@@ -48,6 +48,8 @@ jobs:
         env:
           IDENTITY_TRUSTED_ORIGIN_BROWSER: "1"
         run: node --experimental-strip-types --test scripts/identity-contract.test.mjs
+      - name: Remove generated files before the release allowlist
+        run: git clean -fd -- public
       - name: Identity contract and ownership
         run: node --experimental-strip-types --test scripts/identity-contract.test.mjs scripts/identity-label-ownership.test.mjs scripts/targeted-id-release-contract.test.mjs
       - name: Product authority must pass
