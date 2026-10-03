@@ -31,10 +31,16 @@ jobs:
       - name: Fetch current HEIR
         run: git fetch --no-tags origin king/test
 
+      - name: Product authority workflow fail-closed regression
+        run: node --test scripts/product-authority-enforcement.test.mjs
+
       - name: Validate registry and current mutation authority
         env:
           AUTHORITY_BASE_REF: ${{ github.base_ref }}
-        run: node scripts/product-authority-gate.mjs | tee product-authority-result.txt
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/product-authority-gate.mjs | tee product-authority-result.txt
 
       - name: Inventory remote refs under absolute write-authority law
         env:
