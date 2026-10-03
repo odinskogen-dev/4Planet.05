@@ -1,3 +1,52 @@
+# ATLAS DISCOVERY PUBLIC REDIRECT HTML — QA_CORRECT — 03 OCT 2026
+
+**STATUS:** CANDIDATE CORRECTION / NOT GOLD / NOT LIVE.
+
+**JOB:** Q4-REALITY-OWNER-RECOVERY-01 / DISCOVERY-CORRECTION-CONTINUE. Parent HEIR `4fcbd7a1c1e4ae2fa54218d5305e0a685d57e89a`. Gold finding: `https://github.com/odinskogen-dev/4Planet.05/pull/368#issuecomment-5964948304`.
+
+A public request to `https://4planet.org/atlas/{earth,fires,whales}` returns 308 to `https://4planetatlas.com/{slug}`. That destination is the generic SPA shell. The object HTML already exists at `/atlas/{slug}/`. This slice adds Pages 308 rules so `/{slug}` returns to `/atlas/{slug}/`, where the prerendered object and the existing React route both live. The canonical stays `https://4planet.org/atlas/{slug}`. This does not change production DNS, Workers, or LIVE.
+
+## USER ARRIVES BECAUSE
+A person or crawler opens a public ATLAS discovery link for Earth, Global Fires, or Whales and needs that object's explanation, sources, limits, and a way into the live map.
+
+## ONE THING TO UNDERSTAND
+After the public redirect, the response must be that object's page: its own title, heading, canonical, sources, limitations, and live-map action.
+
+## PRIMARY ACTION
+Open the live ATLAS view for that object.
+
+## SECONDARY DEPTH
+Read why the object matters, which data is available, which sources support it, and what it does not establish.
+
+## P1 DOMINANT
+The object name and the one-sentence human summary.
+
+## P2 ORIENTATION
+Eyebrow, why it matters, and the current available data.
+
+## P3 ACTION / NEXT
+Open live ATLAS. Sharing stays secondary.
+
+## P4 DEPTH
+Sources, limitations, and related links.
+
+## WHAT CAN BE REMOVED
+The generic shell must not remain the final body of these three public routes. A second copy of the object HTML at `/{slug}` is unnecessary because `/atlas/{slug}/` is already the page.
+
+## WHAT MUST BE REUSED
+The existing `atlasDiscovery.json` objects, `AtlasDiscoveryPage`, the `/atlas/{slug}/` prerender, the canonical host `https://4planet.org`, and the Open Graph key parser (`selector.indexOf(":")`) from HEIR `4fcbd7a`.
+
+## TRUTH BOUNDARY
+These pages explain source-grounded ATLAS layers and their limits. They do not create a second map, claim live animal positions, or treat a thermal anomaly as proof of a wildfire. This correction restores raw HTML delivery. It is not proof of Google indexing, and it is not Founder Gold.
+
+## MOBILE-FIRST RISK
+The object page already uses the shared shell. The redirect must land on that same route so phone and desktop hydration do not fall through to the generic shell or a missing route.
+
+## HUMAN SUCCESS
+Following `https://4planet.org/atlas/earth`, `/atlas/fires`, and `/atlas/whales` ends on three distinct pages a person can read without JavaScript: the right name, sources, limits, and a live ATLAS link.
+
+---
+
 # ATLAS GOOGLE SEARCH DISCOVERY CLOSURE 01 — 02 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / SEARCH-INDEXABLE SOURCE ARTIFACT / NO GOOGLE INDEX CLAIM.

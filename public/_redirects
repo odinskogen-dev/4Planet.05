@@ -1,2 +1,11 @@
+# ATLAS discovery objects. The public edge sends 4planet.org/atlas/{slug}
+# to 4planetatlas.com/{slug} and drops /atlas. These static rules run before
+# the SPA shell so the final response is the prerendered /atlas/{slug}/ object.
+/earth /atlas/earth/ 308
+/earth/ /atlas/earth/ 308
+/fires /atlas/fires/ 308
+/fires/ /atlas/fires/ 308
+/whales /atlas/whales/ 308
+/whales/ /atlas/whales/ 308
 /api/*  /api/:splat  200
 /*  /index.html  200

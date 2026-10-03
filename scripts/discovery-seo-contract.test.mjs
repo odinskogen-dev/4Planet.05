@@ -108,6 +108,18 @@ test("Orca discovery object carries a reusable search, share and AI-retrieval pr
   assert.match(speciesMedia,/rightsStatus: "LICENCE_VERIFIED"/);
 });
 
+test("public atlas discovery slugs redirect to the prerendered object path before the SPA shell",()=>{
+  const redirects=read("public/_redirects").split("\n");
+  const splat=redirects.findIndex((line)=>line.startsWith("/* "));
+  assert.ok(splat>0,"SPA shell fallback missing");
+  for(const slug of["earth","fires","whales"]){
+    const bare=redirects.findIndex((line)=>line===`/${slug} /atlas/${slug}/ 308`);
+    const slash=redirects.findIndex((line)=>line===`/${slug}/ /atlas/${slug}/ 308`);
+    assert.ok(bare>=0&&bare<splat,`missing bare redirect for ${slug}`);
+    assert.ok(slash>=0&&slash<splat,`missing slash redirect for ${slug}`);
+  }
+});
+
 test("Orca discovery metadata preserves citations, Taxon identity, limits and ATLAS journey in client and prerender",()=>{
   for(const token of ['"@type": "Taxon"',"citation: sourceUrls","scientificName: curated.scientificName",'limitations.join(" ")',"image={media?.localPath}"]) assert.ok(sr.includes(token), `client metadata missing ${token}`);
   for(const token of ['"@type": "Taxon"',"citation: sourceUrls","What this does not establish","image: item.image","atlasHref"]) assert.ok(pre.includes(token), `prerender metadata missing ${token}`);

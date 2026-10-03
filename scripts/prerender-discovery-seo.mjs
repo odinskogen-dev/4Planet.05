@@ -2,7 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const dist = path.join(root, "dist");
+// Production builds keep dist/. Tests may isolate output without changing meta parsing.
+const dist = path.resolve(process.env.DISCOVERY_PRERENDER_DIST || path.join(root, "dist"));
 const inventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
 const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
