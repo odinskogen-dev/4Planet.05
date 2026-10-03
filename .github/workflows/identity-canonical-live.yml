@@ -29,7 +29,7 @@ env:
 jobs:
   contain-then-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,6 +40,14 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Build the exact candidate for the isolated browser harness
+        run: npm run build
+      - name: Install isolated Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Trusted-origin synthetic browser regression
+        env:
+          IDENTITY_TRUSTED_ORIGIN_BROWSER: "1"
+        run: node --experimental-strip-types --test scripts/identity-contract.test.mjs
       - name: Identity contract and ownership
         run: node --experimental-strip-types --test scripts/identity-contract.test.mjs scripts/identity-label-ownership.test.mjs scripts/targeted-id-release-contract.test.mjs
       - name: Product authority must pass
