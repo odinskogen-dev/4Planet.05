@@ -1,4 +1,4 @@
-import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx");
+import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx"),speciesMedia=read("src/data/speciesMedia.ts"),sourceEnvelopes=read("src/data/speciesSourceEnvelope.ts");
 test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=25);assert.equal(inv.species.filter(s=>s.indexable).length,25);assert.equal(inv.species.filter(s=>!s.indexable).length,0);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle","leopard","eastern-gorilla","chimpanzee","bornean-orangutan","emperor-penguin"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
 test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/path="\/place\/:slug"/);assert.match(map,/discoveryInventory/);assert.match(pre,/Prerendered discovery HTML/)});
 test("quality threshold",()=>assert.match(sr,/curated \? "index,follow,max-image-preview:large" : "noindex,follow"/));
@@ -86,4 +86,29 @@ test("public product-host attribution includes 4NATION, SPECIES and MAGAZINE",()
   assert.ok(analytics.includes('return "species"'));
   assert.ok(analytics.includes('host === "4planetmagazine.com"'));
   assert.ok(analytics.includes('return "magazine"'));
+});
+
+
+test("Orca discovery object carries a reusable search, share and AI-retrieval projection",()=>{
+  const orca=inv.species.find((item)=>item.slug==="orca");
+  assert.equal(orca?.indexable,true);
+  assert.equal(orca?.state,"CURATED");
+  assert.match(orca?.title||"",/Orca \(Orcinus orca\).*Killer whale/i);
+  assert.match(orca?.description||"",/source-grounded evidence/i);
+  assert.equal(orca?.image,"/assets/species/orca/hero.jpg");
+  assert.equal(orca?.atlasHref,"/atlas/whales");
+  assert.deepEqual(orca?.sourceUrls,[
+    "https://www.gbif.org/species/2440483",
+    "https://obis.org/taxon/137102",
+    "https://www.fisheries.noaa.gov/species/killer-whale",
+  ]);
+  assert.ok((orca?.limitations||[]).some((item)=>/not live animal positions/i.test(item)));
+  for(const url of orca?.sourceUrls||[]) assert.ok(sourceEnvelopes.includes(url), `Orca discovery source must exist in canonical source envelope: ${url}`);
+  assert.match(speciesMedia,/localPath: "\/assets\/species\/orca\/hero\.jpg"/);
+  assert.match(speciesMedia,/rightsStatus: "LICENCE_VERIFIED"/);
+});
+
+test("Orca discovery metadata preserves citations, Taxon identity, limits and ATLAS journey in client and prerender",()=>{
+  for(const token of ['"@type": "Taxon"',"citation: sourceUrls","scientificName: curated.scientificName",'limitations.join(" ")',"image={media?.localPath}"]) assert.ok(sr.includes(token), `client metadata missing ${token}`);
+  for(const token of ['"@type": "Taxon"',"citation: sourceUrls","What this does not establish","image: item.image","atlasHref"]) assert.ok(pre.includes(token), `prerender metadata missing ${token}`);
 });

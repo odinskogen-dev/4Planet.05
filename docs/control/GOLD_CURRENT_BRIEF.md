@@ -782,3 +782,36 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **HUMAN REVIEW INTENT:** independent Judge must confirm the exact HEIR candidate preserves product behaviour and that the high audit is cleared. Separate existing Andons remain separate: bundle-size gate and any unrelated workflow failures are not waived by this security correction.
 
 **BOUNDARY:** no LIVE promotion, no external release, no product-value claim, no Human Gold claim. Maker ≠ Judge. The next state may advance only from physical CI + independent judgement.
+# EXPOSURE — ORCA SEARCH / SHARE / AI DISCOVERY 01 — 03 OCT 2026
+
+**STATUS:** HEIR-ONLY CANDIDATE / NOT GOLD / NO LIVE PROMOTION / NO INDEX SUBMISSION OR EXTERNAL DISTRIBUTION AUTHORISED.
+
+**AUTHORITY / FOUR-STATE RESOLUTION:** Affected seam = SPECIES / ORCA discovery. LIVE remains `https://4planet.org/species/orca` with registry identity `READBACK_REQUIRED`. HEIR is the sole `king/test` line at the exact parent recorded by the commit. SPECIES and ORCA have no registered SANDBOX. The implementation therefore lands only on HEIR; the temporary unregistered work branch is quarantine/donor evidence with zero product or promotion authority. Rollback is the exact parent SHA. Production remains Founder-gated.
+
+**USER ARRIVES BECAUSE:** A person searches for Orca / killer whale information, follows an AI answer or receives a shared link and needs a trustworthy, understandable species entry point.
+
+**ONE THING TO UNDERSTAND:** This is the canonical 4PLANET profile for *Orcinus orca*, built from named source roles. Reported occurrence records are evidence records, not live animal positions, abundance, range or population trend.
+
+**PRIMARY ACTION:** Understand the Orca profile, then open the linked whale context in the existing 4PLANET ATLAS.
+
+**SECONDARY DEPTH:** Inspect GBIF taxon identity, OBIS occurrence provenance, NOAA descriptive context, uncertainty, rights and forbidden inferences through the existing evidence seam.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** P1 = Orca identity and useful plain-language profile. P2 = scientific name plus truth boundary. P3 = explore the same subject in ATLAS. P4 = sources, provenance, rights, update semantics and limitations.
+
+**QUESTION / DELETE / SIMPLIFY / REUSE:** Do not create a new Species page, SEO engine, source store or share-card system. Remove the generic search/share projection for Orca by reusing the existing Species route, discovery inventory, source envelope, rights-cleared Orca media, sitemap/prerender pipeline and ATLAS whales object.
+
+**SIMPLEST CAPABLE EXECUTION:** Deterministic metadata and prerender projection over existing canonical objects. No new service, workflow, agent or database.
+
+**TRUTH / SOURCE / RIGHTS BOUNDARY:** Citation URLs are copied only from the existing Orca Source Envelope: GBIF, OBIS and NOAA. JSON-LD identifies a `Taxon` but does not assert population, range, abundance, trend, ecotype, pod or live location. The social image is the existing founder-supplied Orca asset whose current repository rights record is `LICENCE_VERIFIED`; ownership is not asserted and source/rights detail remains visible in evidence records.
+
+**MOBILE-FIRST RISK:** Metadata must not change the rendered mobile hierarchy. The added raw prerender source/limitations content is crawler-visible fallback and must not create duplicate visible content after hydration.
+
+**HUMAN SUCCESS:** A search, AI or shared-link visitor sees a specific Orca title/description/image, can distinguish source fact from occurrence limitations and can continue into the ATLAS whales object. Actual ranking, reach, engagement, return or sharing remains UNKNOWN until measured on a released artifact.
+
+**DESIRED STATE / PROOF:** Exact HEIR commit includes Orca-specific title/description, rights-controlled share image, three canonical citations, Taxon JSON-LD, limitations, ATLAS journey and regression tests. Required proof = discovery contract, Species source contract, product-authority gate, Gold policy gate, typecheck and production build on the exact SHA. Independent Gold plus a Founder-visible HEIR readback are required before any acceptance claim.
+
+**DOOR CLASS / RELEASE:** Internal HEIR code is a reversible two-way door under current execution authority. HEIR→LIVE, IndexNow/search submission, public post, social distribution and any external publication remain one-way Founder-gated actions.
+
+**MAKER ≠ JUDGE / ANDON:** AXE is maker for this bounded candidate, never Gold judge. Stop on source mismatch, rights regression, structured-data invalidity, authority failure, hydration duplication or exact-head CI failure.
+
+---
