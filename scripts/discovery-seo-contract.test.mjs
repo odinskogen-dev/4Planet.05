@@ -108,6 +108,13 @@ test("Orca discovery object carries a reusable search, share and AI-retrieval pr
   assert.match(speciesMedia,/rightsStatus: "LICENCE_VERIFIED"/);
 });
 
+test("ATLAS discovery live-map CTA keeps the /atlas path on the public atlas host",()=>{
+  const page=read("src/pages/integrated/AtlasDiscoveryPage.tsx");
+  assert.match(page,/host === "4planetatlas.com"/);
+  assert.match(page,/host === "127.0.0.1"/);
+  assert.match(page,/servesAtlasPath \? href : `https:\/\/4planet.org\$\{href\}`/);
+});
+
 test("public atlas discovery slugs redirect to the prerendered object path before the SPA shell",()=>{
   const redirects=read("public/_redirects").split("\n");
   const splat=redirects.findIndex((line)=>line.startsWith("/* "));
