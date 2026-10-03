@@ -20,7 +20,7 @@ function setMeta(html, selector, value) {
   return re.test(html) ? html.replace(re, tag) : html.replace("</head>", `    ${tag}\n  </head>`);
 }
 
-function pageHtml({ pathName, title, description, body, jsonLd }) {
+function pageHtml({ pathName, title, description, body, jsonLd, image }) {
   const canonical = origin + pathName;
   let html = base.replace(/<title>[^<]*<\/title>/i, `<title>${esc(title)}</title>`);
   for (const [selector, value] of [
@@ -31,6 +31,7 @@ function pageHtml({ pathName, title, description, body, jsonLd }) {
     ["property:og:url", canonical],
     ["name:twitter:title", title],
     ["name:twitter:description", description],
+    ...(image ? [["property:og:image", origin + image], ["name:twitter:image", origin + image]] : []),
   ]) html = setMeta(html, selector, value);
 
   html = html.replace(
@@ -93,18 +94,36 @@ for (const item of species) {
   const relatedHtml = relatedPlaces.length
     ? `<h2>Related places</h2><ul>${relatedPlaces.map((place) => `<li><a href="/place/${esc(place.slug)}">${esc(place.name)}</a></li>`).join("")}</ul>`
     : "";
+  const sourceUrls = item.sourceUrls ?? [];
+  const sourcesHtml = sourceUrls.length ? `<h2>Sources</h2><ul>${sourceUrls.map((url) => `<li><a href="${esc(url)}">${esc(new URL(url).hostname.replace(/^www\\./, ""))}</a></li>`).join("")}</ul>` : "";
+  const limitations = item.limitations ?? [];
+  const limitationsHtml = limitations.length ? `<h2>What this does not establish</h2><ul>${limitations.map((limit) => `<li>${esc(limit)}</li>`).join("")}</ul>` : "";
+  const atlasHref = item.atlasHref || "/atlas";
   writeRoute(pathName, pageHtml({
     pathName,
-    title: `${item.commonName} (${item.scientificName}) — 4PLANET SPECIES`,
+    title: item.title || `${item.commonName} (${item.scientificName}) — 4PLANET SPECIES`,
     description: item.description,
-    body: `<main><p>4PLANET SPECIES</p><h1>${esc(item.commonName)}</h1><p><em>${esc(item.scientificName)}</em></p><p>${esc(item.description)}</p>${relatedHtml}<p><a href="/atlas">Explore in ATLAS</a> · <a href="/species">All species</a></p></main>`,
+    image: item.image,
+    body: `<main><p>4PLANET SPECIES</p><h1>${esc(item.commonName)}</h1><p><em>${esc(item.scientificName)}</em></p><p>${esc(item.description)}</p>${relatedHtml}${sourcesHtml}${limitationsHtml}<p><a href="${esc(atlasHref)}">Explore in ATLAS</a> · <a href="/species">All species</a></p></main>`,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      name: item.commonName,
+      name: item.title || item.commonName,
       description: item.description,
       url: origin + pathName,
-      about: { "@type": "Thing", name: item.commonName, alternateName: item.scientificName },
+      dateModified: item.reviewedAt || inventory.updatedAt,
+      image: item.image ? origin + item.image : undefined,
+      citation: sourceUrls,
+      mainEntity: {
+        "@type": "Taxon",
+        name: item.commonName,
+        alternateName: item.scientificName,
+        scientificName: item.scientificName,
+        taxonRank: "species",
+        sameAs: sourceUrls,
+      },
+      subjectOf: item.atlasHref ? { "@type": "WebPage", url: origin + item.atlasHref, name: `${item.commonName} in 4PLANET ATLAS` } : undefined,
+      disambiguatingDescription: limitations.length ? limitations.join(" ") : undefined,
       isPartOf: relatedPlaces.map((place) => ({ "@type": "WebPage", url: origin + `/place/${place.slug}`, name: place.name })),
     },
   }));
