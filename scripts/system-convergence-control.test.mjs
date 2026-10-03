@@ -161,6 +161,16 @@ test('control-of-control: convergence workflow executes this test', () => {
   ]) assert.ok(required.has(check), `control-of-control missing ${check}`);
 });
 
+test('bundle Andon emits exact evidence before preserving the existing threshold', () => {
+  assert.match(workflow, /largest_bundle_name=\$largest_name/);
+  assert.match(workflow, /largest_bundle_bytes=\$largest_bytes/);
+  assert.match(workflow, /bundle_limit_bytes=1800000/);
+  assert.match(workflow, /bundle-largest\.txt/);
+  assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /test "\$largest_bytes" -lt 1800000/);
+  assert.doesNotMatch(workflow, /test "\$largest_bytes" -lt (?!1800000)\d+/);
+});
+
 test('activity volume is explicitly not accepted as progress', () => {
   assert.deepEqual(contract.measurement.activityNotAcceptedAsProgress, [
     'COMMITS', 'DOCUMENTS', 'AGENTS', 'BRANCHES', 'RAW_TASK_COMPLETIONS',
