@@ -10,6 +10,7 @@ import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium"
 import { BayActionProof } from "@/pages/integrated/ImpactActionProof";
 import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
 import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
+import CompanyGoldTony from "@/pages/integrated/CompanyGoldTony";
 import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
 import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
@@ -81,6 +82,7 @@ export function AppRoutes() {
       <Route path="/labs/gold/story/:slug" element={<Suspense fallback={LabFallback}><GoldStoryProofPage /></Suspense>} />
       <Route path="/sandbox/gold/*" element={<Suspense fallback={LabFallback}><SandboxGoldRoutes /></Suspense>} />
       <Route path="/labs/food-user-test" element={<Suspense fallback={LabFallback}><FoodUserTest /></Suspense>} />
+      <Route path="/labs/company-gold/tonys" element={<CompanyGoldTony />} />
       <Route path="/os" element={<LabsOverview />} />
       <Route path="/os/labs" element={<LabsOverview />} />
       <Route path="/story" element={<Navigate to="/" replace />} />
