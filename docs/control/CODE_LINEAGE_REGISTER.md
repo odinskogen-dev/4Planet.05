@@ -69,6 +69,15 @@ Donor disposition for this slice: finance truth conventions and owner-scoped dat
 
 Donor disposition for this slice: `agent/lume-project-proto-01`, `agent/orca-lume-19`, `recovery/testking-lume`, `agent/orca-bay-biscay-gold-20` and `recovery/testking-orca-biscay` remain **DONOR** evidence. Their canonical Orca/Bay data and truth boundaries are eligible for **ADOPT / ALREADY PRESENT** review; their LUME renderer/layout override stacks are **REJECT WITH REASON** because LUME ROOM 01 is deliberately clean-room and browser-first. XR, projector hardware and live tracking are **DEFER WITH REASON**.
 
+## SPECIES GOLD PLANK 01 — registered sandbox
+
+| Identity | Role now | Branch / source | Exact parent SHA | Obligation |
+|---|---|---|---|---|
+| SPECIES profile | ACTIVE DEVELOPMENT child | `cursor/species-gold-plank-01-c1dd` | `4a4c26c89eb60b1fec7a079910635cea35cddb1b` | One SPECIES sandbox for the shared Orca/Jaguar premium parent. Returns only to `king/test`. No LIVE authority. |
+| PR #278 | DONOR | evidence-affordance labels | non-mergeable | Do not revive as receiver. |
+| Jaguar Journey #79 | DONOR | journey/XR | read-only | Do not mutate. |
+| Orca Journey #224 | DONOR | journey/XR | read-only | Do not mutate. |
+
 ## Required product-family lineage under #132
 Every one of these receives a complete donor matrix before total closure:
 1. ONE INTERFACE / shared public shell

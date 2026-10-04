@@ -1,3 +1,37 @@
+# SPECIES GOLD PLANK 01 — SHARED PREMIUM PARENT — 04 OCT 2026
+
+**STATUS:** CANDIDATE / NOT HUMAN GOLD / NOT LIVE. Maker return only. Independent Gold must ACCEPT, CORRECT or REJECT.
+
+**USER ARRIVES BECAUSE:** they open Orca or Jaguar and need one source-bounded species record, not a species-specific layout.
+
+**ONE THING TO UNDERSTAND:** the same parent shows what is known, what is unknown, and that a reported point is not a range, a population or a live animal.
+
+**PRIMARY ACTION:** read the species, then open the same canonical taxon in ATLAS or continue to its Mission.
+
+**SECONDARY DEPTH:** evidence chapters, source dates, rights, and the explicit UNKNOWN local-condition boundary.
+
+**P1 DOMINANT:** the animal and the bounded first read.
+
+**P2 ORIENTATION:** where it lives, with the source and the limit on that sentence.
+
+**P3 ACTION:** open the same entity in ATLAS, or the existing Mission / Living Systems handoff when the profile has one.
+
+**P4 DEPTH:** evidence chapters, truth boundary, occurrence records, rights and provenance.
+
+**WHAT CAN BE REMOVED:** the Orca-only premium layout fork, and the Jaguar sentence that treats presence as proof of a connected, functioning forest.
+
+**WHAT MUST BE REUSED:** `SpeciesProfilePage`, narrative chapters, the GBIF/USFWS/CatSG source envelope, ATLAS embed, canonical taxon identity, discovery JSON-LD, Mission/Journey handoffs, and the rights-cleared SP-005 portrait.
+
+**TRUTH BOUNDARY:** species description is not individual behaviour, local ecological health, corridor use, abundance or a live location. No single Jaguar global population number is published. SP-005 is a Pantanal portrait, not an Amazonia image or an occurrence.
+
+**MOBILE-FIRST RISK:** chapters stack under the same hero. Do not add a second layout for a narrow viewport.
+
+**HUMAN SUCCESS:** on phone and desktop, Orca and Jaguar show the same section order, Jaguar no longer claims forest health from presence, and ATLAS still opens the same taxon.
+
+**DONOR:** PR #278, Jaguar Journey #79 and Orca Journey #224 stay read-only. Their profile value that already lives on HEIR is kept; their journey/XR lines are not receivers.
+
+**ROLLBACK:** `king/test@4a4c26c89eb60b1fec7a079910635cea35cddb1b`.
+
 # COMPANY GOLD 01A — TONY'S REVIEW ROUTE ON CURRENT HEIR — 03 OCT 2026
 
 **STATUS:** HEIR / INTERNAL NOINDEX / NOT HUMAN GOLD / NO LIVE.

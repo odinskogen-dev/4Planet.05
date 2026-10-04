@@ -52,7 +52,7 @@
       "lineage_state": "REGISTERED_SANDBOX_DIVERGED_FAIL_CLOSED_FORWARD_SYNC_REQUIRED_BEFORE_FURTHER_MUTATION_OR_PROMOTION",
       "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"
     },
-    "SPECIES": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
+    "SPECIES": {"heir": "king/test", "sandbox": {"branch": "cursor/species-gold-plank-01-c1dd", "registration_sha": "4a4c26c89eb60b1fec7a079910635cea35cddb1b", "classification": "SANDBOX", "review_path": "/species/sandbox", "purpose": "SPECIES Gold Plank 01 shared ORCA/JAGUAR premium parent. Candidate only.", "live_authority": false}, "lineage_state": "REGISTERED_SANDBOX_CHILD_OF_HEIR", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "JAGUAR": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY_AS_SPECIES_EXPERIENCE", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "ORCA": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},
     "S4PIENS": {"heir": "king/test", "sandbox": null, "lineage_state": "HEIR_ONLY", "all_other_lines": "QUARANTINE_PENDING_ARCHIVE_READ_ONLY_DONOR"},

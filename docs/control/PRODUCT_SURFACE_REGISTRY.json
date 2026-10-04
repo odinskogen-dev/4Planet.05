@@ -91,7 +91,14 @@
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
       "heir": {"review_path": "/species", "origin_path": "/species"},
-      "sandbox": null
+      "sandbox": {
+        "branch": "cursor/species-gold-plank-01-c1dd",
+        "sha_at_registration": "4a4c26c89eb60b1fec7a079910635cea35cddb1b",
+        "review_path": "/species/sandbox",
+        "origin_path": "/species",
+        "live_authority": false,
+        "purpose": "SPECIES Gold Plank 01 shared premium parent for ORCA and JAGUAR. Candidate only."
+      }
     },
     "LIVING_SYSTEMS": {
       "live": {
