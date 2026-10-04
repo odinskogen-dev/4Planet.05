@@ -8,7 +8,7 @@ const nodeSource = await readFile(new URL("../src/planet/nodeIntelligence.ts", i
 const gbifMigration = await readFile(new URL("../supabase/migrations/20261004175812_naturebrain_gbif_legacy_record_idempotency_v01.sql", import.meta.url), "utf8");
 const orcaMigration = await readFile(new URL("../supabase/migrations/20261004180550_naturebrain_orca_world_model_gold_slice_v01.sql", import.meta.url), "utf8");
 const contextMigration = await readFile(new URL("../supabase/migrations/20261004180906_naturebrain_entity_context_graph_v03.sql", import.meta.url), "utf8");
-const rpcMigration = await readFile(new URL("../supabase/migrations/20261004182000_naturebrain_internal_entity_context_rpc_v01.sql", import.meta.url), "utf8");
+const rpcMigration = await readFile(new URL("../supabase/migrations/20261004181516_naturebrain_internal_entity_context_rpc_v01.sql", import.meta.url), "utf8");
 
 const compiled = ts.transpileModule(adapterSource, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
@@ -130,7 +130,7 @@ test("Orca World Model uses the canonical graph and explicit evidence boundaries
 
 test("entity context separates raw observation volume from model claims", () => {
   assert.match(contextMigration, /observation_count/);
-  assert.match(contextMigration, /interpretation_status is distinct from 'provider_record_only'/i);
+  assert.match(contextMigration, /interpretation_status is distinct from 'provider_record_only'/ii);
   assert.match(contextMigration, /outbound_relationships/);
   assert.match(contextMigration, /inbound_relationships/);
   assert.match(contextMigration, /measurements/);
