@@ -419,6 +419,24 @@ async function runTrustedOriginJourney({ browser, spec, dist, localAsset, sha, e
     for (const job of pendingC) await releaseHeld(job, cors);
     await page.getByTestId("header-account").filter({ hasText: "SYNTHETIC USER C" }).waitFor();
     await shot(page, evidenceDir, `${spec.name}-logout-stale`);
+
+    await page.evaluate(() => window.__FOURPLANET_SYNTHETIC_AUTH__.emitCurrent());
+    const heldSignedOut = await takeHeld(held, "synthetic-user-c");
+    await page.evaluate(() => window.__FOURPLANET_SYNTHETIC_AUTH__.logout());
+    await page.getByTestId("header-sign-in").waitFor();
+    await page.getByTestId("join-sign-in").waitFor();
+    assert.equal(await page.getByTestId("header-account").count(), 0);
+    assert.equal(await page.getByTestId("join-account").count(), 0);
+    for (const job of heldSignedOut) await releaseHeld(job, cors);
+    await page.waitForTimeout(300);
+    assert.equal(page.url(), original);
+    await page.getByTestId("header-sign-in").waitFor();
+    await page.getByTestId("join-sign-in").waitFor();
+    assert.equal(await page.getByTestId("header-account").count(), 0);
+    assert.equal(await page.getByTestId("join-account").count(), 0);
+    assert.equal((await page.getByTestId("header-sign-in").innerText()).includes("SYNTHETIC USER"), false);
+    assert.equal((await page.getByTestId("join-sign-in").innerText()).includes("SYNTHETIC USER"), false);
+    await shot(page, evidenceDir, `${spec.name}-remain-signed-out`);
     const serious = pageErrors.filter((error) => !/gtag|posthog|analytics/i.test(error));
     assert.deepEqual(serious, []);
     return {
@@ -431,6 +449,7 @@ async function runTrustedOriginJourney({ browser, spec, dist, localAsset, sha, e
       pagesDevReturnRejectedTo: "https://4planet.org/",
       accountSwitchStaleLabelDropped: true,
       logoutStaleLabelDropped: true,
+      heldProfileReleasedWhileSignedOut: true,
       synthetic: true,
       realAccount: false,
       realCustomer: false,
