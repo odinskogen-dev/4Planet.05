@@ -1,3 +1,52 @@
+# WHAT WE BELIEVE — VALUES + PUBLIC BELIEFS v1.0 — 04 OCT 2026
+
+**STATUS:** HEIR CANDIDATE / PUBLIC ABOUT STORY / NOT LIVE / VALUES WORKING v1.0 / FOUNDER RED-TEAM PENDING.
+
+## USER ARRIVES BECAUSE
+A person wants to understand why 4PLANET exists, what it stands for and what kind of organisation it is trying to become.
+
+## ONE THING TO UNDERSTAND
+4PLANET has one moral core with two expressions: internal operating values and public beliefs. They may use different language but may never contradict one another.
+
+## PRIMARY ACTION
+Open `/about/what-we-believe` and understand the purpose and beliefs before moving deeper into the system.
+
+## SECONDARY DEPTH
+Continue into The Story, The System, The Founder or Impact to inspect how the stated beliefs connect to products, evidence and action.
+
+## P1 DOMINANT
+“We believe the future can be better.” The page must communicate constructive purpose before organisational detail.
+
+## P2 ORIENTATION
+People, animals, nature and future generations belong to the same living-planet frame. Economic strength is presented as a means to independence, durability and scale rather than the primary purpose.
+
+## P3 ACTION / NEXT
+See the System or inspect Impact. Do not add a competing campaign CTA or separate values product.
+
+## P4 DEPTH
+Six public beliefs: LIFE MATTERS; TRUTH MATTERS; BETTER SHOULD BE FOR EVERYONE; POWER SHOULD BE USED FOR GOOD; ACTION MATTERS; THE FUTURE CAN BE BETTER.
+
+## WHAT CAN BE REMOVED
+Generic corporate-values language, self-congratulation, unsupported “good company” claims and any duplicate Story/System/Founder content.
+
+## WHAT MUST BE REUSED
+Existing About architecture, PublicShell, 4PLANET visual tokens, The Story, The System, The Founder, existing Impact route and the BRAIN Founder Thesis “ODDEKALV_ FOUNDER THESIS — WHAT WE BELIEVE — v1.0”.
+
+## TRUTH BOUNDARY
+4PLANET does not claim that stating benevolent beliefs proves benevolent impact. Trust is to be earned through truthful products, visible action, evidence, correction and demonstrated usefulness. Values 1.0 remain open to Founder red-team before LOCKED CANON.
+
+## MOBILE-FIRST RISK
+Four-item About subnavigation and six belief rows must wrap without horizontal overflow. Belief rows collapse to a two-column mobile hierarchy with explanatory text beneath the title.
+
+## HUMAN SUCCESS
+A first-time visitor can explain, in plain language, why 4PLANET exists, what it believes, why economic strength matters and how those claims are meant to be proved — without confusing this page with The Story, The System or The Founder.
+
+**CANON / BRAIN:** one source, two expressions. Website copy is a public projection of the working Founder Thesis, not a parallel values authority.
+
+**RELEASE:** HEIR only. No production publication or Founder Release is inferred by this commit.
+
+---
+
 # COMPANY GOLD 01A — TONY'S REVIEW ROUTE ON CURRENT HEIR — 03 OCT 2026
 
 **STATUS:** HEIR / INTERNAL NOINDEX / NOT HUMAN GOLD / NO LIVE.
