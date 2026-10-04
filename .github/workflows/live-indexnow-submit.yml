@@ -1,0 +1,27 @@
+name: 4PLANET Live IndexNow Submit
+
+on:
+  push:
+    branches:
+      - king/test
+    paths:
+      - .github/workflows/live-indexnow-submit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  submit-live-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact current LIVE control
+        uses: actions/checkout@v4
+        with:
+          ref: 01e949bc06528c16bf177bcf310334b0586af1a0
+
+      - name: Submit only currently LIVE discovery URLs
+        env:
+          FOUNDER_INDEXNOW_RELEASE: ENIG_INDEXNOW
+          PUBLIC_SITE_ORIGIN: https://4planet.org
+        run: node scripts/submit-indexnow.mjs
