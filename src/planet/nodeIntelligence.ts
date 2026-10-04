@@ -24,6 +24,7 @@ import { decisionContextForAnchor, entityLabel, failureCascade } from "./decisio
 import { claimsForCurrentEntity } from "./trustIntelligence";
 import {
   NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY,
+  natureBrainLsiEdges,
   natureBrainProductLinks,
   type NatureBrainEntityContext,
 } from "./naturebrainContext";
@@ -45,6 +46,8 @@ export interface NodeIntel {
   claimCount: number;
   cascade: ReturnType<typeof failureCascade>;
   decisionContext?: ReturnType<typeof decisionContextForAnchor>;
+  /** Canonical LSI projection over the supplied NATUREBRAIN context. No second graph. */
+  lsiEdges: ReturnType<typeof natureBrainLsiEdges>;
   truthBoundary: string;
 }
 
@@ -124,6 +127,7 @@ export function nodeIntelligence(id: string, natureBrainContext?: NatureBrainEnt
   }).map((m) => link(m.id, "ACCELERATES"));
 
   const natureLinks = currentNatureContext ? natureBrainProductLinks(currentNatureContext) : [];
+  const lsiEdges = currentNatureContext ? natureBrainLsiEdges(currentNatureContext) : [];
   const natureOutbound = natureLinks
     .filter((item) => item.direction === "OUTBOUND")
     .map((item) => ({ id: item.id, label: item.label, kind: kindFor(item.id), relation: item.relation, href: hrefFor(item.id) }));
@@ -153,6 +157,7 @@ export function nodeIntelligence(id: string, natureBrainContext?: NatureBrainEnt
     claimCount: currentNatureContext ? currentNatureContext.claims.length : claimsForCurrentEntity(id).length,
     cascade: failureCascade(id),
     decisionContext,
+    lsiEdges,
     truthBoundary: currentNatureContext
       ? NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY
       : "Node Intelligence is a read-only traversal of the current shared Planet Model plus explicitly labelled recovered LSI decision context. Connections inherit their source/review boundaries; presence here is not an automated recommendation.",
