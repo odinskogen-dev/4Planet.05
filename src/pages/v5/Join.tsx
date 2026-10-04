@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { T } from "@/styles/tokens";
-import { PublicShell } from "@/components/layout/PublicShell";
+import { IdentityAffordances, PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label, Button } from "@/components/ui";
 import { returnHrefFromSearch } from "@/product/productContext";
 
 const ROLES: [string, string, string][] = [
-  ["4PEOPLE MEMBER_", "Free membership and mission updates.", "Follow the domains you care about and take part as new pathways open."],
+  ["4PEOPLE MEMBER_", "Future membership and mission updates.", "Follow the domains you care about and take part as new pathways open."],
   ["FOUNDING MEMBER_", "Future paid support for 4Planet's public platform and infrastructure.", "Help build the platform, mission development and proof systems credible action depends on."],
   ["MISSION BACKER_", "Future pathway for following and supporting a specific mission as public pathways open.", "Back a specific challenge once its delivery and reporting are in place."],
   ["4AMBASSADOR_", "Future pathway for creators, communicators and public participation.", "Carry the work into culture, community and public imagination."],
@@ -34,9 +34,9 @@ export default function Join() {
         <h1 style={{ fontWeight: 500, color: T.ink, fontSize: "clamp(30px,3.4vw,48px)", letterSpacing: "-.035em", lineHeight: 1.05 }}>Everyone has a role in bringing nature back into balance.</h1>
         <p style={{ fontSize: "clamp(16px,2vw,18px)", color: T.dim, marginTop: 18, maxWidth: 640, lineHeight: 1.55 }}>
           4Planet is being built to bring people, partners, brands and funders into the same system for action.
-          Some ways to take part are open now; paid membership is not yet active. We would rather be honest about
-          that than pretend.
+          Some ways to take part are open now. A free 4PLANET ID is not paid membership, and paid membership is not yet active.
         </p>
+        <IdentityAffordances presentation="join" />
 
         {/* Ways to take part NOW — honest, no payment or data capture */}
         <div className="mono" style={{ fontSize: 11, color: T.blue, marginTop: 40, letterSpacing: ".14em" }}>WAYS TO TAKE PART NOW</div>
@@ -63,7 +63,7 @@ export default function Join() {
         </div>
 
         <p style={{ fontSize: 13.5, color: T.faint, marginTop: 20, maxWidth: 640, lineHeight: 1.55 }}>
-          Membership will support 4Planet's platform, mission development and proof infrastructure. It will not purchase or fund a specific Impact Unit. No registration, payment or data capture is active in this release.
+          Membership will support 4Planet's platform, mission development and proof infrastructure. It will not purchase or fund a specific Impact Unit. Creating a free 4PLANET ID does not activate paid membership, payment, or a member entitlement.
         </p>
         <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
           <Button to="/domains" arrow>ENTER DOMAINS_</Button>
