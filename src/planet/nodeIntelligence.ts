@@ -22,6 +22,11 @@ import {
 } from "./livingSystems";
 import { decisionContextForAnchor, entityLabel, failureCascade } from "./decisionIntelligence";
 import { claimsForCurrentEntity } from "./trustIntelligence";
+import {
+  NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY,
+  natureBrainProductLinks,
+  type NatureBrainEntityContext,
+} from "./naturebrainContext";
 
 export type IntelLink = {
   id: string;
@@ -101,8 +106,11 @@ function titleFor(id: string): { kind: string; title: string; subtitle?: string 
   return null;
 }
 
-export function nodeIntelligence(id: string): NodeIntel | null {
-  const identity = titleFor(id);
+export function nodeIntelligence(id: string, natureBrainContext?: NatureBrainEntityContext): NodeIntel | null {
+  const currentNatureContext = natureBrainContext?.canonical_id === id ? natureBrainContext : undefined;
+  const identity = titleFor(id) ?? (currentNatureContext
+    ? { kind: kindFor(id), title: currentNatureContext.name, subtitle: "NATUREBRAIN · SHARED WORLD MODEL" }
+    : null);
   if (!identity) return null;
 
   const forward = RELATIONS.filter((r) => r.from === id);
@@ -115,9 +123,17 @@ export function nodeIntelligence(id: string): NodeIntel | null {
     return solIds.some((sid) => solutions.some((s) => s.id === sid));
   }).map((m) => link(m.id, "ACCELERATES"));
 
+  const natureLinks = currentNatureContext ? natureBrainProductLinks(currentNatureContext) : [];
+  const natureOutbound = natureLinks
+    .filter((item) => item.direction === "OUTBOUND")
+    .map((item) => ({ id: item.id, label: item.label, kind: kindFor(item.id), relation: item.relation, href: hrefFor(item.id) }));
+  const natureInbound = natureLinks
+    .filter((item) => item.direction === "INBOUND")
+    .map((item) => ({ id: item.id, label: item.label, kind: kindFor(item.id), relation: item.relation, href: hrefFor(item.id) }));
+
   const sections: IntelSection[] = [
-    { label: "OUTBOUND RELATIONSHIPS", items: relationLinks(forward, "from") },
-    { label: "DEPENDS ON / INBOUND", items: relationLinks(reverse, "to") },
+    { label: "OUTBOUND RELATIONSHIPS", items: uniq([...relationLinks(forward, "from"), ...natureOutbound]) },
+    { label: "DEPENDS ON / INBOUND", items: uniq([...relationLinks(reverse, "to"), ...natureInbound]) },
     { label: "LIVING SYSTEMS", items: uniq(systems) },
     { label: "PRESSURES", items: uniq(pressures) },
     { label: "SOLUTIONS", items: uniq(solutions) },
@@ -134,10 +150,12 @@ export function nodeIntelligence(id: string): NodeIntel | null {
     title: identity.title,
     subtitle: identity.subtitle,
     sections,
-    claimCount: claimsForCurrentEntity(id).length,
+    claimCount: currentNatureContext ? currentNatureContext.claims.length : claimsForCurrentEntity(id).length,
     cascade: failureCascade(id),
     decisionContext,
-    truthBoundary: "Node Intelligence is a read-only traversal of the current shared Planet Model plus explicitly labelled recovered LSI decision context. Connections inherit their source/review boundaries; presence here is not an automated recommendation.",
+    truthBoundary: currentNatureContext
+      ? NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY
+      : "Node Intelligence is a read-only traversal of the current shared Planet Model plus explicitly labelled recovered LSI decision context. Connections inherit their source/review boundaries; presence here is not an automated recommendation.",
   };
 }
 
