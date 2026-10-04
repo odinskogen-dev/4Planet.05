@@ -97,6 +97,8 @@ test("truth boundary forbids the central ecological overclaims", () => {
 
 test("generic Node Intelligence can consume NATUREBRAIN without creating a second graph", () => {
   assert.match(nodeSource, /natureBrainProductLinks/);
+  assert.match(nodeSource, /natureBrainLsiEdges/);
+  assert.match(nodeSource, /lsiEdges/);
   assert.match(nodeSource, /NatureBrainEntityContext/);
   assert.match(nodeSource, /NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY/);
   assert.match(nodeSource, /currentNatureContext/);
