@@ -25,7 +25,7 @@ import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
 import { PlanetProofPage } from "@/pages/v5/PlanetProof";
 import { Reports } from "@/pages/v5/Reports";
 import { About } from "@/pages/v5/About";
-import { AboutStory, AboutSystem, Founder } from "@/pages/v5/AboutPages";
+import { AboutStory, AboutSystem, WhatWeBelieve, Founder } from "@/pages/v5/AboutPages";
 import { CulturePlay } from "@/pages/v5/Culture";
 import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
 import Privacy from "@/pages/v5/Privacy";
@@ -143,6 +143,7 @@ export function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/about/story" element={<AboutStory />} />
       <Route path="/about/system" element={<AboutSystem />} />
+      <Route path="/about/what-we-believe" element={<WhatWeBelieve />} />
       <Route path="/about/founder" element={<Founder />} />
       <Route path="/magazine" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/magazine/about" element={<Suspense fallback={MagazineFallback}><MagazineAbout /></Suspense>} />
