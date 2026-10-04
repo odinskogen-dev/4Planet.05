@@ -99,6 +99,7 @@ test("generic Node Intelligence can consume NATUREBRAIN without creating a secon
   assert.match(nodeSource, /natureBrainProductLinks/);
   assert.match(nodeSource, /natureBrainLsiEdges/);
   assert.match(nodeSource, /lsiEdges/);
+  assert.match(nodeSource, /\/domains\/s4piens\?entity=/);
   assert.match(nodeSource, /NatureBrainEntityContext/);
   assert.match(nodeSource, /NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY/);
   assert.match(nodeSource, /currentNatureContext/);
