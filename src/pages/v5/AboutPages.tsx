@@ -6,10 +6,11 @@ const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSp
 const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.04em" };
 const max: React.CSSProperties = { maxWidth: 1240, margin: "0 auto", paddingLeft: "clamp(20px,5vw,72px)", paddingRight: "clamp(20px,5vw,72px)" };
 
-function AboutNav({ active }: { active: "story" | "system" | "founder" }) {
+function AboutNav({ active }: { active: "story" | "system" | "beliefs" | "founder" }) {
   const items = [
     ["STORY", "/about/story", "story"],
     ["SYSTEM", "/about/system", "system"],
+    ["WHAT WE BELIEVE", "/about/what-we-believe", "beliefs"],
     ["FOUNDER", "/about/founder", "founder"],
   ] as const;
   return (
@@ -94,6 +95,88 @@ export function AboutSystem() {
       <Statement eyebrow="MISSIONS" title="The Planetary Map describes the world. Missions choose where 4PLANET acts." body="Missions are operational entry points into real problems, places and systems. They can connect intelligence, ecosystems, solutions and acceleration without turning the first set of Missions into a claim that the planet has only sixteen problems." />
       <Statement eyebrow="TRUTH" title="Source boundaries travel with the product." body="An observation is not a range map. A species identity is not a population assessment. A proposed action pathway is not delivered impact. 4PLANET is designed to keep those distinctions visible while still making the experience useful and beautiful." />
       <style>{`@media(max-width:700px){.system-row{grid-template-columns:52px 1fr!important}.system-row p{grid-column:2}} @media(max-width:760px){.about-split{grid-template-columns:1fr!important}}`}</style>
+    </PublicShell>
+  );
+}
+
+
+export function WhatWeBelieve() {
+  const beliefs = [
+    ["01", "LIFE MATTERS.", "People are part of the living world. Human dignity, animals, species and ecosystems matter — and progress should strengthen the conditions that let life thrive."],
+    ["02", "TRUTH MATTERS.", "A better future starts with seeing reality clearly. We distinguish evidence from assumption, show uncertainty and correct ourselves when the facts change."],
+    ["03", "BETTER SHOULD BE FOR EVERYONE.", "We look for progress that improves human life without degrading the living systems that make it possible."],
+    ["04", "POWER SHOULD BE USED FOR GOOD.", "Technology, business, knowledge, creativity and capital are tools. We choose to use them to help people and the living planet."],
+    ["05", "ACTION MATTERS.", "Good intentions are not enough. We build, test, measure, learn and show what actually happened."],
+    ["06", "THE FUTURE CAN BE BETTER.", "We choose informed optimism: not ignoring difficult realities, but refusing to believe that decline is the only possible direction."],
+  ] as const;
+
+  return (
+    <PublicShell>
+      <section style={{ minHeight: "88svh", background: "#050805", color: "#fff", display: "flex", alignItems: "flex-end" }}>
+        <div style={{ ...max, width: "100%", paddingTop: 120, paddingBottom: "clamp(54px,8vw,110px)" }}>
+          <div style={{ ...mono, color: T.acid }}>ABOUT_ · WHAT WE BELIEVE</div>
+          <h1 style={{ ...display, marginTop: 18, fontSize: "clamp(50px,9vw,138px)", lineHeight: .82, maxWidth: "10ch" }}>We believe the future can be better.</h1>
+          <p style={{ marginTop: 32, maxWidth: 760, fontSize: "clamp(18px,2vw,25px)", lineHeight: 1.55, color: "rgba(255,255,255,.82)" }}>For people. For animals. For nature. For everyone who comes after us.</p>
+        </div>
+      </section>
+
+      <AboutNav active="beliefs" />
+
+      <section style={{ background: "#fff", color: T.ink }}>
+        <div style={{ ...max, paddingTop: "clamp(64px,9vw,130px)", paddingBottom: "clamp(64px,9vw,130px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(140px,.35fr) minmax(0,1fr)", gap: "clamp(32px,8vw,120px)" }} className="belief-split">
+            <div style={{ ...mono, color: T.blue }}>WHY 4PLANET EXISTS</div>
+            <div style={{ maxWidth: 820 }}>
+              <p style={{ ...display, fontSize: "clamp(32px,4.8vw,68px)", lineHeight: 1.0 }}>Humanity has never had more knowledge, technology or capability.</p>
+              <p style={{ marginTop: 30, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.7, color: T.dim }}>The question is what we choose to do with it.</p>
+              <p style={{ marginTop: 20, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.7, color: T.dim }}>4PLANET exists to use intelligence, technology, creativity and business to help build a better future for life on Earth. We build tools that help people understand the world, make better decisions and turn knowledge into action.</p>
+              <p style={{ marginTop: 20, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.7, color: T.dim }}>We believe in truth before ideology. Solutions before promises. Action before appearances. And progress that works for people and the living planet together.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: "#050805", color: "#fff" }}>
+        <div style={{ ...max, paddingTop: "clamp(64px,9vw,120px)", paddingBottom: "clamp(64px,9vw,120px)" }}>
+          <div style={{ ...mono, color: T.acid }}>WHAT WE STAND FOR</div>
+          <div style={{ marginTop: 36, borderTop: "1px solid rgba(255,255,255,.18)" }}>
+            {beliefs.map(([no, title, line]) => (
+              <div key={title} className="belief-row" style={{ display: "grid", gridTemplateColumns: "70px minmax(210px,.55fr) minmax(0,1fr)", gap: "clamp(16px,4vw,60px)", padding: "clamp(28px,4vw,52px) 0", borderBottom: "1px solid rgba(255,255,255,.18)" }}>
+                <span style={{ ...mono, color: T.acid }}>{no}</span>
+                <span style={{ ...display, fontSize: "clamp(25px,3.2vw,46px)", lineHeight: .98 }}>{title}</span>
+                <p style={{ margin: 0, color: "rgba(255,255,255,.72)", fontSize: "clamp(15px,1.35vw,19px)", lineHeight: 1.65, maxWidth: 700 }}>{line}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Statement eyebrow="WHY BUILD A COMPANY?" title="Power should be used for good." body="Capable companies can change the world. Economic strength gives 4PLANET independence, capacity and scale. Technology lets useful ideas reach far more people. Profit matters because it can make the mission durable — but it is a means, not the purpose." />
+
+      <section style={{ background: T.blue, color: "#fff" }}>
+        <div style={{ ...max, paddingTop: "clamp(76px,11vw,160px)", paddingBottom: "clamp(76px,11vw,160px)" }}>
+          <div style={{ ...mono, color: "rgba(255,255,255,.68)" }}>THE DIRECTION</div>
+          <p style={{ ...display, marginTop: 22, fontSize: "clamp(38px,7vw,104px)", lineHeight: .91, maxWidth: "13ch" }}>Become powerful by being useful. Use that power to do more good.</p>
+        </div>
+      </section>
+
+      <section style={{ background: "#fff", color: T.ink }}>
+        <div style={{ ...max, paddingTop: "clamp(64px,9vw,130px)", paddingBottom: "clamp(64px,9vw,130px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(140px,.35fr) minmax(0,1fr)", gap: "clamp(32px,8vw,120px)" }} className="belief-split">
+            <div style={{ ...mono, color: T.blue }}>HOW WE PROVE IT</div>
+            <div style={{ maxWidth: 820 }}>
+              <p style={{ ...display, fontSize: "clamp(32px,4.8vw,68px)", lineHeight: 1.0 }}>We do not ask to be trusted because of what we say.</p>
+              <p style={{ marginTop: 30, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.7, color: T.dim }}>We intend to earn trust through what we build, what we source, what we measure, what we correct and what actually helps. Claims should follow evidence. Impact should follow action. When we are wrong, we should say so and get better.</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 34 }}>
+                <Link to="/about/system" style={{ ...mono, background: T.blue, color: "#fff", padding: "13px 17px", textDecoration: "none" }}>SEE THE SYSTEM →</Link>
+                <Link to="/impact" style={{ ...mono, border: `1px solid ${T.lineStrong}`, color: T.ink, padding: "12px 17px", textDecoration: "none" }}>SEE IMPACT →</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <style>{`@media(max-width:760px){.belief-split{grid-template-columns:1fr!important}.belief-row{grid-template-columns:48px 1fr!important}.belief-row p{grid-column:2}}`}</style>
     </PublicShell>
   );
 }
