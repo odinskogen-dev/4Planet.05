@@ -110,6 +110,8 @@ test("SPECIES-GP-01 preserves canonical discovery, ATLAS and occurrence semantic
   assert.match(orca, /missionSlug: "wh4les"/);
   assert.match(jaguar, /missionSlug: "am4zonia"/);
   assert.match(orca, /atlasJourney: "orca-gbif"/);
+  assert.match(orca, /observation:gbif:5939349319/);
+  assert.match(orca, /Bundled evidence fixture/);
   assert.match(orca, /href: "\/living-systems"/);
   assert.match(page, /AtlasEmbed/);
   assert.match(page, /data-testid="species-to-atlas"/);

@@ -1,10 +1,3 @@
-import {
-  ORCA_INTERPRETATION,
-  ORCA_OBSERVATION,
-  ORCA_PRODUCT_CONTEXT,
-  ORCA_SOURCE_RECORD,
-} from "./truthSpine";
-
 export type EvidenceState = "KNOWN" | "INTERPRETED" | "UNKNOWN";
 
 export interface EvidenceClaim {
@@ -345,16 +338,16 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     chaptersTitle: "From one animal to the living relationships around it.",
     chaptersLede: "Every statement is labelled KNOWN, INTERPRETED or UNKNOWN. Species-level evidence is never silently converted into a claim about one population, pod or individual.",
     truthBoundary: {
-      persistedBy: ORCA_PRODUCT_CONTEXT.persistedBy,
-      text: ORCA_INTERPRETATION.text,
+      persistedBy: "BUNDLED_FIXTURE",
+      text: "This record shows that a human observation of an orca was published to GBIF at the stated coordinates and date. It does not establish range, abundance, population trend, place membership or ecological change.",
       rows: [
-        { label: "SOURCE RECORD", value: ORCA_SOURCE_RECORD.sourceRecordId },
-        { label: "OBSERVATION", value: ORCA_OBSERVATION.id },
+        { label: "SOURCE RECORD", value: "5939349319" },
+        { label: "OBSERVATION", value: "observation:gbif:5939349319" },
         { label: "SIGNAL", value: "NONE CREATED" },
-        { label: "INTERPRETATION", value: ORCA_INTERPRETATION.reviewStatus },
+        { label: "INTERPRETATION", value: "UNREVIEWED" },
       ],
-      disclosure: ORCA_PRODUCT_CONTEXT.disclosure,
-      sourceUrl: ORCA_SOURCE_RECORD.sourceUrl,
+      disclosure: "Bundled evidence fixture. The Supabase/PostGIS contract and seed are included, but hosted persistence was not exercised because no staging secret was supplied.",
+      sourceUrl: "https://www.gbif.org/occurrence/5939349319",
     },
     group: "Marine mammals",
     intro: "The orca is the largest member of the dolphin family — a fast, social, wide-ranging predator found in every ocean. Populations differ in prey, behaviour and calls, so a species label does not describe every group.",
