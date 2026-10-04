@@ -158,6 +158,19 @@ export default function Home() {
         </div>
       </section>
 
+      <section style={{ background: "#050805", color: "#fff" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(58px,8vw,112px) clamp(20px,5vw,72px)", display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(30px,7vw,104px)", alignItems: "end" }} className="home-belief">
+          <div>
+            <div style={{ ...mono, color: T.acid }}>WHAT WE BELIEVE_</div>
+            <h2 style={{ ...display, margin: "16px 0 0", fontSize: "clamp(36px,5.5vw,76px)", lineHeight: .92, maxWidth: "11ch" }}>We believe the future can be better.</h2>
+          </div>
+          <div>
+            <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.76)", fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.65 }}>Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real, use power for good — and leave things better.</p>
+            <Link to="/about/what-we-believe" style={{ ...mono, display: "inline-flex", marginTop: 26, color: "#fff", textDecoration: "none" }}>WHAT WE BELIEVE →</Link>
+          </div>
+        </div>
+      </section>
+
       <section style={{ background: "#fff", color: T.ink }}>
         <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(58px,7vw,100px) clamp(20px,5vw,72px)" }}>
           <Reveal>
@@ -235,7 +248,7 @@ export default function Home() {
         .home-lens{transition:transform .2s ease,opacity .2s ease}.home-lens:hover{transform:translateX(5px)}
         .home-world img,.home-impact__card img{transition:transform .7s cubic-bezier(.2,.7,.2,1)}
         .home-world:hover img,.home-world:focus-visible img,.home-impact__card:hover img,.home-impact__card:focus-visible img{transform:scale(1.018)!important}
-        @media(max-width:900px){.home-premise,.home-lens-intro,.home-world-intro,.home-impact__intro{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+        @media(max-width:900px){.home-premise,.home-belief,.home-lens-intro,.home-world-intro,.home-impact__intro{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
         @media(max-width:680px){.home-lens-grid,.home-world-grid,.home-impact__grid{grid-template-columns:1fr!important}.home-lens{border-bottom:1px solid ${T.line}}.home-impact__card{min-height:420px!important}}
         @media(prefers-reduced-motion:reduce){.home-lens,.home-world img,.home-impact__card img{transition:none!important}.home-lens:hover{transform:none}.home-world:hover img,.home-world:focus-visible img,.home-impact__card:hover img,.home-impact__card:focus-visible img{transform:none!important}}
       `}</style>

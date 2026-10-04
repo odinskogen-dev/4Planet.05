@@ -1,3 +1,50 @@
+# WHAT WE BELIEVE — CANON 2.0 PUBLIC SYNC — 05 OCT 2026
+
+**STATUS:** HEIR PRODUCT CANDIDATE / EXACT CANON PROJECTION / FOUNDER REQUESTED LIVE RELEASE / RELEASE GATES REQUIRED.
+
+## USER ARRIVES BECAUSE
+A person wants to understand what 4PLANET stands for, why it exists and whether the organisation's claims about purpose can be inspected rather than inferred.
+
+## ONE THING TO UNDERSTAND
+4PLANET has one moral core and one value system. The public page is a projection of the canonical WHAT WE BELIEVE Founder Thesis, not a separate marketing value set.
+
+## PRIMARY ACTION
+Read /about/what-we-believe; from the homepage, follow the WHAT WE BELIEVE entry.
+
+## SECONDARY DEPTH
+Continue into Impact for proof, the System for architecture, Join for participation, or the Founder for origin.
+
+## P1 DOMINANT
+“We believe the future can be better.” Purpose = FOR A LIVING PLANET. Ambition = BETTER. FOR EVERYONE.
+
+## P2 ORIENTATION
+Four foundational beliefs plus seven values: CARE DEEPLY; TRUTH FIRST; EVERYONE HAS A PART TO PLAY; BE USEFUL; MAKE IT REAL; USE POWER FOR GOOD; LEAVE IT BETTER.
+
+## P3 ACTION / NEXT
+SEE IMPACT, SEE THE SYSTEM, or FIND YOUR PART. No duplicate values product or campaign funnel.
+
+## P4 DEPTH
+Brand law = DO GOOD → PROVE IT → LET PEOPLE TELL THE STORY. Public copy stays shorter than internal Canon while preserving meaning.
+
+## WHAT CAN BE REMOVED
+The superseded six-belief public draft and any suggestion that public beliefs are a second moral system.
+
+## WHAT MUST BE REUSED
+Existing About architecture, PublicShell, 4PLANET tokens, Impact/System/Join routes and the BRAIN authority ODDEKALV_ FOUNDER THESIS — WHAT WE BELIEVE — LOCKED CANON 2.0.
+
+## TRUTH BOUNDARY
+Publishing values does not prove that 4PLANET lives them. Product behaviour, evidence, Impact/Reports, correction and outcomes must provide proof. Do not describe 4PLANET as “a force for good” as a self-certified fact.
+
+## MOBILE-FIRST RISK
+Seven value rows and the homepage belief signature must stack cleanly at 390/430 without overflow; long headings must wrap without obscuring explanatory copy.
+
+## HUMAN SUCCESS
+A first-time visitor can explain 4PLANET's purpose, ambition and values, and can find both a proof path and a participation path.
+
+**FOUNDER RELEASE CONTEXT:** Founder explicitly stated on 05 Oct 2026 that “nå må vi få dette ut live”. Production promotion remains exact-artifact and gate-controlled; this brief does not bypass QA.
+
+---
+
 # WHAT WE BELIEVE — VALUES + PUBLIC BELIEFS v1.0 — 04 OCT 2026
 
 **STATUS:** HEIR CANDIDATE / PUBLIC ABOUT STORY / NOT LIVE / VALUES WORKING v1.0 / FOUNDER RED-TEAM PENDING.
