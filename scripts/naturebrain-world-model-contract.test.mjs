@@ -130,7 +130,7 @@ test("Orca World Model uses the canonical graph and explicit evidence boundaries
 
 test("entity context separates raw observation volume from model claims", () => {
   assert.match(contextMigration, /observation_count/);
-  assert.match(contextMigration, /interpretation_status is distinct from 'provider_record_only'/ii);
+  assert.match(contextMigration, /interpretation_status is distinct from 'provider_record_only'/i);
   assert.match(contextMigration, /outbound_relationships/);
   assert.match(contextMigration, /inbound_relationships/);
   assert.match(contextMigration, /measurements/);
