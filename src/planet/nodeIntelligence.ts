@@ -64,6 +64,7 @@ const hrefFor = (id: string): string | undefined => {
     if (slug === "pollination") return "/living-systems/pollination";
   }
   if (id.startsWith("mission:4p:")) return `/missions/${id.split(":").slice(2).join(":")}`;
+  if (id.startsWith("human-system:")) return `/domains/s4piens?entity=${encodeURIComponent(id)}`;
   if (id.startsWith("pressure:4p:")) return `/atlas?entity=${encodeURIComponent(id)}`;
   if (id.startsWith("solution:4p:")) return `/atlas?entity=${encodeURIComponent(id)}`;
   return undefined;
