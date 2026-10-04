@@ -8,5 +8,31 @@
   "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37077436047",
   "rollbackRef": "main@44ed8eb1055aa2cdc6a033be23ae44db18b1dd48",
   "releaseControlCommit": true,
-  "note": "Bounded 4PLANET discovery LIVE release. Runtime parent f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24 preserves prior LIVE and overlays only Earth/Fires/Whales useful internet objects, route/sitemap/prerender/public-host analytics, GOLD brief, and the accepted brace-expansion lock remediation. Source HEIR dc2d5e3be517c3da3bac5dcea71cbdcffa3ca870. No social/email send, outreach, paid spend or IndexNow submission."
+  "note": "Bounded 4PLANET discovery LIVE release. Runtime parent f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24 preserves prior LIVE and overlays only Earth/Fires/Whales useful internet objects, route/sitemap/prerender/public-host analytics, GOLD brief, and the accepted brace-expansion lock remediation. Source HEIR dc2d5e3be517c3da3bac5dcea71cbdcffa3ca870. No social/email send, outreach, paid spend or IndexNow submission.",
+  "targetedIdentityRelease": {
+    "liveAuthority": false,
+    "branch": "release/targeted-4planet-id-20261004-baseline",
+    "liveSourceSha": "f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24",
+    "founderDecisionRef": "ENIG TARGETED RELEASE CONTROL AMENDMENT — autoriser én engangs, fil-/delta-avgrenset 4PLANET-identitetsrelease fra verifisert immutable LIVE-kilde, med eksakt kandidat, uavhengig Gold, rollback og eksisterende Pages-prosjekt. Ingen hel HEIR-promotering.",
+    "candidateSha": null,
+    "goldEvidenceRef": null,
+    "rollbackDeployment": "https://0d3c403d.4planet-05.pages.dev",
+    "rollbackSha": "f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24",
+    "rollbackAsset": "/assets/index-B19g76B_.js",
+    "rollbackAssetSha256": "1a6444489e50cb06e32799508f536ee512e86068f9409f992dfbd8a7c35365a7",
+    "rollbackAssetBytes": 1847105,
+    "authorityState": "UNSPENT",
+    "closureReceipt": null,
+    "immutableSourceDeployment": "https://0d3c403d.4planet-05.pages.dev",
+    "currentLiveOrigin": "https://4planet.org",
+    "liveAsset": "/assets/index-B19g76B_.js",
+    "liveAssetSha256": "1a6444489e50cb06e32799508f536ee512e86068f9409f992dfbd8a7c35365a7",
+    "liveAssetBytes": 1847105,
+    "notImmediateRollback": {
+      "rollbackDeployment": "https://3b786854.4planet-05.pages.dev",
+      "rollbackSha": "359f687f91470a8ee40f8558ade56d578d76accb",
+      "asset": "/assets/index-BlYT68qY.js",
+      "reason": "This deployment served the previous discovery runtime 359f687f. The public apex now serves the ATLAS discovery runtime f4e3f338 from https://0d3c403d.4planet-05.pages.dev with /assets/index-B19g76B_.js. Restoring 3b786854 would skip that current runtime, so it is not the immediate pre-ID rollback. The ATLAS package rollback remains main@44ed8eb1 and is not this ID pin. Control tip 01e949bc is the manifest-only authorisation of f4e3f338 and is not a second runtime."
+    }
+  }
 }
