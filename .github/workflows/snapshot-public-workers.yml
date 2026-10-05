@@ -53,3 +53,4 @@ jobs:
           git commit -m "control(discovery): snapshot live public Worker sources"
           git pull --rebase origin king/test
           git push origin HEAD:king/test
+# retry after extractor fix
