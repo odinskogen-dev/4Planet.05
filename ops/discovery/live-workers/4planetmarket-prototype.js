@@ -913,7 +913,7 @@ var planetmarket_commerce_default = {
     headers.set("x-4planet-market-source", env.MARKET_SOURCE_SHA || "unknown");
     let html = await upstream.text();
     html = html.replace(/<script[^>]+src=["']\/host-indexing-policy\.js["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET — Nature, Culture and Better Products</title>");
+    html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET — Products, Creators and Better Commerce</title>");
     html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="4PLANET MARKET is an early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
