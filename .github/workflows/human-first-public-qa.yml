@@ -83,7 +83,7 @@ jobs:
             const result = await page.evaluate(({ banned, selector }) => {
               const bodyText = document.body.innerText;
               const html = document.documentElement;
-              const main = document.querySelector("main");
+              const main = document.querySelector(".editorial-page");
               const grid = document.querySelector(selector);
               const paragraphs = [...document.querySelectorAll("main p")].filter((el) => {
                 const r = el.getBoundingClientRect();
@@ -106,7 +106,7 @@ jobs:
               };
             }, { banned, selector: route.grid });
             console.log(route.path, JSON.stringify(result));
-            await page.screenshot({ path: "/tmp" + route.path.replaceAll("/", "-") + ".png", fullPage: true });
+            await page.screenshot({ path: "/tmp/" + route.path.replaceAll("/", "-") + ".png", fullPage: true });
             if (result.scrollWidth > result.width + 1) throw new Error(route.path + " horizontal overflow");
             if (result.mainBg !== "rgb(255, 255, 255)") throw new Error(route.path + " light background is not #FFFFFF");
             if (result.bannedVisible.length) throw new Error(route.path + " exposes internal language: " + result.bannedVisible.join(", "));
