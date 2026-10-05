@@ -1,58 +1,27 @@
-name: Live Discoverability Verify Now
-
+name: Worker Source Focus Now
 on:
   push:
     branches: [king/test]
-    paths:
-      - .github/workflows/cloudflare-zone-inventory-now.yml
-
+    paths: [.github/workflows/cloudflare-zone-inventory-now.yml]
 permissions:
   contents: read
-
 jobs:
-  verify:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
     steps:
       - name: Resolve token
         env:
-          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
-          TOKEN_4: ${{ secrets.CF_TOKEN }}
-        shell: bash
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          set -euo pipefail
-          TOKEN=""
-          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
-          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
-          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
-          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
-          echo "::add-mask::$TOKEN"; echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
-      - name: Wait for and verify Pages production
-        shell: bash
+          T=$(printf '%s' "$T" | tr -d '\r\n'); T="${T#Bearer }"; echo "::add-mask::$T"; echo "T=$T" >> "$GITHUB_ENV"
+      - name: Print 4SPECIES and 4NATION source
         run: |
-          set -euo pipefail
-          api='https://api.cloudflare.com/client/v4'; auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
-          zones=$(curl -fsS "${api}/zones?per_page=50" "${auth[@]}"); aid=$(jq -r '.result[0].account.id' <<<"$zones")
-          for i in $(seq 1 24); do
-            dep=$(curl -fsS "${api}/accounts/${aid}/pages/projects/4planet-05/deployments?env=production&per_page=5" "${auth[@]}")
-            sha=$(jq -r '.result[0].deployment_trigger.metadata.commit_hash // ""' <<<"$dep")
-            status=$(jq -r '.result[0].latest_stage.status // ""' <<<"$dep")
-            echo "DEPLOY|$sha|$status"
-            if [ "$sha" = "c2e5be6cc7de85dbecf20022a9552a998363dc05" ] && [ "$status" = "success" ]; then break; fi
-            sleep 5
-          done
-          echo '=== LIVE PROBES ==='
-          for d in 4planet.org 4planetatlas.com 4brands.org s4piens.com; do
-            echo "--- $d ---"
-            curl -sSIL --max-time 15 "https://$d/" | tr -d '\r' | grep -Ei '^(HTTP/|location:|x-robots-tag:|content-type:)' | head -20 || true
-            html=$(curl -sSL --max-time 15 "https://$d/" || true)
-            printf 'META|'
-            printf '%s' "$html" | grep -Eio '<title>[^<]*</title>|<link[^>]+rel=["'\'' ]*canonical["'\'' ]*[^>]*>|<meta[^>]+name=["'\'' ]*robots["'\'' ][^>]*>' | head -6 | tr '\n' ' '; echo
-            echo 'ROBOTS:'
-            curl -sSL --max-time 15 "https://$d/robots.txt" | head -30 || true
-            echo 'SITEMAP_HEAD:'
-            curl -sSL --max-time 15 "https://$d/sitemap.xml" | head -8 || true
-          done
+          set -e
+          api='https://api.cloudflare.com/client/v4'
+          z=$(curl -fsS -H "Authorization: Bearer $T" "$api/zones?per_page=1")
+          a=$(jq -r '.result[0].account.id' <<<"$z")
+          echo '=== 4SPECIES ==='
+          curl -fsS -H "Authorization: Bearer $T" "$api/accounts/$a/workers/scripts/4species-router" | sed -n '1,220p'
+          echo '=== 4NATION ==='
+          curl -fsS -H "Authorization: Bearer $T" "$api/accounts/$a/workers/scripts/4planet-nation-live" | sed -n '1,180p'
           echo '=== END ==='
