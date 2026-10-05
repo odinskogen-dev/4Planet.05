@@ -1,21 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as maplibregl from "maplibre-gl";
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { planetProofBySlug, type PlanetProof, type ProofMapLayer, type ProofSection } from "@/planet/proofs/planetProofs";
+import "@/styles/human-first-public.css";
 
 const VECTOR_STYLE = "https://tiles.openfreemap.org/styles/liberty";
-const ink = "#0A0A0A";
-const dim = "#5E5E5E";
-const line = "#E6E6E4";
-const blue = "#2E2EFF";
-const mono: CSSProperties = {
-  fontFamily: "Fragment Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  letterSpacing: ".11em",
-  fontSize: 10,
-  textTransform: "uppercase",
-};
 
 function sourceMap(proof: PlanetProof) {
   return Object.fromEntries(proof.sources.map((source) => [source.id, source]));
@@ -24,10 +15,8 @@ function sourceMap(proof: PlanetProof) {
 function EvidenceMap({ proof }: { proof: PlanetProof }) {
   const box = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const [active, setActive] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(proof.mapLayers.map((layer, i) => [layer.id, i === 0])),
-  );
-  const [available, setAvailable] = useState(true);
+  const [active, setActive] = useState<Record<string, boolean>>(() => Object.fromEntries(proof.mapLayers.map((layer, i) => [layer.id, i === 0])));
+  const [degraded, setDegraded] = useState(false);
 
   useEffect(() => {
     if (!box.current) return;
@@ -43,7 +32,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     m.on("load", () => {
       if (!alive) return;
-      m.fitBounds(proof.bounds, { padding: 24, duration: 0, maxZoom: proof.zoom + 1.2 });
+      m.fitBounds(proof.bounds, { padding: 28, duration: 0, maxZoom: proof.zoom + 1.2 });
       for (const layer of proof.mapLayers) {
         try {
           m.addSource(`proof-${layer.id}`, {
@@ -60,13 +49,13 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
             layout: { visibility: active[layer.id] ? "visible" : "none" },
           });
         } catch {
-          setAvailable(false);
+          setDegraded(true);
         }
       }
     });
     m.on("error", (event) => {
       const message = String(event.error?.message ?? "");
-      if (message && !message.includes("glyph")) setAvailable(false);
+      if (message && !message.includes("glyph")) setDegraded(true);
     });
     return () => {
       alive = false;
@@ -85,106 +74,73 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     }
   }, [active, proof.mapLayers]);
 
-  const toggle = (layer: ProofMapLayer) =>
-    setActive((current) => ({ ...current, [layer.id]: !current[layer.id] }));
+  const toggle = (layer: ProofMapLayer) => setActive((current) => ({ ...current, [layer.id]: !current[layer.id] }));
 
   return (
-    <section aria-label="Explore the Oslofjord map" style={{ background: "#FFFFFF" }}>
-      <div style={{ borderTop: `4px solid ${blue}`, borderBottom: `1px solid ${line}` }}>
-        <div ref={box} style={{ width: "100%", height: "min(58svh,680px)", minHeight: 420 }} />
+    <section className="proof-map" aria-label="Explore the fjord map">
+      <div className="editorial-wrap proof-map-head">
+        <div className="editorial-kicker">Explore the place</div>
+        <h2 style={{ margin: "12px 0 0", fontSize: "clamp(34px,5vw,64px)", lineHeight: 1, letterSpacing: "-.04em", fontWeight: 520 }}>
+          See the fjord. Change the layers.
+        </h2>
+        <p className="editorial-note" style={{ marginTop: 16 }}>
+          Use the map to move between depth, ecological status and mapped physical interventions.
+        </p>
+        {degraded && <p className="editorial-note" style={{ marginTop: 10 }}>Some map layers are temporarily unavailable.</p>}
       </div>
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "22px clamp(20px,5vw,64px) 0" }}>
-        <div style={{ ...mono, color: blue }}>EXPLORE THE FJORD</div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+      <div ref={box} className="proof-map-canvas" />
+      {proof.mapLayers.length > 0 && (
+        <div className="proof-map-controls">
           {proof.mapLayers.map((layer) => (
             <button
               key={layer.id}
               type="button"
+              className="proof-map-control"
+              data-active={active[layer.id] ? "true" : "false"}
               onClick={() => toggle(layer)}
-              style={{
-                border: `1px solid ${active[layer.id] ? blue : line}`,
-                background: active[layer.id] ? blue : "#FFFFFF",
-                color: active[layer.id] ? "#FFFFFF" : ink,
-                padding: "10px 12px",
-                fontSize: 12,
-                cursor: "pointer",
-              }}
             >
-              {layer.label}
+              <strong>{layer.label}</strong>
+              <span>{layer.description}</span>
             </button>
           ))}
         </div>
-        {!available && (
-          <p style={{ marginTop: 12, color: dim, fontSize: 13 }}>
-            Some map layers are temporarily unavailable. The article and sources remain available below.
-          </p>
-        )}
+      )}
+    </section>
+  );
+}
+
+function StorySection({ section, proof, label }: { section: ProofSection; proof: PlanetProof; label: string }) {
+  const sources = useMemo(() => sourceMap(proof), [proof]);
+  return (
+    <section className="proof-story">
+      <div className="editorial-kicker">{label}</div>
+      <div>
+        <h2>{section.headline}</h2>
+        <p>{section.summary}</p>
+        <div className="proof-source-links">
+          {section.sourceIds.map((id) => {
+            const source = sources[id];
+            return source ? <a key={id} href={source.url} target="_blank" rel="noreferrer">{source.authority} ↗</a> : null;
+          })}
+        </div>
       </div>
     </section>
   );
 }
 
-function ReadingSection({ section, proof }: { section: ProofSection; proof: PlanetProof }) {
-  const sources = useMemo(() => sourceMap(proof), [proof]);
+function Sources({ proof }: { proof: PlanetProof }) {
   return (
-    <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,104px) clamp(20px,5vw,64px)", borderTop: `1px solid ${line}` }}>
-      <div style={{ ...mono, color: blue }}>{section.question}</div>
-      <h2 style={{
-        margin: "14px 0 0",
-        color: ink,
-        fontSize: "clamp(36px,6vw,72px)",
-        lineHeight: .98,
-        letterSpacing: "-.045em",
-        fontWeight: 520,
-        maxWidth: 900,
-      }}>{section.headline}</h2>
-      <p style={{
-        margin: "24px 0 0",
-        maxWidth: 760,
-        color: "#292929",
-        fontSize: "clamp(18px,2.2vw,24px)",
-        lineHeight: 1.5,
-      }}>{section.summary}</p>
-
-      {section.facts.length > 0 && (
-        <ul style={{ margin: "28px 0 0", padding: 0, listStyle: "none", maxWidth: 760, borderTop: `1px solid ${line}` }}>
-          {section.facts.slice(0, 3).map((fact) => (
-            <li key={fact} style={{ padding: "16px 0", borderBottom: `1px solid ${line}`, fontSize: 15, lineHeight: 1.55 }}>
-              {fact}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {section.sourceIds.length > 0 && (
-        <div style={{ display: "flex", gap: "10px 18px", flexWrap: "wrap", marginTop: 22 }}>
-          {section.sourceIds.map((id) => {
-            const source = sources[id];
-            return source ? (
-              <a key={id} href={source.url} target="_blank" rel="noreferrer" style={{ color: blue, fontSize: 13, borderBottom: `1px solid ${blue}`, paddingBottom: 2 }}>
-                {source.authority} ↗
-              </a>
-            ) : null;
-          })}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function PublicSources({ proof }: { proof: PlanetProof }) {
-  return (
-    <details style={{ maxWidth: 980, margin: "0 auto", borderTop: `1px solid ${line}`, padding: "28px clamp(20px,5vw,64px) 70px" }}>
-      <summary style={{ ...mono, color: blue, cursor: "pointer", listStyle: "none" }}>SOURCES + METHOD</summary>
-      <div style={{ marginTop: 20, display: "grid", gap: 16 }}>
+    <section className="editorial-section">
+      <div className="editorial-kicker">Sources</div>
+      <div className="editorial-list">
         {proof.sources.map((source) => (
-          <a key={source.id} href={source.url} target="_blank" rel="noreferrer" style={{ color: ink, textDecoration: "none", paddingBottom: 14, borderBottom: `1px solid ${line}` }}>
-            <strong style={{ display: "block", fontSize: 16 }}>{source.label}</strong>
-            <span style={{ display: "block", marginTop: 4, color: dim, fontSize: 13 }}>{source.authority}</span>
+          <a key={source.id} className="editorial-source" href={source.url} target="_blank" rel="noreferrer">
+            <strong>{source.authority}</strong>
+            <span>{source.label} ↗</span>
           </a>
         ))}
       </div>
-    </details>
+    </section>
   );
 }
 
@@ -194,59 +150,84 @@ export function PlanetProofPage({ slug }: { slug: string }) {
 
   const isOslofjord = proof.slug === "oslofjorden";
   const displayName = isOslofjord ? "Oslofjorden" : proof.name;
-  const sections = (() => {
-    if (!isOslofjord) return proof.sections.slice(0, 4);
-    const wanted = ["WHAT IS HERE?", "WHAT IS HAPPENING?", "WHY?", "WHAT CAN BE DONE?"];
-    const selected = wanted
-      .map((question) => proof.sections.find((section) => section.question.toUpperCase() === question))
-      .filter(Boolean) as ProofSection[];
-    return selected.length >= 3 ? selected : proof.sections.slice(0, 4);
-  })();
+  const byId = Object.fromEntries(proof.sections.map((section) => [section.id, section])) as Record<string, ProofSection>;
+  const what = byId.WHAT_IS_HAPPENING ?? proof.sections[0];
+  const why = byId.WHY ?? proof.sections[1];
+  const changed = byId.WHAT_CHANGED ?? proof.sections[2];
+  const action = byId.WHAT_CAN_BE_DONE ?? proof.sections[3];
 
   return (
-    <main style={{ background: "#FFFFFF", color: ink, minHeight: "100vh" }}>
-      <nav style={{ minHeight: 64, padding: "0 clamp(20px,5vw,64px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, borderBottom: `1px solid ${line}`, background: "#FFFFFF" }}>
-        <Link to="/" style={{ color: ink, textDecoration: "none", fontWeight: 700, letterSpacing: "-.03em" }}>4PLANET_</Link>
-        <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-          <Link to="/living-systems" style={{ ...mono, color: ink, textDecoration: "none" }}>LIVING SYSTEMS</Link>
-          <Link to="/atlas" style={{ ...mono, color: ink, textDecoration: "none" }}>ATLAS</Link>
+    <main className="editorial-page">
+      <nav className="proof-nav">
+        <Link to="/" style={{ fontWeight: 700, letterSpacing: "-.03em" }}>4PLANET_</Link>
+        <div style={{ display: "flex", gap: 20, alignItems: "center", fontSize: 12, letterSpacing: ".1em" }}>
+          <Link to="/living-systems">LIVING SYSTEMS</Link>
+          <Link to="/atlas">ATLAS</Link>
         </div>
       </nav>
 
-      <header style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(72px,10vw,132px) clamp(20px,5vw,64px) clamp(60px,8vw,100px)" }}>
-        <div style={{ ...mono, color: blue }}>{proof.domain} · LIVING SYSTEM</div>
-        <h1 style={{
-          margin: "18px 0 0",
-          fontSize: "clamp(58px,10vw,124px)",
-          lineHeight: .84,
-          letterSpacing: "-.065em",
-          fontWeight: 520,
-        }}>{displayName}</h1>
-        {isOslofjord && <div style={{ marginTop: 20, ...mono, color: dim }}>A CLOSER LOOK AT {proof.name.toUpperCase()}</div>}
-        <p style={{
-          margin: "34px 0 0",
-          maxWidth: 820,
-          fontFamily: "Instrument Sans, DM Sans, sans-serif",
-          fontSize: "clamp(25px,3.8vw,48px)",
-          lineHeight: 1.08,
-          letterSpacing: "-.035em",
-        }}>{proof.oneLine}</p>
-      </header>
+      <div className="editorial-wrap">
+        <header className="editorial-hero">
+          <div className="editorial-kicker">{isOslofjord ? "LIVING SYSTEMS / NORWAY" : "LIVING SYSTEMS"}</div>
+          <h1>{displayName}</h1>
+          <p className="editorial-deck">
+            {isOslofjord
+              ? "A fjord under pressure — and a place where change can be measured."
+              : proof.oneLine}
+          </p>
+          {isOslofjord && (
+            <p className="editorial-copy">
+              This first view focuses on Bunnefjorden, the deep inner basin where oxygen conditions and water renewal have been closely monitored.
+            </p>
+          )}
+        </header>
+      </div>
 
       <EvidenceMap proof={proof} />
 
-      <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)" }}>
-        <div style={{ ...mono, color: blue }}>THE SHORT VERSION</div>
-        <p style={{ margin: "16px 0 0", maxWidth: 800, fontSize: "clamp(21px,2.8vw,34px)", lineHeight: 1.35, letterSpacing: "-.02em" }}>
-          {isOslofjord
-            ? "Bunnefjorden is a deep basin inside the Oslofjord where water exchange, oxygen and human pressure meet. The important story is simple: what happens at depth depends on both the shape of the fjord and what enters it."
-            : proof.truthBoundary}
-        </p>
-      </section>
+      <div className="editorial-wrap">
+        {what && <StorySection section={what} proof={proof} label="What’s happening" />}
+        {why && <StorySection section={why} proof={proof} label="Why" />}
 
-      {sections.map((section) => <ReadingSection key={section.id} section={section} proof={proof} />)}
+        {changed && (
+          <section className="proof-story">
+            <div className="editorial-kicker">What changed</div>
+            <div>
+              <h2>{changed.headline}</h2>
+              <p>{changed.summary}</p>
+              {isOslofjord && (
+                <>
+                  <div className="proof-stat">82%</div>
+                  <div className="proof-stat-label">
+                    NIVA reported an 82% reduction in the area with anoxic bottom water immediately before deep-water renewal after the wastewater outfall was lowered.
+                  </div>
+                </>
+              )}
+              <div className="proof-source-links">
+                {changed.sourceIds.map((id) => {
+                  const source = sourceMap(proof)[id];
+                  return source ? <a key={id} href={source.url} target="_blank" rel="noreferrer">{source.authority} ↗</a> : null;
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
-      <PublicSources proof={proof} />
+        {action && <StorySection section={action} proof={proof} label="What can be done" />}
+
+        <section className="editorial-section editorial-split">
+          <div className="editorial-kicker">Read this correctly</div>
+          <div>
+            <p className="editorial-copy" style={{ marginTop: 0 }}>
+              {isOslofjord
+                ? "The reported 82% change concerns anoxic bottom-water area in Bunnefjorden before deep-water renewal. It does not mean the whole Oslofjord ecosystem has been restored."
+                : proof.truthBoundary}
+            </p>
+          </div>
+        </section>
+
+        <Sources proof={proof} />
+      </div>
     </main>
   );
 }
