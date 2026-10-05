@@ -208,6 +208,54 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Places","https://4planet.org/places"],["Impact","https://4planet.org/impact"]],
     schemaType: "CollectionPage",
   },
+  "/reports": {
+    title: "Reports and Evidence — 4PLANET",
+    description: "4PLANET reports connect public claims, delivery evidence and source-grounded learning without confusing contribution with verified outcome.",
+    fallbackTitle: "Reports and Evidence",
+    fallbackParagraphs: [
+      "4PLANET reporting is designed to make evidence inspectable. Public reports should distinguish what was funded, what was delivered, what evidence exists and what ecological outcome can or cannot be supported.",
+      "The reporting model connects mission work and Impact pathways back to sources and proof rather than converting activity into an automatic impact score.",
+      "This public surface is still developing. Empty or private reporting states are not intended for search indexing."
+    ],
+    fallbackLinks: [["Impact","https://4planet.org/impact"],["About","https://4planet.org/about"],["Partners","https://4planet.org/partners"]],
+    schemaType: "CollectionPage",
+  },
+  "/actors": {
+    title: "Actors — Organisations and Roles in Living Systems | 4PLANET",
+    description: "Explore how 4PLANET connects organisations and other actors to places, systems, pressures, solutions and evidence.",
+    fallbackTitle: "Actors",
+    fallbackParagraphs: [
+      "4PLANET models actors because environmental change depends on who can observe, decide, fund, deliver, regulate or verify work in a real system.",
+      "An actor record is not automatically a partner endorsement. Public research, candidate relationships, active work and confirmed partnerships remain distinct states.",
+      "Actor intelligence is intended to connect credible organisations and roles to the places, pressures, solutions and evidence where they are relevant."
+    ],
+    fallbackLinks: [["Partners","https://4planet.org/partners"],["Impact","https://4planet.org/impact"],["Living Systems","https://4planet.org/living-systems"]],
+    schemaType: "CollectionPage",
+  },
+  "/brands": {
+    title: "Brands and Companies — Public Company Context | 4PLANET",
+    description: "Explore the public company and brand context connected to 4PLANET while private Company Brain data remains tenant-scoped and protected.",
+    fallbackTitle: "Brands and Companies",
+    fallbackParagraphs: [
+      "Companies and brands are part of the human systems that shape materials, energy, procurement, work, consumption and ecological pressure.",
+      "4PLANET can connect public company context to relevant systems and evidence. Deeper company intelligence belongs in 4BRANDS, while private Company Brain data remains tenant-scoped and outside the public search surface.",
+      "Public company context should stay source-grounded and distinguish facts from suggestions, estimates and unknowns."
+    ],
+    fallbackLinks: [["4BRANDS","https://4brands.org/"],["S4PIENS","https://s4piens.com/"],["Impact","https://4planet.org/impact"]],
+    schemaType: "CollectionPage",
+  },
+  "/cre4tor/odin": {
+    title: "Odin Oddekalv — CRE4TOR_01 | 4PLANET MARKET",
+    description: "Photography by Odin Oddekalv, the first public creator proof in 4PLANET MARKET.",
+    fallbackTitle: "Odin Oddekalv — CRE4TOR_01",
+    fallbackParagraphs: [
+      "This public creator page presents photography by Odin Oddekalv as the first creator proof inside 4PLANET MARKET.",
+      "Creator identity, rights, work, product, fulfilment and transaction paths are intended to stay connected without creating a second marketplace truth system.",
+      "Product availability, pricing and fulfilment remain owned by the live commerce offer; a product click is not treated as a purchase or delivery record."
+    ],
+    fallbackLinks: [["4PLANET MARKET","https://4planetmarket.com/"],["4PLANET","https://4planet.org/"]],
+    schemaType: "ProfilePage",
+  },
   "/partners": {
     title: "Partners — 4PLANET",
     description: "How 4PLANET approaches collaboration with expert organisations, technology partners and others contributing to a living planet.",
