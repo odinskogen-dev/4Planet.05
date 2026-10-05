@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      TARGET_SHA: 582666e3af022eb9a84e9025623f4a234a821866
+      TARGET_SHA: 904a2471fb471d431ebc0d0f4f8d4262e75872e0
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,6 +106,7 @@ jobs:
               };
             }, { banned, selector: route.grid });
             console.log(route.path, JSON.stringify(result));
+            await page.screenshot({ path: "/tmp" + route.path.replaceAll("/", "-") + ".png", fullPage: true });
             if (result.scrollWidth > result.width + 1) throw new Error(route.path + " horizontal overflow");
             if (result.mainBg !== "rgb(255, 255, 255)") throw new Error(route.path + " light background is not #FFFFFF");
             if (result.bannedVisible.length) throw new Error(route.path + " exposes internal language: " + result.bannedVisible.join(", "));
@@ -113,7 +114,6 @@ jobs:
             if (result.darkBands > 0) throw new Error(route.path + " has direct dark full-width content band");
             if (result.screens > route.maxScreens) throw new Error(route.path + " remains too long: " + result.screens.toFixed(1) + " screens");
             if (result.gridColumns && result.gridColumns.split(" ").length > 1) throw new Error(route.path + " grid did not collapse on mobile: " + result.gridColumns);
-            await page.screenshot({ path: "/tmp" + route.path.replaceAll("/", "-") + ".png", fullPage: true });
           }
           await browser.close();
           NODE
