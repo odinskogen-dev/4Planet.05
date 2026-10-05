@@ -33,8 +33,8 @@ html = re.sub(r"<link\s+rel=[\"']canonical[\"'][^>]*>", "", html, flags=re.I)
 html = html.replace("</head>", '<link rel="canonical" href="https://4sapien.com/"></head>', 1)
 
 # Product-specific social identity if these tags exist.
-html = re.sub(r'(<meta\s+property=[\"']og:title[\"']\s+content=)[\"'][^\"']*[\"']', r'\1"4SAPIEN — Personal Intelligence for Food, Finance and Life"', html, count=1, flags=re.I)
-html = re.sub(r'(<meta\s+property=[\"']og:description[\"']\s+content=)[\"'][^\"']*[\"']', r'\1"Personal decision support across food, finance and everyday life, with user-controlled context."', html, count=1, flags=re.I)
+html = re.sub(r"(<meta\\s+property=[\\\"']og:title[\\\"']\\s+content=)[\\\"'][^\\\"']*[\\\"']", r'\\1"4SAPIEN — Personal Intelligence for Food, Finance and Life"', html, count=1, flags=re.I)
+html = re.sub(r"(<meta\\s+property=[\\\"']og:description[\\\"']\\s+content=)[\\\"'][^\\\"']*[\\\"']", r'\\1"Personal decision support across food, finance and everyday life, with user-controlled context."', html, count=1, flags=re.I)
 if 'property="og:url"' not in html and "property='og:url'" not in html:
     html = html.replace("</head>", '<meta property="og:url" content="https://4sapien.com/"></head>', 1)
 
