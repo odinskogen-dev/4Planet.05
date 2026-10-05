@@ -28,8 +28,8 @@ jobs:
           set -euo pipefail
           node --check ops/discovery/live-workers/4planet-brain-public.js
           grep -Fq 'https://4brain.app/sitemap.xml' ops/discovery/live-workers/4planet-brain-public.js
-          grep -Fq 'Personal Brain' ops/discovery/live-workers/4planet-brain-public.js
-          grep -Fq 'Company Brain' ops/discovery/live-workers/4planet-brain-public.js
+          grep -Fq 'Personal<br>Brain.' ops/discovery/live-workers/4planet-brain-public.js
+          grep -Fq 'Company<br>Brain.' ops/discovery/live-workers/4planet-brain-public.js
       - name: Deploy existing 4planet-brain-public script only
         run: |
           set -euo pipefail
