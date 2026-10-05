@@ -31,11 +31,6 @@ const clean = (value: unknown, max = 320) =>
 const asBool = (value: unknown) => value === true;
 const asNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? value : null;
 
-function textValue(value: any): string | null {
-  const picked = clean(value?.beskrivelse ?? value?.description ?? value?.navn ?? value, 320);
-  return picked || null;
-}
-
 function normaliseAddress(value: any) {
   if (!value || typeof value !== "object") return null;
   const lines = Array.isArray(value.adresse) ? value.adresse.map((x: unknown) => clean(x, 180)).filter(Boolean) : [];
