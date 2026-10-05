@@ -55,10 +55,16 @@ export type PublicCompanyProfileData = {
     address: Address | null; startDate: string | null; endDate: string | null; sourceUrl: string | null;
   }>;
   changes: Array<{ type: string; date: string | null; title: string; detail: string; truthClass: "FACT"; sourceId: string }>;
+  financials: {
+    periodStart: string | null; periodEnd: string | null; currency: string;
+    revenue: number | null; operatingResult: number | null; annualResult: number | null; resultBeforeTax: number | null;
+    assets: number | null; equity: number | null; debt: number | null; operatingMargin: number | null; equityRatio: number | null;
+    truthClass: "FACT";
+  } | null;
   accounts: { availableYears: string[]; latestAvailableYear: string | null; copies: Array<{ year: string; url: string; format: string }> };
   coverage: {
     verifiedIdentity: boolean; sourceCount: number; totalSourceLanes: number; roleCount: number;
-    groupRelationCount: number; locationCount: number; changeCount: number; accountYearCount: number;
+    groupRelationCount: number; locationCount: number; changeCount: number; accountYearCount: number; financialFactsAvailable: boolean;
   };
   sources: PublicCompanySource[];
   unknowns: string[];
@@ -90,6 +96,15 @@ function dateLabel(value: string | null) {
   if (!value) return "UNKNOWN";
   const parsed = new Date(value);
   return Number.isNaN(parsed.valueOf()) ? value : parsed.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" });
+}
+
+function moneyLabel(value: number | null, currency = "NOK") {
+  if (value === null) return "UNKNOWN";
+  return new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
+}
+
+function percentLabel(value: number | null) {
+  return value === null ? "UNKNOWN" : new Intl.NumberFormat("en-GB", { style: "percent", maximumFractionDigits: 1 }).format(value);
 }
 
 function SourceState({ source }: { source: PublicCompanySource }) {
