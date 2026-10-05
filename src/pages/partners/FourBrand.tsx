@@ -617,19 +617,19 @@ export default function FourBrand() {
         <a href="#company-twin" className="fb-nav__link">BUILD YOUR TWIN</a>
       </nav>
 
-      <section className="fb-architecture" aria-label="4BRANDS company intelligence architecture">
+      {analysis && <section className="fb-architecture" aria-label="4BRANDS company intelligence architecture">
         <a href="#company-analysis"><span>00 / COMPANY ANALYSIS</span><strong>Understand from the outside.</strong><p>Free public, source-aware company analysis and value discovery.</p></a>
         <a href="#company-brain"><span>01 / COMPANY BRAIN</span><strong>Remember what the company learns.</strong><p>Permission-aware knowledge, decisions, playbooks and durable learning.</p></a>
         <a href="#company-twin"><span>02 / COMPANY TWIN</span><strong>Model the company now.</strong><p>Current objectives, economics, customers, operations, constraints and decisions.</p></a>
         <a href="#future-engine"><span>03 / FUTURE ENGINE</span><strong>Explore what could happen.</strong><p>Explicit assumptions and scenarios before action. Scenario is never fact or forecast.</p></a>
-      </section>
+      </section>}
 
       {!analysis && !publicProfile && (
         <section className="fb-entry" id="company-analysis">
           <div className="fb-entry__copy">
-            <p className="fb-eyebrow">4BRANDS / COMPANY VALUE INTELLIGENCE</p>
-            <h1>Make the company<br />better.</h1>
-            <p className="fb-intro">Enter a company. 4BRANDS reads public evidence, starts with the economics and finds where value is created, where it leaks, and where better business and a living planet may be the same decision.</p>
+            <p className="fb-eyebrow">4BRANDS / PUBLIC COMPANY INTELLIGENCE</p>
+            <h1>Know the company.</h1>
+            <p className="fb-intro">Search any Norwegian company. Resolve the exact legal entity, inspect what public registers actually know, see what changed, and trace every material field back to its source.</p>
           </div>
 
           <form className="fb-search" onSubmit={runAnalysis}>
@@ -649,7 +649,7 @@ export default function FourBrand() {
               </button>
             </div>
             <div className="fb-search__foot">
-              <span>PUBLIC DATA</span><span>FINANCE FIRST</span><span>SOURCE-AWARE</span><span>NO OPAQUE SCORE</span>
+              <span>BRREG VERIFIED</span><span>SOURCE STATES</span><span>FACTS FIRST</span><span>FREE PUBLIC PROFILE</span>
             </div>
           </form>
 
@@ -675,8 +675,8 @@ export default function FourBrand() {
           {error && <div className="fb-error" role="status"><p>{error}</p><button type="button" onClick={() => { setCompany("TOMRA"); setError(null); }}>Use TOMRA proof</button></div>}
 
           <div className="fb-entry__note">
-            <span>COMPANY → VALUE → DECISION → RESULT → LEARNING</span>
-            <p>Facts stay facts. Estimates stay estimates. Planetary benefit is never called realised impact before it is measured.</p>
+            <span>IDENTITY → FACTS → CHANGES → SOURCES → DEEPER INTELLIGENCE</span>
+            <p>The public profile comes first. Private Company Brain and decision intelligence only enter after the outside-world evidence is useful on its own.</p>
           </div>
         </section>
       )}
