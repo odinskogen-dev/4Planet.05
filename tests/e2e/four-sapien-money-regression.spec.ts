@@ -68,9 +68,12 @@ test("Money keeps all proven Finance guards and a usable navigation",async({page
  if(width<900){
    const productNav=page.locator("body.w-money #root nav").first();
    await expect(productNav).toBeVisible();
-   const box=await productNav.boundingBox();
-   expect(box).not.toBeNull();
-   expect(box!.y).toBeLessThan(80);
+   const navState=await productNav.evaluate((el)=>{
+     const cs=getComputedStyle(el);
+     return {position:cs.position,top:parseFloat(cs.top)||0};
+   });
+   expect(navState.position).toBe("fixed");
+   expect(navState.top).toBeLessThanOrEqual(20);
  }
 });
 
