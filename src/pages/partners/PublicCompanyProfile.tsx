@@ -148,6 +148,32 @@ export default function PublicCompanyProfile({
   const primaryIndustry = profile.company.industries[0];
   const topRoles = profile.roles.slice().sort((a, b) => (a.sequence ?? 999) - (b.sequence ?? 999));
   const recentChanges = profile.changes.slice(0, 8);
+  const investigationSignals = useMemo(() => {
+    const finance = profile.financials;
+    if (!finance) return [];
+    const signals: Array<{ title: string; detail: string; basis: string }> = [];
+    if (finance.operatingResult !== null && finance.operatingResult < 0) signals.push({
+      title: "Negative operating result",
+      detail: "The latest open BRREG key figures show an operating loss.",
+      basis: "FACT + sign test",
+    });
+    if (finance.annualResult !== null && finance.annualResult < 0) signals.push({
+      title: "Negative annual result",
+      detail: "The latest open BRREG key figures show a negative annual result.",
+      basis: "FACT + sign test",
+    });
+    if (finance.equity !== null && finance.equity < 0) signals.push({
+      title: "Negative equity",
+      detail: "The latest open BRREG key figures show negative equity.",
+      basis: "FACT + sign test",
+    });
+    if (finance.assets !== null && finance.debt !== null && finance.debt > finance.assets) signals.push({
+      title: "Debt exceeds reported assets",
+      detail: "Reported total debt is larger than reported total assets in the latest open key figures.",
+      basis: "CALCULATION",
+    });
+    return signals;
+  }, [profile.financials]);
 
   return (
     <section className="fbi" aria-label="4BRANDS public company intelligence">
@@ -235,6 +261,16 @@ export default function PublicCompanyProfile({
               </div>
             </div>
 
+            <div className="fbi-rule-signals">
+              <div className="fbi-section-kicker">WHAT LOOKS UNUSUAL</div>
+              {investigationSignals.length ? investigationSignals.map((signal) => (
+                <article key={signal.title}>
+                  <div><strong>{signal.title}</strong><p>{signal.detail}</p></div>
+                  <span>{signal.basis}</span>
+                </article>
+              )) : <p className="fbi-empty">No bounded negative balance/result rule fired in the connected latest key figures. This is not an all-clear; source coverage remains incomplete.</p>}
+            </div>
+
             <Unknowns items={profile.unknowns} />
           </>
         )}
@@ -293,7 +329,7 @@ export default function PublicCompanyProfile({
         {tab === "STRUCTURE" && (
           <>
             <div className="fbi-section-head">
-              <div><span>03 / STRUCTURE</span><h2>Group and operating footprint.</h2></div>
+              <div><span>04 / STRUCTURE</span><h2>Group and operating footprint.</h2></div>
               <p>BRREG corporate-group links and registered sub-entities are shown as register relationships, not beneficial-ownership conclusions.</p>
             </div>
             <div className="fbi-table-block">
@@ -322,7 +358,7 @@ export default function PublicCompanyProfile({
         {tab === "PEOPLE" && (
           <>
             <div className="fbi-section-head">
-              <div><span>04 / PEOPLE + ROLES</span><h2>Who is formally connected to this entity?</h2></div>
+              <div><span>05 / PEOPLE + ROLES</span><h2>Who is formally connected to this entity?</h2></div>
               <p>Only public roles attached to this legal entity are displayed. 4BRANDS does not build a cross-organisation dossier on individuals.</p>
             </div>
             <div className="fbi-role-list">
@@ -340,7 +376,7 @@ export default function PublicCompanyProfile({
         {tab === "CHANGES" && (
           <>
             <div className="fbi-section-head">
-              <div><span>05 / WHAT CHANGED</span><h2>Changed reality is return value.</h2></div>
+              <div><span>06 / WHAT CHANGED</span><h2>Changed reality is return value.</h2></div>
               <p>This first change layer uses BRREG historical names and published entity-update events. More sources can join the same chronology later.</p>
             </div>
             <div className="fbi-change-ledger">
@@ -358,7 +394,7 @@ export default function PublicCompanyProfile({
         {tab === "SOURCES" && (
           <>
             <div className="fbi-section-head">
-              <div><span>06 / SOURCES</span><h2>The evidence is part of the product.</h2></div>
+              <div><span>07 / SOURCES</span><h2>The evidence is part of the product.</h2></div>
               <p>Source state is visible. A failed or empty source lane is not converted into a claim about the company.</p>
             </div>
             <div className="fbi-source-list">
