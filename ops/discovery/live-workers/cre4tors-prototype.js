@@ -94,7 +94,8 @@ async function proxy(request) {
     html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="CRE4TORS — Creative Work for a Living Planet">');
     html = html.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, '<meta name="twitter:description" content="An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
-    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://cre4tors.com/"></head>');
+    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://cre4tors.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"CRE4TORS","url":"https://cre4tors.com/","description":"An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}</script></head>');
+    html = html.replace(/<body([^>]*)>/i, '<body$1><noscript><main aria-label="Public discovery summary"><h1>CRE4TORS</h1><p>An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.</p><nav><a href="https://4planet.org/">4PLANET</a> · <a href="https://4planetmarket.com/">Market</a> · <a href="https://4planet.org/impact">Impact</a></nav></main></noscript>');
   }
   const tag = '<script src="' + ANALYTICS_PATH + '" defer><\/script>';
   if (!html.includes(ANALYTICS_PATH)) html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, tag + "</body>") : html + tag;
