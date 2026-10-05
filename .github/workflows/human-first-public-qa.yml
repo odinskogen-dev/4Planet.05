@@ -1,0 +1,133 @@
+name: HUMAN FIRST public object QA
+
+on:
+  push:
+    branches:
+      - axe/human-first-public-objects-20261005
+    paths:
+      - .github/workflows/human-first-public-qa.yml
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET_SHA: 9b70d4ca9c0b5cc51ff197c644d816cbaed64c27
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Build exact king/test candidate
+        run: |
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          npm ci
+          npm run typecheck
+          npm run build
+          npm run test:discovery
+          npm audit --audit-level=high
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Mobile human-first contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx vite preview --host 127.0.0.1 --port 4173 >/tmp/vite.log 2>&1 &
+          VITE_PID=$!
+          trap 'kill $VITE_PID || true' EXIT
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          cat > /tmp/human-first.mjs <<'NODE'
+          import { chromium } from "playwright";
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+          const routes = [
+            { path: "/atlas/earth", maxScreens: 7.5, grid: ".editorial-split" },
+            { path: "/living-systems/oslofjord", maxScreens: 11, grid: ".proof-story" },
+            { path: "/species/orca", maxScreens: 8, grid: ".orca-hero-grid" },
+          ];
+          const banned = [
+            "USEFUL INTERNET OBJECT",
+            "HUMAN GOLD CANDIDATE",
+            "NOT FOUNDER APPROVED",
+            "PROOF STATE",
+            "MAKER ≠ JUDGE",
+            "DATE / FRESHNESS",
+            "SOURCES / PROVENANCE",
+            "MAP · DEGRADED",
+            "HUMAN-FIRST READING ORDER",
+            "COMPOUNDING / TRANSFER",
+            "GBIF TAXON · ACCEPTED",
+            "IDENTITY PRESERVED",
+            "POPULATION-SPECIFIC CLAIMS CONTROLLED",
+            "PRODUCT NOTE",
+            "SOURCE REVIEW PENDING",
+          ];
+
+          for (const route of routes) {
+            await page.goto("http://127.0.0.1:4173" + route.path, { waitUntil: "networkidle" });
+            const result = await page.evaluate(({ banned, selector }) => {
+              const bodyText = document.body.innerText;
+              const html = document.documentElement;
+              const main = document.querySelector("main");
+              const grid = document.querySelector(selector);
+              const paragraphs = [...document.querySelectorAll("main p")].filter((el) => {
+                const r = el.getBoundingClientRect();
+                return r.width > 0 && r.height > 0;
+              });
+              const darkBands = [...document.querySelectorAll("main section, main header, main footer")].filter((el) => {
+                const r = el.getBoundingClientRect();
+                const bg = getComputedStyle(el).backgroundColor;
+                return r.width >= innerWidth * .9 && r.height > 80 && (bg === "rgb(0, 0, 0)" || bg === "rgb(10, 10, 10)" || bg === "rgb(8, 8, 8)");
+              }).length;
+              return {
+                width: innerWidth,
+                scrollWidth: html.scrollWidth,
+                screens: html.scrollHeight / innerHeight,
+                mainBg: main ? getComputedStyle(main).backgroundColor : null,
+                gridColumns: grid ? getComputedStyle(grid).gridTemplateColumns : null,
+                narrowParagraphs: paragraphs.filter((el) => el.getBoundingClientRect().width < 280).map((el) => el.textContent?.slice(0,80)),
+                bannedVisible: banned.filter((term) => bodyText.includes(term)),
+                darkBands,
+              };
+            }, { banned, selector: route.grid });
+            console.log(route.path, JSON.stringify(result));
+            if (result.scrollWidth > result.width + 1) throw new Error(route.path + " horizontal overflow");
+            if (result.mainBg !== "rgb(255, 255, 255)") throw new Error(route.path + " light background is not #FFFFFF");
+            if (result.bannedVisible.length) throw new Error(route.path + " exposes internal language: " + result.bannedVisible.join(", "));
+            if (result.narrowParagraphs.length) throw new Error(route.path + " has narrow body copy: " + result.narrowParagraphs.join(" | "));
+            if (result.darkBands > 0) throw new Error(route.path + " has direct dark full-width content band");
+            if (result.screens > route.maxScreens) throw new Error(route.path + " remains too long: " + result.screens.toFixed(1) + " screens");
+            if (result.gridColumns && result.gridColumns.split(" ").length > 1) throw new Error(route.path + " grid did not collapse on mobile: " + result.gridColumns);
+            await page.screenshot({ path: "/tmp" + route.path.replaceAll("/", "-") + ".png", fullPage: true });
+          }
+          await browser.close();
+          NODE
+          node /tmp/human-first.mjs
+
+      - name: Upload mobile QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: human-first-mobile-qa
+          path: |
+            /tmp/-atlas-earth.png
+            /tmp/-living-systems-oslofjord.png
+            /tmp/-species-orca.png
+            /tmp/vite.log
+          if-no-files-found: warn
+          retention-days: 14
