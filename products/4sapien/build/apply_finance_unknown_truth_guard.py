@@ -140,17 +140,26 @@ for path in paths:
              'const row={user_id:userId,name:a.name,kind:a.kind,balance:a.balance===null||a.balance===undefined||a.balance===""?null:Math.round(Number(a.balance)),as_of:dISO(new Date()),source:"manual"};',
              "React add account null")
 
-    old_now = ('const conflict=dueSum>liq;  const assets=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+b.amount,0)'
-               '+accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);  '
-               'const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+b.amount,0);const net=liq+assets-debts;  '
-               'const mSpend=events.filter((e)=>e.type==="spend"&&e.recurring==="monthly").reduce((a,b)=>a+b.amount,0);  '
-               'const runway=mSpend>0?(liq+assets)/mSpend:0;const has=accounts.length>0||events.length>0;')
-    new_now = ('const conflict=liq!==null&&dueSum>liq;const coverageUnknown=liq===null;  const inv=investmentBalance(accounts);'
-               'const assetEvents=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+Number(b.amount||0),0);'
-               'const assets=inv===null?null:assetEvents+inv;  const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+Number(b.amount||0),0);'
-               'const net=liq===null||assets===null?null:liq+assets-debts;  const mSpend=events.filter((e)=>e.type==="spend"&&e.recurring==="monthly").reduce((a,b)=>a+Number(b.amount||0),0);  '
-               'const runway=liq===null||assets===null||mSpend<=0?null:(liq+assets)/mSpend;const has=accounts.length>0||events.length>0;')
-    s = once(s, old_now, new_now, "React Now truth")
+    # React Now: patch small stable anchors rather than one whitespace-sensitive block.
+    s = once(s, " const conflict=dueSum>liq;",
+             " const conflict=liq!==null&&dueSum>liq;const coverageUnknown=liq===null;",
+             "React Now conflict")
+    s = once(s,
+             ' const assets=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+b.amount,0)+accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
+             ' const inv=investmentBalance(accounts);const assetEvents=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+Number(b.amount||0),0);const assets=inv===null?null:assetEvents+inv;',
+             "React Now assets")
+    s = once(s,
+             ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+b.amount,0);const net=liq+assets-debts;',
+             ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+Number(b.amount||0),0);const net=liq===null||assets===null?null:liq+assets-debts;',
+             "React Now net")
+    s = once(s,
+             ' const mSpend=events.filter((e)=>e.type==="spend"&&e.recurring==="monthly").reduce((a,b)=>a+b.amount,0);',
+             ' const mSpend=events.filter((e)=>e.type==="spend"&&e.recurring==="monthly").reduce((a,b)=>a+Number(b.amount||0),0);',
+             "React Now spend baseline")
+    s = once(s,
+             ' const runway=mSpend>0?(liq+assets)/mSpend:0;const has=accounts.length>0||events.length>0;',
+             ' const runway=liq===null||assets===null||mSpend<=0?null:(liq+assets)/mSpend;const has=accounts.length>0||events.length>0;',
+             "React Now runway")
     s = once(s, 'color:liq<0?T.red:T.ink', 'color:liq!==null&&liq<0?T.red:T.ink', "React Now liquidity colour")
     s = once(s, 'accounts.filter((a)=>a.kind!=="investment").length} likvide kontoer', 'accounts.filter((a)=>a.kind==="bank"||a.kind==="cash").length} likvide kontoer', "React Now liquid count")
     s = once(s,
@@ -158,25 +167,26 @@ for path in paths:
              '{runway===null?"UKJENT":(runway>=99?"99+":runway.toFixed(1).replace(".",","))}<span style={{fontSize:12,color:T.faint}}>{runway===null?"":" mnd"}</span>',
              "React Now runway unknown")
     s = once(s,
-             '{conflict?<div style={{fontFamily:T.body,fontSize:12.5,color:T.red,marginTop:8,lineHeight:1.5}}>Forfall de neste 30 dagene ({kr(dueSum)}) er større enn det du har tilgjengelig ({kr(liq)}). Gap: <b>{kr(dueSum-liq)}</b>. Ta tak nå — se «Ro i magen om inkasso» under Regninger for rolige, konkrete steg.</div>     :<div style={{fontFamily:T.body,fontSize:12,color:T.soft,marginTop:6}}>Du har dekning for det som forfaller. Betal gjerne nær forfall for å beholde likviditet.</div>}',
-             '{coverageUnknown?<div style={{fontFamily:T.body,fontSize:12,color:T.soft,marginTop:6}}>Dekning er UKJENT fordi minst én likvid saldo mangler.</div>:conflict?<div style={{fontFamily:T.body,fontSize:12.5,color:T.red,marginTop:8,lineHeight:1.5}}>Forfall de neste 30 dagene ({kr(dueSum)}) er større enn det du har tilgjengelig ({kr(liq)}). Gap: <b>{kr(dueSum-liq)}</b>. Ta tak nå — se «Ro i magen om inkasso» under Regninger for rolige, konkrete steg.</div>     :<div style={{fontFamily:T.body,fontSize:12,color:T.soft,marginTop:6}}>Du har dekning for det som forfaller. Betal gjerne nær forfall for å beholde likviditet.</div>}',
+             '{conflict?<div style={{fontFamily:T.body,fontSize:12.5,color:T.red,marginTop:8,lineHeight:1.5}}>Forfall de neste 30 dagene',
+             '{coverageUnknown?<div style={{fontFamily:T.body,fontSize:12,color:T.soft,marginTop:6}}>Dekning er UKJENT fordi minst én likvid saldo mangler.</div>:conflict?<div style={{fontFamily:T.body,fontSize:12.5,color:T.red,marginTop:8,lineHeight:1.5}}>Forfall de neste 30 dagene',
              "React coverage unknown")
 
     s = once(s,
-             'function Money({accounts,events,quickAdd,delEvent}){const liq=liquidBalance(accounts);  const inv=accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
-             'function Money({accounts,events,quickAdd,delEvent}){const liq=liquidBalance(accounts);  const invAccounts=accounts.filter((a)=>a.kind==="investment");const inv=investmentBalance(accounts);',
+             ' const inv=accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
+             ' const invAccounts=accounts.filter((a)=>a.kind==="investment");const inv=investmentBalance(accounts);',
              "React Money investments")
     s = once(s, '{inv>0&&<div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontFamily:T.body,fontSize:12,color:T.faint}}>',
              '{invAccounts.length>0&&<div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontFamily:T.body,fontSize:12,color:T.faint}}>',
              "React Money investment row")
 
-    old_plan = ('function Plan({accounts,events}){const liq=liquidBalance(accounts);  '
-                'const assets=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+b.amount,0)+accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);  '
-                'const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+b.amount,0);const net=liq+assets-debts;')
-    new_plan = ('function Plan({accounts,events}){const liq=liquidBalance(accounts);  const inv=investmentBalance(accounts);'
-                'const assetEvents=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+Number(b.amount||0),0);const assets=inv===null?null:assetEvents+inv;  '
-                'const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+Number(b.amount||0),0);const net=liq===null||assets===null?null:liq+assets-debts;')
-    s = once(s, old_plan, new_plan, "React Plan truth")
+    s = once(s,
+             ' const assets=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+b.amount,0)+accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
+             ' const inv=investmentBalance(accounts);const assetEvents=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+Number(b.amount||0),0);const assets=inv===null?null:assetEvents+inv;',
+             "React Plan assets")
+    s = once(s,
+             ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+b.amount,0);const net=liq+assets-debts;',
+             ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+Number(b.amount||0),0);const net=liq===null||assets===null?null:liq+assets-debts;',
+             "React Plan net")
     s = once(s, 'const runwayLiq=mSpend>0?liq/mSpend:0;const runwayAll=mSpend>0?(liq+assets)/mSpend:0;',
              'const runwayLiq=liq===null||mSpend<=0?null:liq/mSpend;const runwayAll=liq===null||assets===null||mSpend<=0?null:(liq+assets)/mSpend;',
              "React Plan runway")
