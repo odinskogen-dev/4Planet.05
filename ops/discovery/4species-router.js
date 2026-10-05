@@ -1,4 +1,5 @@
 const ORIGIN = "https://4planet-05.pages.dev";
+const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
 
 const RESERVED = new Set([
   "labs","os","story","domains","missions","atlas","lens","food","s4piens","4sapien",
@@ -119,6 +120,9 @@ export default {
     if (path === "/species") return redirect(`https://4species.com/species/${url.search}`);
     if (path === "/atlas" || path.startsWith("/atlas/")) return redirect(`https://4planetatlas.com/${url.search}`.replace("/?", "?"));
 
+    if (path === `/${INDEXNOW_KEY}.txt`) {
+      return new Response(INDEXNOW_KEY, { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=86400" } });
+    }
     if (path === "/robots.txt") {
       return new Response(robots(), { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=300" } });
     }
