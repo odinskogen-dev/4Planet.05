@@ -10,6 +10,7 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
   const { slug = "" } = useParams();
   const curated = speciesBySlug(slug);
   const envelope = speciesSourceEnvelopeBySlug(slug);
+  const humanFirstOrca = curated?.slug === "orca";
   const title = curated ? `${curated.commonName} (${curated.scientificName}) — 4PLANET SPECIES` : "Universal Species Profile — 4PLANET SPECIES";
   const description = curated
     ? curated.intro || curated.habitat || `Source-grounded profile for ${curated.commonName} with ATLAS context and reported observations.`
@@ -32,7 +33,7 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
         })}
       />
       {curated ? curatedElement : <UniversalSpeciesProfilePage />}
-      <SpeciesEvidenceSeam envelope={envelope} />
+      {!humanFirstOrca ? <SpeciesEvidenceSeam envelope={envelope} /> : null}
     </>
   );
 }

@@ -45,7 +45,10 @@ const staticRoutes = [
   "/join",
 ];
 
-// ATLAS and SPECIES have standalone canonical homes. Their 4planet.org routes\n// redirect to those product domains, so they are excluded from this sitemap.\nconst discoveryRoutes = [\n  ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
+// ATLAS and SPECIES have standalone canonical homes. Their 4planet.org routes
+// redirect to those product domains, so they are excluded from this sitemap.
+const discoveryRoutes = [
+  ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
