@@ -21,6 +21,7 @@ import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
 import { withReturnTo, returnHrefFromSearch } from "@/product/productContext";
 import { AtlasEmbed } from "@/earth/AtlasEmbed";
 import { trackEvent } from "@/analytics/Analytics";
+import "@/styles/human-first-public.css";
 
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em" };
 const panel: React.CSSProperties = { border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,32px)", minWidth: 0 };
@@ -254,6 +255,125 @@ export function SpeciesIndex() {
   );
 }
 
+function OrcaEditorialProfile({
+  profile,
+  atlasHref,
+  followed,
+  onToggle,
+}: {
+  profile: SpeciesProfile;
+  atlasHref: string;
+  followed: boolean;
+  onToggle: () => void;
+}) {
+  const chapters = profile.narrativeChapters?.slice(0, 2) ?? [];
+  const sourceEntries = [
+    ...(profile.descriptorSource ? [{ label: profile.descriptorSource.source, url: profile.descriptorSource.sourceUrl }] : []),
+    ...((profile.narrativeChapters ?? []).flatMap((chapter) =>
+      chapter.claims
+        .filter((claim) => claim.sourceUrl)
+        .map((claim) => ({ label: claim.sourceLabel ?? "Source", url: claim.sourceUrl! })),
+    )),
+    [{ label: "GBIF — Orcinus orca", url: profile.taxonSourceUrl }],
+  ].flat();
+  const sources = Array.from(new Map(sourceEntries.map((source) => [source.url, source])).values());
+
+  return (
+    <PublicShell>
+      <main className="editorial-page">
+        <div className="editorial-wrap">
+          <section className="orca-hero">
+            <div className="orca-hero-grid">
+              <figure className="orca-hero-media">
+                <img src="/assets/species/orca/detail-fjord.jpg" alt="A wild orca surfacing off a Norwegian coast" />
+              </figure>
+              <div className="orca-hero-copy">
+                <div className="editorial-kicker">4PLANET SPECIES</div>
+                <h1>Orca</h1>
+                <p className="latin">{profile.scientificName}</p>
+                <p className="editorial-copy">{profile.intro}</p>
+                <div className="editorial-actions">
+                  <Link
+                    to={atlasHref}
+                    className="editorial-primary"
+                    data-testid="species-to-atlas"
+                    onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
+                  >
+                    EXPLORE ORCA IN ATLAS →
+                  </Link>
+                  <button type="button" onClick={onToggle} className="editorial-secondary">
+                    {followed ? "FOLLOWING ORCA" : "FOLLOW ORCA"}
+                  </button>
+                </div>
+                <dl className="orca-facts">
+                  <div className="orca-fact"><dt>Family</dt><dd>Largest member of the dolphin family</dd></div>
+                  <div className="orca-fact"><dt>Range</dt><dd>Every ocean, from polar seas to the tropics</dd></div>
+                  <div className="orca-fact"><dt>Lives</dt><dd>In distinct populations with different prey, behaviour and calls</dd></div>
+                </dl>
+              </div>
+            </div>
+          </section>
+
+          <section className="editorial-section">
+            <div className="editorial-kicker">Life in the ocean</div>
+            <div className="orca-story-grid">
+              {chapters.map((chapter) => (
+                <article key={chapter.id}>
+                  <div className="editorial-kicker">{chapter.title}</div>
+                  <h3>{chapter.title}</h3>
+                  <p>{chapter.summary}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="editorial-section">
+            <div className="editorial-kicker">From the field</div>
+            <h2>Meet the animal, not the database.</h2>
+            <div className="orca-gallery">
+              {[
+                { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
+                { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of orcas surfacing together" },
+                { src: "/assets/species/orca/detail-spyhop.jpg", alt: "An orca spy-hopping above the surface" },
+                { src: "/assets/species/orca/detail-ice.jpg", alt: "Orcas among Antarctic pack ice" },
+              ].map((image) => (
+                <figure key={image.src}>
+                  <img src={image.src} alt={image.alt} loading="lazy" />
+                </figure>
+              ))}
+            </div>
+          </section>
+
+          <section className="editorial-section editorial-split">
+            <div className="editorial-kicker">About the map</div>
+            <div>
+              <h2>A record is not a live whale.</h2>
+              <p className="editorial-copy">
+                ATLAS can show reported occurrence records for orcas. They can tell us where an observation was recorded; they do not reveal a whale’s current position, population size or migration route.
+              </p>
+              <div className="editorial-actions">
+                <Link to={atlasHref} className="editorial-primary">OPEN ATLAS →</Link>
+              </div>
+            </div>
+          </section>
+
+          <section className="editorial-section">
+            <div className="editorial-kicker">Sources</div>
+            <div className="editorial-list">
+              {sources.map((source) => (
+                <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="editorial-source">
+                  <strong>{source.label}</strong>
+                  <span>Open original source ↗</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        </div>
+      </main>
+    </PublicShell>
+  );
+}
+
 type ObservationState =
   | { status: "LOADING"; rows: Occurrence[]; total: number }
   | { status: "LIVE"; rows: Occurrence[]; total: number }
@@ -431,6 +551,17 @@ export function SpeciesProfilePage() {
       >{followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}</button>
     </>
   );
+
+  if (isOrca) {
+    return (
+      <OrcaEditorialProfile
+        profile={profile}
+        atlasHref={atlasHref}
+        followed={followed}
+        onToggle={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
+      />
+    );
+  }
 
   return (
     <PublicShell>
