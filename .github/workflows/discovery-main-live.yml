@@ -103,3 +103,9 @@ jobs:
           impact=$(curl -fsS https://4planet.org/impact)
           grep -Fq '4PLANET Impact' <<<"$impact"
           grep -Fq 'data-public-discovery-fallback' <<<"$impact"
+          kenya=$(curl -fsS https://4planet.org/place/kenya)
+          grep -Fq 'Documented pressures' <<<"$kenya"
+          grep -Fq 'African Savanna Elephant' <<<"$kenya"
+          grep -Fq 'Related missions' <<<"$kenya"
+          grep -Fq 'https://4planetatlas.com/place/kenya' <<<"$kenya"
+          grep -Fq '<loc>https://4planet.org/living-systems/amazonia</loc>' <<<"$sm"
