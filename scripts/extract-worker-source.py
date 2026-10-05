@@ -2,7 +2,7 @@ import email, pathlib, re, sys
 
 name, headers_path, body_path, output_path = sys.argv[1:]
 headers = pathlib.Path(headers_path).read_text(errors="ignore")
-match = re.search(r"(?im)^content-type:\\s*(.+?)\\r?$", headers)
+match = re.search(r"(?im)^content-type:\s*(.+?)\r?$", headers)
 if not match:
     raise SystemExit(f"missing content-type for {name}")
 content_type = match.group(1).strip()
