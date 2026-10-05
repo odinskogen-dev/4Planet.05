@@ -169,7 +169,7 @@ function SpeciesHero({
 function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: string }) {
   return (
     <Link
-      to={contextHref(`/species/${profile.slug}`, search, { entity: profile.id, journey: profile.slug === "orca" ? "orca-gbif" : null })}
+      to={contextHref(`/species/${profile.slug}`, search, { entity: profile.id, journey: profile.atlasJourney ?? null })}
       style={{ display: "flex", flexDirection: "column", color: T.ink, textDecoration: "none", minWidth: 0, border: `1px solid ${T.line}` }}
     >
       <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="4/3" />
