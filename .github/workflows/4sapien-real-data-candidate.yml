@@ -1,4 +1,5 @@
 name: 4SAPIEN HEIR existing product source QA — NO DEPLOY
+# Final convergence rerun: Claude shell + Finance truth + discovery guard.
 
 on:
   push:
