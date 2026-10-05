@@ -77,7 +77,9 @@ const newsStories = stories.filter((story) => {
 });
 const newsUrls = newsStories.map((story) => `  <url>\n    <loc>${escapeXml(`${origin}/magazine/${story.slug}`)}</loc>\n    <news:news>\n      <news:publication><news:name>4PLANET MAGAZINE</news:name><news:language>en</news:language></news:publication>\n      <news:publication_date>${escapeXml(story.publishedAt)}</news:publication_date>\n      <news:title>${escapeXml(story.title)}</news:title>\n    </news:news>\n  </url>`).join("\n");
 const newsSitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${newsUrls}\n</urlset>\n`;
-fs.writeFileSync(path.join(publicDir, "news-sitemap.xml"), newsSitemap, "utf8");
+const newsSitemapPath = path.join(publicDir, "news-sitemap.xml");
+if (newsStories.length > 0) fs.writeFileSync(newsSitemapPath, newsSitemap, "utf8");
+else if (fs.existsSync(newsSitemapPath)) fs.unlinkSync(newsSitemapPath);
 
 const rssItems = stories.map((story) => `    <item>\n      <title>${escapeXml(story.title)}</title>\n      <link>${escapeXml(`${origin}/magazine/${story.slug}`)}</link>\n      <guid isPermaLink="true">${escapeXml(`${origin}/magazine/${story.slug}`)}</guid>\n      <description>${escapeXml(story.dek)}</description>\n      <category>${escapeXml(story.lane || story.category || "Magazine")}</category>${story.publishedAt ? `\n      <pubDate>${new Date(story.publishedAt).toUTCString()}</pubDate>` : ""}\n    </item>`).join("\n");
 const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>4PLANET MAGAZINE</title>\n    <link>${escapeXml(`${origin}/magazine`)}</link>\n    <description>Stories about the living planet — species, places, people, systems, solutions and culture.</description>\n    <language>en-gb</language>\n    ${rssItems}\n  </channel>\n</rss>\n`;
