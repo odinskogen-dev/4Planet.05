@@ -941,7 +941,8 @@ var planetmarket_commerce_default = {
     html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="4PLANET MARKET — Products, Creators and Better Commerce">');
     html = html.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, '<meta name="twitter:description" content="An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
-    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://4planetmarket.com/"></head>');
+    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://4planetmarket.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"4PLANET MARKET","url":"https://4planetmarket.com/","description":"An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}</script></head>');
+    html = html.replace(/<body([^>]*)>/i, '<body$1><noscript><main aria-label="Public discovery summary"><h1>4PLANET MARKET</h1><p>An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.</p><nav><a href="https://4planet.org/">4PLANET</a> · <a href="https://cre4tors.com/">CRE4TORS</a> · <a href="https://4planet.org/impact">Impact</a></nav></main></noscript>');
     return new Response(html, { status: upstream.status, statusText: upstream.statusText, headers });
   }
 };
