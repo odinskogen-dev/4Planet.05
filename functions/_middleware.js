@@ -470,12 +470,18 @@ export async function onRequest(context) {
     url.pathname === prefix || url.pathname.startsWith(prefix + "/")
   );
 
+  const atlasEmbedSurface =
+    host === "4planet.org" &&
+    url.pathname.replace(/\\/+$/, "") === "/atlas" &&
+    url.searchParams.has("embed");
+
   const privateSurface =
     PRIVATE_HOSTS.has(host) ||
     host.endsWith(".pages.dev") ||
     host === "localhost" ||
     host.endsWith(".localhost") ||
-    (Boolean(PUBLIC_HOSTS[host]) && privatePath);
+    (Boolean(PUBLIC_HOSTS[host]) && privatePath) ||
+    atlasEmbedSurface;
 
   if (url.pathname === "/robots.txt" && privateSurface) {
     return new Response(robotsText(host, true), {
@@ -499,7 +505,8 @@ export async function onRequest(context) {
       ["/magazine", "https://4planetmagazine.com/magazine/"],
     ]);
 
-    if (exactRedirects.has(pathname)) {
+    const firstPartyAtlasEmbed = pathname === "/atlas" && url.searchParams.has("embed");
+    if (exactRedirects.has(pathname) && !firstPartyAtlasEmbed) {
       return Response.redirect(exactRedirects.get(pathname) + url.search, 308);
     }
 
