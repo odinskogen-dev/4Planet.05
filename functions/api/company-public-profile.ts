@@ -313,6 +313,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
       { id: "BRREG-SUBUNITS", title: "Registered sub-entities / locations", publisher: "Brønnøysundregistrene", url: subunitsUrl, retrievedAt, state: subunitsResult.state, note: "Registered sub-entities linked to this main entity." },
       { id: "BRREG-UPDATES", title: "Entity register updates", publisher: "Brønnøysundregistrene", url: updatesUrl, retrievedAt, state: updatesResult.state, note: "Published update events from the Entity Register. Absence is not proof that nothing changed." },
       { id: "BRREG-ACCOUNTS", title: "Annual-account copies", publisher: "Brønnøysundregistrene / Regnskapsregisteret", url: accountYearsUrl, retrievedAt, state: accountsResult.state, note: "Availability index for annual-account copies. Financial values are not inferred from PDF availability." },
+      { id: "BRREG-FINANCIALS", title: "Latest annual-account key figures", publisher: "Brønnøysundregistrene / Regnskapsregisteret", url: financialsUrl, retrievedAt, state: financialsResult.state === "READY" && financials ? "READY" : financialsResult.state, note: "Open NLOD key figures from the latest submitted annual accounts. Some accounting types, including banks and insurers, are excluded; open structured history is not provided by this source." },
     ];
 
     const unknowns: string[] = [];
@@ -323,6 +324,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     if (!group.length) unknowns.push("No child group relations were returned; this does not prove the entity has no wider ownership relationships.");
     if (!locations.length) unknowns.push("No registered sub-entities were returned in this bounded lookup.");
     if (!accountYears.length) unknowns.push("No annual-account copy years were parsed from the public accounts-availability endpoint.");
+    if (!financials) unknowns.push("Structured BRREG financial key figures were not available for this entity. This can be expected for excluded accounting types such as banks and insurers, or where the public source has no matching record.");
     unknowns.push("Public register data does not reveal internal revenue drivers, costs, contracts, customer economics or operational performance unless separately sourced.");
 
     return json({
@@ -335,6 +337,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
         group,
         locations,
         changes,
+        financials,
         accounts: {
           availableYears: accountYears,
           latestAvailableYear: accountYears[0] || company.lastSubmittedAccounts || null,
@@ -353,6 +356,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
           locationCount: locations.length,
           changeCount: changes.length,
           accountYearCount: accountYears.length,
+          financialFactsAvailable: Boolean(financials),
         },
         sources,
         unknowns,
