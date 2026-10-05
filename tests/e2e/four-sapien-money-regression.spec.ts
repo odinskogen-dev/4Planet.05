@@ -58,17 +58,19 @@ test("Money keeps all proven Finance guards and a usable navigation",async({page
  await expect(page.locator("#fsMoneyNow")).toBeVisible();
  await expect(page.locator("#fsMoneyNow")).toContainText("Penger nå");
 
+ const worldNav=page.locator("#fsWorlds");
+ await expect(worldNav).toBeVisible();
+ for(const label of ["I dag","Mat","Penger","Brain","Meg"])await expect(worldNav.getByText(label,{exact:true})).toBeVisible();
+ await expect(worldNav.locator('a[aria-current="page"]')).toContainText("Penger");
+ await expect(page.locator("#fs-global-appnav")).toBeHidden();
+
  const width=page.viewportSize()?.width||1440;
  if(width<900){
    const productNav=page.locator("body.w-money #root nav").first();
    await expect(productNav).toBeVisible();
    const box=await productNav.boundingBox();
    expect(box).not.toBeNull();
-   expect(box!.y).toBeLessThan((page.viewportSize()?.height||900));
- }else{
-   const globalNav=page.locator("#fs-global-appnav");
-   await expect(globalNav).toBeVisible();
-   for(const label of ["I dag","Mat","Penger","Brain"])await expect(globalNav.getByText(label,{exact:true})).toBeVisible();
+   expect(box!.y).toBeLessThan(80);
  }
 });
 
