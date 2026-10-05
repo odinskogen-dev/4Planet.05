@@ -24,6 +24,7 @@ const staticRoutes = [
   "/places",
   "/living-systems/oslofjord",
   "/living-systems/great-barrier-reef",
+  "/living-systems/amazonia",
   "/impact/actions/bay-of-biscay-survey",
   "/cre4tor/odin",
   "/impact",
