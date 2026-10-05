@@ -1,91 +1,44 @@
-name: Snapshot Live Worker Sources
+name: Live Discovery Verification
 
 on:
   push:
-    branches: [king/test]
+    branches:
+      - king/test
     paths:
       - .github/workflows/cloudflare-zone-inventory-now.yml
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  snapshot:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 6
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: king/test
-          fetch-depth: 0
-
-      - name: Resolve Cloudflare token
-        env:
-          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Verify canonical public endpoints
         shell: bash
         run: |
           set -euo pipefail
-          T=$(printf '%s' "$T" | tr -d '\r\n')
-          T="${T#Bearer }"; T="${T#bearer }"
-          echo "::add-mask::$T"
-          echo "T=$T" >> "$GITHUB_ENV"
-
-      - name: Snapshot exact currently deployed Worker JavaScript
-        shell: bash
-        run: |
-          set -euo pipefail
-          api='https://api.cloudflare.com/client/v4'
-          auth=(-H "Authorization: Bearer $T")
-          z=$(curl -fsS "${auth[@]}" "$api/zones?per_page=1")
-          aid=$(jq -r '.result[0].account.id' <<<"$z")
-          mkdir -p ops/discovery/live-workers
-
-          for name in 4planetmarket-prototype cre4tors-prototype 4species-router 4planet-brain-public; do
-            echo "SNAPSHOT $name"
-            curl -fsS -D "/tmp/$name.h" -o "/tmp/$name.body" "${auth[@]}" "$api/accounts/$aid/workers/scripts/$name"
-            python3 - "$name" "/tmp/$name.h" "/tmp/$name.body" <<'PY'
-import email, pathlib, re, sys
-name, hpath, bpath = sys.argv[1:]
-headers = pathlib.Path(hpath).read_text(errors="ignore")
-m = re.search(r"(?im)^content-type:\s*(.+?)\r?$", headers)
-if not m:
-    raise SystemExit("missing content-type")
-ct = m.group(1).strip()
-raw = pathlib.Path(bpath).read_bytes()
-out = pathlib.Path("ops/discovery/live-workers")
-if ct.lower().startswith("multipart/"):
-    msg = email.message_from_bytes((f"Content-Type: {ct}\nMIME-Version: 1.0\n\n").encode()+raw)
-    candidates=[]
-    for part in msg.walk():
-        if part.is_multipart(): continue
-        fn = part.get_filename() or ""
-        payload = part.get_payload(decode=True) or b""
-        if fn.endswith((".js",".mjs")) or b"export {" in payload or b"export default" in payload:
-            candidates.append((fn,payload))
-    if not candidates:
-        raise SystemExit(f"no JS part for {name}")
-    fn,payload=max(candidates,key=lambda x:len(x[1]))
-else:
-    payload=raw
-text=payload.decode("utf-8")
-if len(text)<100:
-    raise SystemExit(f"too-small JS for {name}")
-(out/f"{name}.js").write_text(text)
-print(name, len(text))
-PY
-            node --check "ops/discovery/live-workers/$name.js"
+          for url in \
+            https://4planet.org/sitemap.xml \
+            https://4planet.org/robots.txt \
+            https://4planetatlas.com/ \
+            https://4planetatlas.com/robots.txt \
+            https://4planetatlas.com/sitemap.xml \
+            https://4brands.org/ \
+            https://4brands.org/robots.txt \
+            https://4brands.org/sitemap.xml \
+            https://s4piens.com/ \
+            https://4planetmagazine.com/magazine/ \
+            https://4sapien.com/ \
+            https://4species.com/ \
+            https://4nation.org/ \
+            https://4brain.app/ \
+            https://4planetmarket.com/ \
+            https://cre4tors.com/ \
+            https://n4turetech.com/; do
+            echo "=== $url ==="
+            curl -L -sS --max-time 15 -D /tmp/headers -o /tmp/body "$url" || true
+            tr -d '\r' </tmp/headers | grep -Ei '^(HTTP/|content-type:|x-robots-tag:|location:|link:)' | tail -12 || true
+            head -c 700 /tmp/body | tr '\n' ' '; echo
           done
-
-      - name: Commit snapshot only if changed
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "4PLANET automation"
-          git config user.email "automation@4planet.org"
-          git add ops/discovery/live-workers
-          if git diff --cached --quiet; then
-            echo "SNAPSHOT_UNCHANGED"
-            exit 0
-          fi
-          git commit -m "control(discovery): snapshot exact live Worker sources"
-          git push origin HEAD:king/test
