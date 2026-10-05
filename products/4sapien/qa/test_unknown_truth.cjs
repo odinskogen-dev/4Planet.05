@@ -31,7 +31,8 @@ const accountInputs=await pg.evaluate(()=>[...document.querySelectorAll('[data-a
 const fund=accountInputs.find(x=>x.name==='Fondskonto');ok(fund&&fund.balance===''&&fund.ph==='UKJENT','ukjent kontosaldo står tom/UKJENT, aldri 0');
 await pg.evaluate(()=>document.querySelector('[data-cat="asset"]').click());await pg.waitForTimeout(250);
 const drill=await pg.evaluate(()=>document.getElementById('afBody').innerText);
-ok(/Aksjekonto/.test(drill),'investment-konto vises i Eiendeler-drilldown');
+const drillNames=await pg.evaluate(()=>[...document.querySelectorAll('[data-d] .dn')].map(x=>x.value));
+ok(drillNames.includes('Aksjekonto')&&drillNames.includes('Fondskonto'),'investment-kontoer vises i Eiendeler-drilldown');
 ok(/UKJENT SALDO/.test(drill),'ukjent investering merkes UKJENT SALDO');
 ok(/UKJENT/.test(drill),'drilldown-sum blir UKJENT når en saldo mangler');
 ok(errs.length===0,'ingen overlay-sidefeil '+errs.join('|'));
