@@ -33,6 +33,8 @@ jobs:
             { name: "EARTH-4PLANET", url: "https://4planet.org/atlas/earth", must: ["Earth"] },
             { name: "EARTH-ATLAS-A", url: "https://4planetatlas.com/earth", must: ["Earth"] },
             { name: "EARTH-ATLAS-B", url: "https://4planetatlas.com/atlas/earth", must: ["Earth"] },
+            { name: "FIRES-ATLAS", url: "https://4planetatlas.com/atlas/fires", must: ["Fire"] },
+            { name: "WHALES-ATLAS", url: "https://4planetatlas.com/atlas/whales", must: ["Whale"] },
             { name: "OSLOFJORD", url: "https://4planet.org/living-systems/oslofjord", must: ["Oslofjorden"] },
             { name: "ORCA-4PLANET", url: "https://4planet.org/species/orca", must: ["Orca"] },
             { name: "ORCA-SPECIES-A", url: "https://4species.com/orca", must: ["Orca"] },
