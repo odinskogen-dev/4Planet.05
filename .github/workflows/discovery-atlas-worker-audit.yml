@@ -41,16 +41,35 @@ jobs:
           echo "HTTP HEADERS:"
           grep -Ei '^(content-type|etag|cf-ray|content-length):' /tmp/worker.headers || true
           echo "CONTENT TYPE:"
-          file /tmp/worker.bin
+          file /tmp/worker.js
+          python - <<'PY'
+          from pathlib import Path
+          from email.parser import BytesParser
+          from email.policy import default
+          headers=Path('/tmp/worker.headers').read_text('latin1')
+          ct=next((line.split(':',1)[1].strip() for line in headers.splitlines() if line.lower().startswith('content-type:')),None)
+          raw=Path('/tmp/worker.js').read_bytes()
+          msg=BytesParser(policy=default).parsebytes(('Content-Type: '+ct+'\r\nMIME-Version: 1.0\r\n\r\n').encode('latin1')+raw)
+          for part in msg.walk():
+              if part.is_multipart(): continue
+              payload=part.get_payload(decode=True) or b''
+              if b'export default' in payload and b'async fetch' in payload:
+                  Path('/tmp/worker.js').write_bytes(payload)
+                  break
+          PY
           echo "MODULE MARKERS:"
-          grep -E 'export default|addEventListener|async fetch' /tmp/worker.bin | head -20 || true
+          grep -E 'export default|addEventListener|async fetch' /tmp/worker.js | head -20 || true
+          echo "EDGE SHIM:"
+          grep -n -A90 -B8 'function edgeShim' /tmp/worker.js || true
+          echo "LITERAL ESCAPE MARKERS:"
+          grep -n -F '\\n' /tmp/worker.js | head -40 || true
           echo "PATH HELPERS:"
-          grep -n -A18 -B4 'function withTrailingSlash' /tmp/worker.bin || true
+          grep -n -A18 -B4 'function withTrailingSlash' /tmp/worker.js || true
           echo "PROXY FUNCTION:"
-          grep -n -A95 -B10 'function proxy' /tmp/worker.bin || true
+          grep -n -A95 -B10 'function proxy' /tmp/worker.js || true
           echo "ATLAS HOST BLOCK:"
-          grep -n -A18 -B4 'host === "4planetatlas.com"' /tmp/worker.bin || true
+          grep -n -A18 -B4 'host === "4planetatlas.com"' /tmp/worker.js || true
           echo "PAGES ORIGINS:"
-          strings /tmp/worker.bin | grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' | sort -u || true
+          strings /tmp/worker.js | grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' | sort -u || true
           echo "RELEVANT STRINGS:"
-          strings /tmp/worker.bin | grep -E 'atlas|species|pages[.]dev|4planet' | head -120 || true
+          strings /tmp/worker.js | grep -E 'atlas|species|pages[.]dev|4planet' | head -120 || true
