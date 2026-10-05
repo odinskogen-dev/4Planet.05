@@ -285,7 +285,7 @@ function SpeciesEditorialProfile({
       { label: profile.descriptorSource?.source ?? "GBIF taxon", url: profile.descriptorSource?.sourceUrl ?? profile.taxonSourceUrl },
       ...(profile.publicClaims ?? []).map((claim) => ({ label: claim.source, url: claim.sourceUrl })),
       ...chapters.flatMap((chapter) => chapter.claims.map((claim) => ({ label: claim.sourceLabel ?? "Source", url: claim.sourceUrl ?? "" }))),
-      { label: \`GBIF — \${profile.scientificName}\`, url: profile.taxonSourceUrl },
+      { label: `GBIF — ${profile.scientificName}`, url: profile.taxonSourceUrl },
     ].filter((source) => source.url).map((source) => [source.url, source]),
   ).values()).slice(0, 8);
 
@@ -298,12 +298,12 @@ function SpeciesEditorialProfile({
       <main className="species-editorial-page" style={{ background: "#FFFFFF", color: T.ink }}>
         <section
           data-species-section="hero"
-          style={{ position: "relative", minHeight: "82svh", overflow: "hidden", background: heroBackground ?? "#07101b", borderBottom: \`4px solid \${T.blue}\` }}
+          style={{ position: "relative", minHeight: "82svh", overflow: "hidden", background: heroBackground ?? "#07101b", borderBottom: `4px solid ${T.blue}` }}
         >
           {show && media?.localPath ? (
             <img
               src={media.localPath}
-              alt={\`\${profile.commonName} — \${profile.scientificName}\`}
+              alt={`${profile.commonName} — ${profile.scientificName}`}
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 42%" }}
             />
           ) : null}
@@ -321,9 +321,9 @@ function SpeciesEditorialProfile({
                   data-testid="species-to-atlas"
                   onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
                   style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
-                >{\`EXPLORE \${profile.commonName.toUpperCase()} IN ATLAS →\`}</Link>
+                >{`EXPLORE ${profile.commonName.toUpperCase()} IN ATLAS →`}</Link>
                 <button type="button" onClick={onToggle} className="editorial-secondary" style={{ minHeight: 50 }}>
-                  {followed ? \`FOLLOWING \${profile.commonName.toUpperCase()}\` : \`FOLLOW \${profile.commonName.toUpperCase()}\`}
+                  {followed ? `FOLLOWING ${profile.commonName.toUpperCase()}` : `FOLLOW ${profile.commonName.toUpperCase()}`}
                 </button>
                 {profile.continuation && (
                   <Link
@@ -335,10 +335,10 @@ function SpeciesEditorialProfile({
                 )}
                 {profile.missionSlug && (
                   <Link
-                    to={withReturnTo(\`/missions/\${profile.missionSlug}\`, location.search)}
+                    to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)}
                     data-testid="species-to-mission"
                     style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", border: "1px solid rgba(255,255,255,.72)", color: "#FFFFFF", textDecoration: "none" }}
-                  >{\`\${profile.missionSlug.toUpperCase()}_ MISSION →\`}</Link>
+                  >{`${profile.missionSlug.toUpperCase()}_ MISSION →`}</Link>
                 )}
               </div>
               <dl style={{ margin: "28px 0 0", display: "flex", gap: "18px 34px", flexWrap: "wrap", fontSize: 13 }}>
@@ -350,7 +350,7 @@ function SpeciesEditorialProfile({
           </div>
           {media?.attribution && (
             <div style={{ position: "absolute", right: 14, bottom: 10, ...mono, color: "rgba(255,255,255,.72)", fontSize: 8 }}>
-              {media.attribution}{media.licence ? \` · \${media.licence}\` : ""}
+              {media.attribution}{media.licence ? ` · ${media.licence}` : ""}
             </div>
           )}
         </section>
@@ -395,7 +395,7 @@ function SpeciesEditorialProfile({
         )}
 
         {supportingChapters.map((chapter) => (
-          <section key={chapter.id} data-species-section="supporting-story" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: \`1px solid \${T.line}\` }}>
+          <section key={chapter.id} data-species-section="supporting-story" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
             <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow.replace(/^[A-Z0-9_]+\s*·?\s*/i, "") || "EVIDENCE"}</div>
             <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(36px,6vw,68px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>{chapter.title}</h2>
             <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>{chapter.summary}</p>
@@ -403,11 +403,11 @@ function SpeciesEditorialProfile({
         ))}
 
         {profile.publicClaims && profile.publicClaims.length > 0 && (
-          <section data-species-section="known" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: \`1px solid \${T.line}\` }}>
+          <section data-species-section="known" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
             <div style={{ ...mono, color: T.blue }}>WHAT WE KNOW</div>
             <div style={{ marginTop: 22, display: "grid", gap: 0 }}>
               {profile.publicClaims.slice(0, 4).map((claim, index) => (
-                <article key={\`\${claim.sourceUrl}-\${index}\`} style={{ padding: "20px 0", borderTop: \`1px solid \${T.line}\` }}>
+                <article key={`${claim.sourceUrl}-${index}`} style={{ padding: "20px 0", borderTop: `1px solid ${T.line}` }}>
                   <div style={{ ...mono, color: claim.state === "KNOWN" ? T.acid : claim.state === "INTERPRETED" ? T.blue : "#8A6500" }}>{claim.state}</div>
                   <p style={{ margin: "10px 0 0", maxWidth: 800, fontSize: 18, lineHeight: 1.55 }}>{claim.text}</p>
                   <p style={{ margin: "8px 0 0", maxWidth: 800, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{claim.limitation}</p>
@@ -417,7 +417,7 @@ function SpeciesEditorialProfile({
           </section>
         )}
 
-        <section data-species-section="atlas" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,100px) clamp(20px,5vw,64px)", borderTop: \`1px solid \${T.line}\` }}>
+        <section data-species-section="atlas" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,100px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
           <div style={{ ...mono, color: T.blue }}>WHERE RECORDED</div>
           <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(38px,6vw,72px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>Explore reported observations.</h2>
           {occurrences.status === "LIVE" ? (
@@ -427,21 +427,21 @@ function SpeciesEditorialProfile({
           ) : (
             <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>Reported observation data is currently unavailable or returned no records. The species story and sources remain available.</p>
           )}
-          <Link to={atlasHref} style={{ ...mono, display: "inline-block", marginTop: 24, color: T.blue, borderBottom: \`1px solid \${T.blue}\`, paddingBottom: 3 }}>OPEN OBSERVATIONS IN ATLAS →</Link>
+          <Link to={atlasHref} style={{ ...mono, display: "inline-block", marginTop: 24, color: T.blue, borderBottom: `1px solid ${T.blue}`, paddingBottom: 3 }}>OPEN OBSERVATIONS IN ATLAS →</Link>
         </section>
 
         <section data-species-section="sources" style={{ maxWidth: 980, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(80px,10vw,128px)" }}>
-          <details style={{ borderTop: \`1px solid \${T.line}\`, paddingTop: 26 }}>
+          <details style={{ borderTop: `1px solid ${T.line}`, paddingTop: 26 }}>
             <summary style={{ ...mono, color: T.blue, cursor: "pointer", listStyle: "none" }}>SOURCES + NOTES</summary>
             <div style={{ display: "grid", gap: 14, marginTop: 20 }}>
               {sourceLinks.map((source) => (
-                <a key={source.url} href={source.url} target="_blank" rel="noreferrer" style={{ color: T.ink, textDecoration: "none", paddingBottom: 12, borderBottom: \`1px solid \${T.line}\` }}>
+                <a key={source.url} href={source.url} target="_blank" rel="noreferrer" style={{ color: T.ink, textDecoration: "none", paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
                   {source.label} ↗
                 </a>
               ))}
             </div>
             {profile.truthBoundary && (
-              <div style={{ marginTop: 24, paddingTop: 20, borderTop: \`1px solid \${T.line}\` }}>
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
                 <strong>Truth boundary.</strong>
                 <p style={{ margin: "10px 0 0", maxWidth: 780, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{profile.truthBoundary.text}</p>
                 <p style={{ margin: "10px 0 0", maxWidth: 780, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{profile.truthBoundary.disclosure}</p>
