@@ -4,7 +4,9 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 // ops/discovery/live-workers/4planetmarket-prototype.js
 var __defProp2 = Object.defineProperty;
 var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
-var photoCommerce = /* @__PURE__ */ __name2(() => ({
+var __defProp22 = Object.defineProperty;
+var __name22 = /* @__PURE__ */ __name2((target, value) => __defProp22(target, "name", { value, configurable: true }), "__name");
+var photoCommerce = /* @__PURE__ */ __name22(() => ({
   candidatePriceNok: 1290,
   printSize: "8 \xD7 12 IN",
   podSku: "GLOBAL-FAP-8X12",
@@ -13,7 +15,7 @@ var photoCommerce = /* @__PURE__ */ __name2(() => ({
   shippingCountry: "NO",
   sampleState: "REQUIRED"
 }), "photoCommerce");
-var artCommerce = /* @__PURE__ */ __name2(() => ({
+var artCommerce = /* @__PURE__ */ __name22(() => ({
   candidatePriceNok: 890,
   printSize: "6 \xD7 8 IN",
   podSku: "GLOBAL-FAP-6X8",
@@ -161,7 +163,8 @@ function getFirstMarketProduct(id) {
 }
 __name(getFirstMarketProduct, "getFirstMarketProduct");
 __name2(getFirstMarketProduct, "getFirstMarketProduct");
-var bool = /* @__PURE__ */ __name2((value) => value === "true", "bool");
+__name22(getFirstMarketProduct, "getFirstMarketProduct");
+var bool = /* @__PURE__ */ __name22((value) => value === "true", "bool");
 function canaryPrice(value) {
   if (!value) return null;
   const parsed = Number(value);
@@ -170,6 +173,7 @@ function canaryPrice(value) {
 }
 __name(canaryPrice, "canaryPrice");
 __name2(canaryPrice, "canaryPrice");
+__name22(canaryPrice, "canaryPrice");
 function resolveMarketCommerceRuntime(env) {
   const mode = env.MARKET_COMMERCE_ENV === "LIVE" ? "LIVE" : "TEST";
   const isLive = mode === "LIVE";
@@ -215,6 +219,7 @@ function resolveMarketCommerceRuntime(env) {
 }
 __name(resolveMarketCommerceRuntime, "resolveMarketCommerceRuntime");
 __name2(resolveMarketCommerceRuntime, "resolveMarketCommerceRuntime");
+__name22(resolveMarketCommerceRuntime, "resolveMarketCommerceRuntime");
 function safePublicOrigin(value) {
   const fallback = "https://4planetmarket.com";
   if (!value) return fallback;
@@ -228,6 +233,7 @@ function safePublicOrigin(value) {
 }
 __name(safePublicOrigin, "safePublicOrigin");
 __name2(safePublicOrigin, "safePublicOrigin");
+__name22(safePublicOrigin, "safePublicOrigin");
 function isAllowedMarketOrigin(origin, mode) {
   try {
     const url = new URL(origin);
@@ -241,11 +247,13 @@ function isAllowedMarketOrigin(origin, mode) {
 }
 __name(isAllowedMarketOrigin, "isAllowedMarketOrigin");
 __name2(isAllowedMarketOrigin, "isAllowedMarketOrigin");
+__name22(isAllowedMarketOrigin, "isAllowedMarketOrigin");
 function productSampleApproved(product, env) {
   return product.productType === "PHOTOGRAPHIC PRINT" ? bool(env.MARKET_PHOTO_SAMPLE_APPROVED) : bool(env.MARKET_ART_SAMPLE_APPROVED);
 }
 __name(productSampleApproved, "productSampleApproved");
 __name2(productSampleApproved, "productSampleApproved");
+__name22(productSampleApproved, "productSampleApproved");
 function productCanCheckout(product, env) {
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.checkoutInfrastructureReady) return false;
@@ -254,29 +262,34 @@ function productCanCheckout(product, env) {
 }
 __name(productCanCheckout, "productCanCheckout");
 __name2(productCanCheckout, "productCanCheckout");
+__name22(productCanCheckout, "productCanCheckout");
 function productCanCanary(product, env) {
   const runtime = resolveMarketCommerceRuntime(env);
   return runtime.isLive && runtime.canaryEnabled && runtime.stripeConfigured && runtime.webhookConfigured && runtime.providerFulfilmentReady && Boolean(product.commerce.podSku);
 }
 __name(productCanCanary, "productCanCanary");
 __name2(productCanCanary, "productCanCanary");
+__name22(productCanCanary, "productCanCanary");
 function releasedMarketProductIds(env) {
   return FIRST_MARKET_PRODUCTS.filter((product) => productCanCheckout(product, env)).map((product) => product.id);
 }
 __name(releasedMarketProductIds, "releasedMarketProductIds");
 __name2(releasedMarketProductIds, "releasedMarketProductIds");
+__name22(releasedMarketProductIds, "releasedMarketProductIds");
 function requireMarketProduct(value) {
   if (typeof value !== "string") return null;
   return getFirstMarketProduct(value.trim());
 }
 __name(requireMarketProduct, "requireMarketProduct");
 __name2(requireMarketProduct, "requireMarketProduct");
+__name22(requireMarketProduct, "requireMarketProduct");
 function productAssetUrl(product, env) {
   const runtime = resolveMarketCommerceRuntime(env);
   return new URL(product.imageUrl, runtime.publicOrigin).toString();
 }
 __name(productAssetUrl, "productAssetUrl");
 __name2(productAssetUrl, "productAssetUrl");
+__name22(productAssetUrl, "productAssetUrl");
 function prodigiCallbackUrl(env) {
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.callbackToken) return null;
@@ -286,6 +299,7 @@ function prodigiCallbackUrl(env) {
 }
 __name(prodigiCallbackUrl, "prodigiCallbackUrl");
 __name2(prodigiCallbackUrl, "prodigiCallbackUrl");
+__name22(prodigiCallbackUrl, "prodigiCallbackUrl");
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -294,6 +308,7 @@ function json(body, status = 200) {
 }
 __name(json, "json");
 __name2(json, "json");
+__name22(json, "json");
 async function stripeGet(runtime, path) {
   if (!runtime.stripeSecret) return { ok: false, status: 0, payload: null };
   const response = await fetch(`https://api.stripe.com${path}`, {
@@ -304,6 +319,7 @@ async function stripeGet(runtime, path) {
 }
 __name(stripeGet, "stripeGet");
 __name2(stripeGet, "stripeGet");
+__name22(stripeGet, "stripeGet");
 async function stripePostForm(runtime, path, form, idempotencyKey) {
   if (!runtime.stripeSecret) return { ok: false, status: 0, payload: null };
   const headers = {
@@ -317,6 +333,7 @@ async function stripePostForm(runtime, path, form, idempotencyKey) {
 }
 __name(stripePostForm, "stripePostForm");
 __name2(stripePostForm, "stripePostForm");
+__name22(stripePostForm, "stripePostForm");
 async function updateStripeSessionMetadata(runtime, sessionId, metadata) {
   const form = new URLSearchParams();
   for (const [key, value] of Object.entries(metadata)) form.set(`metadata[${key}]`, value.slice(0, 500));
@@ -324,6 +341,7 @@ async function updateStripeSessionMetadata(runtime, sessionId, metadata) {
 }
 __name(updateStripeSessionMetadata, "updateStripeSessionMetadata");
 __name2(updateStripeSessionMetadata, "updateStripeSessionMetadata");
+__name22(updateStripeSessionMetadata, "updateStripeSessionMetadata");
 async function prodigiGet(runtime, path) {
   if (!runtime.prodigiKey) return { ok: false, status: 0, payload: null };
   const response = await fetch(`${runtime.prodigiBaseUrl}${path}`, {
@@ -334,6 +352,7 @@ async function prodigiGet(runtime, path) {
 }
 __name(prodigiGet, "prodigiGet");
 __name2(prodigiGet, "prodigiGet");
+__name22(prodigiGet, "prodigiGet");
 async function prodigiPost(runtime, path, body) {
   if (!runtime.prodigiKey) return { ok: false, status: 0, payload: null };
   const response = await fetch(`${runtime.prodigiBaseUrl}${path}`, {
@@ -346,8 +365,9 @@ async function prodigiPost(runtime, path, body) {
 }
 __name(prodigiPost, "prodigiPost");
 __name2(prodigiPost, "prodigiPost");
+__name22(prodigiPost, "prodigiPost");
 var encoder = new TextEncoder();
-var hex = /* @__PURE__ */ __name2((buffer) => Array.from(new Uint8Array(buffer)).map((byte) => byte.toString(16).padStart(2, "0")).join(""), "hex");
+var hex = /* @__PURE__ */ __name22((buffer) => Array.from(new Uint8Array(buffer)).map((byte) => byte.toString(16).padStart(2, "0")).join(""), "hex");
 function constantTimeEqual(a, b) {
   if (a.length !== b.length) return false;
   let result = 0;
@@ -356,6 +376,7 @@ function constantTimeEqual(a, b) {
 }
 __name(constantTimeEqual, "constantTimeEqual");
 __name2(constantTimeEqual, "constantTimeEqual");
+__name22(constantTimeEqual, "constantTimeEqual");
 async function verifyStripeSignature(payload, header, secret) {
   let timestamp = "";
   const signatures = [];
@@ -372,7 +393,8 @@ async function verifyStripeSignature(payload, header, secret) {
 }
 __name(verifyStripeSignature, "verifyStripeSignature");
 __name2(verifyStripeSignature, "verifyStripeSignature");
-var onRequestGet = /* @__PURE__ */ __name2(async (ctx) => {
+__name22(verifyStripeSignature, "verifyStripeSignature");
+var onRequestGet = /* @__PURE__ */ __name22(async (ctx) => {
   const runtime = resolveMarketCommerceRuntime(ctx.env);
   const releasedProductIds = releasedMarketProductIds(ctx.env);
   return json({
@@ -393,7 +415,7 @@ var onRequestGet = /* @__PURE__ */ __name2(async (ctx) => {
     fulfilmentProvider: "Prodigi"
   });
 }, "onRequestGet");
-var onRequest = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "GET" ? onRequestGet(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
+var onRequest = /* @__PURE__ */ __name22(async (ctx) => ctx.request.method === "GET" ? onRequestGet(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 async function createMarketCheckoutSession(args) {
   const { runtime, product, origin, attemptId, canary = false } = args;
   const checkoutPriceNok = canary && runtime.canaryPriceNok ? runtime.canaryPriceNok : product.commerce.candidatePriceNok;
@@ -441,6 +463,7 @@ async function createMarketCheckoutSession(args) {
 }
 __name(createMarketCheckoutSession, "createMarketCheckoutSession");
 __name2(createMarketCheckoutSession, "createMarketCheckoutSession");
+__name22(createMarketCheckoutSession, "createMarketCheckoutSession");
 function safeAttemptId(value) {
   if (typeof value !== "string") return crypto.randomUUID();
   const trimmed = value.trim();
@@ -448,7 +471,8 @@ function safeAttemptId(value) {
 }
 __name(safeAttemptId, "safeAttemptId");
 __name2(safeAttemptId, "safeAttemptId");
-var onRequestPost = /* @__PURE__ */ __name2(async (ctx) => {
+__name22(safeAttemptId, "safeAttemptId");
+var onRequestPost = /* @__PURE__ */ __name22(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   const origin = request.headers.get("origin") ?? new URL(request.url).origin;
@@ -487,15 +511,16 @@ var onRequestPost = /* @__PURE__ */ __name2(async (ctx) => {
     shippingCountry: "NO"
   });
 }, "onRequestPost");
-var onRequest2 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
+var onRequest2 = /* @__PURE__ */ __name22(async (ctx) => ctx.request.method === "POST" ? onRequestPost(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function safeAttemptId2(value) {
   if (typeof value !== "string") return crypto.randomUUID();
   const trimmed = value.trim();
   return /^[A-Za-z0-9_-]{8,80}$/.test(trimmed) ? trimmed : crypto.randomUUID();
 }
 __name(safeAttemptId2, "safeAttemptId2");
-__name2(safeAttemptId2, "safeAttemptId");
-var onRequestPost2 = /* @__PURE__ */ __name2(async (ctx) => {
+__name2(safeAttemptId2, "safeAttemptId2");
+__name22(safeAttemptId2, "safeAttemptId");
+var onRequestPost2 = /* @__PURE__ */ __name22(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.isLive || !runtime.canaryEnabled || !runtime.canaryToken) return json({ ok: false, error: "live_canary_closed" }, 503);
@@ -532,12 +557,13 @@ var onRequestPost2 = /* @__PURE__ */ __name2(async (ctx) => {
     warning: "This checkout captures a real payment and, after payment, creates a real Prodigi fulfilment order."
   });
 }, "onRequestPost");
-var onRequest3 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
+var onRequest3 = /* @__PURE__ */ __name22(async (ctx) => ctx.request.method === "POST" ? onRequestPost2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function shippingFromSession(session) {
   return session.collected_information?.shipping_details ?? session.shipping_details ?? null;
 }
 __name(shippingFromSession, "shippingFromSession");
 __name2(shippingFromSession, "shippingFromSession");
+__name22(shippingFromSession, "shippingFromSession");
 function orderRecipient(session) {
   const shipping = shippingFromSession(session);
   const address = shipping?.address ?? session.customer_details?.address ?? null;
@@ -558,13 +584,15 @@ function orderRecipient(session) {
 }
 __name(orderRecipient, "orderRecipient");
 __name2(orderRecipient, "orderRecipient");
+__name22(orderRecipient, "orderRecipient");
 async function loadAuthoritativeSession(runtime, id) {
   const response = await stripeGet(runtime, `/v1/checkout/sessions/${encodeURIComponent(id)}`);
   return response.ok ? response.payload : null;
 }
 __name(loadAuthoritativeSession, "loadAuthoritativeSession");
 __name2(loadAuthoritativeSession, "loadAuthoritativeSession");
-var onRequestPost3 = /* @__PURE__ */ __name2(async (ctx) => {
+__name22(loadAuthoritativeSession, "loadAuthoritativeSession");
+var onRequestPost3 = /* @__PURE__ */ __name22(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.webhookConfigured || !runtime.stripeWebhookSecret) return json({ ok: false, error: "stripe_webhook_not_configured" }, 503);
@@ -649,13 +677,14 @@ var onRequestPost3 = /* @__PURE__ */ __name2(async (ctx) => {
     prodigiOrderId
   });
 }, "onRequestPost");
-var onRequest4 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost3(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
+var onRequest4 = /* @__PURE__ */ __name22(async (ctx) => ctx.request.method === "POST" ? onRequestPost3(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function allowedHost(hostname) {
   return hostname === "4planetmarket.com" || hostname === "www.4planetmarket.com" || hostname.endsWith(".4planet-05.pages.dev") || hostname === "localhost";
 }
 __name(allowedHost, "allowedHost");
 __name2(allowedHost, "allowedHost");
-var onRequestGet2 = /* @__PURE__ */ __name2(async (ctx) => {
+__name22(allowedHost, "allowedHost");
+var onRequestGet2 = /* @__PURE__ */ __name22(async (ctx) => {
   const { request, env } = ctx;
   const url = new URL(request.url);
   if (!allowedHost(url.hostname)) return json({ ok: false, error: "host_not_allowed" }, 403);
@@ -719,7 +748,7 @@ var onRequestGet2 = /* @__PURE__ */ __name2(async (ctx) => {
     } : null
   });
 }, "onRequestGet");
-var onRequest5 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "GET" ? onRequestGet2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
+var onRequest5 = /* @__PURE__ */ __name22(async (ctx) => ctx.request.method === "GET" ? onRequestGet2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function callbackOrderId(event) {
   if (event.subject?.startsWith("ord_")) return event.subject;
   const data = event.data;
@@ -729,7 +758,8 @@ function callbackOrderId(event) {
 }
 __name(callbackOrderId, "callbackOrderId");
 __name2(callbackOrderId, "callbackOrderId");
-var onRequestPost4 = /* @__PURE__ */ __name2(async (ctx) => {
+__name22(callbackOrderId, "callbackOrderId");
+var onRequestPost4 = /* @__PURE__ */ __name22(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   const supplied = new URL(request.url).searchParams.get("token") ?? "";
@@ -781,7 +811,7 @@ var onRequestPost4 = /* @__PURE__ */ __name2(async (ctx) => {
     trackingLinked: Boolean(shipment?.tracking?.number || shipment?.tracking?.url)
   });
 }, "onRequestPost");
-var onRequest6 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost4(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
+var onRequest6 = /* @__PURE__ */ __name22(async (ctx) => ctx.request.method === "POST" ? onRequestPost4(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 var FOUNDER_SAMPLE_PRODUCT_ID = "market:amalie:a14";
 var FOUNDER_SAMPLE_ATTEMPT_ID = "founderA14PhysicalSample01";
 async function sha256Hex(value) {
@@ -791,6 +821,7 @@ async function sha256Hex(value) {
 }
 __name(sha256Hex, "sha256Hex");
 __name2(sha256Hex, "sha256Hex");
+__name22(sha256Hex, "sha256Hex");
 function constantTimeEqual2(a, b) {
   if (a.length !== b.length) return false;
   let result = 0;
@@ -798,7 +829,8 @@ function constantTimeEqual2(a, b) {
   return result === 0;
 }
 __name(constantTimeEqual2, "constantTimeEqual2");
-__name2(constantTimeEqual2, "constantTimeEqual");
+__name2(constantTimeEqual2, "constantTimeEqual2");
+__name22(constantTimeEqual2, "constantTimeEqual");
 async function founderTokenValid(token, env) {
   const expected = env.MARKET_FOUNDER_SAMPLE_TOKEN_SHA256?.trim() ?? "";
   if (!token || expected.length !== 64) return false;
@@ -806,6 +838,7 @@ async function founderTokenValid(token, env) {
 }
 __name(founderTokenValid, "founderTokenValid");
 __name2(founderTokenValid, "founderTokenValid");
+__name22(founderTokenValid, "founderTokenValid");
 async function founderSampleCheckout(ctx) {
   if (ctx.request.method !== "POST") return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
   let body;
@@ -830,6 +863,7 @@ async function founderSampleCheckout(ctx) {
 }
 __name(founderSampleCheckout, "founderSampleCheckout");
 __name2(founderSampleCheckout, "founderSampleCheckout");
+__name22(founderSampleCheckout, "founderSampleCheckout");
 async function founderSamplePage(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token") ?? "";
@@ -845,6 +879,7 @@ async function founderSamplePage(request, env) {
 }
 __name(founderSamplePage, "founderSamplePage");
 __name2(founderSamplePage, "founderSamplePage");
+__name22(founderSamplePage, "founderSamplePage");
 var routes = {
   "/api/market-commerce-status": onRequest,
   "/api/market-checkout": onRequest2,
@@ -865,6 +900,7 @@ function withMarketHeaders(response, env, isPublic = false) {
 }
 __name(withMarketHeaders, "withMarketHeaders");
 __name2(withMarketHeaders, "withMarketHeaders");
+__name22(withMarketHeaders, "withMarketHeaders");
 async function proxyMarket(request, env) {
   if (!env.MARKET_UPSTREAM) return new Response("Market upstream unavailable", { status: 503 });
   const incoming = new URL(request.url);
@@ -884,6 +920,7 @@ async function proxyMarket(request, env) {
 }
 __name(proxyMarket, "proxyMarket");
 __name2(proxyMarket, "proxyMarket");
+__name22(proxyMarket, "proxyMarket");
 var planetmarket_commerce_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -935,15 +972,15 @@ var planetmarket_commerce_default = {
     html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET \u2014 Products, Creators and Better Commerce</title>");
     html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="4PLANET MARKET is an early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
-    html = html.replace(/<meta\s+property=["']og:title["'][^>]*>/i, '<meta property="og:title" content="4PLANET MARKET — Products, Creators and Better Commerce">');
+    html = html.replace(/<meta\s+property=["']og:title["'][^>]*>/i, '<meta property="og:title" content="4PLANET MARKET \u2014 Products, Creators and Better Commerce">');
     html = html.replace(/<meta\s+property=["']og:description["'][^>]*>/i, '<meta property="og:description" content="An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<meta\s+property=["']og:url["'][^>]*>/i, '<meta property="og:url" content="https://4planetmarket.com/">');
-    html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="4PLANET MARKET — Products, Creators and Better Commerce">');
+    html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="4PLANET MARKET \u2014 Products, Creators and Better Commerce">');
     html = html.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, '<meta name="twitter:description" content="An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
-    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://4planetmarket.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"4PLANET MARKET","url":"https://4planetmarket.com/","description":"An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}</script></head>');
-    const discoveryFallback = "<main data-public-discovery-fallback=\"1\"><h1>4PLANET MARKET</h1><p>4PLANET MARKET is an early public marketplace prototype exploring how products, creators and commerce can connect to the wider 4PLANET ecosystem. The aim is to make useful products easier to discover while keeping the people, materials, production and fulfilment behind them understandable.</p><p>The public marketplace and the underlying commerce infrastructure are separate layers. A product appearing in the interface does not automatically mean that public checkout or fulfilment has been released. Availability, price, payment and fulfilment state must be represented from the live commerce system rather than inferred.</p><p>MARKET is being developed as one economic surface within 4PLANET, alongside intelligence, culture and ecological action. The current site is an early prototype, not a claim that a complete global marketplace is already operating.</p><nav aria-label=\"Related public products\"><a href=\"https://4planet.org/\">4PLANET</a> · <a href=\"https://cre4tors.com/\">CRE4TORS</a> · <a href=\"https://4planet.org/impact\">Impact</a></nav></main>";
-    html = html.replace('<div id="root"></div>', '<div id="root">' + discoveryFallback + '</div>');
+    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://4planetmarket.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"4PLANET MARKET","url":"https://4planetmarket.com/","description":"An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}<\/script></head>');
+    const discoveryFallback = '<main data-public-discovery-fallback="1"><h1>4PLANET MARKET</h1><p>4PLANET MARKET is an early public marketplace prototype exploring how products, creators and commerce can connect to the wider 4PLANET ecosystem. The aim is to make useful products easier to discover while keeping the people, materials, production and fulfilment behind them understandable.</p><p>The public marketplace and the underlying commerce infrastructure are separate layers. A product appearing in the interface does not automatically mean that public checkout or fulfilment has been released. Availability, price, payment and fulfilment state must be represented from the live commerce system rather than inferred.</p><p>MARKET is being developed as one economic surface within 4PLANET, alongside intelligence, culture and ecological action. The current site is an early prototype, not a claim that a complete global marketplace is already operating.</p><nav aria-label="Related public products"><a href="https://4planet.org/">4PLANET</a> \xB7 <a href="https://cre4tors.com/">CRE4TORS</a> \xB7 <a href="https://4planet.org/impact">Impact</a></nav></main>';
+    html = html.replace('<div id="root"></div>', '<div id="root">' + discoveryFallback + "</div>");
     return new Response(html, { status: upstream.status, statusText: upstream.statusText, headers });
   }
 };

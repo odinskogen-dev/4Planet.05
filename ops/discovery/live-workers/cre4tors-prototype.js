@@ -4,6 +4,8 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 // ops/discovery/live-workers/cre4tors-prototype.js
 var __defProp2 = Object.defineProperty;
 var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var __defProp22 = Object.defineProperty;
+var __name22 = /* @__PURE__ */ __name2((target, value) => __defProp22(target, "name", { value, configurable: true }), "__name");
 var ORIGIN = "https://b8a8f6c1.4planet-05.pages.dev";
 var PRODUCT_MARKER = "cre4tors-v0.3-78cdebc";
 var ANALYTICS_PATH = "/_4p-analytics.js";
@@ -45,6 +47,7 @@ function addCspSources(csp, directive, sources) {
 }
 __name(addCspSources, "addCspSources");
 __name2(addCspSources, "addCspSources");
+__name22(addCspSources, "addCspSources");
 function productHeaders(source, isPublic = false) {
   const headers = new Headers(source);
   if (isPublic) headers.delete("x-robots-tag");
@@ -55,6 +58,7 @@ function productHeaders(source, isPublic = false) {
 }
 __name(productHeaders, "productHeaders");
 __name2(productHeaders, "productHeaders");
+__name22(productHeaders, "productHeaders");
 async function proxy(request) {
   const incoming = new URL(request.url);
   const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
@@ -88,15 +92,15 @@ async function proxy(request) {
     html = html.replace(/<title>[^<]*<\/title>/i, "<title>CRE4TORS \u2014 Creative Work for a Living Planet</title>");
     html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="CRE4TORS is an early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
     html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
-    html = html.replace(/<meta\s+property=["']og:title["'][^>]*>/i, '<meta property="og:title" content="CRE4TORS — Creative Work for a Living Planet">');
+    html = html.replace(/<meta\s+property=["']og:title["'][^>]*>/i, '<meta property="og:title" content="CRE4TORS \u2014 Creative Work for a Living Planet">');
     html = html.replace(/<meta\s+property=["']og:description["'][^>]*>/i, '<meta property="og:description" content="An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
     html = html.replace(/<meta\s+property=["']og:url["'][^>]*>/i, '<meta property="og:url" content="https://cre4tors.com/">');
-    html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="CRE4TORS — Creative Work for a Living Planet">');
+    html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="CRE4TORS \u2014 Creative Work for a Living Planet">');
     html = html.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, '<meta name="twitter:description" content="An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
-    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://cre4tors.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"CRE4TORS","url":"https://cre4tors.com/","description":"An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}</script></head>');
-    const discoveryFallback = "<main data-public-discovery-fallback=\"1\"><h1>CRE4TORS — Creative Work for a Living Planet</h1><p>CRE4TORS is an early public 4PLANET prototype exploring the role of creators, culture and creative work in a living-planet ecosystem. It is intended to give creative people a clearer place in the wider system rather than treating culture as separate from science, technology, nature and action.</p><p>The product direction includes discovery, creative work, stories and routes into other 4PLANET surfaces. It can connect to MARKET where a real product exists, and to MAGAZINE, missions or Impact where creative work helps people understand and participate.</p><p>This public prototype does not imply that every creator shown is a partner or that every concept is commercially available. Current state, authorship, rights and availability should remain explicit as the product develops.</p><nav aria-label=\"Related public products\"><a href=\"https://4planet.org/\">4PLANET</a> · <a href=\"https://4planetmarket.com/\">MARKET</a> · <a href=\"https://4planetmagazine.com/magazine/\">MAGAZINE</a></nav></main>";
-    html = html.replace('<div id="root"></div>', '<div id="root">' + discoveryFallback + '</div>');
+    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://cre4tors.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"CRE4TORS","url":"https://cre4tors.com/","description":"An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}<\/script></head>');
+    const discoveryFallback = '<main data-public-discovery-fallback="1"><h1>CRE4TORS \u2014 Creative Work for a Living Planet</h1><p>CRE4TORS is an early public 4PLANET prototype exploring the role of creators, culture and creative work in a living-planet ecosystem. It is intended to give creative people a clearer place in the wider system rather than treating culture as separate from science, technology, nature and action.</p><p>The product direction includes discovery, creative work, stories and routes into other 4PLANET surfaces. It can connect to MARKET where a real product exists, and to MAGAZINE, missions or Impact where creative work helps people understand and participate.</p><p>This public prototype does not imply that every creator shown is a partner or that every concept is commercially available. Current state, authorship, rights and availability should remain explicit as the product develops.</p><nav aria-label="Related public products"><a href="https://4planet.org/">4PLANET</a> \xB7 <a href="https://4planetmarket.com/">MARKET</a> \xB7 <a href="https://4planetmagazine.com/magazine/">MAGAZINE</a></nav></main>';
+    html = html.replace('<div id="root"></div>', '<div id="root">' + discoveryFallback + "</div>");
   }
   const tag = '<script src="' + ANALYTICS_PATH + '" defer><\/script>';
   if (!html.includes(ANALYTICS_PATH)) html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, tag + "</body>") : html + tag;
@@ -104,6 +108,7 @@ async function proxy(request) {
 }
 __name(proxy, "proxy");
 __name2(proxy, "proxy");
+__name22(proxy, "proxy");
 var cre4tors_default = { async fetch(request) {
   return proxy(request);
 } };
