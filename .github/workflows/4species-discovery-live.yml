@@ -1,0 +1,55 @@
+name: 4SPECIES Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ops/discovery/4species-router.js
+      - .github/workflows/4species-discovery-live.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 4species-discovery-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate exact source
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'https://4species.com/sitemap.xml' ops/discovery/4species-router.js
+          grep -Fq 'index,follow,max-image-preview:large' ops/discovery/4species-router.js
+      - name: Deploy existing 4species-router script only
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+      - name: Verify live indexability and product routes
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            h=$(curl -sSIL --max-time 15 https://4species.com/species/ | tr -d '\r')
+            if grep -q '200' <<<"$h" && ! grep -qi '^x-robots-tag:.*noindex' <<<"$h"; then break; fi
+            sleep 3
+          done
+          grep -q '200' <<<"$h"
+          ! grep -qi '^x-robots-tag:.*noindex' <<<"$h"
+          curl -fsS https://4species.com/robots.txt | grep -Fq 'Sitemap: https://4species.com/sitemap.xml'
+          curl -fsS https://4species.com/sitemap.xml | grep -Fq 'https://4species.com/species/orca'
+          html=$(curl -fsS https://4species.com/species/orca)
+          grep -Fq 'index,follow,max-image-preview:large' <<<"$html"
+          grep -Fq 'https://4species.com/species/orca' <<<"$html"
