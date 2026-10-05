@@ -9,16 +9,16 @@ const envelope = await readFile(new URL("../src/data/speciesSourceEnvelope.ts", 
 const manifest = await readFile(new URL("../src/content/mediaManifest.ts", import.meta.url), "utf8");
 
 function profileBlock(source, slug) {
-  const marker = \`slug: "\${slug}"\`;
+  const marker = `slug: "${slug}"`;
   const slugAt = source.indexOf(marker);
-  assert.ok(slugAt >= 0, \`missing profile \${slug}\`);
+  assert.ok(slugAt >= 0, `missing profile ${slug}`);
   const objectStart = source.lastIndexOf("\n  {", slugAt);
   const nextObject = source.indexOf("\n  {", slugAt);
   let block = source.slice(objectStart, nextObject === -1 ? source.length : nextObject);
   const chapterRef = block.match(/narrativeChapters:\s*([A-Z0-9_]+)/);
   if (chapterRef) {
     const name = chapterRef[1];
-    const constStart = source.indexOf(\`const \${name}\`);
+    const constStart = source.indexOf(`const ${name}`);
     const constEnd = source.indexOf("\n];", constStart);
     if (constStart >= 0 && constEnd > constStart) block += "\n" + source.slice(constStart, constEnd + 3);
   }
@@ -56,7 +56,7 @@ test("SPECIES-GP-01 Jaguar is source-bounded and does not publish forest-health 
     "64,000",
     "64000",
     "89%",
-  ]) assert.equal(jaguar.includes(forbidden), false, \`Jaguar publishes forbidden shortcut: \${forbidden}\`);
+  ]) assert.equal(jaguar.includes(forbidden), false, `Jaguar publishes forbidden shortcut: ${forbidden}`);
   assert.match(jaguar, /a sighting alone does not prove local population health or ecosystem condition/i);
   assert.match(jaguar, /not a complete range map or a live animal position/i);
   assert.match(jaguar, /remain UNKNOWN/i);
@@ -86,7 +86,7 @@ test("SPECIES-GP-01 Jaguar keeps source envelope and media rights/context intact
     "abundance or trend from occurrence count",
     "corridor use from map proximity",
     "live location from historical occurrence data",
-  ]) assert.ok(envelope.includes(required), \`missing Jaguar envelope contract: \${required}\`);
+  ]) assert.ok(envelope.includes(required), `missing Jaguar envelope contract: ${required}`);
   const sp005 = manifest.slice(manifest.indexOf('"SP-005"'), manifest.indexOf('"SP-006"'));
   assert.match(sp005, /Patty Ho/);
   assert.match(sp005, /CC BY 2\.0/);
