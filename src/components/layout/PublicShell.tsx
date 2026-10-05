@@ -396,6 +396,26 @@ function Footer() {
   const contactEmail = isMagazine
     ? "editor@4planetmagazine.com"
     : "hello@4planet.org";
+  const compactEditorialFooter = pathname.startsWith("/atlas/") || pathname === "/species/orca";
+  if (compactEditorialFooter) {
+    return (
+      <footer style={{ background: "#FFFFFF", color: T.ink, borderTop: `1px solid ${T.line}`, padding: "34px clamp(20px,5vw,72px) 42px" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", justifyContent: "space-between", gap: 28, flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div>
+            <Mark size={18} color={T.ink} accent={T.blue} />
+            <p style={{ marginTop: 12, maxWidth: 360, fontSize: 13.5, lineHeight: 1.5, color: T.dim }}>For a Living Planet.</p>
+          </div>
+          <nav style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+            <Link to="/atlas" style={{ ...mono, color: T.ink, textDecoration: "none" }}>ATLAS</Link>
+            <Link to="/species" style={{ ...mono, color: T.ink, textDecoration: "none" }}>SPECIES</Link>
+            <Link to="/about" style={{ ...mono, color: T.ink, textDecoration: "none" }}>ABOUT</Link>
+            <Link to="/privacy" style={{ ...mono, color: T.ink, textDecoration: "none" }}>PRIVACY</Link>
+          </nav>
+        </div>
+      </footer>
+    );
+  }
+
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/domains/4culture"]]],
     ["PARTICIPATE", [["4People", "/join"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
