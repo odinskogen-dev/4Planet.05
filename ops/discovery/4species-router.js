@@ -98,7 +98,7 @@ async function proxyPage(request, targetPath, publicPath) {
   return new HTMLRewriter()
     .on('script[src="/host-indexing-policy.js"]', { element(el) { el.remove(); } })
     .on('meta[name="robots"]', { element(el) { el.setAttribute("content", "index,follow,max-image-preview:large"); } })
-    .on('link[rel="canonical"]', { element(el) { el.setAttribute("href", canonical); } })
+    .on('link[rel="canonical"]', { element(el) { el.remove(); } })
     .on('meta[property="og:url"]', { element(el) { el.setAttribute("content", canonical); } })
     .on("head", { element(el) { el.append(`<link rel="canonical" href="${canonical}">`, { html: true }); } })
     .transform(new Response(upstream.body, {
