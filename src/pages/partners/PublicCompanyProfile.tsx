@@ -136,15 +136,19 @@ function Unknowns({ items }: { items: string[] }) {
 }
 
 export default function PublicCompanyProfile({
-  profile, onReset, onDeepAnalysis, onPrivate,
+  profile, gleif, onReset, onDeepAnalysis, onPrivate,
 }: {
   profile: PublicCompanyProfileData;
+  gleif?: { state: string; verified: { lei: string; legalName: string; registeredAs: string | null; sourceUrl: string } | null } | null;
   onReset: () => void;
   onDeepAnalysis: () => void;
   onPrivate: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("OVERVIEW");
   const readySources = useMemo(() => profile.sources.filter((source) => source.state === "READY"), [profile.sources]);
+  const verifiedLei = gleif?.verified ?? null;
+  const readySourceCount = readySources.length + (verifiedLei ? 1 : 0);
+  const totalSourceLaneCount = profile.coverage.totalSourceLanes + 1;
   const primaryIndustry = profile.company.industries[0];
   const topRoles = profile.roles.slice().sort((a, b) => (a.sequence ?? 999) - (b.sequence ?? 999));
   const recentChanges = profile.changes.slice(0, 8);
@@ -209,7 +213,7 @@ export default function PublicCompanyProfile({
           <Fact label="LAST ACCOUNTS" value={profile.accounts.latestAvailableYear || profile.company.lastSubmittedAccounts || "UNKNOWN"} meta={String(profile.coverage.accountYearCount) + " public copies indexed"} />
           <Fact label="PUBLIC ROLES" value={String(profile.coverage.roleCount)} meta="This entity only" />
           <Fact label="GROUP LINKS" value={String(profile.coverage.groupRelationCount)} meta="BRREG child relations" />
-          <Fact label="SOURCES LIVE" value={String(readySources.length) + "/" + String(profile.coverage.totalSourceLanes)} meta={"Fetched " + dateLabel(profile.generatedAt)} />
+          <Fact label="SOURCES LIVE" value={String(readySourceCount) + "/" + String(totalSourceLaneCount)} meta={"Fetched " + dateLabel(profile.generatedAt)} />
         </div>
       </header>
 
@@ -236,6 +240,7 @@ export default function PublicCompanyProfile({
               <Fact label="FOUNDED" value={profile.company.foundationDate || "UNKNOWN"} meta={"Registered " + (profile.company.registeredDate || "UNKNOWN")} />
               <Fact label="REGISTERED ADDRESS" value={addressLine(profile.company.businessAddress)} />
               <Fact label="WEBSITE" value={profile.company.website || "UNKNOWN"} meta={profile.company.website ? "Registered by BRREG" : "No registered website"} />
+              <Fact label="LEI / GLOBAL ID" value={verifiedLei?.lei || "UNKNOWN"} meta={verifiedLei ? "GLEIF exact registration-number match" : "No exact verified LEI in current identity resolution"} />
               <Fact label="VAT / BUSINESS REGISTER" value={(profile.company.registeredForVat ? "VAT" : "NO VAT FLAG") + " · " + (profile.company.registeredInBusinessRegister ? "FORETAKSREGISTERET" : "NO BUSINESS-REGISTER FLAG")} />
             </div>
 
@@ -398,6 +403,13 @@ export default function PublicCompanyProfile({
               <p>Source state is visible. A failed or empty source lane is not converted into a claim about the company.</p>
             </div>
             <div className="fbi-source-list">
+              {verifiedLei && (
+                <a href={verifiedLei.sourceUrl} target="_blank" rel="noreferrer">
+                  <div><span>GLEIF-LEI</span><span className="fbi-source-state fbi-source-state--ready">READY</span></div>
+                  <strong>Verified Legal Entity Identifier</strong><p>Global Legal Entity Identifier Foundation</p>
+                  <small>Accepted only when GLEIF registeredAs exactly matches the canonical BRREG organisation number.</small>
+                </a>
+              )}
               {profile.sources.map((source) => (
                 <a key={source.id} href={source.url} target="_blank" rel="noreferrer">
                   <div><span>{source.id}</span><SourceState source={source} /></div>
