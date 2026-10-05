@@ -1,3 +1,23 @@
+# HUMAN-FIRST DISCOVERY OBJECTS — WORLD CLASS 01 — 05 OCT 2026
+
+**STATUS:** HEIR / CONTROLLED MASTER GOLD / NOINDEX / NO LIVE RELEASE.
+
+**FOUNDER LAW:** HUMAN FIRST. PREMIUM. CALM. VISUAL. USEFUL. TRUSTWORTHY. MEMORABLE. Search/AI structure stays behind the visible experience.
+
+**DEMAND MAP:** 120 credible opportunity objects are prioritised in one durable discovery asset. Exact keyword volume is not fabricated: no Search Console property is connected, HYPD keyword research is plan-locked and Bing demand data is not configured. Relative demand bands remain hypotheses until hard query data is available.
+
+**TOP 10 PILOTS:** Global Fires; Orca; Great Barrier Reef; Polar Bear; Amazon Basin; Whales; Sea Ice; Coral Bleaching; Tiger; Serengeti.
+
+**MASTER GOLD 01–03:** Orca / Great Barrier Reef / Global Fires. These intentionally stress three different object classes while reading existing canonical Species, PlanetProof, Place and ATLAS data rather than creating parallel truth stores.
+
+**DESIGN STANDARD:** Orca uses existing cleared documentary media; Great Barrier Reef and Global Fires use designed orientation fields that are explicitly disclosed as non-evidentiary. Shared source, boundary and next-object modules do not force visual sameness.
+
+**TRUTH / RELEASE:** these routes are controlled `/labs/gold/discovery/*` proofs with `noindex,nofollow,noarchive,nosnippet`. No production publication, social send, email send, IndexNow or Search Console submission is authorised.
+
+**ACCEPTANCE:** typecheck + production build + full smoke including `discovery-world-class-contract` + product authority + Gold policy + immutable preview/browser QA. Human Gold remains a judgement gate; passing code is necessary but not sufficient.
+
+---
+
 # WHAT WE BELIEVE — CANON 2.0 PUBLIC SYNC — 05 OCT 2026
 
 **STATUS:** HEIR PRODUCT CANDIDATE / EXACT CANON PROJECTION / FOUNDER REQUESTED LIVE RELEASE / RELEASE GATES REQUIRED.

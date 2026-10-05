@@ -347,6 +347,27 @@ export function GoldTemplateSystemIndex() {
           </div>
         </section>
 
+        <section className="gold-index-proof" aria-labelledby="gold-discovery-masters">
+          <div className="gold-section-head">
+            <p className="gold-kicker">HUMAN-FIRST DISCOVERY / MASTER GOLD</p>
+            <h2 id="gold-discovery-masters">Three unlike entry points. One quality law.</h2>
+          </div>
+          <div className="gold-index-links">
+            {[
+              ["SPECIES", "Orca", "One animal. Family, place, observations and source boundaries.", "orca"],
+              ["PLACE + LIVING SYSTEM", "Great Barrier Reef", "Forty years of monitoring without reducing a reef system to one number.", "great-barrier-reef"],
+              ["ATLAS SIGNAL", "Global Fires", "Fast-moving planetary data with interpretation slowed down on purpose.", "global-fires"],
+            ].map(([kind, title, text, slug]) => (
+              <Link key={slug} to={`/labs/gold/discovery/${slug}`}>
+                <span>{kind}</span>
+                <strong>{title}</strong>
+                <p>{text}</p>
+                <b>OPEN MASTER GOLD →</b>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section className="gold-index-proof" aria-labelledby="gold-story-proofs">
           <div className="gold-section-head"><p className="gold-kicker">TRACK B / REPRESENTATIVE PROOFS</p><h2 id="gold-story-proofs">Four stories. Four different reader jobs.</h2></div>
           <div className="gold-index-links gold-index-links--stories">

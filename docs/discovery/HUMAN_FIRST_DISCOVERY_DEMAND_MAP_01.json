@@ -1,0 +1,4514 @@
+{
+  "schema": "4PLANET_DISCOVERY_DEMAND_MAP_01",
+  "updatedAt": "2026-10-05",
+  "status": "INTERNAL_PRIORITISATION_ASSET_NOT_TRUTH_STORE",
+  "methodology": {
+    "principle": "Use real human demand to decide which useful parts of the living planet to make visible next. Search volume is not invented.",
+    "limitations": [
+      "No Google Search Console property is currently connected through either available GSC connector.",
+      "HYPD keyword-volume research is unavailable on the current Free plan.",
+      "Bing keyword marketplace data is not configured.",
+      "Demand bands are therefore relative hypotheses grounded in public query/SERP patterns, current media relevance, 4PLANET GA4 behaviour and product/source readiness; they are not monthly search-volume claims."
+    ],
+    "observed4PlanetBaseline": {
+      "period": "2026-08-24/2026-10-04",
+      "users": 36,
+      "sessions": 107,
+      "pageViews": 1030,
+      "organicSearchSessions": 4,
+      "atlasLanding": {
+        "sessions": 9,
+        "pageViews": 99
+      },
+      "speciesLanding": {
+        "sessions": 5,
+        "pageViews": 31
+      },
+      "note": "GA4 observations include potential internal/test traffic and do not equal verified unique external humans."
+    },
+    "scoring": "Positive factors: human demand, right-to-win, visual value, source quality, data availability, graph connectivity, repeat value, brand value. Penalties: production cost, maintenance cost, reputational risk. All factors are 1–5 ordinal scores; opportunityScore is prioritisation only."
+  },
+  "universeCount": 120,
+  "opportunities": [
+    {
+      "id": "orca",
+      "family": "SPECIES",
+      "name": "Orca",
+      "intent": "orca / killer whale / where do orcas live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 94,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "blue-whale",
+      "family": "SPECIES",
+      "name": "Blue Whale",
+      "intent": "blue whale / largest animal / blue whale habitat",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "humpback-whale",
+      "family": "SPECIES",
+      "name": "Humpback Whale",
+      "intent": "humpback whale / migration / sightings",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "sperm-whale",
+      "family": "SPECIES",
+      "name": "Sperm Whale",
+      "intent": "sperm whale / deep diving whale",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "whale-shark",
+      "family": "SPECIES",
+      "name": "Whale Shark",
+      "intent": "whale shark / where to see whale sharks",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "great-white-shark",
+      "family": "SPECIES",
+      "name": "Great White Shark",
+      "intent": "great white shark / habitat / sightings",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "tiger",
+      "family": "SPECIES",
+      "name": "Tiger",
+      "intent": "tiger / tiger habitat / where tigers live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 86,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "lion",
+      "family": "SPECIES",
+      "name": "Lion",
+      "intent": "lion / lion habitat / African lions",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "leopard",
+      "family": "SPECIES",
+      "name": "Leopard",
+      "intent": "leopard / habitat / range",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "cheetah",
+      "family": "SPECIES",
+      "name": "Cheetah",
+      "intent": "cheetah / habitat / conservation",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "jaguar",
+      "family": "SPECIES",
+      "name": "Jaguar",
+      "intent": "jaguar / Amazon / habitat",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "polar-bear",
+      "family": "SPECIES",
+      "name": "Polar Bear",
+      "intent": "polar bear / habitat / sea ice / endangered",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "brown-bear",
+      "family": "SPECIES",
+      "name": "Brown Bear",
+      "intent": "brown bear / habitat / range",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "giant-panda",
+      "family": "SPECIES",
+      "name": "Giant Panda",
+      "intent": "giant panda / habitat / conservation",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "african-elephant",
+      "family": "SPECIES",
+      "name": "African Elephant",
+      "intent": "African elephant / distribution / conservation",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "asian-elephant",
+      "family": "SPECIES",
+      "name": "Asian Elephant",
+      "intent": "Asian elephant / habitat / conservation",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "gorilla",
+      "family": "SPECIES",
+      "name": "Gorilla",
+      "intent": "gorilla / habitat / endangered",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "chimpanzee",
+      "family": "SPECIES",
+      "name": "Chimpanzee",
+      "intent": "chimpanzee / habitat / endangered",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "orangutan",
+      "family": "SPECIES",
+      "name": "Orangutan",
+      "intent": "orangutan / Borneo / habitat",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "grey-wolf",
+      "family": "SPECIES",
+      "name": "Grey Wolf",
+      "intent": "wolf / habitat / range",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "sea-otter",
+      "family": "SPECIES",
+      "name": "Sea Otter",
+      "intent": "sea otter / kelp forest / habitat",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "manta-ray",
+      "family": "SPECIES",
+      "name": "Manta Ray",
+      "intent": "manta ray / habitat / migration",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "green-sea-turtle",
+      "family": "SPECIES",
+      "name": "Green Sea Turtle",
+      "intent": "green sea turtle / habitat / nesting",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "emperor-penguin",
+      "family": "SPECIES",
+      "name": "Emperor Penguin",
+      "intent": "emperor penguin / sea ice / Antarctica",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "atlantic-puffin",
+      "family": "SPECIES",
+      "name": "Atlantic Puffin",
+      "intent": "puffin / habitat / migration",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "bald-eagle",
+      "family": "SPECIES",
+      "name": "Bald Eagle",
+      "intent": "bald eagle / habitat / range",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "western-honey-bee",
+      "family": "SPECIES",
+      "name": "Western Honey Bee",
+      "intent": "honey bee / pollination / decline",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "monarch-butterfly",
+      "family": "SPECIES",
+      "name": "Monarch Butterfly",
+      "intent": "monarch butterfly / migration / map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "axolotl",
+      "family": "SPECIES",
+      "name": "Axolotl",
+      "intent": "axolotl / wild habitat / endangered",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "snow-leopard",
+      "family": "SPECIES",
+      "name": "Snow Leopard",
+      "intent": "snow leopard / habitat / range",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "great-barrier-reef",
+      "family": "PLACE",
+      "name": "Great Barrier Reef",
+      "intent": "Great Barrier Reef / bleaching / map",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "amazon-basin",
+      "family": "PLACE",
+      "name": "Amazon Basin",
+      "intent": "Amazon rainforest / Amazon basin / deforestation",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "serengeti",
+      "family": "PLACE",
+      "name": "Serengeti",
+      "intent": "Serengeti / migration / animals",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 87,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "costa-rica",
+      "family": "PLACE",
+      "name": "Costa Rica",
+      "intent": "Costa Rica wildlife / biodiversity",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "kenya",
+      "family": "PLACE",
+      "name": "Kenya",
+      "intent": "Kenya wildlife / safari animals / biodiversity",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "galapagos",
+      "family": "PLACE",
+      "name": "Galápagos",
+      "intent": "Galapagos wildlife / islands / species",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 87,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "yellowstone",
+      "family": "PLACE",
+      "name": "Yellowstone",
+      "intent": "Yellowstone wildlife / ecosystem",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "antarctica",
+      "family": "PLACE",
+      "name": "Antarctica",
+      "intent": "Antarctica wildlife / ice / map",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "arctic",
+      "family": "PLACE",
+      "name": "Arctic",
+      "intent": "Arctic wildlife / sea ice / climate",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "svalbard",
+      "family": "PLACE",
+      "name": "Svalbard",
+      "intent": "Svalbard polar bear / wildlife",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "congo-basin",
+      "family": "PLACE",
+      "name": "Congo Basin",
+      "intent": "Congo rainforest / gorillas / biodiversity",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "borneo",
+      "family": "PLACE",
+      "name": "Borneo",
+      "intent": "Borneo rainforest / orangutan",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "okavango-delta",
+      "family": "PLACE",
+      "name": "Okavango Delta",
+      "intent": "Okavango wildlife / delta",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "pantanal",
+      "family": "PLACE",
+      "name": "Pantanal",
+      "intent": "Pantanal jaguar / wetlands",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "everglades",
+      "family": "PLACE",
+      "name": "Everglades",
+      "intent": "Everglades wildlife / ecosystem",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "coral-triangle",
+      "family": "PLACE",
+      "name": "Coral Triangle",
+      "intent": "Coral Triangle biodiversity",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "mediterranean-sea",
+      "family": "PLACE",
+      "name": "Mediterranean Sea",
+      "intent": "Mediterranean biodiversity / marine",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "north-sea",
+      "family": "PLACE",
+      "name": "North Sea",
+      "intent": "North Sea ecosystem / marine life",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "oslofjord",
+      "family": "PLACE",
+      "name": "Oslofjord",
+      "intent": "Oslofjord status / cod / pollution",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "norwegian-sea",
+      "family": "PLACE",
+      "name": "Norwegian Sea",
+      "intent": "Norwegian Sea whales / ecosystem",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "madagascar",
+      "family": "PLACE",
+      "name": "Madagascar",
+      "intent": "Madagascar wildlife / biodiversity",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "iceland",
+      "family": "PLACE",
+      "name": "Iceland",
+      "intent": "Iceland wildlife / whales / nature",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "great-lakes",
+      "family": "PLACE",
+      "name": "Great Lakes",
+      "intent": "Great Lakes ecosystem / pollution",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "mekong-delta",
+      "family": "PLACE",
+      "name": "Mekong Delta",
+      "intent": "Mekong biodiversity / wetlands",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "sundarbans",
+      "family": "PLACE",
+      "name": "Sundarbans",
+      "intent": "Sundarbans tiger / mangroves",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "global-fires",
+      "family": "ATLAS",
+      "name": "Global Fires",
+      "intent": "wildfire map / fires today / satellite fires",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 95,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "whales-map",
+      "family": "ATLAS",
+      "name": "Whales",
+      "intent": "whale map / whale sightings / observations",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "sea-ice-map",
+      "family": "ATLAS",
+      "name": "Sea Ice",
+      "intent": "sea ice map / Arctic ice / Antarctica ice",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "ocean-temperature",
+      "family": "ATLAS",
+      "name": "Ocean Temperature",
+      "intent": "ocean temperature map / SST",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "coral-bleaching-map",
+      "family": "ATLAS",
+      "name": "Coral Bleaching",
+      "intent": "coral bleaching map / reef heat stress",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "deforestation-map",
+      "family": "ATLAS",
+      "name": "Deforestation",
+      "intent": "deforestation map / forest loss",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "earthquake-map",
+      "family": "ATLAS",
+      "name": "Earthquakes",
+      "intent": "earthquake map / earthquakes today",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 2,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 2,
+        "repeatValue": 5,
+        "brandValue": 3,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 79,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "volcano-map",
+      "family": "ATLAS",
+      "name": "Volcanoes",
+      "intent": "volcano map / active volcanoes",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "protected-areas-map",
+      "family": "ATLAS",
+      "name": "Protected Areas",
+      "intent": "protected areas map / national parks map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "biodiversity-map",
+      "family": "ATLAS",
+      "name": "Biodiversity Observations",
+      "intent": "biodiversity map / species observations",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "marine-heatwaves",
+      "family": "ATLAS",
+      "name": "Marine Heatwaves",
+      "intent": "marine heatwave map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "drought-map",
+      "family": "ATLAS",
+      "name": "Drought",
+      "intent": "drought map / drought monitor",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "flood-map",
+      "family": "ATLAS",
+      "name": "Floods",
+      "intent": "flood map / flooding map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "tree-cover-loss",
+      "family": "ATLAS",
+      "name": "Tree Cover Loss",
+      "intent": "tree cover loss map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "glacier-change",
+      "family": "ATLAS",
+      "name": "Glacier Change",
+      "intent": "glacier melt map / glacier change",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "ocean-chlorophyll",
+      "family": "ATLAS",
+      "name": "Ocean Chlorophyll",
+      "intent": "chlorophyll map / phytoplankton",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "harmful-algal-blooms",
+      "family": "ATLAS",
+      "name": "Harmful Algal Blooms",
+      "intent": "algal bloom map / red tide",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "animal-migration",
+      "family": "ATLAS",
+      "name": "Animal Migration",
+      "intent": "animal migration map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "fishing-activity",
+      "family": "ATLAS",
+      "name": "Fishing Activity",
+      "intent": "fishing activity map / vessels",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "ocean-depth",
+      "family": "ATLAS",
+      "name": "Ocean Depth",
+      "intent": "ocean depth map / bathymetry",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "coral-reef",
+      "family": "ECOSYSTEM",
+      "name": "Coral Reefs",
+      "intent": "coral reef ecosystem",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "mangrove",
+      "family": "ECOSYSTEM",
+      "name": "Mangroves",
+      "intent": "mangrove ecosystem / benefits",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "rainforest",
+      "family": "ECOSYSTEM",
+      "name": "Tropical Rainforest",
+      "intent": "rainforest ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "savanna",
+      "family": "ECOSYSTEM",
+      "name": "Savanna",
+      "intent": "savanna ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "kelp-forest",
+      "family": "ECOSYSTEM",
+      "name": "Kelp Forest",
+      "intent": "kelp forest ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "peatlands",
+      "family": "ECOSYSTEM",
+      "name": "Peatlands",
+      "intent": "peatland ecosystem / carbon",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "seagrass",
+      "family": "ECOSYSTEM",
+      "name": "Seagrass Meadows",
+      "intent": "seagrass ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "wetlands",
+      "family": "ECOSYSTEM",
+      "name": "Wetlands",
+      "intent": "wetland ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "arctic-sea-ice",
+      "family": "ECOSYSTEM",
+      "name": "Arctic Sea Ice Ecosystem",
+      "intent": "sea ice ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "deep-sea",
+      "family": "ECOSYSTEM",
+      "name": "Deep Sea",
+      "intent": "deep sea ecosystem",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "biodiversity-loss",
+      "family": "PROBLEM",
+      "name": "Biodiversity Loss",
+      "intent": "biodiversity loss",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "deforestation",
+      "family": "PROBLEM",
+      "name": "Deforestation",
+      "intent": "deforestation",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "habitat-loss",
+      "family": "PROBLEM",
+      "name": "Habitat Loss",
+      "intent": "habitat loss",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "ocean-acidification",
+      "family": "PROBLEM",
+      "name": "Ocean Acidification",
+      "intent": "ocean acidification",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "plastic-pollution",
+      "family": "PROBLEM",
+      "name": "Plastic Pollution",
+      "intent": "plastic pollution",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "overfishing",
+      "family": "PROBLEM",
+      "name": "Overfishing",
+      "intent": "overfishing",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "invasive-species",
+      "family": "PROBLEM",
+      "name": "Invasive Species",
+      "intent": "invasive species",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "coral-bleaching",
+      "family": "PROBLEM",
+      "name": "Coral Bleaching",
+      "intent": "coral bleaching",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "pollinator-decline",
+      "family": "PROBLEM",
+      "name": "Pollinator Decline",
+      "intent": "pollinator decline",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "freshwater-decline",
+      "family": "PROBLEM",
+      "name": "Freshwater Biodiversity Decline",
+      "intent": "freshwater biodiversity loss",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 3,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 76,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "rewilding",
+      "family": "SOLUTION",
+      "name": "Rewilding",
+      "intent": "rewilding",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 82,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "ecosystem-restoration",
+      "family": "SOLUTION",
+      "name": "Ecosystem Restoration",
+      "intent": "ecosystem restoration",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "coral-restoration",
+      "family": "SOLUTION",
+      "name": "Coral Restoration",
+      "intent": "coral restoration",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "mangrove-restoration",
+      "family": "SOLUTION",
+      "name": "Mangrove Restoration",
+      "intent": "mangrove restoration",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "wetland-restoration",
+      "family": "SOLUTION",
+      "name": "Wetland Restoration",
+      "intent": "wetland restoration",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "wildlife-corridors",
+      "family": "SOLUTION",
+      "name": "Wildlife Corridors",
+      "intent": "wildlife corridors",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "marine-protected-areas",
+      "family": "SOLUTION",
+      "name": "Marine Protected Areas",
+      "intent": "marine protected areas",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "regenerative-agriculture",
+      "family": "SOLUTION",
+      "name": "Regenerative Agriculture",
+      "intent": "regenerative agriculture biodiversity",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "nature-based-solutions",
+      "family": "SOLUTION",
+      "name": "Nature-based Solutions",
+      "intent": "nature based solutions",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "species-reintroduction",
+      "family": "SOLUTION",
+      "name": "Species Reintroduction",
+      "intent": "species reintroduction",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 75,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "edna",
+      "family": "INNOVATION",
+      "name": "Environmental DNA (eDNA)",
+      "intent": "eDNA biodiversity monitoring",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 5,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 86,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "satellite-biodiversity",
+      "family": "INNOVATION",
+      "name": "Satellite Biodiversity Monitoring",
+      "intent": "satellite biodiversity monitoring",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 73,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "bioacoustics",
+      "family": "INNOVATION",
+      "name": "Bioacoustic Monitoring",
+      "intent": "bioacoustics wildlife monitoring",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 73,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "camera-traps",
+      "family": "INNOVATION",
+      "name": "Camera Traps",
+      "intent": "camera trap wildlife monitoring",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 73,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "ai-species-recognition",
+      "family": "INNOVATION",
+      "name": "AI Species Recognition",
+      "intent": "AI species identification",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 73,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "wildlife-tracking",
+      "family": "INNOVATION",
+      "name": "Wildlife Tracking",
+      "intent": "wildlife tracking / animal tracking",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 4,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 4,
+        "maintenanceCost": 5,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "remote-sensing-forest",
+      "family": "INNOVATION",
+      "name": "Remote Sensing for Forest Loss",
+      "intent": "satellite deforestation monitoring",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 4,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 4,
+        "brandValue": 4,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 73,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "where-do-orcas-live",
+      "family": "QUESTION",
+      "name": "Where do orcas live?",
+      "intent": "where do orcas live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 1,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "are-polar-bears-endangered",
+      "family": "QUESTION",
+      "name": "Are polar bears endangered?",
+      "intent": "are polar bears endangered",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 4,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 82,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "animals-in-kenya",
+      "family": "QUESTION",
+      "name": "What animals live in Kenya?",
+      "intent": "what animals live in Kenya",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 1,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "why-coral-bleaching",
+      "family": "QUESTION",
+      "name": "Why do corals bleach?",
+      "intent": "why coral bleaching happens",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 4,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 82,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "what-is-biodiversity",
+      "family": "QUESTION",
+      "name": "What is biodiversity?",
+      "intent": "what is biodiversity",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 4,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "what-is-rewilding",
+      "family": "QUESTION",
+      "name": "What is rewilding?",
+      "intent": "what is rewilding",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 4,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 82,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "is-amazon-burning",
+      "family": "QUESTION",
+      "name": "Is the Amazon burning?",
+      "intent": "Amazon fires today",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 5,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    },
+    {
+      "id": "where-whales-migrate",
+      "family": "QUESTION",
+      "name": "Where do whales migrate?",
+      "intent": "whale migration map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 4,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 82,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY"
+    }
+  ],
+  "top30": [
+    {
+      "id": "global-fires",
+      "family": "ATLAS",
+      "name": "Global Fires",
+      "intent": "wildfire map / fires today / satellite fires",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 95,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 1,
+      "rationale": "High-repeat map intent, strong NASA source family, existing ATLAS layer and a natural return reason when fire conditions change."
+    },
+    {
+      "id": "orca",
+      "family": "SPECIES",
+      "name": "Orca",
+      "intent": "orca / killer whale / where do orcas live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 94,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 2,
+      "rationale": "Globally recognised species with existing premium media, curated evidence, observation seam, Places and ATLAS connectivity; strongest immediate species right-to-win."
+    },
+    {
+      "id": "great-barrier-reef",
+      "family": "PLACE",
+      "name": "Great Barrier Reef",
+      "intent": "Great Barrier Reef / bleaching / map",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 3,
+      "rationale": "Iconic place/ecosystem with exceptional visual potential, authoritative reef monitoring, current heat/bleaching relevance and multiple species connections."
+    },
+    {
+      "id": "polar-bear",
+      "family": "SPECIES",
+      "name": "Polar Bear",
+      "intent": "polar bear / habitat / sea ice / endangered",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 4,
+      "rationale": "High-recognition species whose story naturally connects sea-ice signals, Svalbard and current monitoring; strong visual and temporal value."
+    },
+    {
+      "id": "amazon-basin",
+      "family": "PLACE",
+      "name": "Amazon Basin",
+      "intent": "Amazon rainforest / Amazon basin / deforestation",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 5,
+      "rationale": "Huge public-interest place/system with fires, forest loss, freshwater and Jaguar graph potential; natural bridge from durable object to live signals."
+    },
+    {
+      "id": "whales-map",
+      "family": "ATLAS",
+      "name": "Whales",
+      "intent": "whale map / whale sightings / observations",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 6,
+      "rationale": "Strong visual/map intent with existing OBIS-backed ATLAS object and direct continuation into Orca and other whales."
+    },
+    {
+      "id": "sea-ice-map",
+      "family": "ATLAS",
+      "name": "Sea Ice",
+      "intent": "sea ice map / Arctic ice / Antarctica ice",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 7,
+      "rationale": "Repeatable, current planetary signal with authoritative data and strong links to Arctic Places and Polar Bear."
+    },
+    {
+      "id": "coral-bleaching-map",
+      "family": "ATLAS",
+      "name": "Coral Bleaching",
+      "intent": "coral bleaching map / reef heat stress",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 8,
+      "rationale": "Current, visual and time-sensitive; combines reef place, ocean heat signals, monitoring and coral story without needing a second product."
+    },
+    {
+      "id": "tiger",
+      "family": "SPECIES",
+      "name": "Tiger",
+      "intent": "tiger / tiger habitat / where tigers live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 86,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 9,
+      "rationale": "Very high recognition and search intent; strong Species object opportunity, though less repeatable than live-map objects."
+    },
+    {
+      "id": "serengeti",
+      "family": "PLACE",
+      "name": "Serengeti",
+      "intent": "Serengeti / migration / animals",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 87,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 10,
+      "rationale": "Iconic place with migration, predator/prey and seasonality; strong human story and graph density."
+    },
+    {
+      "id": "biodiversity-map",
+      "family": "ATLAS",
+      "name": "Biodiversity Observations",
+      "intent": "biodiversity map / species observations",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 11,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "deforestation-map",
+      "family": "ATLAS",
+      "name": "Deforestation",
+      "intent": "deforestation map / forest loss",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 12,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "ocean-temperature",
+      "family": "ATLAS",
+      "name": "Ocean Temperature",
+      "intent": "ocean temperature map / SST",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 13,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "marine-heatwaves",
+      "family": "ATLAS",
+      "name": "Marine Heatwaves",
+      "intent": "marine heatwave map",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 14,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "galapagos",
+      "family": "PLACE",
+      "name": "Galápagos",
+      "intent": "Galapagos wildlife / islands / species",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 87,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 15,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "antarctica",
+      "family": "PLACE",
+      "name": "Antarctica",
+      "intent": "Antarctica wildlife / ice / map",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 16,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "where-do-orcas-live",
+      "family": "QUESTION",
+      "name": "Where do orcas live?",
+      "intent": "where do orcas live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 1,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 17,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "animals-in-kenya",
+      "family": "QUESTION",
+      "name": "What animals live in Kenya?",
+      "intent": "what animals live in Kenya",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 1,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 18,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "coral-reef",
+      "family": "ECOSYSTEM",
+      "name": "Coral Reefs",
+      "intent": "coral reef ecosystem",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 19,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "biodiversity-loss",
+      "family": "PROBLEM",
+      "name": "Biodiversity Loss",
+      "intent": "biodiversity loss",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 3,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 83,
+      "recommendedSurface": "KNOWLEDGE_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 20,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "is-amazon-burning",
+      "family": "QUESTION",
+      "name": "Is the Amazon burning?",
+      "intent": "Amazon fires today",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 5,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "CANONICAL_OBJECT_SECTION",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 21,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "african-elephant",
+      "family": "SPECIES",
+      "name": "African Elephant",
+      "intent": "African elephant / distribution / conservation",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 22,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "whale-shark",
+      "family": "SPECIES",
+      "name": "Whale Shark",
+      "intent": "whale shark / where to see whale sharks",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 23,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "jaguar",
+      "family": "SPECIES",
+      "name": "Jaguar",
+      "intent": "jaguar / Amazon / habitat",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 24,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "svalbard",
+      "family": "PLACE",
+      "name": "Svalbard",
+      "intent": "Svalbard polar bear / wildlife",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 25,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "costa-rica",
+      "family": "PLACE",
+      "name": "Costa Rica",
+      "intent": "Costa Rica wildlife / biodiversity",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 85,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 26,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "mangrove",
+      "family": "ECOSYSTEM",
+      "name": "Mangroves",
+      "intent": "mangrove ecosystem / benefits",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "LIVING_SYSTEM",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 27,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "rewilding",
+      "family": "SOLUTION",
+      "name": "Rewilding",
+      "intent": "rewilding",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 3,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 82,
+      "recommendedSurface": "SOLUTION_OBJECT",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 28,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "edna",
+      "family": "INNOVATION",
+      "name": "Environmental DNA (eDNA)",
+      "intent": "eDNA biodiversity monitoring",
+      "demandBand": "MEDIUM",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 3,
+        "rightToWin": 5,
+        "visualValue": 4,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 86,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 29,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    },
+    {
+      "id": "wildlife-tracking",
+      "family": "INNOVATION",
+      "name": "Wildlife Tracking",
+      "intent": "wildlife tracking / animal tracking",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 4,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 4,
+        "maintenanceCost": 5,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 84,
+      "recommendedSurface": "EXPLAINER_OR_ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 30,
+      "rationale": "High combined demand, product fit, source readiness, visual value and graph connectivity relative to build cost."
+    }
+  ],
+  "top10": [
+    {
+      "id": "global-fires",
+      "family": "ATLAS",
+      "name": "Global Fires",
+      "intent": "wildfire map / fires today / satellite fires",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 95,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 1,
+      "rationale": "High-repeat map intent, strong NASA source family, existing ATLAS layer and a natural return reason when fire conditions change."
+    },
+    {
+      "id": "orca",
+      "family": "SPECIES",
+      "name": "Orca",
+      "intent": "orca / killer whale / where do orcas live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 94,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 2,
+      "rationale": "Globally recognised species with existing premium media, curated evidence, observation seam, Places and ATLAS connectivity; strongest immediate species right-to-win."
+    },
+    {
+      "id": "great-barrier-reef",
+      "family": "PLACE",
+      "name": "Great Barrier Reef",
+      "intent": "Great Barrier Reef / bleaching / map",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 3,
+      "rationale": "Iconic place/ecosystem with exceptional visual potential, authoritative reef monitoring, current heat/bleaching relevance and multiple species connections."
+    },
+    {
+      "id": "polar-bear",
+      "family": "SPECIES",
+      "name": "Polar Bear",
+      "intent": "polar bear / habitat / sea ice / endangered",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 4,
+      "rationale": "High-recognition species whose story naturally connects sea-ice signals, Svalbard and current monitoring; strong visual and temporal value."
+    },
+    {
+      "id": "amazon-basin",
+      "family": "PLACE",
+      "name": "Amazon Basin",
+      "intent": "Amazon rainforest / Amazon basin / deforestation",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "AUTHORITATIVE_SOURCE_READY"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 91,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 5,
+      "rationale": "Huge public-interest place/system with fires, forest loss, freshwater and Jaguar graph potential; natural bridge from durable object to live signals."
+    },
+    {
+      "id": "whales-map",
+      "family": "ATLAS",
+      "name": "Whales",
+      "intent": "whale map / whale sightings / observations",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT",
+        "CURRENT_4PLANET_PRODUCT_READINESS"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 93,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 6,
+      "rationale": "Strong visual/map intent with existing OBIS-backed ATLAS object and direct continuation into Orca and other whales."
+    },
+    {
+      "id": "sea-ice-map",
+      "family": "ATLAS",
+      "name": "Sea Ice",
+      "intent": "sea ice map / Arctic ice / Antarctica ice",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 90,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 7,
+      "rationale": "Repeatable, current planetary signal with authoritative data and strong links to Arctic Places and Polar Bear."
+    },
+    {
+      "id": "coral-bleaching-map",
+      "family": "ATLAS",
+      "name": "Coral Bleaching",
+      "intent": "coral bleaching map / reef heat stress",
+      "demandBand": "HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT",
+        "HIGH_REPEAT_MAP_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 4,
+        "rightToWin": 5,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 5,
+        "graphConnectivity": 5,
+        "repeatValue": 5,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 4,
+        "reputationalRisk": 3
+      },
+      "opportunityScore": 89,
+      "recommendedSurface": "ATLAS",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 8,
+      "rationale": "Current, visual and time-sensitive; combines reef place, ocean heat signals, monitoring and coral story without needing a second product."
+    },
+    {
+      "id": "tiger",
+      "family": "SPECIES",
+      "name": "Tiger",
+      "intent": "tiger / tiger habitat / where tigers live",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 4,
+        "repeatValue": 3,
+        "brandValue": 5,
+        "productionCost": 2,
+        "maintenanceCost": 2,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 86,
+      "recommendedSurface": "SPECIES",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 9,
+      "rationale": "Very high recognition and search intent; strong Species object opportunity, though less repeatable than live-map objects."
+    },
+    {
+      "id": "serengeti",
+      "family": "PLACE",
+      "name": "Serengeti",
+      "intent": "Serengeti / migration / animals",
+      "demandBand": "VERY_HIGH",
+      "exactSearchVolume": "UNKNOWN_NOT_FABRICATED",
+      "evidenceBasis": [
+        "PUBLIC_SERP_AND_QUERY_INTENT"
+      ],
+      "scores": {
+        "humanDemand": 5,
+        "rightToWin": 4,
+        "visualValue": 5,
+        "sourceQuality": 5,
+        "dataAvailability": 4,
+        "graphConnectivity": 5,
+        "repeatValue": 4,
+        "brandValue": 5,
+        "productionCost": 3,
+        "maintenanceCost": 3,
+        "reputationalRisk": 2
+      },
+      "opportunityScore": 87,
+      "recommendedSurface": "PLACE",
+      "publicationState": "OPPORTUNITY_ONLY",
+      "rank": 10,
+      "rationale": "Iconic place with migration, predator/prey and seasonality; strong human story and graph density."
+    }
+  ],
+  "masterGoldPilots": [
+    {
+      "rank": 1,
+      "id": "orca",
+      "class": "SPECIES",
+      "why": "Best existing combination of human fascination, cleared media, source maturity, observations, ATLAS and Place graph. It can establish the human-first Species standard immediately."
+    },
+    {
+      "rank": 2,
+      "id": "great-barrier-reef",
+      "class": "PLACE_ECOSYSTEM",
+      "why": "Forces the system to solve a visually iconic place without relying on a generic species template; strong monitoring and heat-signal relationships."
+    },
+    {
+      "rank": 3,
+      "id": "global-fires",
+      "class": "ATLAS_SIGNAL",
+      "why": "Tests high-repeat discovery and a map-first experience where recency, source dates and interpretation boundaries matter more than prose."
+    }
+  ]
+}
