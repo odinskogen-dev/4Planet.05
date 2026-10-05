@@ -25,7 +25,7 @@ jobs:
           api='https://api.cloudflare.com/client/v4'
           z=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4planet.org")
           aid=$(jq -r '.result[0].account.id' <<<"$z")
-          resp=$(curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/pages/projects/4planet-05/deployments?per_page=25")
+          resp=$(curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/pages/projects/4planet-05/deployments?per_page=20")
           dep=$(jq -c '.result[] | select(.deployment_trigger.metadata.commit_hash=="e4dd932e739056911d0d40958b30c1c9faa98071")' <<<"$resp" | head -1)
           echo "DEPLOYMENT=$dep"
           id=$(jq -r '.id // empty' <<<"$dep")
