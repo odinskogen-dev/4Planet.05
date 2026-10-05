@@ -117,6 +117,30 @@ test("Orca and Jaguar share the same mandatory parent section grammar", async ({
   ]);
 });
 
+
+test("Gold Plank transfers across bird, insect and marine-invertebrate profiles", async ({ page }) => {
+  const representatives = [
+    { slug: "emperor-penguin", name: "Emperor Penguin" },
+    { slug: "western-honey-bee", name: "Western Honey Bee" },
+    { slug: "blue-mussel", name: "Blue Mussel" },
+  ];
+
+  for (const representative of representatives) {
+    await page.goto(`/species/${representative.slug}`);
+    await expect(page.getByRole("heading", { level: 1, name: representative.name })).toBeVisible();
+    await expect(page.locator('[data-species-section="hero"]')).toBeVisible();
+    await expect(page.locator('[data-species-section="habitat"]')).toBeVisible();
+    await expect(page.locator('[data-species-section="atlas"]')).toBeVisible();
+    await expect(page.locator('[data-species-section="sources"]')).toBeVisible();
+    await expect(page.getByTestId("species-to-atlas")).toBeVisible();
+    const dimensions = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    }));
+    expect(dimensions.scrollWidth, representative.slug).toBeLessThanOrEqual(dimensions.innerWidth + 1);
+  }
+});
+
 test("Gold Plank remains usable on narrow screens and reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/species/jaguar");
