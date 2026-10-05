@@ -19,14 +19,9 @@ const staticRoutes = [
   "/missions",
   "/living-systems",
   "/places",
-  "/4sapien",
-  "/4sapien/food",
-  "/4sapien/finance",
-  "/4brands",
   "/living-systems/oslofjord",
   "/living-systems/great-barrier-reef",
   "/impact/actions/bay-of-biscay-survey",
-  "/market",
   "/cre4tor/odin",
   "/impact",
   "/actors",
@@ -36,10 +31,6 @@ const staticRoutes = [
   "/reports",
   "/journey/jaguar/",
   "/journey/orca/",
-  "/magazine",
-  "/magazine/about",
-  "/magazine/sources",
-  "/magazine/corrections",
   "/about",
   "/privacy",
   "/join",
@@ -50,7 +41,7 @@ const staticRoutes = [
 const discoveryRoutes = [
   ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
 ];
-const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
+const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 
 const escapeXml = (value) => String(value)
   .replaceAll("&", "&amp;")
