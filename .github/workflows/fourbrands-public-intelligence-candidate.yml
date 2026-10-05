@@ -40,7 +40,10 @@ jobs:
           grep -q 'konsernstruktur' functions/api/company-public-profile.ts
           grep -q 'oppdateringer/enheter' functions/api/company-public-profile.ts
           grep -q 'regnskapsregisteret' functions/api/company-public-profile.ts
+          grep -q 'orgNummer=' functions/api/company-public-profile.ts
           grep -q 'WHAT DOES THE PUBLIC WORLD KNOW' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'WHAT LOOKS UNUSUAL' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'INDUSTRY COHORT' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'WHAT WE DON.T KNOW' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'loadPublicProfile(payload.entity.organizationNumber)' src/pages/partners/FourBrand.tsx
           ! grep -q 'box-shadow:' src/styles/fourbrand-intelligence.css
@@ -98,3 +101,22 @@ jobs:
           accounts='https://data.brreg.no/regnskapsregisteret/regnskap/aarsregnskap'
           code=$(curl -sS --retry 3 -o years.json -w '%{http_code}' "$accounts/kopi/${{ matrix.org }}/aar")
           case "$code" in 200|404) ;; *) echo "accounts HTTP=$code"; exit 1;; esac
+      - name: Latest financial key figures and industry cohort
+        shell: bash
+        run: |
+          set -euo pipefail
+          finance='https://data.brreg.no/regnskapsregisteret/regnskap'
+          code=$(curl -sS --retry 3 -o finance.json -w '%{http_code}' "$finance?orgNummer=${{ matrix.org }}")
+          case "$code" in
+          200)
+            jq -e --arg org '${{ matrix.org }}' 'type == "array" and length > 0 and (.[0].virksomhet.organisasjonsnummer == $org)' finance.json >/dev/null
+            ;;
+          404) ;;
+          *) echo "financials HTTP=$code"; exit 1;;
+          esac
+          industry=$(jq -r '.naeringskode1.kode // empty' entity.json)
+          if [ -n "$industry" ]; then
+            base='https://data.brreg.no/enhetsregisteret/api'
+            curl -fsS --retry 3 --get --data-urlencode "naeringskode=$industry" --data-urlencode 'size=13' --data-urlencode 'sort=antallAnsatte,DESC' "$base/enheter" -o cohort.json
+            jq -e '._embedded.enheter | type == "array"' cohort.json >/dev/null
+          fi
