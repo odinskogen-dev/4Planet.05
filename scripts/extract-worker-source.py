@@ -3,10 +3,8 @@ import email, pathlib, re, sys
 name, headers_path, body_path, output_path = sys.argv[1:]
 headers = pathlib.Path(headers_path).read_text(errors="ignore")
 match = re.search(r"(?im)^content-type:\s*(.+?)\r?$", headers)
-if not match:
-    raise SystemExit(f"missing content-type for {name}")
-content_type = match.group(1).strip()
 raw = pathlib.Path(body_path).read_bytes()
+content_type = match.group(1).strip() if match else ""
 if content_type.lower().startswith("multipart/"):
     msg = email.message_from_bytes((f"Content-Type: {content_type}\nMIME-Version: 1.0\n\n").encode() + raw)
     candidates = []
