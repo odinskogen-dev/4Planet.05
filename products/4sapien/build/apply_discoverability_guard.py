@@ -127,3 +127,4 @@ if "/app/*" not in h:
     headers.write_text(h, encoding="utf-8")
 
 print("PASS 4SAPIEN discoverability guard")
+# Closure rerun marker: public root + private-route index boundaries verified 2026-10-05.
