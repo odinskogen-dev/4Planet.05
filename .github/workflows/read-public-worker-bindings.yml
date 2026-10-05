@@ -31,3 +31,5 @@ jobs:
             curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/workers/scripts/$script/settings" |
               jq '{compatibility_date,compatibility_flags,bindings:[.bindings[]? | {name,type,namespace_id,service,environment}]}'
           done
+
+# trigger: 2026-10-05T15:27
