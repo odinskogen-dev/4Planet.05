@@ -88,6 +88,11 @@ async function proxy(request) {
     html = html.replace(/<title>[^<]*<\/title>/i, "<title>CRE4TORS \u2014 Creative Work for a Living Planet</title>");
     html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="CRE4TORS is an early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
     html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
+    html = html.replace(/<meta\s+property=["']og:title["'][^>]*>/i, '<meta property="og:title" content="CRE4TORS — Creative Work for a Living Planet">');
+    html = html.replace(/<meta\s+property=["']og:description["'][^>]*>/i, '<meta property="og:description" content="An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
+    html = html.replace(/<meta\s+property=["']og:url["'][^>]*>/i, '<meta property="og:url" content="https://cre4tors.com/">');
+    html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="CRE4TORS — Creative Work for a Living Planet">');
+    html = html.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, '<meta name="twitter:description" content="An early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
     html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://cre4tors.com/"></head>');
   }
