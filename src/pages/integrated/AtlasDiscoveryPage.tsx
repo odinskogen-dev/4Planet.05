@@ -75,6 +75,7 @@ export function AtlasDiscoveryPage() {
 
   const canonicalPath = `/atlas/${object.slug}`;
   const fullAtlasHref = atlasHostHref(object.atlasHref);
+  const embedHref = `${object.atlasHref}${object.atlasHref.includes("?") ? "&" : "?"}embed=news`;
 
   const share = async () => {
     const url = `https://4planet.org${canonicalPath}`;
@@ -139,7 +140,33 @@ export function AtlasDiscoveryPage() {
               </button>
             </div>
           </header>
+        </div>
 
+        <section
+          aria-label={`Interactive ${object.name} map`}
+          style={{
+            background: "#FFFFFF",
+            borderTop: "4px solid #2E2EFF",
+            borderBottom: "4px solid #2E2EFF",
+          }}
+        >
+          <iframe
+            src={embedHref}
+            title={`Explore ${object.name} in 4PLANET ATLAS`}
+            loading="eager"
+            referrerPolicy="no-referrer"
+            style={{
+              width: "100%",
+              height: "min(64svh, 720px)",
+              minHeight: 390,
+              display: "block",
+              border: 0,
+              background: "#FFFFFF",
+            }}
+          />
+        </section>
+
+        <div className="editorial-wrap">
           <section className="editorial-section editorial-split">
             <div className="editorial-kicker">Why it matters</div>
             <div>
@@ -156,7 +183,7 @@ export function AtlasDiscoveryPage() {
           </section>
 
           <section className="editorial-section editorial-split">
-            <div className="editorial-kicker">Read this correctly</div>
+            <div className="editorial-kicker">A note on the data</div>
             <div>
               <p className="editorial-copy" style={{ marginTop: 0 }}>{human.note}</p>
               <p className="editorial-note" style={{ marginTop: 18 }}>

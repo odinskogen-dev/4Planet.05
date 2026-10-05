@@ -1,3 +1,50 @@
+# HUMAN-FIRST PUBLIC OBJECTS — EDITORIAL + MOBILE LAW — 05 OCT 2026
+
+**STATUS:** HEIR UX CORRECTION / FOUNDER-DIRECTED / EXACT-SHA QA REQUIRED.
+
+## USER ARRIVES BECAUSE
+A person wants to understand Earth, fire signals, whales, Orca or Oslofjord quickly and usefully — not read an internal evidence-control interface.
+
+## ONE THING TO UNDERSTAND
+Public 4PLANET pages explain the living world first. Evidence, uncertainty and provenance remain attached as controlled depth rather than dominating the interface.
+
+## PRIMARY ACTION
+Understand the object in seconds, then use it: explore the relevant live ATLAS view or continue naturally into the next species/place.
+
+## SECONDARY DEPTH
+Open sources, methods and limitations when wanted. Internal QA states remain internal.
+
+## P1 DOMINANT
+Life, place or planetary signal. One strong headline, one visual/product field, one primary action.
+
+## P2 ORIENTATION
+Short human explanation in ordinary language. No audit ledger, card wall or dense metadata before meaning.
+
+## P3 ACTION / NEXT
+ATLAS exploration, related species/place or source. No login before first value.
+
+## P4 DEPTH
+Sources, dates, limitations and evidence boundaries in compact depth.
+
+## WHAT CAN BE REMOVED
+Public HUMAN GOLD/CANDIDATE/DEGRADED/MAKER≠JUDGE labels; KNOWN/UNKNOWN/INTERPRETED badge walls; raw IDs and occurrence rows; repeated boundary prose; large source-ledger boxes; generic “Useful Internet Object” jargon.
+
+## WHAT MUST BE REUSED
+Canonical data, sources, ATLAS, SPECIES identity, Living Systems evidence, PublicShell and shared analytics. Presentation changes must not fork the truth store.
+
+## VISUAL LAW
+Public white surfaces are #FFFFFF. Off-white paper backgrounds are not the default 4PLANET public canvas. Black and white surface blocks must not meet directly; use imagery, 4PLANET blue or another intentional brand transition. Boxes exist only when the function requires containment.
+
+## MOBILE-FIRST RISK
+Desktop split/grid layouts must collapse before 760px. No narrow rail may force one-word lines, overlap adjacent text or create horizontal overflow. 390/430px are acceptance widths.
+
+## HUMAN SUCCESS
+A first-time mobile visitor understands the page without knowing 4PLANET vocabulary, can identify one useful action, and can reach source depth without being forced through technical language.
+
+**FOUNDER EVIDENCE:** live mobile screenshots supplied 05 Oct 2026 showed overlap, one-word columns, internal QA language, excessive boxes, wrong paper backgrounds and overlong public pages. These are P0/P1 public UX failures.
+
+---
+
 # WHAT WE BELIEVE — CANON 2.0 PUBLIC SYNC — 05 OCT 2026
 
 **STATUS:** HEIR PRODUCT CANDIDATE / EXACT CANON PROJECTION / FOUNDER REQUESTED LIVE RELEASE / RELEASE GATES REQUIRED.
