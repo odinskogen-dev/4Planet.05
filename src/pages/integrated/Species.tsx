@@ -534,7 +534,16 @@ export function SpeciesProfilePage() {
   const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
   const followed = following(profile.id);
 
-  if (isOrca) return <OrcaEditorialPage profile={profile} atlasHref={atlasHref} returnHref={returnHref} occurrences={occurrences} />;
+  if (isOrca) {
+    return (
+      <OrcaEditorialProfile
+        profile={profile}
+        atlasHref={atlasHref}
+        followed={followed}
+        onToggle={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
+      />
+    );
+  }
 
   const actions = (
     <>
@@ -551,17 +560,6 @@ export function SpeciesProfilePage() {
       >{followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}</button>
     </>
   );
-
-  if (isOrca) {
-    return (
-      <OrcaEditorialProfile
-        profile={profile}
-        atlasHref={atlasHref}
-        followed={followed}
-        onToggle={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
-      />
-    );
-  }
 
   return (
     <PublicShell>
