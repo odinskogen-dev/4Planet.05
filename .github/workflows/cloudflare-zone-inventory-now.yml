@@ -1,4 +1,4 @@
-name: Cloudflare Worker SEO Source Audit Now
+name: Cloudflare Worker Source Context Now
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Resolve Cloudflare token
+      - name: Resolve token
         env:
           TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -32,39 +32,27 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: Inspect SEO-sensitive Worker source read-only
+      - name: Print bounded source context
         shell: bash
         run: |
           set -euo pipefail
           api='https://api.cloudflare.com/client/v4'
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
           zones=$(curl -fsS "${api}/zones?per_page=50" "${auth[@]}")
-          aid=$(jq -r '.result[0].account.id // empty' <<<"$zones")
-          scripts=(
-            4planetmarket-prototype
-            cre4tors-prototype
-            n4turetech-treeoflife-proto
-            four-sapien-embla
-            4planet-nation-live
-            4species-router
-            4planet-brain-public
-            4planet-product-domains
-          )
-          echo '=== WORKER SEO SOURCE AUDIT ==='
-          for s in "${scripts[@]}"; do
-            echo "--- $s ---"
+          aid=$(jq -r '.result[0].account.id' <<<"$zones")
+          for s in 4planetmarket-prototype cre4tors-prototype n4turetech-treeoflife-proto 4planet-nation-live 4species-router 4planet-brain-public 4planet-product-domains; do
+            echo "=== $s ==="
             tmp=$(mktemp)
-            headers=$(mktemp)
-            if curl -fsS -D "$headers" -o "$tmp" "${api}/accounts/${aid}/workers/scripts/${s}" "${auth[@]}"; then
-              ct=$(awk 'BEGIN{IGNORECASE=1}/^content-type:/{sub(/^[^:]+:[[:space:]]*/,"");gsub(/\r/,"");print}' "$headers" | tail -1)
-              echo "CONTENT_TYPE=$ct"
-              echo "SIZE=$(wc -c <"$tmp")"
-              echo 'SEO_LINES_BEGIN'
-              grep -ainE 'noindex|nofollow|robots|sitemap|canonical|x-robots|<title|description|hostname|host' "$tmp" | head -120 || true
-              echo 'SEO_LINES_END'
-            else
-              echo 'FETCH_FAILED'
-            fi
-            rm -f "$tmp" "$headers"
+            curl -fsS -o "$tmp" "${api}/accounts/${aid}/workers/scripts/${s}" "${auth[@]}"
+            case "$s" in
+              4planetmarket-prototype) sed -n '780,880p' "$tmp";;
+              cre4tors-prototype) sed -n '1,120p' "$tmp";;
+              n4turetech-treeoflife-proto) sed -n '1,120p' "$tmp";;
+              4planet-nation-live) sed -n '1,140p' "$tmp";;
+              4species-router) sed -n '1,150p' "$tmp";;
+              4planet-brain-public) sed -n '1,110p' "$tmp";;
+              4planet-product-domains) sed -n '1,180p' "$tmp";;
+            esac
+            rm -f "$tmp"
           done
           echo '=== END ==='
