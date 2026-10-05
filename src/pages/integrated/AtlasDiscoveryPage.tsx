@@ -128,6 +128,7 @@ export function AtlasDiscoveryPage() {
               <a
                 href={fullAtlasHref}
                 className="editorial-primary"
+                aria-label={`OPEN LIVE ATLAS — ${object.name}`}
                 onClick={() => trackEvent("discovery_object_explore", { object_kind: "atlas", object_slug: object.slug, product_area: "atlas" })}
               >
                 {human.cta}
