@@ -58,6 +58,9 @@ jobs:
           ! grep -Fq '<loc>https://4planet.org/species</loc>' dist/sitemap.xml
           test -f dist/_headers
           test -f dist/robots.txt
+          if [ ! -f dist/news-sitemap.xml ]; then
+            ! grep -Fq 'news-sitemap.xml' dist/robots.txt
+          fi
       - name: Deploy exact current main to existing Pages project
         run: |
           set -euo pipefail
@@ -91,3 +94,9 @@ jobs:
           grep -qi '^x-robots-tag:.*noindex' <<<"$labs_h"
           os_h=$(curl -sSI https://os.4planet.org/ | tr -d '\r')
           grep -qi '^x-robots-tag:.*noindex' <<<"$os_h"
+          about=$(curl -fsS https://4planet.org/about)
+          grep -Fq 'About 4PLANET' <<<"$about"
+          grep -Fq 'data-public-discovery-fallback' <<<"$about"
+          impact=$(curl -fsS https://4planet.org/impact)
+          grep -Fq '4PLANET Impact' <<<"$impact"
+          grep -Fq 'data-public-discovery-fallback' <<<"$impact"
