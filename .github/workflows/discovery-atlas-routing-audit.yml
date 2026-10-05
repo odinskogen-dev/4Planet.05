@@ -1,0 +1,47 @@
+name: DISCOVERY ATLAS routing authority audit
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-routing-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read 4planet.org routing authorities
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          echo "::add-mask::$TOKEN"
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          zid="$(jq -r '.result[0].id' <<<"$root")"
+
+          echo '=== WORKER ROUTES ==='
+          curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" | jq '.result | map(select(.pattern|contains("4planet.org")))'
+
+          echo '=== ZONE RULESETS ==='
+          rulesets="$(curl -fsS "${api}/zones/${zid}/rulesets" "${auth[@]}")"
+          jq '.result | map({id,name,phase,kind})' <<<"$rulesets"
+
+          for phase in http_request_dynamic_redirect http_request_redirect http_request_origin http_request_transform; do
+            echo "=== PHASE: $phase ==="
+            curl -fsS "${api}/zones/${zid}/rulesets/phases/${phase}/entrypoint" "${auth[@]}"               | jq '{success,result:{id:.result.id,name:.result.name,phase:.result.phase,rules:[.result.rules[]? | {id,description,enabled,expression,action,action_parameters}]}}'               || true
+          done
+
+          echo '=== LEGACY PAGE RULES ==='
+          curl -fsS "${api}/zones/${zid}/pagerules?status=active&per_page=100" "${auth[@]}"             | jq '.result | map({id,status,targets,actions,priority})' || true
