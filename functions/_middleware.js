@@ -172,6 +172,30 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["Impact","https://4planet.org/impact"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
     schemaType: "CollectionPage",
   },
+  "/places": {
+    title: "Places — Explore Living Systems Through Place | 4PLANET",
+    description: "Explore 4PLANET place pages that connect geography with species, living systems, pressures, evidence and relevant human context.",
+    fallbackTitle: "Places",
+    fallbackParagraphs: [
+      "Places are a core entry point into Living Planet Intelligence. A place page connects geography with species, living systems, pressures, evidence and relevant human context instead of treating a location as an isolated map pin.",
+      "Public place coverage grows selectively. Pages should be indexable only when they contain useful, source-grounded context; arbitrary map states and thin generated locations are not intended to become search pages.",
+      "ATLAS provides the spatial exploration layer while canonical place pages provide stable, human-readable entry points into the connected system."
+    ],
+    fallbackLinks: [["ATLAS","https://4planetatlas.com/"],["Living Systems","https://4planet.org/living-systems"],["SPECIES","https://4species.com/species/"],["Kenya","https://4planet.org/place/kenya"]],
+    schemaType: "CollectionPage",
+  },
+  "/place/kenya": {
+    title: "Kenya — Place Intelligence | 4PLANET",
+    description: "Explore Kenya through 4PLANET's connected place, species, living-system and source-grounded intelligence layers.",
+    fallbackTitle: "Kenya — Place Intelligence",
+    fallbackParagraphs: [
+      "Kenya is a public 4PLANET place surface connecting geography to species, ecosystems and relevant human context. It is an entry point into a connected knowledge model rather than a claim to represent every ecological condition in the country.",
+      "Place intelligence is intended to preserve source boundaries and uncertainty while connecting users to the relevant ATLAS, SPECIES and Living Systems views.",
+      "Coverage remains selective and developing. Missing evidence should remain visible rather than being replaced by generic environmental claims."
+    ],
+    fallbackLinks: [["Places","https://4planet.org/places"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Living Systems","https://4planet.org/living-systems"]],
+    schemaType: "WebPage",
+  },
   "/living-systems": {
     title: "Living Systems — 4PLANET",
     description: "Explore living systems as connected places, species, ecological relationships, pressures and human systems through 4PLANET.",
