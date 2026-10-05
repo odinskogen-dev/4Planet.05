@@ -43,6 +43,9 @@ test("SPECIES-GP-01 uses one Human-First parent instead of species-name layout f
   assert.match(page, /profile\.truthBoundary/);
   assert.match(page, /profile\.atlasJourney/);
   assert.match(page, /profile\.continuation/);
+  assert.match(page, /profile\.atlasJourney \?\? null/);
+  assert.equal(route.includes("humanFirstOrca"), false);
+  assert.equal(/slug\s*===\s*["']orca["']/.test(route), false);
 });
 
 test("SPECIES-GP-01 Jaguar is source-bounded and does not publish forest-health or population shortcuts", () => {
