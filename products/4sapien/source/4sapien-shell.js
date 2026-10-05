@@ -63,7 +63,9 @@
       '[data-theme="dark"] #fsWorlds{background:#000!important;border-top-color:rgba(255,255,255,.14)}',
       '[data-theme="dark"] #fsWorlds a{color:#8C867C}',
       '[data-theme="dark"] #fsWorlds a[aria-current="page"]{color:#fff}',
-      '.emblabar{bottom:calc(60px + env(safe-area-inset-bottom,0px))!important}',
+      'body.w-embla .emblabar{bottom:calc(68px + env(safe-area-inset-bottom,0px))!important}',
+      '[data-fs-opaque]{background:var(--paper,#fff)!important;backdrop-filter:none!important}',
+      '[data-theme="dark"] [data-fs-opaque]{background:#000!important}',
       '@media(min-width:900px){#fsWorlds a{flex-direction:row;gap:8px;font-size:13px}#fsWorlds svg{width:18px;height:18px}}'
     ].join('');
     document.head.appendChild(s);
