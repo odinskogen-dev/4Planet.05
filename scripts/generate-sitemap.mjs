@@ -8,6 +8,7 @@ const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_O
 const stories = readStories();
 const discoveryInventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
 const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
+const discoveryTopics = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryTopics.json"), "utf8"));
 
 const missionRoutes = ["/missions/cle4n", "/missions/wh4les", "/missions/cor4l", "/missions/rewild-marine", "/missions/clim4te", "/missions/am4zonia", "/missions/species", "/missions/rewild-land", "/missions/food", "/missions/en4rgy", "/missions/circular-city", "/missions/f4shion", "/missions/m4gazine", "/missions/4film", "/missions/4rt", "/missions/4play"];
 
@@ -22,6 +23,7 @@ const staticRoutes = [
   ...missionRoutes,
   "/living-systems",
   "/places",
+  "/now",
   "/living-systems/oslofjord",
   "/living-systems/great-barrier-reef",
   "/impact/actions/bay-of-biscay-survey",
@@ -43,6 +45,7 @@ const staticRoutes = [
 // redirect to those product domains, so they are excluded from this sitemap.
 const discoveryRoutes = [
   ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
+  ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 
