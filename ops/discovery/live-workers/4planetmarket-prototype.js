@@ -935,6 +935,11 @@ var planetmarket_commerce_default = {
     html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET \u2014 Products, Creators and Better Commerce</title>");
     html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="4PLANET MARKET is an early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
+    html = html.replace(/<meta\s+property=["']og:title["'][^>]*>/i, '<meta property="og:title" content="4PLANET MARKET — Products, Creators and Better Commerce">');
+    html = html.replace(/<meta\s+property=["']og:description["'][^>]*>/i, '<meta property="og:description" content="An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
+    html = html.replace(/<meta\s+property=["']og:url["'][^>]*>/i, '<meta property="og:url" content="https://4planetmarket.com/">');
+    html = html.replace(/<meta\s+name=["']twitter:title["'][^>]*>/i, '<meta name="twitter:title" content="4PLANET MARKET — Products, Creators and Better Commerce">');
+    html = html.replace(/<meta\s+name=["']twitter:description["'][^>]*>/i, '<meta name="twitter:description" content="An early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
     html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://4planetmarket.com/"></head>');
     return new Response(html, { status: upstream.status, statusText: upstream.statusText, headers });
