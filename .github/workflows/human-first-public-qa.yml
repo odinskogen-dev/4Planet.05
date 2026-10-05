@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      TARGET_SHA: b7520c80b22b8a9a7a2c90acb131c431c88ab769
+      TARGET_SHA: 80589f9523efa07c2fd0957864ca1767242d9f38
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,9 +56,9 @@ jobs:
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
           const routes = [
-            { path: "/atlas/earth", maxScreens: 7.5, grid: ".editorial-split" },
-            { path: "/living-systems/oslofjord", maxScreens: 11, grid: ".proof-story" },
-            { path: "/species/orca", maxScreens: 8, grid: ".orca-hero-grid" },
+            { path: "/atlas/earth", maxScreens: 4.8, grid: ".editorial-split" },
+            { path: "/living-systems/oslofjord", maxScreens: 6.5, grid: ".proof-story" },
+            { path: "/species/orca", maxScreens: 6.5, grid: ".orca-hero-grid" },
           ];
           const banned = [
             "USEFUL INTERNET OBJECT",
@@ -89,7 +89,7 @@ jobs:
                 const r = el.getBoundingClientRect();
                 return r.width > 0 && r.height > 0;
               });
-              const darkBands = [...document.querySelectorAll("main section, main header, main footer")].filter((el) => {
+              const darkBands = [...document.querySelectorAll("main section, main header, footer")].filter((el) => {
                 const r = el.getBoundingClientRect();
                 const bg = getComputedStyle(el).backgroundColor;
                 return r.width >= innerWidth * .9 && r.height > 80 && (bg === "rgb(0, 0, 0)" || bg === "rgb(10, 10, 10)" || bg === "rgb(8, 8, 8)");
