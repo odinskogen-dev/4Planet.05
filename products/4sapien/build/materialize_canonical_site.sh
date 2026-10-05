@@ -39,6 +39,7 @@ cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
 
 # Shell must be LAST: it binds every materialized route, including documents/import.
 python products/4sapien/build/apply_shell_nav_guard.py "$SITE"
+python products/4sapien/build/apply_discoverability_guard.py "$SITE"
 
 for f in   "$SITE/index.html"   "$SITE/app/food/index.html"   "$SITE/app/money/index.html"   "$SITE/app/money/documents/index.html"   "$SITE/app/money/import/index.html"   "$SITE/brain/index.html"; do
   test -s "$f"
