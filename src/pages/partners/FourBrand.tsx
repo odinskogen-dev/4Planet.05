@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import "@/styles/fourbrand.css";
+import PublicCompanyProfile, { type PublicCompanyProfileData } from "@/pages/partners/PublicCompanyProfile";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import CompanyBrainControls from "@/pages/partners/CompanyBrainControls";
@@ -385,6 +386,8 @@ export default function FourBrand() {
   const [identityCandidates, setIdentityCandidates] = useState<CompanyIdentityCandidate[]>([]);
   const [identityResolution, setIdentityResolution] = useState<CompanyIdentityResolution | null>(null);
   const [identityState, setIdentityState] = useState<"IDLE" | "SEARCHING" | "CANDIDATES" | "NO_MATCH" | "RESOLVING" | "READY" | "ERROR">("IDLE");
+  const [publicProfile, setPublicProfile] = useState<PublicCompanyProfileData | null>(null);
+  const [publicProfileState, setPublicProfileState] = useState<"IDLE" | "LOADING" | "READY" | "ERROR">("IDLE");
 
   const baselineRevenue = parseScenarioNumber(twin.annualRevenue);
   const baselineMargin = parseScenarioNumber(twin.grossMargin);
@@ -477,6 +480,30 @@ export default function FourBrand() {
     }
   }
 
+  async function loadPublicProfile(organizationNumber: string) {
+    setPublicProfileState("LOADING");
+    setPublicProfile(null);
+    setAnalysis(null);
+    setError(null);
+    try {
+      const response = await fetch("/api/company-public-profile?orgnr=" + encodeURIComponent(organizationNumber), { headers: { accept: "application/json" } });
+      const payload = await response.json() as { ok?: boolean; profile?: PublicCompanyProfileData; error?: string; detail?: string };
+      if (!response.ok || !payload.ok || !payload.profile) throw new Error(payload.detail || payload.error || "Public company profile unavailable");
+      setPublicProfile(payload.profile);
+      setPublicProfileState("READY");
+      trackEvent("public_company_profile_opened", {
+        product_area: "4brands",
+        source_count: payload.profile.coverage.sourceCount,
+        role_count: payload.profile.coverage.roleCount,
+        change_count: payload.profile.coverage.changeCount,
+      });
+      trackMeaningfulUse("4brands", "record_open", "public_company_intelligence_profile");
+    } catch (cause) {
+      setPublicProfileState("ERROR");
+      setError(cause instanceof Error ? cause.message : "Public company profile unavailable");
+    }
+  }
+
   async function confirmIdentity(candidate: CompanyIdentityCandidate) {
     setIdentityState("RESOLVING");
     setError(null);
@@ -489,7 +516,7 @@ export default function FourBrand() {
       setIdentityCandidates([]);
       setIdentityState("READY");
       setCompany(payload.entity.entityName);
-      await analyseResolved(payload.entity.entityName, resolved);
+      await loadPublicProfile(payload.entity.organizationNumber);
     } catch (cause) {
       setIdentityState("ERROR");
       setError(cause instanceof Error ? cause.message : "Exact company identity could not be resolved");
@@ -590,22 +617,22 @@ export default function FourBrand() {
       <nav className="fb-nav" aria-label="4BRANDS">
         <a href="/" className="fb-wordmark">4PLANET<span>_</span></a>
         <div className="fb-nav__context">COMPANY INTELLIGENCE / 4BRANDS</div>
-        <a href="#company-twin" className="fb-nav__link">BUILD YOUR TWIN</a>
+        {analysis ? <a href="#company-twin" className="fb-nav__link">COMPANY WORKSPACE</a> : <a href="#company-analysis" className="fb-nav__link">PUBLIC INTELLIGENCE</a>}
       </nav>
 
-      <section className="fb-architecture" aria-label="4BRANDS company intelligence architecture">
+      {analysis && <section className="fb-architecture" aria-label="4BRANDS company intelligence architecture">
         <a href="#company-analysis"><span>00 / COMPANY ANALYSIS</span><strong>Understand from the outside.</strong><p>Free public, source-aware company analysis and value discovery.</p></a>
         <a href="#company-brain"><span>01 / COMPANY BRAIN</span><strong>Remember what the company learns.</strong><p>Permission-aware knowledge, decisions, playbooks and durable learning.</p></a>
         <a href="#company-twin"><span>02 / COMPANY TWIN</span><strong>Model the company now.</strong><p>Current objectives, economics, customers, operations, constraints and decisions.</p></a>
         <a href="#future-engine"><span>03 / FUTURE ENGINE</span><strong>Explore what could happen.</strong><p>Explicit assumptions and scenarios before action. Scenario is never fact or forecast.</p></a>
-      </section>
+      </section>}
 
-      {!analysis && (
+      {!analysis && !publicProfile && (
         <section className="fb-entry" id="company-analysis">
           <div className="fb-entry__copy">
-            <p className="fb-eyebrow">4BRANDS / COMPANY VALUE INTELLIGENCE</p>
-            <h1>Make the company<br />better.</h1>
-            <p className="fb-intro">Enter a company. 4BRANDS reads public evidence, starts with the economics and finds where value is created, where it leaks, and where better business and a living planet may be the same decision.</p>
+            <p className="fb-eyebrow">4BRANDS / PUBLIC COMPANY INTELLIGENCE</p>
+            <h1>Know the company.</h1>
+            <p className="fb-intro">Search any Norwegian company. Resolve the exact legal entity, inspect what public registers actually know, see what changed, and trace every material field back to its source.</p>
           </div>
 
           <form className="fb-search" onSubmit={runAnalysis}>
@@ -625,7 +652,7 @@ export default function FourBrand() {
               </button>
             </div>
             <div className="fb-search__foot">
-              <span>PUBLIC DATA</span><span>FINANCE FIRST</span><span>SOURCE-AWARE</span><span>NO OPAQUE SCORE</span>
+              <span>BRREG VERIFIED</span><span>SOURCE STATES</span><span>FACTS FIRST</span><span>FREE PUBLIC PROFILE</span>
             </div>
           </form>
 
@@ -645,16 +672,33 @@ export default function FourBrand() {
             </section>
           )}
           {identityState === "NO_MATCH" && <div className="fb-identity-state"><p>No Norwegian legal-entity match was found. That does not mean the company does not exist.</p><button type="button" onClick={() => void continueWithoutNorwegianIdentity()}>Continue without Norwegian legal identity</button></div>}
-          {identityResolution && !analysis && <div className="fb-identity-state" role="status">Exact BRREG identity resolved. Building the value map…</div>}
+          {identityResolution && !analysis && !publicProfile && publicProfileState === "LOADING" && <div className="fb-identity-state" role="status">Exact BRREG identity resolved. Building the public intelligence profile…</div>}
 
           {loading && <div className="fb-loading" role="status"><span /><p>Reading the company. Building the value map.</p></div>}
           {error && <div className="fb-error" role="status"><p>{error}</p><button type="button" onClick={() => { setCompany("TOMRA"); setError(null); }}>Use TOMRA proof</button></div>}
 
           <div className="fb-entry__note">
-            <span>COMPANY → VALUE → DECISION → RESULT → LEARNING</span>
-            <p>Facts stay facts. Estimates stay estimates. Planetary benefit is never called realised impact before it is measured.</p>
+            <span>IDENTITY → FACTS → CHANGES → SOURCES → DEEPER INTELLIGENCE</span>
+            <p>The public profile comes first. Private Company Brain and decision intelligence only enter after the outside-world evidence is useful on its own.</p>
           </div>
         </section>
+      )}
+
+      {publicProfile && !analysis && (
+        <PublicCompanyProfile
+          profile={publicProfile}
+          gleif={identityResolution?.gleif ?? null}
+          onReset={() => {
+            setPublicProfile(null);
+            setPublicProfileState("IDLE");
+            setIdentityResolution(null);
+            setIdentityCandidates([]);
+            setIdentityState("IDLE");
+            setError(null);
+          }}
+          onDeepAnalysis={() => void analyseResolved(publicProfile.company.name, identityResolution)}
+          onPrivate={() => void analyseResolved(publicProfile.company.name, identityResolution)}
+        />
       )}
 
       {analysis && (
