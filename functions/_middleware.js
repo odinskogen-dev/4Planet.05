@@ -496,8 +496,43 @@ export async function onRequest(context) {
   }
 
   const baseConfig = PUBLIC_HOSTS[host];
-  const routeConfig = host === "4planet.org" ? FOURPLANET_ROUTES[url.pathname.replace(/\/$/, "") || "/"] : null;
-  const config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${url.pathname.replace(/\/$/, "") || "/"}` } : baseConfig;
+  const normalisedPath = url.pathname.replace(/\/$/, "") || "/";
+  let routeConfig = host === "4planet.org" ? FOURPLANET_ROUTES[normalisedPath] : null;
+
+  if (host === "4planet.org" && !routeConfig && normalisedPath.startsWith("/mission/")) {
+    const missionSlug = normalisedPath.slice("/mission/".length);
+    const missionDiscovery = {
+      "cle4n": ["CLE4N_ — A Cleaner Ocean, From Source to Sea", "A 4PLANET OCE4N_ mission pathway connecting marine pollution prevention, interception, recovery and transparent evidence.", "A clean ocean is a systems problem, not only a clean-up problem. CLE4N_ connects production, consumption, collection, rivers, coastlines and marine recovery.", "The pathway is in development. Public support opens only when delivery, measurement, evidence and reporting requirements are confirmed."],
+      "wh4les": ["WH4LES_ — Whale Intelligence and Ocean Systems", "A 4PLANET OCE4N_ mission exploring whales, migration corridors, food webs, monitoring and credible protection pathways.", "Whales are participants in ocean food webs, migration systems and nutrient cycles across enormous distances.", "WH4LES_ is a strategic concept. Monitoring, protection and partner pathways must remain evidence-bounded rather than presented as completed conservation work."],
+      "cor4l": ["COR4L_ — Rebuilding Reef Resilience", "A 4PLANET OCE4N_ mission exploring coral reef systems, pressures, monitoring and evidence-led restoration pathways.", "Coral reefs are living structures supporting marine life, coastal livelihoods and vulnerable shorelines.", "COR4L_ is a strategic concept. Restoration and protection pathways are not presented as delivered outcomes without evidence."],
+      "rewild-marine": ["RE:WILD_ Marine — Coastal Habitat Recovery", "A 4PLANET OCE4N_ mission exploring seagrass, kelp, shellfish beds and credible marine habitat recovery pathways.", "Marine rewilding is the long work of returning ecological function to degraded coastal and shallow-sea systems.", "4PLANET is not currently presented as delivering marine restoration itself; delivery requires credible local actors and evidence."],
+      "clim4te": ["CLIM4TE_ — Climate Action Through Living Systems", "A 4PLANET E4RTH_ mission connecting climate action to real places, ecosystems, restoration and evidence.", "CLIM4TE_ makes climate action legible through forests, soils, wetlands, biodiversity and place-based restoration.", "The Tree Unit is an operational proof path under development. Public support remains closed until launch requirements are complete."],
+      "am4zonia": ["AM4ZONIA_ — Rainforest as Planetary Infrastructure", "A 4PLANET E4RTH_ mission exploring Amazon forest systems, biodiversity, stewardship, monitoring and credible protection pathways.", "The Amazon is a living climate and biodiversity system whose ecological relationships extend far beyond a single forest polygon.", "The protection pathway remains in development; allocation, evidence and reporting depend on an approved delivery model."],
+      "species": ["SPECIES_ — Ecological Relationships and Protection", "A 4PLANET E4RTH_ mission connecting species intelligence, ecological functions, public education and credible protection pathways.", "Species are participants in food webs, migration, pollination, seed dispersal and other relationships that keep ecosystems functioning.", "SPECIES_ is a strategic mission concept; public species intelligence is available through the standalone 4SPECIES product."],
+      "rewild-land": ["RE:WILD_ Land — Returning Landscapes to Life", "A 4PLANET E4RTH_ mission exploring habitat reconnection, wetland restoration, natural regeneration and evidence-led land recovery.", "Rewilding is the long work of rebuilding ecological function in damaged or simplified landscapes.", "The habitat-recovery pathway remains in development and is not presented as delivered ecological outcome."],
+      "food": ["FOOD_ — Food as Ecological Infrastructure", "A 4PLANET S4PIENS_ mission exploring how food systems connect soil, water, biodiversity, labour, energy, culture and health.", "Every meal connects human needs to land, water, soil, biodiversity, labour and energy systems.", "FOOD_ is a strategic concept focused on food-system intelligence and practical pathways rather than unsupported impact claims."],
+      "en4rgy": ["EN4RGY_ — Energy Shapes Every Other System", "A 4PLANET S4PIENS_ mission exploring energy, infrastructure, materials, land use, access, reliability and ecological trade-offs.", "Energy is infrastructure behind homes, transport, industry, food, communication and public life.", "EN4RGY_ is a strategic concept designed to make complex system choices more legible without reducing them to slogans."],
+      "circular-city": ["CIRCULAR CITY_ — Cities as Resource Loops", "A 4PLANET S4PIENS_ mission exploring reuse, repair, circular construction, shared infrastructure and urban ecological systems.", "Cities concentrate people, materials, energy, food, waste and knowledge and can either accelerate extraction or circulate resources more intelligently.", "CIRCULAR CITY_ is a strategic concept; future pilots require explicit delivery and evidence."],
+      "f4shion": ["F4SHION_ — Materials, Culture and Longevity", "A 4PLANET S4PIENS_ mission exploring fashion as a material system and cultural pathway toward longevity, repair, reuse and transparency.", "Fashion connects fibres, water, chemicals, labour, supply chains, garments, repair, reuse and cultural value.", "F4SHION_ is a strategic concept, not a claim that 4PLANET currently operates a complete circular-fashion programme."],
+      "m4gazine": ["4PLANET MAGAZINE — Field Intelligence for a Living Planet", "The 4CULTURE_ editorial mission for source-based reporting, field intelligence, photography, essays and public learning.", "Journalism and visual storytelling make ecological reality understandable, memorable and culturally present.", "The canonical editorial home is 4planetmagazine.com; this mission page explains its role inside the wider 4PLANET ecosystem."],
+      "4film": ["4PLANET FILM — Documentary Storytelling for Living Systems", "A 4PLANET 4CULTURE_ mission for documentary storytelling connecting ecological systems, fieldwork and public attention.", "Some ecological realities need image, sound, time and human presence to become emotionally and intellectually legible.", "4PLANET FILM is a strategic concept; future productions and partnerships must be represented according to their actual state."],
+      "4rt": ["4RT_ — Prints for Planet", "A 4PLANET 4CULTURE_ mission exploring art, photography and limited editions with transparent economic and mission pathways.", "Art can hold ecological attention in durable form, but money flows and any ecological contribution must remain explicit and auditable.", "4RT_ is a strategic concept. No sale is converted into an ecological outcome claim without separate delivery evidence."],
+      "4play": ["4PLAY_ — Music, Events and Cultural Activation", "A 4PLANET 4CULTURE_ mission exploring music, events and cultural participation as routes into ecological attention and action.", "Participation becomes stronger when ecological work enters places where people already gather, listen, create and belong.", "4PLAY_ is a strategic concept; cultural attention and ecological outcome remain separate evidence states."]
+    };
+    const mission = missionDiscovery[missionSlug];
+    if (mission) {
+      routeConfig = {
+        title: mission[0],
+        description: mission[1],
+        fallbackTitle: mission[0],
+        fallbackParagraphs: [mission[2], mission[3], "This mission uses shared 4PLANET intelligence and evidence infrastructure rather than a separate truth store."],
+        fallbackLinks: [["Missions","https://4planet.org/missions"],["Living Systems","https://4planet.org/living-systems"],["Impact","https://4planet.org/impact"]],
+        schemaType: "WebPage",
+      };
+    }
+  }
+
+  const config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${normalisedPath}` } : baseConfig;
 
   if (config && url.pathname === "/robots.txt" && host !== "4planet.org") {
     return new Response(robotsText(host), {
