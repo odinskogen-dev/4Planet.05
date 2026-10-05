@@ -1,0 +1,44 @@
+name: 4BRAIN Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ops/discovery/live-workers/4planet-brain-public.js
+      - .github/workflows/4brain-discovery-live.yml
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate source
+        run: |
+          set -euo pipefail
+          node --check ops/discovery/live-workers/4planet-brain-public.js
+          grep -Fq 'https://4brain.app/sitemap.xml' ops/discovery/live-workers/4planet-brain-public.js
+          grep -Fq 'Personal Brain' ops/discovery/live-workers/4planet-brain-public.js
+          grep -Fq 'Company Brain' ops/discovery/live-workers/4planet-brain-public.js
+      - name: Deploy existing 4planet-brain-public script only
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/discovery/live-workers/4planet-brain-public.js --name 4planet-brain-public --compatibility-date 2026-10-05 --keep-vars
+      - name: Verify live public product
+        run: |
+          set -euo pipefail
+          html=$(curl -fsS https://4brain.app/)
+          grep -Fq '4BRAIN — Your Intelligence. Yours to Keep.' <<<"$html"
+          grep -Fq 'index,follow,max-image-preview:large' <<<"$html"
+          curl -fsS https://4brain.app/robots.txt | grep -Fq 'Sitemap: https://4brain.app/sitemap.xml'
+          curl -fsS https://4brain.app/sitemap.xml | grep -Fq 'https://4brain.app/'
