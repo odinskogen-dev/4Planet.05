@@ -48,4 +48,5 @@ jobs:
             exit 0
           fi
           git commit -m "control(discovery): version exact live public Worker sources"
+          git pull --rebase origin king/test
           git push origin HEAD:king/test
