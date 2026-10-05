@@ -12,6 +12,9 @@ on:
       - src/components/layout/PublicShell.tsx
       - src/styles/human-first-public.css
       - scripts/generate-sitemap.mjs
+      - scripts/prerender-discovery-seo.mjs
+      - src/data/discoveryInventory.json
+      - src/planet/proofs/planetProofs.ts
       - functions/_middleware.js
 
 permissions:
