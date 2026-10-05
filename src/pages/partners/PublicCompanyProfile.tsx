@@ -237,14 +237,24 @@ export default function PublicCompanyProfile({
         {tab === "FINANCIALS" && (
           <>
             <div className="fbi-section-head">
-              <div><span>02 / FINANCIAL DOCUMENTS</span><h2>Source first. Numbers only when extracted and verified.</h2></div>
-              <p>Regnskapsregisteret exposes annual-account copies. 4BRANDS does not turn document availability into invented financial metrics.</p>
+              <div><span>02 / FINANCIALS</span><h2>Latest verified accounts, with the boundary visible.</h2></div>
+              <p>The open BRREG key-figure source covers the latest submitted annual accounts for ordinary accounting plans. It excludes some entity types and does not provide open structured history.</p>
             </div>
-            <div className="fbi-financial-summary">
-              <Fact label="LATEST AVAILABLE" value={profile.accounts.latestAvailableYear || profile.company.lastSubmittedAccounts || "UNKNOWN"} />
-              <Fact label="AVAILABLE YEARS" value={String(profile.accounts.availableYears.length)} />
-              <Fact label="FINANCIAL VALUES" value="EXTRACTION OPEN" meta="No metric shown without source-level extraction" />
-            </div>
+            {profile.financials ? (
+              <>
+                <div className="fbi-financial-summary">
+                  <Fact label="REVENUE" value={moneyLabel(profile.financials.revenue, profile.financials.currency)} meta={"Period end " + (profile.financials.periodEnd || "UNKNOWN")} />
+                  <Fact label="OPERATING RESULT" value={moneyLabel(profile.financials.operatingResult, profile.financials.currency)} meta={"Operating margin " + percentLabel(profile.financials.operatingMargin)} />
+                  <Fact label="ANNUAL RESULT" value={moneyLabel(profile.financials.annualResult, profile.financials.currency)} meta="BRREG latest submitted accounts" />
+                  <Fact label="ASSETS" value={moneyLabel(profile.financials.assets, profile.financials.currency)} />
+                  <Fact label="EQUITY" value={moneyLabel(profile.financials.equity, profile.financials.currency)} meta={"Equity ratio " + percentLabel(profile.financials.equityRatio)} />
+                  <Fact label="DEBT" value={moneyLabel(profile.financials.debt, profile.financials.currency)} />
+                </div>
+                <div className="fbi-truth-boundary"><span>FINANCIAL TRUTH</span><p>These are source facts from the latest open BRREG key-figure record. Operating margin and equity ratio are transparent calculations from those facts, not forecasts or recommendations.</p></div>
+              </>
+            ) : (
+              <p className="fbi-empty">Structured key figures are unavailable for this entity. 4BRANDS will not substitute guessed numbers. Banks and insurers are among the entity types explicitly excluded by the open source.</p>
+            )}
             <div className="fbi-document-list">
               {profile.accounts.copies.length ? profile.accounts.copies.map((copy) => (
                 <a key={copy.year} href={copy.url} target="_blank" rel="noreferrer">
