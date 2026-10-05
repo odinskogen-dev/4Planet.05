@@ -1,6 +1,7 @@
 // 4NATION: host-only public origin for the exact tested Pages artifact.
 const IMMUTABLE_ORIGIN = "https://9c7fe142.4planet-05.pages.dev";
 const SOURCE_SHA = "ba354a82b443f9e0cd2124af6ead75a995ed0e8c";
+const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
 const ALLOWED = new Set(["4nation.org", "www.4nation.org"]);
 export default {
   async fetch(request) {
@@ -22,7 +23,9 @@ export default {
         "content-security-policy":"default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline'; connect-src https://ghvdzetmplqkdtfqiror.supabase.co; frame-ancestors 'none'; base-uri 'none'"
       }});
     }
-    if (incoming.pathname === "/robots.txt") return new Response("User-agent: *\nAllow: /\n",{headers:{"content-type":"text/plain; charset=utf-8","x-4nation-sha":SOURCE_SHA}});
+    if (incoming.pathname === `/${INDEXNOW_KEY}.txt`) return new Response(INDEXNOW_KEY,{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=86400","x-4nation-sha":SOURCE_SHA}});
+    if (incoming.pathname === "/robots.txt") return new Response("User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /auth/\n\nSitemap: https://4nation.org/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=300","x-4nation-sha":SOURCE_SHA}});
+    if (incoming.pathname === "/sitemap.xml") return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://4nation.org/</loc></url>\n</urlset>\n',{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public, max-age=300","x-4nation-sha":SOURCE_SHA}});
     const upstreamUrl = new URL(IMMUTABLE_ORIGIN);
     upstreamUrl.pathname = incoming.pathname === "/" ? "/4nation" : incoming.pathname;
     upstreamUrl.search = incoming.search;
@@ -41,6 +44,9 @@ export default {
     if((headers.get("content-type")||"").includes("text/html")&&request.method==="GET"){
       let body=await upstream.text();
       body=body.replace(/<meta\s+name=["']robots["'][^>]*>/gi,"");
+      body=body.replace(/<title>[^<]*<\/title>/i,"<title>4NATION — Better Nation | Public Decision Intelligence</title>");
+      body=body.replace(/<meta\s+name=["']description["'][^>]*>/i,'<meta name="description" content="4NATION is 4PLANET’s nonpartisan public decision intelligence product for understanding choices, sources, trade-offs and public value." />');
+      body=body.replace(/<link\s+rel=["']canonical["'][^>]*>/gi,"");
       body=body.replace("</head>",'<meta name="robots" content="index,follow,max-image-preview:large" /><link rel="canonical" href="https://4nation.org/" /></head>');
       const idHref="https://id.4planet.org/login?return_to="+encodeURIComponent(incoming.toString());
       const idEntry='<a data-fourplanet-id-entry="1" href="'+idHref+'" aria-label="Log in with 4PLANET ID" style="position:fixed;top:14px;right:16px;z-index:2147483000;padding:9px 12px;border:1px solid rgba(8,8,8,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#080808;text-decoration:none;font:650 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;box-shadow:0 4px 18px rgba(0,0,0,.08)">LOG IN · 4PLANET ID</a>';
