@@ -30,7 +30,7 @@ replace_or_insert(
 )
 # One canonical only.
 html = re.sub(r"<link\s+rel=[\"']canonical[\"'][^>]*>", "", html, flags=re.I)
-html = html.replace("</head>", '<link rel="canonical" href="https://4sapien.com/"></head>', 1)
+html = html.replace("</head>", '<link rel="canonical" href="https://4sapien.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"4SAPIEN","url":"https://4sapien.com/","description":"Personal decision support across food, finance and everyday life, built around user-controlled context.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}</script></head>', 1)
 
 # Product-specific social identity if these tags exist.
 html = re.sub(r"(<meta\\s+property=[\\\"']og:title[\\\"']\\s+content=)[\\\"'][^\\\"']*[\\\"']", r'\\1"4SAPIEN — Personal Intelligence for Food, Finance and Life"', html, count=1, flags=re.I)
