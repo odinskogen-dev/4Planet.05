@@ -109,3 +109,4 @@ jobs:
           grep -Fq 'Related missions' <<<"$kenya"
           grep -Fq 'https://4planetatlas.com/place/kenya' <<<"$kenya"
           grep -Fq '<loc>https://4planet.org/living-systems/amazonia</loc>' <<<"$sm"
+          echo 'PLACE_GRAPH_LIVE_PASS'
