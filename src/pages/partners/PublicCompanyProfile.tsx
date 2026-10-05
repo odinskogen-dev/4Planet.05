@@ -50,6 +50,10 @@ export type PublicCompanyProfileData = {
     level: number; name: string; organizationNumber: string; parentName: string | null; parentOrganizationNumber: string | null;
     relationshipCode: string | null; relationship: string | null; basis: string | null; date: string | null; organizationForm: string | null;
   }>;
+  industryCohort: Array<{
+    organizationNumber: string; name: string; employees: number | null; organizationForm: string | null;
+    latestAccounts: string | null; industryCode: string | null; industry: string | null;
+  }>;
   locations: Array<{
     organizationNumber: string; name: string; employees: number | null; industryCode: string | null; industry: string | null;
     address: Address | null; startDate: string | null; endDate: string | null; sourceUrl: string | null;
@@ -64,18 +68,19 @@ export type PublicCompanyProfileData = {
   accounts: { availableYears: string[]; latestAvailableYear: string | null; copies: Array<{ year: string; url: string; format: string }> };
   coverage: {
     verifiedIdentity: boolean; sourceCount: number; totalSourceLanes: number; roleCount: number;
-    groupRelationCount: number; locationCount: number; changeCount: number; accountYearCount: number; financialFactsAvailable: boolean;
+    groupRelationCount: number; locationCount: number; changeCount: number; accountYearCount: number; financialFactsAvailable: boolean; industryCohortCount: number;
   };
   sources: PublicCompanySource[];
   unknowns: string[];
   truthBoundary: string;
 };
 
-type Tab = "OVERVIEW" | "FINANCIALS" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "SOURCES";
+type Tab = "OVERVIEW" | "FINANCIALS" | "MARKET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "SOURCES";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "OVERVIEW", label: "Overview" },
   { id: "FINANCIALS", label: "Financials" },
+  { id: "MARKET", label: "Market" },
   { id: "STRUCTURE", label: "Structure" },
   { id: "PEOPLE", label: "People" },
   { id: "CHANGES", label: "Changes" },
@@ -262,6 +267,26 @@ export default function PublicCompanyProfile({
                 </a>
               )) : <p className="fbi-empty">No annual-account copies were parsed from the availability endpoint.</p>}
             </div>
+          </>
+        )}
+
+        {tab === "MARKET" && (
+          <>
+            <div className="fbi-section-head">
+              <div><span>03 / MARKET ORIENTATION</span><h2>Who sits in the same registered industry?</h2></div>
+              <p>This is a source-grounded BRREG industry cohort, not an AI competitor list. Shared industry code is evidence of classification similarity, not proof of direct competition.</p>
+            </div>
+            <div className="fbi-table-block">
+              <div className="fbi-section-kicker">INDUSTRY COHORT · {profile.industryCohort.length}</div>
+              {profile.industryCohort.length ? profile.industryCohort.map((item, index) => (
+                <div className="fbi-row" key={item.organizationNumber}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div><strong>{item.name}</strong><small>{item.organizationNumber} · {item.organizationForm || "FORM UNKNOWN"}</small></div>
+                  <div><strong>{item.employees === null ? "EMPLOYEES UNKNOWN" : item.employees.toLocaleString("en-GB") + " registered employees"}</strong><small>{item.industryCode || "NO CODE"} · latest accounts {item.latestAccounts || "UNKNOWN"}</small></div>
+                </div>
+              )) : <p className="fbi-empty">No source-grounded cohort was returned for this primary industry code.</p>}
+            </div>
+            <div className="fbi-truth-boundary"><span>PEER BOUNDARY</span><p>These entities are candidates for orientation only. A true comparable or competitor set requires product, geography, customer and economic-model evidence before comparison.</p></div>
           </>
         )}
 
