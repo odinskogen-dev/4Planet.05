@@ -329,7 +329,7 @@ function Header() {
 
   const menuMode = Boolean(panel || mobileOpen);
   const dark = topIsDark(pathname) && !scrolled && !menuMode;
-  const detachedDark = topIsDark(pathname) && scrolled && !menuMode;
+  const detachedDark = topIsDark(pathname) && scrolled && !menuMode && !pathname.startsWith("/species/");
   const fg = menuMode ? T.ink : dark || detachedDark ? "#fff" : T.ink;
   const bg = menuMode ? "#fff" : scrolled ? (detachedDark ? "rgba(5,5,7,.9)" : "rgba(255,255,255,.9)") : "transparent";
 
