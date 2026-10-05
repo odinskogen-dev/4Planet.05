@@ -157,7 +157,7 @@ export function PlanetProofPage({ slug }: { slug: string }) {
   const action = byId.WHAT_CAN_BE_DONE ?? proof.sections[3];
 
   return (
-    <main className="editorial-page">
+    <main className="editorial-page" style={{ background: "#FFFFFF" }}>
       <nav className="proof-nav">
         <Link to="/" style={{ fontWeight: 700, letterSpacing: "-.03em" }}>4PLANET_</Link>
         <div style={{ display: "flex", gap: 20, alignItems: "center", fontSize: 12, letterSpacing: ".1em" }}>
