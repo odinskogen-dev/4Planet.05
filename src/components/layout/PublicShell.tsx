@@ -408,7 +408,7 @@ function Footer() {
         <img src={img("footerPlanet").src} alt={img("footerPlanet").alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%" }} />
       </picture>
       <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,.06) 0%, rgba(0,0,0,.10) 34%, rgba(0,0,0,.52) 60%, rgba(0,0,0,.82) 82%, rgba(0,0,0,.90) 100%)" }} />
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 96, height: 4, background: acc, zIndex: 3 }} />
+      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 4, background: acc, zIndex: 3 }} />
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 1320, margin: "0 auto", width: "100%", padding: "clamp(64px,10vw,140px) clamp(20px,5vw,72px) clamp(28px,4vw,44px)" }}>
         <div style={{ fontFamily: T.display, fontWeight: 500, color: "#fff", fontSize: "clamp(30px,5vw,64px)", letterSpacing: "-.04em", lineHeight: .98, maxWidth: 820 }}>For a Living Planet.</div>
