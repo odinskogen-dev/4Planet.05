@@ -532,6 +532,29 @@ export async function onRequest(context) {
     }
   }
 
+  if (host === "4planet.org" && !routeConfig && normalisedPath.startsWith("/journey/")) {
+    const journeySlug = normalisedPath.slice("/journey/".length);
+    const journeys = {
+      "orca": ["Orca Journey — Follow a Species Through 4PLANET", "A public 4PLANET journey connecting orca species intelligence, place and living-system context across the ecosystem."],
+      "jaguar": ["Jaguar Journey — Follow a Species Through 4PLANET", "A public 4PLANET journey connecting jaguar species intelligence, place and living-system context across the ecosystem."]
+    };
+    const journey = journeys[journeySlug];
+    if (journey) {
+      routeConfig = {
+        title: journey[0],
+        description: journey[1],
+        fallbackTitle: journey[0],
+        fallbackParagraphs: [
+          journey[1],
+          "The journey is a navigation layer across shared canonical species and place intelligence. It does not create a second species record or duplicate the standalone 4SPECIES canonical profile.",
+          "Species facts, conservation context and ecological relationships should remain attributable to their underlying sources and evidence state."
+        ],
+        fallbackLinks: [["4SPECIES",`https://4species.com/species/${journeySlug}`],["ATLAS","https://4planetatlas.com/"],["Living Systems","https://4planet.org/living-systems"]],
+        schemaType: "WebPage",
+      };
+    }
+  }
+
   const config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${normalisedPath}` } : baseConfig;
 
   if (config && url.pathname === "/robots.txt" && host !== "4planet.org") {
