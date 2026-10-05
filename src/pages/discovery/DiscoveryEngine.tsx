@@ -144,7 +144,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
           ],
         })}
       />
-      <main id="main-content" className="editorial-page discovery-page" style={style}>
+      <div className="editorial-page discovery-page" style={style}>
         <div className="editorial-wrap">
           <header className="editorial-hero discovery-hero">
             <div className="editorial-kicker">4PLANET / {topic.domain}</div>
@@ -237,7 +237,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
             </div>
           </section>
         </div>
-      </main>
+      </div>
     </PublicShell>
   );
 }
@@ -284,7 +284,7 @@ export function EarthNowPage() {
           ],
         })}
       />
-      <main id="main-content" className="editorial-page discovery-page discovery-now" style={{ "--discovery-accent": "#2E2EFF" } as CSSProperties}>
+      <div className="editorial-page discovery-page discovery-now" style={{ "--discovery-accent": "#2E2EFF" } as CSSProperties}>
         <div className="discovery-now__hero">
           <div className="editorial-wrap">
             <div className="editorial-kicker">4PLANET / EARTH NOW</div>
@@ -348,7 +348,7 @@ export function EarthNowPage() {
             <div className="editorial-meta">UPDATED {discovery.updatedAt}</div>
           </section>
         </div>
-      </main>
+      </div>
     </PublicShell>
   );
 }
