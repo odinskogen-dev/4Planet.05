@@ -5,6 +5,13 @@ on:
     branches: [main]
     paths:
       - .github/workflows/discovery-main-live.yml
+      - src/pages/integrated/AtlasDiscoveryPage.tsx
+      - src/pages/v5/PlanetProof.tsx
+      - src/pages/integrated/Species.tsx
+      - src/pages/integrated/SpeciesRoute.tsx
+      - src/components/layout/PublicShell.tsx
+      - src/styles/human-first-public.css
+      - scripts/generate-sitemap.mjs
 
 permissions:
   contents: read
