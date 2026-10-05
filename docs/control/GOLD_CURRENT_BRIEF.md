@@ -1,3 +1,50 @@
+# HUMAN-FIRST PUBLIC OBJECTS — MOBILE + EDITORIAL CORRECTION — 05 OCT 2026
+
+**STATUS:** HEIR UX CORRECTION / FOUNDER-DIRECTED / EXACT-SHA QA REQUIRED.
+
+## USER ARRIVES BECAUSE
+A person wants to understand Earth, fire signals, whales, Orca or Oslofjord quickly and usefully — not read an internal evidence-control interface.
+
+## ONE THING TO UNDERSTAND
+Public 4PLANET pages must explain the living world first. Evidence, uncertainty and technical provenance remain attached, but they are controlled depth rather than the dominant visual layer.
+
+## PRIMARY ACTION
+Understand the object in seconds, then explore it in ATLAS or continue naturally into the next relevant object.
+
+## SECONDARY DEPTH
+Open sources, methods and limitations only when wanted. Internal QA states remain internal.
+
+## P1 DOMINANT
+Life, place or planetary signal. One strong headline, one clear visual field, one primary action.
+
+## P2 ORIENTATION
+Short human explanation in ordinary language. No card wall, audit ledger or dense metadata before meaning.
+
+## P3 ACTION / NEXT
+ATLAS exploration, related species/place or source. No login before first value.
+
+## P4 DEPTH
+Sources, dates, limitations and evidence boundaries in compact/collapsible depth.
+
+## WHAT CAN BE REMOVED
+Public-facing HUMAN GOLD/CANDIDATE/DEGRADED/MAKER≠JUDGE labels; KNOWN/UNKNOWN/INTERPRETED badges on every claim; raw IDs; raw occurrence rows; repeated boundary prose; large source-ledger boxes; redundant navigation cards; generic “Useful Internet Object” jargon.
+
+## WHAT MUST BE REUSED
+Existing canonical data, sources, ATLAS, SPECIES identity, Living Systems evidence, PublicShell and shared analytics. This correction changes presentation and information hierarchy, not the truth store.
+
+## VISUAL LAW
+Public white surfaces are **#FFFFFF**. Do not use off-white paper backgrounds for 4PLANET public editorial pages. Black and white surface blocks must not meet directly; use imagery, 4PLANET blue or another intentional transition. Avoid card walls and boxes unless a box is functionally necessary.
+
+## MOBILE-FIRST RISK
+Any desktop split/grid must collapse before 760px. No narrow side column may force one-word lines, overlap adjacent text or expose horizontal overflow. Headlines must remain readable at 390/430px.
+
+## HUMAN SUCCESS
+A first-time mobile visitor can understand the page without knowing 4PLANET vocabulary, can identify one useful action, and can reach source depth without being forced through technical language.
+
+**FOUNDER EVIDENCE:** live mobile screenshots supplied 05 Oct 2026 showed overlap, one-word columns, internal QA language, excessive boxes, wrong paper background and overlong public pages. This correction treats those as P0/P1 public UX failures.
+
+---
+
 # WHAT WE BELIEVE — CANON 2.0 PUBLIC SYNC — 05 OCT 2026
 
 **STATUS:** HEIR PRODUCT CANDIDATE / EXACT CANON PROJECTION / FOUNDER REQUESTED LIVE RELEASE / RELEASE GATES REQUIRED.

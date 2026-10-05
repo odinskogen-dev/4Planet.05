@@ -54,7 +54,7 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
         })}
       />
       {curated ? curatedElement : <UniversalSpeciesProfilePage />}
-      <SpeciesEvidenceSeam envelope={envelope} />
+      {!curated && <SpeciesEvidenceSeam envelope={envelope} />}
       {curated && relatedPlaces.length > 0 ? (
         <nav aria-label={`Places connected to ${curated.commonName}`} style={{ padding: "24px clamp(20px,5vw,64px) 40px", borderTop: "1px solid rgba(0,0,0,.12)" }}>
           <div style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", opacity: .6 }}>EXPLORE WHERE IT LIVES / 4PLANET PLACE_</div>
