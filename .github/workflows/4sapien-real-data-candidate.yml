@@ -6,6 +6,7 @@ on:
     paths:
       - 'products/4sapien/**'
       - 'tests/e2e/four-sapien-pantry-synthetic.spec.ts'
+      - 'tests/e2e/four-sapien-money-regression.spec.ts'
       - '.github/workflows/4sapien-real-data-candidate.yml'
       - '.github/workflows/ask-embla-production.yml'
   workflow_dispatch:
