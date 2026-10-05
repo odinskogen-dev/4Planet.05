@@ -129,17 +129,24 @@ function StorySection({ section, proof, label }: { section: ProofSection; proof:
 }
 
 function Sources({ proof }: { proof: PlanetProof }) {
+  const visible = proof.sources.slice(0, 3);
+  const more = proof.sources.slice(3);
+  const sourceLink = (source: PlanetProof["sources"][number]) => (
+    <a key={source.id} className="editorial-source" href={source.url} target="_blank" rel="noreferrer">
+      <strong>{source.authority}</strong>
+      <span>{source.label} ↗</span>
+    </a>
+  );
   return (
     <section className="editorial-section">
       <div className="editorial-kicker">Sources</div>
-      <div className="editorial-list">
-        {proof.sources.map((source) => (
-          <a key={source.id} className="editorial-source" href={source.url} target="_blank" rel="noreferrer">
-            <strong>{source.authority}</strong>
-            <span>{source.label} ↗</span>
-          </a>
-        ))}
-      </div>
+      <div className="editorial-list">{visible.map(sourceLink)}</div>
+      {more.length > 0 && (
+        <details style={{ marginTop: 18, borderTop: "1px solid #D9D9D9", paddingTop: 16 }}>
+          <summary style={{ cursor: "pointer", fontSize: 14 }}>See all {proof.sources.length} sources</summary>
+          <div className="editorial-list" style={{ marginTop: 16 }}>{more.map(sourceLink)}</div>
+        </details>
+      )}
     </section>
   );
 }
