@@ -14,7 +14,6 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
   const envelope = speciesSourceEnvelopeBySlug(slug);
   const discoveryItem = discovery.species.find((item) => item.slug === slug);
   const media = curated && hasShowableImage(slug) ? speciesMedia(slug) : undefined;
-  const humanFirstOrca = curated?.slug === "orca";
   const sourceUrls = envelope?.records.map((record) => record.sourceUrl) ?? [];
   const limitations = envelope?.forbiddenInferences ?? [];
   const relatedPlaces = curated ? discovery.places.filter((place) => place.indexable && place.relatedSpecies.some((species) => species.slug === slug && species.state === "CURATED")) : [];
@@ -55,8 +54,8 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
         })}
       />
       {curated ? curatedElement : <UniversalSpeciesProfilePage />}
-      {!humanFirstOrca ? <SpeciesEvidenceSeam envelope={envelope} /> : null}
-      {curated && !humanFirstOrca && relatedPlaces.length > 0 ? (
+      <SpeciesEvidenceSeam envelope={envelope} />
+      {curated && relatedPlaces.length > 0 ? (
         <nav aria-label={`Places connected to ${curated.commonName}`} style={{ padding: "24px clamp(20px,5vw,64px) 40px", borderTop: "1px solid rgba(0,0,0,.12)" }}>
           <div style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", opacity: .6 }}>EXPLORE WHERE IT LIVES / 4PLANET PLACE_</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
