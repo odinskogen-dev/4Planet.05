@@ -4,7 +4,11 @@ const PUBLIC_HOSTS = {
     description: "Living Planet Intelligence connecting understanding, credible action and proof for a living planet.",
     canonical: "https://4planet.org/",
     fallbackTitle: "4PLANET — For a Living Planet",
-    fallbackText: "Living Planet Intelligence connecting places, species, living systems, missions and credible ecological action.",
+    fallbackParagraphs: [
+      "4PLANET is an early-stage environmental technology ecosystem building Living Planet Intelligence: connected tools for understanding places, species, living systems and the human systems that shape them.",
+      "The public ecosystem connects ATLAS, SPECIES, 4SAPIEN, S4PIENS, 4BRANDS, 4NATION, MAGAZINE and Impact through shared infrastructure while keeping each product’s purpose and canonical home distinct. Public prototypes are labelled honestly rather than presented as finished systems.",
+      "The operating idea is to connect understanding to better decisions, credible action, evidence and learning. 4PLANET distinguishes contribution from delivery and verified ecological outcome, and keeps sources, uncertainty and unknowns visible where they matter."
+    ],
     fallbackLinks: [
       ["Impact", "https://4planet.org/impact"],
       ["Places", "https://4planet.org/places"],
