@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import "@/styles/fourbrand.css";\nimport PublicCompanyProfile, { type PublicCompanyProfileData } from "@/pages/partners/PublicCompanyProfile";
+import "@/styles/fourbrand.css";
+import PublicCompanyProfile, { type PublicCompanyProfileData } from "@/pages/partners/PublicCompanyProfile";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import CompanyBrainControls from "@/pages/partners/CompanyBrainControls";
