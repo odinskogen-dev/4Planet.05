@@ -1,6 +1,18 @@
 name: TEST KING — Species + Lens Proof Gate
 
 on:
+  pull_request:
+    branches:
+      - king/test
+    paths:
+      - "src/pages/integrated/Species.tsx"
+      - "src/pages/integrated/SpeciesRoute.tsx"
+      - "src/data/species.ts"
+      - "src/content/mediaManifest.ts"
+      - "src/components/species/**"
+      - "tests/e2e/species-gold-plank.spec.ts"
+      - "scripts/species-gold-plank-01.test.mjs"
+      - ".github/workflows/test-king-species-lens-proof.yml"
   push:
     branches:
       - king/test
