@@ -16,6 +16,40 @@ const mono = {
   textTransform: "uppercase" as const,
 };
 
+const publicCopy: Record<string, {
+  kicker: string;
+  lede: string;
+  story: string;
+  exploreTitle: string;
+  items: string[];
+  note: string;
+}> = {
+  earth: {
+    kicker: "PLANET",
+    lede: "Explore the living planet through satellite imagery and public data.",
+    story: "Start with Earth as a whole, then move closer. ATLAS brings different planetary datasets into one place so you can explore land, ocean, climate and life without needing to be a GIS specialist.",
+    exploreTitle: "What you can explore",
+    items: ["Satellite imagery", "Biodiversity and ocean data", "Land, climate and event layers"],
+    note: "Different layers update at different times. The source date stays visible in ATLAS.",
+  },
+  fires: {
+    kicker: "EARTH SIGNAL",
+    lede: "See recent heat signals from space — then explore the context around them.",
+    story: "Satellite sensors can detect unusual heat across the planet. ATLAS lets you place those signals beside other Earth data instead of treating every dot as the same thing.",
+    exploreTitle: "What you can explore",
+    items: ["Recent satellite heat detections", "Source-reported natural events", "Vegetation, forest and Earth imagery"],
+    note: "A heat signal is not automatically a wildfire. Open the source before drawing a conclusion.",
+  },
+  whales: {
+    kicker: "OCEAN LIFE",
+    lede: "Explore where whales and dolphins have been recorded.",
+    story: "Public biodiversity records can show where people have documented cetaceans over time. ATLAS turns those records into a starting point for exploration — not a live animal tracker.",
+    exploreTitle: "What you can explore",
+    items: ["Reported whale and dolphin observations", "The place and date attached to records", "Related species such as Orca"],
+    note: "Recorded observations are not live positions, population counts or migration routes.",
+  },
+};
+
 function atlasHostHref(href: string) {
   if (typeof window === "undefined") return href;
   const host = window.location.hostname.toLowerCase().replace(/^www\./, "");
@@ -43,8 +77,17 @@ export function AtlasDiscoveryPage() {
 
   if (!object) return <NotFound />;
 
+  const copy = publicCopy[object.slug] ?? {
+    kicker: "ATLAS",
+    lede: object.summary,
+    story: object.whyItMatters,
+    exploreTitle: "Explore",
+    items: object.availableData.slice(0, 3),
+    note: object.limitations[0] ?? "",
+  };
   const canonicalPath = `/atlas/${object.slug}`;
   const fullAtlasHref = atlasHostHref(object.atlasHref);
+  const embedHref = `${object.atlasHref}${object.atlasHref.includes("?") ? "&" : "?"}embed=news`;
 
   const share = async () => {
     const url = new URL(canonicalPath, window.location.origin).toString();
@@ -88,112 +131,100 @@ export function AtlasDiscoveryPage() {
           isPartOf: { "@type": "WebSite", name: "4PLANET", url: new URL("/", canonicalUrl).toString() },
         })}
       />
-      <main data-testid="atlas-discovery-object" style={{ background: "#fff", color: T.ink, minHeight: "100vh" }}>
-        <header style={{ padding: "clamp(42px,8vw,110px) clamp(20px,6vw,86px)", borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: T.blue }}>{object.eyebrow} / USEFUL INTERNET OBJECT</div>
-          <h1
-            style={{
-              margin: "24px 0 0",
-              maxWidth: 1180,
-              fontFamily: T.display,
-              fontWeight: 500,
-              fontSize: "clamp(64px,13vw,178px)",
-              letterSpacing: "-.075em",
-              lineHeight: .8,
-            }}
-          >
-            {object.name}
-          </h1>
-          <p style={{ margin: "34px 0 0", maxWidth: 900, fontSize: "clamp(20px,2.8vw,34px)", lineHeight: 1.35 }}>
-            {object.summary}
-          </p>
+
+      <main data-testid="atlas-discovery-object" style={{ background: "#FFFFFF", color: T.ink, minHeight: "100vh" }}>
+        <header style={{ maxWidth: 1180, margin: "0 auto", padding: "clamp(56px,9vw,120px) clamp(20px,5vw,64px) clamp(50px,7vw,88px)" }}>
+          <div style={{ ...mono, color: T.blue }}>4PLANET ATLAS · {copy.kicker}</div>
+          <h1 style={{
+            margin: "18px 0 0",
+            maxWidth: 980,
+            fontFamily: T.display,
+            fontWeight: 520,
+            fontSize: "clamp(58px,10vw,118px)",
+            letterSpacing: "-.065em",
+            lineHeight: .86,
+          }}>{object.name}</h1>
+          <p style={{
+            margin: "30px 0 0",
+            maxWidth: 760,
+            fontFamily: T.display,
+            fontSize: "clamp(24px,3.7vw,48px)",
+            letterSpacing: "-.035em",
+            lineHeight: 1.06,
+          }}>{copy.lede}</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 34 }}>
             <a
               href={fullAtlasHref}
               onClick={() => trackEvent("discovery_object_explore", { object_kind: "atlas", object_slug: object.slug, product_area: "atlas" })}
-              style={{ ...mono, minHeight: 48, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.ink, color: "#fff", textDecoration: "none" }}
-            >
-              OPEN LIVE ATLAS →
-            </a>
+              style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 20px", background: T.blue, color: "#fff", textDecoration: "none" }}
+            >EXPLORE IN ATLAS →</a>
             <button
               type="button"
               onClick={share}
-              style={{ ...mono, minHeight: 48, padding: "0 18px", border: `1px solid ${T.ink}`, background: "#fff", color: T.ink, cursor: "pointer" }}
-            >
-              {shared ? "LINK COPIED" : "SHARE"}
-            </button>
+              style={{ ...mono, minHeight: 50, padding: "0 18px", border: `1px solid ${T.lineStrong}`, background: "#FFFFFF", color: T.ink, cursor: "pointer" }}
+            >{shared ? "LINK COPIED" : "SHARE"}</button>
           </div>
         </header>
 
-        <section style={{ padding: "clamp(50px,7vw,96px) clamp(20px,6vw,86px)", display: "grid", gridTemplateColumns: "minmax(0,1.15fr) minmax(280px,.85fr)", gap: "clamp(34px,7vw,100px)", borderBottom: `1px solid ${T.line}` }}>
-          <div>
-            <div style={{ ...mono, color: T.blue }}>WHY IT MATTERS</div>
-            <p style={{ margin: "18px 0 0", maxWidth: 850, fontSize: "clamp(24px,3.5vw,48px)", lineHeight: 1.14, letterSpacing: "-.03em" }}>
-              {object.whyItMatters}
-            </p>
-          </div>
-          <div>
-            <div style={{ ...mono, color: T.dim }}>DATE / FRESHNESS</div>
-            <p style={{ margin: "14px 0 0", color: T.dim, lineHeight: 1.65 }}>{object.freshness}</p>
-            <div style={{ ...mono, marginTop: 18, color: T.dim }}>OBJECT CHECKED / {discovery.updatedAt}</div>
-          </div>
+        <section aria-label={`Interactive ${object.name} map`} style={{ borderTop: `4px solid ${T.blue}`, borderBottom: `4px solid ${T.blue}`, background: "#FFFFFF" }}>
+          <iframe
+            src={embedHref}
+            title={`Explore ${object.name} in 4PLANET ATLAS`}
+            loading="eager"
+            referrerPolicy="no-referrer"
+            style={{ width: "100%", height: "min(62svh,720px)", minHeight: 420, display: "block", border: 0 }}
+          />
         </section>
 
-        <section style={{ padding: "clamp(50px,7vw,96px) clamp(20px,6vw,86px)", borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: T.blue }}>CURRENT / AVAILABLE DATA</div>
-          <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,270px),1fr))", borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
-            {object.availableData.map((item) => (
-              <div key={item} style={{ minHeight: 150, padding: 24, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, fontSize: 17, lineHeight: 1.5 }}>
-                {item}
-              </div>
-            ))}
-          </div>
-        </section>
+        <section style={{ maxWidth: 1040, margin: "0 auto", padding: "clamp(64px,9vw,120px) clamp(20px,5vw,64px)" }}>
+          <p style={{ margin: 0, maxWidth: 800, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.45, letterSpacing: "-.02em" }}>{copy.story}</p>
 
-        <section style={{ padding: "clamp(50px,7vw,96px) clamp(20px,6vw,86px)", background: "#0a0a0a", color: "#fff" }}>
-          <div style={{ ...mono, color: "#79dcff" }}>SOURCES / PROVENANCE</div>
-          <h2 style={{ margin: "16px 0 0", maxWidth: 940, fontFamily: T.display, fontWeight: 500, fontSize: "clamp(36px,6vw,76px)", letterSpacing: "-.05em", lineHeight: .98 }}>
-            Open the sources. Keep the limits visible.
-          </h2>
-          <div style={{ marginTop: 34, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,320px),1fr))", borderTop: "1px solid rgba(255,255,255,.2)", borderLeft: "1px solid rgba(255,255,255,.2)" }}>
-            {object.sources.map((source) => (
-              <a
-                key={source.url}
-                href={source.url}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => trackEvent("source_opened", { product_area: "atlas", source_kind: "atlas_discovery", object_slug: object.slug })}
-                style={{ color: "#fff", textDecoration: "none", padding: 24, borderRight: "1px solid rgba(255,255,255,.2)", borderBottom: "1px solid rgba(255,255,255,.2)" }}
-              >
-                <div style={{ ...mono, color: "#79dcff" }}>{source.authority}</div>
-                <h3 style={{ margin: "12px 0 0", fontSize: 20, lineHeight: 1.2 }}>{source.label}</h3>
-                <p style={{ margin: "14px 0 0", color: "rgba(255,255,255,.72)", fontSize: 14, lineHeight: 1.55 }}>{source.use}</p>
-                <div style={{ ...mono, marginTop: 16, color: "rgba(255,255,255,.56)" }}>CHECKED {source.checkedAt} · OPEN SOURCE ↗</div>
-              </a>
-            ))}
+          <div style={{ marginTop: "clamp(50px,7vw,82px)" }}>
+            <div style={{ ...mono, color: T.blue }}>{copy.exploreTitle.toUpperCase()}</div>
+            <div style={{ marginTop: 18, borderTop: `1px solid ${T.line}` }}>
+              {copy.items.map((item) => (
+                <div key={item} style={{ padding: "20px 0", borderBottom: `1px solid ${T.line}`, fontFamily: T.display, fontSize: "clamp(22px,3vw,34px)", letterSpacing: "-.025em" }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginTop: "clamp(48px,7vw,78px)", paddingLeft: 18, borderLeft: `3px solid ${T.blue}`, maxWidth: 760 }}>
+            <div style={{ ...mono, color: T.blue }}>GOOD TO KNOW</div>
+            <p style={{ margin: "10px 0 0", fontSize: "clamp(17px,2vw,21px)", lineHeight: 1.55 }}>{copy.note}</p>
           </div>
         </section>
 
-        <section style={{ padding: "clamp(50px,7vw,96px) clamp(20px,6vw,86px)", borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: "#8A6500" }}>LIMITATIONS / WHAT THIS DOES NOT ESTABLISH</div>
-          <ul style={{ margin: "24px 0 0", paddingLeft: 22, maxWidth: 940, display: "grid", gap: 13, fontSize: 17, lineHeight: 1.55 }}>
-            {object.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
-          </ul>
-        </section>
+        <section style={{ maxWidth: 1040, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(70px,9vw,120px)" }}>
+          <div style={{ borderTop: `1px solid ${T.line}`, paddingTop: 26 }}>
+            <div style={{ ...mono, color: T.dim }}>SOURCES</div>
+            <div style={{ display: "flex", gap: "12px 22px", flexWrap: "wrap", marginTop: 14 }}>
+              {object.sources.map((source) => (
+                <a
+                  key={source.url}
+                  href={source.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => trackEvent("source_opened", { product_area: "atlas", source_kind: "atlas_discovery", object_slug: object.slug })}
+                  style={{ color: T.blue, fontSize: 14, textDecoration: "none", borderBottom: `1px solid ${T.blue}`, paddingBottom: 2 }}
+                >{source.authority} ↗</a>
+              ))}
+            </div>
+          </div>
 
-        <section style={{ padding: "clamp(50px,7vw,96px) clamp(20px,6vw,86px)" }}>
-          <div style={{ ...mono, color: T.blue }}>NEXT JOURNEY</div>
-          <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 1, background: T.line, border: `1px solid ${T.line}` }}>
-            {object.related.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={() => trackEvent("discovery_object_next", { object_kind: "atlas", object_slug: object.slug, next_path: item.href })}
-                style={{ minHeight: 120, padding: 24, display: "flex", alignItems: "flex-end", background: "#fff", color: T.ink, textDecoration: "none", fontFamily: T.display, fontSize: 26, letterSpacing: "-.025em" }}
-              >
-                {item.label} →
-              </Link>
-            ))}
+          <div style={{ marginTop: 46, borderTop: `1px solid ${T.line}`, paddingTop: 26 }}>
+            <div style={{ ...mono, color: T.dim }}>KEEP EXPLORING</div>
+            <div style={{ display: "flex", gap: "14px 26px", flexWrap: "wrap", marginTop: 16 }}>
+              {object.related.slice(0, 3).map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => trackEvent("discovery_object_next", { object_kind: "atlas", object_slug: object.slug, next_path: item.href })}
+                  style={{ color: T.ink, textDecoration: "none", fontFamily: T.display, fontSize: "clamp(20px,2.5vw,30px)", letterSpacing: "-.02em" }}
+                >{item.label} →</Link>
+              ))}
+            </div>
           </div>
         </section>
       </main>
