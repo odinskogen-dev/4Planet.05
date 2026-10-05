@@ -38,6 +38,21 @@ html = re.sub(r"(<meta\\s+property=[\\\"']og:description[\\\"']\\s+content=)[\\\
 if 'property="og:url"' not in html and "property='og:url'" not in html:
     html = html.replace("</head>", '<meta property="og:url" content="https://4sapien.com/"></head>', 1)
 
+
+# Provide a meaningful pre-JavaScript public fallback. React createRoot replaces
+# this when the product loads; private product routes stay noindex below.
+fallback = """<main data-public-discovery-fallback="1">
+<h1>4SAPIEN — Personal Intelligence for Food, Finance and Life</h1>
+<p>4SAPIEN is an early public prototype for personal decision support. It is being developed to help a person understand everyday choices across areas such as food and personal finance without pretending that uncertain data is certain.</p>
+<p>The longer-term direction includes a private Personal Brain: user-controlled context that can make repeated interactions more useful over time. Personal context belongs to the user and is not part of the public search surface. Authenticated food, finance, documents and Brain routes remain private and are excluded from indexing.</p>
+<p>Public product pages explain the idea and the current prototype. Individual recommendations depend on the information a user chooses to provide and should distinguish facts, estimates, unknowns and suggestions.</p>
+<nav aria-label="Related public products"><a href="https://4planet.org/">4PLANET</a> · <a href="https://4brain.app/">4BRAIN</a> · <a href="https://s4piens.com/">S4PIENS</a></nav>
+</main>"""
+html = html.replace('<div id="root"></div>', '<div id="root">' + fallback + '</div>', 1)
+schema = '{"@context":"https://schema.org","@type":"WebApplication","name":"4SAPIEN","url":"https://4sapien.com/","description":"Personal decision support across food, finance and everyday life with user-controlled context.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}'
+if 'application/ld+json' not in html:
+    html = html.replace("</head>", '<script type="application/ld+json">' + schema + '</script></head>', 1)
+
 root.write_text(html, encoding="utf-8")
 
 # Every non-root HTML route contains or can contain private/personal context.
