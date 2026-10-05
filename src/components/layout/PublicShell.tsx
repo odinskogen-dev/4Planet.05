@@ -1,11 +1,11 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT } from "@/styles/tokens";
 import { Mark } from "@/components/ui";
 import { content } from "@/content/contentRepository";
 import { img } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
-import { getIdentityClient, identityAccountUrl, identityLoginUrl } from "@/identity/identityClient";
+import { createIdentityLabelOwner, getIdentityClient, identityAccountUrl, identityDisplayLabel, identityLoginUrl, readProfile, type FourPlanetSession } from "@/identity/identityClient";
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const strip = (s: string) => s.replace(/_$/, "");
@@ -175,20 +175,89 @@ function topIsDark(pathname: string) {
   return false;
 }
 
-function IdentityHeaderAction({ color }: { color: string }) {
+const joinIdentityPrimary: CSSProperties = {
+  border: `1px solid ${T.blue}`,
+  background: T.blue,
+  color: "#fff",
+  padding: "13px 18px",
+  fontFamily: T.mono,
+  fontSize: 10.5,
+  fontWeight: 600,
+  letterSpacing: ".12em",
+  textDecoration: "none",
+};
+
+const joinIdentitySecondary: CSSProperties = {
+  border: `1px solid ${T.line}`,
+  background: "transparent",
+  color: T.ink,
+  padding: "13px 18px",
+  fontFamily: T.mono,
+  fontSize: 10.5,
+  letterSpacing: ".12em",
+  textDecoration: "none",
+};
+
+export function IdentityAffordances({ color, presentation = "header" }: { color?: string; presentation?: "header" | "join" }) {
   const [signedIn, setSignedIn] = useState(false);
+  const [label, setLabel] = useState("ACCOUNT");
+  const labelOwner = useRef(createIdentityLabelOwner()).current;
   useEffect(() => {
     let alive = true;
     let unsubscribe = () => {};
+    const apply = (session: FourPlanetSession | null) => {
+      if (!alive) return;
+      const next = labelOwner.begin(session);
+      setSignedIn(next.signedIn);
+      if (next.label) setLabel(next.label);
+      if (!session) return;
+      const generation = next.generation;
+      const requestUserId = session.user.id;
+      readProfile(session).then((profile) => {
+        if (!alive || !labelOwner.accept(generation, requestUserId)) return;
+        setLabel(identityDisplayLabel(profile, session.user));
+      }).catch(() => {
+        if (!alive || !labelOwner.accept(generation, requestUserId)) return;
+        setLabel(identityDisplayLabel(null, session.user));
+      });
+    };
     getIdentityClient().then((client) => {
-      client.auth.getSession().then(({ data }) => { if (alive) setSignedIn(Boolean(data.session)); });
-      const listener = client.auth.onAuthStateChange((_event, session) => { if (alive) setSignedIn(Boolean(session)); });
+      client.auth.getSession().then(({ data }) => apply(data.session));
+      const listener = client.auth.onAuthStateChange((_event, session) => apply(session));
       unsubscribe = () => listener.data.subscription.unsubscribe();
     }).catch(() => undefined);
     return () => { alive = false; unsubscribe(); };
-  }, []);
-  const href = signedIn ? identityAccountUrl(window.location.href) : identityLoginUrl(window.location.href);
-  return <a href={href} className="public-header__identity" style={{ color }}>{signedIn ? "ACCOUNT" : "SIGN IN"}</a>;
+  }, [labelOwner]);
+  const here = typeof window !== "undefined" ? window.location.href : "https://4planet.org/";
+  const loginHref = identityLoginUrl(here);
+  const createHref = identityLoginUrl(here, "signup");
+  const accountHref = identityAccountUrl(here);
+  if (presentation === "join") {
+    return (
+      <div data-testid="join-identity" style={{ marginTop: 26, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        {signedIn ? (
+          <a href={accountHref} data-testid="join-account" style={joinIdentityPrimary}>{label}</a>
+        ) : (
+          <>
+            <a href={createHref} data-testid="join-create" style={joinIdentityPrimary}>CREATE 4PLANET ID</a>
+            <a href={loginHref} data-testid="join-sign-in" style={joinIdentitySecondary}>SIGN IN</a>
+          </>
+        )}
+      </div>
+    );
+  }
+  return (
+    <span className="public-header__identity-group">
+      {signedIn ? (
+        <a href={accountHref} className="public-header__identity" data-testid="header-account" style={{ color }}>{label}</a>
+      ) : (
+        <>
+          <a href={loginHref} className="public-header__identity" data-testid="header-sign-in" style={{ color }}>SIGN IN</a>
+          <a href={createHref} className="public-header__identity" data-testid="header-create-id" style={{ color }}>CREATE 4PLANET ID</a>
+        </>
+      )}
+    </span>
+  );
 }
 
 function Header() {
@@ -357,7 +426,7 @@ function Header() {
           </nav>
 
           <div className="public-header__actions">
-            <IdentityHeaderAction color={fg} />
+            <IdentityAffordances color={fg} />
             <Link to="/join" className="public-header__join" style={{ color: fg }}>JOIN 4PLANET</Link>
             <button ref={menuButton} type="button" className="public-header__menu" aria-expanded={mobileOpen} aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((v) => !v)} style={{ color: fg }}>
               {mobileOpen ? "CLOSE" : "MENU"}
@@ -460,6 +529,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .public-header__nav-button{appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:22px 2px;cursor:pointer;transition:color .16s ease}
         .public-header__nav-button:focus-visible,.public-header__identity:focus-visible,.public-header__join:focus-visible,.public-header__menu:focus-visible,.public-brand:focus-visible{outline:3px solid currentColor;outline-offset:4px}
         .public-header__actions{display:flex;align-items:center;gap:14px}
+        .public-header__identity-group{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
         .public-header__identity{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
         .public-header__identity:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
@@ -484,7 +554,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .mobile-nav__lenses{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line};margin-top:18px}
         .mobile-nav__about{display:grid;margin-top:14px;border-top:1px solid ${T.line}}
         .mobile-nav__about a{padding:14px 0;border-bottom:1px solid ${T.line};font-family:${T.display};font-size:22px;color:${T.ink};text-decoration:none}
-        @media(max-width:920px){.public-header__desktop,.public-header__join{display:none}.public-header__bar{grid-template-columns:1fr auto}.public-header__menu{display:block}.nav-panel{display:none}.mobile-nav{display:block}}
+        @media(max-width:920px){.public-header__desktop,.public-header__join{display:none}.public-header__bar{grid-template-columns:1fr auto;gap:12px}.public-header__actions{gap:8px}.public-header__identity-group{gap:8px}.public-header__identity{font-size:9px;letter-spacing:.06em}.public-header__menu{display:block}.nav-panel{display:none}.mobile-nav{display:block}}
         @media(max-width:560px){.nav-panel-link{grid-template-columns:3px 1fr auto;padding:17px 14px}}
         @media(prefers-reduced-motion:reduce){.public-header{transition:none}.nav-panel-link *{transition:none!important}}
       `}</style>
