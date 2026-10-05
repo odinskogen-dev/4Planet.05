@@ -325,7 +325,7 @@ function SpeciesEditorialProfile({
                   style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
                 >{`EXPLORE ${profile.commonName.toUpperCase()} IN ATLAS →`}</Link>
                 <button type="button" onClick={onToggle} className="editorial-secondary" style={{ minHeight: 50 }}>
-                  {followed ? `FOLLOWING ${profile.commonName.toUpperCase()}` : `FOLLOW ${profile.commonName.toUpperCase()}`}
+                  {followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}
                 </button>
                 {profile.continuation && (
                   <Link
@@ -430,6 +430,16 @@ function SpeciesEditorialProfile({
             <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>Reported observation data is currently unavailable or returned no records. The species story and sources remain available.</p>
           )}
           <Link to={atlasHref} style={{ ...mono, display: "inline-block", marginTop: 24, color: T.blue, borderBottom: `1px solid ${T.blue}`, paddingBottom: 3 }}>OPEN OBSERVATIONS IN ATLAS →</Link>
+          <div style={{ marginTop: 34 }}>
+            <AtlasEmbed view={{
+              kind: "SPECIES",
+              title: profile.commonName + " — where recorded",
+              entityId: profile.id,
+              layers: ["bluemarble", "biodiv"],
+              description: "Explore available source records for the same canonical taxon in full ATLAS.",
+              limitation: "Historical occurrence records are not live animal positions, a verified distribution range, population abundance or a migration route.",
+            }} />
+          </div>
         </section>
 
         <section data-species-section="sources" style={{ maxWidth: 980, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(80px,10vw,128px)" }}>
