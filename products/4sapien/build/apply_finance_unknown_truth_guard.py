@@ -22,6 +22,18 @@ def once(s, old, new, label):
     return s.replace(old, new, 1)
 
 
+def section_once(s, begin, end, old, new, label):
+    a = s.find(begin)
+    b = s.find(end, a + len(begin))
+    if a < 0 or b < 0:
+        raise SystemExit(f"Unknown truth {label}: section anchors missing")
+    block = s[a:b]
+    n = block.count(old)
+    if n != 1:
+        raise SystemExit(f"Unknown truth {label}: expected one section anchor, found {n}")
+    return s[:a] + block.replace(old, new, 1) + s[b:]
+
+
 OLD_REG = ("function reg(i){let inn=0,out=0;S.e.forEach(e=>{let d=date(e);"
            "if(d.getFullYear()!=fsYear()||d.getMonth()!=i)return;"
            "let n=sg(e)*(+e.amount||0);n>0?inn+=n:out-=n});return{inn,out,net:inn-out}}")
@@ -140,62 +152,64 @@ for path in paths:
              'const row={user_id:userId,name:a.name,kind:a.kind,balance:a.balance===null||a.balance===undefined||a.balance===""?null:Math.round(Number(a.balance)),as_of:dISO(new Date()),source:"manual"};',
              "React add account null")
 
-    # React Now: patch small stable anchors rather than one whitespace-sensitive block.
-    s = once(s, " const conflict=dueSum>liq;",
+    # React Now: scope patches so repeated formulas in Plan cannot collide.
+    s = section_once(s, "function Now(", "function Money(", " const conflict=dueSum>liq;",
              " const conflict=liq!==null&&dueSum>liq;const coverageUnknown=liq===null;",
              "React Now conflict")
-    s = once(s,
+    s = section_once(s, "function Now(", "function Money(",
              ' const assets=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+b.amount,0)+accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
              ' const inv=investmentBalance(accounts);const assetEvents=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+Number(b.amount||0),0);const assets=inv===null?null:assetEvents+inv;',
              "React Now assets")
-    s = once(s,
+    s = section_once(s, "function Now(", "function Money(",
              ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+b.amount,0);const net=liq+assets-debts;',
              ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+Number(b.amount||0),0);const net=liq===null||assets===null?null:liq+assets-debts;',
              "React Now net")
-    s = once(s,
+    s = section_once(s, "function Now(", "function Money(",
              ' const mSpend=events.filter((e)=>e.type==="spend"&&e.recurring==="monthly").reduce((a,b)=>a+b.amount,0);',
              ' const mSpend=events.filter((e)=>e.type==="spend"&&e.recurring==="monthly").reduce((a,b)=>a+Number(b.amount||0),0);',
              "React Now spend baseline")
-    s = once(s,
+    s = section_once(s, "function Now(", "function Money(",
              ' const runway=mSpend>0?(liq+assets)/mSpend:0;const has=accounts.length>0||events.length>0;',
              ' const runway=liq===null||assets===null||mSpend<=0?null:(liq+assets)/mSpend;const has=accounts.length>0||events.length>0;',
              "React Now runway")
-    s = once(s, 'color:liq<0?T.red:T.ink', 'color:liq!==null&&liq<0?T.red:T.ink', "React Now liquidity colour")
-    s = once(s, 'accounts.filter((a)=>a.kind!=="investment").length} likvide kontoer', 'accounts.filter((a)=>a.kind==="bank"||a.kind==="cash").length} likvide kontoer', "React Now liquid count")
-    s = once(s,
+    s = section_once(s, "function Now(", "function Money(", 'color:liq<0?T.red:T.ink', 'color:liq!==null&&liq<0?T.red:T.ink', "React Now liquidity colour")
+    s = section_once(s, "function Now(", "function Money(", 'accounts.filter((a)=>a.kind!=="investment").length} likvide kontoer', 'accounts.filter((a)=>a.kind==="bank"||a.kind==="cash").length} likvide kontoer', "React Now liquid count")
+    s = section_once(s, "function Now(", "function Money(",
              '{runway>=99?"99+":runway.toFixed(1).replace(".",",")}<span style={{fontSize:12,color:T.faint}}> mnd</span>',
              '{runway===null?"UKJENT":(runway>=99?"99+":runway.toFixed(1).replace(".",","))}<span style={{fontSize:12,color:T.faint}}>{runway===null?"":" mnd"}</span>',
              "React Now runway unknown")
-    s = once(s,
+    s = section_once(s, "function Now(", "function Money(",
              '{conflict?<div style={{fontFamily:T.body,fontSize:12.5,color:T.red,marginTop:8,lineHeight:1.5}}>Forfall de neste 30 dagene',
              '{coverageUnknown?<div style={{fontFamily:T.body,fontSize:12,color:T.soft,marginTop:6}}>Dekning er UKJENT fordi minst én likvid saldo mangler.</div>:conflict?<div style={{fontFamily:T.body,fontSize:12.5,color:T.red,marginTop:8,lineHeight:1.5}}>Forfall de neste 30 dagene',
              "React coverage unknown")
 
-    s = once(s,
+    s = section_once(s, "function Money(", "function Plan(",
              ' const inv=accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
              ' const invAccounts=accounts.filter((a)=>a.kind==="investment");const inv=investmentBalance(accounts);',
              "React Money investments")
-    s = once(s, '{inv>0&&<div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontFamily:T.body,fontSize:12,color:T.faint}}>',
+    s = section_once(s, "function Money(", "function Plan(",
+             '{inv>0&&<div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontFamily:T.body,fontSize:12,color:T.faint}}>',
              '{invAccounts.length>0&&<div style={{display:"flex",justifyContent:"space-between",marginTop:4,fontFamily:T.body,fontSize:12,color:T.faint}}>',
              "React Money investment row")
 
-    s = once(s,
+    s = section_once(s, "function Plan(", "/* ---------- WEALTH ---------- */",
              ' const assets=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+b.amount,0)+accounts.filter((a)=>a.kind==="investment").reduce((s,a)=>s+(+a.balance||0),0);',
              ' const inv=investmentBalance(accounts);const assetEvents=events.filter((e)=>e.type==="asset").reduce((a,b)=>a+Number(b.amount||0),0);const assets=inv===null?null:assetEvents+inv;',
              "React Plan assets")
-    s = once(s,
+    s = section_once(s, "function Plan(", "/* ---------- WEALTH ---------- */",
              ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+b.amount,0);const net=liq+assets-debts;',
              ' const debts=events.filter((e)=>e.type==="debt").reduce((a,b)=>a+Number(b.amount||0),0);const net=liq===null||assets===null?null:liq+assets-debts;',
              "React Plan net")
-    s = once(s, 'const runwayLiq=mSpend>0?liq/mSpend:0;const runwayAll=mSpend>0?(liq+assets)/mSpend:0;',
-             'const runwayLiq=liq===null||mSpend<=0?null:liq/mSpend;const runwayAll=liq===null||assets===null||mSpend<=0?null:(liq+assets)/mSpend;',
+    s = section_once(s, "function Plan(", "/* ---------- WEALTH ---------- */",
+             ' const runwayLiq=mSpend>0?liq/mSpend:0;const runwayAll=mSpend>0?(liq+assets)/mSpend:0;',
+             ' const runwayLiq=liq===null||mSpend<=0?null:liq/mSpend;const runwayAll=liq===null||assets===null||mSpend<=0?null:(liq+assets)/mSpend;',
              "React Plan runway")
-    s = once(s, 'value={kr(liq)} color={liq<0?T.red:T.ink}', 'value={kr(liq)} color={liq!==null&&liq<0?T.red:T.ink}', "React Plan liquidity colour")
-    s = once(s,
+    s = section_once(s, "function Plan(", "/* ---------- WEALTH ---------- */", 'value={kr(liq)} color={liq<0?T.red:T.ink}', 'value={kr(liq)} color={liq!==null&&liq<0?T.red:T.ink}', "React Plan liquidity colour")
+    s = section_once(s, "function Plan(", "/* ---------- WEALTH ---------- */",
              '{runwayLiq>=99?"99+":runwayLiq.toFixed(1).replace(".",",")}<span style={{fontSize:13,color:T.faint}}> mnd</span>',
              '{runwayLiq===null?"UKJENT":(runwayLiq>=99?"99+":runwayLiq.toFixed(1).replace(".",","))}<span style={{fontSize:13,color:T.faint}}>{runwayLiq===null?"":" mnd"}</span>',
              "React Plan liquid runway")
-    s = once(s,
+    s = section_once(s, "function Plan(", "/* ---------- WEALTH ---------- */",
              '{runwayAll>=99?"99+":runwayAll.toFixed(1).replace(".",",")}<span style={{fontSize:13,color:T.faint}}> mnd</span>',
              '{runwayAll===null?"UKJENT":(runwayAll>=99?"99+":runwayAll.toFixed(1).replace(".",","))}<span style={{fontSize:13,color:T.faint}}>{runwayAll===null?"":" mnd"}</span>',
              "React Plan all runway")
