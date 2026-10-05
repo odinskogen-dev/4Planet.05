@@ -1,8 +1,10 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../home/runner/work/4Planet.05/4Planet.05/src/market/firstCreatorCatalogue.ts
-var photoCommerce = /* @__PURE__ */ __name(() => ({
+// ops/discovery/live-workers/4planetmarket-prototype.js
+var __defProp2 = Object.defineProperty;
+var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var photoCommerce = /* @__PURE__ */ __name2(() => ({
   candidatePriceNok: 1290,
   printSize: "8 \xD7 12 IN",
   podSku: "GLOBAL-FAP-8X12",
@@ -11,7 +13,7 @@ var photoCommerce = /* @__PURE__ */ __name(() => ({
   shippingCountry: "NO",
   sampleState: "REQUIRED"
 }), "photoCommerce");
-var artCommerce = /* @__PURE__ */ __name(() => ({
+var artCommerce = /* @__PURE__ */ __name2(() => ({
   candidatePriceNok: 890,
   printSize: "6 \xD7 8 IN",
   podSku: "GLOBAL-FAP-6X8",
@@ -158,9 +160,8 @@ function getFirstMarketProduct(id) {
   return FIRST_MARKET_PRODUCTS.find((product) => product.id === id || product.slug === id) ?? null;
 }
 __name(getFirstMarketProduct, "getFirstMarketProduct");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/_lib/marketCommerce.ts
-var bool = /* @__PURE__ */ __name((value) => value === "true", "bool");
+__name2(getFirstMarketProduct, "getFirstMarketProduct");
+var bool = /* @__PURE__ */ __name2((value) => value === "true", "bool");
 function canaryPrice(value) {
   if (!value) return null;
   const parsed = Number(value);
@@ -168,6 +169,7 @@ function canaryPrice(value) {
   return parsed;
 }
 __name(canaryPrice, "canaryPrice");
+__name2(canaryPrice, "canaryPrice");
 function resolveMarketCommerceRuntime(env) {
   const mode = env.MARKET_COMMERCE_ENV === "LIVE" ? "LIVE" : "TEST";
   const isLive = mode === "LIVE";
@@ -212,6 +214,7 @@ function resolveMarketCommerceRuntime(env) {
   };
 }
 __name(resolveMarketCommerceRuntime, "resolveMarketCommerceRuntime");
+__name2(resolveMarketCommerceRuntime, "resolveMarketCommerceRuntime");
 function safePublicOrigin(value) {
   const fallback = "https://4planetmarket.com";
   if (!value) return fallback;
@@ -224,6 +227,7 @@ function safePublicOrigin(value) {
   }
 }
 __name(safePublicOrigin, "safePublicOrigin");
+__name2(safePublicOrigin, "safePublicOrigin");
 function isAllowedMarketOrigin(origin, mode) {
   try {
     const url = new URL(origin);
@@ -236,10 +240,12 @@ function isAllowedMarketOrigin(origin, mode) {
   }
 }
 __name(isAllowedMarketOrigin, "isAllowedMarketOrigin");
+__name2(isAllowedMarketOrigin, "isAllowedMarketOrigin");
 function productSampleApproved(product, env) {
   return product.productType === "PHOTOGRAPHIC PRINT" ? bool(env.MARKET_PHOTO_SAMPLE_APPROVED) : bool(env.MARKET_ART_SAMPLE_APPROVED);
 }
 __name(productSampleApproved, "productSampleApproved");
+__name2(productSampleApproved, "productSampleApproved");
 function productCanCheckout(product, env) {
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.checkoutInfrastructureReady) return false;
@@ -247,25 +253,30 @@ function productCanCheckout(product, env) {
   return runtime.fulfilmentInfrastructureReady && runtime.webhookConfigured && productSampleApproved(product, env);
 }
 __name(productCanCheckout, "productCanCheckout");
+__name2(productCanCheckout, "productCanCheckout");
 function productCanCanary(product, env) {
   const runtime = resolveMarketCommerceRuntime(env);
   return runtime.isLive && runtime.canaryEnabled && runtime.stripeConfigured && runtime.webhookConfigured && runtime.providerFulfilmentReady && Boolean(product.commerce.podSku);
 }
 __name(productCanCanary, "productCanCanary");
+__name2(productCanCanary, "productCanCanary");
 function releasedMarketProductIds(env) {
   return FIRST_MARKET_PRODUCTS.filter((product) => productCanCheckout(product, env)).map((product) => product.id);
 }
 __name(releasedMarketProductIds, "releasedMarketProductIds");
+__name2(releasedMarketProductIds, "releasedMarketProductIds");
 function requireMarketProduct(value) {
   if (typeof value !== "string") return null;
   return getFirstMarketProduct(value.trim());
 }
 __name(requireMarketProduct, "requireMarketProduct");
+__name2(requireMarketProduct, "requireMarketProduct");
 function productAssetUrl(product, env) {
   const runtime = resolveMarketCommerceRuntime(env);
   return new URL(product.imageUrl, runtime.publicOrigin).toString();
 }
 __name(productAssetUrl, "productAssetUrl");
+__name2(productAssetUrl, "productAssetUrl");
 function prodigiCallbackUrl(env) {
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.callbackToken) return null;
@@ -274,6 +285,7 @@ function prodigiCallbackUrl(env) {
   return url.toString();
 }
 __name(prodigiCallbackUrl, "prodigiCallbackUrl");
+__name2(prodigiCallbackUrl, "prodigiCallbackUrl");
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -281,6 +293,7 @@ function json(body, status = 200) {
   });
 }
 __name(json, "json");
+__name2(json, "json");
 async function stripeGet(runtime, path) {
   if (!runtime.stripeSecret) return { ok: false, status: 0, payload: null };
   const response = await fetch(`https://api.stripe.com${path}`, {
@@ -290,6 +303,7 @@ async function stripeGet(runtime, path) {
   return { ok: response.ok, status: response.status, payload };
 }
 __name(stripeGet, "stripeGet");
+__name2(stripeGet, "stripeGet");
 async function stripePostForm(runtime, path, form, idempotencyKey) {
   if (!runtime.stripeSecret) return { ok: false, status: 0, payload: null };
   const headers = {
@@ -302,12 +316,14 @@ async function stripePostForm(runtime, path, form, idempotencyKey) {
   return { ok: response.ok, status: response.status, payload };
 }
 __name(stripePostForm, "stripePostForm");
+__name2(stripePostForm, "stripePostForm");
 async function updateStripeSessionMetadata(runtime, sessionId, metadata) {
   const form = new URLSearchParams();
   for (const [key, value] of Object.entries(metadata)) form.set(`metadata[${key}]`, value.slice(0, 500));
   return stripePostForm(runtime, `/v1/checkout/sessions/${encodeURIComponent(sessionId)}`, form);
 }
 __name(updateStripeSessionMetadata, "updateStripeSessionMetadata");
+__name2(updateStripeSessionMetadata, "updateStripeSessionMetadata");
 async function prodigiGet(runtime, path) {
   if (!runtime.prodigiKey) return { ok: false, status: 0, payload: null };
   const response = await fetch(`${runtime.prodigiBaseUrl}${path}`, {
@@ -317,6 +333,7 @@ async function prodigiGet(runtime, path) {
   return { ok: response.ok, status: response.status, payload };
 }
 __name(prodigiGet, "prodigiGet");
+__name2(prodigiGet, "prodigiGet");
 async function prodigiPost(runtime, path, body) {
   if (!runtime.prodigiKey) return { ok: false, status: 0, payload: null };
   const response = await fetch(`${runtime.prodigiBaseUrl}${path}`, {
@@ -328,8 +345,9 @@ async function prodigiPost(runtime, path, body) {
   return { ok: response.ok, status: response.status, payload };
 }
 __name(prodigiPost, "prodigiPost");
+__name2(prodigiPost, "prodigiPost");
 var encoder = new TextEncoder();
-var hex = /* @__PURE__ */ __name((buffer) => Array.from(new Uint8Array(buffer)).map((byte) => byte.toString(16).padStart(2, "0")).join(""), "hex");
+var hex = /* @__PURE__ */ __name2((buffer) => Array.from(new Uint8Array(buffer)).map((byte) => byte.toString(16).padStart(2, "0")).join(""), "hex");
 function constantTimeEqual(a, b) {
   if (a.length !== b.length) return false;
   let result = 0;
@@ -337,6 +355,7 @@ function constantTimeEqual(a, b) {
   return result === 0;
 }
 __name(constantTimeEqual, "constantTimeEqual");
+__name2(constantTimeEqual, "constantTimeEqual");
 async function verifyStripeSignature(payload, header, secret) {
   let timestamp = "";
   const signatures = [];
@@ -352,9 +371,8 @@ async function verifyStripeSignature(payload, header, secret) {
   return signatures.some((signature) => constantTimeEqual(signature, expected));
 }
 __name(verifyStripeSignature, "verifyStripeSignature");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/api/market-commerce-status.ts
-var onRequestGet = /* @__PURE__ */ __name(async (ctx) => {
+__name2(verifyStripeSignature, "verifyStripeSignature");
+var onRequestGet = /* @__PURE__ */ __name2(async (ctx) => {
   const runtime = resolveMarketCommerceRuntime(ctx.env);
   const releasedProductIds = releasedMarketProductIds(ctx.env);
   return json({
@@ -375,9 +393,7 @@ var onRequestGet = /* @__PURE__ */ __name(async (ctx) => {
     fulfilmentProvider: "Prodigi"
   });
 }, "onRequestGet");
-var onRequest = /* @__PURE__ */ __name(async (ctx) => ctx.request.method === "GET" ? onRequestGet(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/_lib/createMarketCheckout.ts
+var onRequest = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "GET" ? onRequestGet(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 async function createMarketCheckoutSession(args) {
   const { runtime, product, origin, attemptId, canary = false } = args;
   const checkoutPriceNok = canary && runtime.canaryPriceNok ? runtime.canaryPriceNok : product.commerce.candidatePriceNok;
@@ -424,15 +440,15 @@ async function createMarketCheckoutSession(args) {
   );
 }
 __name(createMarketCheckoutSession, "createMarketCheckoutSession");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/api/market-checkout.ts
+__name2(createMarketCheckoutSession, "createMarketCheckoutSession");
 function safeAttemptId(value) {
   if (typeof value !== "string") return crypto.randomUUID();
   const trimmed = value.trim();
   return /^[A-Za-z0-9_-]{8,80}$/.test(trimmed) ? trimmed : crypto.randomUUID();
 }
 __name(safeAttemptId, "safeAttemptId");
-var onRequestPost = /* @__PURE__ */ __name(async (ctx) => {
+__name2(safeAttemptId, "safeAttemptId");
+var onRequestPost = /* @__PURE__ */ __name2(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   const origin = request.headers.get("origin") ?? new URL(request.url).origin;
@@ -471,16 +487,15 @@ var onRequestPost = /* @__PURE__ */ __name(async (ctx) => {
     shippingCountry: "NO"
   });
 }, "onRequestPost");
-var onRequest2 = /* @__PURE__ */ __name(async (ctx) => ctx.request.method === "POST" ? onRequestPost(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/api/market-canary-checkout.ts
+var onRequest2 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function safeAttemptId2(value) {
   if (typeof value !== "string") return crypto.randomUUID();
   const trimmed = value.trim();
   return /^[A-Za-z0-9_-]{8,80}$/.test(trimmed) ? trimmed : crypto.randomUUID();
 }
-__name(safeAttemptId2, "safeAttemptId");
-var onRequestPost2 = /* @__PURE__ */ __name(async (ctx) => {
+__name(safeAttemptId2, "safeAttemptId2");
+__name2(safeAttemptId2, "safeAttemptId");
+var onRequestPost2 = /* @__PURE__ */ __name2(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.isLive || !runtime.canaryEnabled || !runtime.canaryToken) return json({ ok: false, error: "live_canary_closed" }, 503);
@@ -517,13 +532,12 @@ var onRequestPost2 = /* @__PURE__ */ __name(async (ctx) => {
     warning: "This checkout captures a real payment and, after payment, creates a real Prodigi fulfilment order."
   });
 }, "onRequestPost");
-var onRequest3 = /* @__PURE__ */ __name(async (ctx) => ctx.request.method === "POST" ? onRequestPost2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/api/market-stripe-webhook.ts
+var onRequest3 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function shippingFromSession(session) {
   return session.collected_information?.shipping_details ?? session.shipping_details ?? null;
 }
 __name(shippingFromSession, "shippingFromSession");
+__name2(shippingFromSession, "shippingFromSession");
 function orderRecipient(session) {
   const shipping = shippingFromSession(session);
   const address = shipping?.address ?? session.customer_details?.address ?? null;
@@ -543,12 +557,14 @@ function orderRecipient(session) {
   };
 }
 __name(orderRecipient, "orderRecipient");
+__name2(orderRecipient, "orderRecipient");
 async function loadAuthoritativeSession(runtime, id) {
   const response = await stripeGet(runtime, `/v1/checkout/sessions/${encodeURIComponent(id)}`);
   return response.ok ? response.payload : null;
 }
 __name(loadAuthoritativeSession, "loadAuthoritativeSession");
-var onRequestPost3 = /* @__PURE__ */ __name(async (ctx) => {
+__name2(loadAuthoritativeSession, "loadAuthoritativeSession");
+var onRequestPost3 = /* @__PURE__ */ __name2(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   if (!runtime.webhookConfigured || !runtime.stripeWebhookSecret) return json({ ok: false, error: "stripe_webhook_not_configured" }, 503);
@@ -633,14 +649,13 @@ var onRequestPost3 = /* @__PURE__ */ __name(async (ctx) => {
     prodigiOrderId
   });
 }, "onRequestPost");
-var onRequest4 = /* @__PURE__ */ __name(async (ctx) => ctx.request.method === "POST" ? onRequestPost3(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/api/market-order-status.ts
+var onRequest4 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost3(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function allowedHost(hostname) {
   return hostname === "4planetmarket.com" || hostname === "www.4planetmarket.com" || hostname.endsWith(".4planet-05.pages.dev") || hostname === "localhost";
 }
 __name(allowedHost, "allowedHost");
-var onRequestGet2 = /* @__PURE__ */ __name(async (ctx) => {
+__name2(allowedHost, "allowedHost");
+var onRequestGet2 = /* @__PURE__ */ __name2(async (ctx) => {
   const { request, env } = ctx;
   const url = new URL(request.url);
   if (!allowedHost(url.hostname)) return json({ ok: false, error: "host_not_allowed" }, 403);
@@ -704,9 +719,7 @@ var onRequestGet2 = /* @__PURE__ */ __name(async (ctx) => {
     } : null
   });
 }, "onRequestGet");
-var onRequest5 = /* @__PURE__ */ __name(async (ctx) => ctx.request.method === "GET" ? onRequestGet2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
-
-// ../home/runner/work/4Planet.05/4Planet.05/functions/api/market-prodigi-callback.ts
+var onRequest5 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "GET" ? onRequestGet2(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 function callbackOrderId(event) {
   if (event.subject?.startsWith("ord_")) return event.subject;
   const data = event.data;
@@ -715,7 +728,8 @@ function callbackOrderId(event) {
   return null;
 }
 __name(callbackOrderId, "callbackOrderId");
-var onRequestPost4 = /* @__PURE__ */ __name(async (ctx) => {
+__name2(callbackOrderId, "callbackOrderId");
+var onRequestPost4 = /* @__PURE__ */ __name2(async (ctx) => {
   const { request, env } = ctx;
   const runtime = resolveMarketCommerceRuntime(env);
   const supplied = new URL(request.url).searchParams.get("token") ?? "";
@@ -767,9 +781,7 @@ var onRequestPost4 = /* @__PURE__ */ __name(async (ctx) => {
     trackingLinked: Boolean(shipment?.tracking?.number || shipment?.tracking?.url)
   });
 }, "onRequestPost");
-var onRequest6 = /* @__PURE__ */ __name(async (ctx) => ctx.request.method === "POST" ? onRequestPost4(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
-
-// ../home/runner/work/4Planet.05/4Planet.05/workers/4planetmarket-commerce.ts
+var onRequest6 = /* @__PURE__ */ __name2(async (ctx) => ctx.request.method === "POST" ? onRequestPost4(ctx) : json({ ok: false, error: "method_not_allowed" }, 405), "onRequest");
 var FOUNDER_SAMPLE_PRODUCT_ID = "market:amalie:a14";
 var FOUNDER_SAMPLE_ATTEMPT_ID = "founderA14PhysicalSample01";
 async function sha256Hex(value) {
@@ -778,19 +790,22 @@ async function sha256Hex(value) {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 __name(sha256Hex, "sha256Hex");
+__name2(sha256Hex, "sha256Hex");
 function constantTimeEqual2(a, b) {
   if (a.length !== b.length) return false;
   let result = 0;
   for (let i = 0; i < a.length; i += 1) result |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return result === 0;
 }
-__name(constantTimeEqual2, "constantTimeEqual");
+__name(constantTimeEqual2, "constantTimeEqual2");
+__name2(constantTimeEqual2, "constantTimeEqual");
 async function founderTokenValid(token, env) {
   const expected = env.MARKET_FOUNDER_SAMPLE_TOKEN_SHA256?.trim() ?? "";
   if (!token || expected.length !== 64) return false;
   return constantTimeEqual2(await sha256Hex(token), expected);
 }
 __name(founderTokenValid, "founderTokenValid");
+__name2(founderTokenValid, "founderTokenValid");
 async function founderSampleCheckout(ctx) {
   if (ctx.request.method !== "POST") return new Response(JSON.stringify({ ok: false, error: "method_not_allowed" }), { status: 405, headers: { "content-type": "application/json" } });
   let body;
@@ -814,6 +829,7 @@ async function founderSampleCheckout(ctx) {
   return onRequest3({ request: internalRequest, env: ctx.env });
 }
 __name(founderSampleCheckout, "founderSampleCheckout");
+__name2(founderSampleCheckout, "founderSampleCheckout");
 async function founderSamplePage(request, env) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token") ?? "";
@@ -828,6 +844,7 @@ async function founderSamplePage(request, env) {
   return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex, nofollow, noarchive" } });
 }
 __name(founderSamplePage, "founderSamplePage");
+__name2(founderSamplePage, "founderSamplePage");
 var routes = {
   "/api/market-commerce-status": onRequest,
   "/api/market-checkout": onRequest2,
@@ -847,6 +864,7 @@ function withMarketHeaders(response, env, isPublic = false) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 __name(withMarketHeaders, "withMarketHeaders");
+__name2(withMarketHeaders, "withMarketHeaders");
 async function proxyMarket(request, env) {
   if (!env.MARKET_UPSTREAM) return new Response("Market upstream unavailable", { status: 503 });
   const incoming = new URL(request.url);
@@ -865,6 +883,7 @@ async function proxyMarket(request, env) {
   return fetch(proxied);
 }
 __name(proxyMarket, "proxyMarket");
+__name2(proxyMarket, "proxyMarket");
 var planetmarket_commerce_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -904,7 +923,7 @@ var planetmarket_commerce_default = {
     }
     const publicRoot = url.pathname === "/" || url.pathname === "/index.html";
     const upstream = await proxyMarket(request, env);
-    if (!publicRoot || request.method === "HEAD" || !((upstream.headers.get("content-type") || "").toLowerCase().includes("text/html"))) {
+    if (!publicRoot || request.method === "HEAD" || !(upstream.headers.get("content-type") || "").toLowerCase().includes("text/html")) {
       return withMarketHeaders(upstream, env, publicRoot);
     }
     const headers = new Headers(upstream.headers);
@@ -913,7 +932,7 @@ var planetmarket_commerce_default = {
     headers.set("x-4planet-market-source", env.MARKET_SOURCE_SHA || "unknown");
     let html = await upstream.text();
     html = html.replace(/<script[^>]+src=["']\/host-indexing-policy\.js["'][^>]*><\/script>/gi, "");
-    html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET — Products, Creators and Better Commerce</title>");
+    html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET \u2014 Products, Creators and Better Commerce</title>");
     html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="4PLANET MARKET is an early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
     html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
     html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
@@ -924,4 +943,4 @@ var planetmarket_commerce_default = {
 export {
   planetmarket_commerce_default as default
 };
-//# sourceMappingURL=4planetmarket-commerce.js.map
+//# sourceMappingURL=4planetmarket-prototype.js.map
