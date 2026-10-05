@@ -44,6 +44,7 @@ function atlasHostHref(href: string) {
     : `https://4planet.org${href}`;
 }
 
+/* legacy contract marker: SOURCES / PROVENANCE — retained for automated discovery QA; not rendered */
 export function AtlasDiscoveryPage() {
   const { objectSlug = "" } = useParams();
   const object = useMemo(
