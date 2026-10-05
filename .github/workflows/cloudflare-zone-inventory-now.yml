@@ -46,3 +46,4 @@ jobs:
           probe https://4sapien.com/sitemap.xml
           probe https://4sapien.com/app/food/
           probe https://4sapien.com/brain/
+# rerun current live discovery verification 2026-10-05T14:15Z
