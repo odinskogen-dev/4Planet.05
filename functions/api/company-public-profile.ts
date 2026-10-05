@@ -162,6 +162,18 @@ function normaliseUpdates(payload: any) {
   }).filter((row: any) => row.id || row.timestamp || row.changes.length).slice(0, 30);
 }
 
+function normaliseIndustryCohort(payload: any, orgnr: string) {
+  return extractEmbeddedArray(payload, ["enheter"]).map((row: any) => ({
+    organizationNumber: clean(row?.organisasjonsnummer, 20),
+    name: clean(row?.navn, 240),
+    employees: asNumber(row?.antallAnsatte),
+    organizationForm: clean(row?.organisasjonsform?.kode, 40) || null,
+    latestAccounts: clean(row?.sisteInnsendteAarsregnskap, 10) || null,
+    industryCode: clean(row?.naeringskode1?.kode, 40) || null,
+    industry: clean(row?.naeringskode1?.beskrivelse, 240) || null,
+  })).filter((row: any) => row.organizationNumber && row.organizationNumber !== orgnr && row.name).slice(0, 12);
+}
+
 function normaliseAccountYears(payload: any): string[] {
   const candidates: unknown[] = Array.isArray(payload) ? payload :
     Array.isArray(payload?.aar) ? payload.aar :
@@ -273,6 +285,12 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     }
 
     const company = buildCompany(rawResult.payload, exact);
+    const primaryIndustryCode = company.industries[0]?.code || "";
+    const cohortUrl = primaryIndustryCode
+      ? `${BRREG_API_BASE}/enheter?naeringskode=${encodeURIComponent(primaryIndustryCode)}&size=13&sort=antallAnsatte,DESC`
+      : "";
+    const cohortResult = cohortUrl ? await fetchJson(cohortUrl, "application/vnd.brreg.enhetsregisteret.enhet.v2+json") : { state: "NOT_APPLICABLE" as SourceState, payload: null };
+    const industryCohort = cohortResult.state === "READY" ? normaliseIndustryCohort(cohortResult.payload, orgnr) : [];
     const roles = rolesResult.state === "READY" ? normaliseRoles(rolesResult.payload) : [];
     const group = groupResult.state === "READY" ? flattenGroup(groupResult.payload) : [];
     const locations = subunitsResult.state === "READY" ? normaliseSubunits(subunitsResult.payload) : [];
@@ -314,6 +332,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
       { id: "BRREG-UPDATES", title: "Entity register updates", publisher: "Brønnøysundregistrene", url: updatesUrl, retrievedAt, state: updatesResult.state, note: "Published update events from the Entity Register. Absence is not proof that nothing changed." },
       { id: "BRREG-ACCOUNTS", title: "Annual-account copies", publisher: "Brønnøysundregistrene / Regnskapsregisteret", url: accountYearsUrl, retrievedAt, state: accountsResult.state, note: "Availability index for annual-account copies. Financial values are not inferred from PDF availability." },
       { id: "BRREG-FINANCIALS", title: "Latest annual-account key figures", publisher: "Brønnøysundregistrene / Regnskapsregisteret", url: financialsUrl, retrievedAt, state: financialsResult.state === "READY" ? (financials ? "READY" : "NO_MATCH") : financialsResult.state, note: "Open NLOD key figures from the latest submitted annual accounts. Some accounting types, including banks and insurers, are excluded; open structured history is not provided by this source." },
+      { id: "BRREG-INDUSTRY", title: "Registered industry cohort", publisher: "Brønnøysundregistrene", url: cohortUrl || exactUrl, retrievedAt, state: cohortResult.state, note: "Entities sharing the same primary registered industry code, sorted by registered employee count. This is a cohort for orientation, not a claim that every entity is a direct competitor." },
     ];
 
     const unknowns: string[] = [];
@@ -335,6 +354,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
         company,
         roles,
         group,
+        industryCohort,
         locations,
         changes,
         financials,
@@ -357,6 +377,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
           changeCount: changes.length,
           accountYearCount: accountYears.length,
           financialFactsAvailable: Boolean(financials),
+          industryCohortCount: industryCohort.length,
         },
         sources,
         unknowns,
