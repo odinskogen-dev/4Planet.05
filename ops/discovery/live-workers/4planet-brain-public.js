@@ -54,9 +54,15 @@ kind = "text/css; charset=utf-8";
 } else if (url.pathname === "/experience.js") {
 body = APP;
 kind = "application/javascript; charset=utf-8";
-} else if (url.pathname === "/robots.txt") {
-body = "User-agent: *\nAllow: /\n";
+} else if (url.pathname === `/${INDEXNOW_KEY}.txt`) {
+body = INDEXNOW_KEY;
 kind = "text/plain; charset=utf-8";
+} else if (url.pathname === "/robots.txt") {
+body = "User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\n\nSitemap: https://4brain.app/sitemap.xml\n";
+kind = "text/plain; charset=utf-8";
+} else if (url.pathname === "/sitemap.xml") {
+body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://4brain.app/</loc></url>\n</urlset>\n';
+kind = "application/xml; charset=utf-8";
 } else {
 return new Response("Not found", { status: 404, headers: security });
 }
