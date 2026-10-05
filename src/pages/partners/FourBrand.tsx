@@ -385,7 +385,9 @@ export default function FourBrand() {
   const [scenario, setScenario] = useState<ScenarioState>(INITIAL_SCENARIO);
   const [identityCandidates, setIdentityCandidates] = useState<CompanyIdentityCandidate[]>([]);
   const [identityResolution, setIdentityResolution] = useState<CompanyIdentityResolution | null>(null);
-  const [identityState, setIdentityState] = useState<"IDLE" | "SEARCHING" | "CANDIDATES" | "NO_MATCH" | "RESOLVING" | "READY" | "ERROR">("IDLE");\n  const [publicProfile, setPublicProfile] = useState<PublicCompanyProfileData | null>(null);\n  const [publicProfileState, setPublicProfileState] = useState<"IDLE" | "LOADING" | "READY" | "ERROR">("IDLE");
+  const [identityState, setIdentityState] = useState<"IDLE" | "SEARCHING" | "CANDIDATES" | "NO_MATCH" | "RESOLVING" | "READY" | "ERROR">("IDLE");
+  const [publicProfile, setPublicProfile] = useState<PublicCompanyProfileData | null>(null);
+  const [publicProfileState, setPublicProfileState] = useState<"IDLE" | "LOADING" | "READY" | "ERROR">("IDLE");
 
   const baselineRevenue = parseScenarioNumber(twin.annualRevenue);
   const baselineMargin = parseScenarioNumber(twin.grossMargin);
