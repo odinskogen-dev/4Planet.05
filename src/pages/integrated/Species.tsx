@@ -260,6 +260,132 @@ type ObservationState =
   | { status: "NO_RECORDS"; rows: Occurrence[]; total: number }
   | { status: "SOURCE_UNAVAILABLE"; rows: Occurrence[]; total: number };
 
+
+function OrcaEditorialPage({
+  profile,
+  atlasHref,
+  returnHref,
+  occurrences,
+}: {
+  profile: SpeciesProfile;
+  atlasHref: string;
+  returnHref: string | null;
+  occurrences: ObservationState;
+}) {
+  const media = speciesMedia(profile.slug);
+  const show = hasShowableImage(profile.slug);
+  const chapters = profile.narrativeChapters ?? [];
+  const leadChapter = chapters[0];
+  const supportingChapters = chapters.slice(1, 3);
+  const sourceLinks = Array.from(new Map(
+    [
+      { label: "GBIF — Orcinus orca", url: profile.taxonSourceUrl },
+      ...(profile.publicClaims ?? []).map((claim) => ({ label: claim.source, url: claim.sourceUrl })),
+      ...chapters.flatMap((chapter) => chapter.claims.map((claim) => ({ label: claim.sourceLabel ?? "Source", url: claim.sourceUrl ?? "" }))),
+    ].filter((source) => source.url).map((source) => [source.url, source]),
+  ).values()).slice(0, 6);
+
+  return (
+    <PublicShell>
+      <main style={{ background: "#FFFFFF", color: T.ink }}>
+        <section style={{ position: "relative", minHeight: "82svh", overflow: "hidden", background: "#07101b", borderBottom: `4px solid ${T.blue}` }}>
+          {show && media?.localPath ? (
+            <img
+              src={media.localPath}
+              alt={`${profile.commonName} — ${profile.scientificName}`}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 42%" }}
+            />
+          ) : null}
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(3,8,18,.14),rgba(3,8,18,.22) 40%,rgba(3,8,18,.82) 100%)" }} />
+          <div style={{ position: "relative", zIndex: 1, minHeight: "82svh", display: "flex", alignItems: "flex-end", padding: "clamp(42px,8vw,104px) clamp(20px,6vw,86px)" }}>
+            <div style={{ maxWidth: 980, color: "#FFFFFF" }}>
+              {returnHref && <Link to={returnHref} style={{ ...mono, color: "#FFFFFF", display: "inline-block", marginBottom: 18 }}>← BACK TO ATLAS</Link>}
+              <div style={{ ...mono, color: "#FFFFFF", opacity: .82 }}>4PLANET SPECIES</div>
+              <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(66px,12vw,148px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
+              <p style={{ margin: "18px 0 0", fontSize: "clamp(18px,2vw,25px)", fontStyle: "italic", opacity: .9 }}>{profile.scientificName}</p>
+              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 720, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.4 }}>{profile.intro}</p>}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 30 }}>
+                <Link
+                  to={atlasHref}
+                  data-testid="species-to-atlas"
+                  onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
+                  style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
+                >EXPLORE ORCA IN ATLAS →</Link>
+                <Link to="/species" style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: "#FFFFFF", color: T.ink, textDecoration: "none" }}>ALL SPECIES</Link>
+              </div>
+            </div>
+          </div>
+          {media?.attribution && (
+            <div style={{ position: "absolute", right: 14, bottom: 10, ...mono, color: "rgba(255,255,255,.72)", fontSize: 8 }}>
+              {media.attribution}{media.licence ? ` · ${media.licence}` : ""}
+            </div>
+          )}
+        </section>
+
+        <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(64px,9vw,118px) clamp(20px,5vw,64px)" }}>
+          <div style={{ ...mono, color: T.blue }}>FAMILY + CULTURE</div>
+          <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(42px,7vw,82px)", lineHeight: .96, letterSpacing: "-.05em", fontWeight: 520 }}>
+            {leadChapter?.title ?? "Orcas live through relationships."}
+          </h2>
+          <p style={{ margin: "26px 0 0", maxWidth: 760, fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.52 }}>
+            {leadChapter?.summary ?? "Orcas are highly social animals whose groups can differ in behaviour, diet and habitat use."}
+          </p>
+        </section>
+
+        <section style={{ maxWidth: 1180, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(64px,9vw,110px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,320px),1fr))", gap: 8 }}>
+            {[
+              { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of wild orcas surfacing together" },
+              { src: "/assets/species/orca/detail-spyhop.jpg", alt: "A wild orca spy-hopping above the surface" },
+            ].map((image) => (
+              <figure key={image.src} style={{ margin: 0, aspectRatio: "4/3", overflow: "hidden", background: "#07101b" }}>
+                <img src={image.src} alt={image.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        {supportingChapters.map((chapter) => (
+          <section key={chapter.id} style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
+            <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow.replace(/WH4LES_\s*·?\s*/i, "")}</div>
+            <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(36px,6vw,68px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>{chapter.title}</h2>
+            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>{chapter.summary}</p>
+          </section>
+        ))}
+
+        <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,100px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
+          <div style={{ ...mono, color: T.blue }}>WHERE RECORDED</div>
+          <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(38px,6vw,72px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>Explore reported observations.</h2>
+          {occurrences.status === "LIVE" ? (
+            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>
+              GBIF currently reports {occurrences.total.toLocaleString()} Orca occurrence records. They show where observations have been reported — not where Orcas are right now.
+            </p>
+          ) : (
+            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>Reported observation data is temporarily unavailable. The species story and sources remain available.</p>
+          )}
+          <Link to={atlasHref} style={{ ...mono, display: "inline-block", marginTop: 24, color: T.blue, borderBottom: `1px solid ${T.blue}`, paddingBottom: 3 }}>OPEN OBSERVATIONS IN ATLAS →</Link>
+        </section>
+
+        <section style={{ maxWidth: 980, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(80px,10vw,128px)" }}>
+          <details style={{ borderTop: `1px solid ${T.line}`, paddingTop: 26 }}>
+            <summary style={{ ...mono, color: T.blue, cursor: "pointer", listStyle: "none" }}>SOURCES + NOTES</summary>
+            <div style={{ display: "grid", gap: 14, marginTop: 20 }}>
+              {sourceLinks.map((source) => (
+                <a key={source.url} href={source.url} target="_blank" rel="noreferrer" style={{ color: T.ink, textDecoration: "none", paddingBottom: 12, borderBottom: `1px solid ${T.line}` }}>
+                  {source.label} ↗
+                </a>
+              ))}
+            </div>
+            <p style={{ marginTop: 20, maxWidth: 760, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>
+              Public observation records are historical source records. They are not live positions, population counts or migration routes.
+            </p>
+          </details>
+        </section>
+      </main>
+    </PublicShell>
+  );
+}
+
 export function SpeciesProfilePage() {
   const { slug } = useParams();
   const profile = speciesBySlug(slug);
@@ -287,6 +413,8 @@ export function SpeciesProfilePage() {
   // the exact prior camera/record; otherwise it opens ATLAS on this entity.
   const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
   const followed = following(profile.id);
+
+  if (isOrca) return <OrcaEditorialPage profile={profile} atlasHref={atlasHref} returnHref={returnHref} occurrences={occurrences} />;
 
   const actions = (
     <>
