@@ -58,8 +58,8 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
       const h1 = page.getByRole("heading", { level: 1 });
       await expect(h1).toHaveCount(1);
       await expect(h1).toHaveText(/Everything you love is connected\./i);
-      await expect(page.getByRole("link", { name: /WHY 4PLANET/i })).toBeVisible();
-      await expect(page.getByRole("link", { name: /OPEN ATLAS/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /EXPLORE THE PLANET/i }).first()).toBeVisible();
+      await expect(page.getByRole("link", { name: /JOIN US/i }).first()).toBeVisible();
 
       await page.keyboard.press("Tab");
       const skip = page.getByRole("link", { name: /SKIP TO (MAIN )?CONTENT/i });
@@ -69,11 +69,18 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
 
       await assertPremiumNavigation(page);
 
-      await expect(page.getByRole("heading", { name: "A healthy living planet is infrastructure for human life." })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "See the same planet from four angles." })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Four connected domains." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Human life depends on a living planet." })).toBeVisible();
+      await expect(page.getByTitle("Interactive 4PLANET ATLAS")).toBeVisible();
+      await expect(page.getByRole("link", { name: /OPEN ATLAS/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "See the same living planet from different angles." })).toBeVisible();
+      await expect(page.locator(".home-lens")).toHaveCount(4);
+      await expect(page.getByRole("heading", { name: "Meet the Orca." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Four connected worlds." })).toBeVisible();
       const worlds = page.locator(".home-world");
       await expect(worlds).toHaveCount(4);
+      await expect(page.getByRole("heading", { name: "Understand it. Help it. Follow what happens." })).toBeVisible();
+      await expect(page.locator(".home-impact-card")).toHaveCount(4);
+      await expect(page.getByText(/NOT YET OPEN FOR PUBLIC SUPPORT/i)).toBeVisible();
 
       const width = page.viewportSize()?.width ?? 1440;
       if (width <= 680) {

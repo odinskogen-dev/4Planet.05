@@ -1,3 +1,19 @@
+# HOMEPAGE BRAND RESET — HUMAN CRAFT CONTRACT CORRECTION — 06 OCT 2026
+
+**STATUS:** HEIR QA CONTRACT CORRECTION · PRODUCT SOURCE UNCHANGED · NO LIVE RELEASE.
+
+The first exact-sha Human Craft run failed because its homepage test still required the previous hero links `WHY 4PLANET` and `OPEN ATLAS` and the previous WHY/lens headings. Founder direction in the immediately preceding product commit changed that hierarchy to `EXPLORE THE PLANET` + `JOIN US`, a white human-life premise, an embedded shared ATLAS, the revised four-lens headline, one Orca visual encounter, the preserved four Domain worlds and a four-image asymmetric IMPACT action gallery.
+
+This correction updates the existing Human Craft regression contract to protect the current Founder-approved hierarchy. It additionally asserts the embedded shared ATLAS, four lens entries, Orca encounter, four Domain worlds, four IMPACT entries and the visible “NOT YET OPEN FOR PUBLIC SUPPORT” boundary. Existing navigation, overflow and mobile Domain-width checks remain.
+
+**PRODUCT CODE:** unchanged from `67f93a9c7a3548a30af869cca6586b2b5fb0ccdb`.
+
+**OBSERVED SEPARATE CONVERGENCE DEBT:** the ONE INTERFACE bundle gate was already failing before this homepage change because the largest JS chunk exceeded the historical 1,800,000-byte threshold. Previous HEIR b833973: 1,922,585 bytes. Homepage-reset candidate 67f93a9: 1,913,134 bytes. The homepage reset therefore reduced the largest JS chunk by 9,451 bytes and did not create that blocker. No unrelated bundle threshold or architecture is changed here.
+
+**ROLLBACK:** exact parent `67f93a9c7a3548a30af869cca6586b2b5fb0ccdb`.
+
+---
+
 # 4PLANET HOMEPAGE BRAND RESET — 06 OCT 2026
 
 **STATUS:** HEIR-ONLY FOUNDER-DIRECTED BRAND / EDITORIAL REFACTOR · NO LIVE RELEASE.
