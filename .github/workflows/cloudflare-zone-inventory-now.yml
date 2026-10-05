@@ -1,4 +1,4 @@
-name: Main Production Build Reproduction
+name: Discoverability Live Diagnostic
 
 on:
   push:
@@ -10,19 +10,33 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - name: Reproduce Cloudflare Pages build
+      - name: Probe current live public and private surfaces
+        shell: bash
         run: |
           set -euo pipefail
-          npm ci
-          npm run build
+          probe() {
+            local url="$1"
+            echo "=== $url ==="
+            curl -sSIL --max-time 20 "$url" | tr -d '\r' | grep -Ei '^(HTTP/|location:|content-type:|x-robots-tag:|cache-control:|link:)' | tail -20 || true
+            curl -sSL --max-time 20 "$url" | head -c 1800 | tr '\n' ' '; echo
+          }
+          probe https://4planetmarket.com/
+          probe https://4planetmarket.com/robots.txt
+          probe https://4planetmarket.com/sitemap.xml
+          probe https://4planetmarket.com/api/market-health
+          probe https://cre4tors.com/
+          probe https://cre4tors.com/robots.txt
+          probe https://cre4tors.com/sitemap.xml
+          probe https://4brain.app/
+          probe https://4brain.app/robots.txt
+          probe https://4brain.app/sitemap.xml
+          probe https://4planet.org/sitemap.xml
+          probe https://s4piens.com/
+          probe https://s4piens.com/robots.txt
+          probe https://s4piens.com/sitemap.xml
+          probe https://labs.4planet.org/
+          probe https://id.4planet.org/
