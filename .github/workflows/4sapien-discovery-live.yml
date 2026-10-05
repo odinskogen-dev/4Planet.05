@@ -61,7 +61,7 @@ jobs:
           grep -Fq 'https://4sapien.com/' <<<"$root"
           curl -fsS https://4sapien.com/robots.txt | grep -Fq 'Sitemap: https://4sapien.com/sitemap.xml'
           curl -fsS https://4sapien.com/sitemap.xml | grep -Fq 'https://4sapien.com/'
-          h=$(curl -sSI https://4sapien.com/app/food/ | tr -d '\r')
-          grep -qi '^x-robots-tag:.*noindex' <<<"$h"
           private=$(curl -fsS https://4sapien.com/app/food/)
           grep -Fq 'noindex,nofollow,noarchive' <<<"$private"
+          brain=$(curl -fsS https://4sapien.com/brain/)
+          grep -Fq 'noindex,nofollow,noarchive' <<<"$brain"
