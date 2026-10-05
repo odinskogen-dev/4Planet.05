@@ -1,4 +1,4 @@
-name: Cloudflare Pages Inventory Now
+name: Cloudflare Worker Domain Inventory Now
 
 on:
   push:
@@ -24,18 +24,15 @@ jobs:
         run: |
           set -euo pipefail
           TOKEN=""
-          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
-            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
-          done
-          [ -n "$TOKEN" ] || { echo 'missing Cloudflare token'; exit 2; }
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          [ -n "$TOKEN" ] || exit 2
           TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
-          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
-          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
           TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: List Pages projects and domains read-only
+      - name: List worker scripts and custom domains read-only
         shell: bash
         run: |
           set -euo pipefail
@@ -43,26 +40,15 @@ jobs:
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
           zones=$(curl -fsS "${api}/zones?per_page=50" "${auth[@]}")
           aid=$(jq -r '.result[0].account.id // empty' <<<"$zones")
-          [ -n "$aid" ] || { echo 'No account id'; exit 3; }
-          resp=$(curl -fsS "${api}/accounts/${aid}/pages/projects" "${auth[@]}")
-          jq -e '.success == true' <<<"$resp" >/dev/null
-          echo '=== PAGES PROJECTS ==='
-          jq -r '.result[] | {
-            name,
-            subdomain,
-            production_branch,
-            domains,
-            source:(.source.config // {}),
-            build_config:(.build_config // {}),
-            deployment_configs:{
-              production:{
-                compatibility_date:(.deployment_configs.production.compatibility_date // null),
-                env_vars:((.deployment_configs.production.env_vars // {})|keys)
-              },
-              preview:{
-                compatibility_date:(.deployment_configs.preview.compatibility_date // null),
-                env_vars:((.deployment_configs.preview.env_vars // {})|keys)
-              }
-            }
-          } | @json' <<<"$resp"
+          echo '=== WORKER SCRIPTS ==='
+          scripts=$(curl -fsS "${api}/accounts/${aid}/workers/scripts" "${auth[@]}" || echo '{"result":[]}')
+          jq -r '.result[]? | [.id, (.modified_on // ""), (.etag // "")] | @tsv' <<<"$scripts"
+          echo '=== WORKER CUSTOM DOMAINS ==='
+          domains=$(curl -fsS "${api}/accounts/${aid}/workers/domains" "${auth[@]}" || echo '{"result":[]}')
+          jq -r '.result[]? | [.hostname, (.service // ""), (.environment // ""), (.zone_id // "")] | @tsv' <<<"$domains"
+          echo '=== ZONE WORKER ROUTES ==='
+          jq -r '.result[] | [.id,.name] | @tsv' <<<"$zones" | while IFS=$'\t' read -r zid name; do
+            routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
+            jq -r --arg z "$name" '.result[]? | [$z,.pattern,(.script//"<none>")] | @tsv' <<<"$routes"
+          done
           echo '=== END ==='
