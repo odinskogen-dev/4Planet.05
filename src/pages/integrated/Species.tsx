@@ -267,6 +267,7 @@ function SpeciesEditorialProfile({
   occurrences,
   followed,
   onToggle,
+  search,
 }: {
   profile: SpeciesProfile;
   atlasHref: string;
@@ -274,6 +275,7 @@ function SpeciesEditorialProfile({
   occurrences: ObservationState;
   followed: boolean;
   onToggle: () => void;
+  search: string;
 }) {
   const media = speciesMedia(profile.slug);
   const show = hasShowableImage(profile.slug);
@@ -327,7 +329,7 @@ function SpeciesEditorialProfile({
                 </button>
                 {profile.continuation && (
                   <Link
-                    to={withReturnTo(profile.continuation.href, location.search)}
+                    to={withReturnTo(profile.continuation.href, search)}
                     data-testid={profile.continuation.testId}
                     onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: profile.continuation!.toProduct, canonical_entity: profile.id })}
                     style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: "#FFFFFF", color: T.ink, textDecoration: "none" }}
@@ -335,7 +337,7 @@ function SpeciesEditorialProfile({
                 )}
                 {profile.missionSlug && (
                   <Link
-                    to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)}
+                    to={withReturnTo(`/missions/${profile.missionSlug}`, search)}
                     data-testid="species-to-mission"
                     style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", border: "1px solid rgba(255,255,255,.72)", color: "#FFFFFF", textDecoration: "none" }}
                   >{`${profile.missionSlug.toUpperCase()}_ MISSION →`}</Link>
@@ -490,6 +492,7 @@ export function SpeciesProfilePage() {
       occurrences={occurrences}
       followed={followed}
       onToggle={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
+      search={location.search}
     />
   );
 }
