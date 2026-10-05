@@ -119,7 +119,7 @@ export function AtlasDiscoveryPage() {
         })}
       />
 
-      <main className="editorial-page" data-testid="atlas-discovery-object">
+      <main className="editorial-page" data-testid="atlas-discovery-object" style={{ background: "#FFFFFF" }}>
         <div className="editorial-wrap">
           <header className="editorial-hero">
             <div className="editorial-kicker">4PLANET ATLAS</div>
