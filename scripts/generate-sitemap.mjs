@@ -9,6 +9,8 @@ const stories = readStories();
 const discoveryInventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
 const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
 
+const missionRoutes = ["/missions/cle4n", "/missions/wh4les", "/missions/cor4l", "/missions/rewild-marine", "/missions/clim4te", "/missions/am4zonia", "/missions/species", "/missions/rewild-land", "/missions/food", "/missions/en4rgy", "/missions/circular-city", "/missions/f4shion", "/missions/m4gazine", "/missions/4film", "/missions/4rt", "/missions/4play"];
+
 const staticRoutes = [
   "/",
   "/domains",
@@ -17,6 +19,7 @@ const staticRoutes = [
   "/domains/s4piens",
   "/domains/4culture",
   "/missions",
+  ...missionRoutes,
   "/living-systems",
   "/places",
   "/living-systems/oslofjord",

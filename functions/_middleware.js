@@ -15,6 +15,14 @@ const PUBLIC_HOSTS = {
       ["Missions", "https://4planet.org/missions"],
       ["ATLAS", "https://4planetatlas.com/"],
       ["SPECIES", "https://4species.com/species/"],
+      ["4SAPIEN", "https://4sapien.com/"],
+      ["S4PIENS", "https://s4piens.com/"],
+      ["4BRANDS", "https://4brands.org/"],
+      ["4NATION", "https://4nation.org/"],
+      ["4BRAIN", "https://4brain.app/"],
+      ["MAGAZINE", "https://4planetmagazine.com/magazine/"],
+      ["MARKET", "https://4planetmarket.com/"],
+      ["CRE4TORS", "https://cre4tors.com/"],
     ],
     schemaType: "WebSite",
   },
@@ -499,8 +507,8 @@ export async function onRequest(context) {
   const normalisedPath = url.pathname.replace(/\/$/, "") || "/";
   let routeConfig = host === "4planet.org" ? FOURPLANET_ROUTES[normalisedPath] : null;
 
-  if (host === "4planet.org" && !routeConfig && normalisedPath.startsWith("/mission/")) {
-    const missionSlug = normalisedPath.slice("/mission/".length);
+  if (host === "4planet.org" && !routeConfig && normalisedPath.startsWith("/missions/")) {
+    const missionSlug = normalisedPath.slice("/missions/".length);
     const missionDiscovery = {
       "cle4n": ["CLE4N_ — A Cleaner Ocean, From Source to Sea", "A 4PLANET OCE4N_ mission pathway connecting marine pollution prevention, interception, recovery and transparent evidence.", "A clean ocean is a systems problem, not only a clean-up problem. CLE4N_ connects production, consumption, collection, rivers, coastlines and marine recovery.", "The pathway is in development. Public support opens only when delivery, measurement, evidence and reporting requirements are confirmed."],
       "wh4les": ["WH4LES_ — Whale Intelligence and Ocean Systems", "A 4PLANET OCE4N_ mission exploring whales, migration corridors, food webs, monitoring and credible protection pathways.", "Whales are participants in ocean food webs, migration systems and nutrient cycles across enormous distances.", "WH4LES_ is a strategic concept. Monitoring, protection and partner pathways must remain evidence-bounded rather than presented as completed conservation work."],
