@@ -19,6 +19,14 @@ export interface NarrativeChapter {
   claims: EvidenceClaim[];
 }
 
+export interface SpeciesTruthBoundary {
+  persistedBy: string;
+  text: string;
+  rows: { label: string; value: string }[];
+  disclosure: string;
+  sourceUrl: string;
+}
+
 export interface SpeciesProfile {
   id: string;
   slug: string;
@@ -34,6 +42,19 @@ export interface SpeciesProfile {
   solution: { id: string; label: string; status: "SOURCE_REVIEW_PENDING" };
   context: string;
   narrativeChapters?: NarrativeChapter[];
+  /** Parent-owned chapter heading. Content only; the section stays shared. */
+  chaptersEyebrow?: string;
+  chaptersTitle?: string;
+  chaptersLede?: string;
+  /** Parent-owned truth-boundary panel. Content only; the section stays shared. */
+  truthBoundary?: SpeciesTruthBoundary;
+  /** ATLAS journey id. Absent means the profile slug is the journey key. */
+  atlasJourney?: string;
+  /** Optional next-surface handoff. The action row is shared. */
+  continuation?: { href: string; label: string; toProduct: string; testId: string };
+  fieldEyebrow?: string;
+  fieldImages?: { src: string; alt: string }[];
+  fieldNote?: string;
   // ── WS-E premium presentation (optional, life-first; never replaces the
   //    KNOWN/INTERPRETED/UNKNOWN evidence model) ──
   group?: "Marine mammals" | "Land mammals" | "Birds" | "Insects" | "Other";
@@ -56,8 +77,8 @@ export interface SpeciesProfile {
   /**
    * ORCA-04: source-backed public claims for non-Orca profiles. Each is labelled
    * KNOWN / INTERPRETED / UNKNOWN, carries an authority + URL, and states its own
-   * boundary. Never surfaced as a settled 4PLANET assertion. Orca uses the richer
-   * narrativeChapters model instead.
+   * boundary. Never surfaced as a settled 4PLANET assertion. Profiles with
+   * narrativeChapters use that shared chapter model for the same section.
    */
   publicClaims?: {
     state: "KNOWN" | "INTERPRETED" | "UNKNOWN";
@@ -178,6 +199,125 @@ const ORCA_CHAPTERS: NarrativeChapter[] = [
   },
 ];
 
+const JAGUAR_CHAPTERS: NarrativeChapter[] = [
+  {
+    id: "jaguar-01-identity",
+    eyebrow: "JAGUAR · 01 IDENTITY",
+    title: "The largest cat in the Americas.",
+    summary: "This is a species-level description. It does not describe the size, sex, age or health of any one observed animal.",
+    claims: [
+      {
+        id: "jaguar-largest-cat",
+        state: "KNOWN",
+        label: "The largest cat in the Americas",
+        text: "The jaguar is the largest cat in the Americas — a muscular, mostly solitary predator.",
+        sourceLabel: "USFWS — Jaguar",
+        sourceUrl: "https://www.fws.gov/species/jaguar-panthera-onca",
+        checkedAt: "2026-10-03",
+        limitation: "Species-level description. Not evidence about the size, sex, age or health of an observed individual.",
+      },
+      {
+        id: "jaguar-local-unknown",
+        state: "UNKNOWN",
+        label: "Local condition",
+        text: "Current local abundance, population trend, corridor use, ecosystem health and live location remain UNKNOWN unless a separate place-and-time evidence object supports them.",
+        checkedAt: "2026-10-03",
+        limitation: "A species profile cannot fill these unknowns.",
+      },
+    ],
+  },
+  {
+    id: "jaguar-02-habitat",
+    eyebrow: "JAGUAR · 02 HABITAT",
+    title: "One species, many habitats.",
+    summary: "Documented environments include tropical forest, swampy savanna, wetland, dry forest and thorn scrub. Range-wide habitat use does not prove current occupancy at a specific place.",
+    claims: [
+      {
+        id: "jaguar-habitats",
+        state: "KNOWN",
+        label: "Many habitats, often near water",
+        text: "Jaguars use tropical forests, swampy grasslands and savannas, wetlands, dry forest and thorn scrub, and are often associated with water.",
+        sourceLabel: "USFWS and IUCN SSC Cat Specialist Group",
+        sourceUrl: "https://www.catsg.org/living-species-jaguar",
+        checkedAt: "2026-10-03",
+        limitation: "Range-wide habitat use does not prove current occupancy, corridor use or condition at a specific place.",
+      },
+    ],
+  },
+  {
+    id: "jaguar-03-ecology",
+    eyebrow: "JAGUAR · 03 ECOLOGY",
+    title: "A flexible predator.",
+    summary: "USFWS reports a wide range of prey and says jaguars generally favour medium-to-large prey while adapting to the fauna of different biomes.",
+    claims: [
+      {
+        id: "jaguar-prey",
+        state: "KNOWN",
+        label: "Wide prey range",
+        text: "USFWS reports that jaguars take a wide range of prey, generally favouring medium-to-large prey and adapting to the fauna of different biomes.",
+        sourceLabel: "USFWS — Jaguar",
+        sourceUrl: "https://www.fws.gov/species/jaguar-panthera-onca",
+        checkedAt: "2026-10-03",
+        limitation: "Do not infer local prey, diet, predation pressure or behaviour from this species profile or from an occurrence point.",
+      },
+    ],
+  },
+  {
+    id: "jaguar-04-place",
+    eyebrow: "JAGUAR · 04 PLACE & RECORD",
+    title: "A reported point is not a range.",
+    summary: "Reported observations are evidence of reporting at a place and time, not a complete range map or a live animal position.",
+    claims: [
+      {
+        id: "jaguar-occurrence-boundary",
+        state: "UNKNOWN",
+        label: "Occurrence is not range",
+        text: "An occurrence point does not establish range, abundance, population trend, corridor use or a live location.",
+        sourceLabel: "GBIF — Panthera onca",
+        sourceUrl: "https://www.gbif.org/species/5219426",
+        checkedAt: "2026-10-03",
+        limitation: "Historical occurrence data remains a report of a record, not a current animal position.",
+      },
+    ],
+  },
+  {
+    id: "jaguar-05-status",
+    eyebrow: "JAGUAR · 05 STATUS & PRESSURE",
+    title: "Global category; regional realities differ.",
+    summary: "The IUCN SSC Cat Specialist Group identifies the species as Near Threatened and says regional status varies. A global category is not a local population assessment.",
+    claims: [
+      {
+        id: "jaguar-status",
+        state: "KNOWN",
+        label: "Near Threatened, with regional differences",
+        text: "The IUCN SSC Cat Specialist Group identifies the jaguar as Near Threatened and states that regional status varies. The page cites Red List version 2024-2.",
+        sourceLabel: "IUCN SSC Cat Specialist Group — Jaguar",
+        sourceUrl: "https://www.catsg.org/living-species-jaguar",
+        checkedAt: "2026-10-03",
+        limitation: "Never convert a global category into a local population assessment.",
+      },
+      {
+        id: "jaguar-population-unknown",
+        state: "UNKNOWN",
+        label: "No single global population number",
+        text: "A single global population number remains UNKNOWN until published estimates are reconciled by method and date.",
+        checkedAt: "2026-10-03",
+        limitation: "Conflicting published estimates are not silently averaged or selected on this page.",
+      },
+      {
+        id: "jaguar-pressures",
+        state: "KNOWN",
+        label: "Pressures differ by place",
+        text: "Documented pressures include habitat loss and fragmentation, prey reduction, retaliatory killing, trophy and illegal trade, and competition perceptions.",
+        sourceLabel: "USFWS and IUCN SSC Cat Specialist Group",
+        sourceUrl: "https://www.fws.gov/species/jaguar-panthera-onca",
+        checkedAt: "2026-10-03",
+        limitation: "This page does not quantify current pressure intensity or conservation outcome at any named site.",
+      },
+    ],
+  },
+];
+
 export const SPECIES_PROFILES: SpeciesProfile[] = [
   {
     id: "taxon:gbif:2440483",
@@ -194,12 +334,37 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     solution: { id: "solution:4p:protected-restoration", label: "Protection and restoration", status: "SOURCE_REVIEW_PENDING" },
     context: "Working execution profile. Taxonomy is source-grounded; ecological claims remain bounded by population, place and evidence.",
     narrativeChapters: ORCA_CHAPTERS,
+    chaptersEyebrow: "WH4LES_ · FOUR EVIDENCE CHAPTERS",
+    chaptersTitle: "From one animal to the living relationships around it.",
+    chaptersLede: "Every statement is labelled KNOWN, INTERPRETED or UNKNOWN. Species-level evidence is never silently converted into a claim about one population, pod or individual.",
+    truthBoundary: {
+      persistedBy: "BUNDLED_FIXTURE",
+      text: "This record shows that a human observation of an orca was published to GBIF at the stated coordinates and date. It does not establish range, abundance, population trend, place membership or ecological change.",
+      rows: [
+        { label: "SOURCE RECORD", value: "5939349319" },
+        { label: "OBSERVATION", value: "observation:gbif:5939349319" },
+        { label: "SIGNAL", value: "NONE CREATED" },
+        { label: "INTERPRETATION", value: "UNREVIEWED" },
+      ],
+      disclosure: "Bundled evidence fixture. The Supabase/PostGIS contract and seed are included, but hosted persistence was not exercised because no staging secret was supplied.",
+      sourceUrl: "https://www.gbif.org/occurrence/5939349319",
+    },
     group: "Marine mammals",
     intro: "The orca is the largest member of the dolphin family — a fast, social, wide-ranging predator found in every ocean. Populations differ in prey, behaviour and calls, so a species label does not describe every group.",
     habitat: "All oceans, from polar seas to the tropics. Coastal groups follow prey along shelves and fjords; others range across open water.",
     descriptorSource: { source: "NOAA Fisheries & GBIF", sourceUrl: "https://www.fisheries.noaa.gov/species/killer-whale", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
     journey: "orca",
     missionSlug: "wh4les",
+    atlasJourney: "orca-gbif",
+    continuation: { href: "/living-systems", label: "CONTINUE TO LIVING SYSTEMS →", toProduct: "living_systems", testId: "species-to-ls" },
+    fieldEyebrow: "FROM THE FIELD · FOUNDER-SUPPLIED",
+    fieldImages: [
+      { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
+      { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of orcas surfacing together" },
+      { src: "/assets/species/orca/detail-spyhop.jpg", alt: "An orca spy-hopping, head raised above the surface" },
+      { src: "/assets/species/orca/detail-ice.jpg", alt: "Orcas spy-hopping among Antarctic pack ice" },
+    ],
+    fieldNote: "Real photographs of wild orcas, founder-supplied and rights-cleared. These are illustrative of the species, not tied to a specific observation record.",
   },
   {
     id: "taxon:gbif:5220086",
@@ -664,13 +829,31 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     livingSystemId: "living-system:4p:tropical-forest",
     issue: { id: "issue:4p:forest-pressure-review", label: "Forest pressure review", status: "SOURCE_REVIEW_PENDING" },
     solution: { id: "solution:4p:protected-restoration", label: "Protection and restoration", status: "SOURCE_REVIEW_PENDING" },
-    context: "Working execution profile. The largest cat in the Americas and a wide-ranging Amazonian predator.",
+    context: "Working execution profile. Species-level description is source-bounded; local abundance, trend, corridor use and live location stay UNKNOWN.",
+    narrativeChapters: JAGUAR_CHAPTERS,
+    chaptersEyebrow: "JAGUAR · EVIDENCE CHAPTERS",
+    chaptersTitle: "What the species record shows, and what stays unknown.",
+    chaptersLede: "Every statement is labelled KNOWN, INTERPRETED or UNKNOWN. A species description is never silently converted into local population health, corridor use or a live location.",
+    truthBoundary: {
+      persistedBy: "SOURCE_ENVELOPE",
+      text: "This profile keeps the accepted GBIF taxon identity for Panthera onca and the bounded USFWS and IUCN Cat Specialist Group descriptions. A reported observation is evidence of reporting at a place and time. It does not establish range, abundance, corridor use, ecosystem health or a live animal position.",
+      rows: [
+        { label: "SOURCE RECORD", value: "jaguar-gbif-taxonomy-2026-08-28" },
+        { label: "DESCRIPTOR", value: "USFWS + IUCN SSC Cat Specialist Group" },
+        { label: "SIGNAL", value: "NONE CREATED" },
+        { label: "LOCAL CONDITION", value: "UNKNOWN" },
+      ],
+      disclosure: "GBIF occurrence licences stay with each dataset. USFWS is a public information page and is not an endorsement. The Cat Specialist Group page is used for attributed facts only.",
+      sourceUrl: "https://www.gbif.org/species/5219426",
+    },
     group: "Land mammals",
-    intro: "The largest cat in the Americas, a powerful, wide-ranging predator whose presence signals connected, functioning forest.",
-    habitat: "Tropical forests and wetlands of Central and South America, including the Amazon basin.",
-    descriptorSource: { source: "IUCN & GBIF", sourceUrl: "https://www.gbif.org/species/5219426", checkedAt: "2026-08-06", note: "General descriptive summary of identity and habitat; not a measured population or range claim." },
+    intro: "The jaguar is the largest cat in the Americas — a muscular, mostly solitary predator found across wet forests, savannas, wetlands and drier woodland. Range-wide patterns describe the species; a sighting alone does not prove local population health or ecosystem condition.",
+    habitat: "Jaguars use many environments across the Americas, including tropical forest, swampy savanna, wetland, dry forest and thorn scrub. They are often associated with water. Reported observations are evidence of reporting at a place and time, not a complete range map or a live animal position.",
+    descriptorSource: { source: "USFWS & IUCN SSC Cat Specialist Group", sourceUrl: "https://www.fws.gov/species/jaguar-panthera-onca", checkedAt: "2026-10-03", note: "Species-level description and habitat. A sighting does not prove local population health or ecosystem condition. No single global population number is published here." },
     journey: "amazonia",
     missionSlug: "am4zonia",
+    fieldEyebrow: "MEDIA RIGHTS · SP-005",
+    fieldNote: "SP-005 is a Pantanal species portrait (Patty Ho, captured 2012-03-17, CC BY 2.0). It is not an Amazonia image, an ATLAS occurrence, a current-location record or evidence of local ecological condition.",
   },
   {
     id: "taxon:gbif:2474514",
