@@ -1,0 +1,34 @@
+name: Read Active Public Product Workers
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/read-public-product-workers.yml
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read deployed public Worker sources only
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          token=$(printf '%s' "$CF_TOKEN" | tr -d '\r\n')
+          token="${token#Bearer }"
+          echo "::add-mask::$token"
+          api='https://api.cloudflare.com/client/v4'
+          zone=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4planet.org")
+          aid=$(jq -r '.result[0].account.id' <<<"$zone")
+          for script in 4planetmarket-prototype cre4tors-prototype 4planet-brain-public; do
+            echo "=== BEGIN:$script ==="
+            curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/workers/scripts/$script"
+            echo
+            echo "=== END:$script ==="
+          done
