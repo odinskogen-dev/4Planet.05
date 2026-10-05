@@ -75,7 +75,8 @@ test("ATLAS useful objects are routed, searchable and prerendered from one inven
   assert.ok(pre.includes("atlasObjects"));
   assert.ok(atlasPage.includes('object.indexable ? "index,follow,max-image-preview:large" : "noindex,follow"'));
   assert.ok(atlasPage.includes("EXPLORE IN ATLAS"));
-  assert.ok(atlasPage.includes(">SOURCES<") || atlasPage.includes("SOURCES"));
+  assert.ok(atlasPage.includes("object.sources.map"));
+  assert.ok(atlasPage.includes("source_opened"));
 });
 
 test("public product-host attribution includes 4NATION, SPECIES and MAGAZINE",()=>{
