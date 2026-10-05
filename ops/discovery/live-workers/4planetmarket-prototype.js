@@ -837,9 +837,10 @@ var routes = {
   "/api/market-order-status": onRequest5,
   "/api/market-prodigi-callback": onRequest6
 };
-function withMarketHeaders(response, env) {
+function withMarketHeaders(response, env, isPublic = false) {
   const headers = new Headers(response.headers);
-  headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+  if (isPublic) headers.delete("x-robots-tag");
+  else headers.set("x-robots-tag", "noindex, nofollow, noarchive");
   headers.set("x-4planet-market", env.MARKET_MARKER || "4market-commerce");
   headers.set("x-4planet-market-source", env.MARKET_SOURCE_SHA || "unknown");
   headers.set("cache-control", "no-store");
@@ -867,6 +868,20 @@ __name(proxyMarket, "proxyMarket");
 var planetmarket_commerce_default = {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
+    if (url.hostname === "www.4planetmarket.com") {
+      url.hostname = "4planetmarket.com";
+      return Response.redirect(url.toString(), 308);
+    }
+    if (url.pathname === `/${INDEXNOW_KEY}.txt`) {
+      return new Response(INDEXNOW_KEY, { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=86400" } });
+    }
+    if (url.pathname === "/robots.txt") {
+      return new Response("User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /sample/\nDisallow: /checkout\nDisallow: /account\n\nSitemap: https://4planetmarket.com/sitemap.xml\n", { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=300" } });
+    }
+    if (url.pathname === "/sitemap.xml") {
+      return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://4planetmarket.com/</loc></url>\n</urlset>\n', { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=300" } });
+    }
     if (url.pathname === "/api/market-health") {
       return withMarketHeaders(new Response(JSON.stringify({ ok: true, source: env.MARKET_SOURCE_SHA }), {
         headers: { "content-type": "application/json; charset=utf-8" }
@@ -887,7 +902,23 @@ var planetmarket_commerce_default = {
         }), env);
       }
     }
-    return withMarketHeaders(await proxyMarket(request, env), env);
+    const publicRoot = url.pathname === "/" || url.pathname === "/index.html";
+    const upstream = await proxyMarket(request, env);
+    if (!publicRoot || request.method === "HEAD" || !((upstream.headers.get("content-type") || "").toLowerCase().includes("text/html"))) {
+      return withMarketHeaders(upstream, env, publicRoot);
+    }
+    const headers = new Headers(upstream.headers);
+    for (const key of ["x-robots-tag", "content-length", "content-encoding", "etag"]) headers.delete(key);
+    headers.set("x-4planet-market", env.MARKET_MARKER || "4market-commerce");
+    headers.set("x-4planet-market-source", env.MARKET_SOURCE_SHA || "unknown");
+    let html = await upstream.text();
+    html = html.replace(/<script[^>]+src=["']\/host-indexing-policy\.js["'][^>]*><\/script>/gi, "");
+    html = html.replace(/<title>[^<]*<\/title>/i, "<title>4PLANET MARKET — Nature, Culture and Better Products</title>");
+    html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="4PLANET MARKET is an early public marketplace prototype connecting creators, products and the wider 4PLANET ecosystem.">');
+    html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
+    html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
+    html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://4planetmarket.com/"></head>');
+    return new Response(html, { status: upstream.status, statusText: upstream.statusText, headers });
   }
 };
 export {
