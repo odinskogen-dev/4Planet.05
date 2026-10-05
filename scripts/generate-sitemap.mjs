@@ -18,14 +18,11 @@ const staticRoutes = [
   "/domains/4culture",
   "/missions",
   "/living-systems",
-  "/atlas",
   "/places",
-  "/species",
   "/4sapien",
   "/4sapien/food",
   "/4sapien/finance",
   "/4brands",
-  "/species/orca",
   "/living-systems/oslofjord",
   "/living-systems/great-barrier-reef",
   "/impact/actions/bay-of-biscay-survey",
@@ -48,10 +45,7 @@ const staticRoutes = [
   "/join",
 ];
 
-const discoveryRoutes = [
-  ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
-  ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
-  ...(atlasDiscovery.objects ?? []).filter((item) => item.indexable === true).map((item) => `/atlas/${item.slug}`),
+// ATLAS and SPECIES have standalone canonical homes. Their 4planet.org routes\n// redirect to those product domains, so they are excluded from this sitemap.\nconst discoveryRoutes = [\n  ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
