@@ -49,6 +49,7 @@ jobs:
           tests/e2e/pantry-choice.spec.ts
           tests/e2e/species-first-read.spec.ts
           tests/e2e/atlas-core-parent-release.spec.ts
+          tests/e2e/discovery-master-gold.spec.ts
           --project=desktop-1440
           --project=mobile-390
           --project=webkit-desktop

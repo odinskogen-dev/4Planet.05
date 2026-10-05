@@ -1,3 +1,17 @@
+# HUMAN-FIRST DISCOVERY — MASTER GOLD BROWSER MATRIX — 05 OCT 2026
+
+**STATUS:** EXISTING QA MATRIX EXTENSION / HEIR ONLY.
+
+**DELTA:** add one bounded Playwright proof for the three Discovery Master Gold routes to the existing VALUE CONVERGENCE browser gate. No new workflow, branch, control plane or deployment surface is created.
+
+**MATRIX:** Chromium desktop 1440 + mobile 390 and WebKit desktop + mobile 390, inherited from the existing convergence workflow.
+
+**ASSERTIONS:** HTTP 200; expected human-first H1/boundary copy; noindex; no horizontal overflow; no undefined/NaN; no fatal page errors; screenshots retained by the existing evidence path.
+
+**KNOWN UNRELATED DEBT:** the separate legacy Species/Lens workflow currently expects the superseded literal `4PLANET SPECIES_` on the existing Orca renderer. This sprint did not change that public renderer and does not treat that locator mismatch as Master Gold failure.
+
+---
+
 # HUMAN-FIRST DISCOVERY OBJECTS — WORLD CLASS 01 — 05 OCT 2026
 
 **STATUS:** HEIR / CONTROLLED MASTER GOLD / NOINDEX / NO LIVE RELEASE.
