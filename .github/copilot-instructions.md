@@ -20,6 +20,30 @@ Hard execution rules:
 
 Run `node scripts/elite-operating-doctrine-gate.mjs` before claiming a repository-level control candidate is verified. Do not bypass or weaken the gate.
 
+
+
+## MASTER BRAND OS — mandatory for material brand / UI / public production
+
+For any material 4PLANET brand, visual design, UI, web, public-product surface, presentation, creative-system, public copy/editorial layout, or other public-facing asset, **fresh-read the current BRAIN Brand routing before production**.
+
+Canonical current brand front door:
+- `00_ AGENT START HERE — AGENTS.md — 4PLANET KNOWLEDGE OS` — Drive ID `13wCyLsLv0xFHYS1nbAXKqcQux3kz8b48U0pm0bGFhVo`
+- `4PLANET BRAND OS — MASTER CANON, PLATFORM, IDENTITY & PRODUCTION SYSTEM` — Drive ID `1bOIr3a83N53RVFZs_jibXr02cRS_RSP_bhCDVmN0_88`
+
+The Brand OS controls master expression; current product authority controls the product job and functional requirements; factual truth, evidence, rights, methodology and provenance outrank branding preference. A later explicit Founder Decision outranks older Brand OS language.
+
+Do **not** design from model/chat memory, a product PRD alone, an archived brand guide, an old screenshot, a generic "premium" prompt, repository-local defaults, or prior AI output.
+
+Before material visual/public production, recover the current Founder Brand Reset and complete the Brand OS agent preflight: user job; selected brand mode; dominant idea; dominant visual anchor; obvious next action; living-world presence level; active contextual accent; type hierarchy; grid/whitespace logic; geometry logic; deliberately deferred complexity.
+
+**HARD FAIL:** material visual/public production begins without current Brand OS rehydration.
+**HARD FAIL:** technically correct work is accepted while visibly drifting into generic SaaS/AI/ESG dashboard/NGO-template/card-grid/sci-fi telemetry aesthetics.
+**HARD FAIL:** a local palette, font family, radius system or product-local brand is silently invented.
+
+If the current runtime cannot physically read the BRAIN/Drive authorities, stop the affected material visual mutation with `CURRENT BRAND OS READ REQUIRED` and obtain a fresh AXE/BRAIN handoff grounded in those exact authorities. Do not guess.
+
+This routing adds no public-release authority and creates no repository-local parallel Brand OS.
+
 Before changing code, inspect the assigned task/PR, exact branch, recent relevant git history and existing components/contracts. Read `AGENTS.md`, `docs/control/FOUR_STATE_PRODUCT_CONTROL.md`, `docs/control/PRODUCT_SURFACE_REGISTRY.json`, `docs/control/PROJECT_CANDIDATE_AUTHORITY.json`, `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/CODE_LINEAGE_REGISTER.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and `docs/control/GOLD_CURRENT_BRIEF.md`. Do not create parallel architecture when an existing implementation can be extended.
 
 For any material user-facing mutation, resolve the affected product's four authority states before writing code: `LIVE`, the sole `HEIR`, the single registered `SANDBOX` or explicit NONE, and `ARCHIVED` history/donors. Resolve exact HEIR branch/SHA, current registered sandbox branch/SHA/review URL, parent SHA, allowed donors, return path to HEIR and rollback identity. If any required authority state is unresolved, stop user-facing mutation with `PRODUCT AUTHORITY CONTEXT UNRESOLVED`.
