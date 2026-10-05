@@ -24,7 +24,7 @@
 
 **MASTER GOLD 01–03:** Orca / Great Barrier Reef / Global Fires. These intentionally stress three different object classes while reading existing canonical Species, PlanetProof, Place and ATLAS data rather than creating parallel truth stores.
 
-**DESIGN STANDARD:** Orca uses existing cleared documentary media; Great Barrier Reef and Global Fires use designed orientation fields that are explicitly disclosed as non-evidentiary. Shared source, boundary and next-object modules do not force visual sameness.
+**DESIGN STANDARD:** Orca uses existing cleared documentary media; Great Barrier Reef uses the canonical COR4L_ media bank explicitly recorded as founder-supplied, rights-cleared and content-verified; Global Fires uses a designed signal field explicitly disclosed as not-live/non-evidentiary. Shared source, boundary and next-object modules do not force visual sameness.
 
 **TRUTH / RELEASE:** these routes are controlled `/labs/gold/discovery/*` proofs with `noindex,nofollow,noarchive,nosnippet`. No production publication, social send, email send, IndexNow or Search Console submission is authorised.
 

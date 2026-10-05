@@ -62,7 +62,7 @@ The rank is editorial/product priority, not a fabricated keyword-volume league t
 Uses the existing curated taxon, existing rights-cleared Orca media, Source Envelope, public claims, related Places and ATLAS/whale observation path. The proof leads with wonder, then makes the map inference boundary unavoidable.
 
 ### GREAT BARRIER REEF / PLACE + LIVING SYSTEM
-Uses the existing Great Barrier Reef Planet Proof and AIMS/NOAA evidence. The proof deliberately avoids a generic stock photograph; the visual orientation is designed and explicitly labelled non-evidentiary. The evidence story centres 40 years of monitoring and the fact that a reef system is not one regional number.
+Uses the existing Great Barrier Reef Planet Proof and AIMS/NOAA evidence. The proof uses the existing COR4L_ media bank that the canonical asset manifest explicitly records as founder-supplied, rights-cleared and content-verified reef photography. The evidence story centres 40 years of AIMS monitoring and the fact that a reef system is not one regional number.
 
 ### GLOBAL FIRES / ATLAS SIGNAL
 Uses the existing ATLAS discovery object and NASA source family. The designed signal field is explicitly labelled not-live. The human idea is simple: fast-moving data needs slower interpretation; detected heat is not automatically a wildfire.
@@ -79,7 +79,7 @@ Shared:
 
 Distinct:
 - Orca = documentary photography + animal relationship story
-- Great Barrier Reef = spatial/monitoring story + designed reef orientation
+- Great Barrier Reef = rights-cleared documentary reef photography + spatial/monitoring story
 - Global Fires = dark signal-first visual + interpretation boundary
 
 This is shared infrastructure without visual sameness.

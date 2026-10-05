@@ -150,7 +150,11 @@ function ReefMaster() {
       <main className="discovery-master discovery-master--reef">
         <GoldBar label="MASTER 02 / PLACE + LIVING SYSTEM" />
         <header className="discovery-master-reefhero">
-          <div className="discovery-master-reefhero__field" aria-hidden><i /><i /><i /><i /></div>
+          <picture className="discovery-master-reefhero__media">
+            <source media="(max-width: 760px)" srcSet="/assets/missions/cor4l/hero-real-mobile.jpg" />
+            <img src="/assets/missions/cor4l/hero-real.jpg" alt="A living coral reef in the rights-cleared COR4L_ media bank" />
+          </picture>
+          <div className="discovery-master-reefhero__veil" aria-hidden />
           <div className="discovery-master-reefhero__copy">
             <Link to="/labs/gold" className="discovery-master-back">← GOLD SYSTEM</Link>
             <div className="discovery-master-kicker">GREAT BARRIER REEF / MASTER GOLD</div>
@@ -161,7 +165,7 @@ function ReefMaster() {
               <Link to="/place/great-barrier-reef">EXPLORE THE PLACE →</Link>
             </div>
           </div>
-          <div className="discovery-master-visualnote">DESIGNED ORIENTATION / NOT OBSERVATIONAL EVIDENCE</div>
+          <div className="discovery-master-visualnote">FOUNDER-SUPPLIED · RIGHTS-CLEARED · CONTENT-VERIFIED REEF PHOTOGRAPHY</div>
         </header>
 
         <section className="discovery-master-section discovery-master-stats">
@@ -169,6 +173,11 @@ function ReefMaster() {
           <article><strong>121</strong><span>reefs surveyed in the 2025–26 summary</span></article>
           <article><strong>5,175</strong><span>manta tows reported by AIMS</span></article>
           <article><strong>≈1,035 km</strong><span>survey effort reported by AIMS</span></article>
+        </section>
+
+        <section className="discovery-master-reefgrid" aria-label="Rights-cleared coral reef photography">
+          <figure><img src="/assets/missions/cor4l/detail-coral-02.jpg" alt="Coral reef detail from the rights-cleared COR4L_ media bank" loading="lazy" /></figure>
+          <figure><img src="/assets/missions/cor4l/detail-coral-03.jpg" alt="Living coral habitat from the rights-cleared COR4L_ media bank" loading="lazy" /></figure>
         </section>
 
         <section className="discovery-master-section discovery-master-statement">

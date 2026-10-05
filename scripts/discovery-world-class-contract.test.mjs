@@ -28,8 +28,12 @@ test("three discovery masters are noindex controlled proofs over existing canoni
   assert.doesNotMatch(master,/<img[^>]+src=["']https?:\/\//);
 });
 
-test("designed non-documentary visuals disclose their status and mobile collapses cleanly",()=>{
-  assert.match(master,/DESIGNED ORIENTATION \/ NOT OBSERVATIONAL EVIDENCE/);
+test("documentary media is rights-gated and non-documentary signal visuals disclose their status",()=>{
+  const assets=read("src/content/assetManifest.ts");
+  assert.match(assets,/COR4L_ ships founder-supplied, rights-cleared, content-verified reef photos/);
+  assert.match(master,/\/assets\/missions\/cor4l\/hero-real\.jpg/);
+  assert.match(master,/\/assets\/missions\/cor4l\/detail-coral-02\.jpg/);
+  assert.match(master,/FOUNDER-SUPPLIED · RIGHTS-CLEARED · CONTENT-VERIFIED REEF PHOTOGRAPHY/);
   assert.match(master,/DESIGNED SIGNAL FIELD \/ NOT LIVE SATELLITE DATA/);
   assert.match(css,/@media\(max-width:760px\)/);
   assert.match(css,/grid-template-columns:1fr/);
