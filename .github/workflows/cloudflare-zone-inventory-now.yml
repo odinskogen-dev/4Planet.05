@@ -1,4 +1,4 @@
-name: Main Pages Failure Audit
+name: Main Production Build Reproduction
 
 on:
   push:
@@ -10,26 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  audit:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 12
     steps:
-      - name: Inspect failed main Pages deployment
-        env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        shell: bash
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Reproduce Cloudflare Pages build
         run: |
           set -euo pipefail
-          token=$(printf '%s' "$CF_TOKEN" | tr -d '\r\n'); token="${token#Bearer }"
-          echo "::add-mask::$token"
-          api='https://api.cloudflare.com/client/v4'
-          z=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4planet.org")
-          aid=$(jq -r '.result[0].account.id' <<<"$z")
-          resp=$(curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/pages/projects/4planet-05/deployments?per_page=20")
-          dep=$(jq -c '.result[] | select(.deployment_trigger.metadata.commit_hash=="e4dd932e739056911d0d40958b30c1c9faa98071")' <<<"$resp" | head -1)
-          echo "DEPLOYMENT=$dep"
-          id=$(jq -r '.id // empty' <<<"$dep")
-          if [ -n "$id" ]; then
-            echo '=== EXACT DEPLOYMENT ==='
-            curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/pages/projects/4planet-05/deployments/$id" | jq '.result'
-          fi
+          npm ci
+          npm run build
