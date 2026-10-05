@@ -1,0 +1,33 @@
+name: Read Active 4SPECIES Router
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/read-4species-router.yml
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read deployed router source only
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          token=$(printf '%s' "$CF_TOKEN" | tr -d '\r\n')
+          token="${token#Bearer }"
+          echo "::add-mask::$token"
+          api='https://api.cloudflare.com/client/v4'
+          zone=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4species.com")
+          aid=$(jq -r '.result[0].account.id' <<<"$zone")
+          curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/workers/scripts/4species-router" > /tmp/router
+          echo '=== 4SPECIES ROUTER ==='
+          cat /tmp/router
+          echo
+          echo '=== END ==='
