@@ -50,7 +50,7 @@ jobs:
             if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
             sleep 1
           done
-          cat > /tmp/human-first.mjs <<'NODE'
+          cat > ./human-first-qa.mjs <<'NODE'
           import { chromium } from "@playwright/test";
 
           const browser = await chromium.launch({ headless: true });
