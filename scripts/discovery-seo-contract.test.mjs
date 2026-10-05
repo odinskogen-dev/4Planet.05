@@ -74,7 +74,7 @@ test("ATLAS useful objects are routed, searchable and prerendered from one inven
   assert.ok(pre.includes("atlasDiscovery"));
   assert.ok(pre.includes("atlasObjects"));
   assert.ok(atlasPage.includes('object.indexable ? "index,follow,max-image-preview:large" : "noindex,follow"'));
-  assert.ok(atlasPage.includes("OPEN LIVE ATLAS"));
+  assert.ok(atlasPage.includes("EXPLORE IN ATLAS"));
   assert.ok(atlasPage.includes("SOURCES / PROVENANCE"));
 });
 
