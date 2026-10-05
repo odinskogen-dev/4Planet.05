@@ -6,12 +6,18 @@ on:
     paths:
       - .github/workflows/discovery-main-live.yml
       - src/pages/integrated/AtlasDiscoveryPage.tsx
+      - src/pages/discovery/DiscoveryEngine.tsx
+      - src/data/discoveryTopics.json
+      - src/routes/router.tsx
       - src/pages/v5/PlanetProof.tsx
       - src/pages/integrated/Species.tsx
       - src/pages/integrated/SpeciesRoute.tsx
       - src/components/layout/PublicShell.tsx
       - src/styles/human-first-public.css
       - scripts/generate-sitemap.mjs
+      - scripts/prerender-discovery-seo.mjs
+      - scripts/discovery-engine-01-contract.test.mjs
+      - package.json
       - functions/_middleware.js
 
 permissions:
@@ -52,8 +58,12 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
+          npm run test:discovery-engine
           npm run build
           test -f dist/sitemap.xml
+          test -f dist/now/index.html
+          test -f dist/wildfires/index.html
+          test -f dist/earthquakes/index.html
           ! grep -Fq '<loc>https://4planet.org/atlas</loc>' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/species</loc>' dist/sitemap.xml
           test -f dist/_headers
@@ -79,6 +89,20 @@ jobs:
           ! grep -Fq '<loc>https://4planet.org/atlas</loc>' <<<"$sm"
           ! grep -Fq '<loc>https://4planet.org/species</loc>' <<<"$sm"
           grep -Fq '<loc>https://4planet.org/</loc>' <<<"$sm"
+          for route in now wildfires earthquakes climate-change biodiversity deforestation plastic-pollution coral-bleaching air-quality orca whales bees amazon-rainforest oslofjord renewable-energy solar-energy food-waste fast-fashion rewilding climate-solutions environmental-jobs; do
+            grep -Fq "<loc>https://4planet.org/$route</loc>" <<<"$sm"
+          done
+          now=$(curl -fsS https://4planet.org/now)
+          grep -Fq 'What is happening on Earth right now?' <<<"$now"
+          grep -Fq 'application/ld+json' <<<"$now"
+          wildfires=$(curl -fsS https://4planet.org/wildfires)
+          grep -Fq 'Wildfires' <<<"$wildfires"
+          grep -Fq 'NASA FIRMS' <<<"$wildfires"
+          quakes=$(curl -fsS https://4planet.org/earthquakes)
+          grep -Fq 'USGS' <<<"$quakes"
+          embed_h=$(curl -sSI 'https://4planet.org/atlas?m=E4RTH&l=bluemarble%2Cfires&embed=news' | tr -d '\r')
+          ! grep -qi '^location:' <<<"$embed_h"
+          grep -qi '^x-robots-tag:.*noindex' <<<"$embed_h"
           curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
           curl -fsS https://4brands.org/robots.txt | grep -Fq 'Sitemap: https://4brands.org/sitemap.xml'
           atlas=$(curl -fsS https://4planetatlas.com/)
