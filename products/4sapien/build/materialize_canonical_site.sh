@@ -13,6 +13,7 @@ mkdir -p "$SITE/app/food" "$SITE/app" "$DROP"
 python products/4sapien/build/materialize_unified_drop.py products/4sapien/source/claude-unified-20260917 "$DROP"
 cp products/4sapien/source/4sapien-design.css "$SITE/4sapien-design.css"
 cp products/4sapien/source/4sapien-theme.js "$SITE/4sapien-theme.js"
+cp public/favicon.svg "$SITE/favicon.svg"
 python products/4sapien/build/apply_front_v2_release.py "$DROP/4sapien_app_unified.html" "$SITE/index.html"
 cp "$DROP/4sapien_food_MERGED.html" "$FOOD"
 
