@@ -1,0 +1,65 @@
+name: HUMAN FIRST live readback
+
+on:
+  push:
+    branches:
+      - axe/human-first-public-objects-20261005
+    paths:
+      - .github/workflows/human-first-live-readback.yml
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Resolve public routes and render
+        shell: bash
+        run: |
+          cat > live-readback.mjs <<'NODE'
+          import { chromium } from "@playwright/test";
+
+          const candidates = [
+            { name: "EARTH-4PLANET", url: "https://4planet.org/atlas/earth", must: ["Earth"] },
+            { name: "EARTH-ATLAS-A", url: "https://4planetatlas.com/earth", must: ["Earth"] },
+            { name: "EARTH-ATLAS-B", url: "https://4planetatlas.com/atlas/earth", must: ["Earth"] },
+            { name: "OSLOFJORD", url: "https://4planet.org/living-systems/oslofjord", must: ["Oslofjorden"] },
+            { name: "ORCA-4PLANET", url: "https://4planet.org/species/orca", must: ["Orca"] },
+            { name: "ORCA-SPECIES-A", url: "https://4species.com/orca", must: ["Orca"] },
+            { name: "ORCA-SPECIES-B", url: "https://4species.com/species/orca", must: ["Orca"] },
+          ];
+
+          const browser = await chromium.launch({headless:true});
+          for (const c of candidates) {
+            const page = await browser.newPage({viewport:{width:390,height:844}});
+            let record = {name:c.name,input:c.url,ok:false};
+            try {
+              const response = await page.goto(c.url,{waitUntil:"networkidle",timeout:30000});
+              const finalUrl = page.url();
+              const text = (await page.locator("body").innerText()).replace(/\s+/g," ").slice(0,900);
+              const title = await page.title();
+              const bg = await page.locator("body").evaluate(el=>getComputedStyle(el).backgroundColor);
+              const hasMust = c.must.every(term=>text.toLowerCase().includes(term.toLowerCase()));
+              const hasInternal = ["HUMAN GOLD CANDIDATE","NOT FOUNDER APPROVED","USEFUL INTERNET OBJECT","MAP · DEGRADED","SOURCES / PROVENANCE"].some(term=>text.includes(term));
+              const overflow = await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
+              record = {name:c.name,input:c.url,status:response?.status(),finalUrl,title,bg,hasMust,hasInternal,overflow,text};
+              if (hasMust && !hasInternal && !overflow && response && response.status() < 400) record.ok=true;
+            } catch (e) {
+              record.error=String(e);
+            }
+            console.log("READBACK "+JSON.stringify(record));
+            await page.close();
+          }
+          await browser.close();
+          NODE
+          node live-readback.mjs
