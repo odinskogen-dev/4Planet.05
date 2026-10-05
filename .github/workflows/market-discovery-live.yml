@@ -1,0 +1,64 @@
+name: MARKET Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ops/discovery/live-workers/4planetmarket-prototype.js
+      - .github/workflows/market-discovery-live.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: market-discovery-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      BASELINE_COMMIT: c7643a776af323a5b6269c90ee9d2c0590718be0
+      SOURCE: ops/discovery/live-workers/4planetmarket-prototype.js
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate exact patched source
+        run: |
+          set -euo pipefail
+          node --check "$SOURCE"
+          grep -Fq 'https://4planetmarket.com/sitemap.xml' "$SOURCE"
+          grep -Fq 'Disallow: /api/' "$SOURCE"
+          grep -Fq 'noindex, nofollow, noarchive' "$SOURCE"
+      - name: Deploy, verify and rollback on failure
+        shell: bash
+        run: |
+          set -uo pipefail
+          npx --yes wrangler@4.128.0 deploy "$SOURCE" --name 4planetmarket-prototype --compatibility-date 2026-10-05 --keep-vars || exit 1
+          sleep 3
+          failed=0
+          h=$(curl -sSIL --max-time 15 https://4planetmarket.com/ | tr -d '\r') || failed=1
+          grep -q '200' <<<"$h" || failed=1
+          grep -qi '^x-robots-tag:.*noindex' <<<"$h" && failed=1
+          html=$(curl -fsS --max-time 15 https://4planetmarket.com/) || failed=1
+          grep -Fq '4PLANET MARKET — Products, Creators and Better Commerce' <<<"$html" || failed=1
+          grep -Fq 'https://4planetmarket.com/' <<<"$html" || failed=1
+          curl -fsS --max-time 15 https://4planetmarket.com/robots.txt | grep -Fq 'Sitemap: https://4planetmarket.com/sitemap.xml' || failed=1
+          curl -fsS --max-time 15 https://4planetmarket.com/sitemap.xml | grep -Fq 'https://4planetmarket.com/' || failed=1
+          ah=$(curl -sSI --max-time 15 https://4planetmarket.com/api/market-health | tr -d '\r') || true
+          grep -qi '^x-robots-tag:.*noindex' <<<"$ah" || failed=1
+          if [ "$failed" -ne 0 ]; then
+            echo "MARKET discoverability smoke failed; rolling back exact pre-change Worker source."
+            git show "$BASELINE_COMMIT:$SOURCE" > /tmp/market-rollback.js
+            node --check /tmp/market-rollback.js
+            npx --yes wrangler@4.128.0 deploy /tmp/market-rollback.js --name 4planetmarket-prototype --compatibility-date 2026-10-05 --keep-vars
+            exit 1
+          fi
+          echo "MARKET_DISCOVERY_LIVE_OK"
