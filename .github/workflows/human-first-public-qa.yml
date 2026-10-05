@@ -51,7 +51,7 @@ jobs:
             sleep 1
           done
           cat > /tmp/human-first.mjs <<'NODE'
-          import { chromium } from "playwright";
+          import { chromium } from "@playwright/test";
 
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
@@ -117,7 +117,7 @@ jobs:
           }
           await browser.close();
           NODE
-          node /tmp/human-first.mjs
+          node ./human-first-qa.mjs
 
       - name: Upload mobile QA
         if: always()
