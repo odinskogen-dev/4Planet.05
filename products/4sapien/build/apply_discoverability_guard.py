@@ -48,7 +48,14 @@ fallback = """<main data-public-discovery-fallback="1">
 <p>Public product pages explain the idea and the current prototype. Individual recommendations depend on the information a user chooses to provide and should distinguish facts, estimates, unknowns and suggestions.</p>
 <nav aria-label="Related public products"><a href="https://4planet.org/">4PLANET</a> · <a href="https://4brain.app/">4BRAIN</a> · <a href="https://s4piens.com/">S4PIENS</a></nav>
 </main>"""
-html = html.replace('<div id="root"></div>', '<div id="root">' + fallback + '</div>', 1)
+mount = '<main class="content" id="view"></main>'
+if mount in html:
+    html = html.replace(mount, '<main class="content" id="view">' + fallback + '</main>', 1)
+else:
+    html = html.replace('<div id="root"></div>', '<div id="root">' + fallback + '</div>', 1)
+
+if 'data-public-discovery-fallback="1"' not in html:
+    raise SystemExit("4SAPIEN public discovery fallback was not inserted")
 schema = '{"@context":"https://schema.org","@type":"WebApplication","name":"4SAPIEN","url":"https://4sapien.com/","description":"Personal decision support across food, finance and everyday life with user-controlled context.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}'
 if 'application/ld+json' not in html:
     html = html.replace("</head>", '<script type="application/ld+json">' + schema + '</script></head>', 1)
