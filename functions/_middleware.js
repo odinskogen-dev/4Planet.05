@@ -377,24 +377,26 @@ function sitemapXml(host, paths) {
 
 function robotsText(host, isPrivate = false) {
   if (isPrivate) return "User-agent: *\nDisallow: /\n";
-  return [
-    "User-agent: OAI-SearchBot",
-    "Allow: /",
-    "",
-    "User-agent: Googlebot",
-    "Allow: /",
-    "",
-    "User-agent: Bingbot",
-    "Allow: /",
-    "",
-    "User-agent: *",
-    "Allow: /",
+  const disallows = [
     "Disallow: /api/",
     "Disallow: /checkout",
     "Disallow: /account",
     "Disallow: /admin",
     "Disallow: /saved",
-    "",
+    "Disallow: /auth/",
+    "Disallow: /id",
+    "Disallow: /oauth",
+    "Disallow: /labs",
+    "Disallow: /os",
+    "Disallow: /sandbox",
+    "Disallow: /company-brain",
+  ];
+  const group = (agent) => [`User-agent: ${agent}`, "Allow: /", ...disallows, ""];
+  return [
+    ...group("OAI-SearchBot"),
+    ...group("Googlebot"),
+    ...group("Bingbot"),
+    ...group("*"),
     `Sitemap: https://${host}/sitemap.xml`,
     "",
   ].join("\n");
@@ -460,11 +462,20 @@ export async function onRequest(context) {
     return Response.redirect(url.toString(), 308);
   }
 
+  const privatePathPrefixes = [
+    "/api", "/checkout", "/account", "/admin", "/saved", "/auth",
+    "/id", "/oauth", "/labs", "/os", "/sandbox", "/company-brain"
+  ];
+  const privatePath = privatePathPrefixes.some((prefix) =>
+    url.pathname === prefix || url.pathname.startsWith(prefix + "/")
+  );
+
   const privateSurface =
     PRIVATE_HOSTS.has(host) ||
     host.endsWith(".pages.dev") ||
     host === "localhost" ||
-    host.endsWith(".localhost");
+    host.endsWith(".localhost") ||
+    (Boolean(PUBLIC_HOSTS[host]) && privatePath);
 
   if (url.pathname === "/robots.txt" && privateSurface) {
     return new Response(robotsText(host, true), {
