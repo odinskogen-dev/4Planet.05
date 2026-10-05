@@ -85,7 +85,7 @@ const rssItems = stories.map((story) => `    <item>\n      <title>${escapeXml(st
 const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>4PLANET MAGAZINE</title>\n    <link>${escapeXml(`${origin}/magazine`)}</link>\n    <description>Stories about the living planet — species, places, people, systems, solutions and culture.</description>\n    <language>en-gb</language>\n    ${rssItems}\n  </channel>\n</rss>\n`;
 fs.writeFileSync(path.join(publicDir, "rss.xml"), rss, "utf8");
 
-const robots = `User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /labs\nDisallow: /os\nDisallow: /sandbox\nDisallow: /checkout\nDisallow: /api\nDisallow: /4nation\n\nSitemap: ${absoluteUrl(origin, "/sitemap.xml")}\nSitemap: ${absoluteUrl(origin, "/news-sitemap.xml")}\n`;
+const robots = `User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /labs\nDisallow: /os\nDisallow: /sandbox\nDisallow: /checkout\nDisallow: /api\nDisallow: /4nation\n\nSitemap: ${absoluteUrl(origin, "/sitemap.xml")}\n${newsStories.length > 0 ? `Sitemap: ${absoluteUrl(origin, "/news-sitemap.xml")}\n` : ""}`;
 fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
 
 console.log(`Generated sitemap.xml with ${routes.length} URLs, news-sitemap.xml with ${newsStories.length} fresh stories, rss.xml with ${stories.length} story items for ${origin}`);
