@@ -26,6 +26,8 @@ const PUBLIC_HOSTS = {
 
 const PRIVATE_HOSTS = new Set([
   "labs.4planet.org",
+  "os.4planet.org",
+  "test.4planet.org",
   "id.4planet.org",
 ]);
 
@@ -167,7 +169,6 @@ export async function onRequest(context) {
     ? `https://4planet.org${url.pathname === "/" ? "/" : url.pathname}`
     : config.canonical;
 
-  let sawCanonical = false;
   const transformed = new HTMLRewriter()
     .on("title", {
       element(element) {
@@ -211,18 +212,12 @@ export async function onRequest(context) {
     })
     .on('link[rel="canonical"]', {
       element(element) {
-        sawCanonical = true;
-        element.setAttribute("href", canonical);
+        element.remove();
       },
     })
     .on("head", {
       element(element) {
-        // Cloudflare HTMLRewriter invokes the head handler before descendants;
-        // appending is safe even if a canonical exists because the canonical
-        // handler above normalises every existing canonical to the same URL.
-        if (!sawCanonical) {
-          element.append(`<link rel="canonical" href="${canonical}">`, { html: true });
-        }
+        element.append(`<link rel="canonical" href="${canonical}">`, { html: true });
       },
     })
     .transform(new Response(response.body, {
