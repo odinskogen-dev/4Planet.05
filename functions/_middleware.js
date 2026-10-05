@@ -292,6 +292,30 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"]],
     schemaType: "WebPage",
   },
+  "/privacy": {
+    title: "Privacy — 4PLANET",
+    description: "4PLANET privacy principles for public products, private account state and user-controlled intelligence.",
+    fallbackTitle: "Privacy",
+    fallbackParagraphs: [
+      "4PLANET separates public planetary intelligence from private user and organisation context. Public product pages may be discoverable; authenticated account state, Personal Brain context and tenant-scoped Company Brain data are private by default.",
+      "Search-engine directives are not treated as a security mechanism. Surfaces requiring secrecy must rely on access control, with noindex, noarchive and cache controls used as additional protections where appropriate.",
+      "Product-specific privacy behaviour can evolve as capabilities move from prototype to production, but private context must not become public merely to improve discoverability."
+    ],
+    fallbackLinks: [["About","https://4planet.org/about"],["4SAPIEN","https://4sapien.com/"],["4BRANDS","https://4brands.org/"]],
+    schemaType: "WebPage",
+  },
+  "/join": {
+    title: "Join 4PLANET — Find a Way to Contribute",
+    description: "Find public routes into 4PLANET missions, products, culture and credible ecological action as they become available.",
+    fallbackTitle: "Join 4PLANET",
+    fallbackParagraphs: [
+      "4PLANET is designed so people who want to help can find a meaningful route into the work. Public routes can include learning, using products, following missions, contributing skills, supporting credible action or participating through culture.",
+      "Availability depends on the maturity of each pathway. A mission or partner pathway is not presented as open when delivery, evidence or participation requirements are unresolved.",
+      "The public ecosystem links understanding to action progressively, with clear boundaries between interest, participation, contribution, delivery and verified outcome."
+    ],
+    fallbackLinks: [["Missions","https://4planet.org/missions"],["Impact","https://4planet.org/impact"],["Partners","https://4planet.org/partners"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
+    schemaType: "WebPage",
+  },
   "/partners": {
     title: "Partners — 4PLANET",
     description: "How 4PLANET approaches collaboration with expert organisations, technology partners and others contributing to a living planet.",
