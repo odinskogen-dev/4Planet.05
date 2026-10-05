@@ -1,0 +1,131 @@
+name: DISCOVERY ATLAS canonical route exclusions
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-route-exclusions.yml
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Exclude only three canonical discovery routes from legacy ATLAS Worker
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          test -n "$TOKEN"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"
+          TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"
+          TOKEN="${TOKEN#CF_API_TOKEN=}"
+          echo "::add-mask::$TOKEN"
+
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json')
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          zid="$(jq -r '.result[0].id // empty' <<<"$root")"
+          test -n "$zid"
+
+          before="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
+          jq -e '.success==true' <<<"$before" >/dev/null
+          printf '%s' "$before" > /tmp/routes-before.json
+
+          # Refuse to touch the legacy route itself.
+          jq -e '.result[]? | select(.pattern=="4planet.org/atlas*" and .script=="4planet-product-domains")' <<<"$before" >/dev/null
+
+          created_ids=()
+          rollback() {
+            for id in "${created_ids[@]:-}"; do
+              [[ -n "$id" ]] || continue
+              curl -fsS -X DELETE "${api}/zones/${zid}/workers/routes/${id}" "${auth[@]}" >/dev/null || true
+            done
+          }
+          trap 'rollback' ERR
+
+          for route in earth fires whales; do
+            pattern="4planet.org/atlas/${route}*"
+            existing_id="$(jq -r --arg p "$pattern" '.result[]? | select(.pattern==$p and (.script==null)) | .id' <<<"$before" | head -n1)"
+            if [[ -n "$existing_id" ]]; then
+              echo "${pattern} exclusion already exists: ${existing_id}"
+              continue
+            fi
+            payload="$(jq -nc --arg p "$pattern" '{pattern:$p,script:null}')"
+            response="$(curl -fsS -X POST "${api}/zones/${zid}/workers/routes" "${auth[@]}" --data "$payload")"
+            jq -e '.success==true and (.result.id|length>0)' <<<"$response" >/dev/null
+            id="$(jq -r '.result.id' <<<"$response")"
+            created_ids+=("$id")
+            echo "Created exclusion: ${pattern}"
+          done
+
+          # Allow route propagation, then poll canonical public pages.
+          ok=0
+          for attempt in $(seq 1 20); do
+            pass=1
+            for route in earth fires whales; do
+              result="$(curl -sS --max-time 20 -D "/tmp/${route}.headers" -o "/tmp/${route}.html" -w '%{url_effective}|%{http_code}|%{size_download}' "https://4planet.org/atlas/${route}")" || pass=0
+              status="$(cut -d'|' -f2 <<<"$result")"
+              [[ "$status" == "200" ]] || pass=0
+            done
+            grep -Fq '<title>Earth — Explore the living planet in 4PLANET ATLAS</title>' /tmp/earth.html || pass=0
+            grep -Fq '<h1>Earth</h1>' /tmp/earth.html || pass=0
+            grep -Fq '<title>Global Fires — Satellite thermal anomalies in 4PLANET ATLAS</title>' /tmp/fires.html || pass=0
+            grep -Fq '<h1>Global Fires</h1>' /tmp/fires.html || pass=0
+            grep -Fq '<title>Whales — Explore reported cetacean observations in 4PLANET ATLAS</title>' /tmp/whales.html || pass=0
+            grep -Fq '<h1>Whales</h1>' /tmp/whales.html || pass=0
+            for route in earth fires whales; do
+              ! grep -Eiq '^location:' "/tmp/${route}.headers" || pass=0
+              ! grep -Eiq '^x-robots-tag:.*noindex' "/tmp/${route}.headers" || pass=0
+            done
+            if [[ "$pass" == "1" ]]; then
+              ok=1
+              break
+            fi
+            sleep 3
+          done
+
+          [[ "$ok" == "1" ]]
+
+          after="$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}")"
+          printf '%s' "$after" > /tmp/routes-after.json
+          jq -e '.result[]? | select(.pattern=="4planet.org/atlas*" and .script=="4planet-product-domains")' <<<"$after" >/dev/null
+          for route in earth fires whales; do
+            jq -e --arg p "4planet.org/atlas/${route}*" '.result[]? | select(.pattern==$p and .script==null)' <<<"$after" >/dev/null
+          done
+
+          # Confirm unrelated public products remain available.
+          [[ "$(curl -L -sS -o /tmp/atlas-root.html -w '%{http_code}' https://4planetatlas.com/)" == "200" ]]
+          [[ "$(curl -L -sS -o /tmp/orca.html -w '%{http_code}' https://4species.com/orca)" == "200" ]]
+
+          trap - ERR
+          echo "LIVE_OK canonical discovery routes"
+          for route in earth fires whales; do
+            echo "https://4planet.org/atlas/${route}"
+          done
+
+      - name: Upload route receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-atlas-route-exclusions-receipt
+          path: |
+            /tmp/routes-before.json
+            /tmp/routes-after.json
+            /tmp/earth.headers
+            /tmp/earth.html
+            /tmp/fires.headers
+            /tmp/fires.html
+            /tmp/whales.headers
+            /tmp/whales.html
+          if-no-files-found: warn
+          retention-days: 30
