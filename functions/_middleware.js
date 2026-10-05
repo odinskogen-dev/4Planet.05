@@ -19,7 +19,11 @@ const PUBLIC_HOSTS = {
     description: "Explore places, species, living systems and source-grounded planetary data through 4PLANET ATLAS.",
     canonical: "https://4planetatlas.com/",
     fallbackTitle: "Explore the Living Planet with 4PLANET ATLAS",
-    fallbackText: "ATLAS is a public exploration surface connecting places, species and living systems with source-grounded planetary context.",
+    fallbackParagraphs: [
+      "4PLANET ATLAS is the spatial exploration surface for Living Planet Intelligence. It connects places, species and living systems so users can move from a location on the map into the source-grounded context that helps explain what lives there, what is changing and how different ecological and human systems connect.",
+      "ATLAS is designed to work with the same canonical objects used elsewhere in 4PLANET rather than creating a separate map-only truth store. A species shown in ATLAS should resolve to the same species identity used in SPECIES, while places and living systems should keep their provenance, uncertainty and update state visible.",
+      "The public product is still developing. Interactive map behaviour may evolve, but the search-readable surface is intended to remain clear about sources, context and product maturity without turning dynamic map states into thousands of low-value search pages."
+    ],
     fallbackLinks: [
       ["4PLANET", "https://4planet.org/"],
       ["SPECIES", "https://4species.com/species/"],
@@ -33,7 +37,11 @@ const PUBLIC_HOSTS = {
     description: "4BRANDS is the Better Company product from 4PLANET: source-grounded company understanding, opportunities and measurable improvement.",
     canonical: "https://4brands.org/",
     fallbackTitle: "Understand Any Company. Improve Your Own.",
-    fallbackText: "4BRANDS is the Better Company product: a source-grounded public experience for understanding companies, value and practical improvement.",
+    fallbackParagraphs: [
+      "4BRANDS is the Better Company product from 4PLANET. Its public role is to make companies easier to understand through source-grounded information about economics, procurement, people and planet, while keeping facts, unknowns and confidence separate from generated suggestions.",
+      "The product direction combines a public company view with a private Company Brain for authorised organisational context. Public analysis can be discovered and shared; private company knowledge, documents, decisions and tenant data remain access-controlled and are not part of the public search surface.",
+      "4BRANDS is being developed around practical value rather than generic sustainability scoring. The aim is to help a company see where value is created or lost, identify realistic improvement opportunities and connect recommendations back to evidence without presenting estimates or suggestions as verified outcomes."
+    ],
     fallbackLinks: [
       ["4PLANET", "https://4planet.org/"],
       ["Impact", "https://4planet.org/impact"],
@@ -47,7 +55,11 @@ const PUBLIC_HOSTS = {
     description: "S4PIENS explores the human systems, value chains, incentives and infrastructure that shape people and the living planet.",
     canonical: "https://s4piens.com/",
     fallbackTitle: "S4PIENS — Human Systems Intelligence",
-    fallbackText: "S4PIENS explores value chains, incentives, infrastructure and other human systems that shape people and the living planet.",
+    fallbackParagraphs: [
+      "S4PIENS is the human-systems intelligence layer in the 4PLANET ecosystem. It explores the value chains, incentives, infrastructure and institutions through which human needs are met, and how those systems interact with people, places, resources and the rest of the living planet.",
+      "The purpose is not to reduce humanity to one model or score. S4PIENS is intended to make complex systems easier to inspect: what a system produces, which actors participate, where dependencies and pressures occur, what solutions exist and where evidence is strong, weak or still missing.",
+      "S4PIENS is distinct from 4SAPIEN, the product for an individual person. The two can share infrastructure and public intelligence, but personal context belongs to the user and is not merged into the public human-systems model."
+    ],
     fallbackLinks: [
       ["4PLANET", "https://4planet.org/"],
       ["4SAPIEN", "https://4sapien.com/"],
