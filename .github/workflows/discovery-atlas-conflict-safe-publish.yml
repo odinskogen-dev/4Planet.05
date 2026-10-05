@@ -1,0 +1,215 @@
+name: DISCOVERY ATLAS conflict-safe canonical publish
+
+on:
+  push:
+    branches:
+      - ops/discovery-atlas-live-deploy-20261003
+    paths:
+      - .github/workflows/discovery-atlas-conflict-safe-publish.yml
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Conflict-safe publish of Earth Fires Whales
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN="${TOKEN_1:-${TOKEN_2:-}}"
+          test -n "$TOKEN"
+          TOKEN="$(printf '%s' "$TOKEN" | tr -d '\r\n')"
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          echo "::add-mask::$TOKEN"
+
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $TOKEN")
+          root="$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")"
+          zid="$(jq -r '.result[0].id // empty' <<<"$root")"
+          account_id="$(jq -r '.result[0].account.id // empty' <<<"$root")"
+          test -n "$zid"; test -n "$account_id"
+
+          settings="$(curl -fsS "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains/settings" "${auth[@]}")"
+          compat="$(jq -r '.result.compatibility_date' <<<"$settings")"
+          usage="$(jq -r '.result.usage_model // "standard"' <<<"$settings")"
+          jq -e '.success==true and ((.result.bindings // [])|length)==0' <<<"$settings" >/dev/null
+
+          parse_worker() {
+            local headers="$1" multipart="$2" out="$3"
+            python - "$headers" "$multipart" "$out" <<'PY'
+          from pathlib import Path
+          from email.parser import BytesParser
+          from email.policy import default
+          import sys
+          headers=Path(sys.argv[1]).read_text("latin1")
+          ct=next((line.split(":",1)[1].strip() for line in headers.splitlines() if line.lower().startswith("content-type:")),None)
+          if not ct: raise SystemExit("missing content-type")
+          raw=Path(sys.argv[2]).read_bytes()
+          msg=BytesParser(policy=default).parsebytes(("Content-Type: "+ct+"\r\nMIME-Version: 1.0\r\n\r\n").encode("latin1")+raw)
+          modules=[]
+          for part in msg.walk():
+              if part.is_multipart(): continue
+              payload=part.get_payload(decode=True) or b""
+              if b"export default" in payload and b"async fetch" in payload:
+                  modules.append(payload)
+          if len(modules)!=1: raise SystemExit(f"expected one worker module, found {len(modules)}")
+          Path(sys.argv[3]).write_bytes(modules[0])
+          PY
+          }
+
+          fetch_worker() {
+            local prefix="$1"
+            curl -fsS -D "/tmp/${prefix}.headers" "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}" -o "/tmp/${prefix}.multipart"
+            parse_worker "/tmp/${prefix}.headers" "/tmp/${prefix}.multipart" "/tmp/${prefix}.js"
+          }
+
+          fetch_worker before
+          before_sha="$(sha256sum /tmp/before.js | cut -d' ' -f1)"
+          cp /tmp/before.js /tmp/rollback.js
+
+          python - <<'PY'
+          from pathlib import Path
+          source=Path("/tmp/before.js").read_text()
+
+          helper_anchor='''async function proxyAsset(request) {
+            const incoming = new URL(request.url);'''
+          helper='''async function proxyCanonicalAtlasObject(request, targetPath) {
+            const incoming = new URL(request.url);
+            const target = new URL(ORIGIN);
+            target.pathname = withTrailingSlash(targetPath);
+            target.search = incoming.search;
+            const response = await fetch(target.toString(), { redirect: "follow" });
+            const headers = new Headers(response.headers);
+            headers.delete("x-robots-tag");
+            headers.delete("X-Robots-Tag");
+            headers.set("cache-control", "public, max-age=300");
+            return new Response(response.body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers,
+            });
+          }
+
+          async function proxyAsset(request) {
+            const incoming = new URL(request.url);'''
+
+          host_anchor='''    if (host === "4planet.org") {
+                if (path === "/atlas" || path.startsWith("/atlas/")) return redirectTo(`https://4planetatlas.com${atlasClean(path)}${url.search}`);'''
+          host_patch='''    if (host === "4planet.org") {
+                if (path === "/atlas/earth" || path === "/atlas/fires" || path === "/atlas/whales") {
+                  return proxyCanonicalAtlasObject(request, path);
+                }
+                if (path === "/atlas" || path.startsWith("/atlas/")) return redirectTo(`https://4planetatlas.com${atlasClean(path)}${url.search}`);'''
+
+          if "async function proxyCanonicalAtlasObject(" in source:
+              raise SystemExit("canonical publisher already present; audit before changing")
+          if helper_anchor not in source: raise SystemExit("proxyAsset anchor missing")
+          if host_anchor not in source: raise SystemExit("4planet.org ATLAS anchor missing")
+          patched=source.replace(helper_anchor,helper,1).replace(host_anchor,host_patch,1)
+          if patched.count("proxyCanonicalAtlasObject") != 2: raise SystemExit("unexpected patch cardinality")
+          Path("/tmp/new.js").write_text(patched)
+          PY
+
+          node --check /tmp/new.js
+          new_sha="$(sha256sum /tmp/new.js | cut -d' ' -f1)"
+          diff -u /tmp/before.js /tmp/new.js > /tmp/worker.patch || test $? -eq 1
+          cat /tmp/worker.patch
+
+          # Final preflight: abort if anybody changed the shared Worker after our read.
+          fetch_worker preflight
+          preflight_sha="$(sha256sum /tmp/preflight.js | cut -d' ' -f1)"
+          if [[ "$preflight_sha" != "$before_sha" ]]; then
+            echo "CONFLICT: Worker changed during preflight. No write performed." >&2
+            exit 2
+          fi
+
+          metadata="$(jq -nc --arg d "$compat" --arg u "$usage" '{main_module:"worker.js",bindings:[],compatibility_date:$d,compatibility_flags:[],usage_model:$u}')"
+          response="$(curl -fsS -X PUT "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}"             -F "metadata=${metadata};type=application/json"             -F "worker.js=@/tmp/new.js;filename=worker.js;type=application/javascript+module")"
+          jq -e '.success==true' <<<"$response" >/dev/null
+
+          # Verify Cloudflare stored exactly our script before checking public traffic.
+          fetch_worker stored
+          stored_sha="$(sha256sum /tmp/stored.js | cut -d' ' -f1)"
+          if [[ "$stored_sha" != "$new_sha" ]]; then
+            echo "Stored Worker is not our exact patch; refusing further action." >&2
+            exit 3
+          fi
+
+          # Targeted cache purge, fail-open if this token lacks purge permission.
+          purge_payload='{"files":["https://4planet.org/atlas/earth","https://4planet.org/atlas/fires","https://4planet.org/atlas/whales"]}'
+          curl -sS -X POST "${api}/zones/${zid}/purge_cache" -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' --data "$purge_payload" >/tmp/purge.json || true
+
+          ok=0
+          for attempt in $(seq 1 30); do
+            pass=1
+            for route in earth fires whales; do
+              probe="https://4planet.org/atlas/${route}?axe_publish_probe=20261005b"
+              result="$(curl -sS --max-time 20 -H 'Cache-Control: no-cache' -D "/tmp/${route}.headers" -o "/tmp/${route}.html" -w '%{http_code}|%{size_download}' "$probe")" || pass=0
+              [[ "$(cut -d'|' -f1 <<<"$result")" == "200" ]] || pass=0
+              ! grep -Eiq '^location:' "/tmp/${route}.headers" || pass=0
+              ! grep -Eiq '^x-robots-tag:.*noindex' "/tmp/${route}.headers" || pass=0
+            done
+            grep -Fq '<title>Earth — Explore the living planet in 4PLANET ATLAS</title>' /tmp/earth.html || pass=0
+            grep -Fq '<h1>Earth</h1>' /tmp/earth.html || pass=0
+            grep -Fq '<title>Global Fires — Satellite thermal anomalies in 4PLANET ATLAS</title>' /tmp/fires.html || pass=0
+            grep -Fq '<h1>Global Fires</h1>' /tmp/fires.html || pass=0
+            grep -Fq '<title>Whales — Explore reported cetacean observations in 4PLANET ATLAS</title>' /tmp/whales.html || pass=0
+            grep -Fq '<h1>Whales</h1>' /tmp/whales.html || pass=0
+            if [[ "$pass" == "1" ]]; then ok=1; break; fi
+            sleep 3
+          done
+
+          if [[ "$ok" != "1" ]]; then
+            echo "Public readback failed. Checking ownership before rollback." >&2
+            fetch_worker failed_current
+            failed_sha="$(sha256sum /tmp/failed_current.js | cut -d' ' -f1)"
+            if [[ "$failed_sha" == "$new_sha" ]]; then
+              rollback_response="$(curl -fsS -X PUT "${api}/accounts/${account_id}/workers/scripts/4planet-product-domains" "${auth[@]}"                 -F "metadata=${metadata};type=application/json"                 -F "worker.js=@/tmp/rollback.js;filename=worker.js;type=application/javascript+module")"
+              jq -e '.success==true' <<<"$rollback_response" >/dev/null
+              echo "ROLLBACK_OK"
+            else
+              echo "CONCURRENT_CHANGE: Worker changed after our publish; not overwriting it." >&2
+            fi
+            exit 1
+          fi
+
+          # One final ownership check and unrelated-product smoke.
+          fetch_worker final
+          final_sha="$(sha256sum /tmp/final.js | cut -d' ' -f1)"
+          [[ "$final_sha" == "$new_sha" ]]
+          [[ "$(curl -L -sS -o /tmp/atlas-root.html -w '%{http_code}' https://4planetatlas.com/)" == "200" ]]
+          [[ "$(curl -L -sS -o /tmp/orca.html -w '%{http_code}' https://4species.com/orca)" == "200" ]]
+
+          echo "LIVE_OK"
+          echo "https://4planet.org/atlas/earth"
+          echo "https://4planet.org/atlas/fires"
+          echo "https://4planet.org/atlas/whales"
+
+      - name: Upload conflict-safe publish receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-atlas-conflict-safe-publish-receipt
+          path: |
+            /tmp/worker.patch
+            /tmp/before.js
+            /tmp/new.js
+            /tmp/preflight.js
+            /tmp/stored.js
+            /tmp/final.js
+            /tmp/failed_current.js
+            /tmp/purge.json
+            /tmp/earth.headers
+            /tmp/earth.html
+            /tmp/fires.headers
+            /tmp/fires.html
+            /tmp/whales.headers
+            /tmp/whales.html
+          if-no-files-found: warn
+          retention-days: 30
