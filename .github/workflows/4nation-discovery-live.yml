@@ -1,0 +1,58 @@
+name: 4NATION Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ops/nation/4nation-live-worker.js
+      - .github/workflows/4nation-discovery-live.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 4nation-discovery-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate bounded discoverability change
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          node --check ops/nation/4nation-live-worker.js
+          grep -Fq 'https://4nation.org/sitemap.xml' ops/nation/4nation-live-worker.js
+          grep -Fq 'Disallow: /auth/' ops/nation/4nation-live-worker.js
+          grep -Fq '4NATION — Better Nation' ops/nation/4nation-live-worker.js
+      - name: Deploy existing 4planet-nation-live script only
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/nation/4nation-live-worker.js --name 4planet-nation-live --compatibility-date 2026-09-21 --keep-vars
+      - name: Verify live public and private boundaries
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            h=$(curl -sSIL --max-time 15 https://4nation.org/ | tr -d '\r')
+            if grep -q '200' <<<"$h" && ! grep -qi '^x-robots-tag:.*noindex' <<<"$h"; then break; fi
+            sleep 3
+          done
+          grep -q '200' <<<"$h"
+          ! grep -qi '^x-robots-tag:.*noindex' <<<"$h"
+          curl -fsS https://4nation.org/robots.txt | grep -Fq 'Sitemap: https://4nation.org/sitemap.xml'
+          curl -fsS https://4nation.org/sitemap.xml | grep -Fq 'https://4nation.org/'
+          html=$(curl -fsS https://4nation.org/)
+          grep -Fq '4NATION — Better Nation' <<<"$html"
+          grep -Fq 'index,follow,max-image-preview:large' <<<"$html"
+          ah=$(curl -sSI --max-time 15 https://4nation.org/auth/4planet/callback | tr -d '\r')
+          grep -qi '^x-robots-tag:.*noindex' <<<"$ah"
