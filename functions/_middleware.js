@@ -256,6 +256,30 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["4PLANET MARKET","https://4planetmarket.com/"],["4PLANET","https://4planet.org/"]],
     schemaType: "ProfilePage",
   },
+  "/living-systems/oslofjord": {
+    title: "Oslofjord — Living System Evidence | 4PLANET",
+    description: "A source-grounded 4PLANET reading of Bunnefjorden and the wider Oslofjord system, with explicit evidence and claim boundaries.",
+    fallbackTitle: "Oslofjord — Living System Evidence",
+    fallbackParagraphs: [
+      "This 4PLANET Living System surface uses Bunnefjorden as a bounded reference cell inside the wider Oslofjord. The reading connects physical form, oxygen conditions, human pressures, a measured wastewater intervention and attributable public sources.",
+      "NIVA reporting is used to describe a specific oxygen-condition change associated with lowering the Nordre Follo wastewater outfall. That evidence is not presented as proof that the whole Oslofjord ecosystem was restored.",
+      "Bathymetry, water-status layers, physical interventions, monitoring and assessment remain attributable to their respective source authorities rather than being merged into an unsupported synthetic score."
+    ],
+    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["Impact","https://4planet.org/impact"]],
+    schemaType: "WebPage",
+  },
+  "/living-systems/great-barrier-reef": {
+    title: "Great Barrier Reef — Living System Evidence | 4PLANET",
+    description: "A 4PLANET transfer reading of Great Barrier Reef monitoring and heat-stress evidence with explicit source and claim boundaries.",
+    fallbackTitle: "Great Barrier Reef — Living System Evidence",
+    fallbackParagraphs: [
+      "This public transfer page tests the same 4PLANET Living System grammar against Great Barrier Reef evidence rather than treating the reef as one homogeneous object.",
+      "AIMS field monitoring and NOAA Coral Reef Watch thermal-stress observations are kept as separate evidence modes. Regional coral-cover estimates do not describe every reef or every dimension of reef health.",
+      "Actor roles and intervention fit remain open where the evidence has not yet been resolved. The page therefore exposes incomplete knowledge instead of manufacturing a generic reef solution."
+    ],
+    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"]],
+    schemaType: "WebPage",
+  },
   "/partners": {
     title: "Partners — 4PLANET",
     description: "How 4PLANET approaches collaboration with expert organisations, technology partners and others contributing to a living planet.",
