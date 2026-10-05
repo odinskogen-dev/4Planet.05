@@ -89,11 +89,11 @@ export const MEDIA_MANIFEST: Record<string, MediaAsset> = {
   },
   "SP-005": {
     assetId: "SP-005", use: "SPECIES / Amazonia — Jaguar flagship profile",
-    provider: "Wikimedia Commons", creator: "Reviewed on Commons (Flickr source)",
+    provider: "Wikimedia Commons", creator: "Patty Ho",
     sourcePage: "https://commons.wikimedia.org/wiki/File:Jaguar_Pantanal.jpg",
-    licence: "CC BY 2.0", licenceUrl: L["CC BY 2.0"], attribution: "Flickr / Wikimedia Commons — CC BY 2.0",
+    licence: "CC BY 2.0", licenceUrl: L["CC BY 2.0"], attribution: "Patty Ho — CC BY 2.0",
     attributionRequired: true, commercialWebAllowed: true, cropModifyAllowed: true,
-    contextLimitation: "Wild Pantanal jaguar; Pantanal is a distinct biome adjacent to Amazonia.",
+    contextLimitation: "Pantanal species portrait only (Patty Ho, captured 2012-03-17). Not an Amazonia image, an ATLAS occurrence, a current-location record or evidence of local ecological condition.",
     localPath: "/assets/species/jaguar/SP-005.jpg", localPathMobile: "/assets/species/jaguar/SP-005-mobile.jpg", checked: "2026-08-12",
   },
   "SP-006": {
