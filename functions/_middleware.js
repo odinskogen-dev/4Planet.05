@@ -100,6 +100,66 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["4PLANET","https://4planet.org/"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Partners","https://4planet.org/partners"]],
     schemaType: "WebPage",
   },
+  "/domains": {
+    title: "4PLANET Domains — Ocean, Land, Human Systems and Culture",
+    description: "Explore OCE4N_, E4RTH_, S4PIENS_ and 4CULTURE_: four public 4PLANET domains connected by shared Living Planet Intelligence.",
+    fallbackTitle: "Four domains. One living planet.",
+    fallbackParagraphs: [
+      "4PLANET organises its public work through four distinct domains with shared infrastructure: OCE4N_ for marine systems, E4RTH_ for land, biodiversity, climate and restoration, S4PIENS_ for human systems, and 4CULTURE_ for culture, media and participation.",
+      "The domains are not separate truth systems. They are public lenses over connected places, species, living systems, human systems, missions and evidence. Each domain develops its own mission pathways while reusing the same underlying intelligence and proof standards.",
+      "Public mission and product maturity varies. Strategic concepts, partner pathways and operational proof paths remain labelled separately so unfinished work is not presented as proven delivery."
+    ],
+    fallbackLinks: [["OCE4N_","https://4planet.org/domains/oce4n"],["E4RTH_","https://4planet.org/domains/e4rth"],["S4PIENS_","https://4planet.org/domains/s4piens"],["4CULTURE_","https://4planet.org/domains/4culture"],["Missions","https://4planet.org/missions"]],
+    schemaType: "CollectionPage",
+  },
+  "/domains/oce4n": {
+    title: "OCE4N_ — Marine Systems and Ocean Resilience | 4PLANET",
+    description: "OCE4N_ is 4PLANET's marine domain for understanding ocean systems and building credible pathways for protection, recovery and participation.",
+    fallbackTitle: "OCE4N_ — The Living Ocean",
+    fallbackParagraphs: [
+      "OCE4N_ is 4PLANET's marine domain: a public place to understand the systems that make oceans productive and resilient and to develop credible pathways for protection, recovery and participation.",
+      "Its current mission pathways include CLE4N_, WH4LES_, COR4L_ and RE:WILD_ Marine. Public support opens only where delivery, evidence and reporting requirements are sufficiently resolved.",
+      "Ocean intelligence connects through shared 4PLANET infrastructure to ATLAS, SPECIES, Living Systems, Impact and MAGAZINE rather than creating a separate marine truth store."
+    ],
+    fallbackLinks: [["Missions","https://4planet.org/missions"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Living Systems","https://4planet.org/living-systems"]],
+    schemaType: "CollectionPage",
+  },
+  "/domains/e4rth": {
+    title: "E4RTH_ — Land, Biodiversity and Restoration | 4PLANET",
+    description: "E4RTH_ is 4PLANET's land-systems domain for forests, biodiversity, climate, species and ecological restoration.",
+    fallbackTitle: "E4RTH_ — The Living Land",
+    fallbackParagraphs: [
+      "E4RTH_ is 4PLANET's land-systems domain: forests, biodiversity, climate, species and the long work of returning damaged landscapes to ecological function.",
+      "Its current mission pathways include CLIM4TE_, AM4ZONIA_, SPECIES_ and RE:WILD_ Land. The Tree Unit is an operational proof path under development; public support remains closed until its launch requirements are complete.",
+      "E4RTH_ connects land-system understanding to shared places, species, evidence and action infrastructure across 4PLANET."
+    ],
+    fallbackLinks: [["Missions","https://4planet.org/missions"],["SPECIES","https://4species.com/species/"],["ATLAS","https://4planetatlas.com/"],["Impact","https://4planet.org/impact"]],
+    schemaType: "CollectionPage",
+  },
+  "/domains/s4piens": {
+    title: "S4PIENS_ — Human Systems | 4PLANET",
+    description: "S4PIENS_ makes food, energy, cities, materials and other human systems legible in relation to people and the living planet.",
+    fallbackTitle: "S4PIENS_ — The Systems We Build",
+    fallbackParagraphs: [
+      "S4PIENS_ makes the human systems behind ecological pressure visible and explores how those systems can be redesigned toward healthier, lower-impact and more durable forms of life.",
+      "Its current mission pathways include FOOD_, EN4RGY_, CIRCULAR CITY_ and F4SHION_. These are public system lenses and strategic pathways, not claims that 4PLANET already operates every intervention described.",
+      "The domain connects to the standalone S4PIENS human-systems intelligence product while keeping 4SAPIEN, the private individual product, distinct."
+    ],
+    fallbackLinks: [["S4PIENS","https://s4piens.com/"],["4SAPIEN","https://4sapien.com/"],["Missions","https://4planet.org/missions"],["Living Systems","https://4planet.org/living-systems"]],
+    schemaType: "CollectionPage",
+  },
+  "/domains/4culture": {
+    title: "4CULTURE_ — Culture for Action | 4PLANET",
+    description: "4CULTURE_ is 4PLANET's cultural layer for editorial, film, art and participation that carries ecological intelligence into public life.",
+    fallbackTitle: "4CULTURE_ — Culture for Action",
+    fallbackParagraphs: [
+      "4CULTURE_ is the cultural distribution layer of 4PLANET: editorial, film, art and gatherings that carry ecological intelligence into public life.",
+      "Its current pathways include 4PLANET MAGAZINE, 4PLANET FILM, 4RT_ and 4PLAY_. They are cultural mission pathways using shared 4PLANET infrastructure rather than competing standalone truth systems.",
+      "Culture is treated as a route to attention, understanding and participation. Cultural activity is not itself described as ecological outcome without separate evidence."
+    ],
+    fallbackLinks: [["MAGAZINE","https://4planetmagazine.com/magazine/"],["Missions","https://4planet.org/missions"],["Impact","https://4planet.org/impact"]],
+    schemaType: "CollectionPage",
+  },
   "/missions": {
     title: "4PLANET Missions — Connected Work for a Living Planet",
     description: "Explore 4PLANET mission areas across ocean, land, human systems and culture, connected through shared living-planet intelligence.",
