@@ -14,6 +14,7 @@ const srv=http.createServer((q,res)=>{let f=path.join(SITE,decodeURI(q.url.split
  try{const b=fs.readFileSync(f);res.writeHead(200,{'Content-Type':mime[path.extname(f)]||'text/plain'});res.end(b)}catch(e){res.writeHead(404);res.end('x')}});
 (async()=>{await new Promise(r=>srv.listen(8099,r));const br=await type.launch();
 const ctx=await br.newContext({viewport:{width:390,height:844},deviceScaleFactor:BROWSER==='webkit'?1:3,isMobile:true,hasTouch:true});
+await ctx.addInitScript(()=>{window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:null},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signOut:async()=>({error:null})},from:()=>({select(){return this},eq(){return this},is(){return this},in(){return this},order(){return this},limit(){return this},maybeSingle:async()=>({data:null,error:null}),single:async()=>({data:null,error:null}),then:r=>Promise.resolve({data:[],error:null}).then(r)}),rpc:async()=>({data:null,error:null})})};});
 await ctx.route('**', r=>r.request().url().startsWith('http://localhost:8099')?r.continue():r.abort());
 for(const [name,p] of PAGES){
   const pg=await ctx.newPage();const errs=[];pg.on('pageerror',e=>errs.push(e.message));
