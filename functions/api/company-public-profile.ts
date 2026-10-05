@@ -15,6 +15,7 @@ type SourceRecord = {
 };
 
 const ACCOUNTS_BASE = "https://data.brreg.no/regnskapsregisteret/regnskap/aarsregnskap";
+const FINANCIALS_BASE = "https://data.brreg.no/regnskapsregisteret/regnskap";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -167,6 +168,33 @@ function normaliseAccountYears(payload: any): string[] {
     Array.isArray(payload?.years) ? payload.years :
     Array.isArray(payload?.tilgjengeligeAar) ? payload.tilgjengeligeAar : [];
   return Array.from(new Set(candidates.map((value) => clean(String(value), 10)).filter((value) => /^20\d{2}$|^19\d{2}$/.test(value)))).sort().reverse();
+}
+
+function normaliseFinancials(payload: any, orgnr: string) {
+  const row = Array.isArray(payload) ? payload[0] : payload?._embedded?.regnskap?.[0] ?? payload?.regnskap?.[0] ?? null;
+  if (!row) return null;
+  const returnedOrg = clean(row?.virksomhet?.organisasjonsnummer, 20);
+  if (returnedOrg && returnedOrg !== orgnr) return null;
+  const numberOrNull = (value: unknown) => typeof value === "number" && Number.isFinite(value) ? value : null;
+  const revenue = numberOrNull(row?.resultatregnskapResultat?.driftsresultat?.driftsinntekter?.sumDriftsinntekter);
+  const operatingResult = numberOrNull(row?.resultatregnskapResultat?.driftsresultat?.driftsresultat);
+  const assets = numberOrNull(row?.eiendeler?.sumEiendeler);
+  const equity = numberOrNull(row?.egenkapitalGjeld?.egenkapital?.sumEgenkapital);
+  return {
+    periodStart: clean(row?.regnskapsperiode?.fraDato, 30) || null,
+    periodEnd: clean(row?.regnskapsperiode?.tilDato, 30) || null,
+    currency: clean(row?.valuta, 12) || "NOK",
+    revenue,
+    operatingResult,
+    annualResult: numberOrNull(row?.resultatregnskapResultat?.aarsresultat),
+    resultBeforeTax: numberOrNull(row?.resultatregnskapResultat?.ordinaertResultatFoerSkattekostnad),
+    assets,
+    equity,
+    debt: numberOrNull(row?.egenkapitalGjeld?.gjeldOversikt?.sumGjeld),
+    operatingMargin: revenue !== null && operatingResult !== null && revenue !== 0 ? operatingResult / revenue : null,
+    equityRatio: assets !== null && equity !== null && assets !== 0 ? equity / assets : null,
+    truthClass: "FACT" as const,
+  };
 }
 
 function buildCompany(raw: any, exact: any) {
