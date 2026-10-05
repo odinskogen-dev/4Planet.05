@@ -1,0 +1,61 @@
+name: MARKET + CRE4TORS Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ops/discovery/live-workers/4planetmarket-prototype.js
+      - ops/discovery/live-workers/cre4tors-prototype.js
+      - .github/workflows/market-cre4tors-discovery-live.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: market-cre4tors-discovery-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate bounded sources
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          node --check ops/discovery/live-workers/4planetmarket-prototype.js
+          node --check ops/discovery/live-workers/cre4tors-prototype.js
+          grep -Fq 'data-public-discovery-fallback' ops/discovery/live-workers/4planetmarket-prototype.js
+          grep -Fq 'data-public-discovery-fallback' ops/discovery/live-workers/cre4tors-prototype.js
+          grep -Fq 'Sitemap: https://4planetmarket.com/sitemap.xml' ops/discovery/live-workers/4planetmarket-prototype.js
+          grep -Fq 'Sitemap: https://cre4tors.com/sitemap.xml' ops/discovery/live-workers/cre4tors-prototype.js
+      - name: Deploy existing public Workers
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/discovery/live-workers/4planetmarket-prototype.js --name 4planetmarket-prototype --compatibility-date 2026-10-05 --keep-vars
+          npx --yes wrangler@4.128.0 deploy ops/discovery/live-workers/cre4tors-prototype.js --name cre4tors-prototype --compatibility-date 2026-10-05 --keep-vars
+      - name: Verify live raw HTML and boundaries
+        run: |
+          set -euo pipefail
+          for d in 4planetmarket.com cre4tors.com; do
+            for attempt in $(seq 1 20); do
+              html=$(curl -fsS "https://$d/" || true)
+              if grep -Fq 'data-public-discovery-fallback' <<<"$html"; then break; fi
+              sleep 3
+            done
+            grep -Fq 'data-public-discovery-fallback' <<<"$html"
+            grep -Fq 'index,follow,max-image-preview:large' <<<"$html"
+            curl -fsS "https://$d/robots.txt" | grep -Fq "Sitemap: https://$d/sitemap.xml"
+            curl -fsS "https://$d/sitemap.xml" | grep -Fq "https://$d/"
+            h=$(curl -sSI "https://$d/api/not-a-public-page" | tr -d '\r')
+            grep -qi '^x-robots-tag:.*noindex' <<<"$h"
+          done
