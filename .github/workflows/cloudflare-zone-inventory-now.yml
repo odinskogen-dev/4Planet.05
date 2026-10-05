@@ -22,7 +22,8 @@ jobs:
             local url="$1"
             echo "=== $url ==="
             curl -sSIL --max-time 20 "$url" | tr -d '\r' | grep -Ei '^(HTTP/|location:|content-type:|x-robots-tag:|cache-control:|link:)' | tail -20 || true
-            curl -sSL --max-time 20 "$url" | head -c 1800 | tr '\n' ' '; echo
+            curl -sSL --max-time 20 "$url" -o /tmp/probe-body || true
+            head -c 1800 /tmp/probe-body | tr '\n' ' '; echo
           }
           probe https://4planetmarket.com/
           probe https://4planetmarket.com/robots.txt
