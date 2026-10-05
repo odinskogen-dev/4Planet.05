@@ -1,38 +1,19 @@
+import { type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { T, DOMAIN_ACCENT } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
-import { Section } from "@/components/ui";
 import { Reveal } from "@/components/Cinematic";
 import { img, type ImageKey } from "@/content/imageRegistry";
 import { IMPACT_UNITS } from "@/data/impactUnits";
 import type { DomainKey } from "@/types/content";
 import { AtlasHero } from "./AtlasHero";
-
-const mono: React.CSSProperties = {
-  fontFamily: T.mono,
-  fontSize: 10.5,
-  letterSpacing: ".14em",
-  textTransform: "uppercase",
-};
-
-const display: React.CSSProperties = {
-  fontFamily: T.display,
-  fontWeight: 500,
-  letterSpacing: "-.045em",
-};
-
-const bodyDim: React.CSSProperties = {
-  fontSize: "clamp(16px,1.15vw,19px)",
-  color: T.dim,
-  lineHeight: 1.62,
-  textWrap: "pretty",
-};
+import "@/styles/home-brand-reset.css";
 
 const PRODUCTS = [
-  ["01", "ATLAS", "SEE THE PLANET", "Move through place, observations and planetary context.", "/atlas", T.blue],
-  ["02", "SPECIES", "MEET LIFE", "Enter through a species, then follow habitat, relationships and evidence.", "/species", "#3AE86F"],
-  ["03", "LIVING SYSTEMS", "UNDERSTAND", "See dependencies, pressures and responses as one connected system.", "/living-systems", "#FF4D22"],
-  ["04", "IMPACT", "HELP", "Move from understanding toward credible action and proof.", "/impact", "#3AE86F"],
+  ["01", "ATLAS", "See the planet.", "Places, observations and planetary context.", "/atlas", T.blue],
+  ["02", "SPECIES", "Meet life.", "Species, habitats, relationships and evidence.", "/species", "#3AE86F"],
+  ["03", "LIVING SYSTEMS", "Understand connections.", "Dependencies, pressures and change.", "/living-systems", "#FF4D22"],
+  ["04", "IMPACT", "Find a way to help.", "Action, delivery, evidence and what happens next.", "/impact", "#3AE86F"],
 ] as const;
 
 const WORLDS: Record<DomainKey, { line: string; image: ImageKey }> = {
@@ -44,80 +25,80 @@ const WORLDS: Record<DomainKey, { line: string; image: ImageKey }> = {
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const dslug = (key: string) => key.replace("_", "").toLowerCase();
-
-const STEPS: [string, string][] = [
-  ["Understand", "Explore the living systems, places and challenges under pressure."],
-  ["Enter a world", "Find the part of the living planet you care about."],
-  ["Follow a mission", "Understand one challenge, what is changing and what can help."],
-  ["Join action", "Support credible pathways as they become ready."],
-  ["Follow proof", "See how action is delivered, evidenced and reported over time."],
-];
-
-const PARTICIPATE: [string, string, string][] = [
-  ["4PEOPLE", "Join a clearer way to understand, follow and support the living world.", "/join"],
-  ["4BRANDS", "Help build credible environmental action people can understand and believe in.", "/brands"],
-  ["4PARTNERS", "Bring real environmental work into a system people can understand, support and follow.", "/partners"],
-  ["4FUNDERS", "Help build long-term public infrastructure for environmental action.", "/funders"],
-];
-
 const impactStatus = (status: string) => status.replace(/_/g, " ");
+const HOME_ATLAS_SRC = "/atlas?l=bluemarble&c=0%2C15&z=1.35&embed=place";
 
 function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
-  const [no, name, tag, line, to, accent] = item;
+  const [no, name, headline, line, to, accent] = item;
   return (
-    <Link to={to} className="home-lens" style={{ display: "block", color: T.ink, textDecoration: "none", padding: "28px 0 30px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
-        <span style={{ ...mono, color: accent }}>{no}</span>
-        <span aria-hidden style={{ ...mono, color: T.dim }}>OPEN ↗</span>
+    <Link
+      to={to}
+      className="home-lens"
+      style={{ "--home-accent": accent } as CSSProperties}
+    >
+      <div className="home-lens__top">
+        <span className="home-lens__id">{no}_ {name}</span>
+        <span aria-hidden className="home-lens__open">OPEN ↗</span>
       </div>
-      <h3 style={{ ...display, margin: "22px 0 0", fontSize: "clamp(24px,2.8vw,39px)", lineHeight: .96 }}>{name}</h3>
-      <div style={{ ...mono, color: T.dim, marginTop: 12 }}>{tag}</div>
-      <p style={{ margin: "12px 0 0", maxWidth: 300, color: T.dim, fontSize: 14.5, lineHeight: 1.55 }}>{line}</p>
+      <h3>{headline}</h3>
+      <p>{line}</p>
+    </Link>
+  );
+}
+
+function ImpactCard({ unit, featured = false }: { unit: typeof IMPACT_UNITS[number]; featured?: boolean }) {
+  return (
+    <Link
+      to={"/impact/" + unit.slug}
+      className={"home-impact-card" + (featured ? " home-impact-card--featured" : "")}
+      style={{ "--home-accent": unit.accent } as CSSProperties}
+    >
+      {!unit.imagePending && (
+        <picture>
+          {unit.imageMobile && <source media="(max-width:680px)" srcSet={unit.imageMobile} />}
+          <img src={unit.image} alt={unit.imageAlt} loading="lazy" decoding="async" />
+        </picture>
+      )}
+      <span aria-hidden className="home-impact-card__scrim" />
+      <div className="home-impact-card__content">
+        <div className="home-impact-card__meta">
+          <span>{unit.index}_ {unit.missionName}</span>
+          <span>EXPLORE →</span>
+        </div>
+        <h3>{unit.action}</h3>
+        {featured && <p>{unit.standfirst}</p>}
+        <div className="home-impact-card__state">{impactStatus(unit.delivery.status)}</div>
+      </div>
     </Link>
   );
 }
 
 function ImpactPreview() {
+  const [featured, ...rest] = IMPACT_UNITS.slice(0, 4);
+  if (!featured) return null;
   return (
-    <section className="home-impact" style={{ background: "#050805", color: "#fff" }}>
-      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(64px,8vw,116px) clamp(20px,5vw,72px)" }}>
+    <section className="home-impact">
+      <div className="home-shell">
         <Reveal>
-          <div className="home-impact__intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(28px,6vw,90px)", alignItems: "end" }}>
+          <div className="home-section-intro home-section-intro--impact">
             <div>
-              <div style={{ ...mono, color: T.acid }}>IMPACT_ · WHAT ACTION COULD LOOK LIKE</div>
-              <h2 style={{ ...display, margin: "14px 0 0", fontSize: "clamp(40px,6vw,82px)", lineHeight: .91, maxWidth: "11ch" }}>Understand it. Help it. Follow what happens.</h2>
+              <div className="home-kicker home-kicker--blue">IMPACT_ FIND A WAY TO HELP</div>
+              <h2>Understand it. Help it. Follow what happens.</h2>
             </div>
             <div>
-              <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.74)", fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.62 }}>4PLANET is building simple action pathways around real ecological work — with the partner, evidence and reporting model made visible before public support opens.</p>
-              <p style={{ ...mono, color: "rgba(255,255,255,.46)", marginTop: 18, lineHeight: 1.55 }}>CURRENT STATE · PROTOTYPE PATHWAYS · NOT YET OPEN FOR PUBLIC SUPPORT</p>
+              <p>Explore concrete action pathways 4PLANET is developing around real ecological work. Each pathway shows what the action is, what still has to become true and how evidence would be followed.</p>
+              <p className="home-status-line">CURRENT STATE_ PROTOTYPE PATHWAYS_ NOT YET OPEN FOR PUBLIC SUPPORT</p>
             </div>
           </div>
         </Reveal>
 
-        <div className="home-impact__grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 1, marginTop: "clamp(38px,5vw,64px)", background: "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.16)" }}>
-          {IMPACT_UNITS.slice(0, 4).map((unit) => (
-            <Link key={unit.slug} to={`/impact/${unit.slug}`} className="home-impact__card" style={{ position: "relative", minHeight: "clamp(330px,38vw,520px)", overflow: "hidden", display: "flex", alignItems: "flex-end", color: "#fff", textDecoration: "none", background: "#090909" }}>
-              {!unit.imagePending && (
-                <picture>
-                  {unit.imageMobile && <source media="(max-width:680px)" srcSet={unit.imageMobile} />}
-                  <img src={unit.image} alt={unit.imageAlt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform .7s cubic-bezier(.2,.7,.2,1)" }} />
-                </picture>
-              )}
-              <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.08) 8%,rgba(0,0,0,.18) 45%,rgba(0,0,0,.92) 100%)" }} />
-              <div style={{ position: "relative", width: "100%", padding: "clamp(24px,3.6vw,48px)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 16 }}>
-                  <span style={{ ...mono, color: unit.accent }}>{unit.index}_ {unit.missionName}</span>
-                  <span style={{ ...mono, color: "rgba(255,255,255,.55)" }}>EXPLORE →</span>
-                </div>
-                <h3 style={{ ...display, margin: "16px 0 0", fontSize: "clamp(32px,4.5vw,62px)", lineHeight: .9, maxWidth: "11ch" }}>{unit.action}</h3>
-                <div style={{ ...mono, color: unit.accent, marginTop: 14 }}>{unit.unitLabel}</div>
-                <p style={{ margin: "14px 0 0", maxWidth: 520, color: "rgba(255,255,255,.76)", fontSize: "clamp(14px,1.25vw,17px)", lineHeight: 1.55 }}>{unit.standfirst}</p>
-                <div style={{ ...mono, color: "rgba(255,255,255,.48)", marginTop: 18, fontSize: 9.5 }}>{impactStatus(unit.delivery.status)}</div>
-              </div>
-            </Link>
-          ))}
+        <div className="home-impact-gallery">
+          <ImpactCard unit={featured} featured />
+          <div className="home-impact-gallery__rail">
+            {rest.map((unit) => <ImpactCard key={unit.slug} unit={unit} />)}
+          </div>
         </div>
-        <Link to="/impact" style={{ ...mono, display: "inline-flex", marginTop: 28, color: "#fff", textDecoration: "none" }}>EXPLORE IMPACT →</Link>
+        <Link to="/impact" className="home-text-link">EXPLORE IMPACT →</Link>
       </div>
     </section>
   );
@@ -128,13 +109,64 @@ function WorldPanel({ dk }: { dk: DomainKey }) {
   const media = img(world.image);
   const accent = DOMAIN_ACCENT[dk];
   return (
-    <Link to={`/domains/${dslug(dk)}`} className="home-world" style={{ position: "relative", minHeight: "clamp(360px,46vw,650px)", display: "flex", alignItems: "flex-end", overflow: "hidden", color: "#fff", textDecoration: "none", background: "#050505" }}>
-      <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: media.objectPosition ?? "50% 50%" }} />
-      <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.05) 10%,rgba(0,0,0,.16) 54%,rgba(0,0,0,.88) 100%)" }} />
-      <div style={{ position: "relative", width: "100%", padding: "clamp(22px,3.5vw,46px)" }}>
-        <div style={{ ...mono, color: accent }}>{dk}</div>
-        <h3 style={{ ...display, margin: "10px 0 0", fontSize: "clamp(34px,5vw,68px)", lineHeight: .88 }}>{dk.replace("_", "")}</h3>
-        <p style={{ margin: "16px 0 0", maxWidth: 430, color: "rgba(255,255,255,.78)", fontSize: "clamp(14px,1.2vw,17px)", lineHeight: 1.55 }}>{world.line}</p>
+    <Link
+      to={"/domains/" + dslug(dk)}
+      className="home-world"
+      style={{ "--home-accent": accent } as CSSProperties}
+    >
+      <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ objectPosition: media.objectPosition ?? "50% 50%" }} />
+      <span aria-hidden className="home-world__scrim" />
+      <div className="home-world__content">
+        <div className="home-kicker home-world__kicker">{dk}</div>
+        <h3>{dk.replace("_", "")}</h3>
+        <p>{world.line}</p>
+      </div>
+    </Link>
+  );
+}
+
+function AtlasWindow() {
+  return (
+    <section className="home-atlas-section">
+      <div className="home-shell">
+        <Reveal>
+          <div className="home-section-intro">
+            <div>
+              <div className="home-kicker home-kicker--blue">EXPLORE THE PLANET_ LIVE ATLAS</div>
+              <h2>One planet. Many relationships.</h2>
+            </div>
+            <div>
+              <p>Move through places, observations and planetary context in the shared 4PLANET ATLAS.</p>
+              <Link to="/atlas" className="home-text-link">OPEN ATLAS →</Link>
+            </div>
+          </div>
+        </Reveal>
+        <div className="home-atlas-window">
+          <iframe
+            src={HOME_ATLAS_SRC}
+            title="Interactive 4PLANET ATLAS"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function OrcaEncounter() {
+  const media = img("wh4lesHero");
+  return (
+    <Link to="/species/orca" className="home-orca" aria-label="Meet the Orca">
+      <picture>
+        {media.srcMobile && <source media="(max-width:680px)" srcSet={media.srcMobile} />}
+        <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ objectPosition: media.objectPosition ?? "50% 50%" }} />
+      </picture>
+      <span aria-hidden className="home-orca__scrim" />
+      <div className="home-orca__content">
+        <div className="home-kicker">SPECIES_</div>
+        <h2>Meet the Orca.</h2>
       </div>
     </Link>
   );
@@ -143,115 +175,75 @@ function WorldPanel({ dk }: { dk: DomainKey }) {
 export default function Home() {
   return (
     <PublicShell>
-      <AtlasHero />
+      <div className="home-brand-reset">
+        <AtlasHero />
 
-      <section id="why-4planet" style={{ background: T.blue, color: "#fff" }}>
-        <div className="home-premise" style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(74px,10vw,152px) clamp(20px,5vw,72px)", display: "grid", gridTemplateColumns: "minmax(0,1.15fr) minmax(300px,.85fr)", gap: "clamp(36px,8vw,120px)", alignItems: "end" }}>
-          <div>
-            <div style={{ ...mono, color: "rgba(255,255,255,.62)" }}>WHY 4PLANET_</div>
-            <h2 style={{ ...display, margin: "18px 0 0", fontSize: "clamp(42px,7vw,98px)", lineHeight: .9, maxWidth: "13ch" }}>A healthy living planet is infrastructure for human life.</h2>
+        <section id="why-4planet" className="home-premise">
+          <div className="home-shell home-premise__grid">
+            <div>
+              <div className="home-kicker home-kicker--blue">WHY 4PLANET</div>
+              <h2>Human life depends on a living planet.</h2>
+            </div>
+            <div className="home-premise__copy">
+              <p>Our food, water, health, economies and societies depend on living systems. Yet the relationships between human systems and the rest of nature are often difficult to see.</p>
+              <p className="home-premise__closing">4PLANET exists to make those relationships easier to understand — and credible ways to help easier to find.</p>
+              <Link to="/about/story" className="home-text-link">WHY WE EXIST →</Link>
+            </div>
           </div>
-          <div>
-            <p style={{ margin: 0, maxWidth: 620, color: "rgba(255,255,255,.82)", fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.62 }}>Food, water, climate regulation, materials, health and prosperity all depend on living systems. 4PLANET exists to make those relationships easier to see — and credible ways to act on them easier to find.</p>
-            <Link to="/about" style={{ ...mono, display: "inline-flex", marginTop: 28, color: "#fff", textDecoration: "none" }}>THE STORY →</Link>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section style={{ background: "#050805", color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(58px,8vw,112px) clamp(20px,5vw,72px)", display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(30px,7vw,104px)", alignItems: "end" }} className="home-belief">
-          <div>
-            <div style={{ ...mono, color: T.acid }}>WHAT WE BELIEVE_</div>
-            <h2 style={{ ...display, margin: "16px 0 0", fontSize: "clamp(36px,5.5vw,76px)", lineHeight: .92, maxWidth: "11ch" }}>We believe the future can be better.</h2>
-          </div>
-          <div>
-            <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.76)", fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.65 }}>Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real, use power for good — and leave things better.</p>
-            <Link to="/about/what-we-believe" style={{ ...mono, display: "inline-flex", marginTop: 26, color: "#fff", textDecoration: "none" }}>WHAT WE BELIEVE →</Link>
-          </div>
-        </div>
-      </section>
+        <AtlasWindow />
 
-      <section style={{ background: "#fff", color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(58px,7vw,100px) clamp(20px,5vw,72px)" }}>
-          <Reveal>
-            <div className="home-lens-intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.72fr) minmax(280px,1fr)", gap: "clamp(28px,6vw,94px)", alignItems: "end" }}>
-              <div>
-                <div style={{ ...mono, color: T.blue }}>ONE PLANET · FOUR PUBLIC LENSES</div>
-                <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(38px,5.5vw,74px)", lineHeight: .92, maxWidth: "10ch" }}>See the same planet from four angles.</h2>
+        <section className="home-lenses">
+          <div className="home-shell">
+            <Reveal>
+              <div className="home-section-intro">
+                <div>
+                  <div className="home-kicker home-kicker--blue">ONE PLANET_ FOUR LENSES</div>
+                  <h2>See the same living planet from different angles.</h2>
+                </div>
+                <p>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT are connected ways into one shared living-planet model — not separate worlds.</p>
               </div>
-              <p style={{ margin: 0, maxWidth: 650, color: T.dim, fontSize: "clamp(16px,1.4vw,19px)", lineHeight: 1.62 }}>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT are connected ways into one shared living-planet model — not separate product worlds.</p>
+            </Reveal>
+            <div className="home-lens-grid">
+              {PRODUCTS.map((item) => <ProductLens key={item[0]} item={item} />)}
             </div>
-          </Reveal>
-          <div className="home-lens-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: "clamp(18px,3vw,42px)", marginTop: "clamp(34px,5vw,58px)", borderTop: `1px solid ${T.lineStrong}` }}>
-            {PRODUCTS.map((item) => <ProductLens key={item[0]} item={item} />)}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <ImpactPreview />
+        <OrcaEncounter />
 
-      <section id="worlds" style={{ background: "#050505", color: "#fff" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(62px,8vw,104px) clamp(20px,5vw,72px) 0" }}>
-          <div style={{ ...mono, color: T.acid }}>THE LIVING WORLD</div>
-          <div className="home-world-intro" style={{ display: "grid", gridTemplateColumns: "minmax(0,.8fr) minmax(280px,1fr)", gap: "clamp(24px,6vw,90px)", alignItems: "end", marginTop: 12 }}>
-            <h2 style={{ ...display, margin: 0, fontSize: "clamp(36px,5.2vw,70px)", lineHeight: .92, maxWidth: "10ch" }}>Four connected domains.</h2>
-            <p style={{ margin: 0, maxWidth: 650, color: "rgba(255,255,255,.62)", fontSize: "clamp(15px,1.35vw,18px)", lineHeight: 1.6 }}>The Planetary Map describes the world. Domains make that world navigable. Missions focus where 4PLANET acts inside those domains.</p>
-          </div>
-        </div>
-        <div className="home-world-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 1, marginTop: "clamp(34px,5vw,58px)", background: "rgba(255,255,255,.12)" }}>
-          {ORDER.map((dk) => <WorldPanel key={dk} dk={dk} />)}
-        </div>
-      </section>
-
-      <section id="how" style={{ background: T.paper, color: T.ink }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(56px,8vw,120px) clamp(20px,5vw,72px)" }}>
-          <Reveal>
-            <div style={{ ...mono, color: T.blue, marginBottom: 16 }}>A CLEAR WAY IN</div>
-            <h2 style={{ ...display, margin: 0, fontSize: "clamp(24px,3vw,40px)", lineHeight: 1.02, maxWidth: 820 }}>Environmental problems are complex. Participation should not be.</h2>
-            <p style={{ ...bodyDim, marginTop: 18, maxWidth: 700 }}>4PLANET organises the living world into connected domains and missions, then brings together people, field organisations, scientists and funders around credible action you can understand, support and follow.</p>
-          </Reveal>
-          <Reveal delay={60}>
-            <div className="process5" style={{ marginTop: "clamp(36px,5vw,60px)", borderTop: `1px solid ${T.line}`, paddingTop: "clamp(24px,3vw,40px)" }}>
-              {STEPS.map(([title, line], index) => (
-                <div key={title} className="process5-step">
-                  <span className="mono" style={{ fontSize: 11, color: T.blue }}>{`0${index + 1}_`}</span>
-                  <div style={{ fontWeight: 500, fontSize: "clamp(15px,1.2vw,18px)", marginTop: 12, letterSpacing: "-.01em" }}>{title}</div>
-                  <p style={{ fontSize: 13, marginTop: 10, lineHeight: 1.5, color: T.dim }}>{line}</p>
-                </div>
-              ))}
+        <section id="worlds" className="home-worlds">
+          <div className="home-shell home-worlds__intro">
+            <div className="home-kicker">THE LIVING WORLD</div>
+            <div className="home-section-intro home-section-intro--dark">
+              <h2>Four connected worlds.</h2>
+              <p>Enter the living ocean, living land, the human systems shaping planetary pressure and the culture that shapes what people care about and do.</p>
             </div>
-            <div className="mono" style={{ fontSize: 11, letterSpacing: ".18em", color: T.blue, marginTop: "clamp(32px,4vw,52px)" }}>PLANET → DOMAIN → MISSION → ACTION → PROOF</div>
-            <p style={{ ...bodyDim, fontSize: 13.5, marginTop: 18, maxWidth: 640 }}>No impact pathway is open for public support yet. Each opens only when its delivery model, evidence and reporting are in place — the ecological facts we show are sourced; the delivery model is shown at its true status.</p>
-          </Reveal>
-        </div>
-      </section>
-
-      <Section pad="clamp(48px,6vw,96px)">
-        <Reveal>
-          <div style={{ ...mono, color: T.blue, marginBottom: 8 }}>TAKE PART</div>
-          <h2 style={{ ...display, margin: 0, fontSize: "clamp(24px,3vw,40px)", lineHeight: 1.02, maxWidth: 820 }}>Build this with us.</h2>
-          <div className="part-grid" style={{ marginTop: "clamp(28px,4vw,44px)", borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
-            {PARTICIPATE.map(([title, line, to]) => (
-              <Link key={title} to={to} className="part-box" style={{ padding: "clamp(24px,3vw,38px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                  <span style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(20px,2vw,26px)", letterSpacing: "-.02em" }}>{title}</span>
-                  <span className="pb-arr" style={{ color: T.faint, transition: "color .18s, transform .18s" }}>→</span>
-                </div>
-                <p style={{ fontSize: 14, color: T.dim, marginTop: 12, lineHeight: 1.5, maxWidth: 380 }}>{line}</p>
-              </Link>
-            ))}
           </div>
-        </Reveal>
-      </Section>
+          <div className="home-world-grid">
+            {ORDER.map((dk) => <WorldPanel key={dk} dk={dk} />)}
+          </div>
+        </section>
 
-      <style>{`
-        .home-lens{transition:transform .2s ease,opacity .2s ease}.home-lens:hover{transform:translateX(5px)}
-        .home-world img,.home-impact__card img{transition:transform .7s cubic-bezier(.2,.7,.2,1)}
-        .home-world:hover img,.home-world:focus-visible img,.home-impact__card:hover img,.home-impact__card:focus-visible img{transform:scale(1.018)!important}
-        @media(max-width:900px){.home-premise,.home-belief,.home-lens-intro,.home-world-intro,.home-impact__intro{grid-template-columns:1fr!important}.home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-        @media(max-width:680px){.home-lens-grid,.home-world-grid,.home-impact__grid{grid-template-columns:1fr!important}.home-lens{border-bottom:1px solid ${T.line}}.home-impact__card{min-height:420px!important}}
-        @media(prefers-reduced-motion:reduce){.home-lens,.home-world img,.home-impact__card img{transition:none!important}.home-lens:hover{transform:none}.home-world:hover img,.home-world:focus-visible img,.home-impact__card:hover img,.home-impact__card:focus-visible img{transform:none!important}}
-      `}</style>
+        <ImpactPreview />
+
+        <section className="home-belief-join">
+          <div className="home-shell home-belief-join__grid">
+            <div>
+              <div className="home-kicker home-kicker--blue">WHAT WE BELIEVE</div>
+              <h2>We believe the future can be better.</h2>
+              <p>Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real, use power for good — and leave things better.</p>
+              <Link to="/about/what-we-believe" className="home-text-link">WHAT WE BELIEVE →</Link>
+            </div>
+            <div className="home-belief-join__join">
+              <div className="home-kicker">JOIN US</div>
+              <h3>There is a place for everyone. You too.</h3>
+              <Link to="/join" className="home-brand-button">JOIN US</Link>
+            </div>
+          </div>
+        </section>
+      </div>
     </PublicShell>
   );
 }

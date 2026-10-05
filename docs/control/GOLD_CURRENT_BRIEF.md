@@ -1,3 +1,47 @@
+# 4PLANET HOMEPAGE BRAND RESET — 06 OCT 2026
+
+**STATUS:** HEIR-ONLY FOUNDER-DIRECTED BRAND / EDITORIAL REFACTOR · NO LIVE RELEASE.
+
+**FOUNDER INTENT / HUMAN VALUE:** make the 4PLANET front door feel unmistakably 4PLANET: calm, elegant, intelligent, cinematic where earned, documentary-life-first and immediately useful — while preserving the working product architecture and showing visitors that they can move from understanding into real action pathways.
+
+**USER ARRIVES BECAUSE:** a first-time visitor wants to understand what 4PLANET is, feel why it matters, explore the living planet and discover a credible way to go deeper or take part.
+
+**ONE THING TO UNDERSTAND:** 4PLANET connects one living planet through shared intelligence, distinct lenses, living worlds and evidence-aware pathways from understanding toward action.
+
+**PRIMARY ACTION:** EXPLORE THE PLANET → existing shared ATLAS.
+
+**SECONDARY ACTION:** JOIN US → existing /join route.
+
+**P1 DOMINANT:** cinematic Earth encounter with “4PLANET_ For a Living Planet” and “Everything you love is connected.” The underscore is the separator; no dot/dash is inserted after it.
+
+**P2 ORIENTATION:** calm white premise → live shared ATLAS → “ONE PLANET_ FOUR LENSES” index using 01_ ATLAS / 02_ SPECIES / 03_ LIVING SYSTEMS / 04_ IMPACT.
+
+**P3 LIFE / WORLD:** one bounded visual Orca encounter only, then the four existing large immersive Domain worlds. No second Orca story is added.
+
+**P4 ACTION / PROOF:** retain all four existing IMPACT images and pathways, but change the homepage presentation from a competing dark 2×2 world grid to a white asymmetric editorial action gallery: one leading action plus three smaller visual entries. Truth-status wording remains visible; public support is not implied open.
+
+**CLOSE / BELONGING:** one quiet WHAT WE BELIEVE + JOIN section. 4PEOPLE / 4BRANDS / 4PARTNERS / 4FUNDERS remain in the existing footer rather than becoming another four-item homepage module.
+
+**DELETE / SIMPLIFY:** remove the giant blue WHY colour wall, the early separate black beliefs wall, the five-step process block and the standalone four-actor TAKE PART grid from the homepage. Do not delete their routes or product capabilities.
+
+**REUSE:** existing PublicShell/header/footer, routes, identity/auth, shared ATLAS renderer/runtime, existing image registry, current Domain media, existing IMPACT_UNITS/data/statuses, About/Beliefs/Join routes. No new map engine, auth system, data store, content truth store or product architecture.
+
+**TYPOGRAPHY / BRAND:** Instrument Sans remains display type but uses restrained scale and medium/regular visual weight; authority comes from spacing, composition, imagery and hierarchy. Homepage secondary copy uses a bounded local dim hierarchy rather than changing global product tokens. Brand-blue + white capsule CTAs are used for homepage primary actions. Large Domain imagery stays immersive. Paper/white becomes the dominant connective surface.
+
+**TRUTH BOUNDARY:** IMPACT delivery states remain prototype/pathway states; contribution/payment ≠ delivery ≠ outcome ≠ verified impact. The homepage does not invent partner, outcome or availability claims. ATLAS iframe is the existing first-party /atlas renderer with embed mode, not a second map.
+
+**MOBILE-FIRST RISK:** hero CTAs stack; live ATLAS receives a bounded 520px mobile frame; lens index becomes one column; Domain worlds become one column; IMPACT preserves one featured card followed by the remaining three rather than a cramped four-up grid.
+
+**HUMAN SUCCESS:** within the first journey a visitor can (1) recognise 4PLANET, (2) understand the premise, (3) interact with ATLAS, (4) understand the four lenses, (5) encounter real life, (6) enter a Domain world, (7) see concrete action pathways and their honest state, and (8) join — without experiencing repeated giant four-card systems or generic SaaS hierarchy.
+
+**FOUR-STATE AUTHORITY:** affected product = 4PLANET homepage. LIVE = https://4planet.org/ exact registry source c78f3b9814e823fdaa9167ccc784d2a88283215d. HEIR = sole king/test at the exact parent of this commit, review path https://test.4planet.org/. SANDBOX = NONE. ARCHIVED/donor material remains read-only. Legal write target = HEIR. Rollback identity = exact parent SHA of this commit. No production promotion is authorised.
+
+**DOOR CLASS:** reversible HEIR visual/editorial refactor. LIVE remains a separate one-way exact-artifact Founder release.
+
+**ACCEPTANCE REQUIRED:** exact-head product-authority + Gold policy + typecheck + production build + relevant browser/mobile visual proof. Technical pass is not Founder Human Gold.
+
+---
+
 # HUMAN-FIRST DISCOVERY — MASTER GOLD BROWSER MATRIX — 05 OCT 2026
 
 **STATUS:** EXISTING QA MATRIX EXTENSION / HEIR ONLY.
