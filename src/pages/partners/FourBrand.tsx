@@ -614,7 +614,7 @@ export default function FourBrand() {
       <nav className="fb-nav" aria-label="4BRANDS">
         <a href="/" className="fb-wordmark">4PLANET<span>_</span></a>
         <div className="fb-nav__context">COMPANY INTELLIGENCE / 4BRANDS</div>
-        <a href="#company-twin" className="fb-nav__link">BUILD YOUR TWIN</a>
+        {analysis ? <a href="#company-twin" className="fb-nav__link">COMPANY WORKSPACE</a> : <a href="#company-analysis" className="fb-nav__link">PUBLIC INTELLIGENCE</a>}
       </nav>
 
       {analysis && <section className="fb-architecture" aria-label="4BRANDS company intelligence architecture">
