@@ -261,6 +261,32 @@ export async function onRequest(context) {
     });
   }
 
+  if (host === "4planet.org") {
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    const exactRedirects = new Map([
+      ["/atlas", "https://4planetatlas.com/"],
+      ["/species", "https://4species.com/species/"],
+      ["/4brands", "https://4brands.org/"],
+      ["/4sapien", "https://4sapien.com/"],
+      ["/market", "https://4planetmarket.com/"],
+      ["/magazine", "https://4planetmagazine.com/magazine/"],
+    ]);
+
+    if (exactRedirects.has(pathname)) {
+      return Response.redirect(exactRedirects.get(pathname) + url.search, 308);
+    }
+
+    if (pathname.startsWith("/species/")) {
+      const slug = pathname.slice("/species/".length);
+      return Response.redirect("https://4species.com/species/" + slug + url.search, 308);
+    }
+
+    if (pathname.startsWith("/magazine/")) {
+      const suffix = pathname.slice("/magazine/".length);
+      return Response.redirect("https://4planetmagazine.com/magazine/" + suffix + url.search, 308);
+    }
+  }
+
   const baseConfig = PUBLIC_HOSTS[host];
   const routeConfig = host === "4planet.org" ? FOURPLANET_ROUTES[url.pathname.replace(/\/$/, "") || "/"] : null;
   const config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${url.pathname.replace(/\/$/, "") || "/"}` } : baseConfig;
