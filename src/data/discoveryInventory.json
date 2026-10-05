@@ -1,6 +1,6 @@
 {
   "schema": "4PLANET_DISCOVERY_INVENTORY_01",
-  "updatedAt": "2026-10-01",
+  "updatedAt": "2026-10-06",
   "publicationLaw": "Only objects with indexable=true have passed this sprint's bounded public-discovery threshold. BUILD_NEXT items are inventory candidates, not published truth objects.",
   "places": [
     {
@@ -85,7 +85,26 @@
           "checkedAt": "2026-10-01",
           "use": "KWS-described pressures including habitat fragmentation, human–wildlife conflict, poaching and climate change."
         }
-      ]
+      ],
+      "relatedMissions": [
+        {
+          "slug": "species",
+          "label": "SPECIES_",
+          "topic": "species protection and ecological relationships"
+        },
+        {
+          "slug": "clim4te",
+          "label": "CLIM4TE_",
+          "topic": "climate resilience through living systems"
+        },
+        {
+          "slug": "rewild-land",
+          "label": "RE:WILD_ Land",
+          "topic": "habitat recovery and ecological function"
+        }
+      ],
+      "relatedLivingSystems": [],
+      "atlasHref": "https://4planetatlas.com/place/kenya"
     }
   ],
   "species": [
