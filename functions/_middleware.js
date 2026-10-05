@@ -280,6 +280,18 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"]],
     schemaType: "WebPage",
   },
+  "/impact/actions/bay-of-biscay-survey": {
+    title: "Bay of Biscay Cetacean Survey — Action Evidence | 4PLANET",
+    description: "A bounded 4PLANET action page for a cetacean survey evidence pathway in the Bay of Biscay, separating delivery from ecological outcome.",
+    fallbackTitle: "Bay of Biscay Cetacean Survey",
+    fallbackParagraphs: [
+      "This public action page represents a bounded survey and evidence pathway rather than a claim that observation alone creates ecological impact.",
+      "The purpose of the action layer is to connect a defined activity to who performs it, what evidence is produced and what later conclusions that evidence can legitimately support.",
+      "4PLANET keeps contribution, delivery, observation and verified ecological outcome as separate states. Stronger outcome claims require evidence beyond completion of a survey."
+    ],
+    fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"]],
+    schemaType: "WebPage",
+  },
   "/partners": {
     title: "Partners — 4PLANET",
     description: "How 4PLANET approaches collaboration with expert organisations, technology partners and others contributing to a living planet.",
