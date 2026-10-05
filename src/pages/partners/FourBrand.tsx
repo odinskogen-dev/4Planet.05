@@ -687,6 +687,7 @@ export default function FourBrand() {
       {publicProfile && !analysis && (
         <PublicCompanyProfile
           profile={publicProfile}
+          gleif={identityResolution?.gleif ?? null}
           onReset={() => {
             setPublicProfile(null);
             setPublicProfileState("IDLE");
