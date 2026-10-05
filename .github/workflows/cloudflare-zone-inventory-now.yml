@@ -12,7 +12,7 @@ permissions:
 jobs:
   inventory:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Resolve Cloudflare token
         env:
@@ -35,22 +35,23 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
-      - name: List Cloudflare zones read-only
+      - name: List zones and public routing read-only
         shell: bash
         run: |
           set -euo pipefail
           api='https://api.cloudflare.com/client/v4'
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
-          page=1
-          : > /tmp/zones.tsv
-          while true; do
-            resp=$(curl -fsS "${api}/zones?page=${page}&per_page=50&order=name&direction=asc" "${auth[@]}")
-            jq -e '.success == true' <<<"$resp" >/dev/null
-            jq -r '.result[] | [(.name // ""),(.status // ""),(.account.name // ""),(.account.id // ""),(.type // ""),(.name_servers // [] | join(","))] | @tsv' <<<"$resp" >> /tmp/zones.tsv
-            total_pages=$(jq -r '.result_info.total_pages // 1' <<<"$resp")
-            [ "$page" -ge "$total_pages" ] && break
-            page=$((page+1))
+          zones=$(curl -fsS "${api}/zones?per_page=50&order=name&direction=asc" "${auth[@]}")
+          jq -e '.success == true' <<<"$zones" >/dev/null
+          echo '=== CLOUDFLARE PUBLIC DOMAIN INVENTORY ==='
+          jq -r '.result[] | [.id,.name] | @tsv' <<<"$zones" | while IFS=$'\t' read -r zid domain; do
+            dns=$(curl -fsS "${api}/zones/${zid}/dns_records?per_page=100" "${auth[@]}")
+            apex=$(jq -r --arg d "$domain" '[.result[]? | select(.name==$d and (.type=="A" or .type=="AAAA" or .type=="CNAME")) | (.type+":"+(.content//""))] | join(",")' <<<"$dns")
+            www=$(jq -r --arg d "www.$domain" '[.result[]? | select(.name==$d and (.type=="A" or .type=="AAAA" or .type=="CNAME")) | (.type+":"+(.content//""))] | join(",")' <<<"$dns")
+            routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
+            rtxt=$(jq -r '[.result[]? | (.pattern+"=>"+(.script//"<none>"))] | join(",")' <<<"$routes")
+            probe=$(curl -LIsS --connect-timeout 4 --max-time 10 -o /dev/null -w '%{http_code}|%{url_effective}' "https://$domain/" || true)
+            [ -n "$probe" ] || probe='000|'
+            printf '%s\t%s\t%s\t%s\t%s\n' "$domain" "${apex:-NONE}" "${www:-NONE}" "${rtxt:-NONE}" "$probe"
           done
-          echo '=== CLOUDFLARE ZONES ==='
-          sort -u /tmp/zones.tsv
           echo '=== END ==='
