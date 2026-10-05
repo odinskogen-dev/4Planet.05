@@ -15,6 +15,7 @@ import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
 import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
 import { PlacesIndex, PlaceRoute } from "@/pages/integrated/Places";
 import { AtlasDiscoveryPage } from "@/pages/integrated/AtlasDiscoveryPage";
+import { DiscoveryTopicPage, EarthNowPage, DISCOVERY_TOPIC_SLUGS } from "@/pages/discovery/DiscoveryEngine";
 import { LensCapture } from "@/pages/lens/LensCapture";
 import { FoodCapture } from "@/pages/sapiens/FoodCapture";
 import PickPrototype from "../food/PickPrototype";
@@ -102,6 +103,11 @@ export function AppRoutes() {
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/atlas/:objectSlug" element={<AtlasDiscoveryPage />} />
+      <Route path="/now" element={<EarthNowPage />} />
+      <Route path="/earth-now" element={<Navigate to="/now" replace />} />
+      {DISCOVERY_TOPIC_SLUGS.map((slug) => (
+        <Route key={slug} path={`/${slug}`} element={<DiscoveryTopicPage slug={slug} />} />
+      ))}
       <Route path="/places" element={<PlacesIndex />} />
       <Route path="/place/:slug" element={<PlaceRoute />} />
       <Route path="/species" element={<SpeciesIndex />} />
