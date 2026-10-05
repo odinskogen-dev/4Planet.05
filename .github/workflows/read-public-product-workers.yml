@@ -31,7 +31,7 @@ jobs:
           zone=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4planet.org")
           aid=$(jq -r '.result[0].account.id' <<<"$zone")
           mkdir -p ops/discovery/live-workers
-          for script in 4planetmarket-prototype cre4tors-prototype 4planet-brain-public; do
+          for script in 4planetmarket-prototype cre4tors-prototype 4planet-brain-public four-sapien-embla; do
             curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/workers/scripts/$script" -o "/tmp/$script.multipart"
             python3 -c 'import pathlib,sys; raw=pathlib.Path(sys.argv[1]).read_bytes(); body=raw.split(b"\r\n\r\n",1)[1].rsplit(b"\r\n--",1)[0] if b"\r\n\r\n" in raw else raw; pathlib.Path(sys.argv[2]).write_bytes(body)' "/tmp/$script.multipart" "ops/discovery/live-workers/$script.js"
             node --check "ops/discovery/live-workers/$script.js"
@@ -51,4 +51,5 @@ jobs:
           git pull --rebase origin king/test
           git push origin HEAD:king/test
 
-# trigger: 2026-10-05T15
+
+# trigger: 2026-10-05T15:12
