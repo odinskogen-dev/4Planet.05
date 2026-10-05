@@ -1,9 +1,8 @@
-name: Live Discovery Verification
+name: Pages Deployment State Audit
 
 on:
   push:
-    branches:
-      - king/test
+    branches: [king/test]
     paths:
       - .github/workflows/cloudflare-zone-inventory-now.yml
 
@@ -11,34 +10,31 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  audit:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Verify canonical public endpoints
+      - name: Read Cloudflare Pages deploy state and live discovery
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          for url in \
-            https://4planet.org/sitemap.xml \
-            https://4planet.org/robots.txt \
-            https://4planetatlas.com/ \
-            https://4planetatlas.com/robots.txt \
-            https://4planetatlas.com/sitemap.xml \
-            https://4brands.org/ \
-            https://4brands.org/robots.txt \
-            https://4brands.org/sitemap.xml \
-            https://s4piens.com/ \
-            https://4planetmagazine.com/magazine/ \
-            https://4sapien.com/ \
-            https://4species.com/ \
-            https://4nation.org/ \
-            https://4brain.app/ \
-            https://4planetmarket.com/ \
-            https://cre4tors.com/ \
-            https://n4turetech.com/; do
-            echo "=== $url ==="
-            curl -L -sS --max-time 15 -D /tmp/headers -o /tmp/body "$url" || true
-            tr -d '\r' </tmp/headers | grep -Ei '^(HTTP/|content-type:|x-robots-tag:|location:|link:)' | tail -12 || true
-            head -c 700 /tmp/body | tr '\n' ' '; echo
+          token=$(printf '%s' "$CF_TOKEN" | tr -d '\r\n'); token="${token#Bearer }"
+          echo "::add-mask::$token"
+          api='https://api.cloudflare.com/client/v4'
+          z=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4planet.org")
+          aid=$(jq -r '.result[0].account.id' <<<"$z")
+          echo '=== PAGES DEPLOYS ==='
+          curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$aid/pages/projects/4planet-05/deployments?per_page=20" |
+            jq -r '.result[] | [(.environment//""),(.deployment_trigger.metadata.branch//""),(.deployment_trigger.metadata.commit_hash//""),(.latest_stage.status//""),(.url//"")] | @tsv' | head -20
+          echo '=== LIVE S4PIENS ==='
+          for u in https://s4piens.com/ https://s4piens.com/robots.txt https://s4piens.com/sitemap.xml; do
+            echo "--- $u"; curl -LfsS --max-time 15 -D /tmp/h -o /tmp/b "$u" || true; tr -d '\r' </tmp/h | grep -Ei '^(HTTP/|content-type:|x-robots-tag:|location:)' | tail -8 || true; head -c 900 /tmp/b | tr '\n' ' '; echo
           done
+          echo '=== LIVE 4PLANET SITEMAP MARKERS ==='
+          sm=$(curl -fsS --max-time 15 https://4planet.org/sitemap.xml)
+          printf 'atlas='; grep -c '<loc>https://4planet.org/atlas</loc>' <<<"$sm" || true
+          printf 'species='; grep -c '<loc>https://4planet.org/species</loc>' <<<"$sm" || true
+          printf 'orca='; grep -c '<loc>https://4planet.org/species/orca</loc>' <<<"$sm" || true
+          echo '=== END ==='
