@@ -1,0 +1,100 @@
+name: 4BRANDS Public Intelligence Candidate
+
+on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - functions/api/company-public-profile.ts
+      - functions/api/company-identity.ts
+      - src/pages/partners/FourBrand.tsx
+      - src/pages/partners/PublicCompanyProfile.tsx
+      - src/styles/fourbrand.css
+      - src/styles/fourbrand-intelligence.css
+      - .github/workflows/fourbrands-public-intelligence-candidate.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Existing company identity contracts
+        run: node --test scripts/company-identity-contract.test.mjs scripts/procurement-demand-contract.test.mjs scripts/company-climate-trace-contract.test.mjs
+      - name: Public profile contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f functions/api/company-public-profile.ts
+          test -f src/pages/partners/PublicCompanyProfile.tsx
+          test -f src/styles/fourbrand-intelligence.css
+          grep -q 'fetchBrregExact' functions/api/company-public-profile.ts
+          grep -q 'konsernstruktur' functions/api/company-public-profile.ts
+          grep -q 'oppdateringer/enheter' functions/api/company-public-profile.ts
+          grep -q 'regnskapsregisteret' functions/api/company-public-profile.ts
+          grep -q 'WHAT DOES THE PUBLIC WORLD KNOW' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'WHAT WE DON.T KNOW' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'loadPublicProfile(payload.entity.organizationNumber)' src/pages/partners/FourBrand.tsx
+          ! grep -q 'box-shadow:' src/styles/fourbrand-intelligence.css
+          ! grep -Eq 'linear-gradient|radial-gradient' src/styles/fourbrand-intelligence.css
+      - run: npm run typecheck
+      - run: npm run build
+
+  brreg-real-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { company: TOMRA, org: "976500198" }
+          - { company: EQUINOR, org: "923609016" }
+          - { company: TELENOR, org: "982463718" }
+          - { company: DNB, org: "984851006" }
+          - { company: KONGSBERG, org: "943753709" }
+          - { company: HYDRO, org: "914778271" }
+          - { company: ORKLA, org: "910747711" }
+          - { company: MOWI, org: "964118191" }
+          - { company: STOREBRAND, org: "916300484" }
+          - { company: AKER_BP, org: "989795848" }
+    steps:
+      - name: Exact BRREG identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://data.brreg.no/enhetsregisteret/api'
+          curl -fsS --retry 3 -H 'Accept: application/vnd.brreg.enhetsregisteret.enhet.v2+json' \
+            "$base/enheter/${{ matrix.org }}" -o entity.json
+          jq -e --arg org '${{ matrix.org }}' '.organisasjonsnummer == $org and (.navn | length > 0)' entity.json >/dev/null
+          jq '{organisasjonsnummer,navn,organisasjonsform,antallAnsatte,naeringskode1,sisteInnsendteAarsregnskap}' entity.json
+      - name: Roles and updates source lanes
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://data.brreg.no/enhetsregisteret/api'
+          curl -fsS --retry 3 -H 'Accept: application/vnd.brreg.enhetsregisteret.rolle.v1+json' \
+            "$base/enheter/${{ matrix.org }}/roller" -o roles.json
+          jq -e '.rollegrupper | type == "array"' roles.json >/dev/null
+          curl -fsS --retry 3 \
+            "$base/oppdateringer/enheter?organisasjonsnummer=${{ matrix.org }}&includeChanges=true&size=5&sort=id,DESC" -o updates.json
+          jq -e 'type == "object"' updates.json >/dev/null
+      - name: Group, sub-entities and annual accounts availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://data.brreg.no/enhetsregisteret/api'
+          code=$(curl -sS --retry 3 -o group.json -w '%{http_code}' "$base/konsernstruktur/${{ matrix.org }}")
+          case "$code" in 200|404) ;; *) echo "group HTTP=$code"; exit 1;; esac
+          curl -fsS --retry 3 "$base/underenheter?overordnetEnhet=${{ matrix.org }}&size=5" -o units.json
+          jq -e 'type == "object"' units.json >/dev/null
+          accounts='https://data.brreg.no/regnskapsregisteret/regnskap/aarsregnskap'
+          code=$(curl -sS --retry 3 -o years.json -w '%{http_code}' "$accounts/kopi/${{ matrix.org }}/aar")
+          case "$code" in 200|404) ;; *) echo "accounts HTTP=$code"; exit 1;; esac
