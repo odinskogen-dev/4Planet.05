@@ -43,4 +43,6 @@ jobs:
             head -c 600 "$body" | tr '\n' ' '
             echo
             echo "BODY_END"
+            echo "VISIBLE ESCAPE CHECK"
+            grep -n -F '\\n' "$body" | head -20 || true
           done
