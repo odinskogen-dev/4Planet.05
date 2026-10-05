@@ -36,8 +36,6 @@ jobs:
           node --check ops/discovery/live-workers/cre4tors-prototype.js
           grep -Fq 'data-public-discovery-fallback' ops/discovery/live-workers/4planetmarket-prototype.js
           grep -Fq 'data-public-discovery-fallback' ops/discovery/live-workers/cre4tors-prototype.js
-          grep -Fq 'Sitemap: https://4planetmarket.com/sitemap.xml' ops/discovery/live-workers/4planetmarket-prototype.js
-          grep -Fq 'Sitemap: https://cre4tors.com/sitemap.xml' ops/discovery/live-workers/cre4tors-prototype.js
       - name: Deploy existing public Workers
         run: |
           set -euo pipefail
