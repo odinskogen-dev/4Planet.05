@@ -42,7 +42,7 @@ function RouteCTA({ pathname }: { pathname: string }) {
     );
   }
 
-  if (pathname === "/missions/wh4les" || pathname === "/species/orca") {
+  if (pathname === "/missions/wh4les") {
     return (
       <section className="completion-route-cta completion-route-cta--whales" aria-label="Continue into the Orca Journey">
         <div className="completion-route-cta__inner">
