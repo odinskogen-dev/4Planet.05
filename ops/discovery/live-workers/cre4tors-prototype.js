@@ -42,9 +42,10 @@ if (!found) next.push([directive, ...sources].join(" "));
 return next.join("; ");
 }
 __name(addCspSources, "addCspSources");
-function productHeaders(source) {
+function productHeaders(source, isPublic = false) {
 const headers = new Headers(source);
-headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+if (isPublic) headers.delete("x-robots-tag");
+else headers.set("x-robots-tag", "noindex, nofollow, noarchive");
 headers.set("x-4planet-prototype", PRODUCT_MARKER);
 headers.set("x-4planet-analytics", ANALYTICS_MARKER);
 return headers;
@@ -52,6 +53,10 @@ return headers;
 __name(productHeaders, "productHeaders");
 async function proxy(request) {
 const incoming = new URL(request.url);
+const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
+if (incoming.pathname === `/${INDEXNOW_KEY}.txt`) return new Response(INDEXNOW_KEY, { status: 200, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=86400" } });
+if (incoming.pathname === "/robots.txt") return new Response("User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /account\nDisallow: /admin\n\nSitemap: https://cre4tors.com/sitemap.xml\n", { status: 200, headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=300" } });
+if (incoming.pathname === "/sitemap.xml") return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://cre4tors.com/</loc></url>\n</urlset>\n', { status: 200, headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=300" } });
 if (incoming.pathname === ANALYTICS_PATH) {
 return new Response(ANALYTICS_JS, { status: 200, headers: { "Content-Type": "application/javascript; charset=utf-8", "Cache-Control": "no-store", "X-4PLANET-Analytics": ANALYTICS_MARKER } });
 }
@@ -59,7 +64,8 @@ const upstreamUrl = new URL(incoming.pathname + incoming.search, ORIGIN);
 const upstreamRequest = new Request(upstreamUrl.toString(), request);
 upstreamRequest.headers.delete("host");
 const upstream = await fetch(upstreamRequest);
-const headers = productHeaders(upstream.headers);
+const isPublicRoot = incoming.pathname === "/" || incoming.pathname === "/index.html";
+const headers = productHeaders(upstream.headers, isPublicRoot);
 if (request.method === "HEAD") return new Response(null, { status: upstream.status, statusText: upstream.statusText, headers });
 const type = upstream.headers.get("content-type") || "";
 if (!type.toLowerCase().includes("text/html")) return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers });
@@ -73,6 +79,14 @@ headers.delete("content-length");
 headers.delete("content-encoding");
 headers.delete("etag");
 let html = await upstream.text();
+if (isPublicRoot) {
+html = html.replace(/<script[^>]+src=["']\/host-indexing-policy\.js["'][^>]*><\/script>/gi, "");
+html = html.replace(/<title>[^<]*<\/title>/i, "<title>CRE4TORS — Creative Work for a Living Planet</title>");
+html = html.replace(/<meta\s+name=["']description["'][^>]*>/i, '<meta name="description" content="CRE4TORS is an early 4PLANET public prototype exploring creators, culture and work that can create value for people and a living planet.">');
+html = html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow,max-image-preview:large">');
+html = html.replace(/<link\s+rel=["']canonical["'][^>]*>/gi, "");
+html = html.replace(/<\/head>/i, '<link rel="canonical" href="https://cre4tors.com/"></head>');
+}
 const tag = '<script src="' + ANALYTICS_PATH + '" defer><\/script>';
 if (!html.includes(ANALYTICS_PATH)) html = /<\/body>/i.test(html) ? html.replace(/<\/body>/i, tag + "</body>") : html + tag;
 return new Response(html, { status: upstream.status, statusText: upstream.statusText, headers });
