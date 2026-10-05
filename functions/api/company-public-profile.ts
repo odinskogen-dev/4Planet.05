@@ -253,14 +253,16 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     const subunitsUrl = `${BRREG_API_BASE}/underenheter?overordnetEnhet=${orgnr}&size=100`;
     const updatesUrl = `${BRREG_API_BASE}/oppdateringer/enheter?organisasjonsnummer=${orgnr}&includeChanges=true&size=30&sort=id,DESC`;
     const accountYearsUrl = `${ACCOUNTS_BASE}/kopi/${orgnr}/aar`;
+    const financialsUrl = `${FINANCIALS_BASE}?orgNummer=${encodeURIComponent(orgnr)}`;
 
-    const [rawResult, rolesResult, groupResult, subunitsResult, updatesResult, accountsResult] = await Promise.all([
+    const [rawResult, rolesResult, groupResult, subunitsResult, updatesResult, accountsResult, financialsResult] = await Promise.all([
       fetchJson(exactUrl, "application/vnd.brreg.enhetsregisteret.enhet.v2+json"),
       fetchJson(rolesUrl, "application/vnd.brreg.enhetsregisteret.rolle.v1+json"),
       fetchJson(groupUrl),
       fetchJson(subunitsUrl, "application/vnd.brreg.enhetsregisteret.underenhet.v2+json"),
       fetchJson(updatesUrl, "application/vnd.brreg.enhetsregisteret.oppdatering.enhet.v1+json"),
       fetchJson(accountYearsUrl),
+      fetchJson(financialsUrl),
     ]);
 
     if (rawResult.state !== "READY" || !rawResult.payload) {
@@ -276,6 +278,7 @@ export const onRequestGet = async ({ request }: PagesContext): Promise<Response>
     const locations = subunitsResult.state === "READY" ? normaliseSubunits(subunitsResult.payload) : [];
     const registerUpdates = updatesResult.state === "READY" ? normaliseUpdates(updatesResult.payload) : [];
     const accountYears = accountsResult.state === "READY" ? normaliseAccountYears(accountsResult.payload) : [];
+    const financials = financialsResult.state === "READY" ? normaliseFinancials(financialsResult.payload, orgnr) : null;
 
     const changes = [
       ...company.historicalNames.map((item: any) => ({
