@@ -1,0 +1,67 @@
+name: 4SAPIEN Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - products/4sapien/build/apply_discoverability_guard.py
+      - products/4sapien/build/materialize_canonical_site.sh
+      - .github/workflows/4sapien-discovery-live.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 4sapien-discovery-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Materialize exact canonical 4SAPIEN site
+        run: |
+          set -euo pipefail
+          bash products/4sapien/build/materialize_canonical_site.sh products/4sapien/site /tmp/4sapien-unified-20260917
+      - name: Verify discovery + privacy boundaries before deploy
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          grep -Fq '<meta name="robots" content="index,follow,max-image-preview:large">' products/4sapien/site/index.html
+          grep -Fq '<link rel="canonical" href="https://4sapien.com/">' products/4sapien/site/index.html
+          grep -Fq 'Sitemap: https://4sapien.com/sitemap.xml' products/4sapien/site/robots.txt
+          grep -Fq 'https://4sapien.com/' products/4sapien/site/sitemap.xml
+          grep -Fq 'noindex,nofollow,noarchive' products/4sapien/site/app/food/index.html
+          grep -Fq 'noindex,nofollow,noarchive' products/4sapien/site/app/money/index.html
+          grep -Fq 'noindex,nofollow,noarchive' products/4sapien/site/brain/index.html
+          grep -Fq 'X-Robots-Tag: noindex, nofollow, noarchive' products/4sapien/site/_headers
+          node --check products/4sapien/site/4sapien-shell.js
+      - name: Deploy existing four-sapien-embla Worker assets
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --config products/4sapien/wrangler.jsonc --keep-vars
+      - name: Verify LIVE root and private routes
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            root=$(curl -fsS https://4sapien.com/ || true)
+            if grep -Fq 'https://4sapien.com/' <<<"$root" && grep -Fq 'index,follow,max-image-preview:large' <<<"$root"; then break; fi
+            sleep 3
+          done
+          grep -Fq '4SAPIEN — Personal Intelligence for Food, Finance and Life' <<<"$root"
+          grep -Fq 'https://4sapien.com/' <<<"$root"
+          curl -fsS https://4sapien.com/robots.txt | grep -Fq 'Sitemap: https://4sapien.com/sitemap.xml'
+          curl -fsS https://4sapien.com/sitemap.xml | grep -Fq 'https://4sapien.com/'
+          h=$(curl -sSI https://4sapien.com/app/food/ | tr -d '\r')
+          grep -qi '^x-robots-tag:.*noindex' <<<"$h"
+          private=$(curl -fsS https://4sapien.com/app/food/)
+          grep -Fq 'noindex,nofollow,noarchive' <<<"$private"
