@@ -199,7 +199,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { company: TOMRA, org: "976500198" }
+          - { company: TOMRA, org: "927124238" }
           - { company: EQUINOR, org: "923609016" }
           - { company: TELENOR, org: "982463718" }
           - { company: DNB, org: "984851006" }
