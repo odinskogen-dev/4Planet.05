@@ -1,4 +1,4 @@
-name: Cloudflare Zone Inventory Now
+name: Public Discoverability Audit Now
 
 on:
   push:
@@ -10,48 +10,53 @@ permissions:
   contents: read
 
 jobs:
-  inventory:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
-      - name: Resolve Cloudflare token
-        env:
-          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
-          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
-          TOKEN_4: ${{ secrets.CF_TOKEN }}
+      - name: Audit public domains read-only
         shell: bash
         run: |
           set -euo pipefail
-          TOKEN=""
-          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
-            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
-          done
-          [ -n "$TOKEN" ] || { echo 'missing Cloudflare token'; exit 2; }
-          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
-          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
-          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
-          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
-          echo "::add-mask::$TOKEN"
-          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          domains=(
+            4planet.org
+            4planetatlas.com
+            4planetmagazine.com
+            4planetmarket.com
+            4sapien.com
+            s4piens.com
+            4brands.org
+            4nation.org
+            4species.com
+            cre4tors.com
+            n4turetech.com
+            oddekalv.org
+            4brain.app
+          )
+          echo '=== PUBLIC DISCOVERABILITY AUDIT ==='
+          for d in "${domains[@]}"; do
+            echo "--- $d ---"
+            headers=$(mktemp); body=$(mktemp)
+            if curl -LfsS --connect-timeout 5 --max-time 15 -D "$headers" -o "$body" "https://$d/"; then
+              final=$(curl -LIsS --connect-timeout 5 --max-time 15 -o /dev/null -w '%{url_effective}|%{http_code}|%{content_type}' "https://$d/" || true)
+              xrobots=$(awk 'BEGIN{IGNORECASE=1}/^x-robots-tag:/{sub(/^[^:]+:[[:space:]]*/,""); gsub(/\r/,""); print}' "$headers" | tail -1)
+              title=$(python3 -c 'import re,sys; s=open(sys.argv[1],errors="ignore").read(); m=re.search(r"<title[^>]*>(.*?)</title>",s,re.I|re.S); print(re.sub(r"\\s+"," ",m.group(1)).strip() if m else "")' "$body")
+              meta=$(python3 -c 'import re,sys; s=open(sys.argv[1],errors="ignore").read(); ms=re.findall(r"<meta[^>]+>",s,re.I); vals=[]; [vals.append(x) for x in ms if re.search(r"(name|property)=[\"\\x27]robots[\"\\x27]",x,re.I)]; print(" ".join(vals)[:800])' "$body")
+              canon=$(python3 -c 'import re,sys; s=open(sys.argv[1],errors="ignore").read(); m=re.search(r"<link[^>]+rel=[\"\\x27]canonical[\"\\x27][^>]*href=[\"\\x27]([^\"\\x27]+)",s,re.I); print(m.group(1) if m else "")' "$body")
+              echo "ROOT|$final|XROBOTS=${xrobots:-NONE}|TITLE=${title:-NONE}|CANON=${canon:-NONE}|META_ROBOTS=${meta:-NONE}"
+            else
+              echo 'ROOT|FETCH_FAILED'
+            fi
+            rm -f "$headers" "$body"
 
-      - name: List zones and public routing read-only
-        shell: bash
-        run: |
-          set -euo pipefail
-          api='https://api.cloudflare.com/client/v4'
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
-          zones=$(curl -fsS "${api}/zones?per_page=50&order=name&direction=asc" "${auth[@]}")
-          jq -e '.success == true' <<<"$zones" >/dev/null
-          echo '=== CLOUDFLARE PUBLIC DOMAIN INVENTORY ==='
-          jq -r '.result[] | [.id,.name] | @tsv' <<<"$zones" | while IFS=$'\t' read -r zid domain; do
-            dns=$(curl -fsS "${api}/zones/${zid}/dns_records?per_page=100" "${auth[@]}")
-            apex=$(jq -r --arg d "$domain" '[.result[]? | select(.name==$d and (.type=="A" or .type=="AAAA" or .type=="CNAME")) | (.type+":"+(.content//""))] | join(",")' <<<"$dns")
-            www=$(jq -r --arg d "www.$domain" '[.result[]? | select(.name==$d and (.type=="A" or .type=="AAAA" or .type=="CNAME")) | (.type+":"+(.content//""))] | join(",")' <<<"$dns")
-            routes=$(curl -fsS "${api}/zones/${zid}/workers/routes" "${auth[@]}" || echo '{"result":[]}')
-            rtxt=$(jq -r '[.result[]? | (.pattern+"=>"+(.script//"<none>"))] | join(",")' <<<"$routes")
-            probe=$(curl -LIsS --connect-timeout 4 --max-time 10 -o /dev/null -w '%{http_code}|%{url_effective}' "https://$domain/" || true)
-            [ -n "$probe" ] || probe='000|'
-            printf '%s\t%s\t%s\t%s\t%s\n' "$domain" "${apex:-NONE}" "${www:-NONE}" "${rtxt:-NONE}" "$probe"
+            rcode=$(curl -LsS --connect-timeout 5 --max-time 12 -o /tmp/robots.$$ -w '%{http_code}|%{content_type}' "https://$d/robots.txt" || true)
+            rbody=$(tr '\n' ' ' </tmp/robots.$$ | head -c 700 || true)
+            echo "ROBOTS|$rcode|$rbody"
+            rm -f /tmp/robots.$$
+
+            scode=$(curl -LsS --connect-timeout 5 --max-time 12 -o /tmp/sitemap.$$ -w '%{http_code}|%{content_type}' "https://$d/sitemap.xml" || true)
+            sbody=$(head -c 240 /tmp/sitemap.$$ | tr '\n' ' ' || true)
+            echo "SITEMAP|$scode|$sbody"
+            rm -f /tmp/sitemap.$$
           done
           echo '=== END ==='
