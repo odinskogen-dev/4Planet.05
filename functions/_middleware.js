@@ -30,7 +30,7 @@ const PUBLIC_HOSTS = {
   },
   "4brands.org": {
     title: "4BRANDS — Understand Any Company. Improve Your Own.",
-    description: "4BRANDS is 4PLANET's Better Company product: source-grounded company understanding, opportunities and measurable improvement.",
+    description: "4BRANDS is the Better Company product from 4PLANET: source-grounded company understanding, opportunities and measurable improvement.",
     canonical: "https://4brands.org/",
     fallbackTitle: "Understand Any Company. Improve Your Own.",
     fallbackText: "4BRANDS is the Better Company product: a source-grounded public experience for understanding companies, value and practical improvement.",
