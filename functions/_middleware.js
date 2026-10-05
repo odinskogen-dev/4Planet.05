@@ -3,23 +3,57 @@ const PUBLIC_HOSTS = {
     title: "4PLANET — For a Living Planet",
     description: "Living Planet Intelligence connecting understanding, credible action and proof for a living planet.",
     canonical: "https://4planet.org/",
+    fallbackTitle: "4PLANET — For a Living Planet",
+    fallbackText: "Living Planet Intelligence connecting places, species, living systems, missions and credible ecological action.",
+    fallbackLinks: [
+      ["Impact", "https://4planet.org/impact"],
+      ["Places", "https://4planet.org/places"],
+      ["Missions", "https://4planet.org/missions"],
+      ["ATLAS", "https://4planetatlas.com/"],
+      ["SPECIES", "https://4species.com/species/"],
+    ],
+    schemaType: "WebSite",
   },
   "4planetatlas.com": {
     title: "4PLANET ATLAS — Explore the Living Planet",
     description: "Explore places, species, living systems and source-grounded planetary data through 4PLANET ATLAS.",
     canonical: "https://4planetatlas.com/",
+    fallbackTitle: "Explore the Living Planet with 4PLANET ATLAS",
+    fallbackText: "ATLAS is a public exploration surface connecting places, species and living systems with source-grounded planetary context.",
+    fallbackLinks: [
+      ["4PLANET", "https://4planet.org/"],
+      ["SPECIES", "https://4species.com/species/"],
+      ["Living Systems", "https://4planet.org/living-systems"],
+    ],
+    schemaType: "WebApplication",
     sitemap: ["/"],
   },
   "4brands.org": {
     title: "4BRANDS — Understand Any Company. Improve Your Own.",
     description: "4BRANDS is 4PLANET's Better Company product: source-grounded company understanding, opportunities and measurable improvement.",
     canonical: "https://4brands.org/",
+    fallbackTitle: "Understand Any Company. Improve Your Own.",
+    fallbackText: "4BRANDS is the Better Company product: a source-grounded public experience for understanding companies, value and practical improvement.",
+    fallbackLinks: [
+      ["4PLANET", "https://4planet.org/"],
+      ["Impact", "https://4planet.org/impact"],
+      ["ATLAS", "https://4planetatlas.com/"],
+    ],
+    schemaType: "WebApplication",
     sitemap: ["/"],
   },
   "s4piens.com": {
     title: "S4PIENS — Human Systems Intelligence",
     description: "S4PIENS explores the human systems, value chains, incentives and infrastructure that shape people and the living planet.",
     canonical: "https://s4piens.com/",
+    fallbackTitle: "S4PIENS — Human Systems Intelligence",
+    fallbackText: "S4PIENS explores value chains, incentives, infrastructure and other human systems that shape people and the living planet.",
+    fallbackLinks: [
+      ["4PLANET", "https://4planet.org/"],
+      ["4SAPIEN", "https://4sapien.com/"],
+      ["ATLAS", "https://4planetatlas.com/"],
+    ],
+    schemaType: "WebApplication",
     sitemap: ["/"],
   },
 };
@@ -72,6 +106,39 @@ function robotsText(host, isPrivate = false) {
     `Sitemap: https://${host}/sitemap.xml`,
     "",
   ].join("\n");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function discoveryFallback(config) {
+  const links = (config.fallbackLinks || [])
+    .map(([label, href]) => `<li><a href="${escapeHtml(href)}">${escapeHtml(label)}</a></li>`)
+    .join("");
+  return `<noscript><main aria-label="Public discovery summary"><h1>${escapeHtml(config.fallbackTitle || config.title)}</h1><p>${escapeHtml(config.fallbackText || config.description)}</p><nav aria-label="Related 4PLANET public surfaces"><ul>${links}</ul></nav></main></noscript>`;
+}
+
+function structuredData(config, canonical) {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": config.schemaType || "WebSite",
+    name: config.title,
+    url: canonical,
+    description: config.description,
+  };
+  if (config.schemaType === "WebApplication") {
+    data.isPartOf = {
+      "@type": "WebSite",
+      name: "4PLANET",
+      url: "https://4planet.org/",
+    };
+  }
+  return `<script type="application/ld+json">${JSON.stringify(data).replaceAll("<", "\\u003c")}</script>`;
 }
 
 function withSecurityHeaders(response, privateSurface = false) {
@@ -218,6 +285,12 @@ export async function onRequest(context) {
     .on("head", {
       element(element) {
         element.append(`<link rel="canonical" href="${canonical}">`, { html: true });
+        element.append(structuredData(config, canonical), { html: true });
+      },
+    })
+    .on("body", {
+      element(element) {
+        element.prepend(discoveryFallback(config), { html: true });
       },
     })
     .transform(new Response(response.body, {
