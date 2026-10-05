@@ -280,7 +280,7 @@ function OrcaEditorialProfile({
 
   return (
     <PublicShell>
-      <main className="editorial-page">
+      <main className="editorial-page" style={{ background: "#FFFFFF" }}>
         <div className="editorial-wrap">
           <section className="orca-hero">
             <div className="orca-hero-grid">
