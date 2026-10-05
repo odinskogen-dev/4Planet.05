@@ -32,7 +32,7 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
         })}
       />
       {curated ? curatedElement : <UniversalSpeciesProfilePage />}
-      <SpeciesEvidenceSeam envelope={envelope} />
+      {!curated && <SpeciesEvidenceSeam envelope={envelope} />}
     </>
   );
 }
