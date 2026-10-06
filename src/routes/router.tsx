@@ -100,6 +100,7 @@ export function AppRoutes() {
       <Route path="/domains/oce4n/pl4stic" element={<Navigate to="/missions/cle4n" replace />} />
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
+      <Route path="/embed/atlas" element={<Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#fff" }} />}><PublicWorld /></Suspense>} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/atlas/:objectSlug" element={<AtlasDiscoveryPage />} />
       <Route path="/places" element={<PlacesIndex />} />

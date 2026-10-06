@@ -15,7 +15,7 @@ type EmbeddedMap = {
  */
 export function AtlasEmbedRuntime() {
   const { pathname, search } = useLocation();
-  const embedded = pathname === "/atlas" &&
+  const embedded = (pathname === "/atlas" || pathname === "/embed/atlas") &&
     isAtlasEmbedKind(new URLSearchParams(search).get("embed"));
 
   useEffect(() => {

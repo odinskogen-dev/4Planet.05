@@ -46,6 +46,7 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+  const homepageEmbed = location.pathname === "/embed/atlas";
 
   // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
   // mounted at the BrowserRouter level. PublicWorld must never run a second
@@ -54,6 +55,34 @@ export default function PublicWorld() {
   // cross-product return camera. World still initialises directly from URL z/c,
   // while the single global authority protects that exact state through startup
   // settling and releases on genuine user camera input.
+  if (supported && homepageEmbed) {
+    return (
+      <>
+        <div className="home-atlas-embed-runtime">
+          <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#fff" }} />}>
+            <World />
+          </Suspense>
+        </div>
+        <style>{`
+          .home-atlas-embed-runtime{position:fixed;inset:0;background:#fff;overflow:hidden}
+          .home-atlas-embed-runtime .world{background:#fff!important}
+          .home-atlas-embed-runtime .search-wrap,
+          .home-atlas-embed-runtime .lens-rail,
+          .home-atlas-embed-runtime .atlas-panel,
+          .home-atlas-embed-runtime .status-strip,
+          .home-atlas-embed-runtime .ctx,
+          .home-atlas-embed-runtime .recenter-btn,
+          .home-atlas-embed-runtime .maplibregl-ctrl-top-left,
+          .home-atlas-embed-runtime .maplibregl-ctrl-top-right,
+          .home-atlas-embed-runtime .maplibregl-ctrl-bottom-left,
+          .home-atlas-embed-runtime .maplibregl-ctrl-bottom-right{display:none!important}
+          .home-atlas-embed-runtime .maplibregl-canvas-container,
+          .home-atlas-embed-runtime .maplibregl-canvas{background:#fff!important}
+        `}</style>
+      </>
+    );
+  }
+
   if (supported) {
     return (
       <>
@@ -73,6 +102,18 @@ export default function PublicWorld() {
         <AtlasLiveEvidenceBridge />
         <AtlasSavedViews />
       </>
+    );
+  }
+
+  if (homepageEmbed) {
+    return (
+      <main id="main-content" style={{ position: "fixed", inset: 0, background: "#fff", overflow: "hidden" }}>
+        <img
+          src="/assets/brand/earthrise.jpg"
+          alt="Earth rising above the lunar horizon"
+          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#fff" }}
+        />
+      </main>
     );
   }
 
