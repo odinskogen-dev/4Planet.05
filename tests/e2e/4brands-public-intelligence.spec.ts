@@ -87,6 +87,21 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
     });
   });
 
+  await page.route("**/api/company-first-party?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        state: "FIRST_PARTY_SOURCE_MAP",
+        company: { organizationNumber: "927124238", name: "TOMRA SYSTEMS ASA", registeredWebsite: "https://www.tomra.com/" },
+        homepage: { url: "https://www.tomra.com/", title: "TOMRA", description: "Company-published business description.", h1: "TOMRA", state: "READY" },
+        pages: [{ url: "https://www.tomra.com/investor-relations", title: "Investor Relations", description: "Company-published investor information.", h1: "Investor Relations", category: "INVESTOR", state: "READY" }],
+        truthBoundary: "Website content is first-party company-published context / claims, not independently verified fact.",
+      }),
+    });
+  });
+
   await page.route("**/api/climate-trace-owners?**", async (route) => {
     await route.fulfill({
       status: 200,
@@ -154,6 +169,12 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
   await expect(page.getByRole("heading", { name: "TOMRA SYSTEMS ASA", exact: true })).toBeVisible();
   await expect(page.getByText(/ORG 927124238/)).toBeVisible();
   await expect(page.getByText("549300TOMRATEST00001", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Business", exact: true }).click();
+  await page.getByRole("button", { name: "Map official company sources" }).click();
+  await expect(page.getByText("BRREG-ANCHORED FIRST PARTY", { exact: true })).toBeVisible();
+  await expect(page.getByText("Investor Relations", { exact: true })).toBeVisible();
+  await expect(page.getByText(/not independently verified fact/i)).toBeVisible();
 
   await page.getByRole("button", { name: "Procurement", exact: true }).click();
   await page.getByLabel("Procurement keywords").fill("reverse vending");
