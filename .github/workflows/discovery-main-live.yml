@@ -83,10 +83,12 @@ jobs:
           atlas=$(curl -fsS https://4planetatlas.com/)
           grep -Fq 'https://4planetatlas.com/places' <<<"$atlas"
           grep -Fq 'https://4planetatlas.com/place/berlin' <<<"$atlas"
+          echo 'ATLAS_ROOT_CRAWL_PATH_PASS'
           places=$(curl -fsS https://4planetatlas.com/places)
           grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
           grep -Fq 'numberOfItems' <<<"$places"
           test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "50"
+          echo 'ATLAS_PLACE_INDEX_HUB_PASS'
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
           grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
           grep -Fq 'name="viewport"' <<<"$berlin"
@@ -96,14 +98,18 @@ jobs:
           grep -Fq 'Natural Earth 1:10m Populated Places' <<<"$berlin"
           grep -Fq 'Related places in the current index' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
+          echo 'ATLAS_BERLIN_ENTITY_PASS'
           norway=$(curl -fsS https://4planetatlas.com/place/norway)
           grep -Fq '"@type":"Country"' <<<"$norway"
           grep -Fq 'Places within this geography' <<<"$norway"
+          echo 'ATLAS_COUNTRY_GRAPH_PASS'
           sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "50"
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          echo 'ATLAS_PLACE_SITEMAP_50_PASS'
           kenya_h=$(curl -sSI https://4planet.org/place/kenya | tr -d '\r')
           grep -Fqi '^location: https://4planetatlas.com/place/kenya' <<<"$kenya_h"
+          echo 'ATLAS_PLACE_CANONICAL_REDIRECT_PASS'
           echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
 
       - name: Verify production public discovery
