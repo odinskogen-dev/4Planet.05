@@ -859,7 +859,8 @@ function WorldInner() {
     const m = new maplibregl.Map({
       container: boxRef.current, style: VECTOR_STYLE, center: init.current.center,
       zoom: init.current.zoom, minZoom: 1, maxZoom: 22,
-      attributionControl: { compact: true }, canvasContextAttributes: { antialias: true },
+      attributionControl: { compact: true },
+      canvasContextAttributes: { antialias: false, powerPreference: "high-performance" },
       // V40 P0: the persistent world must never freeze when context is open.
       // Every interaction is turned on explicitly so no default can silently drop.
       interactive: true,
@@ -1237,7 +1238,7 @@ function WorldInner() {
           dashboard — it collapses to a single line you open when you want it. */}
       <div className={`atlas-panel ${collapsed ? "rest" : ""}`} style={{ top: 112 }}>
         <button className="sect" onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed}>
-          <span>{collapsed ? "LAYERS" : "4PLANET_ EARTH · LAYERS"}</span>
+          <span>{collapsed ? "Layers" : "Layers"}</span>
           <span>{collapsed ? "+" : "\u2212"}</span>
         </button>
 
