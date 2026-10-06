@@ -59,36 +59,36 @@ function RelationshipDecisionUtility({ a }: { a: LivingSystemAnchor }) {
 
   return (
     <section data-testid="ls-decision-utility" aria-label="Decision utility" style={{ marginTop: "clamp(12px,2vw,24px)", border: `1px solid ${T.line}`, padding: "clamp(20px,3vw,30px)" }}>
-      <div style={{ ...mono, color: a.accent }}>USE THE SYSTEM · BEFORE ACTING</div>
+      <div style={{ ...mono, color: a.accent }}>CHECK THE RELATIONSHIP_ BEFORE ACTING</div>
       <h3 style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(22px,2.4vw,32px)", lineHeight: 1.08, letterSpacing: "-.025em", marginTop: 10, maxWidth: 720 }}>
-        Do not jump from a species or place straight to a solution.
+        A useful response starts with the relationships.
       </h3>
       <p style={{ marginTop: 12, color: T.dim, fontSize: 14.5, lineHeight: 1.6, maxWidth: 720 }}>
-        Read the chain in order: identify the exact system, check what it depends on, verify the pressure in that context, then test whether a response actually fits. Unknown or interpreted links stay visible and lower decision confidence rather than being treated as facts.
+        First identify the system, then what it depends on, what pressure is present here, and whether a response fits this context. Unknown or interpreted links stay visible rather than being treated as facts.
       </p>
       <div className="tw" style={{ marginTop: 22, borderTop: `1px solid ${T.line}`, borderLeft: `1px solid ${T.line}` }}>
         <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: a.accent }}>01 · DEPENDENCY CHECK</div>
+          <div style={{ ...mono, color: a.accent }}>01_ WHAT IT DEPENDS ON</div>
           <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
-            {dependency ? `${dependency.relationships.length} bounded relationship${dependency.relationships.length === 1 ? "" : "s"} describe what this system depends on.` : "Dependency evidence is not yet mapped."}
+            {dependency ? `${dependency.relationships.length} relationship${dependency.relationships.length === 1 ? "" : "s"} currently show what this system depends on.` : "Dependency evidence is not yet mapped."}
           </p>
         </div>
         <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: a.accent }}>02 · PRESSURE CHECK</div>
+          <div style={{ ...mono, color: a.accent }}>02_ WHAT IS CHANGING</div>
           <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
-            {pressure ? `${pressure.relationships.length} pressure relationship${pressure.relationships.length === 1 ? "" : "s"} are mapped; their evidence state and boundary remain attached.` : "Pressure evidence is not yet mapped."}
+            {pressure ? `${pressure.relationships.length} pressure relationship${pressure.relationships.length === 1 ? "" : "s"} are mapped; source and confidence remain attached.` : "Pressure evidence is not yet mapped."}
           </p>
         </div>
         <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: a.accent }}>03 · RESPONSE GATE</div>
+          <div style={{ ...mono, color: a.accent }}>03_ WHAT MAY HELP</div>
           <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
-            {response ? `${response.relationships.length} response path${response.relationships.length === 1 ? "" : "s"} are shown, but the product does not convert them into a universal recommendation.` : "No response path is established yet."}
+            {response ? `${response.relationships.length} possible response path${response.relationships.length === 1 ? "" : "s"} are shown. They are context, not universal recommendations.` : "No response path is established yet."}
           </p>
         </div>
         <div style={{ padding: "18px", borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
-          <div style={{ ...mono, color: unresolved.length ? "#8A6500" : T.acid }}>04 · CONFIDENCE</div>
+          <div style={{ ...mono, color: unresolved.length ? "#8A6500" : T.acid }}>04_ WHAT WE KNOW</div>
           <p style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: T.ink }}>
-            {unresolved.length ? `${unresolved.length} relationship${unresolved.length === 1 ? " is" : "s are"} INTERPRETED or UNKNOWN. Treat the chain as decision support, not certainty.` : "All mapped links in this bounded view are KNOWN; scope boundaries still apply."}
+            {unresolved.length ? `${unresolved.length} relationship${unresolved.length === 1 ? " is" : "s are"} interpreted or unknown. Treat this view as a guide to investigate further, not certainty.` : "All relationships shown here are currently source-backed within this view. Scope limits still apply."}
           </p>
         </div>
       </div>
@@ -157,7 +157,7 @@ export function LivingSystems() {
           {LIVING_SYSTEM_ANCHORS.map((a) => (
             <Link key={a.slug} to={fwd(`/living-systems/${a.slug}`)} className="ls-anchor" style={{ display: "block", padding: "clamp(20px,2.6vw,32px)", textDecoration: "none", color: T.ink, borderRight: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <span style={{ ...mono, color: a.accent }}>{a.index} · {a.kind} ANCHOR</span>
+                <span style={{ ...mono, color: a.accent }}>{a.index}_ {a.kind} ANCHOR</span>
                 <span style={{ ...mono, color: a.status === "LIVE" ? T.acid : "#8A6500", fontSize: 9 }}>{a.status === "LIVE" ? "LIVE" : "EARLY EVIDENCE"}</span>
               </div>
               <div style={{ fontFamily: T.display, fontWeight: 500, fontSize: "clamp(20px,2vw,26px)", letterSpacing: "-.02em", marginTop: 12 }}>{a.anchorLabel}</div>
@@ -166,13 +166,13 @@ export function LivingSystems() {
           ))}
         </div>
 
-        <div style={{ ...mono, color: T.blue, marginTop: "clamp(44px,6vw,72px)" }}>GUIDED JOURNEY · 01 · LIVE</div>
+        <div style={{ ...mono, color: T.blue, marginTop: "clamp(44px,6vw,72px)" }}>GUIDED JOURNEY_ 01_ LIVE</div>
         <div style={{ marginTop: 10 }}>
           <AnchorJourney a={orca} search={location.search} showReturn={false} />
         </div>
 
         <p style={{ marginTop: 32, ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.7, maxWidth: 700 }}>
-          THE ORCA JOURNEY IS LIVE AND EVIDENCE-BACKED. AMAZONIA, OSLOFJORDEN AND BEE → POLLINATION → FOOD ARE EARLY EVIDENCE VIEWS. RELATIONSHIPS REMAIN BOUNDED BY THEIR CURRENT SOURCE AND EVIDENCE STATE.
+          The Orca journey is live and evidence-backed. Amazonia, Oslofjorden and Bee → Pollination → Food are early evidence views. Every relationship remains bounded by its current source and evidence state.
         </p>
       </Section>
     </PublicShell>
