@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "functions/_middleware.js"
+      - "functions/atlas-promoted-places.generated.js"
       - ".github/workflows/atlas-place-live-qa.yml"
   workflow_dispatch:
 
@@ -44,15 +45,15 @@ jobs:
           grep -Fq 'ItemList' <<<"$index"
           grep -Fq 'Natural Earth 1:50m Populated Places v5.1.2' <<<"$index"
           sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "50"
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "250"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "250"
           curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
 
       - name: Verify representative entity authority
         shell: bash
         run: |
           set -euo pipefail
-          for slug in berlin oslo nairobi tokyo kenya brazil; do
+          for slug in berlin oslo nairobi tokyo kenya brazil manila; do
             html=$(curl -fsS "https://4planetatlas.com/place/$slug")
             grep -Fq '<meta name="robots" content="index,follow' <<<"$html"
             grep -Fq 'application/ld+json' <<<"$html"
@@ -66,6 +67,9 @@ jobs:
           grep -Fq 'Wikidata Q64' <<<"$berlin"
           grep -Fq 'GeoNames 2950159' <<<"$berlin"
           grep -Fq 'ISO DE' <<<"$berlin"
+          manila=$(curl -fsS https://4planetatlas.com/place/manila)
+          grep -Fq 'ATLAS_PLACE_COHORT_02_200' <<<"$manila" || grep -Fq 'Natural Earth NE_ID' <<<"$manila"
+          grep -Fq 'Wikidata Q1461' <<<"$manila"
           kenya=$(curl -fsS https://4planetatlas.com/place/kenya)
           grep -Fq 'Curated species connections' <<<"$kenya"
           grep -Fq 'African Savanna Elephant' <<<"$kenya"
@@ -85,7 +89,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for slug in berlin oslo nairobi tokyo kenya brazil; do
+          for slug in berlin oslo nairobi tokyo kenya brazil manila; do
             t=$(curl -sS -o /dev/null -w '%{time_total}' "https://4planetatlas.com/place/$slug")
             python - "$slug" "$t" <<'PY'
           import sys
