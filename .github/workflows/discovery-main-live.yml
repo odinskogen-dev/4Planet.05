@@ -15,6 +15,10 @@ on:
       - src/styles/home-brand-reset.css
       - src/App.tsx
       - src/earth/AtlasEmbedRuntime.tsx
+      - src/routes/router.tsx
+      - src/content/imageRegistry.ts
+      - src/earth/World.tsx
+      - src/earth/PublicWorld.tsx
       - src/earth/atlasViewContract.ts
       - src/styles/human-first-public.css
       - scripts/generate-sitemap.mjs
