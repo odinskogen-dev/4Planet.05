@@ -1,3 +1,61 @@
+# 4PLANET DISCOVERY ENGINE 01 — BOUNDED LIVE RELEASE — 06 OCT 2026
+
+**STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / EXACT CARRIER QA + PHYSICAL READBACK REQUIRED.
+
+**FOUNDER DECISION:** 06 OCT 2026 — “Det er selvsagt Live sidene som må oppdages. Fortsett.”
+
+**LIVE SCOPE:** Earth Now at `/now`; twenty canonical discovery pages; their exact routes, source-grounded content registry, Master Brand OS presentation, canonical ATLAS embeds, crawler-readable prerender, sitemap entries, structured data, bounded tests and the patched `source-map-js 1.2.2` security lock.
+
+**EXCLUDED:** all unrelated current `king/test` work, 4SAPIEN, 4BRANDS, 4NATION, other homepage/product candidates, social/email publication, outreach, paid spend and unrelated infrastructure changes.
+
+**BOUNDING METHOD:** preserve production `main@1c7f7504640363db9495adbf459cd7a043c57316` and overlay only the Discovery Engine 01 delta proven through TEST KING. No wholesale `king/test → LIVE` promotion.
+
+**SOURCE HEIR:** Discovery Engine integrated at `bc7646271a6d4f5358af79ab8d2c7aa4a84e9ca8`; security correction integrated at `268424bd8b22bb01967c84911d399e91f0754891`; current TEST KING readback when this carrier was cut: `60b8c66090fdac653d756b9ab901602859c9ab48`. Subsequent unrelated HEIR commits are not implicitly included.
+
+**QA EVIDENCE SO FAR:** Discovery integration passed FOUR STATE Product Authority and GOLD/WORLD CLASS. Exact-sha typecheck, production build and the full smoke suite passed, including all Discovery Engine 01 contracts. The new high-severity source-map advisory was then patched to 1.2.2. A later failure was a separate Living Systems sitemap contract subsequently corrected on TEST KING. This carrier must independently rerun build, smoke, security and browser/readback checks before LIVE is claimed.
+
+**ROLLBACK:** `main@1c7f7504640363db9495adbf459cd7a043c57316` plus its existing immutable Cloudflare Pages deployment.
+
+## USER ARRIVES BECAUSE
+A person searches Google, Bing or an AI assistant for a real environmental subject and needs a useful, source-grounded 4PLANET result that leads into the actual product.
+
+## ONE THING TO UNDERSTAND
+Discovery is a public product entry layer over existing 4PLANET intelligence, not an SEO content farm; each canonical URL is meant to compound in value.
+
+## PRIMARY ACTION
+Read the answer and evidence boundary, then inspect the same subject through the embedded canonical 4PLANET ATLAS.
+
+## SECONDARY DEPTH
+Continue into relevant SPECIES, PLACE, Living Systems, Mission, Impact, S4PIENS or 4BRANDS journeys and original sources.
+
+## P1 DOMINANT
+`/now` answers “What is happening on Earth right now?” with latest-available signals and a visible warning that the sources do not share one synchronized live clock.
+
+## P2 ORIENTATION
+Twenty permanent guides cover Wildfires, Earthquakes, Climate Change, Biodiversity, Deforestation, Plastic Pollution, Coral Bleaching, Air Quality, Orca, Whales, Bees, Amazon Rainforest, Oslofjord, Renewable Energy, Solar Energy, Food Waste, Fast Fashion, Rewilding, Climate Solutions and Environmental Jobs.
+
+## P3 ACTION / NEXT
+Each page provides a source list, last-checked date, embedded canonical ATLAS view and internal 4PLANET continuation.
+
+## P4 DEPTH
+Canonical metadata, OG/Twitter metadata, JSON-LD, citation URLs, breadcrumbs/item lists and explicit “what sources establish / do not establish” boundaries are rendered for human and machine discovery.
+
+## WHAT CAN BE REMOVED
+No new Brain, CMS, SEO database, map engine, content farm, FAQ stuffing, separate trend database or new design system.
+
+## WHAT MUST BE REUSED
+Current LIVE tree, Master Brand OS, PublicShell, canonical `4planetatlas.com`, existing source/provenance semantics, existing sitemap/prerender pipeline and privacy-safe analytics.
+
+## TRUTH BOUNDARY
+“Earth Now” means latest available per source, never one universal real-time Earth. Thermal anomaly ≠ confirmed wildfire. Occurrence record ≠ current animal position, abundance or migration route. Tree-cover loss ≠ automatically deforestation. Coral thermal stress ≠ observed bleaching. Aerosol optical depth ≠ ground-level air quality. Context layers remain context. No Google indexing, ranking, traffic or AI citation claim exists until measured.
+
+## MOBILE-FIRST RISK
+ATLAS embeds, fact strips and signal rows must work at 390/430 without page overflow or blocked interaction. Prerender fallback must not become duplicate visible hydrated content.
+
+## HUMAN SUCCESS
+A first-time visitor quickly understands the topic, sees what is known versus unknown, opens the original sources, uses the map and continues deeper into 4PLANET.
+
+---
 # DISCOVERY + USEFUL INTERNET OBJECTS — BOUNDED LIVE RELEASE 03 OCT 2026
 
 **STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / EXACT-RUNTIME READBACK REQUIRED BEFORE LIVE CLAIM.
