@@ -15,7 +15,8 @@ type EmbeddedMap = {
  */
 export function AtlasEmbedRuntime() {
   const { pathname, search } = useLocation();
-  const embedded = (pathname === "/atlas" || pathname === "/embed/atlas") &&
+  const homepageEmbed = pathname.startsWith("/embed/atlas");
+  const embedded = (pathname === "/atlas" || homepageEmbed) &&
     isAtlasEmbedKind(new URLSearchParams(search).get("embed"));
 
   useEffect(() => {
@@ -80,7 +81,9 @@ export function AtlasEmbedRuntime() {
   if (!embedded) return null;
   return <style>{[
     ".atlas-product-identity,.atlas-product-switcher{display:none!important}",
-    ".world .atlas-panel,.world .lens-rail,.world .search-line,.world .site-menu,.world .status-strip{display:none!important}",
+    homepageEmbed
+      ? ".world .lens-rail,.world .search-line,.world .site-menu,.world .status-strip{display:none!important}"
+      : ".world .atlas-panel,.world .lens-rail,.world .search-line,.world .site-menu,.world .status-strip{display:none!important}",
     ".world .ctx{max-width:min(100vw,440px)}",
   ].join("")}</style>;
 }
