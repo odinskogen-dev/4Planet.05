@@ -12,7 +12,9 @@ on:
       - functions/api/brand-analysis.ts
       - src/styles/fourbrand-intelligence.css
       - src/pages/partners/PublicCompanyProfile.tsx
+      - src/pages/partners/PublicCompanyExternalSignals.tsx
       - functions/api/company-public-profile.ts
+      - tests/e2e/4brands-public-intelligence.spec.ts
   workflow_dispatch:
 
 permissions:
@@ -187,10 +189,50 @@ jobs:
           grep -q 'WHAT DOES THE PUBLIC WORLD KNOW' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'WHAT LOOKS UNUSUAL' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'INDUSTRY COHORT' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'PublicProcurementIntelligence' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'PublicPlanetIntelligence' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'SIGNAL BOUNDARY' src/pages/partners/PublicCompanyExternalSignals.tsx
+          grep -q 'IDENTITY BOUNDARY' src/pages/partners/PublicCompanyExternalSignals.tsx
           grep -q 'loadPublicProfile(payload.entity.organizationNumber)' src/pages/partners/FourBrand.tsx
           ! grep -Eq 'linear-gradient|radial-gradient|box-shadow:' src/styles/fourbrand-intelligence.css
       - run: npm run typecheck
       - run: npm run build
+
+  public-intelligence-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact HEIR candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build exact source
+        run: npm run build
+      - name: Start exact-head preview
+        shell: bash
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4brands-preview.log 2>&1 &
+          for attempt in {1..60}; do
+            curl --fail --silent http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/4brands-preview.log || true
+          exit 1
+      - name: Public-first desktop + mobile proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/4brands-public-intelligence.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
 
   public-intelligence-real-brreg:
     runs-on: ubuntu-latest
