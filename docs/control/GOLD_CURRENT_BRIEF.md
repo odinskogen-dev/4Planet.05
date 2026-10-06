@@ -1039,3 +1039,23 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **MAKER ≠ JUDGE / ANDON:** AXE is maker for this bounded candidate, never Gold judge. Stop on source mismatch, rights regression, structured-data invalidity, authority failure, hydration duplication or exact-head CI failure.
 
 ---
+
+
+## SPECIES GOLD PLANK 02 — HUMAN-FIRST SHARED PARENT / 2026-10-06
+
+JOB: Q4-REALITY-SPECIES-GOLD-PLANK-20261003-01.
+CURRENT RECEIVER: sandbox/species-gold-plank-02-20261006, single registered SPECIES sandbox from HEIR 6d94565bd8b1fc4d2c9758812558b41ad06adc04.
+DONORS: PR #378 and quarantined PR #387 only; neither is moving authority.
+DESIRED HUMAN STATE: one Human-First parent/template for curated SPECIES. ORCA + JAGUAR share the same editorial hierarchy; biological differences remain data/config/media/source-driven. Technical evidence walls stay out of the curated public first read; truth/source/rights remain available in controlled depth.
+TRUTH: Jaguar must not infer ecosystem health from presence and must not publish one global population number while methods/dates conflict. Occurrence ≠ range, abundance, trend, migration or live position.
+GATE: exact-head contracts + typecheck/build + Chromium/WebKit desktop/390/430 + keyboard/focus/reduced motion + discovery + rights/provenance + independent Judge. No LIVE authority.
+PAPPAS PLANKE: generic child defect → fix parent → retest every affected child. Transfer cohort includes bird, insect and marine invertebrate before scale.
+
+
+### FIRST FACTORY BATCH 01
+After the shared parent passes Gold, the same existing Factory path must materialise/verify this source-envelope-bound first batch without child-specific layout code:
+AFRICAN SAVANNA ELEPHANT · CHEETAH · BLUE WHALE · TIGER · POLAR BEAR · WHALE SHARK · GREEN SEA TURTLE · EMPEROR PENGUIN · GIANT PANDA · ELKHORN CORAL.
+
+Elkhorn Coral is the new source→product transfer proof in this batch: the canonical source envelope already existed; this package adds the normal SPECIES object + discovery object only. No custom renderer. Missing rights-cleared photography is represented by the parent-owned truthful fallback, never by an invented or unlicensed image.
+
+Factory acceptance = canonical identity + descriptor/source + bounded claims/limits + source-envelope provenance/rights/uncertainty + indexable discovery object + shared Human-First renderer + ATLAS handoff + no overflow + no technical evidence wall on curated first read. Torture transfer remains independently exercised on bird, insect and marine invertebrate profiles.

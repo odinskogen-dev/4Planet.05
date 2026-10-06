@@ -11,7 +11,6 @@ import {
   type EvidenceState,
   type SpeciesProfile,
 } from "@/data/species";
-import { ORCA_INTERPRETATION, ORCA_OBSERVATION, ORCA_PRODUCT_CONTEXT, ORCA_SOURCE_RECORD } from "@/data/truthSpine";
 import { taxonOccurrences } from "@/planet/connectors";
 import type { Occurrence } from "@/planet/types";
 import { useFollows } from "@/planet/follow";
@@ -170,7 +169,7 @@ function SpeciesHero({
 function SpeciesCard({ profile, search }: { profile: SpeciesProfile; search: string }) {
   return (
     <Link
-      to={contextHref(`/species/${profile.slug}`, search, { entity: profile.id, journey: profile.slug === "orca" ? "orca-gbif" : null })}
+      to={contextHref(`/species/${profile.slug}`, search, { entity: profile.id, journey: profile.atlasJourney ?? null })}
       style={{ display: "flex", flexDirection: "column", color: T.ink, textDecoration: "none", minWidth: 0, border: `1px solid ${T.line}` }}
     >
       <LifeImage slug={profile.slug} name={profile.commonName} sci={profile.scientificName} ratio="4/3" />
@@ -255,142 +254,28 @@ export function SpeciesIndex() {
   );
 }
 
-function OrcaEditorialProfile({
-  profile,
-  atlasHref,
-  followed,
-  onToggle,
-}: {
-  profile: SpeciesProfile;
-  atlasHref: string;
-  followed: boolean;
-  onToggle: () => void;
-}) {
-  const chapters = profile.narrativeChapters?.slice(0, 2) ?? [];
-  const sourceEntries = [
-    ...(profile.descriptorSource ? [{ label: profile.descriptorSource.source, url: profile.descriptorSource.sourceUrl }] : []),
-    ...((profile.narrativeChapters ?? []).flatMap((chapter) =>
-      chapter.claims
-        .filter((claim) => claim.sourceUrl)
-        .map((claim) => ({ label: claim.sourceLabel ?? "Source", url: claim.sourceUrl! })),
-    )),
-    [{ label: "GBIF — Orcinus orca", url: profile.taxonSourceUrl }],
-  ].flat();
-  const sources = Array.from(new Map(sourceEntries.map((source) => [source.url, source])).values());
-
-  return (
-    <PublicShell>
-      <main className="editorial-page" style={{ background: "#FFFFFF" }}>
-        <div className="editorial-wrap">
-          <section className="orca-hero">
-            <div className="orca-hero-grid">
-              <figure className="orca-hero-media">
-                <img src="/assets/species/orca/detail-fjord.jpg" alt="A wild orca surfacing off a Norwegian coast" />
-              </figure>
-              <div className="orca-hero-copy">
-                <div className="editorial-kicker">4PLANET SPECIES</div>
-                <h1>Orca</h1>
-                <p className="latin">{profile.scientificName}</p>
-                <p className="editorial-copy">{profile.intro}</p>
-                <div className="editorial-actions">
-                  <Link
-                    to={atlasHref}
-                    className="editorial-primary"
-                    data-testid="species-to-atlas"
-                    onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
-                  >
-                    EXPLORE ORCA IN ATLAS →
-                  </Link>
-                  <button type="button" onClick={onToggle} className="editorial-secondary">
-                    {followed ? "FOLLOWING ORCA" : "FOLLOW ORCA"}
-                  </button>
-                </div>
-                <dl className="orca-facts">
-                  <div className="orca-fact"><dt>Family</dt><dd>Largest member of the dolphin family</dd></div>
-                  <div className="orca-fact"><dt>Range</dt><dd>Every ocean, from polar seas to the tropics</dd></div>
-                  <div className="orca-fact"><dt>Lives</dt><dd>In distinct populations with different prey, behaviour and calls</dd></div>
-                </dl>
-              </div>
-            </div>
-          </section>
-
-          <section className="editorial-section">
-            <div className="editorial-kicker">Life in the ocean</div>
-            <div className="orca-story-grid">
-              {chapters.map((chapter) => (
-                <article key={chapter.id}>
-                  <div className="editorial-kicker">{chapter.title}</div>
-                  <h3>{chapter.title}</h3>
-                  <p>{chapter.summary}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="editorial-section">
-            <div className="editorial-kicker">From the field</div>
-            <h2>Meet the animal, not the database.</h2>
-            <div className="orca-gallery">
-              {[
-                { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
-                { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of orcas surfacing together" },
-                { src: "/assets/species/orca/detail-spyhop.jpg", alt: "An orca spy-hopping above the surface" },
-                { src: "/assets/species/orca/detail-ice.jpg", alt: "Orcas among Antarctic pack ice" },
-              ].map((image) => (
-                <figure key={image.src}>
-                  <img src={image.src} alt={image.alt} loading="lazy" />
-                </figure>
-              ))}
-            </div>
-          </section>
-
-          <section className="editorial-section editorial-split">
-            <div className="editorial-kicker">About the map</div>
-            <div>
-              <h2>A record is not a live whale.</h2>
-              <p className="editorial-copy">
-                ATLAS can show reported occurrence records for orcas. They can tell us where an observation was recorded; they do not reveal a whale’s current position, population size or migration route.
-              </p>
-              <div className="editorial-actions">
-                <Link to={atlasHref} className="editorial-primary">OPEN ATLAS →</Link>
-              </div>
-            </div>
-          </section>
-
-          <section className="editorial-section">
-            <div className="editorial-kicker">Sources</div>
-            <div className="editorial-list">
-              {sources.map((source) => (
-                <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="editorial-source">
-                  <strong>{source.label}</strong>
-                  <span>Open original source ↗</span>
-                </a>
-              ))}
-            </div>
-          </section>
-        </div>
-      </main>
-    </PublicShell>
-  );
-}
-
 type ObservationState =
   | { status: "LOADING"; rows: Occurrence[]; total: number }
   | { status: "LIVE"; rows: Occurrence[]; total: number }
   | { status: "NO_RECORDS"; rows: Occurrence[]; total: number }
   | { status: "SOURCE_UNAVAILABLE"; rows: Occurrence[]; total: number };
 
-
-function OrcaEditorialPage({
+function SpeciesEditorialProfile({
   profile,
   atlasHref,
   returnHref,
   occurrences,
+  followed,
+  onToggle,
+  search,
 }: {
   profile: SpeciesProfile;
   atlasHref: string;
   returnHref: string | null;
   occurrences: ObservationState;
+  followed: boolean;
+  onToggle: () => void;
+  search: string;
 }) {
   const media = speciesMedia(profile.slug);
   const show = hasShowableImage(profile.slug);
@@ -399,16 +284,24 @@ function OrcaEditorialPage({
   const supportingChapters = chapters.slice(1, 3);
   const sourceLinks = Array.from(new Map(
     [
-      { label: "GBIF — Orcinus orca", url: profile.taxonSourceUrl },
+      { label: profile.descriptorSource?.source ?? "GBIF taxon", url: profile.descriptorSource?.sourceUrl ?? profile.taxonSourceUrl },
       ...(profile.publicClaims ?? []).map((claim) => ({ label: claim.source, url: claim.sourceUrl })),
       ...chapters.flatMap((chapter) => chapter.claims.map((claim) => ({ label: claim.sourceLabel ?? "Source", url: claim.sourceUrl ?? "" }))),
+      { label: `GBIF — ${profile.scientificName}`, url: profile.taxonSourceUrl },
     ].filter((source) => source.url).map((source) => [source.url, source]),
-  ).values()).slice(0, 6);
+  ).values()).slice(0, 8);
+
+  const heroBackground = show && media?.localPath
+    ? undefined
+    : "linear-gradient(145deg,#07101b 0%,#14293c 62%,#07101b 100%)";
 
   return (
     <PublicShell>
-      <main style={{ background: "#FFFFFF", color: T.ink }}>
-        <section style={{ position: "relative", minHeight: "82svh", overflow: "hidden", background: "#07101b", borderBottom: `4px solid ${T.blue}` }}>
+      <main className="species-editorial-page" style={{ background: "#FFFFFF", color: T.ink }}>
+        <section
+          data-species-section="hero"
+          style={{ position: "relative", minHeight: "82svh", overflow: "hidden", background: heroBackground ?? "#07101b", borderBottom: `4px solid ${T.blue}` }}
+        >
           {show && media?.localPath ? (
             <img
               src={media.localPath}
@@ -416,23 +309,45 @@ function OrcaEditorialPage({
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 42%" }}
             />
           ) : null}
-          <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(3,8,18,.14),rgba(3,8,18,.22) 40%,rgba(3,8,18,.82) 100%)" }} />
+          <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(3,8,18,.12),rgba(3,8,18,.24) 40%,rgba(3,8,18,.84) 100%)" }} />
           <div style={{ position: "relative", zIndex: 1, minHeight: "82svh", display: "flex", alignItems: "flex-end", padding: "clamp(42px,8vw,104px) clamp(20px,6vw,86px)" }}>
             <div style={{ maxWidth: 980, color: "#FFFFFF" }}>
               {returnHref && <Link to={returnHref} style={{ ...mono, color: "#FFFFFF", display: "inline-block", marginBottom: 18 }}>← BACK TO ATLAS</Link>}
-              <div style={{ ...mono, color: "#FFFFFF", opacity: .82 }}>4PLANET SPECIES</div>
-              <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(66px,12vw,148px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
+              <div style={{ ...mono, color: "#FFFFFF", opacity: .82 }}>4PLANET SPECIES_</div>
+              <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(64px,12vw,148px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
               <p style={{ margin: "18px 0 0", fontSize: "clamp(18px,2vw,25px)", fontStyle: "italic", opacity: .9 }}>{profile.scientificName}</p>
-              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 720, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.4 }}>{profile.intro}</p>}
+              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 760, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.4 }}>{profile.intro}</p>}\n              {!show && <p style={{ margin: "18px 0 0", ...mono, color: "rgba(255,255,255,.76)" }}>RIGHTS-CLEARED PHOTOGRAPH NOT AVAILABLE · FACTUAL PROFILE REMAINS AVAILABLE</p>}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 30 }}>
                 <Link
                   to={atlasHref}
                   data-testid="species-to-atlas"
                   onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
                   style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
-                >EXPLORE ORCA IN ATLAS →</Link>
-                <Link to="/species" style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: "#FFFFFF", color: T.ink, textDecoration: "none" }}>ALL SPECIES</Link>
+                >{`EXPLORE ${profile.commonName.toUpperCase()} IN ATLAS →`}</Link>
+                <button type="button" onClick={onToggle} className="editorial-secondary" style={{ minHeight: 50 }}>
+                  {followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}
+                </button>
+                {profile.continuation && (
+                  <Link
+                    to={withReturnTo(profile.continuation.href, search)}
+                    data-testid={profile.continuation.testId}
+                    onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: profile.continuation!.toProduct, canonical_entity: profile.id })}
+                    style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: "#FFFFFF", color: T.ink, textDecoration: "none" }}
+                  >{profile.continuation.label}</Link>
+                )}
+                {profile.missionSlug && (
+                  <Link
+                    to={withReturnTo(`/missions/${profile.missionSlug}`, search)}
+                    data-testid="species-to-mission"
+                    style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", border: "1px solid rgba(255,255,255,.72)", color: "#FFFFFF", textDecoration: "none" }}
+                  >{`${profile.missionSlug.toUpperCase()}_ MISSION →`}</Link>
+                )}
               </div>
+              <dl style={{ margin: "28px 0 0", display: "flex", gap: "18px 34px", flexWrap: "wrap", fontSize: 13 }}>
+                <div><dt style={{ opacity: .62 }}>Taxon</dt><dd style={{ margin: "4px 0 0" }}>{profile.taxonomicStatus}</dd></div>
+                {profile.region && <div><dt style={{ opacity: .62 }}>Region</dt><dd style={{ margin: "4px 0 0" }}>{profile.region}</dd></div>}
+                <div><dt style={{ opacity: .62 }}>Source identity</dt><dd style={{ margin: "4px 0 0" }}>GBIF {profile.gbifKey}</dd></div>
+              </dl>
             </div>
           </div>
           {media?.attribution && (
@@ -442,51 +357,92 @@ function OrcaEditorialPage({
           )}
         </section>
 
-        <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(64px,9vw,118px) clamp(20px,5vw,64px)" }}>
-          <div style={{ ...mono, color: T.blue }}>FAMILY + CULTURE</div>
-          <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(42px,7vw,82px)", lineHeight: .96, letterSpacing: "-.05em", fontWeight: 520 }}>
-            {leadChapter?.title ?? "Orcas live through relationships."}
-          </h2>
-          <p style={{ margin: "26px 0 0", maxWidth: 760, fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.52 }}>
-            {leadChapter?.summary ?? "Orcas are highly social animals whose groups can differ in behaviour, diet and habitat use."}
-          </p>
-        </section>
+        {profile.habitat && (
+          <section data-species-section="habitat" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(64px,9vw,118px) clamp(20px,5vw,64px)" }}>
+            <div style={{ ...mono, color: T.blue }}>WHERE IT LIVES</div>
+            <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(42px,7vw,82px)", lineHeight: .96, letterSpacing: "-.05em", fontWeight: 520 }}>
+              A species lives in systems, not pins on a map.
+            </h2>
+            <p style={{ margin: "26px 0 0", maxWidth: 780, fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.52 }}>{profile.habitat}</p>
+            {profile.descriptorSource && (
+              <p style={{ margin: "18px 0 0", maxWidth: 760, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>
+                Source: <a href={profile.descriptorSource.sourceUrl} target="_blank" rel="noreferrer" style={{ color: T.blue }}>{profile.descriptorSource.source} ↗</a> · checked {profile.descriptorSource.checkedAt}. {profile.descriptorSource.note}
+              </p>
+            )}
+          </section>
+        )}
 
-        <section style={{ maxWidth: 1180, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(64px,9vw,110px)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,320px),1fr))", gap: 8 }}>
-            {[
-              { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of wild orcas surfacing together" },
-              { src: "/assets/species/orca/detail-spyhop.jpg", alt: "A wild orca spy-hopping above the surface" },
-            ].map((image) => (
-              <figure key={image.src} style={{ margin: 0, aspectRatio: "4/3", overflow: "hidden", background: "#07101b" }}>
-                <img src={image.src} alt={image.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </figure>
-            ))}
-          </div>
-        </section>
+        {leadChapter && (
+          <section data-species-section="lead-story" style={{ maxWidth: 980, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(64px,9vw,110px)" }}>
+            <div style={{ ...mono, color: T.blue }}>{leadChapter.eyebrow.replace(/^[A-Z0-9_]+\s*·?\s*/i, "") || "LIFE"}</div>
+            <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(42px,7vw,82px)", lineHeight: .96, letterSpacing: "-.05em", fontWeight: 520 }}>
+              {leadChapter.title}
+            </h2>
+            <p style={{ margin: "26px 0 0", maxWidth: 760, fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.52 }}>{leadChapter.summary}</p>
+          </section>
+        )}
+
+        {profile.fieldImages && profile.fieldImages.length > 0 && (
+          <section data-species-section="field-media" style={{ maxWidth: 1180, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(64px,9vw,110px)" }}>
+            <div style={{ ...mono, color: T.blue, marginBottom: 18 }}>{profile.fieldEyebrow ?? "FROM THE FIELD"}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,260px),1fr))", gap: 8 }}>
+              {profile.fieldImages.map((image) => (
+                <figure key={image.src} style={{ margin: 0, aspectRatio: "4/3", overflow: "hidden", background: "#07101b" }}>
+                  <img src={image.src} alt={image.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </figure>
+              ))}
+            </div>
+            {profile.fieldNote && <p style={{ margin: "14px 0 0", maxWidth: 780, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{profile.fieldNote}</p>}
+          </section>
+        )}
 
         {supportingChapters.map((chapter) => (
-          <section key={chapter.id} style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
-            <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow.replace(/WH4LES_\s*·?\s*/i, "")}</div>
+          <section key={chapter.id} data-species-section="supporting-story" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
+            <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow.replace(/^[A-Z0-9_]+\s*·?\s*/i, "") || "EVIDENCE"}</div>
             <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(36px,6vw,68px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>{chapter.title}</h2>
             <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>{chapter.summary}</p>
           </section>
         ))}
 
-        <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,100px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
+        {profile.publicClaims && profile.publicClaims.length > 0 && (
+          <section data-species-section="known" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(56px,8vw,96px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
+            <div style={{ ...mono, color: T.blue }}>WHAT WE KNOW</div>
+            <div style={{ marginTop: 22, display: "grid", gap: 0 }}>
+              {profile.publicClaims.slice(0, 4).map((claim, index) => (
+                <article key={`${claim.sourceUrl}-${index}`} style={{ padding: "20px 0", borderTop: `1px solid ${T.line}` }}>
+                  <div style={{ ...mono, color: claim.state === "KNOWN" ? T.acid : claim.state === "INTERPRETED" ? T.blue : "#8A6500" }}>{claim.state}</div>
+                  <p style={{ margin: "10px 0 0", maxWidth: 800, fontSize: 18, lineHeight: 1.55 }}>{claim.text}</p>
+                  <p style={{ margin: "8px 0 0", maxWidth: 800, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{claim.limitation}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section data-species-section="atlas" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,100px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
           <div style={{ ...mono, color: T.blue }}>WHERE RECORDED</div>
           <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(38px,6vw,72px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>Explore reported observations.</h2>
           {occurrences.status === "LIVE" ? (
             <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>
-              GBIF currently reports {occurrences.total.toLocaleString()} Orca occurrence records. They show where observations have been reported — not where Orcas are right now.
+              GBIF currently reports {occurrences.total.toLocaleString()} occurrence records for {profile.commonName}. They show where observations have been reported — not where the species is right now, its abundance or its complete range.
             </p>
           ) : (
-            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>Reported observation data is temporarily unavailable. The species story and sources remain available.</p>
+            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>Reported observation data is currently unavailable or returned no records. The species story and sources remain available.</p>
           )}
           <Link to={atlasHref} style={{ ...mono, display: "inline-block", marginTop: 24, color: T.blue, borderBottom: `1px solid ${T.blue}`, paddingBottom: 3 }}>OPEN OBSERVATIONS IN ATLAS →</Link>
+          <div style={{ marginTop: 34 }}>
+            <AtlasEmbed view={{
+              kind: "SPECIES",
+              title: profile.commonName + " — where recorded",
+              entityId: profile.id,
+              layers: ["bluemarble", "biodiv"],
+              description: "Explore available source records for the same canonical taxon in full ATLAS.",
+              limitation: "Historical occurrence records are not live animal positions, a verified distribution range, population abundance or a migration route.",
+            }} />
+          </div>
         </section>
 
-        <section style={{ maxWidth: 980, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(80px,10vw,128px)" }}>
+        <section data-species-section="sources" style={{ maxWidth: 980, margin: "0 auto", padding: "0 clamp(20px,5vw,64px) clamp(80px,10vw,128px)" }}>
           <details style={{ borderTop: `1px solid ${T.line}`, paddingTop: 26 }}>
             <summary style={{ ...mono, color: T.blue, cursor: "pointer", listStyle: "none" }}>SOURCES + NOTES</summary>
             <div style={{ display: "grid", gap: 14, marginTop: 20 }}>
@@ -496,8 +452,15 @@ function OrcaEditorialPage({
                 </a>
               ))}
             </div>
+            {profile.truthBoundary && (
+              <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.line}` }}>
+                <strong>Truth boundary.</strong>
+                <p style={{ margin: "10px 0 0", maxWidth: 780, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{profile.truthBoundary.text}</p>
+                <p style={{ margin: "10px 0 0", maxWidth: 780, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>{profile.truthBoundary.disclosure}</p>
+              </div>
+            )}
             <p style={{ marginTop: 20, maxWidth: 760, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>
-              Public observation records are historical source records. They are not live positions, population counts or migration routes.
+              Public occurrence records are historical source records. They are not live positions, complete range maps, population counts, abundance estimates or migration routes.
             </p>
           </details>
         </section>
@@ -527,197 +490,19 @@ export function SpeciesProfilePage() {
   }, [profile]);
 
   if (!profile) return <NotFound />;
-  const isOrca = profile.slug === "orca";
   const returnHref = returnHrefFromSearch(location.search);
-  // If we arrived from an ATLAS observation, "same entity in ATLAS" returns to
-  // the exact prior camera/record; otherwise it opens ATLAS on this entity.
-  const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: isOrca ? "orca-gbif" : profile.slug });
+  const atlasHref = returnHref ?? contextHref("/atlas", location.search, { entity: profile.id, journey: profile.atlasJourney ?? profile.slug });
   const followed = following(profile.id);
 
-  if (isOrca) {
-    return (
-      <OrcaEditorialProfile
-        profile={profile}
-        atlasHref={atlasHref}
-        followed={followed}
-        onToggle={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
-      />
-    );
-  }
-
-  const actions = (
-    <>
-      <Link to={atlasHref} data-testid="species-to-atlas" onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })} style={{ ...mono, background: T.blue, color: "#fff", padding: "12px 15px", textDecoration: "none" }}>{returnHref ? "← BACK TO OBSERVATION IN ATLAS →" : "OPEN SAME ENTITY IN ATLAS →"}</Link>
-      {isOrca && (
-        <Link to={withReturnTo("/living-systems", location.search)} data-testid="species-to-ls" onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "living_systems", canonical_entity: profile.id })} style={{ ...mono, background: "transparent", color: T.blue, border: `1px solid ${T.blue}`, padding: "11px 15px", textDecoration: "none" }}>CONTINUE TO LIVING SYSTEMS →</Link>
-      )}
-      {profile.missionSlug && (
-        <Link to={withReturnTo(`/missions/${profile.missionSlug}`, location.search)} data-testid="species-to-mission" style={{ ...mono, background: "transparent", color: T.ink, border: `1px solid ${T.ink}`, padding: "11px 15px", textDecoration: "none" }}>{profile.missionSlug.toUpperCase()}_ MISSION →</Link>
-      )}
-      <button
-        onClick={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
-        style={{ ...mono, background: "transparent", color: followed ? T.acid : T.ink, border: `1px solid ${followed ? T.acid : T.ink}`, padding: "11px 15px", cursor: "pointer" }}
-      >{followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}</button>
-    </>
-  );
-
   return (
-    <PublicShell>
-      <div className={returnHref ? "closer-look" : undefined}>
-        {/* Premium full-screen key-facts hero — the one screen a person needs. */}
-        <SpeciesHero profile={profile} returnHref={returnHref} actions={actions} />
-      </div>
-      <Section pad="clamp(48px,6vw,96px)">
-        <Link to={contextHref("/species", location.search)} style={{ ...mono, color: T.blue }}>← SPECIES INDEX</Link>
-        <div style={{ marginTop: 24, display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Status>GBIF TAXON · ACCEPTED</Status>
-          <Status color={T.acid}>IDENTITY PRESERVED</Status>
-          <Status color="#8A6500">POPULATION-SPECIFIC CLAIMS CONTROLLED</Status>
-        </div>
-        {speciesMedia(profile.slug)?.illustration && !hasShowableImage(profile.slug) && (
-          <p style={{ margin: "16px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6, fontSize: 10.5, maxWidth: 760 }}>
-            PHOTOGRAPH · PENDING RIGHTS — {speciesMedia(profile.slug)?.assetBlocker ?? "no cleared photograph yet"} The hero image is a 4PLANET illustration, not a photograph of this animal.
-          </p>
-        )}
-        {profile.habitat && (
-          <div style={{ ...panel, marginTop: 28, maxWidth: 760 }}>
-            <div style={{ ...mono, color: T.blue }}>WHERE IT LIVES</div>
-            <p style={{ marginTop: 12, fontSize: 16, lineHeight: 1.55 }}>{profile.habitat}</p>
-            {profile.descriptorSource && (
-              <p style={{ margin: "12px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>
-                DESCRIPTION SOURCE · <a href={profile.descriptorSource.sourceUrl} target="_blank" rel="noreferrer" style={{ color: T.blue }}>{profile.descriptorSource.source} ↗</a> · CHECKED {profile.descriptorSource.checkedAt} · {profile.descriptorSource.note}
-              </p>
-            )}
-          </div>
-        )}
-        {profile.publicClaims && profile.publicClaims.length > 0 && (
-          <div style={{ marginTop: 24, maxWidth: 760 }}>
-            <div style={{ ...mono, color: T.blue, marginBottom: 12 }}>WHAT IS KNOWN · SOURCE-BACKED</div>
-            <div style={{ display: "grid", gap: 12 }}>
-              {profile.publicClaims.map((c, i) => {
-                const col = c.state === "KNOWN" ? T.acid : c.state === "INTERPRETED" ? T.blue : "#8A6500";
-                return (
-                  <div key={i} style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${col}`, padding: "14px 16px" }}>
-                    <div style={{ ...mono, color: col }}>{c.state} · CHECKED {c.checkedAt}</div>
-                    <p style={{ margin: "8px 0 0", fontSize: 15, lineHeight: 1.5 }}>{c.text}</p>
-                    <p style={{ margin: "8px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", lineHeight: 1.6 }}>BOUNDARY · {c.limitation}</p>
-                    <a href={c.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, color: T.blue, display: "inline-block", marginTop: 8 }}>{c.source} ↗</a>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        <AtlasEmbed view={{ kind: "SPECIES", title: profile.commonName + " — where recorded", entityId: profile.id, layers: ["bluemarble", "biodiv"], description: "Explore available source records for the same canonical taxon in full ATLAS.", limitation: "Historical occurrence records are not live animal positions, a verified distribution range, population abundance or a migration route." }} />
-        <div className="tw" style={{ marginTop: 52 }}>
-          <div style={panel}>
-            <div style={{ ...mono, color: T.dim }}>TAXON IDENTITY</div>
-            <dl style={{ marginTop: 20, display: "grid", gridTemplateColumns: "auto 1fr", gap: "10px 18px", fontSize: 14 }}>
-              <dt>Canonical ID</dt><dd style={{ wordBreak: "break-all" }}>{profile.id}</dd>
-              <dt>GBIF key</dt><dd>{profile.gbifKey}</dd>
-              <dt>Rank</dt><dd>{profile.rank}</dd>
-              <dt>Status</dt><dd>{profile.taxonomicStatus}</dd>
-              <dt>Kingdom</dt><dd>{profile.kingdom}</dd>
-            </dl>
-            <a href={profile.taxonSourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 22, color: T.blue }}>OPEN GBIF TAXON RECORD ↗</a>
-          </div>
-          <div style={panel}>
-            <div style={{ ...mono, color: T.dim }}>OCCURRENCE RECORDS</div>
-            <div style={{ marginTop: 18 }}><Status color={occurrences.status === "LIVE" ? T.acid : occurrences.status === "SOURCE_UNAVAILABLE" ? T.red : "#8A6500"}>{occurrences.status === "LIVE" ? "RECORDS RETRIEVED" : occurrences.status.replace(/_/g, " ")}</Status></div>
-            {occurrences.status === "LIVE" && <p style={{ marginTop: 18, fontSize: 15 }}>{occurrences.total.toLocaleString()} records reported by GBIF; {occurrences.rows.length} loaded in this view.</p>}
-            <p style={{ marginTop: 14, color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>Records show reporting activity. They do not establish range, abundance, population trend or live tracking.</p>
-            {occurrences.rows.slice(0, 3).map((row) => (
-              <a key={row.sourceRecordId} href={row.sourceUrl} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 12, color: T.ink, fontSize: 12 }}>
-                {row.eventDate ?? "DATE NOT SUPPLIED"} · {row.lat.toFixed(3)}, {row.lng.toFixed(3)} ↗
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {isOrca && (
-          <>
-            <div style={{ ...panel, marginTop: 24, borderColor: T.blue }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-                <div style={{ ...mono, color: T.blue }}>WHAT THIS RECORD SHOWS · AND WHAT IT DOES NOT</div>
-                <Status color="#8A6500">{ORCA_PRODUCT_CONTEXT.persistedBy.replace(/_/g, " ")}</Status>
-              </div>
-              <p style={{ marginTop: 18, maxWidth: 840, lineHeight: 1.55 }}>{ORCA_INTERPRETATION.text}</p>
-              <div className="four" style={{ marginTop: 24 }}>
-                {[
-                  ["SOURCE RECORD", ORCA_SOURCE_RECORD.sourceRecordId],
-                  ["OBSERVATION", ORCA_OBSERVATION.id],
-                  ["SIGNAL", "NONE CREATED"],
-                  ["INTERPRETATION", ORCA_INTERPRETATION.reviewStatus],
-                ].map(([label, value]) => <div key={label} style={{ borderTop: `1px solid ${T.line}`, padding: "14px 0" }}><div style={{ ...mono, color: T.dim }}>{label}</div><div style={{ marginTop: 8, fontSize: 12, wordBreak: "break-all" }}>{value}</div></div>)}
-              </div>
-              <p style={{ marginTop: 18, fontSize: 12.5, color: T.dim, lineHeight: 1.55 }}>{ORCA_PRODUCT_CONTEXT.disclosure}</p>
-              <a href={ORCA_SOURCE_RECORD.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 14, color: T.blue }}>SOURCE RECORD + LICENCE ↗</a>
-            </div>
-
-            <section style={{ marginTop: 72 }} aria-labelledby="whales-evidence-title">
-              <div style={{ ...mono, color: T.blue }}>WH4LES_ · FOUR EVIDENCE CHAPTERS</div>
-              <h2 id="whales-evidence-title" style={{ marginTop: 16, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(38px,6vw,78px)", lineHeight: .95, letterSpacing: "-.045em" }}>
-                From one animal to the living relationships around it.
-              </h2>
-              <p style={{ marginTop: 24, maxWidth: 780, fontSize: 17, lineHeight: 1.6, color: T.dim }}>
-                Every statement is labelled KNOWN, INTERPRETED or UNKNOWN. Species-level evidence is never silently converted into a claim about one population, pod or individual.
-              </p>
-              {profile.narrativeChapters?.map((chapter, index) => (
-                <article key={chapter.id} style={{ marginTop: index === 0 ? 48 : 72 }}>
-                  <div style={{ ...mono, color: T.blue }}>{chapter.eyebrow}</div>
-                  <h3 style={{ marginTop: 14, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(34px,5vw,64px)", lineHeight: .98, letterSpacing: "-.04em" }}>{chapter.title}</h3>
-                  <p style={{ marginTop: 20, maxWidth: 820, fontSize: 17, lineHeight: 1.62 }}>{chapter.summary}</p>
-                  <div className="tw" style={{ marginTop: 28 }}>
-                    {chapter.claims.map((claim) => <EvidenceClaimCard key={claim.id} claim={claim} />)}
-                  </div>
-                </article>
-              ))}
-            </section>
-          </>
-        )}
-
-        {isOrca && (
-          <section style={{ marginTop: 72 }}>
-            <div style={{ ...mono, color: T.blue }}>FROM THE FIELD · FOUNDER-SUPPLIED</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 2, marginTop: 18 }}>
-              {[
-                { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
-                { src: "/assets/species/orca/detail-pod.jpg", alt: "A pod of orcas surfacing together" },
-                { src: "/assets/species/orca/detail-spyhop.jpg", alt: "An orca spy-hopping, head raised above the surface" },
-                { src: "/assets/species/orca/detail-ice.jpg", alt: "Orcas spy-hopping among Antarctic pack ice" },
-              ].map((im) => (
-                <figure key={im.src} style={{ margin: 0, aspectRatio: "4/5", overflow: "hidden", background: "#05081b" }}>
-                  <img src={im.src} alt={im.alt} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </figure>
-              ))}
-            </div>
-            <p style={{ margin: "10px 0 0", ...mono, color: T.dim, letterSpacing: ".04em", fontSize: 10.5 }}>
-              Real photographs of wild orcas, founder-supplied and rights-cleared. These are illustrative of the species, not tied to a specific observation record.
-            </p>
-          </section>
-        )}
-
-        <div className="tw" style={{ marginTop: 72 }}>
-          <div style={panel}>
-            <div style={{ ...mono, color: T.red }}>PRESSURE</div>
-            <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.issue.label}</h2>
-            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>The connection to this species exists. The public wording is held back until its ecological source pack is audited — no unsourced claim is shown.</p>
-            <div style={{ marginTop: 18 }}><Status color="#8A6500">SOURCE REVIEW PENDING</Status></div>
-          </div>
-          <div style={panel}>
-            <div style={{ ...mono, color: T.acid }}>RESPONSE</div>
-            <h2 style={{ marginTop: 16, fontSize: 25 }}>{profile.solution.label}</h2>
-            <p style={{ marginTop: 12, color: T.dim, lineHeight: 1.55 }}>A connected prototype path — not a recommendation, an efficacy claim or a 4PLANET delivery offer.</p>
-            <div style={{ marginTop: 18 }}><Status color="#8A6500">SOURCE REVIEW PENDING</Status></div>
-          </div>
-        </div>
-
-        <div style={{ ...panel, marginTop: 24 }}>
-          <div style={{ ...mono, color: T.blue }}>PRODUCT NOTE</div>
-          <p style={{ marginTop: 16, fontSize: 18, lineHeight: 1.5 }}>{profile.commonName} retains the same canonical identity across SPECIES, ATLAS and local WATCH.</p>
-          <p style={{ marginTop: 10, color: T.dim, fontSize: 13 }}>Working prototype · evidence layer checked 3 August 2026 · not a population assessment, live tracker or ecological outcome claim.</p>
-        </div>
-      </Section>
-    </PublicShell>
+    <SpeciesEditorialProfile
+      profile={profile}
+      atlasHref={atlasHref}
+      returnHref={returnHref}
+      occurrences={occurrences}
+      followed={followed}
+      onToggle={() => toggle({ id: profile.id, type: "TAXON", label: profile.commonName, sub: profile.scientificName })}
+      search={location.search}
+    />
   );
 }

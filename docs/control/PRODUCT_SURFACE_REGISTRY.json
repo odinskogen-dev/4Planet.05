@@ -14,8 +14,16 @@
     "live_authority": false
   },
   "state_law": {
-    "human_visible_states": ["LIVE", "HEIR", "SANDBOX", "ARCHIVED"],
-    "product_development_write_targets": ["HEIR", "SANDBOX"],
+    "human_visible_states": [
+      "LIVE",
+      "HEIR",
+      "SANDBOX",
+      "ARCHIVED"
+    ],
+    "product_development_write_targets": [
+      "HEIR",
+      "SANDBOX"
+    ],
     "live_development_write_authority": false,
     "live_mutation_policy": "FOUNDER_GATED_EXACT_ARTIFACT_PROMOTION_ONLY",
     "archive_development_write_authority": false,
@@ -34,7 +42,10 @@
     "human_review_required_for_user_facing_promotion": true,
     "all_material_active_product_work_requires_founder_visible_url": true,
     "new_user_facing_idea_requires_registry_before_material_code": true,
-    "archived_source_may_only_donate_into": ["HEIR", "SANDBOX"]
+    "archived_source_may_only_donate_into": [
+      "HEIR",
+      "SANDBOX"
+    ]
   },
   "new_idea_intake": {
     "required_before_material_product_code": true,
@@ -60,7 +71,10 @@
         "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/",
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
-      "heir": {"review_path": "/", "origin_path": "/"},
+      "heir": {
+        "review_path": "/",
+        "origin_path": "/"
+      },
       "sandbox": null
     },
     "ATLAS": {
@@ -70,7 +84,10 @@
         "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/atlas",
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
-      "heir": {"review_path": "/atlas", "origin_path": "/atlas"},
+      "heir": {
+        "review_path": "/atlas",
+        "origin_path": "/atlas"
+      },
       "sandbox": {
         "branch": "work/atlas-zero-loss-gold-convergence-01",
         "sha_at_registration": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
@@ -90,8 +107,21 @@
         "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/species",
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
-      "heir": {"review_path": "/species", "origin_path": "/species"},
-      "sandbox": null
+      "heir": {
+        "review_path": "/species",
+        "origin_path": "/species"
+      },
+      "sandbox": {
+        "branch": "sandbox/species-gold-plank-02-20261006",
+        "sha_at_registration": "e315c9ece0f3eed099e217af32cec2ca710a5c4d",
+        "pr": 390,
+        "exact_preview_at_registration": null,
+        "branch_preview": "https://sandbox-species-gold-plank-02-20261006.4planet-05.pages.dev/species",
+        "review_path": "/species/sandbox",
+        "origin_path": "/species",
+        "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_FACTORY_BATCH_GOLD_PENDING",
+        "live_authority": false
+      }
     },
     "LIVING_SYSTEMS": {
       "live": {
@@ -100,22 +130,43 @@
         "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/living-systems",
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
-      "heir": {"review_path": "/living-systems", "origin_path": "/living-systems"},
+      "heir": {
+        "review_path": "/living-systems",
+        "origin_path": "/living-systems"
+      },
       "sandbox": null
     },
     "ORCA": {
-      "live": {"url": "https://4planet.org/species/orca", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/orca", "origin_path": "/species/orca"},
+      "live": {
+        "url": "https://4planet.org/species/orca",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/orca",
+        "origin_path": "/species/orca"
+      },
       "sandbox": null
     },
     "AMAZONIA": {
-      "live": {"url": "https://4planet.org/missions/am4zonia", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/amazonia", "origin_path": "/missions/am4zonia"},
+      "live": {
+        "url": "https://4planet.org/missions/am4zonia",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/amazonia",
+        "origin_path": "/missions/am4zonia"
+      },
       "sandbox": null
     },
     "OSLOFJORD": {
-      "live": {"url": "https://4planet.org/living-systems/oslofjord", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/oslofjord", "origin_path": "/living-systems/oslofjord"},
+      "live": {
+        "url": "https://4planet.org/living-systems/oslofjord",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/oslofjord",
+        "origin_path": "/living-systems/oslofjord"
+      },
       "sandbox": null
     },
     "IMPACT": {
@@ -125,7 +176,10 @@
         "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/impact",
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
-      "heir": {"review_path": "/impact", "origin_path": "/impact"},
+      "heir": {
+        "review_path": "/impact",
+        "origin_path": "/impact"
+      },
       "sandbox": null
     },
     "MAGAZINE": {
@@ -135,7 +189,10 @@
         "immutable_pages_deployment": "https://6c806159.4planet-05.pages.dev/",
         "identity_state": "IMMUTABLE_FILMS_DARK_WORKER_PIN_VERIFIED_2026_09_08"
       },
-      "heir": {"review_path": "/magazine", "origin_path": "/magazine"},
+      "heir": {
+        "review_path": "/magazine",
+        "origin_path": "/magazine"
+      },
       "sandbox": {
         "branch": "recovery/testking-magazine",
         "sha_at_registration": "17e5c96c0ba2bb10ca2d02690fc44d43ed62e1f0",
@@ -149,8 +206,14 @@
       }
     },
     "S4PIENS": {
-      "live": {"url": "https://s4piens.com/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/s4piens", "origin_path": "/domains/s4piens"},
+      "live": {
+        "url": "https://s4piens.com/",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/s4piens",
+        "origin_path": "/domains/s4piens"
+      },
       "sandbox": null
     },
     "4SAPIEN": {
@@ -159,32 +222,65 @@
         "source_sha": "5065e44331f5a11954632dabdb5936b22f7bd0cf",
         "identity_state": "LIVE_DOMAIN_BROWSER_VERIFIED_2026_09_20_SOURCE_SHA_FROM_RELEASE_HANDOFF"
       },
-      "heir": {"review_path": "/4sapien", "origin_path": "/4sapien"},
+      "heir": {
+        "review_path": "/4sapien",
+        "origin_path": "/4sapien"
+      },
       "sandbox": null
     },
     "FOOD": {
-      "live": {"url": "https://s4piens.com/food", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/food", "origin_path": "/4sapien/food"},
+      "live": {
+        "url": "https://s4piens.com/food",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/food",
+        "origin_path": "/4sapien/food"
+      },
       "sandbox": null
     },
     "CRE4TORS": {
-      "live": {"url": "https://cre4tors.com/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/cre4tors", "origin_path": "/missions/4rt"},
+      "live": {
+        "url": "https://cre4tors.com/",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/cre4tors",
+        "origin_path": "/missions/4rt"
+      },
       "sandbox": null
     },
     "MARKET": {
-      "live": {"url": "https://4planetmarket.com/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/market", "origin_path": "/impact"},
+      "live": {
+        "url": "https://4planetmarket.com/",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/market",
+        "origin_path": "/impact"
+      },
       "sandbox": null
     },
     "4BRANDS": {
-      "live": {"url": "https://4brands.org/", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/4brands", "origin_path": "/4brands"},
+      "live": {
+        "url": "https://4brands.org/",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/4brands",
+        "origin_path": "/4brands"
+      },
       "sandbox": null
     },
     "ACTORS": {
-      "live": {"url": "https://4planet.org/actors", "identity_state": "READBACK_REQUIRED"},
-      "heir": {"review_path": "/actors", "origin_path": "/actors"},
+      "live": {
+        "url": "https://4planet.org/actors",
+        "identity_state": "READBACK_REQUIRED"
+      },
+      "heir": {
+        "review_path": "/actors",
+        "origin_path": "/actors"
+      },
       "sandbox": null
     }
   },
@@ -194,8 +290,20 @@
     "initial_state": "BUILDING",
     "write_authority": false,
     "development_authority": false,
-    "allowed_actions": ["READ", "RENDER", "COMPARE", "DONATE_BY_COPY_INTO_HEIR_OR_SANDBOX"],
-    "forbidden_actions": ["DEVELOP_IN_PLACE", "REPAIR_IN_PLACE", "MERGE_INTO_ARCHIVE", "USE_AS_RECEIVING_BRANCH", "RESTART_ARCHIVED_BRANCH", "PROMOTE_ARCHIVED_BRANCH_DIRECTLY"],
+    "allowed_actions": [
+      "READ",
+      "RENDER",
+      "COMPARE",
+      "DONATE_BY_COPY_INTO_HEIR_OR_SANDBOX"
+    ],
+    "forbidden_actions": [
+      "DEVELOP_IN_PLACE",
+      "REPAIR_IN_PLACE",
+      "MERGE_INTO_ARCHIVE",
+      "USE_AS_RECEIVING_BRANCH",
+      "RESTART_ARCHIVED_BRANCH",
+      "PROMOTE_ARCHIVED_BRANCH_DIRECTLY"
+    ],
     "destructive_cleanup_before_disposition": false
   },
   "activation": {
