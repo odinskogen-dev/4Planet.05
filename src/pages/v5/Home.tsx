@@ -186,7 +186,7 @@ export default function Home() {
             <div className="home-premise__copy">
               <p>Our food, water, health, economies and societies depend on living systems. Yet the relationships between human systems and the rest of nature are often difficult to see.</p>
               <p className="home-premise__closing">4PLANET exists to make those relationships easier to understand — and credible ways to help easier to find.</p>
-              <Link to="/about/story" className="home-text-link">Why we exist →</Link>
+              <Link to="/about/story" className="home-text-link">Why 4PLANET →</Link>
             </div>
           </div>
         </section>
