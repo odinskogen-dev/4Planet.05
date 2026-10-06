@@ -193,3 +193,94 @@ export function PublicPlanetIntelligence({ companyName }: { companyName: string 
     </div>
   );
 }
+
+
+type FirstPartyPage = {
+  url: string;
+  title: string | null;
+  description: string | null;
+  h1: string | null;
+  category?: string;
+  state: string;
+};
+
+export function PublicBusinessSources({ organizationNumber, companyName }: { organizationNumber: string; companyName: string }) {
+  const [state, setState] = useState<"IDLE" | "LOADING" | "READY" | "NO_WEBSITE" | "ERROR">("IDLE");
+  const [homepage, setHomepage] = useState<FirstPartyPage | null>(null);
+  const [pages, setPages] = useState<FirstPartyPage[]>([]);
+  const [registeredWebsite, setRegisteredWebsite] = useState<string | null>(null);
+  const [boundary, setBoundary] = useState("");
+
+  async function discover() {
+    setState("LOADING");
+    setPages([]);
+    setHomepage(null);
+    try {
+      const response = await fetch(`/api/company-first-party?orgnr=${encodeURIComponent(organizationNumber)}`);
+      const payload = await response.json() as {
+        ok?: boolean;
+        state?: string;
+        company?: { registeredWebsite?: string | null };
+        homepage?: FirstPartyPage;
+        pages?: FirstPartyPage[];
+        truthBoundary?: string;
+      };
+      if (!response.ok || !payload.ok) throw new Error("FIRST_PARTY_SOURCE_FAILED");
+      setRegisteredWebsite(payload.company?.registeredWebsite || null);
+      setBoundary(payload.truthBoundary || "");
+      if (payload.state === "NO_REGISTERED_WEBSITE") {
+        setState("NO_WEBSITE");
+        return;
+      }
+      setHomepage(payload.homepage || null);
+      setPages(Array.isArray(payload.pages) ? payload.pages : []);
+      setState("READY");
+    } catch {
+      setState("ERROR");
+    }
+  }
+
+  return (
+    <div className="fbi-external-tool" aria-label="First-party business sources">
+      <div className="fbi-section-head">
+        <div><span>BUSINESS / FIRST-PARTY SOURCES</span><h2>Map what the company says about itself.</h2></div>
+        <p>The starting domain comes from the exact BRREG entity. Company-published material remains a claim/source layer until independently corroborated.</p>
+      </div>
+
+      {state === "IDLE" && <button className="fbi-tool-action" type="button" onClick={() => void discover()}>Map official company sources</button>}
+      {state === "LOADING" && <p className="fbi-tool-state" role="status">Reading the BRREG-registered website and bounded first-party source links…</p>}
+      {state === "NO_WEBSITE" && <p className="fbi-tool-state" role="status">No usable official website is registered for this exact entity. 4BRANDS will not guess a domain from the company name.</p>}
+      {state === "ERROR" && <p className="fbi-tool-state" role="status">The first-party source map is unavailable. No company claim is inferred.</p>}
+
+      {state === "READY" && (
+        <>
+          <div className="fbi-reviewed-join">
+            <span>BRREG-ANCHORED FIRST PARTY</span>
+            <strong>{registeredWebsite || homepage?.url || companyName}</strong>
+            <p>Website identity is anchored to the exact organisation number {organizationNumber}.</p>
+          </div>
+          <div className="fbi-tool-results">
+            {homepage && (
+              <article>
+                <span>OFFICIAL HOMEPAGE · COMPANY-PUBLISHED</span>
+                <h3>{homepage.title || companyName}</h3>
+                <p>{homepage.description || homepage.h1 || "No bounded page description was extracted."}</p>
+                <a href={homepage.url} target="_blank" rel="noreferrer">Open official source ↗</a>
+              </article>
+            )}
+            {pages.map((page) => (
+              <article key={page.url}>
+                <span>{page.category || "FIRST PARTY"} · {page.state}</span>
+                <h3>{page.title || page.h1 || "Company-published page"}</h3>
+                <p>{page.description || page.h1 || "No bounded description was extracted."}</p>
+                <a href={page.url} target="_blank" rel="noreferrer">Open original source ↗</a>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="fbi-truth-boundary"><span>CLAIM BOUNDARY</span><p>{boundary || "Company website content is first-party claim context. It does not become independently verified fact merely because it is official company material."}</p></div>
+    </div>
+  );
+}
