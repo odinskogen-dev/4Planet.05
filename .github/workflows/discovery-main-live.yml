@@ -89,6 +89,7 @@ jobs:
             ! grep -Fq 'news-sitemap.xml' dist/robots.txt
           fi
       - name: Deploy exact current main to existing Pages project
+        id: deploy
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
@@ -133,6 +134,7 @@ jobs:
           echo 'LIVING_SYSTEMS_V142_CUSTOM_DOMAIN_PASS'
 
       - name: Verify ATLAS Place indexability live
+        if: ${{ always() && steps.deploy.outcome == 'success' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -181,6 +183,7 @@ jobs:
           echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
 
       - name: Verify production public discovery
+        if: ${{ always() && steps.deploy.outcome == 'success' }}
         shell: bash
         run: |
           set -euo pipefail
