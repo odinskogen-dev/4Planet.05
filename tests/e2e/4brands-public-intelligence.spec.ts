@@ -205,7 +205,7 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
 
   await page.getByRole("button", { name: "Capital", exact: true }).click();
   await page.getByRole("button", { name: "Load EU funding records" }).click();
-  await expect(page.getByText(/not company revenue/i)).toBeVisible();
+  await expect(page.getByText("CORDIS project participation and grant-role amounts are public source records, not company revenue.", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Procurement", exact: true }).click();
   await page.getByLabel("Procurement keywords").fill("reverse vending");
