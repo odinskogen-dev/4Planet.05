@@ -135,7 +135,7 @@ export function AppRoutes() {
       <Route path="/actors/:slug" element={<Suspense fallback={ActorFallback}><ActorProfile /></Suspense>} />
       <Route path="/get-involved" element={<Suspense fallback={ActorFallback}><FindYourWayToHelp /></Suspense>} />
       <Route path="/funders" element={<Funders />} />
-      <Route path="/living-systems" element={<LivingSystems />} />
+      <Route path="/living-systems" element={<ExternalRedirect to="/livingsystems/" />} />
       <Route path="/living-systems/oslofjorden" element={<Navigate to="/living-systems/oslofjord" replace />} />
       <Route path="/living-systems/oslofjord" element={<PlanetProofPage slug="oslofjorden" />} />
       <Route path="/living-systems/great-barrier-reef" element={<PlanetProofPage slug="great-barrier-reef" />} />

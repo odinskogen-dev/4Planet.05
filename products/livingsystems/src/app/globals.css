@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-dm: "DM Sans", system-ui, -apple-system, sans-serif;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: #ffffff;
+  color: #0a0a0a;
+  font-family: var(--font-dm);
+  font-feature-settings: "ss01", "cv01";
+}
+
+::selection {
+  background: #2e2eff;
+  color: #ffffff;
+}
+
+/* Thin top progress hairline used on key surfaces */
+.hairline {
+  height: 1px;
+  background: linear-gradient(90deg, #2e2eff 0%, #2e2eff 40%, transparent 40%);
+}
+
+@layer components {
+  /* Uppercase micro-label — the core editorial device */
+  .micro {
+    @apply text-[10.5px] font-medium uppercase tracking-micro text-muted;
+  }
+  .micro-ink {
+    @apply text-[10.5px] font-medium uppercase tracking-micro text-ink;
+  }
+  .micro-brand {
+    @apply text-[10.5px] font-medium uppercase tracking-micro text-brand;
+  }
+  .rule {
+    @apply border-t border-line;
+  }
+}

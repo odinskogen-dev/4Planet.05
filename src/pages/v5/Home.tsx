@@ -12,7 +12,7 @@ import "@/styles/home-brand-reset.css";
 const PRODUCTS = [
   ["01", "Atlas", "See the planet — places, observations and planetary context.", "/atlas", T.blue],
   ["02", "Species", "Meet life — species, habitats, relationships and evidence.", "/species", "#3AE86F"],
-  ["03", "Living Systems", "Understand connections — dependencies, pressures and change.", "/living-systems", "#FF4D22"],
+  ["03", "Living Systems", "Understand connections — dependencies, pressures and change.", "/livingsystems/", "#FF4D22"],
   ["04", "Impact", "Find a way to help — action, delivery, evidence and what happens next.", "/impact", "#3AE86F"],
 ] as const;
 
@@ -37,6 +37,7 @@ function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
     <Link
       to={to}
       className="home-lens"
+      reloadDocument={to === "/livingsystems/"}
       style={{ "--home-accent": accent } as CSSProperties}
     >
       <div className="home-lens__top">
