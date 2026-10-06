@@ -70,7 +70,7 @@ function ActionForm({ a }: { a: Audience }) {
   if (state === "delivered") return (
     <div style={{ border: `1px solid ${T.lineStrong}`, padding: "clamp(22px,3vw,34px)", maxWidth: 640 }}>
       <StatusLabel>You're on the list</StatusLabel>
-      <p style={{ fontSize: 16, color: T.ink, marginTop: 14, lineHeight: 1.6 }}>You're on the list. We'll be in touch as this part of 4Planet opens.</p>
+      <p style={{ fontSize: 16, color: T.ink, marginTop: 14, lineHeight: 1.6 }}>You're on the list. We'll be in touch as this part of 4PLANET opens.</p>
     </div>
   );
   if (state === "pending") return (
@@ -108,13 +108,13 @@ function ActionForm({ a }: { a: Audience }) {
       )}
       <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, color: T.dim, lineHeight: 1.5 }}>
         <input required type="checkbox" name="consent" style={{ marginTop: 3 }} />
-        <span>I agree to be contacted about 4Planet. No account is created and no payment is taken.</span>
+        <span>I agree to be contacted about 4PLANET. No account is created and no payment is taken.</span>
       </label>
       <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
         <button type="submit" disabled={state === "sending"} className="btn4 hov" style={{ display: "inline-flex", alignItems: "center", height: 44, padding: "0 22px", fontSize: 13.5, fontWeight: 500, background: T.blue, color: "#fff", border: `1px solid ${T.blue}`, cursor: state === "sending" ? "default" : "pointer", opacity: state === "sending" ? .6 : 1, fontFamily: T.sans, ["--acc" as keyof CSSProperties]: T.blue, ["--acc-fg" as keyof CSSProperties]: "#fff" }}>{state === "sending" ? "SENDING…" : a.submitLabel}</button>
         <span className="mono" style={{ fontSize: 11, color: T.faint, letterSpacing: ".06em" }}>{a.secondaryNote}</span>
       </div>
-      <p style={{ fontSize: 11.5, color: T.faint, lineHeight: 1.5, marginTop: 2 }}>We use your information to process your enquiry and contact you about 4Planet. We use carefully selected service providers to operate this process. You can ask us to remove your details at any time — see our <Link to="/privacy" className="link" style={{ color: T.blue }}>Privacy note</Link>.</p>
+      <p style={{ fontSize: 11.5, color: T.faint, lineHeight: 1.5, marginTop: 2 }}>We use your information to process your enquiry and contact you about 4PLANET. We use carefully selected service providers to operate this process. You can ask us to remove your details at any time — see our <Link to="/privacy" className="link" style={{ color: T.blue }}>Privacy note</Link>.</p>
     </form>
   );
 }
@@ -169,23 +169,23 @@ function AudiencePage(a: Audience) {
 
 export function People() {
   return <AudiencePage
-    id="people" code="4People_" title="Become part of the public movement for a living planet." heroKey="participationField" bottomKey="participationField2"
-    submitLabel="JOIN 4PLANET" secondaryNote="FREE TO BEGIN · NO PAYMENT"
+    id="people" code="4People_" title="Find your way into 4PLANET." heroKey="participationField" bottomKey="participationField2"
+    submitLabel="JOIN 4PLANET" secondaryNote="MEMBERSHIP_ PLANNED_ NO PAYMENT ACTIVE"
     lead="You do not need to be a scientist, activist or organisation to care about the living world. You need a clearer way in."
     why={[
-      "4Planet gives people a place to understand environmental challenges, follow the Domains they care about and participate as credible pathways open.",
-      "As a member, you help build the public side of 4Planet: the stories, missions, tools and future Impact Pathways that make environmental action easier to join.",
-      "Membership is free to begin. More access opens as the system develops.",
+      "4PLANET gives people a place to understand environmental challenges, follow the Domains they care about and find credible ways to participate as pathways open.",
+      "When membership opens, it is intended to connect people to the stories, missions, tools and future Impact Pathways that make credible action easier to find and follow.",
+      "The first public membership is planned to be free to begin. No membership account or payment is active yet.",
     ]}
-    how={[["Understand", "Follow domains, missions and living systems, explained without jargon."], ["Join free", "Register now and be first when participation and Impact Pathways open."], ["Participate", "Take part in 4Culture — film, sound, editorial and events that make the work visible."], ["Support", "Back the platform and proof infrastructure credible action depends on."]]}
-    building="4Planet is building the public layer of a living-planet institution: where understanding, culture and credible action meet. Members shape which missions gain momentum and are first to access pathways as they open."
-    supporting="Join free now and be first to access Domains, Field Notes and future Impact Pathways as they open."
-    status="Anyone can register interest now. Membership access opens with the first secure public release — and registered members are contacted first."
-    statusLabel="Membership — Opening soon / Join free"
+    how={[["Understand", "Follow domains, missions and living systems, explained without jargon."], ["Join free", "Explore now. Interest registration will open when the public membership path is ready."], ["Participate", "Take part in 4Culture — film, sound, editorial and events that make the work visible."], ["Support", "Back the platform and proof infrastructure credible action depends on."]]}
+    building="4PLANET is building a public place where understanding, culture and credible action meet. Future members will be able to follow what matters to them and access pathways as they open."
+    supporting="Explore Domains, Missions and Field Notes now. Membership access will be offered when the secure public path is ready."
+    status="Interest registration is not active on this release. When it opens, the page will say so clearly."
+    statusLabel="Membership_ Opening soon"
     fields={[{ name: "name", label: "Name", required: true, half: true }, { name: "email", label: "Email", type: "email", required: true, half: true }]}
     interests
     related={[["Enter Domains", "/domains"], ["Explore Missions", "/missions"], ["Impact Pathways", "/impact"]]}
-    next="Start by entering a domain that matters to you, then register your interest above. Join free now and be first to access Domains, Field Notes and future Impact Pathways as they open."
+    next="Start by entering a domain that matters to you, then register your interest above. Explore Domains, Missions and Field Notes now. Membership access will be offered when the secure public path is ready."
   />;
 }
 
@@ -195,11 +195,11 @@ export function Brands() {
     submitLabel="BUILD WITH 4PLANET" secondaryNote="STRATEGIC COLLABORATION"
     lead="People expect more from brands than statements. They expect action that can be seen, understood and trusted."
     why={[
-      "4Planet works with aligned companies to support missions, domains, campaigns and public environmental participation.",
+      "4PLANET is developing ways for aligned companies to support Missions, Domains, cultural work and credible public participation.",
       "A brand can help fund mission development, sponsor a Domain, support cultural work or build campaigns around credible action.",
-      "Done well, this creates value both ways: more support for the living world, more trust for the brand, more meaningful participation for the audience.",
+      "Done well, the aim is shared value: more resources for credible work, clearer evidence for the company and more useful participation for its audience.",
     ]}
-    how={[["Sponsor a mission", "Support the development of a specific mission within a domain."], ["Sponsor a domain", "Back an entire domain or part of the system's infrastructure."], ["Campaign together", "Work with 4Culture on honest storytelling and employee engagement."], ["Earn credibility", "Engage only with claims that meet 4Planet's proof standard — never inflated impact."]]}
+    how={[["Sponsor a mission", "Support the development of a specific mission within a domain."], ["Sponsor a domain", "Back an entire domain or part of the system's infrastructure."], ["Campaign together", "Work with 4Culture on honest storytelling and employee engagement."], ["Meet the proof standard", "Use only claims that the evidence supports — never inflated impact."]]}
     building="4Planet builds strategic collaborations around real environmental missions: mission and domain sponsorship, campaigns and cultural work, employee engagement, and long-term credibility grounded in proof rather than messaging."
     supporting="Help build credible environmental action your audience can understand, follow and believe in."
     status="Brand partnership conversations are opening selectively. No public claims are made on a partner's behalf until they meet the proof standard."
@@ -216,14 +216,14 @@ export function Partners() {
     submitLabel="EXPLORE PARTNERSHIP" secondaryNote="MISSION ALIGNMENT"
     lead="Many organisations already do the work the world needs. They restore land, plant trees, remove waste, protect species, monitor ecosystems, build tools and conduct research in places most people never see."
     why={[
-      "4Planet does not replace field organisations.",
+      "4PLANET does not replace field organisations.",
       "It helps translate credible work into public understanding, support, evidence, stories and reporting.",
       "4Partners is for NGOs, field operators, scientists, universities, cleanup projects, restoration initiatives, technology builders, monitoring groups and local organisations that want to build missions together where there is real alignment.",
     ]}
     how={[["Deliver", "Run the field work behind future Impact Pathways."], ["Verify", "Help define the evidence and reporting standards claims are held to."], ["Research", "Contribute the science and monitoring behind missions."], ["Build", "Develop the tools, data and infrastructure the system needs."]]}
-    building="4Planet builds Missions together with field partners where there is real alignment — translating credible work into public understanding, participation, proof and reporting, without overstating what has been done."
+    building="4PLANET can build Missions with field partners where there is real alignment — translating credible work into public understanding, participation, proof and reporting without overstating what has been done."
     supporting="Let's explore whether our missions align."
-    status="4Planet is developing implementation and knowledge partnerships. Nothing is presented as delivered, verified or approved until it is."
+    status="4PLANET is developing implementation and knowledge partnerships. Nothing is presented as delivered, verified or approved until it is."
     statusLabel="Partnerships — In development"
     fields={[{ name: "name", label: "Contact name", required: true, half: true }, { name: "email", label: "Email", type: "email", required: true, half: true }, { name: "organisation", label: "Organisation", required: true, half: true }, { name: "role", label: "Role", half: true }, { name: "website", label: "Website" }, { name: "workArea", label: "Relevant work area" }]}
     related={[["Living Systems", "/living-systems"], ["Explore Missions", "/missions"], ["Proof & Reports", "/reports"]]}
@@ -238,13 +238,13 @@ export function Funders() {
     lead="Environmental work needs more than campaigns. It needs infrastructure."
     why={[
       "Systems that help people understand what matters. Partners that can deliver. Evidence that can be trusted. Stories that can move culture. Funding that lets the work become durable.",
-      "4Planet is being built as public infrastructure for a living planet.",
+      "4PLANET is being built as public infrastructure for a living planet.",
       "Strategic funding can help develop Domains, Missions, Impact Pathways, evidence models, editorial systems and the operating layer required to make credible action easier to join.",
     ]}
     how={[["Fund the platform", "Back the infrastructure credible public action depends on."], ["Fund missions", "Support the development of specific domains and missions."], ["Fund proof", "Back the evidence and reporting layer that makes claims trustworthy."], ["Help it scale", "Enable the first Impact Pathways to open responsibly."]]}
-    building="4Planet builds long-term public infrastructure for environmental action: domains, missions, evidence, culture and Impact Pathways — designed to last, not to chase a single campaign cycle."
+    building="4PLANET is designed as long-term public infrastructure for environmental action: Domains, Missions, evidence, culture and Impact Pathways — built to last beyond a single campaign cycle."
     supporting="Help build long-term public infrastructure for environmental action."
-    status="4Planet is preparing its first mission and infrastructure funding pathways. No active funding pathway is presented as open until it is."
+    status="4PLANET is preparing its first mission and infrastructure funding pathways. No active funding pathway is presented as open until it is."
     statusLabel="Funding — In development"
     fields={[{ name: "name", label: "Contact name", required: true, half: true }, { name: "email", label: "Email", type: "email", required: true, half: true }, { name: "organisation", label: "Organisation / foundation", required: true, half: true }, { name: "role", label: "Role", half: true }, { name: "fundingInterest", label: "Funding interest" }]}
     related={[["The System", "/about"], ["Enter Domains", "/domains"], ["Proof & Reports", "/reports"]]}
