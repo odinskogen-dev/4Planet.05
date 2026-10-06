@@ -299,8 +299,28 @@ export async function saveFoodDecision(
   });
   if (!response.ok) throw new Error("FOOD_DECISION_WRITE_FAILED");
   const rows = (await response.json()) as Array<{ id?: string }>;
-  if (!rows[0]?.id) throw new Error("FOOD_DECISION_WRITE_READBACK_FAILED");
-  return rows[0].id;
+  const insertedId = rows[0]?.id;
+  if (!insertedId) throw new Error("FOOD_DECISION_WRITE_READBACK_FAILED");
+  const verifyParams = new URLSearchParams({
+    id: `eq.${insertedId}`,
+    user_id: `eq.${session.user.id}`,
+    select: "id,decision,provenance",
+    limit: "1",
+  });
+  const verify = await fetch(`${identityConstants.supabaseUrl}/rest/v1/four_sapien_decisions?${verifyParams.toString()}`, {
+    headers: headers(session),
+    cache: "no-store",
+  });
+  if (!verify.ok) throw new Error("FOOD_DECISION_WRITE_READBACK_FAILED");
+  const verified = (await verify.json()) as Array<{ id?: string; decision?: string; provenance?: { loop?: string } }>;
+  if (
+    verified[0]?.id !== insertedId
+    || verified[0]?.decision !== summary.optionId
+    || verified[0]?.provenance?.loop !== (summary.loop || "food_first_value_v2")
+  ) {
+    throw new Error("FOOD_DECISION_WRITE_READBACK_FAILED");
+  }
+  return insertedId;
 }
 
 export async function loadLatestFoodDecision(
