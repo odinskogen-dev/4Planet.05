@@ -1,3 +1,35 @@
+# DISCOVERY ENGINE 01 — ROUTER SECURITY REMEDIATION — 07 OCT 2026
+
+**STATUS:** BOUNDED RELEASE BLOCKER FIX FOR THE FOUNDER-AUTHORISED DISCOVERY LIVE OBJECTIVE.
+
+**USER ARRIVES BECAUSE:** the public discovery surfaces must reach production without bypassing the repository's dependency-security gate.
+
+**ONE THING TO UNDERSTAND:** React Router 6.30.4 is blocked by current security advisories with no patched 6.x release. This bounded change migrates the existing declarative router dependency to 7.18.4; it does not redesign routing.
+
+**PRIMARY ACTION:** preserve all existing routes and Discovery Engine behaviour while clearing the security audit.
+
+**SECONDARY DEPTH:** exact typecheck, build, smoke, GOLD and browser gates must prove compatibility before LIVE promotion.
+
+**P1 DOMINANT:** dependency security remediation only.
+
+**P2 ORIENTATION:** existing BrowserRouter / Routes / Route / Link / Navigate / hooks remain the application routing model.
+
+**P3 ACTION / NEXT:** if any compatibility regression appears, repair the specific route behaviour; do not suppress npm audit.
+
+**P4 DEPTH:** package-lock is updated to the exact 7.18.4 router artifacts and required cookie/set-cookie-parser transitive dependencies.
+
+**WHAT CAN BE REMOVED:** obsolete @remix-run/router 1.23.3 transitive package from the v6 line.
+
+**WHAT MUST BE REUSED:** existing route definitions, PublicShell, Discovery Engine, identity/auth and all product URLs.
+
+**TRUTH BOUNDARY:** passing dependency audit does not itself prove UI correctness; typecheck/build/smoke/browser proof remain required.
+
+**MOBILE-FIRST RISK:** no intended visual/mobile change; regression gates remain authority.
+
+**HUMAN SUCCESS:** users see no routing regression, while the release no longer ships the blocked router dependency.
+
+---
+
 # LIVING SYSTEMS v1.4.2 — QA CORRECTION 02 — 06 OCT 2026
 
 **CONCURRENT HEIR CHANGE:** The Founder-authorised homepage premium refinement landed after the canonical route fix and rewrote the product-card tuple, restoring its prior `/living-systems` target as part of that refactor.
