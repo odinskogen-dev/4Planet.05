@@ -759,3 +759,33 @@ a:hover .ph-arrow { transform: translate(2px,-2px); }
   .partners-hub .ph-public-core i { transform:rotate(90deg); }
   .partners-hub .ph-ecosystem-close { grid-template-columns:1fr; }
 }
+
+
+/* PARTNERS UNIVERSAL ID / MOBILE HEADER COLLISION FIX — 2026-10-07 */
+@media (max-width: 800px) {
+  .ph-id-entry {
+    right: calc(var(--pad) + 52px) !important;
+    top: calc(16px + env(safe-area-inset-top, 0px)) !important;
+    z-index: 41 !important;
+  }
+  .partners-hub .ph-menu {
+    position: relative;
+    z-index: 42;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 420px) {
+  .ph-id-entry {
+    right: 76px !important;
+  }
+  .partners-hub .ph-brand {
+    gap: 8px;
+  }
+  .partners-hub .ph-brand small {
+    display: none;
+  }
+}
