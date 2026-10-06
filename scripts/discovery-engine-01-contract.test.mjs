@@ -68,8 +68,8 @@ test("routes, sitemap and prerender all consume the same canonical discovery reg
   assert.match(sitemap, /discoveryTopics/);
   assert.match(sitemap, /"\/now"/);
   assert.match(prerender, /discoveryTopics\.json/);
-  assert.match(prerender, /writeRoute\("\/now"/);
-  assert.match(prerender, /for \(const topic of discoveryTopics\)/);
+  assert.match(prerender, /write\("\/now"/);
+  assert.match(prerender, /for\(const t of dt\)/);
 });
 
 test("every discovery page uses the shared ATLAS embed seam and public shell", () => {
