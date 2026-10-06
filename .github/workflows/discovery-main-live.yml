@@ -86,6 +86,16 @@ jobs:
           curl -fsS https://4brands.org/robots.txt | grep -Fq 'Sitemap: https://4brands.org/sitemap.xml'
           atlas=$(curl -fsS https://4planetatlas.com/)
           grep -Fq '4PLANET ATLAS — Explore the Living Planet' <<<"$atlas"
+          atlas_places=$(curl -fsS https://4planetatlas.com/places)
+          grep -Fq 'World Place Index' <<<"$atlas_places"
+          berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
+          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
+          grep -Fq 'Open Berlin in ATLAS' <<<"$berlin"
+          grep -Fq 'application/ld+json' <<<"$berlin"
+          atlas_sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
+          grep -Fq '<loc>https://4planetatlas.com/place/berlin</loc>' <<<"$atlas_sm"
+          grep -Fq '<loc>https://4planetatlas.com/place/oslo</loc>' <<<"$atlas_sm"
+          grep -Fq '<loc>https://4planetatlas.com/place/tokyo</loc>' <<<"$atlas_sm"
           brands=$(curl -fsS https://4brands.org/)
           grep -Fq '4BRANDS — Understand Any Company. Improve Your Own.' <<<"$brands"
           grep -Fq 'application/ld+json' <<<"$brands"
