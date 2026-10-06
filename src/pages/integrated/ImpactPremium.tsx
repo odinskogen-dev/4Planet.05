@@ -19,12 +19,10 @@ export function ImpactPublicHome() {
           <img className="impact-hero__img" src="/assets/brand/story-hero.jpg" alt="A single figure crossing a vast landscape" />
           <div className="impact-hero__scrim" />
           <div className="impact-hero__inner">
-            <div className="impact-eyebrow">4PLANET IMPACT_ · FOR A LIVING PLANET</div>
-            <h1 className="impact-hero__title">Action for the planet, made credible.</h1>
+            <div className="impact-eyebrow">4PLANET IMPACT_ For a Living Planet</div>
+            <h1 className="impact-hero__title">Find a way to help. Follow what happens next.</h1>
             <p className="impact-hero__lede">
-              Four ways to act for living systems — each one grounded in real ecology and delivered by a chosen field
-              partner. We are the mission owner and initiator; the science is sourced, and nothing is counted as done
-              until the evidence supports it.
+              Four action pathways in development — each connected to source-backed ecological context, an explicit delivery model and visible proof requirements. Nothing is counted as delivered, successful or verified until the evidence supports it.
             </p>
           </div>
           <div className="impact-scroll-cue">SCROLL ↓</div>
@@ -32,13 +30,13 @@ export function ImpactPublicHome() {
 
         {/* 2 — four-unit menu, pure black */}
         <section className="impact-menu">
-          <div className="impact-eyebrow" style={{ marginBottom: 22 }}>THE FOUR ACTIONS</div>
+          <div className="impact-eyebrow" style={{ marginBottom: 22 }}>FOUR ACTION PATHWAYS</div>
           <div className="impact-menu__grid">
             {IMPACT_UNITS.map((u) => (
               <Link key={u.slug} to={href(u.slug)} className={`impact-menu__cell${u.imagePending ? " pending" : ""}`}>
                 {!u.imagePending && <img src={u.image} alt={u.imageAlt} loading="lazy" />}
                 <div className="impact-menu__meta">
-                  <div className="impact-menu__no">{u.index} · {u.missionName}</div>
+                  <div className="impact-menu__no">{u.index}_ {u.missionName}</div>
                   <div>
                     <div className="impact-menu__ttl">{u.action}</div>
                     <div className="impact-menu__sub">{u.unitLabel} · {DELIVERY_LABEL[u.delivery.status]}</div>
@@ -83,7 +81,7 @@ function ImpactUnitWorld({ unit: u, href }: { unit: ImpactUnit; href: string }) 
       {/* desktop corners overlay the image */}
       <div className="hide-mobile">{corners}</div>
       <div className="impact-unit__center">
-        <div className="impact-eyebrow">{u.missionName} · {u.unitLabel}</div>
+        <div className="impact-eyebrow">{u.missionName} {u.unitLabel}</div>
         <div className="impact-unit__action">{u.action}</div>
         <p className="impact-unit__stand">{u.standfirst}</p>
         {u.imagePending && (
@@ -128,7 +126,7 @@ export function ImpactStory() {
           <h2 className="impact-h">Why we chose this mission</h2>
           <p className="impact-p">{u.whyWeChose}</p>
           <p className="impact-p" style={{ color: "rgba(255,255,255,.66)", fontSize: 14.5 }}>
-            4PLANET is the mission owner and initiator. Delivery is carried out by a chosen field partner — see the
+            4PLANET is the mission owner and initiator. Delivery is intended to be carried out by a validated field partner — see the
             status below.
           </p>
 
