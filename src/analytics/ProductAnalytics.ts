@@ -1,6 +1,7 @@
 import { trackEvent } from "@/analytics/Analytics";
 
 export type ProductArea = "4planet" | "4sapien" | "s4piens" | "4brands" | "market" | "creator" | "magazine" | "atlas" | "species" | "living_systems" | "impact" | "missions" | "domains";
+export type CoreAnalyticsStage = "STATE" | "DECISION" | "ACTION" | "OUTCOME" | "PROOF" | "RETURN";
 export type MeaningfulUseKind =
   | "search"
   | "record_open"
@@ -65,5 +66,21 @@ export function trackJoinInterest(product: ProductArea, surface: "join" | "follo
   trackEvent("join_interest", {
     product_area: product,
     interest_surface: surface,
+  });
+}
+
+export function trackCoreLifecycle(
+  product: "4sapien" | "4brands",
+  actorType: "PERSON" | "COMPANY",
+  stage: CoreAnalyticsStage,
+  evidenceState: "SOURCE_REFERENCED" | "USER_CONFIRMED" | "DEMO_FIXTURE_NOT_VERIFIED" | "UNKNOWN",
+  returning = false,
+) {
+  trackEvent("core_lifecycle", {
+    product_area: product,
+    actor_type: actorType,
+    lifecycle_stage: stage,
+    evidence_state: evidenceState,
+    returning,
   });
 }
