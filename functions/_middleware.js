@@ -43,7 +43,7 @@ const PUBLIC_HOSTS = {
       ["Living Systems", "https://4planet.org/living-systems"],
     ],
     schemaType: "WebApplication",
-    sitemap: ["/", "/places", ...ATLAS_WORLD_PLACES.map((place) => `/place/${place.slug}`)],
+    sitemap: "ATLAS_WORLD_PLACE_INDEX",
   },
   "4brands.org": {
     title: "4BRANDS — Understand Any Company. Improve Your Own.",
@@ -665,7 +665,10 @@ export async function onRequest(context) {
   }
 
   if (config?.sitemap && url.pathname === "/sitemap.xml") {
-    return new Response(sitemapXml(host, config.sitemap), {
+    const sitemapPaths = config.sitemap === "ATLAS_WORLD_PLACE_INDEX"
+      ? ["/", "/places", ...ATLAS_WORLD_PLACES.map((place) => `/place/${place.slug}`)]
+      : config.sitemap;
+    return new Response(sitemapXml(host, sitemapPaths), {
       status: 200,
       headers: {
         "content-type": "application/xml; charset=utf-8",
