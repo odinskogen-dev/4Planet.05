@@ -1,6 +1,6 @@
 import { type CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { T, DOMAIN_ACCENT } from "@/styles/tokens";
+import { DOMAIN_ACCENT } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Reveal } from "@/components/Cinematic";
 import { img, type ImageKey } from "@/content/imageRegistry";
@@ -10,50 +10,59 @@ import { AtlasHero } from "./AtlasHero";
 import "@/styles/home-brand-reset.css";
 
 const PRODUCTS = [
-  ["01", "ATLAS", "See the planet.", "Places, observations and planetary context.", "/atlas", T.blue],
-  ["02", "SPECIES", "Meet life.", "Species, habitats, relationships and evidence.", "/species", "#3AE86F"],
-  ["03", "LIVING SYSTEMS", "Understand connections.", "Dependencies, pressures and change.", "/livingsystems/", "#FF4D22"],
-  ["04", "IMPACT", "Find a way to help.", "Action, delivery, evidence and what happens next.", "/impact", "#3AE86F"],
+  ["01", "Atlas", "Explore places, observations and planetary context.", "/atlas"],
+  ["02", "Species", "Understand species, habitats and the evidence around them.", "/species"],
+  ["03", "Living Systems", "See how living and human systems connect, change and come under pressure.", "/living-systems"],
+  ["04", "Impact", "Find action pathways and follow what happens next.", "/impact"],
 ] as const;
 
-const WORLDS: Record<DomainKey, { line: string; image: ImageKey }> = {
-  OCE4N_: { line: "The living ocean — migration, coasts, reefs and the systems beneath the surface.", image: "oce4nDomainHero" },
-  E4RTH_: { line: "Forests, freshwater, soil, species and the recovery of living land.", image: "e4rthDomainHero" },
-  S4PIENS_: { line: "Human systems — food, energy, cities and materials shaping planetary pressure.", image: "s4piensDomainHero" },
-  "4CULTURE_": { line: "Stories, sound, image and ideas shaping attention, meaning and participation.", image: "m4gazineHero" },
+const WORLDS: Record<DomainKey, { displayName: string; system: string; line: string; image: ImageKey }> = {
+  OCE4N_: {
+    displayName: "OCE4N",
+    system: "Marine systems",
+    line: "Oceans, coasts, reefs and migration — and the living systems beneath the surface.",
+    image: "oce4nDomainHero",
+  },
+  E4RTH_: {
+    displayName: "E4RTH",
+    system: "Terrestrial systems",
+    line: "Forests, freshwater, soil, species and the recovery of living land.",
+    image: "e4rthDomainHero",
+  },
+  S4PIENS_: {
+    displayName: "S4PIENS",
+    system: "Human systems",
+    line: "Food, energy, cities and materials shaping pressure on the planet.",
+    image: "s4piensDomainHero",
+  },
+  "4CULTURE_": {
+    displayName: "4Culture",
+    system: "Cultural systems",
+    line: "Stories, sound, image and ideas shaping what people notice, value and do.",
+    image: "cultureAnchor",
+  },
 };
 
 const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const dslug = (key: string) => key.replace("_", "").toLowerCase();
-const impactStatus = (status: string) => status.replace(/_/g, " ");
-const HOME_ATLAS_SRC = "/atlas?l=bluemarble&c=0%2C15&z=1.35&embed=place";
+const HOME_ATLAS_SRC = "/embed/atlas?l=bluemarble&c=0%2C15&z=1.35&t=light&embed=place";
 
 function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
-  const [no, name, headline, line, to, accent] = item;
+  const [no, name, line, to] = item;
   return (
-    <Link
-      to={to}
-      className="home-lens"
-      reloadDocument={to === "/livingsystems/"}
-      style={{ "--home-accent": accent } as CSSProperties}
-    >
-      <div className="home-lens__top">
-        <span className="home-lens__id">{no}_ {name}</span>
-        <span aria-hidden className="home-lens__open">OPEN ↗</span>
-      </div>
-      <h3>{headline}</h3>
+    <Link to={to} className="home-lens">
+      <div className="home-lens__number">{no}</div>
+      <h3>{name}</h3>
       <p>{line}</p>
     </Link>
   );
 }
 
-function ImpactCard({ unit, featured = false }: { unit: typeof IMPACT_UNITS[number]; featured?: boolean }) {
+function ImpactCard({ unit }: { unit: typeof IMPACT_UNITS[number] }) {
+  const action = unit.action.toLowerCase();
+  const title = action.charAt(0).toUpperCase() + action.slice(1);
   return (
-    <Link
-      to={"/impact/" + unit.slug}
-      className={"home-impact-card" + (featured ? " home-impact-card--featured" : "")}
-      style={{ "--home-accent": unit.accent } as CSSProperties}
-    >
+    <Link to={"/impact/" + unit.slug} className="home-impact-card">
       {!unit.imagePending && (
         <picture>
           {unit.imageMobile && <source media="(max-width:680px)" srcSet={unit.imageMobile} />}
@@ -62,44 +71,43 @@ function ImpactCard({ unit, featured = false }: { unit: typeof IMPACT_UNITS[numb
       )}
       <span aria-hidden className="home-impact-card__scrim" />
       <div className="home-impact-card__content">
-        <div className="home-impact-card__meta">
-          <span>{unit.index}_ {unit.missionName}</span>
-          <span>EXPLORE →</span>
-        </div>
-        <h3>{unit.action}</h3>
-        {featured && <p>{unit.standfirst}</p>}
-        <div className="home-impact-card__state">{impactStatus(unit.delivery.status)}</div>
+        <div className="home-impact-card__eyebrow">In development</div>
+        <h3>{title}</h3>
       </div>
     </Link>
   );
 }
 
 function ImpactPreview() {
-  const [featured, ...rest] = IMPACT_UNITS.slice(0, 4);
-  if (!featured) return null;
+  const units = IMPACT_UNITS.slice(0, 4);
+  if (!units.length) return null;
+
   return (
     <section className="home-impact">
       <div className="home-shell">
         <Reveal>
           <div className="home-section-intro home-section-intro--impact">
             <div>
-              <div className="home-kicker home-kicker--blue">IMPACT_ FIND A WAY TO HELP</div>
-              <h2>Understand it. Help it. Follow what happens.</h2>
+              <div className="home-kicker home-kicker--blue">From understanding to action</div>
+              <h2 className="home-impact-title">
+                <span>Understand it.</span>
+                <span>Help it.</span>
+                <span>Follow what happens.</span>
+              </h2>
             </div>
             <div>
-              <p>Explore concrete action pathways 4PLANET is developing around real ecological work. Each pathway shows what the action is, what still has to become true and how evidence would be followed.</p>
-              <p className="home-status-line">CURRENT STATE_ PROTOTYPE PATHWAYS_ NOT YET OPEN FOR PUBLIC SUPPORT</p>
+              <p>
+                These action pathways are in development. Each one shows a real problem, a possible response,
+                who would need to be involved and how progress could be checked before public participation opens.
+              </p>
             </div>
           </div>
         </Reveal>
 
         <div className="home-impact-gallery">
-          <ImpactCard unit={featured} featured />
-          <div className="home-impact-gallery__rail">
-            {rest.map((unit) => <ImpactCard key={unit.slug} unit={unit} />)}
-          </div>
+          {units.map((unit) => <ImpactCard key={unit.slug} unit={unit} />)}
         </div>
-        <Link to="/impact" className="home-text-link">EXPLORE IMPACT →</Link>
+        <Link to="/impact" className="home-text-link">Explore Impact →</Link>
       </div>
     </section>
   );
@@ -109,18 +117,24 @@ function WorldPanel({ dk }: { dk: DomainKey }) {
   const world = WORLDS[dk];
   const media = img(world.image);
   const accent = DOMAIN_ACCENT[dk];
+
   return (
     <Link
       to={"/domains/" + dslug(dk)}
       className="home-world"
       style={{ "--home-accent": accent } as CSSProperties}
     >
-      <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ objectPosition: media.objectPosition ?? "50% 50%" }} />
+      <img
+        src={media.src}
+        alt={media.alt}
+        loading="lazy"
+        decoding="async"
+        style={{ objectPosition: media.objectPosition ?? "50% 50%" }}
+      />
       <span aria-hidden className="home-world__scrim" />
       <div className="home-world__content">
-        <div className="home-kicker home-world__kicker">{dk}</div>
-        <h3>{dk.replace("_", "")}</h3>
-        <p>{world.line}</p>
+        <h3>{world.displayName}</h3>
+        <p><strong>{world.system}.</strong> {world.line}</p>
       </div>
     </Link>
   );
@@ -133,19 +147,22 @@ function AtlasWindow() {
         <Reveal>
           <div className="home-section-intro">
             <div>
-              <div className="home-kicker home-kicker--blue">EXPLORE THE PLANET_ LIVE ATLAS</div>
+              <div className="home-kicker home-kicker--blue">Explore the planet</div>
               <h2>One planet. Many relationships.</h2>
             </div>
             <div>
-              <p>Move through places, observations and planetary context in the shared 4PLANET ATLAS.</p>
-              <Link to="/atlas" className="home-text-link">OPEN ATLAS →</Link>
+              <p>
+                Atlas is 4Planet&apos;s interactive map. Explore places, species, observations and layers of
+                planetary context — then open the full Atlas when you want to go deeper.
+              </p>
+              <Link to="/atlas" className="home-text-link">Open Atlas →</Link>
             </div>
           </div>
         </Reveal>
         <div className="home-atlas-window">
           <iframe
             src={HOME_ATLAS_SRC}
-            title="Interactive 4PLANET ATLAS"
+            title="Interactive 4Planet Atlas"
             loading="lazy"
             referrerPolicy="no-referrer"
             allowFullScreen
@@ -157,16 +174,21 @@ function AtlasWindow() {
 }
 
 function OrcaEncounter() {
-  const media = img("wh4lesHero");
+  const media = img("orcaEncounter");
   return (
     <Link to="/species/orca" className="home-orca" aria-label="Meet the Orca">
       <picture>
         {media.srcMobile && <source media="(max-width:680px)" srcSet={media.srcMobile} />}
-        <img src={media.src} alt={media.alt} loading="lazy" decoding="async" style={{ objectPosition: media.objectPosition ?? "50% 50%" }} />
+        <img
+          src={media.src}
+          alt={media.alt}
+          loading="lazy"
+          decoding="async"
+          style={{ objectPosition: media.objectPosition ?? "50% 50%" }}
+        />
       </picture>
       <span aria-hidden className="home-orca__scrim" />
       <div className="home-orca__content">
-        <div className="home-kicker">SPECIES_</div>
         <h2>Meet the Orca.</h2>
       </div>
     </Link>
@@ -182,13 +204,19 @@ export default function Home() {
         <section id="why-4planet" className="home-premise">
           <div className="home-shell home-premise__grid">
             <div>
-              <div className="home-kicker home-kicker--blue">WHY 4PLANET</div>
+              <div className="home-kicker home-kicker--blue">Why 4Planet</div>
               <h2>Human life depends on a living planet.</h2>
             </div>
             <div className="home-premise__copy">
-              <p>Our food, water, health, economies and societies depend on living systems. Yet the relationships between human systems and the rest of nature are often difficult to see.</p>
-              <p className="home-premise__closing">4PLANET exists to make those relationships easier to understand — and credible ways to help easier to find.</p>
-              <Link to="/about/story" className="home-text-link">WHY WE EXIST →</Link>
+              <p>
+                Food, water, health and prosperity depend on living systems. But the links between human activity
+                and the rest of nature are often difficult to see.
+              </p>
+              <p className="home-premise__closing">
+                4Planet makes those relationships easier to understand, then connects that understanding to
+                credible ways people and organisations can help.
+              </p>
+              <Link to="/about/story" className="home-text-link">Why 4Planet →</Link>
             </div>
           </div>
         </section>
@@ -200,10 +228,13 @@ export default function Home() {
             <Reveal>
               <div className="home-section-intro">
                 <div>
-                  <div className="home-kicker home-kicker--blue">ONE PLANET_ FOUR LENSES</div>
-                  <h2>See the same living planet from different angles.</h2>
+                  <div className="home-kicker home-kicker--blue">How it works</div>
+                  <h2>Four ways to understand the same planet.</h2>
                 </div>
-                <p>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT are connected ways into one shared living-planet model — not separate worlds.</p>
+                <p>
+                  Atlas shows where things are. Species brings individual life into focus. Living Systems explains
+                  connections and pressures. Impact shows where action could begin and what happens next.
+                </p>
               </div>
             </Reveal>
             <div className="home-lens-grid">
@@ -216,10 +247,13 @@ export default function Home() {
 
         <section id="worlds" className="home-worlds">
           <div className="home-shell home-worlds__intro">
-            <div className="home-kicker">THE LIVING WORLD</div>
+            <div className="home-kicker home-kicker--inverse">Where we work</div>
             <div className="home-section-intro home-section-intro--dark">
-              <h2>Four connected worlds.</h2>
-              <p>Enter the living ocean, living land, the human systems shaping planetary pressure and the culture that shapes what people care about and do.</p>
+              <h2>Four domains. One connected planet.</h2>
+              <p>
+                4Planet uses four domains to make complex problems easier to understand — and to show where
+                different kinds of action can help. They are parts of the same living system, not separate worlds.
+              </p>
             </div>
           </div>
           <div className="home-world-grid">
@@ -230,17 +264,32 @@ export default function Home() {
         <ImpactPreview />
 
         <section className="home-belief-join">
-          <div className="home-shell home-belief-join__grid">
-            <div>
-              <div className="home-kicker home-kicker--blue">WHAT WE BELIEVE</div>
+          <div className="home-shell">
+            <div className="home-belief-copy">
               <h2>We believe the future can be better.</h2>
-              <p>Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real, use power for good — and leave things better.</p>
-              <Link to="/about/what-we-believe" className="home-text-link">WHAT WE BELIEVE →</Link>
+              <p>
+                Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real,
+                use power for good — and leave things better.
+              </p>
+              <Link to="/about" className="home-text-link home-text-link--blue">What we believe →</Link>
             </div>
+
+            <figure className="home-belief-visual">
+              <img
+                src={img("s4piensFieldResearcher").src}
+                alt={img("s4piensFieldResearcher").alt}
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+
             <div className="home-belief-join__join">
-              <div className="home-kicker">JOIN US</div>
               <h3>There is a place for everyone. You too.</h3>
-              <Link to="/join" className="home-brand-button">JOIN US</Link>
+              <p>
+                4Planet is for people and organisations who want to understand more, contribute meaningfully and
+                follow what happens next.
+              </p>
+              <Link to="/join" className="home-brand-button">Join us</Link>
             </div>
           </div>
         </section>
