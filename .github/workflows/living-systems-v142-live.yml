@@ -150,7 +150,7 @@ jobs:
           while IFS= read -r file; do
             rel="${file#dist}"
             url="https://4planet.org${rel}"
-            code=$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' "$url")
+            code=$(curl --globoff -sS --max-time 20 -o /dev/null -w '%{http_code}' "$url")
             echo "LS_ASSET_PROBE $code $url"
             test "$code" = "200"
             asset_live=$((asset_live+1))
