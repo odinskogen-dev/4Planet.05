@@ -33,6 +33,18 @@ test("ORCA Gold remains truth-bounded and field feed fails closed", () => {
   assert.match(page, /Intake → source QA → editorial review → public/);
 });
 
+test("Coral Restoration Foundation reuses canonical Actor identity without implying partnership", () => {
+  assert.match(engine, /P17-A011/);
+  assert.match(engine, /slug: "coral-restoration-foundation"/);
+  assert.match(engine, /relationshipState: "PUBLIC_RECORD_ONLY"/);
+  assert.match(engine, /4PLANET has not established a partnership, endorsement, funding relationship or verified-impact relationship/);
+  assert.match(engine, /https:\/\/coralrestoration\.org\/internships\//);
+  assert.match(engine, /lastReviewed: "2026-10-06"/);
+  assert.match(page, /actor\.problems\.map/);
+  assert.match(page, /actor\.solutions\.map/);
+  assert.match(page, /actor-gold-source-visual/);
+});
+
 test("Actor Gold page exposes work place living context editorial proof and action layers", () => {
   for (const token of [
     "WHAT THEY ACTUALLY DO",
@@ -52,6 +64,7 @@ test("Actor Gold has a responsive rights-safe signature visual", () => {
   assert.match(page, /actor-gold-route/);
   assert.match(page, /Illustrative monitoring corridor/);
   assert.match(css, /actor-gold-corridor/);
+  assert.match(css, /actor-gold-source-visual/);
   assert.match(css, /@media \(max-width: 620px\)/);
   assert.match(css, /prefers-reduced-motion/);
 });
