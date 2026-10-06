@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const router = readFileSync(new URL("../src/routes/router.tsx", import.meta.url), "utf8");
+const deferredRoutes = readFileSync(new URL("../src/routes/deferredRoutes.tsx", import.meta.url), "utf8");
 const bridge = readFileSync(new URL("../src/components/PublicCompletionBridge.tsx", import.meta.url), "utf8");
 const shell = readFileSync(new URL("../src/components/layout/PublicShell.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/styles/premium-completion.css", import.meta.url), "utf8");
