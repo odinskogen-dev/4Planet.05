@@ -71,6 +71,6 @@ test("Actor Gold has a responsive rights-safe signature visual", () => {
 
 test("Actor scale strategy is torture-test-first not x100 generation", () => {
   assert.match(engine, /ACTOR_TORTURE_TEST_ARCHETYPES/);
-  assert.match(page, /ORCA is Gold 01/);
+  assert.match(page, /ORCA proves monitoring/);
   assert.match(page, /One exceptional system\. Ten unlike actors\. Then scale\./i);
 });
