@@ -12,7 +12,7 @@ const join = readFileSync(new URL("../src/pages/v5/Join.tsx", import.meta.url), 
 const orca = readFileSync(new URL("../public/journey/orca/index.html", import.meta.url), "utf8");
 
 test("participation routes and global menu expose all four ways to take part", () => {
-  assert.match(deferredRoutes, /export const Join = lazy\\(\\(\\) => import\\("@\\/pages\\/v5\\/Join"\\)\\)/);
+  assert.ok(deferredRoutes.includes('export const Join = lazy(() => import("@/pages/v5/Join"));'));
   assert.match(router, /path="\/join" element={<Join \/>}/);
   assert.match(router, /path="\/people" element={<People \/>}/);
   assert.match(join, /WAYS TO TAKE PART NOW/);
