@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import "@/styles/fourbrand-intelligence.css";
+import { PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
 
 export type PublicCompanySource = {
   id: string;
@@ -75,15 +76,18 @@ export type PublicCompanyProfileData = {
   truthBoundary: string;
 };
 
-type Tab = "OVERVIEW" | "FINANCIALS" | "MARKET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "SOURCES";
+type Tab = "OVERVIEW" | "FINANCIALS" | "MARKET" | "PROCUREMENT" | "PLANET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "FINDINGS" | "SOURCES";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "OVERVIEW", label: "Overview" },
   { id: "FINANCIALS", label: "Financials" },
   { id: "MARKET", label: "Market" },
+  { id: "PROCUREMENT", label: "Procurement" },
+  { id: "PLANET", label: "Planet" },
   { id: "STRUCTURE", label: "Structure" },
   { id: "PEOPLE", label: "People" },
   { id: "CHANGES", label: "Changes" },
+  { id: "FINDINGS", label: "Findings" },
   { id: "SOURCES", label: "Sources" },
 ];
 
@@ -259,10 +263,10 @@ export default function PublicCompanyProfile({
 
               <div className="fbi-intelligence-next">
                 <div className="fbi-section-kicker">NEXT INTELLIGENCE LAYERS</div>
-                <div className="fbi-lane"><span>PUBLIC PROCUREMENT</span><strong>TED adapter exists</strong><p>Demand signals can be queried from published notices. Doffin national-only coverage remains open.</p></div>
-                <div className="fbi-lane"><span>MARKET + PEERS</span><strong>Not yet verified in this profile</strong><p>Peer sets must be source-grounded rather than invented from a company description.</p></div>
-                <div className="fbi-lane"><span>INNOVATION + CAPITAL</span><strong>Source integration open</strong><p>Patent, EU-project and funding sources are not silently presented as connected until physically verified.</p></div>
-                <div className="fbi-lane"><span>PLANET</span><strong>Identity join requires review</strong><p>Environmental source records must resolve to this legal company before any company-level claim is shown.</p></div>
+                <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("PROCUREMENT")}><span>PUBLIC PROCUREMENT</span><strong>TED source connected</strong><p>Inspect published demand signals without using the AI research engine.</p></button>
+                <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("MARKET")}><span>MARKET + PEERS</span><strong>BRREG cohort connected</strong><p>Use source-grounded industry orientation before asserting direct competition.</p></button>
+                <div className="fbi-lane"><span>INNOVATION + CAPITAL</span><strong>Credentialled sources remain open</strong><p>CORDIS DET requires an API key and EPO OPS requires developer credentials; neither is presented as connected before that exists.</p></div>
+                <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("PLANET")}><span>PLANET</span><strong>Climate TRACE discovery connected</strong><p>Review the external owner identity before any facility record is shown.</p></button>
               </div>
             </div>
 
@@ -331,6 +335,14 @@ export default function PublicCompanyProfile({
           </>
         )}
 
+        {tab === "PROCUREMENT" && (
+          <PublicProcurementIntelligence companyName={profile.company.name} />
+        )}
+
+        {tab === "PLANET" && (
+          <PublicPlanetIntelligence companyName={profile.company.name} />
+        )}
+
         {tab === "STRUCTURE" && (
           <>
             <div className="fbi-section-head">
@@ -393,6 +405,29 @@ export default function PublicCompanyProfile({
                 </div>
               )) : <p className="fbi-empty">No bounded change records resolved from currently connected public sources.</p>}
             </div>
+          </>
+        )}
+
+        {tab === "FINDINGS" && (
+          <>
+            <div className="fbi-section-head">
+              <div><span>09 / FINDINGS</span><h2>Signals worth investigating, not manufactured certainty.</h2></div>
+              <p>4BRANDS separates deterministic calculations and source-backed change signals from hypotheses. Public evidence can point to a question without proving its cause.</p>
+            </div>
+            <div className="fbi-findings-list">
+              {recentChanges.slice(0, 4).map((change) => (
+                <article key={"finding-change-" + change.type + "-" + String(change.date)}>
+                  <span>CHANGE · FACT</span><strong>{change.title}</strong><p>{change.detail}</p>
+                </article>
+              ))}
+              {investigationSignals.map((signal) => (
+                <article key={"finding-signal-" + signal.title}>
+                  <span>{signal.basis}</span><strong>{signal.title}</strong><p>{signal.detail}</p>
+                </article>
+              ))}
+              {!recentChanges.length && !investigationSignals.length ? <p className="fbi-empty">No bounded public-data signal currently clears the evidence threshold. That is an honest result, not an invitation to invent one.</p> : null}
+            </div>
+            <Unknowns items={profile.unknowns} />
           </>
         )}
 
