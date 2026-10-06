@@ -542,7 +542,7 @@ export async function onRequest(context) {
   }
 
   if (host === "4planet.org") {
-    const pathname = url.pathname.replace(/\\/+$/, "") || "/";
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
     if (pathname.startsWith("/place/")) {
       const slug = pathname.slice("/place/".length);
       if (ATLAS_WORLD_PLACES.some((place) => place.slug === slug)) {
