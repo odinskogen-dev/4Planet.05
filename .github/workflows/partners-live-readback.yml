@@ -1,0 +1,79 @@
+name: Partners Live Readback QA
+
+on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - .github/workflows/partners-live-readback.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verify live Partners ecosystem release
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch();
+          try {
+            for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+              const page = await browser.newPage({viewport});
+              let loaded = false;
+              for (let attempt=1; attempt<=30; attempt++) {
+                const resp = await page.goto('https://partners.4planet.org/', {waitUntil:'domcontentloaded', timeout:30000});
+                const body = await page.locator('body').innerText().catch(()=> '');
+                if (resp?.status()===200 && body.includes('A force for nature.') && body.includes('LIVING PLANET ENGINE') && body.includes('SAPIENSBRAIN / S4PIENS')) {
+                  loaded = true;
+                  break;
+                }
+                await page.waitForTimeout(4000);
+              }
+              if (!loaded) throw new Error('LIVE_RELEASE_NOT_VISIBLE viewport='+viewport.width);
+              const body = await page.locator('body').innerText();
+              for (const required of ['A force for nature.','An ecosystem to help the ecosystem.','LIVING PLANET ENGINE','SAPIENSBRAIN / S4PIENS','ACTOR VALUE WORLDS','ACTION ENGINE','PHILANTHROPY + FOUNDATIONS']) {
+                if (!body.includes(required)) throw new Error('LIVE_MISSING '+required);
+              }
+              const robots = await page.locator('meta[name="robots"]').getAttribute('content');
+              if (!robots?.toLowerCase().includes('noindex')) throw new Error('LIVE_NOINDEX_MISSING');
+              if (viewport.width < 700) {
+                const menu = page.getByRole('button',{name:'Open navigation'});
+                await menu.click();
+                const nav = page.getByRole('navigation',{name:'Partners navigation'});
+                if (!(await nav.isVisible())) throw new Error('LIVE_MOBILE_MENU_FAIL');
+                await page.keyboard.press('Escape');
+                if (await nav.isVisible()) throw new Error('LIVE_MOBILE_ESCAPE_FAIL');
+                const login = page.getByRole('link',{name:/4PLANET ID/});
+                const mb = await menu.boundingBox();
+                const lb = await login.boundingBox();
+                if (mb && lb) {
+                  const overlap = !(mb.x+mb.width <= lb.x || lb.x+lb.width <= mb.x || mb.y+mb.height <= lb.y || lb.y+lb.height <= mb.y);
+                  if (overlap) throw new Error('LIVE_ID_MENU_OVERLAP');
+                }
+              }
+              await page.close();
+            }
+            for (const path of ['/portfolio','/for/foundation','/for/company','/for/science','/proof','/system']) {
+              const page = await browser.newPage();
+              const resp = await page.goto('https://partners.4planet.org'+path,{waitUntil:'domcontentloaded',timeout:30000});
+              if (resp?.status()!==200) throw new Error('LIVE_ROUTE_FAIL '+path+' '+resp?.status());
+              await page.locator('h1').first().waitFor({state:'visible',timeout:10000});
+              await page.close();
+            }
+            console.log('PARTNERS_LIVE_ECOSYSTEM_RELEASE=PASS');
+            console.log('PARTNERS_LIVE_MOBILE_HEADER=PASS');
+            console.log('PARTNERS_LIVE_KEY_ROUTES=PASS');
+          } finally {
+            await browser.close();
+          }
+          NODE
