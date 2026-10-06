@@ -10,6 +10,12 @@ on:
       - src/pages/integrated/Species.tsx
       - src/pages/integrated/SpeciesRoute.tsx
       - src/components/layout/PublicShell.tsx
+      - src/pages/v5/Home.tsx
+      - src/pages/v5/AtlasHero.tsx
+      - src/styles/home-brand-reset.css
+      - src/App.tsx
+      - src/earth/AtlasEmbedRuntime.tsx
+      - src/earth/atlasViewContract.ts
       - src/styles/human-first-public.css
       - scripts/generate-sitemap.mjs
       - scripts/prerender-discovery-seo.mjs
