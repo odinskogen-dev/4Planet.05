@@ -47,6 +47,7 @@ export const IMAGES = {
 
   // ── MISSION HEROES ──────────────────────────────────────────────────
   wh4lesHero: { src: `${A}/missions/wh4les/hero-real.jpg`, srcMobile: `${A}/missions/wh4les/hero-real-mobile.jpg`, alt: "A wild orca surfacing off a green Norwegian coast", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
+  orcaEncounter: { src: `${A}/species/orca/detail-spyhop.jpg`, alt: "An orca spyhopping at the surface, facing the viewer", aspectRatio: "3/2", objectPosition: "50% 42%", mission: "wh4les", domain: "OCE4N_", role: "editorial" },
   cor4lHero: { src: `${A}/missions/cor4l/hero-real.jpg`, srcMobile: `${A}/missions/cor4l/hero-real-mobile.jpg`, alt: "A living coral reef — vivid soft corals lit by surface light", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
   rewildMarineHero: { src: "https://oceanexplorer.noaa.gov/wp-content/uploads/2023/11/kelp-point.jpeg", alt: "A real giant kelp forest in sunlit coastal water at Cojo Anchorage, California", credit: "Robert Schwemmer / NOAA", licenseNote: "NOAA-created still image — public domain unless otherwise noted; checked 2026-09-01", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 48%", role: "missionHero" },
