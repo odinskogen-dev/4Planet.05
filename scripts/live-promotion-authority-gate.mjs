@@ -49,6 +49,52 @@ if (manifest.boundedRelease === true) {
   }
 
   const changed = git(["diff", "--name-only", manifest.priorLiveSha, manifest.releaseCommitSha]).split("\n").filter(Boolean);
+  if (manifest.releaseType === "DISCOVERY_ENGINE_01") {
+    const descriptorPath = "docs/control/DISCOVERY_ENGINE_01_RELEASE.json";
+    if (!fs.existsSync(descriptorPath)) fail("Discovery release descriptor missing");
+    const descriptor = JSON.parse(fs.readFileSync(descriptorPath, "utf8"));
+    if (descriptor.releaseType !== "DISCOVERY_ENGINE_01") fail("Discovery release type mismatch");
+    if (descriptor.priorLiveSha !== manifest.priorLiveSha) fail("Discovery prior LIVE mismatch");
+    if (descriptor.testKingSha !== manifest.testKingSha) fail("Discovery TEST KING mismatch");
+
+    const declared = Array.isArray(manifest.releaseFiles) ? [...manifest.releaseFiles].sort() : [];
+    const descriptorFiles = Array.isArray(descriptor.releaseFiles) ? [...descriptor.releaseFiles].sort() : [];
+    const actual = [...changed].sort();
+    if (!declared.length || JSON.stringify(declared) !== JSON.stringify(descriptorFiles)) fail("Discovery release file manifest mismatch");
+    if (JSON.stringify(actual) !== JSON.stringify(declared)) {
+      fail(`Discovery bounded release files differ: actual=${actual.join(",")} declared=${declared.join(",")}`);
+    }
+
+    const sourceExact = Array.isArray(manifest.sourceExactFiles) ? manifest.sourceExactFiles : [];
+    const descriptorExact = Array.isArray(descriptor.sourceExactFiles) ? descriptor.sourceExactFiles : [];
+    if (!sourceExact.length || JSON.stringify([...sourceExact].sort()) !== JSON.stringify([...descriptorExact].sort())) {
+      fail("Discovery source-exact file manifest mismatch");
+    }
+
+    let exact = 0;
+    for (const path of sourceExact) {
+      const liveBlob = git(["rev-parse", `${manifest.releaseCommitSha}:${path}`]);
+      const testBlob = git(["rev-parse", `${manifest.testKingSha}:${path}`]);
+      if (!liveBlob || !testBlob || liveBlob !== testBlob) fail(`Discovery source blob mismatch: ${path}`);
+      exact += 1;
+    }
+
+    console.log("LIVE PROMOTION AUTHORITY GUARD: PASS — BOUNDED DISCOVERY ENGINE 01");
+    console.log(JSON.stringify({
+      branch,
+      currentHead: head,
+      releaseCommit: manifest.releaseCommitSha,
+      exactTestedArtifact: manifest.testKingSha,
+      priorLiveSha: manifest.priorLiveSha,
+      releaseFiles: actual.length,
+      exactSourceBlobs: exact,
+      founderDecisionRef: manifest.founderDecisionRef,
+      evidenceRef: manifest.evidenceRef,
+      rollbackRef: manifest.rollbackRef
+    }, null, 2));
+    process.exit(0);
+  }
+
   const exactAllowed = new Set([
     "package.json",
     "src/pages/v5/Home.tsx",
