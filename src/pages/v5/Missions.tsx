@@ -73,7 +73,7 @@ export function MissionDetail() {
           <div style={{ ...mono("#fff"), marginBottom: 16 }}>
             <Link to={"/domains/" + dslug(m.domain)} style={{ color: acc, textDecoration: "none" }}>{m.code}</Link>
           </div>
-          <h1 style={{ ...display, color: acc, fontSize: "clamp(40px,6.6vw,100px)", lineHeight: .9 }}>{strip(m.name)}</h1>
+          <h1 style={{ ...display, color: acc, fontSize: "clamp(38px,5.4vw,72px)", lineHeight: .9 }}>{strip(m.name)}</h1>
           <p style={{ fontSize: "clamp(17px,1.8vw,23px)", color: "rgba(255,255,255,.94)", marginTop: 18, maxWidth: 580, lineHeight: 1.38 }}>{m.hero}</p>
           <div style={{ ...mono("#fff"), fontSize: 10.5, marginTop: 22, display: "inline-flex", alignItems: "center", gap: 8, border: `1px solid ${acc}`, padding: "7px 12px" }}>
             <span style={{ width: 6, height: 6, background: acc, display: "inline-block" }} />{status}
@@ -85,18 +85,18 @@ export function MissionDetail() {
         <section style={{ background: acc, color: "#fff" }}>
           <div style={{ maxWidth: 1320, margin: "0 auto", padding: "clamp(40px,6vw,76px) clamp(20px,5vw,72px)" }}>
             <Reveal>
-              <div style={{ ...mono("rgba(255,255,255,.78)"), marginBottom: 14 }}>4RT_ · WORKING PROTOTYPES</div>
+              <div style={{ ...mono("rgba(255,255,255,.78)"), marginBottom: 14 }}>4RT_ WORKING PROTOTYPES</div>
               <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(280px,.72fr)", gap: "clamp(28px,6vw,88px)", alignItems: "end" }} className="art-prototype-bridge">
                 <div>
                   <h2 style={{ ...display, margin: 0, fontSize: "clamp(32px,5vw,68px)", lineHeight: .96, maxWidth: "13ch" }}>The first working forms of 4RT are already visible.</h2>
-                  <p style={{ margin: "20px 0 0", maxWidth: 760, fontSize: "clamp(15px,1.45vw,19px)", lineHeight: 1.62, color: "rgba(255,255,255,.9)" }}>CRE4TORS is the creator-side prototype. 4PLANET MARKET is the public market beta. Together they are the clearest current expression of Prints for Planet: art and limited editions with transparent economics, connected to 4PLANET Missions and verified Impact pathways as those pathways become real.</p>
+                  <p style={{ margin: "20px 0 0", maxWidth: 760, fontSize: "clamp(15px,1.45vw,19px)", lineHeight: 1.62, color: "rgba(255,255,255,.9)" }}>CRE4TORS is the creator-side prototype. 4PLANET MARKET is the public market beta. Together they are the clearest current expression of Prints for Planet: art and limited editions with transparent economics, connected to 4PLANET Missions and, when ready, evidence-backed Impact pathways.</p>
                 </div>
                 <div>
                   <div style={{ display: "grid", gap: 10 }}>
-                    <a href="https://cre4tors.com" style={{ ...mono("#fff"), display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, padding: "15px 16px", border: "1px solid rgba(255,255,255,.65)", textDecoration: "none" }}>CRE4TORS · PROTOTYPE <span aria-hidden>↗</span></a>
-                    <a href="https://4planetmarket.com" style={{ ...mono("#fff"), display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, padding: "15px 16px", border: "1px solid rgba(255,255,255,.65)", textDecoration: "none" }}>4PLANET MARKET · BETA <span aria-hidden>↗</span></a>
+                    <a href="https://cre4tors.com" style={{ ...mono("#fff"), display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, padding: "15px 16px", border: "1px solid rgba(255,255,255,.65)", textDecoration: "none" }}>CRE4TORS_ PROTOTYPE <span aria-hidden>↗</span></a>
+                    <a href="https://4planetmarket.com" style={{ ...mono("#fff"), display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, padding: "15px 16px", border: "1px solid rgba(255,255,255,.65)", textDecoration: "none" }}>4PLANET MARKET_ BETA <span aria-hidden>↗</span></a>
                   </div>
-                  <div style={{ ...mono("rgba(255,255,255,.72)"), marginTop: 14, fontSize: 9.5, lineHeight: 1.6 }}>PROTOTYPE / BETA · NO CLAIM OF DELIVERED ECOLOGICAL IMPACT</div>
+                  <div style={{ ...mono("rgba(255,255,255,.72)"), marginTop: 14, fontSize: 9.5, lineHeight: 1.6 }}>PROTOTYPE_ BETA_ NO CLAIM OF DELIVERED ECOLOGICAL IMPACT</div>
                 </div>
               </div>
             </Reveal>
