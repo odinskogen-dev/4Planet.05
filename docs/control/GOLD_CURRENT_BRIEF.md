@@ -1,3 +1,17 @@
+# DISCOVERY RELEASE SECURITY CORRECTION — SOURCE-MAP-JS 1.2.2 — 06 OCT 2026
+
+**STATUS:** CONTROLLED DEPENDENCY PATCH / NO DISCOVERY PRODUCT SEMANTIC CHANGE.
+
+**WHY:** exact TEST KING Public Preview passed typecheck, production build and the full smoke suite, including DISCOVERY ENGINE 01, then failed only because a newly published high-severity advisory covers `source-map-js <1.2.2`. The patched release is 1.2.2.
+
+**CHANGE:** update the existing transitive `source-map-js` lock entry from 1.2.1 to 1.2.2. PostCSS already accepts the compatible `^1.2.1` range. No application source, route, content, source claim, ATLAS behavior or design is altered by this correction.
+
+**PROOF REQUIRED:** `npm ci` → typecheck → production build → smoke → `npm audit --audit-level=high` on the new exact TEST KING SHA. Discovery Engine remains bound to the release path immediately below.
+
+**SOURCE:** GitHub Advisory GHSA-68fv-2mgg-jv7q / CVE-2026-93749, patched in source-map-js 1.2.2.
+
+---
+
 # LIVING SYSTEMS v1.4.2 ZERO LOSS — FOUNDER-AUTHORISED LIVE CANDIDATE — 06 OCT 2026
 
 **STATUS:** TEST KING CANDIDATE / FOUNDER AUTHORISED FOR BOUNDED LIVE RELEASE AFTER EXACT-SHA QA + RUNTIME READBACK.
