@@ -24,7 +24,8 @@ for (const item of CASES) {
     expect(src).toContain("embed=");
 
     const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
-    expect(canonical).toBe(`https://4planet.org${item.path}`);
+    const runtimeOrigin = new URL(page.url()).origin;
+    expect(canonical).toBe(`${runtimeOrigin}${item.path}`);
 
     const robots = await page.locator('meta[name="robots"]').getAttribute("content");
     expect(robots).toContain("index");
