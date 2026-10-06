@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import "@/styles/fourbrand-intelligence.css";
-import { PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
+import { PublicBusinessSources, PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
 
 export type PublicCompanySource = {
   id: string;
@@ -76,10 +76,11 @@ export type PublicCompanyProfileData = {
   truthBoundary: string;
 };
 
-type Tab = "OVERVIEW" | "FINANCIALS" | "MARKET" | "PROCUREMENT" | "PLANET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "FINDINGS" | "SOURCES";
+type Tab = "OVERVIEW" | "BUSINESS" | "FINANCIALS" | "MARKET" | "PROCUREMENT" | "PLANET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "FINDINGS" | "SOURCES";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "OVERVIEW", label: "Overview" },
+  { id: "BUSINESS", label: "Business" },
   { id: "FINANCIALS", label: "Financials" },
   { id: "MARKET", label: "Market" },
   { id: "PROCUREMENT", label: "Procurement" },
@@ -284,10 +285,14 @@ export default function PublicCompanyProfile({
           </>
         )}
 
+        {tab === "BUSINESS" && (
+          <PublicBusinessSources organizationNumber={profile.company.organizationNumber} companyName={profile.company.name} />
+        )}
+
         {tab === "FINANCIALS" && (
           <>
             <div className="fbi-section-head">
-              <div><span>02 / FINANCIALS</span><h2>Latest verified accounts, with the boundary visible.</h2></div>
+              <div><span>03 / FINANCIALS</span><h2>Latest verified accounts, with the boundary visible.</h2></div>
               <p>The open BRREG key-figure source covers the latest submitted annual accounts for ordinary accounting plans. It excludes some entity types and does not provide open structured history.</p>
             </div>
             {profile.financials ? (
@@ -318,7 +323,7 @@ export default function PublicCompanyProfile({
         {tab === "MARKET" && (
           <>
             <div className="fbi-section-head">
-              <div><span>03 / MARKET ORIENTATION</span><h2>Who sits in the same registered industry?</h2></div>
+              <div><span>04 / MARKET ORIENTATION</span><h2>Who sits in the same registered industry?</h2></div>
               <p>This is a source-grounded BRREG industry cohort, not an AI competitor list. Shared industry code is evidence of classification similarity, not proof of direct competition.</p>
             </div>
             <div className="fbi-table-block">
@@ -346,7 +351,7 @@ export default function PublicCompanyProfile({
         {tab === "STRUCTURE" && (
           <>
             <div className="fbi-section-head">
-              <div><span>04 / STRUCTURE</span><h2>Group and operating footprint.</h2></div>
+              <div><span>07 / STRUCTURE</span><h2>Group and operating footprint.</h2></div>
               <p>BRREG corporate-group links and registered sub-entities are shown as register relationships, not beneficial-ownership conclusions.</p>
             </div>
             <div className="fbi-table-block">
@@ -375,7 +380,7 @@ export default function PublicCompanyProfile({
         {tab === "PEOPLE" && (
           <>
             <div className="fbi-section-head">
-              <div><span>05 / PEOPLE + ROLES</span><h2>Who is formally connected to this entity?</h2></div>
+              <div><span>08 / PEOPLE + ROLES</span><h2>Who is formally connected to this entity?</h2></div>
               <p>Only public roles attached to this legal entity are displayed. 4BRANDS does not build a cross-organisation dossier on individuals.</p>
             </div>
             <div className="fbi-role-list">
@@ -393,7 +398,7 @@ export default function PublicCompanyProfile({
         {tab === "CHANGES" && (
           <>
             <div className="fbi-section-head">
-              <div><span>06 / WHAT CHANGED</span><h2>Changed reality is return value.</h2></div>
+              <div><span>09 / WHAT CHANGED</span><h2>Changed reality is return value.</h2></div>
               <p>This first change layer uses BRREG historical names and published entity-update events. More sources can join the same chronology later.</p>
             </div>
             <div className="fbi-change-ledger">
@@ -411,7 +416,7 @@ export default function PublicCompanyProfile({
         {tab === "FINDINGS" && (
           <>
             <div className="fbi-section-head">
-              <div><span>09 / FINDINGS</span><h2>Signals worth investigating, not manufactured certainty.</h2></div>
+              <div><span>10 / FINDINGS</span><h2>Signals worth investigating, not manufactured certainty.</h2></div>
               <p>4BRANDS separates deterministic calculations and source-backed change signals from hypotheses. Public evidence can point to a question without proving its cause.</p>
             </div>
             <div className="fbi-findings-list">
@@ -434,7 +439,7 @@ export default function PublicCompanyProfile({
         {tab === "SOURCES" && (
           <>
             <div className="fbi-section-head">
-              <div><span>07 / SOURCES</span><h2>The evidence is part of the product.</h2></div>
+              <div><span>11 / SOURCES</span><h2>The evidence is part of the product.</h2></div>
               <p>Source state is visible. A failed or empty source lane is not converted into a claim about the company.</p>
             </div>
             <div className="fbi-source-list">
