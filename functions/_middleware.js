@@ -581,7 +581,7 @@ export async function onRequest(context) {
   }
 
   if (host === "4planetatlas.com" && normaliseHost(url.hostname) === host && url.pathname.startsWith("/place/")) {
-    const slug = url.pathname.replace(/^\\/place\\//,"").replace(/\\/+$/,"");
+    const slug = url.pathname.slice("/place/".length).replace(/\/+$/,"");
     const place = ATLAS_WORLD_PLACES.find((item) => item.slug === slug);
     if (place) {
       const canonical = `https://4planetatlas.com/place/${place.slug}`;
