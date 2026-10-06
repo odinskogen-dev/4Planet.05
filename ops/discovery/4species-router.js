@@ -8,6 +8,12 @@ const RESERVED = new Set([
   "store","cart","members","ambassadors","portal","sponsors","oce4n","e4rth","4culture","system","404"
 ]);
 
+const SPECIES_PLACE_RELATIONS = {
+  "african-savanna-elephant": { label: "Kenya", url: "https://4planetatlas.com/place/kenya" },
+  "lion": { label: "Kenya", url: "https://4planetatlas.com/place/kenya" },
+  "cheetah": { label: "Kenya", url: "https://4planetatlas.com/place/kenya" },
+};
+
 const INDEXABLE_SPECIES = [
   "orca","humpback-whale","western-honey-bee","sperm-whale","harbour-porpoise",
   "bottlenose-dolphin","atlantic-cod","blue-mussel","jaguar","hyacinth-macaw",
@@ -96,12 +102,18 @@ async function proxyPage(request, targetPath, publicPath) {
   }
 
   const canonical = canonicalFor(publicPath);
+  const slug = publicPath.startsWith("/species/") ? publicPath.slice("/species/".length).replace(/\/+$/, "") : "";
+  const placeRelation = SPECIES_PLACE_RELATIONS[slug] || null;
   return new HTMLRewriter()
     .on('script[src="/host-indexing-policy.js"]', { element(el) { el.remove(); } })
     .on('meta[name="robots"]', { element(el) { el.setAttribute("content", "index,follow,max-image-preview:large"); } })
     .on('link[rel="canonical"]', { element(el) { el.remove(); } })
     .on('meta[property="og:url"]', { element(el) { el.setAttribute("content", canonical); } })
     .on("head", { element(el) { el.append(`<link rel="canonical" href="${canonical}">`, { html: true }); } })
+    .on("body", { element(el) {
+      if (!placeRelation) return;
+      el.append(`<nav data-4planet-related-place aria-label="Related place intelligence"><p>Related place intelligence: <a href="${placeRelation.url}">${placeRelation.label} in 4PLANET ATLAS</a>. This link reflects an existing curated species–place relationship; occurrence does not imply local abundance or complete range.</p></nav>`, { html: true });
+    } })
     .transform(new Response(upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
