@@ -95,7 +95,12 @@ jobs:
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
           grep -Fq 'BreadcrumbList' <<<"$berlin"
           grep -Fq '"@type":"City"' <<<"$berlin"
-          grep -Fq 'Natural Earth 1:10m Populated Places' <<<"$berlin"
+          grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
+          grep -Fq 'Natural Earth NE_ID' <<<"$berlin"
+          grep -Fq '1159151529' <<<"$berlin"
+          grep -Fq 'Q64' <<<"$berlin"
+          grep -Fq '2950159' <<<"$berlin"
+          grep -Fq 'Verified geographic hierarchy' <<<"$berlin"
           grep -Fq 'Related places in the current index' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
           echo 'ATLAS_BERLIN_ENTITY_PASS'
@@ -103,6 +108,12 @@ jobs:
           grep -Fq '"@type":"Country"' <<<"$norway"
           grep -Fq 'Places within this geography' <<<"$norway"
           echo 'ATLAS_COUNTRY_GRAPH_PASS'
+          kenya=$(curl -fsS https://4planetatlas.com/place/kenya)
+          grep -Fq 'Connected Living Planet Intelligence' <<<"$kenya"
+          grep -Fq 'African Savanna Elephant' <<<"$kenya"
+          grep -Fq 'CLIM4TE_' <<<"$kenya"
+          grep -Fq 'Evidence sources' <<<"$kenya"
+          echo 'ATLAS_KENYA_EVIDENCE_GRAPH_PASS'
           sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "50"
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
@@ -138,7 +149,7 @@ jobs:
           grep -Fq 'application/ld+json' <<<"$berlin"
           grep -Fq 'name="viewport"' <<<"$berlin"
           grep -Fq 'Related places in the current index' <<<"$berlin"
-          grep -Fq 'Natural Earth 1:10m Populated Places' <<<"$berlin"
+          grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
           grep -Fq '/place/' <<<"$berlin"
           unknown_code=$(curl -sS -o /tmp/atlas-unknown-place.html -w '%{http_code}' https://4planetatlas.com/place/__indexability-canary-not-a-place__)
@@ -154,20 +165,26 @@ jobs:
           brands=$(curl -fsS https://4brands.org/)
           grep -Fq '4BRANDS — Understand Any Company. Improve Your Own.' <<<"$brands"
           grep -Fq 'application/ld+json' <<<"$brands"
-          grep -Fq 'Public discovery summary' <<<"$brands"
+          grep -Fq 'rel="canonical" href="https://4brands.org/"' <<<"$brands"
+          grep -Fq '<h1' <<<"$brands"
+          echo 'FOURBRANDS_PUBLIC_SEMANTICS_PASS'
           root=$(curl -fsS https://4planet.org/)
-          grep -Fq 'Public discovery summary' <<<"$root"
           grep -Fq 'application/ld+json' <<<"$root"
+          grep -Fq 'rel="canonical" href="https://4planet.org/"' <<<"$root"
+          grep -Fq '<h1' <<<"$root"
+          echo 'FOURPLANET_ROOT_SEMANTICS_PASS'
           labs_h=$(curl -sSI https://labs.4planet.org/ | tr -d '\r')
           grep -qi '^x-robots-tag:.*noindex' <<<"$labs_h"
           os_h=$(curl -sSI https://os.4planet.org/ | tr -d '\r')
           grep -qi '^x-robots-tag:.*noindex' <<<"$os_h"
           about=$(curl -fsS https://4planet.org/about)
           grep -Fq 'About 4PLANET' <<<"$about"
-          grep -Fq 'data-public-discovery-fallback' <<<"$about"
+          grep -Fq 'rel="canonical" href="https://4planet.org/about"' <<<"$about"
+          grep -Fq 'application/ld+json' <<<"$about"
           impact=$(curl -fsS https://4planet.org/impact)
           grep -Fq '4PLANET Impact' <<<"$impact"
-          grep -Fq 'data-public-discovery-fallback' <<<"$impact"
+          grep -Fq 'rel="canonical" href="https://4planet.org/impact"' <<<"$impact"
+          grep -Fq 'application/ld+json' <<<"$impact"
           kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
           grep -Fq '<loc>https://4planet.org/living-systems/amazonia</loc>' <<<"$sm"
