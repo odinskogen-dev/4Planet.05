@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "description": "Static export only — invoke no Cloudflare Pages Functions. exclude takes precedence over include, so every path (including /functions/*) is served as a static asset. This prevents Cloudflare from treating the exported /functions/ directory as a reserved Functions directory.",
+  "include": ["/*"],
+  "exclude": ["/*"]
+}

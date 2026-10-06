@@ -1,3 +1,56 @@
+# LIVING SYSTEMS v1.4.2 ZERO LOSS — FOUNDER-AUTHORISED LIVE CANDIDATE — 06 OCT 2026
+
+**STATUS:** TEST KING CANDIDATE / FOUNDER AUTHORISED FOR BOUNDED LIVE RELEASE AFTER EXACT-SHA QA + RUNTIME READBACK.
+
+**FOUNDER DECISION:** 06 OCT 2026 — recover the complete historical Living Systems v1.4.2 line-for-line with ZERO LOSS, preserve its full intelligence engine and exact visual baseline, make it the leading Living Systems public product, and release it at 4planet.org/livingsystems. Newer work becomes donor material only after intact recovery.
+
+**SOURCE AUTHORITY:** `odinskogen-dev/4Planet_LivingSystems1.4.2@0a849ff3fd28e6cc6abcd04c95c5292410443502`. 88/88 historical source files. No historical source file is edited for recovery.
+
+**LIVE BOUNDARY:** Living Systems v1.4.2 product tree + build wrapper + 4PLANET home lens/link + canonical sitemap/legacy landing redirect. No wholesale TEST KING promotion. Existing newer Living Systems implementation remains donor/history.
+
+**ROLLBACK:** preserve the exact prior LIVE main SHA at promotion time and immutable prior Pages deployment. No LIVE claim before exact custom-domain readback.
+
+## USER ARRIVES BECAUSE
+They want to understand how species, ecosystems, ecological functions, ecosystem services, human systems, threats and solutions depend on one another.
+
+## ONE THING TO UNDERSTAND
+Living systems are networks of relationships and dependencies; species and places are entry points, while the relationships are the core intelligence asset.
+
+## PRIMARY ACTION
+Start a guided Living Systems journey and move through the connected dependency graph.
+
+## SECONDARY DEPTH
+Explore ecosystems, species, dependencies, solutions, decisions, learning, trust and original sources without leaving the same recovered intelligence model.
+
+## P1 DOMINANT
+The intact v1.4.2 Living Systems product and its Human Use entry into the graph.
+
+## P2 ORIENTATION
+Clear relationship pathways showing what depends on what, why it matters and what can fail or help.
+
+## P3 ACTION / NEXT
+Continue into a related species, ecosystem, solution, decision pathway, learning record or source; later donor integration may connect the same object to ATLAS and current NATUREBRAIN.
+
+## P4 DEPTH
+Reverse dependencies, recursive failure cascades, claims/sources/trust, data quality, Solution Intelligence, Decision Intelligence and Learning Intelligence.
+
+## WHAT CAN BE REMOVED
+Nothing from the historical v1.4.2 source during recovery. Cleanup/redesign is explicitly deferred until full intact live proof exists.
+
+## WHAT MUST BE REUSED
+All 88 historical v1.4.2 source files, historical visual language, graph engine, registry/data model, trust/source logic, dependency and cascade logic, Solution/Decision/Learning intelligence, Human Use Translation, Amazon and Pollination/Food proof cases.
+
+## TRUTH BOUNDARY
+Historical examples remain structured intelligence/prototype evidence, not proof of live ecological outcomes. Decision Intelligence is structured reasoning, not automated advice. NATUREBRAIN integration later must preserve or expand recovered semantics and source/uncertainty boundaries.
+
+## MOBILE-FIRST RISK
+The historical product must render and navigate correctly under the /livingsystems base path on mobile without changing its visual language or breaking internal links.
+
+## HUMAN SUCCESS
+A first-time visitor can enter Living Systems, understand a real dependency pathway, move to deeper intelligence and inspect trust/source context while seeing the same v1.4.2 product recovered intact.
+
+---
+
 # 4PLANET DISCOVERY ENGINE 01 — EARTH NOW + 20 CANONICAL LIVE DISCOVERY SURFACES — 06 OCT 2026
 
 **STATUS:** BOUNDED PUBLIC PRODUCT CANDIDATE / FOUNDER LIVE INTENT EXPLICIT / EXACT-ARTIFACT QA REQUIRED BEFORE PRODUCTION PROMOTION.

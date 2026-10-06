@@ -34,6 +34,7 @@ function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
     <Link
       to={to}
       className="home-lens"
+      reloadDocument={to === "/livingsystems/"}
       style={{ "--home-accent": accent } as CSSProperties}
     >
       <div className="home-lens__top">
