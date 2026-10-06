@@ -32,6 +32,14 @@ import Privacy from "@/pages/v5/Privacy";
 import PlanetSignal from "@/pages/v5/PlanetSignal";
 import { NotFound } from "@/pages/system";
 
+const DiscoveryTopicPage = lazy(() => import("@/pages/discovery/DiscoveryEngine").then((module) => ({ default: module.DiscoveryTopicPage })));
+const EarthNowPage = lazy(() => import("@/pages/discovery/DiscoveryEngine").then((module) => ({ default: module.EarthNowPage })));
+const DISCOVERY_TOPIC_SLUGS = [
+  "wildfires","earthquakes","climate-change","biodiversity","deforestation",
+  "plastic-pollution","coral-bleaching","air-quality","orca","whales","bees",
+  "amazon-rainforest","oslofjord","renewable-energy","solar-energy","food-waste",
+  "fast-fashion","rewilding","climate-solutions","environmental-jobs"
+] as const;
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
 const NationPage = lazy(() => import("@/pages/nation/NationPage"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
@@ -103,6 +111,11 @@ export function AppRoutes() {
       <Route path="/embed/atlas" element={<Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#fff" }} />}><PublicWorld /></Suspense>} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/atlas/:objectSlug" element={<AtlasDiscoveryPage />} />
+      <Route path="/now" element={<Suspense fallback={MagazineFallback}><EarthNowPage /></Suspense>} />
+      <Route path="/earth-now" element={<Navigate to="/now" replace />} />
+      {DISCOVERY_TOPIC_SLUGS.map((slug) => (
+        <Route key={slug} path={`/${slug}`} element={<Suspense fallback={MagazineFallback}><DiscoveryTopicPage slug={slug} /></Suspense>} />
+      ))}
       <Route path="/places" element={<PlacesIndex />} />
       <Route path="/place/:slug" element={<PlaceRoute />} />
       <Route path="/species" element={<SpeciesIndex />} />
