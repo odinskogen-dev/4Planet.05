@@ -147,7 +147,7 @@ function SpeciesHero({
               ← BACK TO OBSERVATION IN ATLAS
             </Link>
           )}
-          <div className="sp-hero__eyebrow">4PLANET SPECIES_ · {(profile.group || "LIFE").toUpperCase()}</div>
+          <div className="sp-hero__eyebrow">4PLANET SPECIES_ {(profile.group || "LIFE").toUpperCase()}</div>
           <h1 className="sp-hero__name">{profile.commonName}</h1>
           <p className="sp-hero__sci">{profile.scientificName}</p>
           {profile.intro && <p className="sp-hero__intro">{profile.intro}</p>}
@@ -421,9 +421,9 @@ function OrcaEditorialPage({
             <div style={{ maxWidth: 980, color: "#FFFFFF" }}>
               {returnHref && <Link to={returnHref} style={{ ...mono, color: "#FFFFFF", display: "inline-block", marginBottom: 18 }}>← BACK TO ATLAS</Link>}
               <div style={{ ...mono, color: "#FFFFFF", opacity: .82 }}>4PLANET SPECIES</div>
-              <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(66px,12vw,148px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
+              <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(46px,7vw,82px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
               <p style={{ margin: "18px 0 0", fontSize: "clamp(18px,2vw,25px)", fontStyle: "italic", opacity: .9 }}>{profile.scientificName}</p>
-              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 720, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.4 }}>{profile.intro}</p>}
+              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 720, fontSize: "clamp(18px,2vw,24px)", lineHeight: 1.4 }}>{profile.intro}</p>}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 30 }}>
                 <Link
                   to={atlasHref}
@@ -444,7 +444,7 @@ function OrcaEditorialPage({
 
         <section style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(64px,9vw,118px) clamp(20px,5vw,64px)" }}>
           <div style={{ ...mono, color: T.blue }}>FAMILY + CULTURE</div>
-          <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(42px,7vw,82px)", lineHeight: .96, letterSpacing: "-.05em", fontWeight: 520 }}>
+          <h2 style={{ margin: "14px 0 0", maxWidth: 900, fontFamily: T.display, fontSize: "clamp(38px,5.4vw,68px)", lineHeight: .96, letterSpacing: "-.05em", fontWeight: 520 }}>
             {leadChapter?.title ?? "Orcas live through relationships."}
           </h2>
           <p style={{ margin: "26px 0 0", maxWidth: 760, fontSize: "clamp(19px,2.4vw,25px)", lineHeight: 1.52 }}>
@@ -655,8 +655,8 @@ export function SpeciesProfilePage() {
             </div>
 
             <section style={{ marginTop: 72 }} aria-labelledby="whales-evidence-title">
-              <div style={{ ...mono, color: T.blue }}>WH4LES_ · FOUR EVIDENCE CHAPTERS</div>
-              <h2 id="whales-evidence-title" style={{ marginTop: 16, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(38px,6vw,78px)", lineHeight: .95, letterSpacing: "-.045em" }}>
+              <div style={{ ...mono, color: T.blue }}>WH4LES_ FOUR EVIDENCE CHAPTERS</div>
+              <h2 id="whales-evidence-title" style={{ marginTop: 16, maxWidth: 980, fontFamily: T.display, fontSize: "clamp(36px,5vw,64px)", lineHeight: .95, letterSpacing: "-.045em" }}>
                 From one animal to the living relationships around it.
               </h2>
               <p style={{ marginTop: 24, maxWidth: 780, fontSize: 17, lineHeight: 1.6, color: T.dim }}>
