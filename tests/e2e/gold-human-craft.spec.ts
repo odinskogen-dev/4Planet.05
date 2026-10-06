@@ -58,8 +58,8 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
       const h1 = page.getByRole("heading", { level: 1 });
       await expect(h1).toHaveCount(1);
       await expect(h1).toHaveText(/Everything you love is connected\./i);
-      await expect(page.getByRole("link", { name: /WHY 4PLANET/i })).toBeVisible();
-      await expect(page.getByRole("link", { name: /OPEN ATLAS/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /EXPLORE THE PLANET/i }).first()).toBeVisible();
+      await expect(page.getByRole("link", { name: /JOIN US/i }).first()).toBeVisible();
 
       await page.keyboard.press("Tab");
       const skip = page.getByRole("link", { name: /SKIP TO (MAIN )?CONTENT/i });
