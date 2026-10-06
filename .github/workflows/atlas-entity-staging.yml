@@ -38,10 +38,12 @@ jobs:
           base="https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
           curl -fsSL --retry 3 "$base/ne_50m_populated_places_simple.geojson" -o .atlas-source/places-simple.geojson
           curl -fsSL --retry 3 "$base/ne_10m_populated_places.geojson" -o .atlas-source/places-rich.geojson
-          curl -fsSL --retry 3 "$base/ne_110m_admin_0_countries.geojson" -o .atlas-source/countries.geojson
+          curl -fsSL --retry 3 "$base/ne_10m_admin_0_countries.geojson" -o .atlas-source/countries-staging.geojson
+          curl -fsSL --retry 3 "$base/ne_110m_admin_0_countries.geojson" -o .atlas-source/countries-live.geojson
           test -s .atlas-source/places-simple.geojson
           test -s .atlas-source/places-rich.geojson
-          test -s .atlas-source/countries.geojson
+          test -s .atlas-source/countries-staging.geojson
+          test -s .atlas-source/countries-live.geojson
 
       - name: Resolve current upstream file SHA and live exclusion set
         id: source
@@ -95,8 +97,8 @@ jobs:
           assert all(-90<=x["lat"]<=90 and -180<=x["lon"]<=180 for x in rows)
           assert all(x["qualityGate"]["publicIndexApproved"] is False for x in rows)
           qa=p["qa"]
-          assert qa["duplicateSourceIds"]==0 and qa["duplicateSlugs"]==0
-          assert qa["invalidCoordinates"]==0 and qa["missingCountry"]==0 and qa["missingProvenance"]==0
+          assert qa["duplicateSourceIds"]==0 and qa["duplicateSlugs"]==0 and qa["duplicateCoordinates"]==0
+          assert qa["invalidCoordinates"]==0 and qa["missingCountry"]==0 and qa["missingHierarchy"]==0 and qa["missingProvenance"]==0
           print("NEXT_500_STAGING_QA_PASS")
           print(json.dumps({"candidateCount":len(rows),"countries":len({x["country"] for x in rows}),"continents":sorted({x["continent"] for x in rows if x.get("continent")})}))
           PY
