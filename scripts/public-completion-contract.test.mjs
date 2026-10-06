@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const router = readFileSync(new URL("../src/routes/router.tsx", import.meta.url), "utf8");
+const deferredRoutes = readFileSync(new URL("../src/routes/deferredRoutes.tsx", import.meta.url), "utf8");
 const bridge = readFileSync(new URL("../src/components/PublicCompletionBridge.tsx", import.meta.url), "utf8");
 const shell = readFileSync(new URL("../src/components/layout/PublicShell.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/styles/premium-completion.css", import.meta.url), "utf8");
@@ -11,7 +12,7 @@ const join = readFileSync(new URL("../src/pages/v5/Join.tsx", import.meta.url), 
 const orca = readFileSync(new URL("../public/journey/orca/index.html", import.meta.url), "utf8");
 
 test("participation routes and global menu expose all four ways to take part", () => {
-  assert.match(router, /import Join from "@\/pages\/v5\/Join"/);
+  assert.match(deferredRoutes, /export const Join = lazy\\(\\(\\) => import\\("@\\/pages\\/v5\\/Join"\\)\\)/);
   assert.match(router, /path="\/join" element={<Join \/>}/);
   assert.match(router, /path="\/people" element={<People \/>}/);
   assert.match(join, /WAYS TO TAKE PART NOW/);
