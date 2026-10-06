@@ -70,13 +70,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/prepare_atlas_natural_earth_candidates.py             --places-geojson .atlas-source/places-simple.geojson             --rich-geojson .atlas-source/places-rich.geojson             --countries-geojson .atlas-source/countries.geojson             --live-json .atlas-source/live.json             --output src/data/atlas-next-500-staging.json             --limit 500             --source-version 5.1.2             --source-file-sha "${{ steps.source.outputs.sha }}"
+          python scripts/prepare_atlas_natural_earth_candidates.py             --places-geojson .atlas-source/places-simple.geojson             --rich-geojson .atlas-source/places-rich.geojson             --countries-geojson .atlas-source/countries-staging.geojson             --live-json .atlas-source/live.json             --output src/data/atlas-next-500-staging.json             --limit 500             --source-version 5.1.2             --source-file-sha "${{ steps.source.outputs.sha }}"
 
       - name: Verify current 50 entity authority against Natural Earth
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/verify_atlas_entity_authority.py             --middleware functions/_middleware.js             --places-simple .atlas-source/places-simple.geojson             --places-rich .atlas-source/places-rich.geojson             --countries .atlas-source/countries.geojson             --output src/data/atlas-entity-authority-qa.json
+          python scripts/verify_atlas_entity_authority.py             --middleware functions/_middleware.js             --places-simple .atlas-source/places-simple.geojson             --places-rich .atlas-source/places-rich.geojson             --countries .atlas-source/countries-live.geojson             --output src/data/atlas-entity-authority-qa.json
 
       - name: Red-team staging cohort
         shell: bash
