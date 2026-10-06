@@ -1,3 +1,5 @@
+import { ATLAS_PROMOTED_PLACES } from "./atlas-promoted-places.generated.js";
+
 // ATLAS_ENTITY_AUTHORITY_CLOSURE_02
 // ATLAS_ENTITY_AUTHORITY_CLOSURE_01
 const PUBLIC_HOSTS = {
@@ -1249,15 +1251,18 @@ const ATLAS_ENTITY_METADATA = {
   }
 };
 
-const ATLAS_WORLD_PLACES = ATLAS_WORLD_PLACE_ROWS.map(([slug,name,type,context,lat,lon,summary])=>({
+const ATLAS_BASE_WORLD_PLACES = ATLAS_WORLD_PLACE_ROWS.map(([slug,name,type,context,lat,lon,summary])=>({
   slug,name,type,context,lat,lon,summary,
   sourceUrl: type === "Country"
     ? "https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/"
     : "https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-populated-places/",
   sourceRightsUrl: "https://www.naturalearthdata.com/about/terms-of-use/",
   sourceCheckedAt: "2026-10-07",
+  publicIndexApproved: true,
+  publicationCohort: "ATLAS_PLACE_COHORT_01_50",
   ...(ATLAS_ENTITY_METADATA[slug] || {})
 }));
+const ATLAS_WORLD_PLACES = [...ATLAS_BASE_WORLD_PLACES, ...ATLAS_PROMOTED_PLACES];
 
 const ATLAS_EVIDENCE_RELATIONS = {
   "kenya": {
@@ -1361,7 +1366,8 @@ function atlasPlacePassesQualityGate(place){
     Number.isFinite(sourceLat) && sourceLat >= -90 && sourceLat <= 90 &&
     Number.isFinite(sourceLon) && sourceLon >= -180 && sourceLon <= 180 &&
     place.summary && place.neId && place.sourceDataset && place.sourceVersion &&
-    place.sourceFileSha && place.sourceUrl && place.sourceRightsUrl && place.sourceCheckedAt
+    place.sourceFileSha && place.sourceUrl && place.sourceRightsUrl && place.sourceCheckedAt &&
+    place.publicIndexApproved === true
   );
 }
 const ATLAS_INDEXABLE_PLACES = ATLAS_WORLD_PLACES.filter(atlasPlacePassesQualityGate);
