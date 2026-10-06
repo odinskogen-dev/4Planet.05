@@ -249,3 +249,30 @@ jobs:
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
           grep -Fq '<loc>https://4planet.org/livingsystems/</loc>' <<<"$sm"
           echo 'PLACE_GRAPH_LIVE_PASS'
+
+  atlas-live-proof:
+    name: ATLAS Place Live Proof
+    needs: deploy
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify canonical ATLAS Place graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          places=$(curl -fsS https://4planetatlas.com/places)
+          grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "50"
+          berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
+          grep -Fq '1159151529' <<<"$berlin"
+          grep -Fq 'Q64' <<<"$berlin"
+          grep -Fq '2950159' <<<"$berlin"
+          grep -Fq 'Verified geographic hierarchy' <<<"$berlin"
+          kenya=$(curl -fsS https://4planetatlas.com/place/kenya)
+          grep -Fq 'Connected Living Planet Intelligence' <<<"$kenya"
+          grep -Fq 'African Savanna Elephant' <<<"$kenya"
+          sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          unknown=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' https://4planetatlas.com/place/__atlas-live-proof-unknown__)
+          test "$unknown" = "404"
+          echo 'ATLAS_ENTITY_AUTHORITY_LIVE_PASS'
