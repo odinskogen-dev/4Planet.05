@@ -38,6 +38,7 @@ export const IMAGES = {
   oce4nDomainHero: { src: `${A}/domains/oce4n/hero.jpg`, srcMobile: `${A}/domains/oce4n/hero-mobile.jpg`, alt: "A humpback whale seen from behind, tail spread wide, a free-diver small alongside", aspectRatio: "16/9", objectPosition: "50% 45%", domain: "OCE4N_", role: "domainHero" },
   e4rthDomainHero: { src: `${A}/domains/e4rth/hero.jpg`, srcMobile: `${A}/domains/e4rth/hero-mobile.jpg`, alt: "A deep green forested valley from above — the living land", aspectRatio: "16/9", objectPosition: "50% 55%", domain: "E4RTH_", role: "domainHero" },
   s4piensDomainHero: { src: `${A}/domains/s4piens/hero.jpg`, srcMobile: `${A}/domains/s4piens/hero-mobile.jpg`, alt: "Human systems and material flows — the world we build", aspectRatio: "16/9", objectPosition: "50% 50%", domain: "S4PIENS_", role: "domainHero" },
+  s4piensFieldResearcher: { src: `${A}/domains/s4piens/detail-01.jpg`, alt: "A field researcher in a red jacket walking through an Icelandic landscape", aspectRatio: "3/2", objectPosition: "50% 50%", domain: "S4PIENS_", role: "editorial" },
   cultureDomainHero: { src: `${A}/domains/4culture/hero.jpg`, srcMobile: `${A}/domains/4culture/hero-mobile.jpg`, alt: "A cultural frame — culture as a way into environmental action", aspectRatio: "3/4", objectPosition: "50% 45%", domain: "4CULTURE_", role: "domainHero" },
 
   // ── 4CULTURE EDITORIAL ──────────────────────────────────────────────
@@ -47,6 +48,7 @@ export const IMAGES = {
 
   // ── MISSION HEROES ──────────────────────────────────────────────────
   wh4lesHero: { src: `${A}/missions/wh4les/hero-real.jpg`, srcMobile: `${A}/missions/wh4les/hero-real-mobile.jpg`, alt: "A wild orca surfacing off a green Norwegian coast", mission: "wh4les", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
+  orcaEncounter: { src: `${A}/species/orca/detail-spyhop.jpg`, alt: "An orca spyhopping at the surface, facing the viewer", aspectRatio: "3/2", objectPosition: "50% 42%", mission: "wh4les", domain: "OCE4N_", role: "editorial" },
   cor4lHero: { src: `${A}/missions/cor4l/hero-real.jpg`, srcMobile: `${A}/missions/cor4l/hero-real-mobile.jpg`, alt: "A living coral reef — vivid soft corals lit by surface light", mission: "cor4l", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 50%", role: "missionHero" },
   pl4sticHero: { src: `${A}/missions/pl4stic/hero.jpg`, alt: "A plastic bag drifting underwater among small fish", mission: "cle4n", domain: "OCE4N_", aspectRatio: "4/3", objectPosition: "50% 50%", role: "missionHero" },
   rewildMarineHero: { src: "https://oceanexplorer.noaa.gov/wp-content/uploads/2023/11/kelp-point.jpeg", alt: "A real giant kelp forest in sunlit coastal water at Cojo Anchorage, California", credit: "Robert Schwemmer / NOAA", licenseNote: "NOAA-created still image — public domain unless otherwise noted; checked 2026-09-01", mission: "rewild-marine", domain: "OCE4N_", aspectRatio: "3/2", objectPosition: "50% 48%", role: "missionHero" },
