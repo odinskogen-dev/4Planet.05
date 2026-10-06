@@ -1,0 +1,219 @@
+name: Discovery Engine 01 Bounded LIVE
+
+on:
+  push:
+    branches:
+      - release/discovery-live-20261007
+
+permissions:
+  contents: read
+
+concurrency:
+  group: discovery-engine-01-bounded-live
+  cancel-in-progress: false
+
+jobs:
+  qa-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact release head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Resolve bounded release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin king/test main
+          descriptor='docs/control/DISCOVERY_ENGINE_01_RELEASE.json'
+          manifest='docs/control/LIVE_PROMOTION_MANIFEST.json'
+          prior=$(jq -r '.priorLiveSha' "$descriptor")
+          test_king=$(jq -r '.testKingSha' "$descriptor")
+          manifest_type=$(jq -r '.releaseType // ""' "$manifest")
+          manifest_release=$(jq -r '.releaseCommitSha // ""' "$manifest")
+          manifest_status=$(jq -r '.status // ""' "$manifest")
+
+          product_sha="$GITHUB_SHA"
+          authorised=0
+          if [[ "$manifest_type" == "DISCOVERY_ENGINE_01" && "$manifest_release" =~ ^[0-9a-f]{40}$ ]]; then
+            product_sha="$manifest_release"
+            [[ "$manifest_status" == "FOUNDER_ACCEPTED" || "$manifest_status" == "FOUNDER_AUTHORISED" ]] && authorised=1
+            parent=$(git rev-parse HEAD^)
+            [[ "$parent" == "$product_sha" ]] || { echo "release-control parent mismatch"; exit 2; }
+            mapfile -t control_delta < <(git diff --name-only "$product_sha" HEAD)
+            [[ "${#control_delta[@]}" -eq 1 && "${control_delta[0]}" == "docs/control/LIVE_PROMOTION_MANIFEST.json" ]] || {
+              printf 'release-control delta invalid: %s\n' "${control_delta[*]}"; exit 3;
+            }
+          fi
+
+          [[ "$(git rev-parse "$product_sha^")" == "$prior" ]] || { echo "bounded carrier is not direct child of prior LIVE"; exit 4; }
+
+          mapfile -t actual < <(git diff --name-only "$prior" "$product_sha" | sort)
+          mapfile -t declared < <(jq -r '.releaseFiles[]' "$descriptor" | sort)
+          diff -u <(printf '%s\n' "${declared[@]}") <(printf '%s\n' "${actual[@]}")
+
+          while IFS= read -r path; do
+            live_blob=$(git rev-parse "$product_sha:$path")
+            test_blob=$(git rev-parse "$test_king:$path")
+            [[ "$live_blob" == "$test_blob" ]] || { echo "source-exact mismatch: $path"; exit 5; }
+          done < <(jq -r '.sourceExactFiles[]' "$descriptor")
+
+          echo "PRODUCT_SHA=$product_sha" >> "$GITHUB_ENV"
+          echo "PRIOR_LIVE_SHA=$prior" >> "$GITHUB_ENV"
+          echo "TEST_KING_SHA=$test_king" >> "$GITHUB_ENV"
+          echo "RELEASE_AUTHORISED=$authorised" >> "$GITHUB_ENV"
+          echo "Bounded carrier scope + TEST KING source equivalence PASS"
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Discovery LIVE contract
+        run: npm run test:discovery-live
+
+      - name: Existing smoke contracts
+        run: npm run test:smoke
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Asset control
+        run: npm run assets:verify
+
+      - name: Dependency security gate
+        run: npm audit --audit-level=high
+
+      - name: Search artifact proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/now/index.html
+          test -f dist/wildfires/index.html
+          test -f dist/earthquakes/index.html
+          grep -Fq '<loc>https://4planet.org/now</loc>' dist/sitemap.xml
+          for route in wildfires earthquakes climate-change biodiversity deforestation plastic-pollution coral-bleaching air-quality orca whales bees amazon-rainforest oslofjord renewable-energy solar-energy food-waste fast-fashion rewilding climate-solutions environmental-jobs; do
+            grep -Fq "<loc>https://4planet.org/$route</loc>" dist/sitemap.xml
+          done
+          grep -Fq 'What is happening on Earth right now?' dist/now/index.html
+          grep -Fq 'NASA FIRMS' dist/wildfires/index.html
+          grep -Fq 'USGS' dist/earthquakes/index.html
+          grep -Fq 'application/ld+json' dist/now/index.html
+
+      - name: Start local production preview
+        shell: bash
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/discovery-preview.log 2>&1 &
+          echo $! > /tmp/discovery-preview.pid
+          for attempt in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/now >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/discovery-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser proof — desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test tests/e2e/discovery-live.spec.ts --project=desktop-1440 --project=mobile-390
+
+      - name: Pre-promotion authority guard
+        if: env.RELEASE_AUTHORISED == '1'
+        env:
+          GITHUB_REF_NAME: main
+          ALLOW_PREPROMOTION_CHECK: "1"
+        run: node scripts/live-promotion-authority-gate.mjs
+
+      - name: Resolve Cloudflare credentials
+        if: env.RELEASE_AUTHORISED == '1'
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo "Cloudflare token missing"; exit 20; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          root=$(curl -fsS -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active')
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo "Cloudflare account not resolved"; exit 21; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+
+      - name: Deploy exact Discovery artifact to 4planet.org production
+        if: env.RELEASE_AUTHORISED == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist \
+            --project-name=4planet-05 \
+            --branch=main \
+            --commit-hash="$PRODUCT_SHA" \
+            --commit-dirty=false | tee /tmp/discovery-live-deploy.txt
+
+      - name: Verify Cloudflare production provenance
+        if: env.RELEASE_AUTHORISED == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          ok=0
+          for attempt in $(seq 1 24); do
+            deps=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")
+            if jq -e --arg sha "$PRODUCT_SHA" '.result[] | select((.deployment_trigger.metadata.commit_hash // .source.config.commit_hash // "") == $sha)' <<<"$deps" >/dev/null; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo "Exact production deployment not found"; exit 22; }
+
+      - name: Physical LIVE readback
+        if: env.RELEASE_AUTHORISED == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          routes=(now wildfires earthquakes climate-change biodiversity deforestation plastic-pollution coral-bleaching air-quality orca whales bees amazon-rainforest oslofjord renewable-energy solar-energy food-waste fast-fashion rewilding climate-solutions environmental-jobs)
+          for attempt in $(seq 1 30); do
+            pass=1
+            for route in "${routes[@]}"; do
+              curl -fsS --connect-timeout 10 --max-time 30 "https://4planet.org/$route" >/tmp/discovery-live.html || { pass=0; break; }
+              grep -qi '<title>' /tmp/discovery-live.html || { pass=0; break; }
+            done
+            [ "$pass" -eq 1 ] && break
+            sleep 5
+          done
+          [ "$pass" -eq 1 ] || { echo "LIVE route matrix failed"; exit 23; }
+          now=$(curl -fsS https://4planet.org/now)
+          wild=$(curl -fsS https://4planet.org/wildfires)
+          sitemap=$(curl -fsS https://4planet.org/sitemap.xml)
+          grep -Fq 'What is happening on Earth right now?' <<<"$now"
+          grep -Fq 'NASA FIRMS' <<<"$wild"
+          grep -Fq '<loc>https://4planet.org/now</loc>' <<<"$sitemap"
+          echo "DISCOVERY ENGINE 01 LIVE READBACK PASS"
