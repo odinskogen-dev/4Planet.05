@@ -76,7 +76,7 @@ def main():
         lat, lon=p.get("latitude"), p.get("longitude")
         if not name or not country or not isinstance(lat,(int,float)) or not isinstance(lon,(int,float)) or not math.isfinite(lat) or not math.isfinite(lon) or not (-90<=lat<=90 and -180<=lon<=180):
             continue
-        slug=slugify(str(p.get("nameascii") or name))
+        slug=slugify(name)
         if not slug: continue
         if slug in used_slugs: slug=f"{slug}-{str(p.get('iso_a2') or 'xx').lower()}"
         if slug in used_slugs: slug=f"{slug}-{ne}"
