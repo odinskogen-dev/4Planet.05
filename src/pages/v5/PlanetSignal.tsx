@@ -57,8 +57,8 @@ export default function PlanetSignal() {
       path="/signal" robots="noindex,follow" />
     <main style={{ minHeight:"100vh", background:"#fff", color:T.ink }}>
       <section style={{ background:"#080808", color:"#fff", padding:"clamp(48px,8vw,112px) clamp(20px,6vw,84px)" }}>
-        <div style={{...mono,color:T.acid}}>4PLANET_ / PLANET SIGNAL</div>
-        <h1 style={{fontFamily:T.display,fontWeight:500,fontSize:"clamp(62px,12vw,170px)",lineHeight:.82,letterSpacing:"-.07em",margin:"26px 0 0",maxWidth:"8ch"}}>One signal worth seeing.</h1>
+        <div style={{...mono,color:T.acid}}>4PLANET_ PLANET SIGNAL</div>
+        <h1 style={{fontFamily:T.display,fontWeight:500,fontSize:"clamp(44px,6.8vw,82px)",lineHeight:.82,letterSpacing:"-.07em",margin:"26px 0 0",maxWidth:"8ch"}}>One signal worth seeing.</h1>
         <p style={{fontSize:"clamp(18px,2vw,26px)",lineHeight:1.5,color:"rgba(255,255,255,.72)",maxWidth:760,marginTop:34}}>
           One exceptionally interesting place, species, relationship or ecological development. Short, useful, source-grounded — and connected to the living planet in ATLAS.
         </p>
@@ -67,8 +67,8 @@ export default function PlanetSignal() {
       <section style={{padding:"clamp(42px,7vw,92px) clamp(20px,6vw,84px)",display:"grid",gridTemplateColumns:"minmax(0,1fr) minmax(300px,.8fr)",gap:"clamp(36px,8vw,120px)"}}>
         <div>
           <div style={{...mono,color:T.blue}}>WHAT YOU’LL GET</div>
-          <h2 style={{fontFamily:T.display,fontWeight:500,fontSize:"clamp(38px,5vw,72px)",letterSpacing:"-.05em",lineHeight:.94,margin:"14px 0 0"}}>Not a corporate newsletter.</h2>
-          <p style={{fontSize:18,lineHeight:1.65,color:T.dim,maxWidth:650,marginTop:22}}>Each issue starts with a real public 4PLANET object, preserves its source limits, and gives you one clear way to explore further.</p>
+          <h2 style={{fontFamily:T.display,fontWeight:500,fontSize:"clamp(38px,5vw,72px)",letterSpacing:"-.05em",lineHeight:.94,margin:"14px 0 0"}}>One useful signal from the living planet.</h2>
+          <p style={{fontSize:18,lineHeight:1.65,color:T.dim,maxWidth:650,marginTop:22}}>Each issue starts with a real public 4PLANET object, keeps its source limits visible and gives you one clear way to explore further.</p>
           <div style={{marginTop:34,borderTop:`1px solid ${T.line}`}}>
             {issues.map(([eyebrow,title,to])=><Link key={eyebrow} to={to} style={{display:"block",padding:"20px 0",borderBottom:`1px solid ${T.line}`,textDecoration:"none",color:T.ink}}>
               <span style={{...mono,color:T.blue}}>{eyebrow}</span><strong style={{display:"block",fontFamily:T.display,fontWeight:500,fontSize:25,marginTop:7}}>{title}</strong>
