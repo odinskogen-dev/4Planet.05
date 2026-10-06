@@ -118,26 +118,43 @@ jobs:
           test "$live" = "$expected"
           echo "LS_V142_LIVE_HTML_ROUTES=$live"
 
-      - name: Verify v1.4.2 intelligence surfaces and static assets
+      - name: Verify v1.4.2 intelligence surfaces and every exported Next asset
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS https://4planet.org/livingsystems/start/ | grep -Fq 'Start with a question'
-          curl -fsS https://4planet.org/livingsystems/dependencies/ | grep -Fq 'Dependencies'
-          curl -fsS https://4planet.org/livingsystems/decisions/ | grep -Fq 'Decision'
-          curl -fsS https://4planet.org/livingsystems/learning/ | grep -Fq 'Learning'
-          curl -fsS https://4planet.org/livingsystems/trust/ | grep -Fq 'Trust'
-          curl -fsS https://4planet.org/livingsystems/sources/ | grep -Fq 'Source'
-          curl -fsS https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/ | grep -Fq 'Amazon'
-          curl -fsS https://4planet.org/livingsystems/species/western-honey-bee/ | grep -Fq 'Honey'
-          root=$(curl -fsS https://4planet.org/livingsystems/)
-          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$root" | sort -u)
-          test -n "$assets"
+          checks=(
+            "start|Start with a question"
+            "dependencies|Dependencies"
+            "decisions|Decision"
+            "learning|Learning"
+            "trust|Trust"
+            "sources|Source"
+            "ecosystems/EC_AMAZON_RAINFOREST|Amazon"
+            "species/western-honey-bee|Honey"
+          )
+          for check in "${checks[@]}"; do
+            route="${check%%|*}"
+            needle="${check#*|}"
+            local_file="dist/livingsystems/${route}/index.html"
+            test -f "$local_file"
+            url="https://4planet.org/livingsystems/${route}/"
+            code=$(curl -sS --max-time 20 -o /tmp/ls-surface.html -w '%{http_code}' "$url")
+            echo "LS_SURFACE_PROBE $code $url"
+            test "$code" = "200"
+            grep -Fq "$needle" /tmp/ls-surface.html
+          done
+
+          asset_expected=$(find dist/livingsystems/_next -type f | wc -l | tr -d ' ')
+          test "$asset_expected" -gt 0
           asset_live=0
-          while IFS= read -r asset; do
-            curl -fsS --max-time 20 -o /dev/null "https://4planet.org$asset"
+          while IFS= read -r file; do
+            rel="${file#dist}"
+            url="https://4planet.org${rel}"
+            code=$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' "$url")
+            echo "LS_ASSET_PROBE $code $url"
+            test "$code" = "200"
             asset_live=$((asset_live+1))
-          done <<<"$assets"
-          test "$asset_live" -gt 0
-          echo "LS_V142_REFERENCED_ASSETS_LIVE=$asset_live"
+          done < <(find dist/livingsystems/_next -type f | sort)
+          test "$asset_live" = "$asset_expected"
+          echo "LS_V142_EXPORTED_ASSETS_LIVE=$asset_live"
           echo 'LS_V142_ZERO_LOSS_CUSTOM_DOMAIN_PASS'
