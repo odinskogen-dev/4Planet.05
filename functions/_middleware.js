@@ -135,7 +135,37 @@ const ATLAS_WORLD_PLACES = [
   ["brazil","Brazil","Country","South America",-14.2350,-51.9253,"Brazil is a country in South America."],
   ["australia","Australia","Country","Oceania",-25.2744,133.7751,"Australia is a country and continent in Oceania."],
   ["japan","Japan","Country","East Asia",36.2048,138.2529,"Japan is an island country in East Asia."],
-].map(([slug,name,type,context,lat,lon,summary])=>({slug,name,type,context,lat,lon,summary,source:"Natural Earth Populated Places / public-domain geographic reference cohort"}));
+].map(([slug,name,type,context,lat,lon,summary])=>({
+  slug,name,type,context,lat,lon,summary,
+  sourceDataset: type === "Country" ? "Natural Earth 1:10m Admin 0 — Countries" : "Natural Earth 1:10m Populated Places",
+  sourceUrl: type === "Country"
+    ? "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-0-countries/"
+    : "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-populated-places/",
+  sourceRightsUrl: "https://www.naturalearthdata.com/about/terms-of-use/",
+  sourceCheckedAt: "2026-10-06"
+}));
+
+function atlasDistanceKm(a,b){
+  const r=6371,toRad=(v)=>v*Math.PI/180;
+  const dLat=toRad(b.lat-a.lat),dLon=toRad(b.lon-a.lon);
+  const x=Math.sin(dLat/2)**2+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLon/2)**2;
+  return 2*r*Math.asin(Math.sqrt(x));
+}
+function atlasPlaceRelations(place){
+  const parent=ATLAS_WORLD_PLACES.find((p)=>p.type==="Country"&&p.name===place.context);
+  const children=place.type==="Country"?ATLAS_WORLD_PLACES.filter((p)=>p.context===place.name&&p.slug!==place.slug):[];
+  const nearby=ATLAS_WORLD_PLACES.filter((p)=>p.slug!==place.slug)
+    .map((p)=>({...p,distanceKm:atlasDistanceKm(place,p)}))
+    .sort((a,b)=>a.distanceKm-b.distanceKm).slice(0,4);
+  const seen=new Set([place.slug]);
+  const related=[];
+  for(const item of [parent,...children,...nearby].filter(Boolean)){
+    if(seen.has(item.slug)) continue;
+    seen.add(item.slug); related.push(item);
+    if(related.length===6) break;
+  }
+  return {parent,children,related};
+}
 
 const FOURPLANET_ROUTES = {
   "/about": {
@@ -240,10 +270,10 @@ const FOURPLANET_ROUTES = {
     fallbackTitle: "Places",
     fallbackParagraphs: [
       "Places are a core entry point into Living Planet Intelligence. A place page connects geography with species, living systems, pressures, evidence and relevant human context instead of treating a location as an isolated map pin.",
-      "Public place coverage grows selectively. Pages should be indexable only when they contain useful, source-grounded context; arbitrary map states and thin generated locations are not intended to become search pages.",
+      "Canonical Place pages now live in the ATLAS World Place Index. Verified geography can publish first; ecological intelligence is added progressively only where source-grounded relationships exist. Arbitrary map states and machine-generated variants are not search pages.",
       "ATLAS provides the spatial exploration layer while canonical place pages provide stable, human-readable entry points into the connected system."
     ],
-    fallbackLinks: [["ATLAS","https://4planetatlas.com/"],["Living Systems","https://4planet.org/living-systems"],["SPECIES","https://4species.com/species/"],["Kenya","https://4planet.org/place/kenya"]],
+    fallbackLinks: [["World Place Index","https://4planetatlas.com/places"],["ATLAS","https://4planetatlas.com/"],["Living Systems","https://4planet.org/living-systems"],["SPECIES","https://4species.com/species/"]],
     schemaType: "CollectionPage",
   },
   "/place/kenya": {
@@ -576,18 +606,38 @@ export async function onRequest(context) {
 
   if (host === "4planetatlas.com" && url.pathname === "/places") {
     const items = ATLAS_WORLD_PLACES.map((place) => `<li><a href="/place/${escapeHtml(place.slug)}">${escapeHtml(place.name)}</a> — ${escapeHtml(place.type)}, ${escapeHtml(place.context)}</li>`).join("");
-    const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="index,follow,max-image-preview:large"><title>World Place Index — 4PLANET ATLAS</title><meta name="description" content="Explore verified geographic places in 4PLANET ATLAS, with progressive Living Planet Intelligence as evidence becomes available."><link rel="canonical" href="https://4planetatlas.com/places"></head><body><main><p>4PLANET ATLAS / WORLD PLACE INDEX</p><h1>Explore the world by place</h1><p>Every page begins with a verified geographic identity. Living systems, species, pressures, missions, evidence and solutions are added progressively only when supported.</p><ul>${items}</ul><p>Geographic reference cohort: Natural Earth populated places and public-domain geographic reference data. Ecological enrichment is a separate evidence layer.</p></main></body></html>`;
+    const canonical="https://4planetatlas.com/places";
+    const data={"@context":"https://schema.org","@graph":[
+      {"@type":"CollectionPage","@id":canonical+"#page","name":"4PLANET ATLAS World Place Index","url":canonical,"description":"Verified geographic entry points into 4PLANET ATLAS, with progressive source-grounded living-planet intelligence."},
+      {"@type":"ItemList","@id":canonical+"#places","numberOfItems":ATLAS_WORLD_PLACES.length,"itemListElement":ATLAS_WORLD_PLACES.map((place,index)=>({"@type":"ListItem","position":index+1,"url":`https://4planetatlas.com/place/${place.slug}`,"name":place.name}))}
+    ]};
+    const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>World Place Index — 4PLANET ATLAS</title><meta name="description" content="Explore verified places in 4PLANET ATLAS. Geography is published first; source-grounded living-planet intelligence is connected progressively."><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><p>4PLANET ATLAS / WORLD PLACE INDEX</p><h1>Explore the world by place</h1><p>This index contains ${ATLAS_WORLD_PLACES.length} verified geographic entry points. Each place has a stable canonical URL, a reference coordinate, explicit provenance and a direct route into the shared ATLAS map.</p><p>Geographic identity is the Level 0 foundation. Living systems, species, pressures, missions, evidence and solutions are connected only when source-grounded evidence supports them. Missing ecological knowledge remains unknown rather than being filled with generic environmental text.</p><nav aria-label="World Place Index"><ul>${items}</ul></nav><h2>How to read the index</h2><p>Reference coordinates help ATLAS open the intended geography; they do not define administrative or ecological boundaries. Place pages link to related geographic entries so people and crawlers can move through the index without relying on JavaScript.</p><h2>Provenance</h2><p>The current cohort uses public-domain Natural Earth geographic reference data. City and populated-place identities use the 1:10m Populated Places dataset; country identities use the 1:10m Admin 0 Countries dataset. Ecological enrichment is a separate evidence layer.</p><p><a href="/">Open 4PLANET ATLAS</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p></main></body></html>`;
     return new Response(body,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
   }
 
-  if (host === "4planetatlas.com" && normaliseHost(url.hostname) === host && url.pathname.startsWith("/place/")) {
+  if (host === "4planetatlas.com" && url.pathname.startsWith("/place/")) {
     const slug = url.pathname.slice("/place/".length).replace(/\/+$/,"");
     const place = ATLAS_WORLD_PLACES.find((item) => item.slug === slug);
     if (place) {
       const canonical = `https://4planetatlas.com/place/${place.slug}`;
       const mapHref = `https://4planetatlas.com/?place=${encodeURIComponent(place.slug)}&lat=${place.lat}&lon=${place.lon}&z=${place.type === "Country" ? 4 : 10}`;
-      const data = {"@context":"https://schema.org","@type":"Place","name":place.name,"geo":{"@type":"GeoCoordinates","latitude":place.lat,"longitude":place.lon},"containedInPlace":{"@type":"Place","name":place.context},"url":canonical};
-      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(place.name)} — Explore in 4PLANET ATLAS</title><meta name="description" content="Explore ${escapeHtml(place.name)} in 4PLANET ATLAS. Verified geography first; living systems, species, pressures, evidence and missions are added as source-grounded intelligence becomes available."><link rel="canonical" href="${canonical}"><meta property="og:title" content="${escapeHtml(place.name)} — 4PLANET ATLAS"><meta property="og:url" content="${canonical}"><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><p>4PLANET ATLAS / PLACE</p><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.type)} · ${escapeHtml(place.context)}</p><p>${escapeHtml(place.summary)}</p><h2>Geographic reference</h2><dl><dt>Latitude</dt><dd>${place.lat}</dd><dt>Longitude</dt><dd>${place.lon}</dd><dt>Source class</dt><dd>${escapeHtml(place.source)}</dd></dl><h2>Living Planet Intelligence</h2><p>Ecological enrichment is progressive. Unknown relationships are not filled with generic claims. As evidence is connected, this place can expose Living Systems, Species, Pressures, Missions, Evidence and Solutions.</p><p><a href="${mapHref}">Open ${escapeHtml(place.name)} in ATLAS</a> · <a href="/places">World Place Index</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p><p>Geographic identity and coordinates are separate from ecological evidence. A place page does not imply species presence, ecosystem condition or verified ecological outcome.</p></main></body></html>`;
+      const {parent,children,related}=atlasPlaceRelations(place);
+      const schemaType=place.type==="City"||place.type==="City-state"?"City":place.type==="Country"?"Country":"Place";
+      const description=`Explore ${place.name} in 4PLANET ATLAS: verified location, geographic context and a direct map view, with source-grounded intelligence added over time.`;
+      const breadcrumbs=[
+        {"@type":"ListItem","position":1,"name":"4PLANET ATLAS","item":"https://4planetatlas.com/"},
+        {"@type":"ListItem","position":2,"name":"World Place Index","item":"https://4planetatlas.com/places"},
+        {"@type":"ListItem","position":3,"name":place.name,"item":canonical}
+      ];
+      const data={"@context":"https://schema.org","@graph":[
+        {"@type":"WebPage","@id":canonical+"#page","url":canonical,"name":`${place.name} — Explore in 4PLANET ATLAS`,"description":description,"mainEntity":{"@id":canonical+"#place"},"breadcrumb":{"@id":canonical+"#breadcrumbs"},"citation":[place.sourceUrl,place.sourceRightsUrl],"isPartOf":{"@type":"WebSite","name":"4PLANET ATLAS","url":"https://4planetatlas.com/"}},
+        {"@type":schemaType,"@id":canonical+"#place","name":place.name,"url":canonical,"geo":{"@type":"GeoCoordinates","latitude":place.lat,"longitude":place.lon},"containedInPlace":{"@type":"Place","name":place.context},...(parent?{"containedInPlace":{"@id":`https://4planetatlas.com/place/${parent.slug}#place`}}:{})},
+        {"@type":"BreadcrumbList","@id":canonical+"#breadcrumbs","itemListElement":breadcrumbs}
+      ]};
+      const parentHtml=parent?`<p><strong>Parent geography:</strong> <a href="/place/${escapeHtml(parent.slug)}">${escapeHtml(parent.name)}</a>.</p>`:`<p><strong>Geographic context:</strong> ${escapeHtml(place.context)}. A canonical parent object is not yet published in this cohort.</p>`;
+      const childHtml=children.length?`<h2>Places within this geography</h2><ul>${children.map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> — ${escapeHtml(p.type)}</li>`).join("")}</ul>`:"";
+      const relatedHtml=related.length?`<h2>Related places in the current index</h2><ul>${related.map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> — ${escapeHtml(p.type)}, ${escapeHtml(p.context)}</li>`).join("")}</ul>`:"";
+      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(place.name)} — Explore in 4PLANET ATLAS</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><meta property="og:title" content="${escapeHtml(place.name)} — 4PLANET ATLAS"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${canonical}"><meta property="og:type" content="website"><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><nav aria-label="Breadcrumb"><a href="/">ATLAS</a> / <a href="/places">Places</a> / <span>${escapeHtml(place.name)}</span></nav><p>4PLANET ATLAS / PLACE</p><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.type)} · ${escapeHtml(place.context)}</p><h2>About this place</h2><p>${escapeHtml(place.summary)} 4PLANET ATLAS represents ${escapeHtml(place.name)} as a stable geographic object at reference coordinate ${place.lat}, ${place.lon}. The coordinate is used to open the intended map context; it is not an administrative boundary, ecological boundary or claim about conditions across the whole place.</p>${parentHtml}<p><a href="${mapHref}">Open ${escapeHtml(place.name)} in ATLAS</a>. The handoff carries the same place slug and reference coordinate so the geographic entry point and interactive map resolve to the same object.</p><h2>Living Planet Intelligence</h2><p>Geographic identity is published independently from ecological interpretation. Living Systems, Species, Pressures, Missions, Evidence and Solutions are connected here only when the shared 4PLANET evidence model supports the relationship. Until then, those relationships remain unknown rather than being inferred from the place name.</p>${childHtml}${relatedHtml}<h2>Source and provenance</h2><p><strong>Geographic source:</strong> <a href="${escapeHtml(place.sourceUrl)}">${escapeHtml(place.sourceDataset)}</a>. Natural Earth data is public domain; <a href="${escapeHtml(place.sourceRightsUrl)}">terms of use</a>. Source reference checked ${escapeHtml(place.sourceCheckedAt)}.</p><p><a href="/places">World Place Index</a> · <a href="/">ATLAS home</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p><p>Truth boundary: this Place page verifies geographic identity and map context. It does not by itself establish species presence, ecosystem health, pressure, causality or ecological outcome.</p></main></body></html>`;
       return new Response(body,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
     }
   }
