@@ -209,8 +209,8 @@ export function FindYourWayToHelp() {
 
       <section className="participation-results">
         <div className="participation-results-head">
-          <div><p>EXPLAINABLE MATCHES</p><h2>Places where you could genuinely be useful.</h2></div>
-          <div className={`participation-api-state participation-api-${apiState.toLowerCase()}`}><span>LIVE SUPPLY</span><strong>{apiState === "LIVE" ? `VolunteerConnector · ${reportedCount ?? "live"} public listings` : apiState === "LOADING" ? "Checking public API…" : "External source unavailable — showing first-party pathways only"}</strong></div>
+          <div><p>YOUR MATCHES</p><h2>Places where your interests and constraints may genuinely fit.</h2></div>
+          <div className={`participation-api-state participation-api-${apiState.toLowerCase()}`}><span>CURRENT OPPORTUNITIES</span><strong>{apiState === "LIVE" ? `VolunteerConnector · ${reportedCount ?? "live"} public listings` : apiState === "LOADING" ? "Checking public API…" : "External source unavailable — showing first-party pathways only"}</strong></div>
         </div>
         {matches.length ? matches.map((match) => (
           <div className="participation-match" key={match.opportunity.id}>
@@ -218,30 +218,30 @@ export function FindYourWayToHelp() {
             <aside>
               <p>WHY THIS MATCH</p>
               {match.reasons.map((reason) => <span key={reason}>{reason}</span>)}
-              <p>HARD GATES</p>
+              <p>REQUIREMENTS</p>
               {match.hardGates.map((gate) => <span key={gate.label}><b>{gate.state}</b> {gate.label} — {gate.reason}</span>)}
             </aside>
           </div>
-        )) : <div className="participation-zero"><h3>No credible match under these constraints.</h3><p>That is a valid result. Broaden one constraint rather than pretending a weak listing fits.</p></div>}
+        )) : <div className="participation-zero"><h3>No credible match under these constraints.</h3><p>That is a valid result. Broaden a constraint only if it is genuinely flexible.</p></div>}
       </section>
 
       <section className="participation-external-proof">
-        <header><p>LIVE EXTERNAL SOURCE PROOF</p><h2>Real supply. Not automatically recommended.</h2><span>VolunteerConnector listings are shown as externally asserted records. UNKNOWN availability, costs or eligibility block them from the explainable match list until those gates can be resolved.</span></header>
-        {apiState === "LIVE" && external.length ? <div>{external.slice(0, 3).map((opportunity) => <OpportunityCard key={opportunity.id} opportunity={opportunity} compact />)}</div> : <div className="participation-zero"><h3>External source not available.</h3><p>The product fails closed rather than replacing live records with fabricated examples.</p></div>}
+        <header><p>EXTERNAL OPPORTUNITIES</p><h2>Current listings. Not automatic recommendations.</h2><span>VolunteerConnector listings are shown as external records. Unknown availability, costs or eligibility keep them out of the match list until those details can be resolved.</span></header>
+        {apiState === "LIVE" && external.length ? <div>{external.slice(0, 3).map((opportunity) => <OpportunityCard key={opportunity.id} opportunity={opportunity} compact />)}</div> : <div className="participation-zero"><h3>External source not available.</h3><p>If a live source cannot be verified, 4PLANET shows no external listing rather than inventing one.</p></div>}
       </section>
 
       <section className="participation-transfer-proof">
-        <header><p>TEMPLATE TRANSFER PROOF</p><h2>One Actor system. Unlike actors.</h2><span>The shared schema must survive marine monitoring, restoration implementation and knowledge infrastructure without organisation-specific page architecture.</span></header>
+        <header><p>DIFFERENT ACTORS_ ONE STRUCTURE</p><h2>One structure for very different kinds of work.</h2><span>The shared schema must survive marine monitoring, restoration implementation and knowledge infrastructure without organisation-specific page architecture.</span></header>
         <div className="participation-transfer-grid">{ACTOR_TEMPLATE_TRANSFER_CASES.map((actor) => <article key={actor.actorId}><span>{actor.archetype}</span><h3>{actor.actorName}</h3><p>{actor.note}</p><div><b>{actor.actorId}</b><b>{humanise(actor.getInvolvedState)}</b></div><a href={actor.source} target="_blank" rel="noreferrer">SOURCE ↗</a></article>)}</div>
       </section>
 
       <section className="participation-trust">
-        <div><p>HOW THIS WORKS</p><h2>Matching without magic.</h2></div>
+        <div><p>HOW THIS WORKS</p><h2>Matching that shows its reasons.</h2></div>
         <div>{PARTICIPATION_CONTRACT_RULES.map((rule) => <p key={rule}>{rule}</p>)}</div>
       </section>
 
       <section className="participation-engine">
-        <p>ACTOR ENGINE 01 — FOUNDATION</p>
+        <p>HOW THE SYSTEM CONNECTS</p>
         <div>{ACTOR_ENGINE_01_FOUNDATION.map((step, index) => <span key={step}><b>{String(index + 1).padStart(2, "0")}</b>{step}</span>)}</div>
       </section>
     </main>
