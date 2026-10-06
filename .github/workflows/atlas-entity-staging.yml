@@ -6,6 +6,7 @@ on:
     paths:
       - "scripts/prepare_atlas_natural_earth_candidates.py"
       - "scripts/verify_atlas_entity_authority.py"
+      - "functions/_middleware.js"
       - ".github/workflows/atlas-entity-staging.yml"
   workflow_dispatch:
 
