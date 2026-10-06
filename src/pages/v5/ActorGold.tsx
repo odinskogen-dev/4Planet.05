@@ -19,7 +19,30 @@ function RelationshipMark({ actor }: { actor: ActorGoldProfile }) {
   return <span className="actor-gold-state">{label}</span>;
 }
 
-function OrcaSignatureVisual({ actor }: { actor: ActorGoldProfile }) {
+function ActorSignatureVisual({ actor }: { actor: ActorGoldProfile }) {
+  if (actor.visual.primary === "SOURCE_DATA") {
+    return (
+      <figure className="actor-gold-visual" aria-labelledby="actor-visual-caption">
+        <div className="actor-gold-visual-head">
+          <span>4PLANET ACTOR VISUAL 01</span>
+          <span>SOURCE + METHOD</span>
+        </div>
+        <div className="actor-gold-source-visual" role="img" aria-label={actor.visual.label}>
+          <div className="actor-gold-source-core"><span>ACTOR</span><strong>{actor.name}</strong></div>
+          <div className="actor-gold-source-flow">
+            {actor.work.slice(0, 4).map((item, index) => (
+              <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item}</strong></div>
+            ))}
+          </div>
+          <div className="actor-gold-source-proof"><span>METHOD</span><b>→</b><span>MONITORING</span><b>→</b><span>EVIDENCE</span></div>
+        </div>
+        <figcaption id="actor-visual-caption">
+          <strong>{actor.visual.label}</strong>
+          <span>{actor.visual.truthBoundary}</span>
+        </figcaption>
+      </figure>
+    );
+  }
   return (
     <figure className="actor-gold-visual" aria-labelledby="actor-visual-caption">
       <div className="actor-gold-visual-head">
@@ -152,14 +175,14 @@ export function ActorProfilePage() {
         <div className="actor-gold-hero-copy">{actor.oneLine}</div>
         <div className="actor-gold-hero-meta">
           <span>ID {actor.id}</span>
-          <span>FIELD / MONITORING</span>
-          <span>OCE4N_</span>
+          <span>{actor.workMode}</span>
+          <span>{actor.domain}</span>
         </div>
         <a className="actor-gold-get-involved-jump" href="#get-involved">GET INVOLVED ↓</a>
       </header>
 
       <section className="actor-gold-visual-wrap">
-        <OrcaSignatureVisual actor={actor} />
+        <ActorSignatureVisual actor={actor} />
       </section>
 
       <section className="actor-gold-section actor-gold-section-light">
@@ -184,7 +207,11 @@ export function ActorProfilePage() {
           <div><p>SPECIES</p>{actor.species.map((item) => <span key={item}>{item}</span>)}</div>
           <div><p>ECOSYSTEMS</p>{actor.ecosystems.map((item) => <span key={item}>{item}</span>)}</div>
         </div>
-        <Link className="actor-gold-inline-link" to="/species/orca">EXPLORE ORCA IN SPECIES →</Link>
+        <div className="actor-gold-context-columns actor-gold-context-solutions">
+          <div><p>PROBLEMS / PRESSURES</p>{actor.problems.map((item) => <span key={item.label}><b>{item.state}</b> {item.label} — {item.note}</span>)}</div>
+          <div><p>SOLUTIONS / METHODS</p>{actor.solutions.map((item) => item.path ? <Link key={item.label} to={item.path}><b>{item.state}</b> {item.label} →</Link> : <span key={item.label}><b>{item.state}</b> {item.label} — {item.note}</span>)}</div>
+        </div>
+        {actor.slug === "orca" ? <Link className="actor-gold-inline-link" to="/species/orca">EXPLORE ORCA IN SPECIES →</Link> : null}
       </section>
 
       <section className="actor-gold-section actor-gold-section-paper">
@@ -227,6 +254,8 @@ export function ActorProfilePage() {
       <section className="actor-gold-trust">
         <div><p>RELATIONSHIP / EDITORIAL DISCLOSURE</p><span>{actor.editorialDisclosure}</span></div>
         <div><p>SOURCE AUTHORITY</p><span>{actor.sourceAuthority}</span></div>
+        <div><p>LAST REVIEWED</p><span>{actor.lastReviewed}</span></div>
+        <div><p>PRIMARY SOURCES</p><span>{actor.sourceLinks.map((source, index) => <a key={source.url} href={source.url} target="_blank" rel="noreferrer">{index ? " · " : ""}{source.label} ↗</a>)}</span></div>
         <div><p>VISUAL RIGHTS MODEL</p><span>Primary profile visual requires no third-party photography. Documentary media is additive only after rights clearance.</span></div>
         <div><p>CORRECTIONS</p><Link to={actor.correctionsPath}>OPEN CORRECTIONS DESK →</Link></div>
       </section>
@@ -234,7 +263,7 @@ export function ActorProfilePage() {
       <section className="actor-gold-engine-note">
         <p>ACTOR ENGINE 01</p>
         <h2>Identity to action, without losing truth.</h2>
-        <span>The profile now carries a reusable participation seam: source-backed opportunities live as separate objects and can be projected into Actor, matching and future Atlas/Impact surfaces without duplicating identity.</span>
+        <span>The profile carries reusable problem, solution, evidence and participation seams. Source-backed opportunities remain separate objects and project into Actor, matching and future Atlas/Impact surfaces without duplicating identity.</span>
         <details><summary>VIEW VISUAL LADDER</summary>{ACTOR_GOLD_VISUAL_LADDER.map((rule) => <p key={rule}>{rule}</p>)}</details>
         <details><summary>VIEW RELEASE RULES</summary>{ACTOR_GOLD_RELEASE_RULES.map((rule) => <p key={rule}>{rule}</p>)}</details>
       </section>
