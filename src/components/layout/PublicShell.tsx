@@ -11,7 +11,7 @@ const ORDER: DomainKey[] = ["OCE4N_", "E4RTH_", "S4PIENS_", "4CULTURE_"];
 const strip = (s: string) => s.replace(/_$/, "");
 const dslug = (s: string) => s.replace("_", "").toLowerCase();
 const mono: React.CSSProperties = { fontFamily: T.mono, fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase" };
-const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 500, letterSpacing: "-.035em" };
+const display: React.CSSProperties = { fontFamily: T.display, fontWeight: 450, letterSpacing: "-.035em" };
 
 type PanelKey = "EXPLORE" | "DOMAINS" | "MISSIONS" | "CULTURE" | "ABOUT" | "TAKE PART";
 
@@ -324,7 +324,7 @@ function Header() {
   useEffect(() => {
     const seg = pathname.split("/").filter(Boolean);
     const cap = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
-    document.title = seg.length ? `${seg.map(cap).join(" · ")} — 4PLANET_` : "4PLANET_ — For a Living Planet";
+    document.title = seg.length ? `${seg.map(cap).join(" · ")} — 4PLANET_` : "4PLANET_ For a Living Planet";
   }, [pathname]);
 
   const menuMode = Boolean(panel || mobileOpen);
@@ -435,7 +435,7 @@ function Footer() {
         <div style={{ marginTop: 18, maxWidth: 640 }}>
           <p style={{ color: "rgba(255,255,255,.9)", fontSize: "clamp(15px,1.4vw,19px)", lineHeight: 1.5 }}>One planet. One connected living system.</p>
           <p style={{ color: "rgba(255,255,255,.9)", fontSize: "clamp(15px,1.4vw,19px)", lineHeight: 1.5 }}>The work has only just begun.</p>
-          <p className="mono" style={{ color: acc, fontSize: 12.5, letterSpacing: ".04em", marginTop: 14 }}>Cause there is no Planet B.</p>
+          
         </div>
 
         <div className="foot-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: "clamp(28px,4vw,56px)", alignItems: "start", marginTop: "clamp(44px,6vw,84px)" }}>
@@ -452,7 +452,7 @@ function Footer() {
         </div>
 
         <div style={{ borderTop: `1px solid rgba(255,255,255,.16)`, marginTop: "clamp(40px,5vw,64px)", paddingTop: 22, display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-          <span className="mono" style={{ fontSize: 11.5, color: "rgba(255,255,255,.7)" }}>4PLANET_ — FOR A LIVING PLANET.</span>
+          <span className="mono" style={{ fontSize: 11.5, color: "rgba(255,255,255,.7)" }}>4PLANET_ FOR A LIVING PLANET.</span>
           <a href={`mailto:${contactEmail}`} className="foot-link mono" style={{ fontSize: 11, color: "rgba(255,255,255,.7)", textDecoration: "none" }}>{contactEmail.toUpperCase()}</a>
 
           <Link to="/privacy" className="foot-link mono" style={{ fontSize: 11, color: "rgba(255,255,255,.7)", textDecoration: "none" }}>PRIVACY</Link>

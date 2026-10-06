@@ -76,8 +76,8 @@
 .home-worlds__intro{padding-bottom:clamp(36px,5vw,64px)}
 .home-worlds__intro>.home-kicker{color:rgba(255,255,255,.55)}
 .home-worlds__intro .home-section-intro{margin-top:14px}
-.home-world-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;background:rgba(255,255,255,.14)}
-.home-world{position:relative;min-height:clamp(520px,72vh,760px);display:flex;align-items:flex-end;overflow:hidden;color:#fff;text-decoration:none;background:#050505}
+.home-world-grid{display:grid;grid-template-columns:1fr;gap:1px;background:rgba(255,255,255,.14)}
+.home-world{position:relative;min-height:clamp(640px,92svh,980px);display:flex;align-items:flex-end;overflow:hidden;color:#fff;text-decoration:none;background:#050505}
 .home-world>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
 .home-world:hover>img,.home-world:focus-visible>img{transform:scale(1.015)}
 .home-world__scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.04) 10%,rgba(0,0,0,.14) 54%,rgba(0,0,0,.84) 100%)}
@@ -132,7 +132,7 @@
   .home-lens-grid{grid-template-columns:1fr}
   .home-lens{border-bottom:1px solid rgba(8,8,8,.14)}
   .home-world-grid{grid-template-columns:1fr}
-  .home-world{min-height:68svh}
+  .home-world{min-height:78svh}
   .home-impact-gallery__rail{grid-template-columns:1fr}
   .home-impact-gallery__rail .home-impact-card{min-height:330px}
   .home-impact-card--featured{min-height:460px}
