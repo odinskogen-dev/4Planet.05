@@ -39,8 +39,11 @@ async function assertPremiumNavigation(page) {
       await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
     await page.getByRole("button", { name: "EXPLORE", exact: true }).hover();
-    await expect(page.getByRole("region", { name: "EXPLORE navigation" })).toBeVisible();
+    const explorePanel = page.getByRole("region", { name: "EXPLORE navigation" });
+    await expect(explorePanel).toBeVisible();
     await expect(page.getByRole("link", { name: /ATLAS/i }).first()).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(explorePanel).toBeHidden();
   }
 
   await expect(page.getByText(/4NTARCTICA/i)).toHaveCount(0);
@@ -71,17 +74,21 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
 
       await expect(page.getByRole("heading", { name: "Human life depends on a living planet." })).toBeVisible();
 
-      const atlasFrameElement = page.getByTitle("Interactive 4PLANET ATLAS");
+      const atlasFrameElement = page.getByTitle("Interactive 4Planet Atlas");
       await expect(atlasFrameElement).toBeVisible();
       await atlasFrameElement.scrollIntoViewIfNeeded();
-      const atlasFrame = page.frameLocator('iframe[title="Interactive 4PLANET ATLAS"]');
+      const atlasFrame = page.frameLocator('iframe[title="Interactive 4Planet Atlas"]');
       await expect(atlasFrame.locator(".world.light")).toBeVisible({ timeout: 20_000 });
       await expect(atlasFrame.locator("canvas.maplibregl-canvas")).toBeVisible({ timeout: 20_000 });
+      const layers = atlasFrame.getByRole("button", { name: "Layers", exact: true });
+      await expect(layers).toBeVisible();
+      await layers.click();
+      await expect(layers).toHaveAttribute("aria-expanded", "true");
 
-      await expect(page.getByRole("heading", { name: "See the same living planet from different angles." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Four ways to understand the same planet." })).toBeVisible();
       await expect(page.locator(".home-lens")).toHaveCount(4);
       await expect(page.getByRole("heading", { name: "Meet the Orca." })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Four connected worlds." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Four domains. One connected planet." })).toBeVisible();
 
       const worlds = page.locator(".home-world");
       await expect(worlds).toHaveCount(4);
