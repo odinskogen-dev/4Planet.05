@@ -99,10 +99,17 @@ jobs:
           grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
           grep -Fq 'Open Berlin in ATLAS' <<<"$berlin"
           grep -Fq 'application/ld+json' <<<"$berlin"
+          grep -Fq 'name="viewport"' <<<"$berlin"
+          grep -Fq 'Related places in the current index' <<<"$berlin"
+          grep -Fq 'Natural Earth 1:10m Populated Places' <<<"$berlin"
+          grep -Fq 'Truth boundary:' <<<"$berlin"
+          grep -Fq '/place/' <<<"$berlin"
           atlas_sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
           grep -Fq '<loc>https://4planetatlas.com/place/berlin</loc>' <<<"$atlas_sm"
           grep -Fq '<loc>https://4planetatlas.com/place/oslo</loc>' <<<"$atlas_sm"
           grep -Fq '<loc>https://4planetatlas.com/place/tokyo</loc>' <<<"$atlas_sm"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | sort -u | wc -l | tr -d ' ')" = "50"
           brands=$(curl -fsS https://4brands.org/)
           grep -Fq '4BRANDS — Understand Any Company. Improve Your Own.' <<<"$brands"
           grep -Fq 'application/ld+json' <<<"$brands"
