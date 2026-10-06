@@ -16,6 +16,7 @@ on:
       - src/data/discoveryInventory.json
       - src/planet/proofs/planetProofs.ts
       - functions/_middleware.js
+      - src/content/missions.ts
 
 permissions:
   contents: read
