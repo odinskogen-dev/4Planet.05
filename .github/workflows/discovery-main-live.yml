@@ -6,6 +6,13 @@ on:
     paths:
       - .github/workflows/discovery-main-live.yml
       - src/pages/integrated/AtlasDiscoveryPage.tsx
+      - src/pages/discovery/DiscoveryEngine.tsx
+      - src/data/discoveryTopics.json
+      - src/routes/router.tsx
+      - scripts/discovery-engine-01-contract.test.mjs
+      - package.json
+      - package-lock.json
+      - docs/control/GOLD_CURRENT_BRIEF.md
       - src/pages/v5/PlanetProof.tsx
       - src/pages/integrated/Species.tsx
       - src/pages/integrated/SpeciesRoute.tsx
@@ -62,8 +69,12 @@ jobs:
         run: |
           set -euo pipefail
           npm ci
+          npm run test:discovery-engine
           npm run build
           test -f dist/sitemap.xml
+          test -f dist/now/index.html
+          test -f dist/wildfires/index.html
+          test -f dist/earthquakes/index.html
           ! grep -Fq '<loc>https://4planet.org/atlas</loc>' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/species</loc>' dist/sitemap.xml
           test -f dist/_headers
@@ -126,6 +137,21 @@ jobs:
           ! grep -Fq '<loc>https://4planet.org/atlas</loc>' <<<"$sm"
           ! grep -Fq '<loc>https://4planet.org/species</loc>' <<<"$sm"
           grep -Fq '<loc>https://4planet.org/</loc>' <<<"$sm"
+          for route in now wildfires earthquakes climate-change biodiversity deforestation plastic-pollution coral-bleaching air-quality orca whales bees amazon-rainforest oslofjord renewable-energy solar-energy food-waste fast-fashion rewilding climate-solutions environmental-jobs; do
+            grep -Fq "<loc>https://4planet.org/$route</loc>" <<<"$sm"
+          done
+          now=$(curl -fsS https://4planet.org/now)
+          grep -Fq 'What is happening on Earth right now?' <<<"$now"
+          grep -Fq 'application/ld+json' <<<"$now"
+          grep -Fq 'LATEST AVAILABLE' <<<"$now"
+          wildfires=$(curl -fsS https://4planet.org/wildfires)
+          grep -Fq '<h1>Wildfires</h1>' <<<"$wildfires"
+          grep -Fq 'NASA FIRMS' <<<"$wildfires"
+          grep -Fq 'What the sources establish' <<<"$wildfires"
+          earthquakes=$(curl -fsS https://4planet.org/earthquakes)
+          grep -Fq '<h1>Earthquakes</h1>' <<<"$earthquakes"
+          grep -Fq 'USGS' <<<"$earthquakes"
+          echo 'DISCOVERY_ENGINE_01_LIVE_PASS'
           curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
           curl -fsS https://4brands.org/robots.txt | grep -Fq 'Sitemap: https://4brands.org/sitemap.xml'
           atlas=$(curl -fsS https://4planetatlas.com/)
