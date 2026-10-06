@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "status": "FOUNDER_AUTHORISED",
+  "status": "NOT_AUTHORISED",
   "sourceBranch": "king/test",
-  "testKingSha": "f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24",
-  "priorLiveSha": "44ed8eb1055aa2cdc6a033be23ae44db18b1dd48",
-  "founderDecisionRef": "Founder instruction 2026-10-03 — “AXE Jeg foreslår vi faktisk kjører det ut live også sender du meg url når alt er ute”.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37077436047",
-  "rollbackRef": "main@44ed8eb1055aa2cdc6a033be23ae44db18b1dd48",
-  "releaseControlCommit": true,
-  "note": "Bounded 4PLANET discovery LIVE release. Runtime parent f4e3f33807bb8ca1919d09f4f0a12eb1fb58fe24 preserves prior LIVE and overlays only Earth/Fires/Whales useful internet objects, route/sitemap/prerender/public-host analytics, GOLD brief, and the accepted brace-expansion lock remediation. Source HEIR dc2d5e3be517c3da3bac5dcea71cbdcffa3ca870. No social/email send, outreach, paid spend or IndexNow submission."
+  "testKingSha": null,
+  "priorLiveSha": "1c7f7504640363db9495adbf459cd7a043c57316",
+  "founderDecisionRef": null,
+  "evidenceRef": null,
+  "rollbackRef": "main@1c7f7504640363db9495adbf459cd7a043c57316",
+  "releaseControlCommit": false,
+  "note": "Pre-release fail-closed state for the bounded 4PLANET Discovery Engine 01 production carrier. Exact carrier QA must complete before a separate manifest-only Founder-authorisation commit. No wholesale king/test promotion."
 }
