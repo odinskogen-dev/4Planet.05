@@ -110,9 +110,9 @@ export function ActorsIndex() {
         ))}
       </section>
       <section className="actor-index-method">
-        <p>GOLD METHOD</p>
-        <h2>One exceptional system. Ten unlike actors. Then scale.</h2>
-        <span>ORCA is Gold 01. Get Involved is now part of the same profile grammar: identity → trust → real participation, with source and cost reality intact.</span>
+        <p>HOW PROFILES WORK</p>
+        <h2>One clear structure for understanding very different kinds of work.</h2>
+        <span>Each profile connects identity, evidence, place and real ways to participate while keeping source limits and practical costs visible.</span>
       </section>
     </main>
   );
@@ -146,7 +146,7 @@ export function ActorProfilePage() {
       </nav>
 
       <header className="actor-gold-hero">
-        <div className="actor-gold-kicker"><span>ACTOR GOLD 01</span><RelationshipMark actor={actor} /><span>{actor.publicationState}</span></div>
+        <div className="actor-gold-kicker"><span>ACTOR PROFILE</span><RelationshipMark actor={actor} /><span>{actor.publicationState}</span></div>
         <h1>{actor.name}</h1>
         <p>{actor.actorType}</p>
         <div className="actor-gold-hero-copy">{actor.oneLine}</div>
@@ -163,7 +163,7 @@ export function ActorProfilePage() {
       </section>
 
       <section className="actor-gold-section actor-gold-section-light">
-        <SectionIntro number="01" eyebrow="WHAT THEY ACTUALLY DO" title="Work before branding." copy="The profile starts with the work itself: observable methods, operating contexts and evidence boundaries." />
+        <SectionIntro number="01" eyebrow="WHAT THEY ACTUALLY DO" title="Start with the work itself." copy="The profile starts with the work itself: observable methods, operating contexts and evidence boundaries." />
         <div className="actor-gold-list-grid">
           {actor.work.map((item, index) => <article key={item}><span>0{index + 1}</span><h3>{item}</h3></article>)}
         </div>
@@ -188,9 +188,9 @@ export function ActorProfilePage() {
       </section>
 
       <section className="actor-gold-section actor-gold-section-paper">
-        <SectionIntro number="04" eyebrow="FIELD FEED" title="A live page only when the field is live." copy="Partner material enters this feed only after source, rights and editorial release. Empty is more trustworthy than invented activity." />
+        <SectionIntro number="04" eyebrow="FIELD FEED" title="Field updates only when the field is live." copy="Partner material enters this feed only after source, rights and editorial release. Empty is more trustworthy than invented activity." />
         {actor.fieldFeed.length === 0 ? (
-          <div className="actor-gold-empty"><span>NO PUBLIC FIELD DISPATCHES YET</span><p>Intake → source QA → editorial review → public. This profile will populate automatically when real dispatches clear those gates.</p></div>
+          <div className="actor-gold-empty"><span>NO PUBLIC FIELD UPDATES YET</span><p>Field updates appear only after source, rights and editorial checks. Empty is more trustworthy than invented activity.</p></div>
         ) : actor.fieldFeed.map((dispatch) => <article key={dispatch.sourcePackId}>{dispatch.title}</article>)}
       </section>
 
@@ -204,7 +204,7 @@ export function ActorProfilePage() {
       </section>
 
       <section className="actor-gold-section actor-gold-section-dark">
-        <SectionIntro number="06" eyebrow="PROJECTS / DATA / PROOF" title="Do not collapse activity into outcome." copy="Delivery, survey effort, observed data and ecological outcome stay separate until the evidence supports each level." />
+        <SectionIntro number="06" eyebrow="PROJECTS / DATA / PROOF" title="Activity is not the same as outcome." copy="Delivery, survey effort, observed data and ecological outcome stay separate until the evidence supports each level." />
         <div className="actor-gold-project-grid">
           {actor.projects.map((project) => <article key={project.title}><span>{project.state}</span><h3>{project.title}</h3><p>{project.note}</p></article>)}
           {actor.evidence.map((item) => <article key={item.label} className="actor-gold-evidence"><span>{item.state}</span><h3>{item.label}</h3><p>{item.note}</p></article>)}
@@ -214,7 +214,7 @@ export function ActorProfilePage() {
       <GetInvolvedSection actorId={actor.id} />
 
       <section className="actor-gold-section actor-gold-section-action">
-        <SectionIntro number="08" eyebrow="FOLLOW / SUPPORT / ACT" title="One useful next move, when it is real." copy="Actions stay locked until authority and delivery are verified. The interface never manufactures urgency to fill space." />
+        <SectionIntro number="08" eyebrow="FOLLOW / SUPPORT / ACT" title="One useful next move — when it is real." copy="Actions stay locked until authority and delivery are verified. The interface never manufactures urgency to fill space." />
         <div className="actor-gold-actions">
           {actor.actions.map((action) => action.path && action.state === "OPEN" ? (
             <Link key={action.label} to={action.path}><span>{action.label}</span><b>↗</b></Link>
@@ -232,11 +232,11 @@ export function ActorProfilePage() {
       </section>
 
       <section className="actor-gold-engine-note">
-        <p>ACTOR ENGINE 01</p>
-        <h2>Identity to action, without losing truth.</h2>
-        <span>The profile now carries a reusable participation seam: source-backed opportunities live as separate objects and can be projected into Actor, matching and future Atlas/Impact surfaces without duplicating identity.</span>
-        <details><summary>VIEW VISUAL LADDER</summary>{ACTOR_GOLD_VISUAL_LADDER.map((rule) => <p key={rule}>{rule}</p>)}</details>
-        <details><summary>VIEW RELEASE RULES</summary>{ACTOR_GOLD_RELEASE_RULES.map((rule) => <p key={rule}>{rule}</p>)}</details>
+        <p>HOW THIS PROFILE CONNECTS</p>
+        <h2>From identity to action, without losing the evidence.</h2>
+        <span>Source-backed opportunities remain separate from the profile itself, so participation can be shown without turning identity, activity and ecological outcomes into the same claim.</span>
+        <details><summary>VIEW PROFILE EVIDENCE</summary>{ACTOR_GOLD_VISUAL_LADDER.map((rule) => <p key={rule}>{rule}</p>)}</details>
+        <details><summary>VIEW PUBLICATION RULES</summary>{ACTOR_GOLD_RELEASE_RULES.map((rule) => <p key={rule}>{rule}</p>)}</details>
       </section>
     </main>
   );
