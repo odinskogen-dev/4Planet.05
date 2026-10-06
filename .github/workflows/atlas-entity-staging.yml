@@ -1,0 +1,124 @@
+name: ATLAS Entity Authority + Next 500 Staging
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/prepare_atlas_natural_earth_candidates.py"
+      - "scripts/verify_atlas_entity_authority.py"
+      - ".github/workflows/atlas-entity-staging.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atlas-entity-staging
+  cancel-in-progress: false
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch pinned-class upstream Natural Earth source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .atlas-source
+          base="https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson"
+          curl -fsSL --retry 3 "$base/ne_50m_populated_places_simple.geojson" -o .atlas-source/places-simple.geojson
+          curl -fsSL --retry 3 "$base/ne_10m_populated_places.geojson" -o .atlas-source/places-rich.geojson
+          curl -fsSL --retry 3 "$base/ne_110m_admin_0_countries.geojson" -o .atlas-source/countries.geojson
+          test -s .atlas-source/places-simple.geojson
+          test -s .atlas-source/places-rich.geojson
+          test -s .atlas-source/countries.geojson
+
+      - name: Resolve current upstream file SHA and live exclusion set
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha=$(curl -fsSL --retry 3 "https://api.github.com/repos/nvkelso/natural-earth-vector/contents/geojson/ne_50m_populated_places_simple.geojson?ref=master" | python -c 'import json,sys; print(json.load(sys.stdin)["sha"])')
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          text=Path("functions/_middleware.js").read_text(encoding="utf-8")
+          m=re.search(r"const ATLAS_ENTITY_METADATA = (\{.*?\n\});\n\nconst ATLAS_WORLD_PLACES",text,re.S)
+          if not m:
+              raise SystemExit("Could not locate live ATLAS entity metadata")
+          meta=json.loads(m.group(1))
+          places=[{"slug":slug,"naturalEarthId":row.get("neId")} for slug,row in meta.items()]
+          if len(places)!=50:
+              raise SystemExit(f"Expected 50 live places, got {len(places)}")
+          Path(".atlas-source/live.json").write_text(json.dumps({"places":places},indent=2)+"\n",encoding="utf-8")
+          PY
+
+      - name: Generate next 500 staging-only candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/prepare_atlas_natural_earth_candidates.py             --places-geojson .atlas-source/places-simple.geojson             --rich-geojson .atlas-source/places-rich.geojson             --countries-geojson .atlas-source/countries.geojson             --live-json .atlas-source/live.json             --output src/data/atlas-next-500-staging.json             --limit 500             --source-version 5.1.2             --source-file-sha "${{ steps.source.outputs.sha }}"
+
+      - name: Verify current 50 entity authority against Natural Earth
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/verify_atlas_entity_authority.py             --middleware functions/_middleware.js             --places-simple .atlas-source/places-simple.geojson             --places-rich .atlas-source/places-rich.geojson             --countries .atlas-source/countries.geojson             --output src/data/atlas-entity-authority-qa.json
+
+      - name: Red-team staging cohort
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+          p=json.loads(Path("src/data/atlas-next-500-staging.json").read_text(encoding="utf-8"))
+          rows=p["places"]
+          assert p["state"]=="STAGING_ONLY_DO_NOT_PUBLISH"
+          assert len(rows)==500, len(rows)
+          assert all(x["status"]=="STAGING_ONLY" and x["publishApproved"] is False for x in rows)
+          assert len({x["slug"] for x in rows})==len(rows)
+          assert len({x["naturalEarthId"] for x in rows})==len(rows)
+          assert all(re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*",x["slug"]) for x in rows)
+          assert all(x["country"] and x["source"]["rights"]=="Public domain" for x in rows)
+          assert all(-90<=x["lat"]<=90 and -180<=x["lon"]<=180 for x in rows)
+          assert all(x["qualityGate"]["publicIndexApproved"] is False for x in rows)
+          qa=p["qa"]
+          assert qa["duplicateSourceIds"]==0 and qa["duplicateSlugs"]==0
+          assert qa["invalidCoordinates"]==0 and qa["missingCountry"]==0 and qa["missingProvenance"]==0
+          print("NEXT_500_STAGING_QA_PASS")
+          print(json.dumps({"candidateCount":len(rows),"countries":len({x["country"] for x in rows}),"continents":sorted({x["continent"] for x in rows if x.get("continent")})}))
+          PY
+
+      - name: Commit derived staging and QA assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/atlas-next-500-staging.json src/data/atlas-entity-authority-qa.json
+          if git diff --cached --quiet; then
+            echo "Derived assets already current."
+            exit 0
+          fi
+          git commit -m "data(atlas): stage verified next 500 place candidates"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              echo "ATLAS_NEXT_500_STAGING_COMMITTED"
+              exit 0
+            fi
+            sleep $((attempt * 2))
+          done
+          echo "Could not push generated staging without conflict."
+          exit 1
