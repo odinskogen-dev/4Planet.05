@@ -43,6 +43,23 @@ export interface GoldSection {
   callout?: string;
 }
 
+export interface GoldSolutionIntelligence {
+  problem: string;
+  causalMechanism: string;
+  humanSystemPosition: string[];
+  applicability: string[];
+  maturity: string;
+  evidenceLevel: string;
+  demonstratedOutcomes: GoldFact[];
+  economics: GoldFact[];
+  limitations: string[];
+  actors: Array<{ actorId: string; name: string; role: string; state: GoldEvidenceState; href?: string }>;
+  implementationRequirements: string[];
+  capital: { state: GoldEvidenceState; note: string };
+  currentActions: Array<{ label: string; provider: string; href: string; checkedAt: string; state: "OPEN" | "WATCH" }>;
+  unknowns: string[];
+}
+
 export interface GoldObjectProof {
   slug: string;
   kind: GoldObjectKind;
@@ -56,6 +73,7 @@ export interface GoldObjectProof {
   facts: GoldFact[];
   sections: GoldSection[];
   relationships: GoldRelationship[];
+  solutionIntelligence?: GoldSolutionIntelligence;
   sources: GoldSource[];
   truthBoundary: string;
   donorNote: string;
@@ -274,6 +292,44 @@ export const GOLD_OBJECT_PROOFS: GoldObjectProof[] = [
       { kind: "PRESSURE", label: "Nutrient / particle inputs", relation: "Regional pressure reduction remains central to Oslofjord recovery.", state: "KNOWN" },
       { kind: "PROOF", label: "Long-term ecological outcome", relation: "Must be measured after intervention; not assumed from planting activity.", state: "UNKNOWN", boundary: "Delivery ≠ survival ≠ function ≠ ecosystem recovery." },
     ],
+    solutionIntelligence: {
+      problem: "Loss or degradation of eelgrass habitat in shallow coastal systems, where local physical disturbance and wider water-quality pressures can prevent recovery.",
+      causalMechanism: "Re-establish eelgrass through shoot transplantation or seed sowing only after site suitability is assessed, while reducing the pressures that would otherwise undermine establishment.",
+      humanSystemPosition: ["Coastal restoration", "Municipal / marine management", "Field monitoring"],
+      applicability: ["Site-specific shallow coastal habitats", "Oslofjord as a documented Norwegian use context", "Only where suitability and pressure-reduction conditions are met"],
+      maturity: "Practical guidance exists; Norwegian authorities still describe marine restoration as complex and relatively little tested.",
+      evidenceLevel: "METHOD DOCUMENTED / OUTCOME SITE-SPECIFIC",
+      demonstratedOutcomes: [
+        { label: "METHOD DELIVERY", value: "Documented", note: "Site selection, planting and monitoring are described in practical guidance.", state: "KNOWN" },
+        { label: "UNIVERSAL SUCCESS", value: "UNKNOWN", note: "No transferable universal survival or ecosystem-recovery rate is claimed.", state: "UNKNOWN" },
+      ],
+      economics: [
+        { label: "STANDARD COST", value: "UNKNOWN", note: "The checked sources do not establish a universal cost per restored area.", state: "UNKNOWN" },
+        { label: "VALUE PATH", value: "Habitat recovery only if ecological function persists", note: "Planting activity alone is not economic or ecological outcome proof.", state: "INTERPRETED" },
+      ],
+      limitations: [
+        "Restoration cannot substitute for reducing nutrient, particle and physical pressures.",
+        "A planted site is not evidence of long-term survival, ecological function or ecosystem recovery.",
+        "Site suitability and monitoring design must be resolved before an intervention is treated as applicable.",
+      ],
+      actors: [],
+      implementationRequirements: [
+        "Site-suitability assessment",
+        "Pressure-reduction plan",
+        "Appropriate transplantation or seed method",
+        "Monitoring plan with explicit outcome measures",
+      ],
+      capital: {
+        state: "UNKNOWN",
+        note: "No generic funding requirement or standard project budget is established by the checked sources; capital must be attached to a real site and delivery plan.",
+      },
+      currentActions: [],
+      unknowns: [
+        "Site-specific survival probability",
+        "Long-term ecological-function outcome",
+        "Standardised cost and funding requirement",
+      ],
+    },
     sources: [
       {
         label: "Restaurering av ålegrasenger — praktisk veileder",
@@ -303,6 +359,154 @@ export const GOLD_OBJECT_PROOFS: GoldObjectProof[] = [
       { label: "Open Oslofjord", href: "/labs/gold/object/oslofjord", kind: "PLACE" },
       { label: "Open existing Impact", href: "/impact", kind: "PROOF / ACTION" },
       { label: "Read the Explainer proof", href: "/labs/gold/story/explainer-1-5c", kind: "MAGAZINE" },
+    ],
+  },
+  {
+    slug: "coral-restoration",
+    kind: "SOLUTION",
+    title: "Coral restoration",
+    eyebrow: "SOLUTION GOLD · RESTORE, MONITOR, ADAPT",
+    standfirst: "Growing corals in nurseries and returning them to degraded reefs is an established restoration practice. Its value depends on site conditions, genetic diversity, heat stress, monitoring and whether restored corals persist as part of a functioning reef.",
+    status: "TEST PROOF · ACTIVE PRACTICE + OPEN UNCERTAINTY",
+    accent: "#ff785a",
+    visual: "OCEAN",
+    facts: [
+      { label: "CORE METHOD", value: "Nursery → outplant → monitor", note: "NOAA + CRF", state: "KNOWN" },
+      { label: "FLORIDA PRACTICE", value: "Tens of thousands of acroporid colonies outplanted annually", note: "NOAA AOML", state: "KNOWN" },
+      { label: "ONE-YEAR SURVIVORSHIP", value: ">70% reported in Florida programme context", note: "NOAA AOML; not a universal rate", state: "KNOWN" },
+      { label: "ECOSYSTEM-SCALE BENEFIT", value: "Context-dependent", note: "NOAA science-needs assessment retains major evidence gaps", state: "UNKNOWN" },
+      { label: "STANDARD COST", value: "UNKNOWN", note: "No universal cost per restored reef area is claimed", state: "UNKNOWN" },
+      { label: "CURRENT PARTICIPATION", value: "Spring 2027 CRF internship open", note: "Applications listed through 30 October 2026", state: "KNOWN" },
+    ],
+    sections: [
+      {
+        index: "01",
+        eyebrow: "WHAT IT DOES",
+        title: "Increase living coral where natural recovery is not enough.",
+        body: [
+          "NOAA describes coral restoration as a family of interventions that includes growing corals in protected nursery conditions, planting nursery-grown corals onto reefs and building resilience to environmental stress.",
+          "Coral Restoration Foundation documents an operational version of that loop: in-situ nurseries, multi-species outplanting and photomosaic monitoring. The method is real; the outcome is not automatic.",
+        ],
+      },
+      {
+        index: "02",
+        eyebrow: "WHAT THE EVIDENCE SAYS",
+        title: "Survival can be measured. Ecosystem recovery is a higher bar.",
+        body: [
+          "NOAA AOML reports that tens of thousands of acroporid colonies are raised and outplanted on Florida's coral reef each year, with more than 70 percent one-year survivorship in that programme context.",
+          "NOAA's Florida Keys science-needs assessment also notes that historical outplanting has often involved limited species, relatively low scale and minimal overall ecosystem benefits. The Gold object therefore separates colony survival from reef recovery.",
+        ],
+        callout: "OUTPLANTING ≠ SURVIVAL ≠ REPRODUCTION ≠ ECOSYSTEM RECOVERY",
+      },
+      {
+        index: "03",
+        eyebrow: "WHERE IT BREAKS",
+        title: "A restoration method cannot outrun the conditions around it.",
+        body: [
+          "Marine heat, disease, water quality, predation, competition and site choice can materially change restoration performance. NOAA programmes continue to test resilient genotypes, site selection and adaptive management because the operating environment is not stable.",
+          "A credible solution record therefore carries failure conditions, monitoring requirements and current uncertainty beside the intervention itself.",
+        ],
+      },
+    ],
+    relationships: [
+      { kind: "PRESSURE", label: "Marine heat stress", relation: "Heat stress can drive bleaching and mortality and can change when and where outplanting is viable.", state: "KNOWN" },
+      { kind: "PLACE", label: "Florida Keys", relation: "A major current operating and research context for nursery propagation and outplanting.", state: "KNOWN" },
+      { kind: "ACTOR", label: "Coral Restoration Foundation", relation: "A restoration nonprofit operating nurseries, outplanting, monitoring and research programmes.", state: "KNOWN", href: "/actors/coral-restoration-foundation" },
+      { kind: "PROOF", label: "Long-term reef recovery", relation: "Requires evidence beyond coral placement or short-term colony survival.", state: "UNKNOWN", boundary: "Project activity and colony survival do not prove ecosystem-scale recovery." },
+    ],
+    solutionIntelligence: {
+      problem: "Degraded coral reefs facing interacting pressures including ocean warming, disease, pollution, physical damage and loss of reef-building coral.",
+      causalMechanism: "Propagate genetically diverse corals in nurseries, outplant them to suitable degraded reef sites, then monitor survival, growth, reproduction and wider reef response while adapting methods to environmental conditions.",
+      humanSystemPosition: ["Marine restoration operations", "Conservation science", "Field monitoring", "Restoration training and practitioner infrastructure"],
+      applicability: ["Degraded reef sites with appropriate permits and site assessment", "Florida and Caribbean practice contexts documented by the checked sources", "Not a substitute for reducing climate and local water-quality pressures"],
+      maturity: "Operational restoration practice with active research and method refinement.",
+      evidenceLevel: "METHOD DEMONSTRATED / OUTCOMES CONTEXT-SPECIFIC",
+      demonstratedOutcomes: [
+        { label: "ONE-YEAR COLONY SURVIVAL", value: ">70% in reported Florida acroporid programme context", note: "NOAA AOML; not a universal success rate.", state: "KNOWN" },
+        { label: "DRY TORTUGAS CASE", value: ">90% after eight months in one reported 2025 outplant cohort", note: "CRF preliminary project report; project-specific and provider-reported.", state: "KNOWN" },
+        { label: "ECOSYSTEM RECOVERY", value: "UNKNOWN / site-specific", note: "NOAA identifies continuing questions about scaling restoration into ecosystem processes and benefits.", state: "UNKNOWN" },
+      ],
+      economics: [
+        { label: "STANDARD UNIT COST", value: "UNKNOWN", note: "No universal cost-per-colony or cost-per-hectare is inferred from these sources.", state: "UNKNOWN" },
+        { label: "CAPITAL INTENSITY", value: "Context-specific", note: "Nursery, vessel, diving, monitoring, permitting and labour needs vary by site and programme.", state: "INTERPRETED" },
+      ],
+      limitations: [
+        "Heat stress, disease and poor site conditions can overwhelm an otherwise sound restoration method.",
+        "Short-term survivorship is not equivalent to reproduction, reef function or ecosystem recovery.",
+        "Restoration does not remove the need to reduce climate and local pollution pressures.",
+      ],
+      actors: [
+        { actorId: "P17-A011", name: "Coral Restoration Foundation", role: "Restoration operator, research collaborator and training/participation provider", state: "KNOWN", href: "/actors/coral-restoration-foundation" },
+      ],
+      implementationRequirements: [
+        "Permitted and ecologically suitable restoration site",
+        "Diverse and appropriate coral stock / nursery capacity",
+        "Trained field team and safe diving/boat operations where required",
+        "Outplanting protocol matched to species and site",
+        "Monitoring and adaptive-management plan",
+      ],
+      capital: {
+        state: "UNKNOWN",
+        note: "The method clearly consumes labour, nursery, field and monitoring resources, but no generic project capital requirement should be invented without a specific site, scope and delivery plan.",
+      },
+      currentActions: [
+        {
+          label: "Spring 2027 Coral Conservation & Reef Restoration Internship",
+          provider: "Coral Restoration Foundation",
+          href: "https://coralrestoration.org/internships/",
+          checkedAt: "2026-10-06",
+          state: "OPEN",
+        },
+      ],
+      unknowns: [
+        "Transferable long-term ecosystem recovery rate",
+        "Standardised economics across sites",
+        "Best intervention under future heat regimes",
+      ],
+    },
+    sources: [
+      {
+        label: "Restoring Coral Reefs",
+        publisher: "NOAA Fisheries",
+        url: "https://www.fisheries.noaa.gov/national/habitat-conservation/restoring-coral-reefs",
+        checkedAt: "2026-10-06",
+        note: "Public authority for restoration approaches, reef pressures and current NOAA restoration context.",
+      },
+      {
+        label: "Coral Reef Restoration — Science Needs Assessment",
+        publisher: "NOAA Office of National Marine Sanctuaries",
+        url: "https://sanctuaries.noaa.gov/science/assessment/florida-keys/coral-restoration.html",
+        checkedAt: "2026-10-06",
+        note: "Independent boundary source on historical scale, species limitations and the need to connect outplanting to ecosystem processes.",
+      },
+      {
+        label: "Coral Restoration and Resilience",
+        publisher: "NOAA AOML",
+        url: "https://www.aoml.noaa.gov/projects/coral-restoration-and-resilience/",
+        checkedAt: "2026-10-06",
+        note: "Source for current Florida programme scale and reported one-year acroporid survivorship context.",
+      },
+      {
+        label: "Restoration",
+        publisher: "Coral Restoration Foundation",
+        url: "https://coralrestoration.org/restoration/",
+        checkedAt: "2026-10-06",
+        note: "Operator source for nursery, outplanting and photomosaic-monitoring methods.",
+      },
+      {
+        label: "Spring 2027 internship",
+        publisher: "Coral Restoration Foundation",
+        url: "https://coralrestoration.org/internships/",
+        checkedAt: "2026-10-06",
+        note: "Current action source: application window, eligibility, schedule, stipend statement and participant-cost requirements.",
+      },
+    ],
+    truthBoundary: "This TEST Solution object does not claim that coral restoration reverses reef decline by itself, that a short-term survival percentage transfers across sites, or that 4PLANET partners with or delivers work for Coral Restoration Foundation.",
+    donorNote: "The existing Solution Gold grammar, Actor identity spine and Get Involved opportunity contract are reused. No separate solution, actor or participation database is introduced.",
+    nextObjects: [
+      { label: "Open Coral Restoration Foundation", href: "/actors/coral-restoration-foundation", kind: "ACTOR" },
+      { label: "Find a way to help", href: "/get-involved", kind: "ACTION" },
+      { label: "Explore ATLAS", href: "/atlas", kind: "ATLAS" },
     ],
   },
 ];
