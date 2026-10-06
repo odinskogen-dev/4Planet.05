@@ -4,6 +4,7 @@ import {
   type FourPlanetSession,
 } from "@/identity/identityClient";
 import type { PantryItem } from "@/food/pantry-decision.js";
+import { foodDecisionCoreContext } from "@/data/corePrimitives";
 
 export type FoodPantryMemory = {
   id: string;
@@ -252,6 +253,8 @@ export async function saveFoodDecision(
   session: FourPlanetSession,
   summary: FoodDecisionSummary,
 ) {
+  const core = foodDecisionCoreContext(session.user.id, summary.sourceRef);
+  const evidenceState = core.evidence[0]?.source_state ?? "UNKNOWN";
   const response = await fetch(`${identityConstants.supabaseUrl}/rest/v1/four_sapien_decisions`, {
     method: "POST",
     headers: headers(session, {
@@ -268,7 +271,7 @@ export async function saveFoodDecision(
       status: "decided",
       evidence: [{
         source_ref: summary.sourceRef,
-        source_state: summary.sourceRef === "DEMO_FIXTURE_NOT_VERIFIED" ? "DEMO_FIXTURE_NOT_VERIFIED" : "SOURCE_REFERENCED",
+        source_state: evidenceState,
         missing_count: summary.missingCount,
         unknown_count: summary.unknownCount,
       }],
@@ -277,6 +280,7 @@ export async function saveFoodDecision(
         privacy: "private_person",
         evidence_class: "USER_DECISION",
         loop: "food_first_value_v2",
+        core,
       },
       decided_at: new Date().toISOString(),
     }),
