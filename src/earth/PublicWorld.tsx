@@ -68,7 +68,6 @@ export default function PublicWorld() {
           .home-atlas-embed-runtime .world{background:#fff!important}
           .home-atlas-embed-runtime .search-wrap,
           .home-atlas-embed-runtime .lens-rail,
-          .home-atlas-embed-runtime .atlas-panel,
           .home-atlas-embed-runtime .status-strip,
           .home-atlas-embed-runtime .ctx,
           .home-atlas-embed-runtime .recenter-btn,
@@ -76,6 +75,10 @@ export default function PublicWorld() {
           .home-atlas-embed-runtime .maplibregl-ctrl-top-right,
           .home-atlas-embed-runtime .maplibregl-ctrl-bottom-left,
           .home-atlas-embed-runtime .maplibregl-ctrl-bottom-right{display:none!important}
+          .home-atlas-embed-runtime .atlas-panel{top:18px!important;left:18px!important;right:auto!important;width:min(300px,calc(100vw - 36px));max-height:calc(100vh - 36px);border:0!important;border-radius:18px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 14px 40px rgba(0,0,0,.10)!important;padding:12px!important}
+          .home-atlas-embed-runtime .atlas-panel.rest{width:auto!important;padding:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+          .home-atlas-embed-runtime .atlas-panel.rest .sect{width:auto!important;min-width:74px;padding:10px 14px!important;border:0!important;border-radius:999px!important;background:#2E2EFF!important;color:#fff!important;font-family:'DM Sans',sans-serif!important;font-size:12px!important;font-weight:600!important;letter-spacing:0!important;opacity:1!important;box-shadow:0 8px 24px rgba(46,46,255,.20)!important}
+          .home-atlas-embed-runtime .atlas-panel:not(.rest) .sect{padding:6px 0 10px!important;font-family:'DM Sans',sans-serif!important;font-size:12px!important;font-weight:600!important;letter-spacing:0!important;color:#080808!important}
           .home-atlas-embed-runtime .maplibregl-canvas-container,
           .home-atlas-embed-runtime .maplibregl-canvas{background:#fff!important}
         `}</style>
