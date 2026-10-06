@@ -12,7 +12,7 @@ import "@/styles/home-brand-reset.css";
 const PRODUCTS = [
   ["01", "ATLAS", "See the planet.", "Places, observations and planetary context.", "/atlas", T.blue],
   ["02", "SPECIES", "Meet life.", "Species, habitats, relationships and evidence.", "/species", "#3AE86F"],
-  ["03", "LIVING SYSTEMS", "Understand connections.", "Dependencies, pressures and change.", "/living-systems", "#FF4D22"],
+  ["03", "LIVING SYSTEMS", "Understand connections.", "Dependencies, pressures and change.", "/livingsystems/", "#FF4D22"],
   ["04", "IMPACT", "Find a way to help.", "Action, delivery, evidence and what happens next.", "/impact", "#3AE86F"],
 ] as const;
 

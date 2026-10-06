@@ -1,3 +1,13 @@
+# LIVING SYSTEMS v1.4.2 — QA CORRECTION 01 — 06 OCT 2026
+
+**CAUSE:** TEST KING Home uses a six-field product tuple. The initial bounded route transform targeted the older five-field shape, so the tuple stayed at `/living-systems` while `reloadDocument` expected `/livingsystems/`. TypeScript correctly failed closed.
+
+**CORRECTION:** Change only the LIVING SYSTEMS tuple target to `/livingsystems/` and harden the recovery contract to assert the actual tuple.
+
+**ZERO LOSS:** All 88 recovered v1.4.2 source files remain untouched. No historical visual, graph, intelligence or data semantics changed.
+
+---
+
 # LIVING SYSTEMS v1.4.2 ZERO LOSS — FOUNDER-AUTHORISED LIVE CANDIDATE — 06 OCT 2026
 
 **STATUS:** TEST KING CANDIDATE / FOUNDER AUTHORISED FOR BOUNDED LIVE RELEASE AFTER EXACT-SHA QA + RUNTIME READBACK.
