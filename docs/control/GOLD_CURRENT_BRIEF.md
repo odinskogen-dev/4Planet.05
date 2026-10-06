@@ -1,3 +1,13 @@
+# LIVING SYSTEMS v1.4.2 — QA CORRECTION 02 — 06 OCT 2026
+
+**CONCURRENT HEIR CHANGE:** The Founder-authorised homepage premium refinement landed after the canonical route fix and rewrote the product-card tuple, restoring its prior `/living-systems` target as part of that refactor.
+
+**RECONCILIATION:** Preserve the entire new homepage refinement. Change only the Living Systems target to `/livingsystems/` and full-document navigation so the standalone recovered Next product is loaded. Harden the contract to ignore cosmetic label case.
+
+**ZERO LOSS:** 88/88 historical v1.4.2 source files remain untouched. No current homepage visual work is reverted.
+
+---
+
 # 4PLANET HOMEPAGE — BRAND + COPY REFINEMENT LIVE CANDIDATE — 06 OCT 2026
 
 **STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / EXACT-HEAD HUMAN CRAFT + ATLAS ZERO LOSS REQUIRED BEFORE LIVE CLAIM.

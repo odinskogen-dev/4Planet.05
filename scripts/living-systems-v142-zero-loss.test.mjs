@@ -14,7 +14,7 @@ const nextConfig=await readFile(path.join(product,"next.config.js"),"utf8");
 assert.ok(nextConfig.includes('output: "export"'));assert.ok(nextConfig.includes('trailingSlash: true'));assert.ok(!nextConfig.includes("basePath"));
 const continuation=await readFile(path.join(product,"CONTINUATION.md"),"utf8");
 for(const phrase of ["relationships are the asset","Dependency Engine","Trust Layer","Solution Intelligence","Decision Intelligence","Learning Intelligence","Human Use Translation"])assert.ok(continuation.includes(phrase),`Missing historical invariant: ${phrase}`);
-const home=await readFile(path.join(root,"src","pages","v5","Home.tsx"),"utf8");assert.ok(home.split("\n").some((line)=>line.includes('"LIVING SYSTEMS"')&&line.includes('"/livingsystems/"')));assert.ok(home.includes('reloadDocument={to === "/livingsystems/"}'));
+const home=await readFile(path.join(root,"src","pages","v5","Home.tsx"),"utf8");assert.ok(home.split("\n").some((line)=>line.toLowerCase().includes('"living systems"')&&line.includes('"/livingsystems/"')));assert.ok(home.includes('reloadDocument={to === "/livingsystems/"}'));
 const router=await readFile(path.join(root,"src","routes","router.tsx"),"utf8");assert.ok(router.includes('<Route path="/living-systems" element={<ExternalRedirect to="/livingsystems/" />} />'));
 const redirects=await readFile(path.join(root,"public","_redirects"),"utf8");assert.ok(redirects.includes("/livingsystems  /livingsystems/  301"));assert.ok(redirects.includes("/living-systems  /livingsystems/  301"));
 const sitemap=await readFile(path.join(root,"scripts","generate-sitemap.mjs"),"utf8");assert.ok(sitemap.includes('"/livingsystems/"'));
