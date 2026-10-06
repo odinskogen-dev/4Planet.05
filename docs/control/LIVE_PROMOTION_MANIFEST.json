@@ -1,12 +1,15 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
   "testKingSha": "2003637420de884c4d67c9198712cb4749cc4924",
   "priorLiveSha": "c80b1edcbf46542ebbbf2a01224f3762f3c7b44f",
+  "releaseCommitSha": "23064dfbf4a775b3f22ec361b32d5ddee5a63556",
+  "boundedRelease": true,
+  "sourceCommit": "0a849ff3fd28e6cc6abcd04c95c5292410443502",
   "founderDecisionRef": "Founder instruction 2026-10-07 — “Dette må gjøres helt ferdig. Ikke stopp før 100% av LS 1.4.2 er live på 4Planet.”",
   "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37541957544",
   "rollbackRef": "main@c80b1edcbf46542ebbbf2a01224f3762f3c7b44f",
   "releaseControlCommit": false,
-  "note": "Bounded Living Systems v1.4.2 ZERO LOSS LIVE release. 88/88 historical blobs match source commit 0a849ff3fd28e6cc6abcd04c95c5292410443502. Preserve current LIVE and overlay only recovered product + build/navigation/release seams. No wholesale king/test promotion."
+  "note": "Bounded Living Systems v1.4.2 ZERO LOSS LIVE release. The release commit is a direct child of prior LIVE and overlays only the approved Living Systems recovery/deploy seams. Current main may contain later independent commits; release authority is bound to releaseCommitSha."
 }
