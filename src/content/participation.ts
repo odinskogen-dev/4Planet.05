@@ -411,6 +411,14 @@ export const ACTOR_TEMPLATE_TRANSFER_CASES = [
     note: "A current official internship proves that restoration actors can expose real participation with dates, eligibility and participant-cost reality without implying a 4PLANET partnership.",
   },
   {
+    actorId: "P17-A307",
+    actorName: "veritree",
+    archetype: "RESTORATION / IMPLEMENTATION",
+    source: "https://www.veritree.com/explore-projects/our-projects",
+    getInvolvedState: "NO_PUBLISHED_4PLANET_PATHWAY",
+    note: "The same profile grammar can carry restoration projects, evidence, geography and needs while Get Involved correctly remains empty until a sourced pathway exists.",
+  },
+  {
     actorId: "P17-A003",
     actorName: "GBIF",
     archetype: "KNOWLEDGE / DATA INFRASTRUCTURE",
