@@ -1,3 +1,24 @@
+# 4PLANET HOMEPAGE — BRAND + COPY REFINEMENT LIVE CANDIDATE — 06 OCT 2026
+
+**STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / MUST PASS EXACT-HEAD HUMAN CRAFT + ATLAS ZERO LOSS BEFORE LIVE CLAIM.
+
+**FOUNDER DIRECTION:** 06 OCT 2026 — complete and publish the agreed 4planet.org homepage refinement now, then report exactly what changed.
+
+**BOUNDED LIVE SCOPE:** Homepage presentation/copy and the existing first-party ATLAS homepage embed only. Preserve current 4PLANET routing, shared ATLAS renderer, camera authority, source model, auth, data and product architecture.
+
+**USER / BRAND JOB:** A first-time visitor should quickly understand WHAT 4Planet is, WHY it exists, HOW the four lenses help, WHY the four Domains exist, and WHERE credible action can begin — while the page feels calm, premium, human and unmistakably 4Planet.
+
+**VISUAL / COPY CHANGES:** pure white light surfaces; restrained Apple-like card shadows; less mono; no unnecessary all-caps or underscores in body copy; 4Planet casing in prose; black-on-white Lens cards; controlled headline line-breaks; clearer Impact development language; blue Domains introduction with white text; one non-duplicated Domain title per image; explicit system descriptors (Marine / Terrestrial / Human / Cultural systems); closer Orca encounter; blue DJ 4Culture visual; researcher visual retained before Join.
+
+**ATLAS:** Homepage embed uses the existing MapLibre World and canonical Layers console, rendered in white mode with one small brand-blue Layers control. No second map, camera or layer authority. Full ATLAS and homepage embed use a lower-cost WebGL context plus bounded tile cache and short raster fade to reduce visible loading/popping during movement.
+
+**TRUTH / IMPACT:** Impact pathways remain explicitly in development. No public participation, delivery, partner, outcome or ecological-impact claim is promoted by this release.
+
+**ACCEPTANCE:** exact-head typecheck/build; GOLD Human Craft desktop-1440 + mobile-390 + mobile-430; homepage white-mode real MapLibre canvas + functional Layers control; ATLAS Zero Loss; no horizontal overflow. Unrelated pre-existing discovery/SEO, BrainBench, data-value or other-lane failures do not become claims about this bounded homepage delta and must not be silently repaired here.
+
+**ROLLBACK:** prior production main immutable deployment / prior main SHA immediately before this bounded promotion.
+
+---
 # 4BRANDS PUBLIC COMPANY INTELLIGENCE + PREMIUM PRODUCT REBUILD 01 — 06 OCT 2026
 
 **STATUS:** HEIR PRODUCT CANDIDATE / PUBLIC-FIRST COMPANY INTELLIGENCE / NO LIVE RELEASE.
