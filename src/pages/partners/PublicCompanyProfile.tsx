@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "@/styles/fourbrand-intelligence.css";
 import { PublicBusinessSources, PublicEuProjectIntelligence, PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
 
@@ -152,6 +152,7 @@ export default function PublicCompanyProfile({
   onPrivate: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("OVERVIEW");
+  const [previousVisit, setPreviousVisit] = useState<string | null>(null);
   const readySources = useMemo(() => profile.sources.filter((source) => source.state === "READY"), [profile.sources]);
   const verifiedLei = gleif?.verified ?? null;
   const readySourceCount = readySources.length + (verifiedLei ? 1 : 0);
@@ -159,6 +160,28 @@ export default function PublicCompanyProfile({
   const primaryIndustry = profile.company.industries[0];
   const topRoles = profile.roles.slice().sort((a, b) => (a.sequence ?? 999) - (b.sequence ?? 999));
   const recentChanges = profile.changes.slice(0, 8);
+  const changesSinceVisit = useMemo(() => {
+    if (!previousVisit) return profile.changes;
+    const threshold = new Date(previousVisit).valueOf();
+    if (!Number.isFinite(threshold)) return profile.changes;
+    return profile.changes.filter((change) => {
+      if (!change.date) return false;
+      const when = new Date(change.date).valueOf();
+      return Number.isFinite(when) && when > threshold;
+    });
+  }, [previousVisit, profile.changes]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = "4brands:last-seen:" + profile.company.organizationNumber;
+    try {
+      const prior = window.localStorage.getItem(key);
+      setPreviousVisit(prior);
+      window.localStorage.setItem(key, profile.generatedAt);
+    } catch {
+      setPreviousVisit(null);
+    }
+  }, [profile.company.organizationNumber, profile.generatedAt]);
   const investigationSignals = useMemo(() => {
     const finance = profile.financials;
     if (!finance) return [];
@@ -228,7 +251,7 @@ export default function PublicCompanyProfile({
         {TABS.map((item) => (
           <button type="button" key={item.id} className={tab === item.id ? "is-active" : ""} onClick={() => setTab(item.id)}>
             {item.label}
-            {item.id === "CHANGES" && profile.coverage.changeCount > 0 ? <span>{profile.coverage.changeCount}</span> : null}
+            {item.id === "CHANGES" && (previousVisit ? changesSinceVisit.length : profile.coverage.changeCount) > 0 ? <span>{previousVisit ? changesSinceVisit.length : profile.coverage.changeCount}</span> : null}
           </button>
         ))}
       </nav>
@@ -253,7 +276,7 @@ export default function PublicCompanyProfile({
 
             <div className="fbi-two-column">
               <div className="fbi-changes-preview">
-                <div className="fbi-section-kicker">WHAT CHANGED</div>
+                <div className="fbi-section-kicker">{previousVisit ? "NEW SINCE LAST VISIT" : "WHAT CHANGED"}</div>
                 {recentChanges.length ? recentChanges.map((change) => (
                   <article key={change.type + "-" + String(change.date) + "-" + change.title}>
                     <time>{dateLabel(change.date)}</time>
@@ -409,7 +432,7 @@ export default function PublicCompanyProfile({
           <>
             <div className="fbi-section-head">
               <div><span>09 / WHAT CHANGED</span><h2>Changed reality is return value.</h2></div>
-              <p>This first change layer uses BRREG historical names and published entity-update events. More sources can join the same chronology later.</p>
+              <p>{previousVisit ? "New-since-last-visit is calculated against a local, non-authoritative visit marker. " : ""}This change layer uses BRREG historical names and published entity-update events; source events remain authoritative.</p>
             </div>
             <div className="fbi-change-ledger">
               {profile.changes.length ? profile.changes.map((change, index) => (
