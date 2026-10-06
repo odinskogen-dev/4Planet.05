@@ -1,3 +1,22 @@
+# 4PLANET HOMEPAGE — BRAND + COPY REFINEMENT LIVE CANDIDATE — 06 OCT 2026
+
+**STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / EXACT-HEAD HUMAN CRAFT + ATLAS ZERO LOSS REQUIRED BEFORE LIVE CLAIM.
+
+**FOUNDER DIRECTION:** 06 OCT 2026 — complete and publish the agreed 4planet.org homepage refinement now, then report exactly what changed.
+
+**BOUNDED LIVE SCOPE:** Homepage presentation/copy and the existing first-party ATLAS homepage embed only. Preserve current routing, shared ATLAS renderer, camera authority, source model, auth, data and product architecture.
+
+**USER / BRAND JOB:** A first-time visitor should quickly understand what 4Planet is, why it exists, how the four lenses help, why the four Domains exist, and where credible action can begin — while the page feels calm, premium, human and unmistakably 4Planet.
+
+**VISUAL / COPY CHANGES:** pure white light surfaces; restrained card shadows; materially less mono; no unnecessary all-caps or underscores in body copy; 4Planet casing in prose; black-on-white Lens cards; controlled headline line-breaks; clearer Impact development language; blue Domains introduction with white text; one non-duplicated Domain title per image; explicit Marine / Terrestrial / Human / Cultural system descriptors; closer Orca encounter; blue DJ 4Culture visual; researcher visual retained before Join.
+
+**ATLAS:** Homepage embed reuses the existing MapLibre World and canonical Layers console, with one separate blue trigger that only opens/closes that existing console. No second map, camera, data or layer authority. Full ATLAS and homepage embed use lower-cost WebGL rendering, a bounded tile cache and short tile fade to reduce visible loading/popping during movement.
+
+**TRUTH / IMPACT:** Impact pathways remain explicitly in development. No public participation, delivery, partner, outcome or ecological-impact claim is promoted by this release.
+
+**ACCEPTANCE:** exact-head typecheck/build; Human Craft desktop-1440 + mobile-390 + mobile-430; real white-mode MapLibre canvas + functional Layers trigger; ATLAS Zero Loss; no horizontal overflow.
+
+---
 # DISCOVERY RELEASE SECURITY CORRECTION — SOURCE-MAP-JS 1.2.2 — 06 OCT 2026
 
 **STATUS:** CONTROLLED DEPENDENCY PATCH / NO DISCOVERY PRODUCT SEMANTIC CHANGE.
