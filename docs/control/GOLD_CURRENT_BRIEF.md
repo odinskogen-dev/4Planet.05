@@ -1,3 +1,17 @@
+# DISCOVERY RELEASE SECURITY CORRECTION — SOURCE-MAP-JS 1.2.2 — 06 OCT 2026
+
+**STATUS:** CONTROLLED DEPENDENCY PATCH / NO DISCOVERY PRODUCT SEMANTIC CHANGE.
+
+**WHY:** exact TEST KING Public Preview passed typecheck, production build and the full smoke suite, including DISCOVERY ENGINE 01, then failed only because the current dependency audit flags a high-severity `source-map-js <1.2.2` advisory.
+
+**CHANGE:** update the existing transitive `source-map-js` lock entry from 1.2.1 to patched 1.2.2. PostCSS already accepts the compatible `^1.2.1` range. No application source, route, content, source claim, ATLAS behavior or design is altered.
+
+**PROOF REQUIRED:** `npm ci` → typecheck → production build → smoke → `npm audit --audit-level=high` on the new exact TEST KING SHA.
+
+**SOURCE:** GitHub Advisory GHSA-68fv-2mgg-jv7q / CVE-2026-93749.
+
+---
+
 # LIVING SYSTEMS v1.4.2 — QA CORRECTION 01 — 06 OCT 2026
 
 **CAUSE:** TEST KING Home uses a six-field product tuple. The initial bounded route transform targeted the older five-field shape, so the tuple stayed at `/living-systems` while `reloadDocument` expected `/livingsystems/`. TypeScript correctly failed closed.
