@@ -29,6 +29,18 @@ export type FoodDecisionSummary = {
   missingCount: number;
   unknownCount: number;
   comparedOptionIds: string[];
+  loop?: string;
+  title?: string;
+  question?: string;
+};
+
+export type SavedFoodDecision = {
+  id: string;
+  optionId: string;
+  status: string;
+  decidedAt: string;
+  sourceRef: string | null;
+  loop: string;
 };
 
 type FoodValuePayload = Record<string, string | number | boolean | null>;
@@ -264,8 +276,8 @@ export async function saveFoodDecision(
     body: JSON.stringify({
       user_id: session.user.id,
       world: "food",
-      title: "FOOD meal choice",
-      question: "What can I make with what I have?",
+      title: (summary.title || "FOOD meal choice").slice(0, 240),
+      question: (summary.question || "What can I make with what I have?").slice(0, 500),
       options: summary.comparedOptionIds.slice(0, 10).map((id) => ({ id })),
       decision: summary.optionId,
       status: "decided",
@@ -279,7 +291,7 @@ export async function saveFoodDecision(
         source: "4SAPIEN FOOD",
         privacy: "private_person",
         evidence_class: "USER_DECISION",
-        loop: "food_first_value_v2",
+        loop: (summary.loop || "food_first_value_v2").slice(0, 80),
         core,
       },
       decided_at: new Date().toISOString(),
@@ -289,6 +301,42 @@ export async function saveFoodDecision(
   const rows = (await response.json()) as Array<{ id?: string }>;
   if (!rows[0]?.id) throw new Error("FOOD_DECISION_WRITE_READBACK_FAILED");
   return rows[0].id;
+}
+
+export async function loadLatestFoodDecision(
+  session: FourPlanetSession,
+  loop: string,
+): Promise<SavedFoodDecision | null> {
+  const params = new URLSearchParams({
+    user_id: `eq.${session.user.id}`,
+    world: "eq.food",
+    select: "id,decision,status,evidence,provenance,decided_at",
+    order: "decided_at.desc",
+    limit: "20",
+  });
+  const response = await fetch(`${identityConstants.supabaseUrl}/rest/v1/four_sapien_decisions?${params.toString()}`, {
+    headers: headers(session),
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error("FOOD_DECISION_READ_FAILED");
+  const rows = (await response.json()) as Array<{
+    id?: string;
+    decision?: string;
+    status?: string;
+    evidence?: Array<{ source_ref?: string | null }>;
+    provenance?: { loop?: string };
+    decided_at?: string;
+  }>;
+  const row = rows.find((candidate) => candidate.provenance?.loop === loop);
+  if (!row?.id || !row.decision) return null;
+  return {
+    id: row.id,
+    optionId: row.decision,
+    status: row.status || "unknown",
+    decidedAt: row.decided_at || "",
+    sourceRef: row.evidence?.[0]?.source_ref ?? null,
+    loop,
+  };
 }
 
 export async function removeFoodPantryMemory(session: FourPlanetSession, id: string) {
