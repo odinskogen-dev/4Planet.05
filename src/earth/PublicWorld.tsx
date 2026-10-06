@@ -68,6 +68,7 @@ export default function PublicWorld() {
           .home-atlas-embed-runtime .world{background:#fff!important}
           .home-atlas-embed-runtime .search-wrap,
           .home-atlas-embed-runtime .lens-rail,
+          .home-atlas-embed-runtime .atlas-panel,
           .home-atlas-embed-runtime .status-strip,
           .home-atlas-embed-runtime .ctx,
           .home-atlas-embed-runtime .recenter-btn,
@@ -75,10 +76,6 @@ export default function PublicWorld() {
           .home-atlas-embed-runtime .maplibregl-ctrl-top-right,
           .home-atlas-embed-runtime .maplibregl-ctrl-bottom-left,
           .home-atlas-embed-runtime .maplibregl-ctrl-bottom-right{display:none!important}
-          .home-atlas-embed-runtime .atlas-panel{top:18px!important;left:18px!important;right:auto!important;width:min(310px,calc(100vw - 36px));max-height:calc(100vh - 36px);border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 18px 48px rgba(8,8,8,.10)!important}
-          .home-atlas-embed-runtime .atlas-panel.rest{width:auto!important;padding:0!important;background:transparent!important;box-shadow:none!important}
-          .home-atlas-embed-runtime .atlas-panel .sect{width:100%;border:0!important;border-radius:999px!important;background:#2E2EFF!important;color:#fff!important;padding:10px 14px!important;font-size:9.5px!important;letter-spacing:.08em!important;opacity:1!important}
-          .home-atlas-embed-runtime .atlas-panel:not(.rest) .sect{margin-bottom:8px}
           .home-atlas-embed-runtime .maplibregl-canvas-container,
           .home-atlas-embed-runtime .maplibregl-canvas{background:#fff!important}
         `}</style>
