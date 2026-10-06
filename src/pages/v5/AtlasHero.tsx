@@ -20,12 +20,12 @@ export function AtlasHero() {
       <div aria-hidden className="planet-hero__scrim" />
 
       <div className="planet-hero__content">
-        <div className="home-kicker planet-hero__kicker">4PLANET_ For a Living Planet</div>
-        <h1>Everything you love is connected.</h1>
-        <p>Explore one living planet — its places, species, pressures and the relationships that keep life going.</p>
+        <div className="home-kicker planet-hero__kicker">4Planet_ For a Living Planet</div>
+        <h1><span>Everything you love</span>{" "}<span>is connected.</span></h1>
+        <p>4Planet helps you understand the living planet, see how human systems affect it and find credible ways to help.</p>
         <div className="planet-hero__actions">
-          <Link to="/atlas" className="home-brand-button">EXPLORE THE PLANET</Link>
-          <Link to="/join" className="home-brand-button">JOIN US</Link>
+          <Link to="/atlas" className="home-brand-button">Explore the planet</Link>
+          <Link to="/join" className="home-brand-button">Join us</Link>
         </div>
       </div>
     </section>
