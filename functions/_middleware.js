@@ -1349,14 +1349,20 @@ const ATLAS_EVIDENCE_RELATIONS = {
 };
 
 function atlasPlacePassesQualityGate(place){
+  const sourceLat=place?.sourceCoordinate?.lat;
+  const sourceLon=place?.sourceCoordinate?.lon;
   return Boolean(
     place && place.slug && place.name && place.type && place.context &&
-    Number.isFinite(place.lat) && place.lat >= -90 && place.lat <= 90 &&
-    Number.isFinite(place.lon) && place.lon >= -180 && place.lon <= 180 &&
-    place.summary && place.sourceUrl && place.sourceRightsUrl && place.sourceCheckedAt
+    Number.isFinite(sourceLat) && sourceLat >= -90 && sourceLat <= 90 &&
+    Number.isFinite(sourceLon) && sourceLon >= -180 && sourceLon <= 180 &&
+    place.summary && place.neId && place.sourceDataset && place.sourceVersion &&
+    place.sourceFileSha && place.sourceUrl && place.sourceRightsUrl && place.sourceCheckedAt
   );
 }
 const ATLAS_INDEXABLE_PLACES = ATLAS_WORLD_PLACES.filter(atlasPlacePassesQualityGate);
+if(ATLAS_INDEXABLE_PLACES.length!==ATLAS_WORLD_PLACES.length) throw new Error("ATLAS live place gate rejected one or more places");
+if(new Set(ATLAS_INDEXABLE_PLACES.map((p)=>p.slug)).size!==ATLAS_INDEXABLE_PLACES.length) throw new Error("ATLAS duplicate place slug");
+if(new Set(ATLAS_INDEXABLE_PLACES.map((p)=>p.neId)).size!==ATLAS_INDEXABLE_PLACES.length) throw new Error("ATLAS duplicate Natural Earth ID");
 
 function atlasDistanceKm(a,b){
   const r=6371,toRad=(v)=>v*Math.PI/180;
