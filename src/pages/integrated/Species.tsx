@@ -316,7 +316,8 @@ function SpeciesEditorialProfile({
               <div style={{ ...mono, color: "#FFFFFF", opacity: .82 }}>4PLANET SPECIES_</div>
               <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(64px,12vw,148px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
               <p style={{ margin: "18px 0 0", fontSize: "clamp(18px,2vw,25px)", fontStyle: "italic", opacity: .9 }}>{profile.scientificName}</p>
-              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 760, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.4 }}>{profile.intro}</p>}\n              {!show && <p style={{ margin: "18px 0 0", ...mono, color: "rgba(255,255,255,.76)" }}>RIGHTS-CLEARED PHOTOGRAPH NOT AVAILABLE · FACTUAL PROFILE REMAINS AVAILABLE</p>}
+              {profile.intro && <p style={{ margin: "24px 0 0", maxWidth: 760, fontSize: "clamp(20px,2.5vw,30px)", lineHeight: 1.4 }}>{profile.intro}</p>}
+              {!show && <p style={{ margin: "18px 0 0", ...mono, color: "rgba(255,255,255,.76)" }}>RIGHTS-CLEARED PHOTOGRAPH NOT AVAILABLE · FACTUAL PROFILE REMAINS AVAILABLE</p>}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 30 }}>
                 <Link
                   to={atlasHref}
