@@ -14,6 +14,7 @@ on:
       - src/pages/partners/PublicCompanyProfile.tsx
       - src/pages/partners/PublicCompanyExternalSignals.tsx
       - functions/api/company-public-profile.ts
+      - functions/api/company-first-party.ts
       - tests/e2e/4brands-public-intelligence.spec.ts
   workflow_dispatch:
 
@@ -189,8 +190,10 @@ jobs:
           grep -q 'WHAT DOES THE PUBLIC WORLD KNOW' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'WHAT LOOKS UNUSUAL' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'INDUSTRY COHORT' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'PublicBusinessSources' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'PublicProcurementIntelligence' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'PublicPlanetIntelligence' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'BRREG_REGISTERED_WEBSITE' functions/api/company-first-party.ts
           grep -q 'SIGNAL BOUNDARY' src/pages/partners/PublicCompanyExternalSignals.tsx
           grep -q 'IDENTITY BOUNDARY' src/pages/partners/PublicCompanyExternalSignals.tsx
           grep -q 'loadPublicProfile(payload.entity.organizationNumber)' src/pages/partners/FourBrand.tsx
