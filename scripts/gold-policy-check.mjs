@@ -150,7 +150,7 @@ function readPromotionManifest() {
 function validateLivePromotion() {
   const manifest = readPromotionManifest();
   const requiredText = ["sourceBranch", "testKingSha", "priorLiveSha", "founderDecisionRef", "evidenceRef", "rollbackRef"];
-  if (manifest.status !== "FOUNDER_ACCEPTED") fail(`LIVE promotion manifest status is ${manifest.status}; FOUNDER_ACCEPTED required`);
+  if (manifest.status !== "FOUNDER_AUTHORISED") fail(`LIVE promotion manifest status is ${manifest.status}; FOUNDER_AUTHORISED required`);
   if (manifest.sourceBranch !== "king/test") fail(`LIVE promotion source must be king/test, got ${manifest.sourceBranch}`);
   for (const key of requiredText) {
     if (!manifest[key] || !String(manifest[key]).trim()) fail(`LIVE promotion manifest missing ${key}`);
