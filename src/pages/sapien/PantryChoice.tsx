@@ -12,6 +12,7 @@ import {
 } from '@/food/pantryMemory';
 import { identityLoginUrl, type FourPlanetSession } from '@/identity/identityClient';
 import { trackEvent } from '@/analytics/Analytics';
+import { trackCoreLifecycle } from '@/analytics/ProductAnalytics';
 
 const DEMO_RECIPES: FoodRecipe[] = [
   { id:'fixture-porridge',name:'Porridge — example',sourceRef:'DEMO_FIXTURE_NOT_VERIFIED',
@@ -99,6 +100,7 @@ export default function PantryChoice() {
           value_kind:'food_pantry_rehydrated',
           item_count:saved.pantry.length,
         });
+        trackCoreLifecycle('4sapien','PERSON','RETURN','USER_CONFIRMED',true);
         recordFoodValueEvent(current,'food_context_returned',{
           loop:'food_first_value_v2',
           stage:'return',
@@ -232,6 +234,13 @@ export default function PantryChoice() {
         missing_count:option.missing.length,
         unknown_count:option.unknown.length,
       });
+      trackCoreLifecycle(
+        '4sapien',
+        'PERSON',
+        'DECISION',
+        option.sourceRef === 'DEMO_FIXTURE_NOT_VERIFIED' ? 'DEMO_FIXTURE_NOT_VERIFIED' : option.sourceRef ? 'SOURCE_REFERENCED' : 'UNKNOWN',
+        Boolean(memory),
+      );
       recordFoodValueEvent(session,'food_decision_saved',{
         loop:'food_first_value_v2',
         stage:'decision',
