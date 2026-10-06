@@ -44,6 +44,11 @@ try {
     const homeSections = await page.locator("main.ph-home-short > section").count();
     if (homeSections !== 4) throw Error("Homepage must have exactly four concise sections, got " + homeSections);
     await page.locator("main.ph-home-short h1").waitFor();
+    const ecosystemText = await page.locator("main.ph-home-short").innerText();
+    for (const required of ["A force for nature.", "LIVING PLANET ENGINE", "SAPIENSBRAIN / S4PIENS", "ACTOR VALUE WORLDS", "ACTION ENGINE", "PHILANTHROPY + FOUNDATIONS"]) {
+      if (!ecosystemText.includes(required)) throw Error("Ecosystem pitch missing: " + required);
+    }
+    console.log("PARTNERS_ECOSYSTEM_ARCHITECTURE=PASS viewport=" + viewport.width);
     await page.keyboard.press("Tab");
     const skipText = await page.evaluate(() => document.activeElement?.textContent?.trim() || "");
     if (skipText !== "Skip to content") throw Error("Keyboard bypass of primary navigation missing");
