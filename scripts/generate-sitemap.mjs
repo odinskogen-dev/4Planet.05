@@ -8,6 +8,7 @@ const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_O
 const stories = readStories();
 const discoveryInventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
 const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
+const discoveryTopics = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryTopics.json"), "utf8"));
 
 const staticRoutes = [
   "/",
@@ -18,6 +19,7 @@ const staticRoutes = [
   "/domains/4culture",
   "/missions",
   "/living-systems",
+  "/now",
   "/atlas",
   "/places",
   "/species",
@@ -52,6 +54,7 @@ const discoveryRoutes = [
   ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
   ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
   ...(atlasDiscovery.objects ?? []).filter((item) => item.indexable === true).map((item) => `/atlas/${item.slug}`),
+  ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
