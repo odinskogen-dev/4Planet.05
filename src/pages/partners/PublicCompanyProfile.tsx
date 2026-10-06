@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import "@/styles/fourbrand-intelligence.css";
-import { PublicBusinessSources, PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
+import { PublicBusinessSources, PublicEuProjectIntelligence, PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
 
 export type PublicCompanySource = {
   id: string;
@@ -76,7 +76,7 @@ export type PublicCompanyProfileData = {
   truthBoundary: string;
 };
 
-type Tab = "OVERVIEW" | "BUSINESS" | "FINANCIALS" | "MARKET" | "PROCUREMENT" | "PLANET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "FINDINGS" | "SOURCES";
+type Tab = "OVERVIEW" | "BUSINESS" | "FINANCIALS" | "MARKET" | "PROCUREMENT" | "INNOVATION" | "CAPITAL" | "PLANET" | "STRUCTURE" | "PEOPLE" | "CHANGES" | "FINDINGS" | "SOURCES";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "OVERVIEW", label: "Overview" },
@@ -84,6 +84,8 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: "FINANCIALS", label: "Financials" },
   { id: "MARKET", label: "Market" },
   { id: "PROCUREMENT", label: "Procurement" },
+  { id: "INNOVATION", label: "Innovation" },
+  { id: "CAPITAL", label: "Capital" },
   { id: "PLANET", label: "Planet" },
   { id: "STRUCTURE", label: "Structure" },
   { id: "PEOPLE", label: "People" },
@@ -266,7 +268,7 @@ export default function PublicCompanyProfile({
                 <div className="fbi-section-kicker">NEXT INTELLIGENCE LAYERS</div>
                 <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("PROCUREMENT")}><span>PUBLIC PROCUREMENT</span><strong>TED source connected</strong><p>Inspect published demand signals without using the AI research engine.</p></button>
                 <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("MARKET")}><span>MARKET + PEERS</span><strong>BRREG cohort connected</strong><p>Use source-grounded industry orientation before asserting direct competition.</p></button>
-                <div className="fbi-lane"><span>INNOVATION + CAPITAL</span><strong>Credentialled sources remain open</strong><p>CORDIS DET requires an API key and EPO OPS requires developer credentials; neither is presented as connected before that exists.</p></div>
+                <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("INNOVATION")}><span>INNOVATION + CAPITAL</span><strong>CORDIS public graph connected</strong><p>Inspect exact-legal-name EU research/project records. EPO patent intelligence remains credential-blocked.</p></button>
                 <button type="button" className="fbi-lane fbi-lane--button" onClick={() => setTab("PLANET")}><span>PLANET</span><strong>Climate TRACE discovery connected</strong><p>Review the external owner identity before any facility record is shown.</p></button>
               </div>
             </div>
@@ -342,6 +344,14 @@ export default function PublicCompanyProfile({
 
         {tab === "PROCUREMENT" && (
           <PublicProcurementIntelligence companyName={profile.company.name} />
+        )}
+
+        {tab === "INNOVATION" && (
+          <PublicEuProjectIntelligence organizationNumber={profile.company.organizationNumber} companyName={profile.company.name} mode="innovation" />
+        )}
+
+        {tab === "CAPITAL" && (
+          <PublicEuProjectIntelligence organizationNumber={profile.company.organizationNumber} companyName={profile.company.name} mode="capital" />
         )}
 
         {tab === "PLANET" && (
