@@ -25,9 +25,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for i in $(seq 1 30); do
+          for i in $(seq 1 45); do
             berlin=$(curl -fsS --max-time 15 https://4planetatlas.com/place/berlin || true)
-            if grep -Fq 'Natural Earth NE_ID' <<<"$berlin" && grep -Fq 'Verified geographic hierarchy' <<<"$berlin"; then
+            manila=$(curl -fsS --max-time 15 https://4planetatlas.com/place/manila || true)
+            sm=$(curl -fsS --max-time 15 https://4planetatlas.com/sitemap.xml || true)
+            count=$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')
+            if grep -Fq 'Natural Earth NE_ID' <<<"$berlin" && grep -Fq 'Verified geographic hierarchy' <<<"$berlin" && grep -Fq 'Q1461' <<<"$manila" && [ "$count" = "250" ]; then
               exit 0
             fi
             sleep 4
