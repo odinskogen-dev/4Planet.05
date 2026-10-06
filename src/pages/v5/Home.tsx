@@ -36,7 +36,7 @@ const WORLDS: Record<DomainKey, { displayName: string; system: string; line: str
     image: "s4piensDomainHero",
   },
   "4CULTURE_": {
-    displayName: "4Culture",
+    displayName: "4CULTURE",
     system: "Cultural systems",
     line: "Stories, sound, image and ideas shaping what people notice, value and do.",
     image: "cultureAnchor",
@@ -247,8 +247,8 @@ export default function Home() {
 
         <section id="worlds" className="home-worlds">
           <div className="home-shell home-worlds__intro">
-            <div className="home-kicker home-kicker--inverse">Where we work</div>
-            <div className="home-section-intro home-section-intro--dark">
+            <div className="home-kicker">Where we work</div>
+            <div className="home-section-intro">
               <h2>Four domains. One connected planet.</h2>
               <p>
                 4Planet uses four domains to make complex problems easier to understand — and to show where
