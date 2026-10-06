@@ -24,6 +24,7 @@ function PartnersIdentityEntry() {
   const href = signedIn ? identityAccountUrl(window.location.href) : identityLoginUrl(window.location.href);
   return (
     <a
+      className="ph-id-entry"
       href={href}
       aria-label={signedIn ? "Open 4PLANET ID account" : "Log in with 4PLANET ID"}
       style={{
