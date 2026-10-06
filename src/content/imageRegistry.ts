@@ -38,6 +38,7 @@ export const IMAGES = {
   oce4nDomainHero: { src: `${A}/domains/oce4n/hero.jpg`, srcMobile: `${A}/domains/oce4n/hero-mobile.jpg`, alt: "A humpback whale seen from behind, tail spread wide, a free-diver small alongside", aspectRatio: "16/9", objectPosition: "50% 45%", domain: "OCE4N_", role: "domainHero" },
   e4rthDomainHero: { src: `${A}/domains/e4rth/hero.jpg`, srcMobile: `${A}/domains/e4rth/hero-mobile.jpg`, alt: "A deep green forested valley from above — the living land", aspectRatio: "16/9", objectPosition: "50% 55%", domain: "E4RTH_", role: "domainHero" },
   s4piensDomainHero: { src: `${A}/domains/s4piens/hero.jpg`, srcMobile: `${A}/domains/s4piens/hero-mobile.jpg`, alt: "Human systems and material flows — the world we build", aspectRatio: "16/9", objectPosition: "50% 50%", domain: "S4PIENS_", role: "domainHero" },
+  s4piensFieldResearcher: { src: `${A}/domains/s4piens/detail-01.jpg`, alt: "A field researcher in a red jacket walking through an Icelandic landscape", aspectRatio: "3/2", objectPosition: "50% 50%", domain: "S4PIENS_", role: "editorial" },
   cultureDomainHero: { src: `${A}/domains/4culture/hero.jpg`, srcMobile: `${A}/domains/4culture/hero-mobile.jpg`, alt: "A cultural frame — culture as a way into environmental action", aspectRatio: "3/4", objectPosition: "50% 45%", domain: "4CULTURE_", role: "domainHero" },
 
   // ── 4CULTURE EDITORIAL ──────────────────────────────────────────────
