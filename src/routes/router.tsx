@@ -106,6 +106,7 @@ export function AppRoutes() {
       <Route path="/ecosystems/amazon-rainforest" element={<Navigate to="/missions/am4zonia" replace />} />
       <Route path="/missions/:slug" element={<MissionDetail />} />
       <Route path="/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
+      <Route path="/embed/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/atlas/:objectSlug" element={<AtlasDiscoveryPage />} />
       <Route path="/now" element={<EarthNowPage />} />
       <Route path="/earth-now" element={<Navigate to="/now" replace />} />

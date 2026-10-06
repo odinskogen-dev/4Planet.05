@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
@@ -79,6 +79,53 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+  const homepageEmbed = location.pathname === "/embed/atlas";
+  const [homepageLayersOpen, setHomepageLayersOpen] = useState(false);
+
+  if (supported && homepageEmbed) {
+    return (
+      <>
+        <div className={"home-atlas-embed-runtime" + (homepageLayersOpen ? " layers-open" : "")}>
+          <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#fff" }} />}>
+            <World />
+          </Suspense>
+          <button
+            type="button"
+            className="home-atlas-layers-button"
+            aria-expanded={homepageLayersOpen}
+            onClick={() => {
+              const canonicalToggle = document.querySelector(".home-atlas-embed-runtime .atlas-panel .sect") as HTMLButtonElement | null;
+              canonicalToggle?.click();
+              setHomepageLayersOpen((value) => !value);
+            }}
+          >
+            Layers
+          </button>
+        </div>
+        <style>{`
+          .home-atlas-embed-runtime{position:fixed;inset:0;background:#fff;overflow:hidden}
+          .home-atlas-embed-runtime .world{background:#fff!important}
+          .home-atlas-embed-runtime .search-wrap,
+          .home-atlas-embed-runtime .lens-rail,
+          .home-atlas-embed-runtime .status-strip,
+          .home-atlas-embed-runtime .ctx,
+          .home-atlas-embed-runtime .recenter-btn,
+          .home-atlas-embed-runtime .maplibregl-ctrl-top-left,
+          .home-atlas-embed-runtime .maplibregl-ctrl-top-right,
+          .home-atlas-embed-runtime .maplibregl-ctrl-bottom-left,
+          .home-atlas-embed-runtime .maplibregl-ctrl-bottom-right{display:none!important}
+          .home-atlas-layers-button{position:fixed!important;top:76px;left:18px;z-index:1000!important;pointer-events:auto!important;touch-action:manipulation;min-height:38px;padding:9px 14px;border:0;border-radius:999px;background:#2E2EFF;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:0;box-shadow:0 8px 24px rgba(46,46,255,.20);cursor:pointer}
+          .home-atlas-layers-button:focus-visible{outline:2px solid #080808;outline-offset:3px}
+          .home-atlas-embed-runtime .atlas-panel{display:none!important;top:124px!important;left:18px!important;right:auto!important;width:min(300px,calc(100vw - 36px));max-height:calc(100vh - 142px);border:0!important;border-radius:18px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 14px 40px rgba(0,0,0,.10)!important;padding:12px!important}
+          .home-atlas-embed-runtime.layers-open .atlas-panel{display:block!important}
+          .home-atlas-embed-runtime.layers-open .atlas-panel.rest{display:block!important}
+          .home-atlas-embed-runtime .atlas-panel .sect{display:none!important}
+          .home-atlas-embed-runtime .maplibregl-canvas-container,
+          .home-atlas-embed-runtime .maplibregl-canvas{background:#fff!important}
+        `}</style>
+      </>
+    );
+  }
 
   // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
   // mounted at the BrowserRouter level. PublicWorld must never run a second
@@ -107,6 +154,18 @@ export default function PublicWorld() {
         <AtlasLiveEvidenceBridge />
         <AtlasSavedViews />
       </>
+    );
+  }
+
+  if (homepageEmbed) {
+    return (
+      <main id="main-content" style={{ position: "fixed", inset: 0, background: "#fff", overflow: "hidden" }}>
+        <img
+          src="/assets/brand/earthrise.jpg"
+          alt="Earth rising above the lunar horizon"
+          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#fff" }}
+        />
+      </main>
     );
   }
 
