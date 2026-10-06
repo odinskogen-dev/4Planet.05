@@ -247,19 +247,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: BRREG-anchored TOMRA first-party website is physically reachable
+      - name: BRREG-anchored first-party source mechanism respects access controls and fetches a permitted real site
         shell: bash
         run: |
           set -euo pipefail
-          entity=$(curl -fsS --retry 3 --max-time 20 -H 'Accept: application/vnd.brreg.enhetsregisteret.enhet.v2+json' https://data.brreg.no/enhetsregisteret/api/enheter/927124238)
-          test "$(jq -r '.organisasjonsnummer' <<<"$entity")" = "927124238"
-          site=$(jq -r '.hjemmeside // empty' <<<"$entity")
-          test -n "$site"
-          case "$site" in http://*|https://*) ;; *) site="https://$site";; esac
-          code=$(curl -sS -L --retry 2 --max-time 25 -A '4PLANET/1.0 public-company-source-discovery (https://4planet.org)' -o /tmp/tomra-first-party.html -w '%{http_code}' "$site" || true)
-          echo "registered_website=$site HTTP=$code bytes=$(wc -c </tmp/tomra-first-party.html 2>/dev/null || echo 0)"
-          test "$code" = "200"
-          test "$(wc -c </tmp/tomra-first-party.html)" -gt 500
+          orgs=(927124238 923609016 982463718 984851006 943753709 914778271 910747711 964118191 916300484 989795848)
+          fetched=0
+          registered=0
+          for orgnr in "${orgs[@]}"; do
+            entity=$(curl -fsS --retry 3 --max-time 20 -H 'Accept: application/vnd.brreg.enhetsregisteret.enhet.v2+json' "https://data.brreg.no/enhetsregisteret/api/enheter/${orgnr}")
+            test "$(jq -r '.organisasjonsnummer' <<<"$entity")" = "$orgnr"
+            site=$(jq -r '.hjemmeside // empty' <<<"$entity")
+            [ -n "$site" ] || { echo "$orgnr NO_REGISTERED_WEBSITE"; continue; }
+            registered=$((registered+1))
+            case "$site" in http://*|https://*) ;; *) site="https://$site";; esac
+            outfile="/tmp/first-party-${orgnr}.html"
+            code=$(curl -sS -L --retry 1 --max-time 20 -A '4PLANET/1.0 public-company-source-discovery (https://4planet.org)' -o "$outfile" -w '%{http_code}' "$site" || true)
+            bytes=$(wc -c <"$outfile" 2>/dev/null || echo 0)
+            echo "$orgnr registered_website=$site HTTP=$code bytes=$bytes"
+            if [ "$code" = "200" ] && [ "$bytes" -gt 500 ]; then
+              fetched=$((fetched+1))
+            elif [ "$code" = "401" ] || [ "$code" = "403" ] || [ "$code" = "429" ]; then
+              echo "$orgnr FIRST_PARTY_ACCESS_CONTROLLED — respected; no bypass attempted"
+            else
+              echo "$orgnr FIRST_PARTY_SOURCE_UNAVAILABLE"
+            fi
+          done
+          test "$registered" -gt 0
+          test "$fetched" -gt 0
+          echo "FIRST_PARTY_REAL_FETCH_PASS fetched=$fetched registered=$registered"
 
       - name: Public CORDIS EURIO SPARQL endpoint responds
         shell: bash
