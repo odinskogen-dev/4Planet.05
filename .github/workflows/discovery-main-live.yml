@@ -104,6 +104,9 @@ jobs:
           grep -Fq 'Natural Earth 1:10m Populated Places' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
           grep -Fq '/place/' <<<"$berlin"
+          unknown_code=$(curl -sS -o /tmp/atlas-unknown-place.html -w '%{http_code}' https://4planetatlas.com/place/__indexability-canary-not-a-place__)
+          test "$unknown_code" = "404"
+          grep -Fq 'Place not found' /tmp/atlas-unknown-place.html
           atlas_sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
           grep -Fq '<loc>https://4planetatlas.com/place/berlin</loc>' <<<"$atlas_sm"
           grep -Fq '<loc>https://4planetatlas.com/place/oslo</loc>' <<<"$atlas_sm"
