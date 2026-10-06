@@ -107,8 +107,8 @@ jobs:
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "50"
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
           echo 'ATLAS_PLACE_SITEMAP_50_PASS'
-          kenya_h=$(curl -sSI https://4planet.org/place/kenya | tr -d '\r')
-          grep -Fqi '^location: https://4planetatlas.com/place/kenya' <<<"$kenya_h"
+          kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
+          test "$kenya_target" = "https://4planetatlas.com/place/kenya"
           echo 'ATLAS_PLACE_CANONICAL_REDIRECT_PASS'
           echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
 
@@ -168,7 +168,7 @@ jobs:
           impact=$(curl -fsS https://4planet.org/impact)
           grep -Fq '4PLANET Impact' <<<"$impact"
           grep -Fq 'data-public-discovery-fallback' <<<"$impact"
-          kenya_h=$(curl -sSI https://4planet.org/place/kenya | tr -d '\r')
-          grep -Fqi '^location: https://4planetatlas.com/place/kenya' <<<"$kenya_h"
+          kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
+          test "$kenya_target" = "https://4planetatlas.com/place/kenya"
           grep -Fq '<loc>https://4planet.org/living-systems/amazonia</loc>' <<<"$sm"
           echo 'PLACE_GRAPH_LIVE_PASS'
