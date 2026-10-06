@@ -60,18 +60,24 @@ test("decision/action/outcome/proof boundaries cannot collapse into one claim", 
   assert.equal(core.coreContext({ actor, product: "4sapien", stage: "PROOF" }).claim_boundary, "PROOF_ONLY_TO_EVIDENCE_REACHED");
 });
 
-test("core reuse rate counts only primitives consumed by at least two products", () => {
+test("CORE_REUSE_RATE V1 is physical shared-primitives / target-primitives, not percent of product code", () => {
   const result = core.coreReuseRate({
     IDENTITY: ["4sapien", "4brands"],
     ACTOR: ["4sapien", "4brands"],
     SOURCE_PROVENANCE: ["4sapien", "4brands"],
     DECISION_BOUNDARY: ["4sapien", "4brands"],
-    LIFECYCLE_CLAIM_BOUNDARY: ["4sapien"],
+    LIFECYCLE_CLAIM_BOUNDARY: ["4sapien", "4brands"],
   });
-  assert.equal(result.reused, 4);
+  assert.equal(result.reused, 5);
   assert.equal(result.total, 5);
-  assert.equal(result.rate, 0.8);
-  assert.deepEqual(result.primitives, ["IDENTITY", "ACTOR", "SOURCE_PROVENANCE", "DECISION_BOUNDARY"]);
+  assert.equal(result.rate, 1);
+  assert.deepEqual(result.primitives, [
+    "IDENTITY",
+    "ACTOR",
+    "SOURCE_PROVENANCE",
+    "DECISION_BOUNDARY",
+    "LIFECYCLE_CLAIM_BOUNDARY",
+  ]);
 });
 
 const sapienRuntime = await readFile(new URL("../src/food/pantryMemory.ts", import.meta.url), "utf8");
