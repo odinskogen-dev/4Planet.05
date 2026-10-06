@@ -37,6 +37,7 @@ const PUBLIC_HOSTS = {
       "The public product is still developing. Interactive map behaviour may evolve, but the search-readable surface is intended to remain clear about sources, context and product maturity without turning dynamic map states into thousands of low-value search pages."
     ],
     fallbackLinks: [
+      ["World Place Index", "https://4planetatlas.com/places"],
       ["4PLANET", "https://4planet.org/"],
       ["SPECIES", "https://4species.com/species/"],
       ["Living Systems", "https://4planet.org/living-systems"],
