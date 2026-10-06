@@ -46,6 +46,7 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
+  const homepageEmbed = location.pathname === "/embed/atlas";
 
   // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
   // mounted at the BrowserRouter level. PublicWorld must never run a second
@@ -54,6 +55,37 @@ export default function PublicWorld() {
   // cross-product return camera. World still initialises directly from URL z/c,
   // while the single global authority protects that exact state through startup
   // settling and releases on genuine user camera input.
+  if (supported && homepageEmbed) {
+    return (
+      <>
+        <div className="home-atlas-embed-runtime">
+          <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#fff" }} />}>
+            <World />
+          </Suspense>
+        </div>
+        <style>{`
+          .home-atlas-embed-runtime{position:fixed;inset:0;background:#fff;overflow:hidden}
+          .home-atlas-embed-runtime .world{background:#fff!important}
+          .home-atlas-embed-runtime .search-wrap,
+          .home-atlas-embed-runtime .lens-rail,
+          .home-atlas-embed-runtime .status-strip,
+          .home-atlas-embed-runtime .ctx,
+          .home-atlas-embed-runtime .recenter-btn,
+          .home-atlas-embed-runtime .maplibregl-ctrl-top-left,
+          .home-atlas-embed-runtime .maplibregl-ctrl-top-right,
+          .home-atlas-embed-runtime .maplibregl-ctrl-bottom-left,
+          .home-atlas-embed-runtime .maplibregl-ctrl-bottom-right{display:none!important}
+          .home-atlas-embed-runtime .atlas-panel{top:18px!important;left:18px!important;right:auto!important;width:min(310px,calc(100vw - 36px));max-height:calc(100vh - 36px);border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 18px 48px rgba(8,8,8,.10)!important}
+          .home-atlas-embed-runtime .atlas-panel.rest{width:auto!important;padding:0!important;background:transparent!important;box-shadow:none!important}
+          .home-atlas-embed-runtime .atlas-panel .sect{width:100%;border:0!important;border-radius:999px!important;background:#2E2EFF!important;color:#fff!important;padding:10px 14px!important;font-size:9.5px!important;letter-spacing:.08em!important;opacity:1!important}
+          .home-atlas-embed-runtime .atlas-panel:not(.rest) .sect{margin-bottom:8px}
+          .home-atlas-embed-runtime .maplibregl-canvas-container,
+          .home-atlas-embed-runtime .maplibregl-canvas{background:#fff!important}
+        `}</style>
+      </>
+    );
+  }
+
   if (supported) {
     return (
       <>
@@ -73,6 +105,18 @@ export default function PublicWorld() {
         <AtlasLiveEvidenceBridge />
         <AtlasSavedViews />
       </>
+    );
+  }
+
+  if (homepageEmbed) {
+    return (
+      <main id="main-content" style={{ position: "fixed", inset: 0, background: "#fff", overflow: "hidden" }}>
+        <img
+          src="/assets/brand/earthrise.jpg"
+          alt="Earth rising above the lunar horizon"
+          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#fff" }}
+        />
+      </main>
     );
   }
 
