@@ -73,3 +73,29 @@ test("core reuse rate counts only primitives consumed by at least two products",
   assert.equal(result.rate, 0.8);
   assert.deepEqual(result.primitives, ["IDENTITY", "ACTOR", "SOURCE_PROVENANCE", "DECISION_BOUNDARY"]);
 });
+
+const sapienRuntime = await readFile(new URL("../src/food/pantryMemory.ts", import.meta.url), "utf8");
+const brandsRuntime = await readFile(new URL("../src/product/FourBrandBrainClient.ts", import.meta.url), "utf8");
+const sapienUi = await readFile(new URL("../src/pages/sapien/PantryChoice.tsx", import.meta.url), "utf8");
+const brandsUi = await readFile(new URL("../src/pages/partners/CompanyBrainControls.tsx", import.meta.url), "utf8");
+
+test("physical runtime consumers share 4PLANET ID and core primitive code", () => {
+  assert.match(sapienRuntime, /identityClient/);
+  assert.match(brandsRuntime, /identityClient/);
+  assert.match(sapienRuntime, /corePrimitives/);
+  assert.match(brandsRuntime, /corePrimitives/);
+  assert.match(sapienRuntime, /foodDecisionCoreContext/);
+  assert.match(brandsRuntime, /attachCompanyAnalysisCore/);
+});
+
+test("shared core context is persisted through existing domain stores rather than a new database", () => {
+  assert.match(sapienRuntime, /provenance:\s*\{[\s\S]*?core,/);
+  assert.match(brandsRuntime, /twin:\{\.\.\.twin,_core:core\}/);
+  assert.match(brandsRuntime, /record_result/);
+  assert.match(brandsRuntime, /core_context:core/);
+});
+
+test("both product surfaces emit the same privacy-safe core lifecycle event", () => {
+  assert.match(sapienUi, /trackCoreLifecycle\('4sapien','PERSON'/);
+  assert.match(brandsUi, /trackCoreLifecycle\('4brands','COMPANY'/);
+});
