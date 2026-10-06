@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "releaseType": "DISCOVERY_ENGINE_01",
+  "priorLiveSha": "4f9f4e100874dd94bf59490097f0e67f54f3b961",
+  "testKingSha": "f3e92afe8d7240e977cbea908c3770529fec26a6",
+  "sourceExactFiles": [
+    "src/data/discoveryTopics.json",
+    "src/pages/discovery/DiscoveryEngine.tsx"
+  ],
+  "releaseFiles": [
+    ".github/workflows/discovery-bounded-live.yml",
+    "docs/control/DISCOVERY_ENGINE_01_RELEASE.json",
+    "docs/control/GOLD_CURRENT_BRIEF.md",
+    "package-lock.json",
+    "package.json",
+    "scripts/discovery-live-carrier-contract.test.mjs",
+    "scripts/generate-sitemap.mjs",
+    "scripts/live-promotion-authority-gate.mjs",
+    "scripts/prerender-discovery-seo.mjs",
+    "src/components/layout/PublicShell.tsx",
+    "src/data/discoveryTopics.json",
+    "src/pages/discovery/DiscoveryEngine.tsx",
+    "src/routes/router.tsx",
+    "src/styles/human-first-public.css",
+    "tests/e2e/discovery-live.spec.ts"
+  ],
+  "founderDecisionRef": "Founder instruction 2026-10-06/07 — “Det er selvsagt Live sidene som må oppdages” + “fortsett til fullført”",
+  "objective": "Publish Earth Now plus 20 canonical source-grounded discovery pages on 4planet.org while preserving current LIVE product work.",
+  "releaseLaw": "Production-shaped bounded carrier: direct child of prior LIVE, exact source blobs for canonical discovery core, surgical integration for LIVE bridge files, full build/security/browser proof before promotion.",
+  "rollbackRef": "main@4f9f4e100874dd94bf59490097f0e67f54f3b961"
+}
