@@ -1,3 +1,52 @@
+# 4PLANET DISCOVERY ENGINE 01 — EARTH NOW + 20 CANONICAL LIVE DISCOVERY SURFACES — 06 OCT 2026
+
+**STATUS:** BOUNDED PUBLIC PRODUCT CANDIDATE / FOUNDER LIVE INTENT EXPLICIT / EXACT-ARTIFACT QA REQUIRED BEFORE PRODUCTION PROMOTION.
+
+## USER ARRIVES BECAUSE
+A person searches Google, Bing or an AI assistant for a real environmental subject — for example wildfires, earthquakes, climate change, biodiversity, orca, Oslofjord or renewable energy — and needs a useful, source-grounded 4PLANET answer that can continue into the living product.
+
+## ONE THING TO UNDERSTAND
+Discovery is a product entry layer over existing 4PLANET intelligence, not a content farm. One permanent canonical URL should become more useful as sources, relationships and visualisation improve.
+
+## PRIMARY ACTION
+Read the answer and key source boundary, then inspect the same subject through the embedded canonical 4PLANET ATLAS.
+
+## SECONDARY DEPTH
+Continue into related SPECIES, PLACE, Living Systems, Mission, Impact, S4PIENS or 4BRANDS journeys where the existing product graph supports them.
+
+## P1 DOMINANT
+EARTH NOW at `/now`: “What is happening on Earth right now?” with latest-available planetary signals and a visible warning that the sources do not share one synchronized real-time clock.
+
+## P2 ORIENTATION
+Twenty permanent source-grounded topic pages: Wildfires, Earthquakes, Climate Change, Biodiversity, Deforestation, Plastic Pollution, Coral Bleaching, Air Quality, Orca, Whales, Bees, Amazon Rainforest, Oslofjord, Renewable Energy, Solar Energy, Food Waste, Fast Fashion, Rewilding, Climate Solutions and Environmental Jobs.
+
+## P3 ACTION / NEXT
+Each page exposes its canonical source list, latest checked date, an embedded canonical ATLAS view and relevant internal product connections. Earth Now links back into permanent topic pages instead of becoming a disposable feed.
+
+## P4 DEPTH
+Crawler-readable prerendered HTML, canonical metadata, OG/Twitter metadata, JSON-LD, Breadcrumb/ItemList structures, sitemap inclusion and explicit establishes / does-not-establish boundaries. Machine readability remains subordinate to human usefulness.
+
+## WHAT CAN BE REMOVED
+No new CMS, SEO database, second ATLAS, trend database, duplicate Brain, keyword-stuffed FAQ system or separate design system. Existing discovery, source, ATLAS, PublicShell, analytics, sitemap and prerender infrastructure are reused.
+
+## WHAT MUST BE REUSED
+Current Master Brand OS and PublicShell; current `src/data/discoveryInventory.json` and `atlasDiscovery.json`; existing source/provenance discipline; canonical `4planetatlas.com` renderer and its existing layers; current sitemap/prerender pipeline; existing analytics event seam.
+
+## TRUTH BOUNDARY
+“Earth Now” means latest available per source, never one universal real-time Earth. Thermal anomaly ≠ confirmed wildfire. Occurrence record ≠ current animal position, abundance or migration route. Tree-cover loss ≠ automatically deforestation. Coral thermal stress ≠ observed bleaching. Aerosol optical depth ≠ ground-level air quality. Context layers are labelled as context where no direct topic layer exists. No indexation, ranking or AI citation is claimed without measurement.
+
+## MOBILE-FIRST RISK
+The embedded ATLAS must remain usable at 390/430 widths without horizontal page overflow; topic fact strips and signal rows must collapse cleanly; search-readable fallback must not create duplicate visible content after hydration.
+
+## HUMAN SUCCESS
+A first-time visitor can understand the topic within seconds, see what is known versus not established, inspect the original sources, use the map and continue into a deeper 4PLANET object without encountering generic generated SEO prose.
+
+**FOUNDER LIVE INTENT:** On 06 Oct 2026 the Founder explicitly corrected the execution target: “Det er selvsagt Live sidene som må oppdages” and instructed execution to continue. This authorises the LIVE objective for this bounded discovery change, but the production manifest is populated only after the exact integrated artifact has passed the required QA gates.
+
+**RELEASE PATH:** bounded change → sole TEST KING integration → exact-sha QA/evidence → manifest-only Founder release control → production promotion → physical readback on `https://4planet.org/now` and all 20 canonical URLs. Do not stop at TEST/HEIR.
+
+---
+
 # 4BRANDS PUBLIC COMPANY INTELLIGENCE + PREMIUM PRODUCT REBUILD 01 — 06 OCT 2026
 
 **STATUS:** HEIR PRODUCT CANDIDATE / PUBLIC-FIRST COMPANY INTELLIGENCE / NO LIVE RELEASE.

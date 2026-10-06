@@ -25,6 +25,7 @@ const TOP: { key: PanelKey; to: string }[] = [
 ];
 
 const LENSES = [
+  ["EARTH NOW", "WHAT IS HAPPENING", "/now"],
   ["ATLAS", "SEE THE PLANET", "/atlas"],
   ["SPECIES", "MEET LIFE", "/species"],
   ["LIVING SYSTEMS", "UNDERSTAND CONNECTIONS", "/living-systems"],
@@ -169,7 +170,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 }
 
 function topIsDark(pathname: string) {
-  if (pathname === "/" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/what-we-believe" || pathname === "/about/founder") return true;
+  if (pathname === "/" || pathname === "/now" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/what-we-believe" || pathname === "/about/founder") return true;
   if (pathname === "/atlas" || pathname === "/impact" || pathname.startsWith("/impact/")) return true;
   if (pathname.startsWith("/domains/") || pathname.startsWith("/missions/")) return true;
   if (pathname === "/domains" || pathname.startsWith("/species/") || pathname.startsWith("/ecosystems/")) return true;
