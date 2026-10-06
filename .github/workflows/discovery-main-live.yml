@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - .github/workflows/discovery-main-live.yml
+      - products/livingsystems/**
+      - scripts/build-living-systems-v142.mjs
+      - scripts/living-systems-v142-zero-loss.test.mjs
+      - public/_redirects
+      - package.json
       - src/pages/integrated/AtlasDiscoveryPage.tsx
       - src/pages/v5/PlanetProof.tsx
       - src/pages/integrated/Species.tsx
@@ -67,6 +72,14 @@ jobs:
           set -euo pipefail
           npm ci
           npm run build
+          test -f dist/livingsystems/index.html
+          grep -Fq 'Living Systems' dist/livingsystems/index.html
+          grep -Fq 'A system for understanding how nature' dist/livingsystems/index.html
+          grep -Fq '<loc>https://4planet.org/livingsystems/</loc>' dist/sitemap.xml
+          ls_routes="$(find dist/livingsystems -type f -name index.html | wc -l | tr -d ' ')"
+          test "$ls_routes" -gt 0
+          echo "LIVING_SYSTEMS_V142_EXPORTED_ROUTES=$ls_routes"
+          echo 'LIVING_SYSTEMS_V142_BUILD_ARTIFACT_PASS'
           test -f dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/atlas</loc>' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/species</loc>' dist/sitemap.xml
@@ -79,6 +92,46 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
+      - name: Verify Living Systems v1.4.2 ZERO LOSS custom-domain runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 45); do
+            ls_root=$(curl -fsS --max-time 15 https://4planet.org/livingsystems/ || true)
+            if grep -Fq 'A system for understanding how nature' <<<"$ls_root" && grep -Fq 'Living Systems' <<<"$ls_root"; then
+              break
+            fi
+            sleep 4
+          done
+          grep -Fq 'A system for understanding how nature' <<<"$ls_root"
+          grep -Fq 'Living Systems' <<<"$ls_root"
+          grep -Fq '/livingsystems/start' <<<"$ls_root"
+          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$ls_root" | sort -u)
+          test -n "$assets"
+          while IFS= read -r asset; do
+            curl -fsS --max-time 20 -o /dev/null "https://4planet.org$asset"
+          done <<<"$assets"
+          route_count=0
+          while IFS= read -r file; do
+            rel="${file#dist}"
+            rel="${rel%index.html}"
+            url="https://4planet.org${rel}"
+            code=$(curl -sS --max-time 20 -o /tmp/ls-live-page.html -w '%{http_code}' "$url")
+            test "$code" = "200"
+            grep -Fqi '<html' /tmp/ls-live-page.html
+            route_count=$((route_count+1))
+          done < <(find dist/livingsystems -type f -name index.html | sort)
+          expected_count=$(find dist/livingsystems -type f -name index.html | wc -l | tr -d ' ')
+          test "$route_count" = "$expected_count"
+          curl -fsS https://4planet.org/livingsystems/start/ | grep -Fq 'Start with a question'
+          curl -fsS https://4planet.org/livingsystems/decisions/ | grep -Fq 'Decision'
+          curl -fsS https://4planet.org/livingsystems/learning/ | grep -Fq 'Learning'
+          curl -fsS https://4planet.org/livingsystems/trust/ | grep -Fq 'Trust'
+          curl -fsS https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/ | grep -Fq 'Amazon'
+          curl -fsS https://4planet.org/livingsystems/species/western-honey-bee/ | grep -Fq 'Honey'
+          echo "LIVING_SYSTEMS_V142_LIVE_ROUTES=$route_count"
+          echo 'LIVING_SYSTEMS_V142_CUSTOM_DOMAIN_PASS'
+
       - name: Verify ATLAS Place indexability live
         shell: bash
         run: |
@@ -191,5 +244,5 @@ jobs:
           grep -Fq 'application/ld+json' <<<"$impact"
           kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
-          grep -Fq '<loc>https://4planet.org/living-systems/amazonia</loc>' <<<"$sm"
+          grep -Fq '<loc>https://4planet.org/livingsystems/</loc>' <<<"$sm"
           echo 'PLACE_GRAPH_LIVE_PASS'

@@ -12,7 +12,7 @@ import "@/styles/home-brand-reset.css";
 const PRODUCTS = [
   ["01", "Atlas", "Explore places, observations and planetary context.", "/atlas"],
   ["02", "Species", "Understand species, habitats and the evidence around them.", "/species"],
-  ["03", "Living Systems", "See how living and human systems connect, change and come under pressure.", "/living-systems"],
+  ["03", "Living Systems", "See how living and human systems connect, change and come under pressure.", "/livingsystems/"],
   ["04", "Impact", "Find action pathways and follow what happens next.", "/impact"],
 ] as const;
 
@@ -50,7 +50,7 @@ const HOME_ATLAS_SRC = "/embed/atlas?l=bluemarble&c=0%2C15&z=1.35&t=light&embed=
 function ProductLens({ item }: { item: typeof PRODUCTS[number] }) {
   const [no, name, line, to] = item;
   return (
-    <Link to={to} className="home-lens">
+    <Link to={to} reloadDocument={to === "/livingsystems/"} className="home-lens">
       <div className="home-lens__number">{no}</div>
       <h3>{name}</h3>
       <p>{line}</p>

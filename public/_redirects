@@ -1,2 +1,4 @@
+/livingsystems  /livingsystems/  301
+/living-systems  /livingsystems/  301
 /api/*  /api/:splat  200
 /*  /index.html  200

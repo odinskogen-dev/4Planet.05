@@ -1,3 +1,60 @@
+# LIVING SYSTEMS v1.4.2 ZERO LOSS — BOUNDED LIVE RELEASE — 07 OCT 2026
+
+**STATUS:** FOUNDER_ACCEPTED / EXACT TEST KING ARTIFACT GREEN / BOUNDED LIVE PROMOTION AUTHORISED.
+
+**FOUNDER DECISION:** 07 OCT 2026 — “Dette må gjøres helt ferdig. Ikke stopp før 100% av LS 1.4.2 er live på 4Planet.”
+
+**SOURCE AUTHORITY:** `odinskogen-dev/4Planet_LivingSystems1.4.2@0a849ff3fd28e6cc6abcd04c95c5292410443502`.
+
+**EXACT TESTED HEIR:** `king/test@2003637420de884c4d67c9198712cb4749cc4924`. Public Preview Gate PASS: https://github.com/odinskogen-dev/4Planet.05/actions/runs/37541957544. Typecheck, production build, smoke/contracts, lint, assets and dependency audit all PASS.
+
+**ZERO LOSS PROOF:** 88 historical files / 88 recovered files; all 88 Git blob SHAs match original source exactly; 0 mismatch; 0 extras.
+
+**LIVE SCOPE:** Preserve exact current LIVE tree and overlay only recovered v1.4.2, build wrapper, Home destination, canonical /livingsystems/ sitemap/redirect contract, release controls and deployment verification. No wholesale TEST KING promotion.
+
+**PRIOR LIVE / ROLLBACK:** `main@c80b1edcbf46542ebbbf2a01224f3762f3c7b44f` plus prior immutable Cloudflare Pages deployment.
+
+## USER ARRIVES BECAUSE
+They want to understand how species, ecosystems, ecological functions, ecosystem services, human systems, threats and solutions depend on one another.
+
+## ONE THING TO UNDERSTAND
+Living Systems Intelligence makes relationships and dependencies visible. Species and places are entry points; relationships are the core intelligence asset.
+
+## PRIMARY ACTION
+Open the recovered Living Systems product at /livingsystems/ and start a guided question or explore the graph.
+
+## SECONDARY DEPTH
+Move through ecosystems, species, dependencies, solutions, decisions, learning, trust and sources inside the same v1.4.2 system.
+
+## P1 DOMINANT
+The original v1.4.2 product, recovered byte-for-byte and served as the leading public Living Systems baseline.
+
+## P2 ORIENTATION
+Dependency pathways, reverse dependencies, failure cascades and Human Use Translation explain how the system fits together.
+
+## P3 ACTION / NEXT
+Continue into solutions, structured decision signals, learning records, evidence or sources. Newer NATUREBRAIN/ATLAS/SPECIES work is donor material after intact recovery.
+
+## P4 DEPTH
+Trust/Claims/Sources, Source Verification, Data Quality, Solution Intelligence, Decision Intelligence, Learning Intelligence, Amazon and Pollination/Food proof cases.
+
+## WHAT CAN BE REMOVED
+Nothing from historical v1.4.2 source in this recovery. Modernisation is deferred until intact LIVE proof exists.
+
+## WHAT MUST BE REUSED
+All 88 exact historical blobs, original visual language, routes, components, graph/data model, dependency engine, trust layer, solution/decision/learning intelligence, Human Use Translation and historical documentation.
+
+## TRUTH BOUNDARY
+Historical prototype examples are structured intelligence examples, not proof of live ecological outcomes. Decision Intelligence is structured reasoning, not automated advice. Later convergence must preserve or expand semantics rather than flatten them.
+
+## MOBILE-FIRST RISK
+The historical static export must load all internal routes and _next assets correctly under /livingsystems/ on custom domain. Deployment QA crawls every exported HTML route.
+
+## HUMAN SUCCESS
+A visitor can open /livingsystems/, see v1.4.2, navigate its complete exported route set, inspect source/trust context and use Human Use/Dependency/Solution/Decision/Learning surfaces without a broken route or asset.
+
+---
+
 # DISCOVERY + USEFUL INTERNET OBJECTS — BOUNDED LIVE RELEASE 03 OCT 2026
 
 **STATUS:** FOUNDER-AUTHORISED BOUNDED LIVE CANDIDATE / EXACT-RUNTIME READBACK REQUIRED BEFORE LIVE CLAIM.
