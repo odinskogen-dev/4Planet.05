@@ -1,3 +1,41 @@
+# 4BRANDS PUBLIC COMPANY INTELLIGENCE + PREMIUM PRODUCT REBUILD 01 — 06 OCT 2026
+
+**STATUS:** HEIR PRODUCT CANDIDATE / PUBLIC-FIRST COMPANY INTELLIGENCE / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a leader, employee, investor, supplier or curious person wants one source-grounded view of what the public world can establish about a company before connecting private data.
+
+**ONE THING TO UNDERSTAND:** exact legal identity comes first. 4BRANDS then separates public FACTS, transparent CALCULATIONS, source SIGNALS, bounded HYPOTHESES and explicit UNKNOWNs instead of generating an AI company essay.
+
+**PRIMARY ACTION:** search a company → resolve the exact BRREG legal entity → inspect its public intelligence profile.
+
+**P1 DOMINANT:** legal company identity, source coverage, key register/financial facts and material change state.
+
+**P2 ORIENTATION:** BUSINESS / FINANCIALS / MARKET / PROCUREMENT / INNOVATION / CAPITAL / PLANET / STRUCTURE / PEOPLE / CHANGES / FINDINGS / SOURCES use progressive disclosure rather than one long report.
+
+**P3 ACTION:** inspect original evidence; use TED demand search; review a Climate TRACE owner identity before showing facility records; inspect exact-legal-name CORDIS relationships; authenticate through existing 4PLANET ID before private Company Brain depth.
+
+**P4 DEPTH:** BRREG roles, group structure, subunits, updates, annual-account availability, latest open key figures and industry cohort; GLEIF exact registration-number identity where available; BRREG-anchored first-party website discovery; CORDIS EURIO; TED; reviewed Climate TRACE.
+
+**DESIGN CONTRACT:** current BRAND OS is authority; historical BRAND OS is donor. PAPER/INK dominate, thin rules/grids, Instrument Sans + DM Sans + bounded Fragment Mono, restrained type scale, no pill-heavy SaaS chrome, no gradient/glow/shadow aesthetic, no giant generic hero typography. REVEAL COMPLEXITY, NOT DISPLAY COMPLEXITY.
+
+**TRUTH BOUNDARIES:** industry cohort ≠ proven competitor set. Published procurement notice ≠ eligibility/contract/payment. Company website content = first-party claim context until corroborated. CORDIS participation/funding-role value ≠ company revenue/cash/profit/current funding availability. Climate TRACE name similarity never becomes a company emissions claim without explicit owner review. Local “last seen” state is non-authoritative UI state; source events remain authoritative.
+
+**SOURCE ACCESS:** a BRREG-registered company website may block automated retrieval. HTTP access control is recorded as SOURCE_UNAVAILABLE / access-controlled, not bypassed and not converted to a fact about the company. Gold requires the first-party mechanism to physically fetch at least one registered website in the real-company matrix where the publisher permits it.
+
+**KNOWN EXTERNAL BLOCKERS:** EPO OPS patent intelligence requires external developer/OAuth credentials and is not presented as connected. Doffin-only national notice coverage remains open until its structured public API path is verified; TED is the currently connected public procurement source. Arbitrary old AI “Research deeper” remains separate and fail-closed where its server model credential is absent.
+
+**RETURN VALUE:** WHAT CHANGED is first-class. A bounded local visit marker can label new register events since the previous visit without becoming a truth store or notification system.
+
+**GOLD MATRIX:** real BRREG source audit on TOMRA, EQUINOR, TELENOR, DNB, KONGSBERG, HYDRO, ORKLA, MOWI, STOREBRAND and AKER BP; dedicated desktop 1440 + mobile 390 public-first browser proof; real open-source liveness for BRREG/first-party, CORDIS, TED and Climate TRACE.
+
+**HUMAN SUCCESS:** the free profile is useful without private data: exact identity, inspectable evidence, material public facts, change context, bounded signals, source tools and explicit unknowns can be navigated without reading a giant AI report.
+
+**FOUR-STATE AUTHORITY:** affected product = 4BRANDS. LIVE = https://4brands.org/ and remains existing production/readback state. HEIR = sole king/test exact candidate. Historical BRAND OS and other donors remain read-only. No new BRAIN, company DB, design-system master or control plane is created.
+
+**RELEASE:** HEIR only. Production/custom-domain promotion remains exact-artifact Founder-gated after independent Gold. Passing CI, preview or merge is not LIVE authority.
+
+---
+
 # HOMEPAGE BRAND RESET — HUMAN CRAFT CONTRACT CORRECTION — 06 OCT 2026
 
 **STATUS:** HEIR QA CONTRACT CORRECTION · PRODUCT SOURCE UNCHANGED · NO LIVE RELEASE.
