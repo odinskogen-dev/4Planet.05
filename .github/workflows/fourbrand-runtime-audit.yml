@@ -15,6 +15,7 @@ on:
       - src/pages/partners/PublicCompanyExternalSignals.tsx
       - functions/api/company-public-profile.ts
       - functions/api/company-first-party.ts
+      - functions/api/company-eu-projects.ts
       - tests/e2e/4brands-public-intelligence.spec.ts
   workflow_dispatch:
 
@@ -194,6 +195,8 @@ jobs:
           grep -q 'PublicProcurementIntelligence' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'PublicPlanetIntelligence' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'BRREG_REGISTERED_WEBSITE' functions/api/company-first-party.ts
+          grep -q 'CORDIS_SPARQL' functions/api/company-eu-projects.ts
+          grep -q 'EXACT_CASE_INSENSITIVE_LEGAL_NAME_AFTER_BRREG_RESOLUTION' functions/api/company-eu-projects.ts
           grep -q 'SIGNAL BOUNDARY' src/pages/partners/PublicCompanyExternalSignals.tsx
           grep -q 'IDENTITY BOUNDARY' src/pages/partners/PublicCompanyExternalSignals.tsx
           grep -q 'loadPublicProfile(payload.entity.organizationNumber)' src/pages/partners/FourBrand.tsx
@@ -236,6 +239,60 @@ jobs:
           tests/e2e/4brands-public-intelligence.spec.ts
           --project=desktop-1440
           --project=mobile-390
+
+  public-intelligence-open-source-liveness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: BRREG-anchored TOMRA first-party website is physically reachable
+        shell: bash
+        run: |
+          set -euo pipefail
+          entity=$(curl -fsS --retry 3 --max-time 20 -H 'Accept: application/vnd.brreg.enhetsregisteret.enhet.v2+json' https://data.brreg.no/enhetsregisteret/api/enheter/927124238)
+          test "$(jq -r '.organisasjonsnummer' <<<"$entity")" = "927124238"
+          site=$(jq -r '.hjemmeside // empty' <<<"$entity")
+          test -n "$site"
+          case "$site" in http://*|https://*) ;; *) site="https://$site";; esac
+          code=$(curl -sS -L --retry 2 --max-time 25 -A '4PLANET/1.0 public-company-source-discovery (https://4planet.org)' -o /tmp/tomra-first-party.html -w '%{http_code}' "$site" || true)
+          echo "registered_website=$site HTTP=$code bytes=$(wc -c </tmp/tomra-first-party.html 2>/dev/null || echo 0)"
+          test "$code" = "200"
+          test "$(wc -c </tmp/tomra-first-party.html)" -gt 500
+
+      - name: Public CORDIS EURIO SPARQL endpoint responds
+        shell: bash
+        run: |
+          set -euo pipefail
+          q='PREFIX eurio: <http://data.europa.eu/s66#> SELECT ?project WHERE { ?project a eurio:Project . } LIMIT 1'
+          curl -fsS --retry 2 --max-time 30 -X POST \
+            -H 'accept: application/sparql-results+json' \
+            -H 'content-type: application/x-www-form-urlencoded; charset=utf-8' \
+            --data-urlencode "query=$q" \
+            --data-urlencode 'format=application/sparql-results+json' \
+            https://cordis.europa.eu/datalab/sparql -o /tmp/cordis.json
+          jq -e '.results.bindings | type == "array"' /tmp/cordis.json >/dev/null
+
+      - name: Public TED search API responds
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 2 --max-time 30 \
+            -H 'content-type: application/json' -H 'accept: application/json' \
+            --data '{"query":"FT~recycling AND buyer-country=NOR SORT BY publication-date DESC","fields":["publication-number","notice-title"],"limit":1,"scope":"ACTIVE","paginationMode":"PAGE_NUMBER","page":1,"checkQuerySyntax":true}' \
+            https://api.ted.europa.eu/v3/notices/search -o /tmp/ted.json
+          jq -e 'type == "object"' /tmp/ted.json >/dev/null
+
+      - name: Climate TRACE public owner discovery responds
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS --retry 2 --max-time 25 -G \
+            --data-urlencode 'name=TOMRA' --data-urlencode 'limit=2' \
+            -H 'accept: application/json' \
+            -o /tmp/climate-owners.json -w '%{http_code}' \
+            https://api.climatetrace.org/v7/owners || true)
+          echo "Climate TRACE HTTP=$code"
+          test "$code" = "200"
+          jq -e 'type == "array" or type == "object"' /tmp/climate-owners.json >/dev/null
 
   public-intelligence-real-brreg:
     runs-on: ubuntu-latest
