@@ -5,6 +5,7 @@ import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import CompanyBrainControls from "@/pages/partners/CompanyBrainControls";
 import type { CompanyBrainSnapshot } from "@/product/FourBrandBrainClient";
+import { identityLoginUrl } from "@/identity/identityClient";
 
 type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
 type Confidence = "HIGH" | "MEDIUM" | "LOW";
@@ -647,7 +648,7 @@ export default function FourBrand() {
                 maxLength={120}
                 autoFocus
               />
-              <button type="submit" disabled={loading || company.trim().length < 2} aria-label="Run company analysis">
+              <button type="submit" disabled={loading || company.trim().length < 2} aria-label="Search">
                 {loading ? <span className="fb-spinner" aria-hidden="true" /> : <span aria-hidden="true">→</span>}
               </button>
             </div>
@@ -697,7 +698,11 @@ export default function FourBrand() {
             setError(null);
           }}
           onDeepAnalysis={() => void analyseResolved(publicProfile.company.name, identityResolution)}
-          onPrivate={() => void analyseResolved(publicProfile.company.name, identityResolution)}
+          onPrivate={() => {
+            if (typeof window === "undefined") return;
+            const returnTo = window.location.origin + "/4brands#company-brain";
+            window.location.href = identityLoginUrl(returnTo);
+          }}
         />
       )}
 
