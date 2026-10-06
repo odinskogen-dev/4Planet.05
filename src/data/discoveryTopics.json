@@ -1,0 +1,1041 @@
+{
+  "schema": "4PLANET_DISCOVERY_ENGINE_01",
+  "updatedAt": "2026-10-06",
+  "publicationLaw": "One improving canonical URL per useful topic. Every page must add source-grounded understanding or product utility, keep source and interpretation separate, and reuse existing 4PLANET / NATUREBRAIN / ATLAS infrastructure.",
+  "earthNow": {
+    "title": "Earth Now — What Is Happening on Earth Right Now? | 4PLANET",
+    "description": "Explore the latest available source-grounded signals across Earth — fires, earthquakes, natural events, coral heat stress, forest change, atmosphere and biodiversity — through 4PLANET ATLAS.",
+    "answer": "Earth Now is a public 4PLANET window into the latest available planetary signals from authoritative sources. Different datasets update at different speeds, so every layer keeps its own source and time semantics instead of being labelled generically as live.",
+    "atlasHref": "/atlas?m=PLANET&l=bluemarble,fires,events,quakes,coral,forest,aerosol,biodiv&z=1.65&c=5,18",
+    "embedKind": "NEWS",
+    "signals": [
+      {
+        "label": "Wildfires + thermal anomalies",
+        "detail": "Satellite-detected heat and source-reported fire events.",
+        "href": "/wildfires",
+        "layers": "NASA FIRMS / GIBS + EONET"
+      },
+      {
+        "label": "Earthquakes",
+        "detail": "Recent recorded seismic events from the USGS global feed.",
+        "href": "/earthquakes",
+        "layers": "USGS"
+      },
+      {
+        "label": "Natural events",
+        "detail": "Source-reported storms, volcanoes, fires and other open events.",
+        "href": "/wildfires",
+        "layers": "NASA EONET"
+      },
+      {
+        "label": "Coral heat stress",
+        "detail": "Satellite-derived accumulated thermal stress on reefs.",
+        "href": "/coral-bleaching",
+        "layers": "NOAA Coral Reef Watch"
+      },
+      {
+        "label": "Forest change",
+        "detail": "Mapped tree-cover-loss context with separate forest assessment evidence.",
+        "href": "/deforestation",
+        "layers": "Global Forest Watch / UMD + FAO"
+      },
+      {
+        "label": "Atmosphere",
+        "detail": "Satellite aerosol context; not a ground-level air-quality reading.",
+        "href": "/air-quality",
+        "layers": "NASA GIBS + WHO context"
+      },
+      {
+        "label": "Ocean conditions",
+        "detail": "Sea-surface temperature and related marine context.",
+        "href": "/climate-change",
+        "layers": "NASA GIBS / GHRSST"
+      },
+      {
+        "label": "Life observations",
+        "detail": "Open biodiversity records and occurrence density with sampling limitations.",
+        "href": "/biodiversity",
+        "layers": "GBIF / OBIS"
+      }
+    ],
+    "truthBoundary": "Earth Now means latest available from each source, not one synchronized real-time Earth. Historical records, delayed composites and source failures remain labelled according to their own meaning."
+  },
+  "topics": [
+    {
+      "slug": "wildfires",
+      "name": "Wildfires",
+      "title": "Wildfires — Global Fire Signals, Maps and Sources | 4PLANET",
+      "description": "Explore satellite thermal anomalies and source-reported wildfire events with 4PLANET ATLAS, including source dates and clear limits on what the data proves.",
+      "domain": "E4RTH",
+      "answer": "Wildfire monitoring combines several kinds of evidence. Satellite thermal anomalies can reveal unusual heat, while event feeds report incidents under their own definitions. Neither should be treated as proof of local conditions without checking the source, time and context.",
+      "keyFacts": [
+        "Thermal anomalies detect heat, not cause.",
+        "NASA event records and satellite layers have different update rules.",
+        "4PLANET keeps signal, event and interpretation separate."
+      ],
+      "happening": "The embedded ATLAS view exposes the latest available fire and natural-event layers configured in 4PLANET. Read each source date before treating a record as current.",
+      "whyItMatters": "Fire information changes quickly. A stable, source-aware page makes it possible to inspect the map without turning every heat pixel into a wildfire claim.",
+      "sourceEstablishes": "NASA satellite products can establish detected thermal anomalies for defined observation periods, while EONET can establish events carried by its source feed.",
+      "sourceDoesNotEstablish": "A thermal anomaly alone does not establish a wildfire, its cause, local danger or ecological outcome.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,fires,events&z=1.65&c=5,18",
+      "embedKind": "NEWS",
+      "atlasLabel": "Global fire and event context",
+      "atlasContextNote": "The fire layer contains satellite-detected heat. It is not a local emergency service.",
+      "sources": [
+        {
+          "authority": "NASA FIRMS",
+          "label": "Fire Information for Resource Management System",
+          "url": "https://firms.modaps.eosdis.nasa.gov/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "NASA EONET",
+          "label": "Earth Observatory Natural Event Tracker v3",
+          "url": "https://eonet.gsfc.nasa.gov/docs/v3",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "AM4ZONIA_",
+          "href": "/missions/am4zonia"
+        },
+        {
+          "label": "Climate change",
+          "href": "/climate-change"
+        },
+        {
+          "label": "Deforestation",
+          "href": "/deforestation"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "earthquakes",
+      "name": "Earthquakes",
+      "title": "Earthquakes Today — Global Map and USGS Data | 4PLANET",
+      "description": "Explore recent earthquakes worldwide through 4PLANET ATLAS using USGS source records, with magnitude, time, place and clear interpretation limits.",
+      "domain": "E4RTH",
+      "answer": "Earthquakes are sudden releases of energy in the Earth’s crust. 4PLANET uses the USGS global feed to place recent recorded events on the same ATLAS used for other planetary signals.",
+      "keyFacts": [
+        "The ATLAS earthquake layer uses the USGS global feed.",
+        "Magnitude, time, place and depth belong to the source record.",
+        "An earthquake record does not automatically establish ecological impact."
+      ],
+      "happening": "The embedded map reads the recent USGS earthquake layer available in ATLAS. Freshness belongs to the source feed and individual event timestamps.",
+      "whyItMatters": "Earthquake searches spike during major events. A permanent page can remain useful between events while directing people to the original records.",
+      "sourceEstablishes": "USGS source records can establish reported event location, time, magnitude, depth and event metadata.",
+      "sourceDoesNotEstablish": "The event record alone does not establish local damage, ecological consequence or safety conditions.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,quakes&z=1.65&c=5,18",
+      "embedKind": "NEWS",
+      "atlasLabel": "Recent recorded earthquakes",
+      "atlasContextNote": "Use official civil-protection sources for local safety decisions.",
+      "sources": [
+        {
+          "authority": "USGS",
+          "label": "Earthquake Hazards Program — GeoJSON feeds",
+          "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Earth Now",
+          "href": "/now"
+        },
+        {
+          "label": "Climate change",
+          "href": "/climate-change"
+        },
+        {
+          "label": "Explore Earth",
+          "href": "/atlas/earth"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "climate-change",
+      "name": "Climate Change",
+      "title": "Climate Change — Evidence, Signals and Solutions | 4PLANET",
+      "description": "Understand climate change through source-grounded evidence, planetary signals and connected solutions, with IPCC sources and 4PLANET ATLAS context.",
+      "domain": "E4RTH",
+      "answer": "Climate change is a long-term shift in the climate system. The IPCC’s latest completed assessment is AR6; 4PLANET connects that evidence to observable planetary layers without pretending one map layer represents the whole climate system.",
+      "keyFacts": [
+        "Climate is a long-term system, not a single weather event.",
+        "Different observations have different time scales and uncertainties.",
+        "Mitigation, adaptation and ecological response are separate but connected questions."
+      ],
+      "happening": "ATLAS can place temperature-related, sea-ice, vegetation, aerosol and other source layers beside one another. They should be read according to each source’s own date and method.",
+      "whyItMatters": "Climate change touches ecosystems, infrastructure, food, health and economies. Clear source boundaries matter because individual signals are often overinterpreted.",
+      "sourceEstablishes": "IPCC assessments synthesize the state of scientific knowledge across physical science, impacts, adaptation and mitigation.",
+      "sourceDoesNotEstablish": "A single local event or one ATLAS layer cannot by itself establish attribution to climate change.",
+      "atlasHref": "/atlas?m=PLANET&l=bluemarble,sst,seaice,ndvi,aerosol&z=1.65&c=5,18",
+      "embedKind": "NEWS",
+      "atlasLabel": "Climate-related planetary context",
+      "atlasContextNote": "The layers have different temporal coverage and should not be read as one combined climate score.",
+      "sources": [
+        {
+          "authority": "IPCC",
+          "label": "AR6 Synthesis Report: Climate Change 2023",
+          "url": "https://www.ipcc.ch/synthesis-report/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "NASA EOSDIS",
+          "label": "Global Imagery Browse Services",
+          "url": "https://nasa-gibs.github.io/gibs-api-docs/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "CLIM4TE_",
+          "href": "/missions/clim4te"
+        },
+        {
+          "label": "Climate solutions",
+          "href": "/climate-solutions"
+        },
+        {
+          "label": "Renewable energy",
+          "href": "/renewable-energy"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "biodiversity",
+      "name": "Biodiversity",
+      "title": "Biodiversity — Species Records, Patterns and Sources | 4PLANET",
+      "description": "Explore biodiversity through open species occurrence data, source-grounded explanations and 4PLANET ATLAS without confusing records with abundance.",
+      "domain": "E4RTH",
+      "answer": "Biodiversity describes the variety of life at genetic, species and ecosystem levels. 4PLANET uses open biodiversity records as evidence of reported occurrences, not as a complete census of life.",
+      "keyFacts": [
+        "Occurrence records show where a source reported an organism.",
+        "More records can reflect more observation effort, not more life.",
+        "Species, places and living systems need distinct evidence layers."
+      ],
+      "happening": "The ATLAS biodiversity view shows GBIF record density and selected occurrence layers. Bright or dense areas can indicate recording intensity rather than ecological abundance.",
+      "whyItMatters": "Biodiversity data becomes misleading when observation effort is confused with biological reality. The page keeps that limitation visible.",
+      "sourceEstablishes": "GBIF provides open access to occurrence records and taxonomic data supplied by its publishing network.",
+      "sourceDoesNotEstablish": "Record density alone does not establish abundance, complete range, population trend or ecosystem health.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,biodiv,species&z=1.65&c=5,18",
+      "embedKind": "SPECIES",
+      "atlasLabel": "Biodiversity records and context",
+      "atlasContextNote": "Record density is partly a map of where people have looked.",
+      "sources": [
+        {
+          "authority": "GBIF",
+          "label": "Global Biodiversity Information Facility",
+          "url": "https://www.gbif.org/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "IPBES",
+          "label": "Global Assessment of Biodiversity and Ecosystem Services",
+          "url": "https://www.ipbes.net/global-assessment",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "SPECIES_ Mission",
+          "href": "/missions/species"
+        },
+        {
+          "label": "Whales",
+          "href": "/whales"
+        },
+        {
+          "label": "Bees",
+          "href": "/bees"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "deforestation",
+      "name": "Deforestation",
+      "title": "Deforestation and Forest Change — Maps, Data and Context | 4PLANET",
+      "description": "Explore forest change through authoritative assessments and mapped tree-cover loss, with clear distinctions between tree-cover loss and deforestation.",
+      "domain": "E4RTH",
+      "answer": "Deforestation is the conversion of forest to another land use. Tree-cover loss is a different measure: it can include harvest, fire, storms and other temporary or permanent changes.",
+      "keyFacts": [
+        "Tree-cover loss is not automatically deforestation.",
+        "National forest assessments and satellite products answer different questions.",
+        "Time, threshold and land-use definitions must remain visible."
+      ],
+      "happening": "ATLAS exposes a Global Forest Watch / UMD tree-cover-loss layer as spatial context. FAO’s FRA 2025 provides the latest global official national-data assessment.",
+      "whyItMatters": "Forest change is central to climate, biodiversity and livelihoods, but different datasets use different definitions. Conflating them produces false conclusions.",
+      "sourceEstablishes": "FAO FRA 2025 reports official national forest-resource trends; mapped tree-cover-loss products show detected canopy-loss patterns under their own methods.",
+      "sourceDoesNotEstablish": "A tree-cover-loss pixel by itself does not establish deforestation, illegality, cause or permanence.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,forest,ndvi&z=1.65&c=5,18",
+      "embedKind": "NEWS",
+      "atlasLabel": "Forest change context",
+      "atlasContextNote": "The map layer is tree-cover loss, not a direct deforestation verdict.",
+      "sources": [
+        {
+          "authority": "FAO",
+          "label": "Global Forest Resources Assessment 2025",
+          "url": "https://www.fao.org/forest-resources-assessment/past-assessments/fra-2025/en",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "Global Forest Watch",
+          "label": "Global Forest Watch data platform",
+          "url": "https://www.globalforestwatch.org/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Amazon rainforest",
+          "href": "/amazon-rainforest"
+        },
+        {
+          "label": "AM4ZONIA_",
+          "href": "/missions/am4zonia"
+        },
+        {
+          "label": "Rewilding",
+          "href": "/rewilding"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "plastic-pollution",
+      "name": "Plastic Pollution",
+      "title": "Plastic Pollution — Evidence, Systems and Solutions | 4PLANET",
+      "description": "Understand plastic pollution across production, use, waste and environmental leakage, with UNEP sources and ocean-system context.",
+      "domain": "OCE4N",
+      "answer": "Plastic pollution is a system problem spanning material production, product design, consumption, waste management and leakage into land and water. No single ocean map measures the whole problem.",
+      "keyFacts": [
+        "Plastic pollution begins before litter reaches the ocean.",
+        "Different polymers, products and chemicals create different risks.",
+        "Prevention, reuse, collection and treatment solve different parts of the system."
+      ],
+      "happening": "4PLANET currently uses ATLAS here as environmental context, not as a global plastic-pollution measurement layer.",
+      "whyItMatters": "Plastic is useful but persistent waste and leakage can create long-lived environmental pressures. The solution space is wider than clean-up alone.",
+      "sourceEstablishes": "UNEP documents plastic pollution as a global environmental challenge and tracks the international process for a legally binding instrument.",
+      "sourceDoesNotEstablish": "The ATLAS context view does not establish local plastic concentration, clean-up performance or ecological outcome.",
+      "atlasHref": "/atlas?m=OCE4N&l=bluemarble&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Ocean and planetary context",
+      "atlasContextNote": "This is contextual geography, not a plastic-concentration layer.",
+      "sources": [
+        {
+          "authority": "UNEP",
+          "label": "Plastic pollution",
+          "url": "https://www.unep.org/topics/chemicals-and-pollution-action/plastic-pollution",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "UNEP",
+          "label": "Intergovernmental Negotiating Committee on Plastic Pollution",
+          "url": "https://www.unep.org/inc-plastic-pollution",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "CLE4N_",
+          "href": "/missions/cle4n"
+        },
+        {
+          "label": "Impact",
+          "href": "/impact"
+        },
+        {
+          "label": "Circular City",
+          "href": "/missions/circular-city"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "coral-bleaching",
+      "name": "Coral Bleaching",
+      "title": "Coral Bleaching — Heat Stress, Reef Context and Sources | 4PLANET",
+      "description": "Explore coral heat stress and bleaching context using NOAA Coral Reef Watch layers, with a clear boundary between heat stress and observed bleaching.",
+      "domain": "OCE4N",
+      "answer": "Coral bleaching can occur when corals experience stress, especially prolonged heat. NOAA Degree Heating Weeks measure accumulated thermal stress; they are a pressure indicator, not direct observation of bleaching on every reef.",
+      "keyFacts": [
+        "Degree Heating Weeks accumulate heat stress over time.",
+        "Heat stress and observed bleaching are different evidence types.",
+        "Local reef condition still requires field evidence."
+      ],
+      "happening": "The ATLAS coral layer uses NOAA Coral Reef Watch heat-stress data where available.",
+      "whyItMatters": "Heat-stress maps are powerful early-warning context, but overclaiming them as direct reef condition hides what still needs field observation.",
+      "sourceEstablishes": "NOAA Coral Reef Watch products establish satellite-derived thermal-stress conditions under defined methods and spatial resolution.",
+      "sourceDoesNotEstablish": "Heat stress alone does not establish that every coral in a mapped area has bleached or died.",
+      "atlasHref": "/atlas?m=OCE4N&l=bluemarble,coral,sst&z=2.2&c=147,-18",
+      "embedKind": "NEWS",
+      "atlasLabel": "Coral heat stress and sea-surface temperature",
+      "atlasContextNote": "Heat stress is pressure evidence, not a direct bleaching census.",
+      "sources": [
+        {
+          "authority": "NOAA Coral Reef Watch",
+          "label": "Daily 5 km Coral Bleaching Heat Stress Monitoring",
+          "url": "https://coralreefwatch.noaa.gov/product/5km/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "COR4L_",
+          "href": "/missions/cor4l"
+        },
+        {
+          "label": "Great Barrier Reef",
+          "href": "/living-systems/great-barrier-reef"
+        },
+        {
+          "label": "Climate change",
+          "href": "/climate-change"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "air-quality",
+      "name": "Air Quality",
+      "title": "Air Quality — Pollution, Aerosols and What the Data Means | 4PLANET",
+      "description": "Understand air quality through WHO health context and satellite aerosol data, while keeping aerosol optical depth separate from ground-level pollution measurements.",
+      "domain": "S4PIENS",
+      "answer": "Air quality describes the concentration of pollutants people and ecosystems are exposed to. Satellite aerosol optical depth can show particles in the atmospheric column, but it is not the same as a ground-level air-quality measurement.",
+      "keyFacts": [
+        "Air pollution is a major environmental health risk.",
+        "Satellite aerosol data and surface monitors measure different things.",
+        "Local exposure requires appropriate ground-level measurements and methods."
+      ],
+      "happening": "ATLAS exposes a NASA aerosol optical-depth layer as planetary context. It should be read as a proxy, not as a local PM2.5 reading.",
+      "whyItMatters": "People often interpret colourful atmospheric maps as direct exposure. Keeping measurement type explicit prevents that error.",
+      "sourceEstablishes": "WHO provides health evidence and guideline context; NASA satellite products provide atmospheric observations under their own retrieval methods.",
+      "sourceDoesNotEstablish": "ATLAS aerosol optical depth does not by itself establish the pollution concentration a person is breathing at ground level.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,aerosol&z=1.65&c=5,18",
+      "embedKind": "NEWS",
+      "atlasLabel": "Atmospheric aerosol context",
+      "atlasContextNote": "Aerosol optical depth is an atmospheric-column measure, not a ground monitor.",
+      "sources": [
+        {
+          "authority": "WHO",
+          "label": "Ambient (outdoor) air pollution",
+          "url": "https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "NASA EOSDIS",
+          "label": "Global Imagery Browse Services",
+          "url": "https://nasa-gibs.github.io/gibs-api-docs/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "EN4RGY_",
+          "href": "/missions/en4rgy"
+        },
+        {
+          "label": "Climate change",
+          "href": "/climate-change"
+        },
+        {
+          "label": "Climate solutions",
+          "href": "/climate-solutions"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "orca",
+      "name": "Orca",
+      "title": "Orca — Species, Observations and Ocean Context | 4PLANET",
+      "description": "Meet the orca through source-grounded species intelligence and reported occurrence records, connected to 4PLANET ATLAS and WH4LES_.",
+      "domain": "OCE4N",
+      "answer": "Orca, Orcinus orca, is a globally distributed toothed whale with distinct populations and ecotypes. 4PLANET keeps species-level facts, population-level evidence and individual occurrence records separate.",
+      "keyFacts": [
+        "An occurrence point is not a live animal position.",
+        "Different orca populations can have different status and pressures.",
+        "Species identity stays connected across SPECIES and ATLAS."
+      ],
+      "happening": "The embedded ATLAS view shows reported cetacean occurrence context. It is not an orca tracker.",
+      "whyItMatters": "Orca is an ideal example of why species intelligence needs identity, place, population and source boundaries rather than a single generic profile.",
+      "sourceEstablishes": "NOAA and biodiversity data sources can establish population-specific status information and source-reported occurrence records.",
+      "sourceDoesNotEstablish": "A set of occurrence points does not establish a migration route, current position or population abundance.",
+      "atlasHref": "/atlas?m=OCE4N&l=bluemarble,whales&entity=taxon%3Agbif%3A2440483&z=2.2&c=0,20",
+      "embedKind": "SPECIES",
+      "atlasLabel": "Cetacean occurrence context",
+      "atlasContextNote": "Reported observations are historical/source records, not a live tracker.",
+      "sources": [
+        {
+          "authority": "NOAA Fisheries",
+          "label": "Southern Resident Killer Whale (Orcinus orca)",
+          "url": "https://www.fisheries.noaa.gov/west-coast/endangered-species-conservation/southern-resident-killer-whale-orcinus-orca",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "GBIF",
+          "label": "Orcinus orca species record",
+          "url": "https://www.gbif.org/species/2440483",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Open Orca in SPECIES",
+          "href": "/species/orca"
+        },
+        {
+          "label": "WH4LES_",
+          "href": "/missions/wh4les"
+        },
+        {
+          "label": "Whales",
+          "href": "/whales"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "whales",
+      "name": "Whales",
+      "title": "Whales — Species, Occurrence Records and Ocean Context | 4PLANET",
+      "description": "Explore whale and dolphin occurrence records, species connections and ocean context without confusing observations with live tracks or population size.",
+      "domain": "OCE4N",
+      "answer": "Whales are diverse marine mammals recorded across many scientific and observation datasets. 4PLANET treats each record as evidence with its own place, time and source rather than turning points into a live migration map.",
+      "keyFacts": [
+        "OBIS and GBIF aggregate occurrence records from many datasets.",
+        "Record count is not population size.",
+        "Observation points do not automatically form a migration route."
+      ],
+      "happening": "ATLAS exposes a bounded cetacean occurrence layer and connects relevant records into species journeys.",
+      "whyItMatters": "Marine observations are sparse and uneven. Honest interpretation makes the data useful without making it look more complete than it is.",
+      "sourceEstablishes": "OBIS and GBIF records can establish that contributing sources reported occurrences with available time and location metadata.",
+      "sourceDoesNotEstablish": "The records alone do not establish current occupancy, abundance or complete distribution.",
+      "atlasHref": "/atlas?m=OCE4N&l=bluemarble,whales&z=2.2&c=0,20",
+      "embedKind": "SPECIES",
+      "atlasLabel": "Reported cetacean observations",
+      "atlasContextNote": "The current ATLAS whale layer is bounded and incomplete by design.",
+      "sources": [
+        {
+          "authority": "OBIS",
+          "label": "Ocean Biodiversity Information System",
+          "url": "https://obis.org/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "GBIF",
+          "label": "Global Biodiversity Information Facility",
+          "url": "https://www.gbif.org/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Orca",
+          "href": "/orca"
+        },
+        {
+          "label": "WH4LES_",
+          "href": "/missions/wh4les"
+        },
+        {
+          "label": "Oslofjord",
+          "href": "/oslofjord"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "bees",
+      "name": "Bees",
+      "title": "Bees and Pollinators — Biodiversity, Pollination and Sources | 4PLANET",
+      "description": "Understand bees and pollinators through IPBES evidence and biodiversity records, connected to 4PLANET species and land-system context.",
+      "domain": "E4RTH",
+      "answer": "Bees are a diverse group of pollinators, and pollination connects wild plants, crops and ecosystem processes. Pressures and responses differ across species and places.",
+      "keyFacts": [
+        "Pollination is an ecosystem service involving many animal groups.",
+        "Not all bee species have the same ecology or trend.",
+        "Occurrence records show observations, not total population."
+      ],
+      "happening": "ATLAS provides broader biodiversity and occurrence context; it is not a complete bee abundance map.",
+      "whyItMatters": "Pollinators connect biodiversity and food systems, but generic claims about ‘the bees’ can hide major differences between species and regions.",
+      "sourceEstablishes": "IPBES assesses pollinator status, drivers, ecosystem-service relationships and policy responses; GBIF provides source occurrence records.",
+      "sourceDoesNotEstablish": "A mapped occurrence or global assessment does not determine the status of every local bee population.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,biodiv,species&z=1.65&c=5,18",
+      "embedKind": "SPECIES",
+      "atlasLabel": "Biodiversity and occurrence context",
+      "atlasContextNote": "The map is broader biodiversity context, not a bee-population census.",
+      "sources": [
+        {
+          "authority": "IPBES",
+          "label": "Assessment Report on Pollinators, Pollination and Food Production",
+          "url": "https://www.ipbes.net/assessment-reports/pollinators",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "GBIF",
+          "label": "Global Biodiversity Information Facility",
+          "url": "https://www.gbif.org/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Biodiversity",
+          "href": "/biodiversity"
+        },
+        {
+          "label": "FOOD_",
+          "href": "/missions/food"
+        },
+        {
+          "label": "SPECIES_",
+          "href": "/missions/species"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "amazon-rainforest",
+      "name": "Amazon Rainforest",
+      "title": "Amazon Rainforest — Forest Change, Fire and Biodiversity | 4PLANET",
+      "description": "Explore Amazonia through forest-change, fire and biodiversity context with source-grounded maps and clear boundaries between observations and interpretation.",
+      "domain": "E4RTH",
+      "answer": "The Amazon is a continental forest system spanning multiple countries, ecosystems and human communities. No single polygon or dataset fully represents it.",
+      "keyFacts": [
+        "Land-cover maps, fire detections and biodiversity records measure different things.",
+        "Amazonia crosses national and ecological boundaries.",
+        "Fire detection does not by itself establish deforestation."
+      ],
+      "happening": "The ATLAS view combines global fire, forest-change and biodiversity layers focused on Amazonia without creating a separate Amazon-only data system.",
+      "whyItMatters": "The Amazon links biodiversity, water, climate and human systems at enormous scale. Source definitions and boundaries determine what conclusions are valid.",
+      "sourceEstablishes": "MapBiomas Amazonia provides annual land-cover mapping under explicit methods; NASA fire systems provide time-bounded thermal observations.",
+      "sourceDoesNotEstablish": "These layers alone do not establish cause, illegality, land tenure or ecological outcome for a specific change.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,fires,forest,biodiv&z=3.4&c=-62,-4",
+      "embedKind": "PLACE",
+      "atlasLabel": "Amazonia forest, fire and biodiversity context",
+      "atlasContextNote": "Multiple sources are shown together but retain separate meanings.",
+      "sources": [
+        {
+          "authority": "MapBiomas Amazonia",
+          "label": "MapBiomas Amazonia Collection",
+          "url": "https://amazonia.mapbiomas.org/en/en/mapbiomas-amazonia-collection/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "NASA FIRMS",
+          "label": "Fire Information for Resource Management System",
+          "url": "https://firms.modaps.eosdis.nasa.gov/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "AM4ZONIA_",
+          "href": "/missions/am4zonia"
+        },
+        {
+          "label": "Deforestation",
+          "href": "/deforestation"
+        },
+        {
+          "label": "Wildfires",
+          "href": "/wildfires"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "oslofjord",
+      "name": "Oslofjord",
+      "title": "Oslofjord — State, Pressures, Evidence and Map | 4PLANET",
+      "description": "Explore Oslofjord through source-grounded place intelligence, environmental status and mapped context, including the bounded Bunnefjorden proof case.",
+      "domain": "OCE4N",
+      "answer": "Oslofjord is a complex coastal system affected by several pressures. 4PLANET keeps whole-fjord status separate from the narrower Bunnefjorden case where specific oxygen conditions and an infrastructure intervention can be inspected.",
+      "keyFacts": [
+        "Whole-fjord state and Bunnefjorden evidence are different scopes.",
+        "Water status, habitat interventions and bathymetry come from different source systems.",
+        "A measured oxygen improvement is not proof that the whole fjord is restored."
+      ],
+      "happening": "The embedded ATLAS offers ocean and biodiversity context. The deeper Living Systems page carries the bounded Bunnefjorden evidence case.",
+      "whyItMatters": "Oslofjord is close enough to be personally legible and complex enough to demonstrate how place, pressure, actors and evidence should be connected.",
+      "sourceEstablishes": "Miljødirektoratet reports on wider fjord condition; NIVA provides bounded evidence on Bunnefjorden oxygen and deep-water renewal.",
+      "sourceDoesNotEstablish": "A local intervention result cannot be generalized into recovery of the entire Oslofjord ecosystem.",
+      "atlasHref": "/atlas?m=OCE4N&l=bluemarble,sst,biodiv&z=7&c=10.6,59.6",
+      "embedKind": "PLACE",
+      "atlasLabel": "Oslofjord marine context",
+      "atlasContextNote": "Use the Living Systems page for the bounded Bunnefjorden evidence chain.",
+      "sources": [
+        {
+          "authority": "Miljødirektoratet",
+          "label": "Tilstandsrapport for Oslofjorden",
+          "url": "https://www.miljodirektoratet.no/publikasjoner/2025/januar-2025/tilstandsrapport-for-oslofjorden/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "NIVA",
+          "label": "Mulighetsvurdering – Overføring av Gjersjøvann til Bunnefjorden",
+          "url": "https://www.niva.no/publikasjoner/publikasjon?cristinid=10302191",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Living Systems — Oslofjord",
+          "href": "/living-systems/oslofjord"
+        },
+        {
+          "label": "RE:WILD_ Marine",
+          "href": "/missions/rewild-marine"
+        },
+        {
+          "label": "Whales",
+          "href": "/whales"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "renewable-energy",
+      "name": "Renewable Energy",
+      "title": "Renewable Energy — Data, Technologies and System Context | 4PLANET",
+      "description": "Understand renewable energy through IRENA and IEA data, connected to energy-system and emissions context without reducing trade-offs to a single score.",
+      "domain": "S4PIENS",
+      "answer": "Renewable energy comes from sources replenished on human timescales, including solar, wind, hydropower, geothermal and bioenergy. Deployment, grids, materials, land and reliability remain part of the system question.",
+      "keyFacts": [
+        "Renewable technologies have different resource and system profiles.",
+        "Installed capacity is not the same as electricity generated.",
+        "Grid, storage, permitting and supply chains affect deployment."
+      ],
+      "happening": "IRENA’s 2026 statistics cover renewable capacity through 2025; IEA’s latest renewable analysis provides deployment and system context.",
+      "whyItMatters": "Energy underpins almost every human system. Comparing technologies requires more than a simple green/not-green label.",
+      "sourceEstablishes": "IRENA and IEA provide capacity, technology and market/system data using documented methods.",
+      "sourceDoesNotEstablish": "A global capacity trend does not determine the best technology, site or grid choice for a specific project.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,night,emissions&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Energy and human-system context",
+      "atlasContextNote": "Night lights and emissions are context layers, not a renewable-capacity map.",
+      "sources": [
+        {
+          "authority": "IRENA",
+          "label": "Renewable capacity statistics 2026",
+          "url": "https://www.irena.org/Publications/2026/Mar/Renewable-capacity-statistics-2026",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "IEA",
+          "label": "Renewables 2025",
+          "url": "https://www.iea.org/reports/renewables-2025",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Solar energy",
+          "href": "/solar-energy"
+        },
+        {
+          "label": "EN4RGY_",
+          "href": "/missions/en4rgy"
+        },
+        {
+          "label": "Climate solutions",
+          "href": "/climate-solutions"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "solar-energy",
+      "name": "Solar Energy",
+      "title": "Solar Energy — Solar PV Data, Growth and System Context | 4PLANET",
+      "description": "Understand solar PV through IEA and IRENA data, including capacity, generation and system context with clear limits on what global statistics imply locally.",
+      "domain": "S4PIENS",
+      "answer": "Solar photovoltaics convert sunlight directly into electricity. Their value depends not only on panel performance but on location, grid conditions, storage, demand, finance, materials and land or rooftop use.",
+      "keyFacts": [
+        "Capacity and generation are different measures.",
+        "Solar output varies by location and time.",
+        "Grid integration and storage can matter as deployment scales."
+      ],
+      "happening": "IEA’s solar page carries current technology tracking; IRENA publishes comparable global capacity statistics.",
+      "whyItMatters": "Solar is expanding rapidly, but useful decisions need local resource, system and economic context rather than global averages alone.",
+      "sourceEstablishes": "IEA and IRENA provide historical and current technology/capacity data under documented definitions.",
+      "sourceDoesNotEstablish": "Global deployment data does not establish the economics or environmental performance of a specific installation.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,night,emissions&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Human-system and emissions context",
+      "atlasContextNote": "The current map is contextual; 4PLANET does not yet expose a global solar-capacity layer here.",
+      "sources": [
+        {
+          "authority": "IEA",
+          "label": "Solar PV — latest findings",
+          "url": "https://www.iea.org/energy-system/renewables/solar-pv",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "IRENA",
+          "label": "Renewable capacity statistics 2026",
+          "url": "https://www.irena.org/Publications/2026/Mar/Renewable-capacity-statistics-2026",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Renewable energy",
+          "href": "/renewable-energy"
+        },
+        {
+          "label": "EN4RGY_",
+          "href": "/missions/en4rgy"
+        },
+        {
+          "label": "Climate change",
+          "href": "/climate-change"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "food-waste",
+      "name": "Food Waste",
+      "title": "Food Waste — Scale, Measurement and Solutions | 4PLANET",
+      "description": "Understand food waste across households, food service and retail using UNEP evidence, linked to the wider food system and practical reduction pathways.",
+      "domain": "S4PIENS",
+      "answer": "Food waste is edible or associated food material discarded across households, food service and retail. Measurement matters because prevention strategies depend on where and why waste occurs.",
+      "keyFacts": [
+        "Food waste is measured across different sectors.",
+        "Comparable measurement is essential for tracking reduction.",
+        "Prevention and redistribution are different from downstream waste treatment."
+      ],
+      "happening": "UNEP’s Food Waste Index Report 2024 is the core current global reference used on this page.",
+      "whyItMatters": "Wasted food also embodies land, water, energy, labour and money. Reducing it can improve both household and system efficiency.",
+      "sourceEstablishes": "UNEP provides global estimates, sector measurement guidance and documented approaches to reducing food waste.",
+      "sourceDoesNotEstablish": "Global estimates do not determine the waste level of a specific household, business or city without local measurement.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,night&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Human-system context",
+      "atlasContextNote": "The map is context for human systems; it is not a food-waste measurement layer.",
+      "sources": [
+        {
+          "authority": "UNEP",
+          "label": "Food Waste Index Report 2024",
+          "url": "https://www.unep.org/resources/publication/food-waste-index-report-2024",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "FOOD_",
+          "href": "/missions/food"
+        },
+        {
+          "label": "S4PIENS_",
+          "href": "/domains/s4piens"
+        },
+        {
+          "label": "Climate solutions",
+          "href": "/climate-solutions"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "fast-fashion",
+      "name": "Fast Fashion",
+      "title": "Fast Fashion — Materials, Impacts and Circular Solutions | 4PLANET",
+      "description": "Understand fast fashion as a textile value-chain problem involving materials, chemicals, labour, overproduction, consumption and waste.",
+      "domain": "S4PIENS",
+      "answer": "Fast fashion is a business and consumption model built around rapid product turnover and high volumes. Its environmental effects span fibres, chemicals, energy, water, production, transport, use and end-of-life.",
+      "keyFacts": [
+        "Textile impacts occur across the full value chain.",
+        "Durability, repair, reuse and circularity address different stages.",
+        "Company claims need source-specific verification."
+      ],
+      "happening": "UNEP’s textile work provides the evidence and policy context; 4PLANET connects the topic to F4SHION_ and future company intelligence.",
+      "whyItMatters": "Fashion is both a material system and a cultural system. That makes product design, business models and consumer behaviour relevant together.",
+      "sourceEstablishes": "UNEP documents environmental risks across the textile lifecycle and work toward sustainable and circular textile systems.",
+      "sourceDoesNotEstablish": "Sector-level evidence does not prove the environmental performance of an individual brand or garment.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,night,emissions&z=1.65&c=5,18",
+      "embedKind": "BRANDS",
+      "atlasLabel": "Human-system and emissions context",
+      "atlasContextNote": "The map is system context, not a fashion supply-chain trace.",
+      "sources": [
+        {
+          "authority": "UNEP",
+          "label": "Sustainable and circular textiles",
+          "url": "https://www.unep.org/topics/chemicals-and-pollution-action/circularity-sectors/sustainable-and-circular-textiles",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "UNEP",
+          "label": "Environmental permitting in the textile value chain",
+          "url": "https://www.unep.org/resources/report/supporting-transition-sustainable-textile-value-chain-role-environmental",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "F4SHION_",
+          "href": "/missions/f4shion"
+        },
+        {
+          "label": "4BRANDS",
+          "href": "/brands"
+        },
+        {
+          "label": "Circular City",
+          "href": "/missions/circular-city"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "rewilding",
+      "name": "Rewilding",
+      "title": "Rewilding — Principles, Evidence and Restoration Context | 4PLANET",
+      "description": "Understand rewilding through IUCN guidance, ecological-process recovery and place-based evidence rather than a single universal intervention.",
+      "domain": "E4RTH",
+      "answer": "Rewilding aims to restore ecological integrity by enabling natural processes, relationships and dynamic ecosystems to recover. It is not one fixed technique and requires place-specific goals, people, monitoring and adaptation.",
+      "keyFacts": [
+        "Rewilding focuses on ecological processes and integrity.",
+        "Local engagement and monitoring matter.",
+        "Interventions and acceptable outcomes differ by place."
+      ],
+      "happening": "IUCN published new rewilding guidelines in 2025; 4PLANET connects those principles to place, species and restoration context.",
+      "whyItMatters": "Rewilding is increasingly used as a broad label. Clear principles help separate genuine ecological recovery work from vague nature marketing.",
+      "sourceEstablishes": "IUCN guidance provides evidence-informed principles and implementation considerations for rewilding.",
+      "sourceDoesNotEstablish": "The label ‘rewilding’ does not itself prove ecological recovery or determine the right intervention for a place.",
+      "atlasHref": "/atlas?m=E4RTH&l=bluemarble,biodiv,forest&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Land, biodiversity and forest context",
+      "atlasContextNote": "The map shows context; project outcomes require their own evidence.",
+      "sources": [
+        {
+          "authority": "IUCN",
+          "label": "Guidelines for rewilding",
+          "url": "https://iucn.org/resources/publication/guidelines-rewilding",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "IUCN",
+          "label": "Benefits and risks of rewilding",
+          "url": "https://iucn.org/resources/issues-brief/benefits-and-risks-rewilding",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "RE:WILD_ Land",
+          "href": "/missions/rewild-land"
+        },
+        {
+          "label": "RE:WILD_ Marine",
+          "href": "/missions/rewild-marine"
+        },
+        {
+          "label": "Biodiversity",
+          "href": "/biodiversity"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "climate-solutions",
+      "name": "Climate Solutions",
+      "title": "Climate Solutions — Mitigation, Adaptation and Evidence | 4PLANET",
+      "description": "Explore climate solutions across energy, land, cities and human systems with IPCC evidence and clear separation between proposed action, delivery and measured outcome.",
+      "domain": "S4PIENS",
+      "answer": "Climate solutions include actions that reduce greenhouse-gas emissions, remove carbon, reduce exposure and vulnerability, or strengthen resilience. Their value depends on context, scale, trade-offs, implementation and evidence.",
+      "keyFacts": [
+        "Mitigation and adaptation solve different parts of the climate problem.",
+        "A solution category is not proof of a successful project.",
+        "Costs, co-benefits and trade-offs vary by place and system."
+      ],
+      "happening": "4PLANET connects solution categories to energy, land, company and place context rather than publishing a single ranked list.",
+      "whyItMatters": "People searching for solutions need to know what can work, where it fits and what evidence would prove delivery and outcome.",
+      "sourceEstablishes": "IPCC AR6 synthesizes assessed mitigation and adaptation options, their feasibility and system context.",
+      "sourceDoesNotEstablish": "An assessed option does not guarantee success for a specific project, company or location.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,emissions,forest&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Emissions, land and system context",
+      "atlasContextNote": "ATLAS context is evidence input, not a ranking of solutions.",
+      "sources": [
+        {
+          "authority": "IPCC",
+          "label": "AR6 Synthesis Report: Climate Change 2023",
+          "url": "https://www.ipcc.ch/synthesis-report/",
+          "checkedAt": "2026-10-06"
+        },
+        {
+          "authority": "IPCC",
+          "label": "AR6 Working Group III — Mitigation of Climate Change",
+          "url": "https://www.ipcc.ch/report/ar6/wg3/",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Climate change",
+          "href": "/climate-change"
+        },
+        {
+          "label": "Renewable energy",
+          "href": "/renewable-energy"
+        },
+        {
+          "label": "Impact",
+          "href": "/impact"
+        }
+      ],
+      "indexable": true
+    },
+    {
+      "slug": "environmental-jobs",
+      "name": "Environmental Jobs",
+      "title": "Environmental Jobs — Green Work and Ways to Help | 4PLANET",
+      "description": "Understand green jobs and practical routes into environmental work, connected to organisations, missions and ways to contribute through 4PLANET.",
+      "domain": "S4PIENS",
+      "answer": "Green jobs are decent jobs that contribute to preserving or restoring the environment, either through the goods and services produced or through more environmentally sustainable production processes.",
+      "keyFacts": [
+        "Environmental work exists in established and emerging sectors.",
+        "Job title alone does not determine environmental value.",
+        "Skills, location and actual employer activity matter."
+      ],
+      "happening": "4PLANET connects this topic to its actor and participation layers so discovery can lead toward real organisations and roles rather than a static article.",
+      "whyItMatters": "Many people want to help but do not know where their existing skills fit. Search discovery can become a path into meaningful work and contribution.",
+      "sourceEstablishes": "The ILO defines green jobs and describes how work can contribute through environmental goods, services or improved production processes.",
+      "sourceDoesNotEstablish": "A role advertised as ‘green’ is not automatically high-impact, legitimate or a good fit for a particular person.",
+      "atlasHref": "/atlas?m=S4PIENS&l=bluemarble,night&z=1.65&c=5,18",
+      "embedKind": "SOLUTIONS",
+      "atlasLabel": "Human-system context",
+      "atlasContextNote": "The map provides system context; jobs and organisations require their own records.",
+      "sources": [
+        {
+          "authority": "ILO",
+          "label": "What is a green job?",
+          "url": "https://www.ilo.org/topics-and-sectors/just-transition-towards-environmentally-sustainable-economies-and-societies/what-green-job",
+          "checkedAt": "2026-10-06"
+        }
+      ],
+      "related": [
+        {
+          "label": "Find your way to help",
+          "href": "/get-involved"
+        },
+        {
+          "label": "Actors",
+          "href": "/actors"
+        },
+        {
+          "label": "Join 4PLANET",
+          "href": "/join"
+        }
+      ],
+      "indexable": true
+    }
+  ]
+}
