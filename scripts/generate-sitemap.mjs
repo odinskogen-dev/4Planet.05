@@ -42,7 +42,8 @@ const staticRoutes = [
 
 // ATLAS and SPECIES have standalone canonical homes. Their 4planet.org routes
 // redirect to those product domains, so they are excluded from this sitemap.
-// Canonical PLACE ownership lives on 4planetatlas.com. 4planet.org keeps the /places gateway but does not compete with ATLAS place URLs.\nconst discoveryRoutes = [];
+// Canonical PLACE ownership lives on 4planetatlas.com. 4planet.org keeps the /places gateway but does not compete with ATLAS place URLs.
+const discoveryRoutes = [];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 
 const escapeXml = (value) => String(value)
