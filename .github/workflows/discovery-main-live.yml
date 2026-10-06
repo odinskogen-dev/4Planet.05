@@ -110,6 +110,7 @@ jobs:
           grep -Fq '<loc>https://4planetatlas.com/place/tokyo</loc>' <<<"$atlas_sm"
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | wc -l | tr -d ' ')" = "50"
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
           brands=$(curl -fsS https://4brands.org/)
           grep -Fq '4BRANDS — Understand Any Company. Improve Your Own.' <<<"$brands"
           grep -Fq 'application/ld+json' <<<"$brands"
