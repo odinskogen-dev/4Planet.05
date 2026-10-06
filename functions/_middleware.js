@@ -542,7 +542,13 @@ export async function onRequest(context) {
   }
 
   if (host === "4planet.org") {
-    const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    const pathname = url.pathname.replace(/\\/+$/, "") || "/";
+    if (pathname.startsWith("/place/")) {
+      const slug = pathname.slice("/place/".length);
+      if (ATLAS_WORLD_PLACES.some((place) => place.slug === slug)) {
+        return Response.redirect("https://4planetatlas.com/place/" + slug + url.search, 308);
+      }
+    }
     const exactRedirects = new Map([
       ["/atlas", "https://4planetatlas.com/"],
       ["/species", "https://4species.com/species/"],
