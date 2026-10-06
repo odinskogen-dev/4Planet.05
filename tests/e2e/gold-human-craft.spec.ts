@@ -39,8 +39,11 @@ async function assertPremiumNavigation(page) {
       await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
     await page.getByRole("button", { name: "EXPLORE", exact: true }).hover();
-    await expect(page.getByRole("region", { name: "EXPLORE navigation" })).toBeVisible();
+    const explorePanel = page.getByRole("region", { name: "EXPLORE navigation" });
+    await expect(explorePanel).toBeVisible();
     await expect(page.getByRole("link", { name: /ATLAS/i }).first()).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(explorePanel).toBeHidden();
   }
 
   await expect(page.getByText(/4NTARCTICA/i)).toHaveCount(0);
