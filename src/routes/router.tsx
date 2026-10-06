@@ -1,37 +1,55 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import Home from "@/pages/v5/Home";
-import LabsOverview from "@/pages/labs/LabsOverview";
-import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
-import { MissionDetail } from "@/pages/v5/Missions";
-import { MissionsIndex } from "@/pages/v5/AllMissions";
-import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
-import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
-import { BayActionProof } from "@/pages/integrated/ImpactActionProof";
-import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
-import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
-import CompanyGoldTony from "@/pages/integrated/CompanyGoldTony";
-import { SpeciesIndex, SpeciesProfilePage } from "@/pages/integrated/Species";
-import { SpeciesEngineLab } from "@/pages/integrated/SpeciesEngineLab";
-import { SpeciesRoute } from "@/pages/integrated/SpeciesRoute";
-import { PlacesIndex, PlaceRoute } from "@/pages/integrated/Places";
-import { AtlasDiscoveryPage } from "@/pages/integrated/AtlasDiscoveryPage";
-import { DiscoveryTopicPage, EarthNowPage, DISCOVERY_TOPIC_SLUGS } from "@/pages/discovery/DiscoveryEngine";
-import { LensCapture } from "@/pages/lens/LensCapture";
-import { FoodCapture } from "@/pages/sapiens/FoodCapture";
-import PickPrototype from "../food/PickPrototype";
-import { FourFinanceHome, FourSapienHome } from "../pages/sapien/FourSapien";
-import { People, Brands, Partners, Funders } from "@/pages/v5/Entry";
-import Join from "@/pages/v5/Join";
-import { LivingSystems, LivingSystemJourney } from "@/pages/v5/LivingSystems";
-import { PlanetProofPage } from "@/pages/v5/PlanetProof";
-import { Reports } from "@/pages/v5/Reports";
-import { About } from "@/pages/v5/About";
-import { AboutStory, AboutSystem, WhatWeBelieve, Founder } from "@/pages/v5/AboutPages";
-import { CulturePlay } from "@/pages/v5/Culture";
-import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
-import Privacy from "@/pages/v5/Privacy";
-import PlanetSignal from "@/pages/v5/PlanetSignal";
+import {
+  LabsOverview,
+  DomainsIndex,
+  DomainWorld,
+  MissionDetail,
+  MissionsIndex,
+  ImpactLabIndex,
+  ImpactTestJourney,
+  PersonalImpactRecordPage,
+  ImpactPublicHome,
+  ImpactStory,
+  BayActionProof,
+  CheckoutReturn,
+  CommerceStripeLab,
+  CompanyGoldTony,
+  SpeciesIndex,
+  SpeciesProfilePage,
+  SpeciesEngineLab,
+  SpeciesRoute,
+  PlacesIndex,
+  PlaceRoute,
+  AtlasDiscoveryPage,
+  DiscoveryTopicPage,
+  EarthNowPage,
+  DISCOVERY_TOPIC_SLUGS,
+  LensCapture,
+  FoodCapture,
+  PickPrototype,
+  FourFinanceHome,
+  FourSapienHome,
+  People,
+  Brands,
+  Partners,
+  Funders,
+  Join,
+  LivingSystemJourney,
+  PlanetProofPage,
+  Reports,
+  About,
+  AboutStory,
+  AboutSystem,
+  WhatWeBelieve,
+  Founder,
+  CulturePlay,
+  MarketHome,
+  OdinCreatorPage,
+  Privacy,
+  PlanetSignal,
+} from "./deferredRoutes";
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
@@ -75,7 +93,8 @@ function ExternalRedirect({ to }: { to: string }) {
 
 export function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={MagazineFallback}>
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/4nation/*" element={<Suspense fallback={LabFallback}><NationPage /></Suspense>} />
       <Route path="/labs" element={<LabsOverview />} />
@@ -191,6 +210,7 @@ export function AppRoutes() {
       <Route path="/system" element={toHome} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
