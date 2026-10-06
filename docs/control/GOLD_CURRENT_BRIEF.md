@@ -1,3 +1,50 @@
+# DISCOVERY ENGINE 01 — BOUNDED PRODUCTION CARRIER — 07 OCT 2026
+
+**STATUS:** FOUNDER-AUTHORISED LIVE OBJECTIVE / PRODUCTION-SHAPED BOUNDED CARRIER / QA BEFORE PROMOTION.
+
+## USER ARRIVES BECAUSE
+A person searching the open web or asking an AI system about a living-planet subject should be able to discover a useful 4PLANET page, understand the evidence quickly, inspect the source boundary and continue into the existing product.
+
+## ONE THING TO UNDERSTAND
+This is not a separate SEO site. EARTH NOW and the 20 canonical topic pages are public entry objects inside 4planet.org, connected to the existing ATLAS and 4PLANET product graph.
+
+## PRIMARY ACTION
+Open the source-grounded answer, then explore the same subject through the embedded canonical 4PLANET ATLAS.
+
+## SECONDARY DEPTH
+Continue into permanent related objects such as SPECIES, PLACE, Living Systems, Missions, Impact, S4PIENS and 4BRANDS where the current product graph supports them.
+
+## P1 DOMINANT
+`/now` answers “What is happening on Earth right now?” using latest-available source semantics rather than one fake universal real-time clock.
+
+## P2 ORIENTATION
+Twenty canonical pages cover Wildfires, Earthquakes, Climate Change, Biodiversity, Deforestation, Plastic Pollution, Coral Bleaching, Air Quality, Orca, Whales, Bees, Amazon Rainforest, Oslofjord, Renewable Energy, Solar Energy, Food Waste, Fast Fashion, Rewilding, Climate Solutions and Environmental Jobs.
+
+## P3 ACTION / NEXT
+Each page provides a concise answer, key facts, embedded ATLAS context, source list, what the evidence establishes, what it does not establish and related 4PLANET journeys.
+
+## P4 DEPTH
+Crawler-rendered HTML, canonical metadata, structured data, sitemap inclusion, stable URLs, explicit source dates, analytics seams and browser/mobile proof.
+
+## WHAT CAN BE REMOVED
+No second CMS, map engine, SEO database, Brain, product architecture or design system. No keyword stuffing, fake FAQs or mass-generated article layer.
+
+## WHAT MUST BE REUSED
+Current LIVE homepage/product state, PublicShell, Master Brand OS, existing ATLAS product, current source/provenance law, current sitemap/prerender pipeline and existing analytics.
+
+## TRUTH BOUNDARY
+“Earth Now” means latest available per source. Thermal anomaly ≠ confirmed wildfire. Occurrence record ≠ abundance/current animal position/migration route. Tree-cover loss ≠ automatically deforestation. Coral thermal stress ≠ observed bleaching. Aerosol optical depth ≠ ground-level air quality. Context layers are labelled as context. Indexing/ranking/AI citation is not claimed without external evidence.
+
+## MOBILE-FIRST RISK
+The ATLAS iframe and signal/topic lists must remain usable at 390px without horizontal overflow, unreadable scale or hidden source boundaries.
+
+## HUMAN SUCCESS
+A visitor can understand why the page matters within seconds, inspect the original evidence, interact with the map and continue deeper without encountering generic SEO filler or losing the current LIVE 4PLANET experience.
+
+**PRODUCTION CARRIER LAW:** Direct child of prior LIVE `4f9f4e100874dd94bf59490097f0e67f54f3b961`; exact TEST KING source = `f3e92afe8d7240e977cbea908c3770529fec26a6`; exact source blobs are required for the canonical discovery registry and Discovery Engine component. Surgical LIVE bridge files are separately bounded by `docs/control/DISCOVERY_ENGINE_01_RELEASE.json`. Promotion remains fail-closed until exact carrier QA, browser proof, Founder manifest and Cloudflare production provenance all pass.
+
+---
+
 # LIVING SYSTEMS v1.4.2 ZERO LOSS — BOUNDED LIVE RELEASE — 07 OCT 2026
 
 **STATUS:** FOUNDER_ACCEPTED / EXACT TEST KING ARTIFACT GREEN / BOUNDED LIVE PROMOTION AUTHORISED.
