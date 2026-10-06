@@ -173,9 +173,9 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "iso3": "NOR",
     "country": "Norway",
     "admin1": "Oslo",
-    "continent": null,
-    "region": null,
-    "subregion": null,
+    "continent": "Europe",
+    "region": "Europe",
+    "subregion": "Northern Europe",
     "featureClass": "Admin-0 capital",
     "sourceDataset": "Natural Earth 1:50m Populated Places",
     "sourcePath": "geojson/ne_50m_populated_places_simple.geojson",
@@ -195,9 +195,9 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "iso3": "NOR",
     "country": "Norway",
     "admin1": "Hordaland",
-    "continent": null,
-    "region": null,
-    "subregion": null,
+    "continent": "Europe",
+    "region": "Europe",
+    "subregion": "Northern Europe",
     "featureClass": "Admin-1 capital",
     "sourceDataset": "Natural Earth 1:50m Populated Places",
     "sourcePath": "geojson/ne_50m_populated_places_simple.geojson",
@@ -305,9 +305,9 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "iso3": "FRA",
     "country": "France",
     "admin1": "Île-de-France",
-    "continent": null,
-    "region": null,
-    "subregion": null,
+    "continent": "Europe",
+    "region": "Europe",
+    "subregion": "Western Europe",
     "featureClass": "Admin-0 capital",
     "sourceDataset": "Natural Earth 1:50m Populated Places",
     "sourcePath": "geojson/ne_50m_populated_places_simple.geojson",
@@ -1136,8 +1136,11 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "sourceKind": "country",
     "neId": "1159320971",
     "wikidataId": "Q114",
+    "geonamesId": null,
     "iso2": "KE",
     "iso3": "KEN",
+    "country": "Kenya",
+    "admin1": null,
     "continent": "Africa",
     "region": "Africa",
     "subregion": "Eastern Africa",
@@ -1155,8 +1158,11 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "sourceKind": "country",
     "neId": "1159321109",
     "wikidataId": "Q20",
+    "geonamesId": null,
     "iso2": "-99",
     "iso3": "-99",
+    "country": "Norway",
+    "admin1": null,
     "continent": "Europe",
     "region": "Europe",
     "subregion": "Northern Europe",
@@ -1174,8 +1180,11 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "sourceKind": "country",
     "neId": "1159320441",
     "wikidataId": "Q155",
+    "geonamesId": null,
     "iso2": "BR",
     "iso3": "BRA",
+    "country": "Brazil",
+    "admin1": null,
     "continent": "South America",
     "region": "Americas",
     "subregion": "South America",
@@ -1193,8 +1202,11 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "sourceKind": "country",
     "neId": "1159320355",
     "wikidataId": "Q408",
+    "geonamesId": null,
     "iso2": "AU",
     "iso3": "AUS",
+    "country": "Australia",
+    "admin1": null,
     "continent": "Oceania",
     "region": "Oceania",
     "subregion": "Australia and New Zealand",
@@ -1212,8 +1224,11 @@ const ATLAS_WORLD_PLACE_ROWS = [
     "sourceKind": "country",
     "neId": "1159320937",
     "wikidataId": "Q17",
+    "geonamesId": null,
     "iso2": "JP",
     "iso3": "JPN",
+    "country": "Japan",
+    "admin1": null,
     "continent": "Asia",
     "region": "Asia",
     "subregion": "Eastern Asia",
@@ -1238,6 +1253,100 @@ const ATLAS_WORLD_PLACES = ATLAS_WORLD_PLACE_ROWS.map(([slug,name,type,context,l
   sourceCheckedAt: "2026-10-07",
   ...(ATLAS_ENTITY_METADATA[slug] || {})
 }));
+
+const ATLAS_EVIDENCE_RELATIONS = {
+  "kenya": {
+    "ecosystems": [
+      "Lowland and mountain forests",
+      "Wooded and open grasslands",
+      "Semi-arid scrubland and dry woodlands",
+      "Inland aquatic systems and wetlands",
+      "Coastal and marine ecosystems"
+    ],
+    "pressures": [
+      "Habitat fragmentation",
+      "Human–wildlife conflict",
+      "Poaching and wildlife trafficking",
+      "Climate-change impacts"
+    ],
+    "species": [
+      {
+        "slug": "african-savanna-elephant",
+        "label": "African Savanna Elephant",
+        "scientificName": "Loxodonta africana",
+        "state": "CURATED"
+      },
+      {
+        "slug": "lion",
+        "label": "African Lion",
+        "scientificName": "Panthera leo",
+        "state": "CURATED"
+      },
+      {
+        "slug": "cheetah",
+        "label": "Cheetah",
+        "scientificName": "Acinonyx jubatus",
+        "state": "CURATED"
+      }
+    ],
+    "missions": [
+      {
+        "slug": "species",
+        "label": "SPECIES_",
+        "topic": "species protection and ecological relationships"
+      },
+      {
+        "slug": "clim4te",
+        "label": "CLIM4TE_",
+        "topic": "climate resilience through living systems"
+      },
+      {
+        "slug": "rewild-land",
+        "label": "RE:WILD_ Land",
+        "topic": "habitat recovery and ecological function"
+      }
+    ],
+    "sources": [
+      {
+        "label": "Kenya Wildlife Service — Protected Area Management",
+        "url": "https://kws.go.ke/protected-area-management/",
+        "checkedAt": "2026-10-01",
+        "use": "Protected-area framework, conservation areas and KWS land-coverage statement."
+      },
+      {
+        "label": "Kenya Wildlife Service — Ecosystems, Land and Seascapes Conservation",
+        "url": "https://kws.go.ke/ecosystems-land-and-seascapes-conservation/",
+        "checkedAt": "2026-10-01",
+        "use": "KWS ecosystem-management scope including forests, wetlands, savannas and marine ecosystems."
+      },
+      {
+        "label": "Convention on Biological Diversity — Kenya Country Profile",
+        "url": "https://www.cbd.int/countries/profile?country=ke",
+        "checkedAt": "2026-10-01",
+        "use": "Ecological-zone and habitat summary. CBD labels the profile text as draft; 4PLANET preserves that limitation."
+      },
+      {
+        "label": "GBIF — Kenya",
+        "url": "https://www.gbif.org/country/KE/summary",
+        "checkedAt": "2026-10-01",
+        "use": "Country-scale biodiversity occurrence-data entry point; occurrence records are not population estimates or complete range."
+      },
+      {
+        "label": "Protected Planet — Kenya",
+        "url": "https://www.protectedplanet.net/en/country/KEN",
+        "checkedAt": "2026-10-01",
+        "use": "September 2026 protected-area profile and source inventory."
+      },
+      {
+        "label": "Kenya Wildlife Service — Strategic Plan 2024–2028",
+        "url": "https://kws.go.ke/strategic-plan/",
+        "checkedAt": "2026-10-01",
+        "use": "KWS-described pressures including habitat fragmentation, human–wildlife conflict, poaching and climate change."
+      }
+    ],
+    "truthBoundary": "This page is a source-grounded country-scale discovery object. The ATLAS bounding box is a navigation extent, not an official administrative or ecological boundary. Protected-area totals and coverage figures use different source definitions and must not be collapsed."
+  }
+};
 
 function atlasPlacePassesQualityGate(place){
   return Boolean(
@@ -1709,7 +1818,11 @@ export async function onRequest(context) {
   }
 
   if (host === "4planetatlas.com" && url.pathname === "/places") {
-    const items = ATLAS_INDEXABLE_PLACES.map((place) => `<li><a href="/place/${escapeHtml(place.slug)}">${escapeHtml(place.name)}</a> — ${escapeHtml(place.type)}, ${escapeHtml(place.context)}</li>`).join("");
+    const continentGroups=[...new Set(ATLAS_INDEXABLE_PLACES.map((p)=>p.continent||"Other"))].sort();
+    const items = continentGroups.map((continent)=>{
+      const places=ATLAS_INDEXABLE_PLACES.filter((p)=>(p.continent||"Other")===continent).sort((a,b)=>a.name.localeCompare(b.name));
+      return `<section><h2>${escapeHtml(continent)}</h2><ul>${places.map((place)=>`<li><a href="/place/${escapeHtml(place.slug)}">${escapeHtml(place.name)}</a> — ${escapeHtml(place.type)}, ${escapeHtml(place.country||place.context)}</li>`).join("")}</ul></section>`;
+    }).join("");
     const canonical="https://4planetatlas.com/places";
     const data={"@context":"https://schema.org","@graph":[
       {"@type":"CollectionPage","@id":canonical+"#page","name":"4PLANET ATLAS World Place Index","url":canonical,"description":"Verified geographic entry points into 4PLANET ATLAS, with progressive source-grounded living-planet intelligence."},
@@ -1755,10 +1868,18 @@ export async function onRequest(context) {
         {"@type":schemaType,"@id":canonical+"#place","name":place.name,"url":canonical,"geo":{"@type":"GeoCoordinates","latitude":entityLat,"longitude":entityLon},"containedInPlace":contained,...(identifiers.length?{"identifier":identifiers}:{}),...(sameAs.length?{"sameAs":sameAs}:{})},
         {"@type":"BreadcrumbList","@id":canonical+"#breadcrumbs","itemListElement":breadcrumbs}
       ]};
+      const evidenceRelation=ATLAS_EVIDENCE_RELATIONS[place.slug]||null;
+      const evidenceHtml=evidenceRelation?`<h2>Connected Living Planet Intelligence</h2>
+        ${evidenceRelation.ecosystems?.length?`<h3>Living systems and habitats</h3><ul>${evidenceRelation.ecosystems.map((x)=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`:""}
+        ${evidenceRelation.species?.length?`<h3>Curated species connections</h3><ul>${evidenceRelation.species.map((x)=>`<li><a href="https://4species.com/species/${escapeHtml(x.slug)}">${escapeHtml(x.label)}</a>${x.scientificName?` — <em>${escapeHtml(x.scientificName)}</em>`:""}</li>`).join("")}</ul>`:""}
+        ${evidenceRelation.pressures?.length?`<h3>Documented pressures</h3><ul>${evidenceRelation.pressures.map((x)=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`:""}
+        ${evidenceRelation.missions?.length?`<h3>Related 4PLANET Missions</h3><ul>${evidenceRelation.missions.map((x)=>`<li><a href="https://4planet.org/missions/${escapeHtml(x.slug)}">${escapeHtml(x.label)}</a> — ${escapeHtml(x.topic)}</li>`).join("")}</ul>`:""}
+        ${evidenceRelation.sources?.length?`<h3>Evidence sources</h3><ul>${evidenceRelation.sources.map((x)=>`<li><a href="${escapeHtml(x.url)}">${escapeHtml(x.label)}</a> — checked ${escapeHtml(x.checkedAt||"")}</li>`).join("")}</ul>`:""}
+        ${evidenceRelation.truthBoundary?`<p><strong>Evidence boundary:</strong> ${escapeHtml(evidenceRelation.truthBoundary)}</p>`:""}`:"";
       const parentHtml=parent?`<p><strong>Parent geography:</strong> <a href="/place/${escapeHtml(parent.slug)}">${escapeHtml(parent.name)}</a>.</p>`:`<p><strong>Geographic context:</strong> ${escapeHtml(place.context)}. A canonical parent object is not yet published in this cohort.</p>`;
       const childHtml=children.length?`<h2>Places within this geography</h2><ul>${children.map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> — ${escapeHtml(p.type)}</li>`).join("")}</ul>`:"";
       const relatedHtml=related.length?`<h2>Related places in the current index</h2><ul>${related.map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> — ${escapeHtml(p.type)}, ${escapeHtml(p.context)}</li>`).join("")}</ul>`:"";
-      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(place.name)} — Explore in 4PLANET ATLAS</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><meta property="og:title" content="${escapeHtml(place.name)} — 4PLANET ATLAS"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${canonical}"><meta property="og:type" content="website"><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><nav aria-label="Breadcrumb"><a href="/">ATLAS</a> / <a href="/places">Places</a> / <span>${escapeHtml(place.name)}</span></nav><p>4PLANET ATLAS / PLACE</p><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.type)} · ${escapeHtml(place.context)}</p><h2>About this place</h2><p>${escapeHtml(place.summary)} 4PLANET ATLAS represents ${escapeHtml(place.name)} as a stable geographic object at Natural Earth reference coordinate ${entityLat}, ${entityLon}. The coordinate is used to open the intended map context; it is not an administrative boundary, ecological boundary or claim about conditions across the whole place.</p>${parentHtml}<p><strong>Verified geographic hierarchy:</strong> ${entityContext.map(escapeHtml).join(" → ") || "Not fully resolved in the current source cohort"}.</p><p><strong>Source identity:</strong> Natural Earth NE_ID ${escapeHtml(place.neId||"unknown")}${place.iso2?` · ISO ${escapeHtml(place.iso2)}`:""}${place.wikidataId?` · Wikidata ${escapeHtml(place.wikidataId)}`:""}${place.geonamesId?` · GeoNames ${escapeHtml(place.geonamesId)}`:""}.</p><p><a href="${mapHref}">Open ${escapeHtml(place.name)} in ATLAS</a>. The handoff carries the same place slug and reference coordinate so the geographic entry point and interactive map resolve to the same object.</p><h2>Living Planet Intelligence</h2><p>Geographic identity is published independently from ecological interpretation. Living Systems, Species, Pressures, Missions, Evidence and Solutions are connected here only when the shared 4PLANET evidence model supports the relationship. Until then, those relationships remain unknown rather than being inferred from the place name.</p>${childHtml}${relatedHtml}<h2>Source and provenance</h2><p><strong>Geographic source:</strong> <a href="${escapeHtml(place.sourceUrl)}">${escapeHtml(place.sourceDataset)}</a>${place.sourceVersion?` v${escapeHtml(place.sourceVersion)}`:""}. Source feature ${escapeHtml(place.neId||"unknown")}${place.sourceFileSha?` · upstream file ${escapeHtml(place.sourceFileSha.slice(0,12))}`:""}. Natural Earth data is public domain; <a href="${escapeHtml(place.sourceRightsUrl)}">terms of use</a>. Source reference checked ${escapeHtml(place.sourceCheckedAt)}.</p><p><a href="/places">World Place Index</a> · <a href="/">ATLAS home</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p><p>Truth boundary: this Place page verifies geographic identity and map context. It does not by itself establish species presence, ecosystem health, pressure, causality or ecological outcome.</p></main></body></html>`;
+      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(place.name)} — Explore in 4PLANET ATLAS</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><meta property="og:title" content="${escapeHtml(place.name)} — 4PLANET ATLAS"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${canonical}"><meta property="og:type" content="website"><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><nav aria-label="Breadcrumb"><a href="/">ATLAS</a> / <a href="/places">Places</a> / <span>${escapeHtml(place.name)}</span></nav><p>4PLANET ATLAS / PLACE</p><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.type)} · ${escapeHtml(place.context)}</p><h2>About this place</h2><p>${escapeHtml(place.summary)} 4PLANET ATLAS represents ${escapeHtml(place.name)} as a stable geographic object at Natural Earth reference coordinate ${entityLat}, ${entityLon}. The coordinate is used to open the intended map context; it is not an administrative boundary, ecological boundary or claim about conditions across the whole place.</p>${parentHtml}<p><strong>Verified geographic hierarchy:</strong> ${entityContext.map(escapeHtml).join(" → ") || "Not fully resolved in the current source cohort"}.</p><p><strong>Source identity:</strong> Natural Earth NE_ID ${escapeHtml(place.neId||"unknown")}${place.iso2?` · ISO ${escapeHtml(place.iso2)}`:""}${place.wikidataId?` · Wikidata ${escapeHtml(place.wikidataId)}`:""}${place.geonamesId?` · GeoNames ${escapeHtml(place.geonamesId)}`:""}.</p><p><a href="${mapHref}">Open ${escapeHtml(place.name)} in ATLAS</a>. The handoff carries the same place slug and reference coordinate so the geographic entry point and interactive map resolve to the same object.</p><h2>Living Planet Intelligence</h2><p>Geographic identity is published independently from ecological interpretation. Living Systems, Species, Pressures, Missions, Evidence and Solutions are connected here only when the shared 4PLANET evidence model supports the relationship. Until then, those relationships remain unknown rather than being inferred from the place name.</p>${childHtml}${relatedHtml}${evidenceHtml}<h2>Source and provenance</h2><p><strong>Geographic source:</strong> <a href="${escapeHtml(place.sourceUrl)}">${escapeHtml(place.sourceDataset)}</a>${place.sourceVersion?` v${escapeHtml(place.sourceVersion)}`:""}. Source feature ${escapeHtml(place.neId||"unknown")}${place.sourceFileSha?` · upstream file ${escapeHtml(place.sourceFileSha.slice(0,12))}`:""}. Natural Earth data is public domain; <a href="${escapeHtml(place.sourceRightsUrl)}">terms of use</a>. Source reference checked ${escapeHtml(place.sourceCheckedAt)}.</p><p><a href="/places">World Place Index</a> · <a href="/">ATLAS home</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p><p>Truth boundary: this Place page verifies geographic identity and map context. It does not by itself establish species presence, ecosystem health, pressure, causality or ecological outcome.</p></main></body></html>`;
       return new Response(body,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
     }
     return new Response("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>Place not found — 4PLANET ATLAS</title></head><body><main><h1>Place not found</h1><p>This URL is not a qualified canonical Place in the current ATLAS World Place Index.</p><p><a href=\"/places\">Explore the World Place Index</a></p></main></body></html>",{status:404,headers:{"content-type":"text/html; charset=utf-8","x-robots-tag":"noindex, nofollow","cache-control":"public, max-age=300"}});
