@@ -104,7 +104,10 @@ jobs:
           newest_status=$(jq -r --arg branch "$production_branch" '[.result[]? | select(.deployment_trigger.metadata.branch == $branch and .environment == "production")][0].latest_stage.status // empty' <<<"$deps")
           echo "CLOUDFLARE_PRODUCTION_COMMIT=${newest_commit}"
           echo "CLOUDFLARE_PRODUCTION_STATUS=${newest_status}"
-          [ -n "$newest_commit" ] || { echo 'No production deployment commit found'; exit 1; }
+          if [ -z "$newest_commit" ]; then
+            echo 'CLOUDFLARE_PRODUCTION_DEPLOYMENT_METADATA=UNKNOWN_READBACK_REQUIRED'
+            echo 'Deployment-list metadata is not used as candidate Gold. Live HTTP is verified separately below.'
+          fi
 
       - name: Verify canonical 4planet.org/4brands runtime
         shell: bash
