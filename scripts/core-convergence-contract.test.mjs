@@ -60,48 +60,37 @@ test("decision/action/outcome/proof boundaries cannot collapse into one claim", 
   assert.equal(core.coreContext({ actor, product: "4sapien", stage: "PROOF" }).claim_boundary, "PROOF_ONLY_TO_EVIDENCE_REACHED");
 });
 
-test("CORE_REUSE_RATE V1 is physical shared-primitives / target-primitives, not percent of product code", () => {
+test("CORE_REUSE_RATE V1 reports only physically shared target primitives", () => {
   const result = core.coreReuseRate({
     IDENTITY: ["4sapien", "4brands"],
-    ACTOR: ["4sapien", "4brands"],
-    SOURCE_PROVENANCE: ["4sapien", "4brands"],
-    DECISION_BOUNDARY: ["4sapien", "4brands"],
-    LIFECYCLE_CLAIM_BOUNDARY: ["4sapien", "4brands"],
+    ACTOR: ["4sapien"],
+    SOURCE_PROVENANCE: ["4sapien"],
+    DECISION_BOUNDARY: ["4sapien"],
+    LIFECYCLE_CLAIM_BOUNDARY: ["4sapien"],
   });
-  assert.equal(result.reused, 5);
+  assert.equal(result.reused, 1);
   assert.equal(result.total, 5);
-  assert.equal(result.rate, 1);
-  assert.deepEqual(result.primitives, [
-    "IDENTITY",
-    "ACTOR",
-    "SOURCE_PROVENANCE",
-    "DECISION_BOUNDARY",
-    "LIFECYCLE_CLAIM_BOUNDARY",
-  ]);
+  assert.equal(result.rate, 0.2);
+  assert.deepEqual(result.primitives, ["IDENTITY"]);
 });
 
 const sapienRuntime = await readFile(new URL("../src/food/pantryMemory.ts", import.meta.url), "utf8");
 const brandsRuntime = await readFile(new URL("../src/product/FourBrandBrainClient.ts", import.meta.url), "utf8");
 const sapienUi = await readFile(new URL("../src/pages/sapien/PantryChoice.tsx", import.meta.url), "utf8");
-const brandsUi = await readFile(new URL("../src/pages/partners/CompanyBrainControls.tsx", import.meta.url), "utf8");
 
-test("physical runtime consumers share 4PLANET ID and core primitive code", () => {
+test("physical runtime consumers already share canonical 4PLANET ID", () => {
   assert.match(sapienRuntime, /identityClient/);
   assert.match(brandsRuntime, /identityClient/);
+});
+
+test("4SAPIEN physically consumes shared core semantics through its existing private store", () => {
   assert.match(sapienRuntime, /corePrimitives/);
-  assert.match(brandsRuntime, /corePrimitives/);
   assert.match(sapienRuntime, /foodDecisionCoreContext/);
-  assert.match(brandsRuntime, /attachCompanyAnalysisCore/);
-});
-
-test("shared core context is persisted through existing domain stores rather than a new database", () => {
   assert.match(sapienRuntime, /provenance:\s*\{[\s\S]*?core,/);
-  assert.match(brandsRuntime, /twin:\{\.\.\.twin,_core:core\}/);
-  assert.match(brandsRuntime, /record_result/);
-  assert.match(brandsRuntime, /core_context:core/);
+  assert.match(sapienUi, /trackCoreLifecycle\('4sapien','PERSON'/);
 });
 
-test("both product surfaces emit the same privacy-safe core lifecycle event", () => {
-  assert.match(sapienUi, /trackCoreLifecycle\('4sapien','PERSON'/);
-  assert.match(brandsUi, /trackCoreLifecycle\('4brands','COMPANY'/);
+test("4BRANDS cross-product core adoption remains unclaimed until product authority is reconciled", () => {
+  assert.doesNotMatch(brandsRuntime, /corePrimitives/);
+  assert.match(brandsRuntime, /identityClient/);
 });
