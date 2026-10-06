@@ -1,3 +1,48 @@
+# DISCOVERY ENGINE 01 — ROUTE-LEVEL BUNDLE SPLIT — 07 OCT 2026
+
+**STATUS:** BOUNDED PERFORMANCE / RELEASE-GATE FIX FOR THE FOUNDER-AUTHORISED DISCOVERY LIVE OBJECTIVE.
+
+## USER ARRIVES BECAUSE
+Public discovery and the rest of 4PLANET must load without forcing every secondary product surface into the first JavaScript payload.
+
+## ONE THING TO UNDERSTAND
+The existing router eagerly imported many independent product pages. This change converts secondary routes to React lazy boundaries so the initial bundle carries only what the current route needs.
+
+## PRIMARY ACTION
+Preserve every existing public URL and route behaviour while reducing the main production bundle below the existing convergence threshold.
+
+## SECONDARY DEPTH
+Discovery Engine pages, Species, Places, Impact, Labs, 4SAPIEN, About, Market and other secondary surfaces are fetched as route chunks only when entered.
+
+## P1 DOMINANT
+No product redesign. No URL change. No content change. Main-bundle reduction only.
+
+## P2 ORIENTATION
+Home stays eager; existing already-lazy ATLAS, Magazine and specialist flows remain lazy; newly deferred routes use one shared top-level Suspense boundary.
+
+## P3 ACTION / NEXT
+Exact typecheck, build, smoke, security, browser and bundle evidence decide acceptance.
+
+## P4 DEPTH
+The 20 discovery slugs stay explicit in the router layer while the full discovery data/content module moves out of the initial bundle.
+
+## WHAT CAN BE REMOVED
+Eager imports of route modules that are not required to render the current entry route.
+
+## WHAT MUST BE REUSED
+Existing React Router, existing route paths, current page components, existing fallbacks, Master Brand OS and all current product data.
+
+## TRUTH BOUNDARY
+A smaller bundle is a delivery improvement, not evidence of better content or product outcomes. No route is removed or renamed.
+
+## MOBILE-FIRST RISK
+Lazy loading must not create blank navigation states; the existing white/public, dark/world and lab fallbacks remain available.
+
+## HUMAN SUCCESS
+Users reach the same destinations with the same content while initial JavaScript is materially smaller and the existing convergence budget is met.
+
+---
+
 # DISCOVERY ENGINE 01 — ROUTER SECURITY REMEDIATION — 07 OCT 2026
 
 **STATUS:** BOUNDED RELEASE BLOCKER FIX FOR THE FOUNDER-AUTHORISED DISCOVERY LIVE OBJECTIVE.
