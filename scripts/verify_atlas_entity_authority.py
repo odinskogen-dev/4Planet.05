@@ -46,6 +46,8 @@ def main():
     ap.add_argument("--places-rich",required=True)
     ap.add_argument("--countries",required=True)
     ap.add_argument("--output",required=True)
+    ap.add_argument("--places-source-sha")
+    ap.add_argument("--countries-source-sha")
     args=ap.parse_args()
 
     meta=extract_metadata(args.middleware)
@@ -106,6 +108,9 @@ def main():
 
         for field in ("continent","region","subregion","sourceDataset","sourceVersion","sourceFileSha"):
             if not m.get(field): failures.append(f"{slug}: missing {field}")
+        expected_sha=args.countries_source_sha if kind=="country" else args.places_source_sha
+        if expected_sha and m.get("sourceFileSha") != expected_sha:
+            failures.append(f"{slug}: upstream source SHA changed {m.get('sourceFileSha')} != {expected_sha}")
         if not ne: failures.append(f"{slug}: missing stable Natural Earth id")
 
         rows.append({
