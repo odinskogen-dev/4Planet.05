@@ -1,0 +1,123 @@
+name: Living Systems v1.4.2 LIVE Full Proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/living-systems-v142-live-proof.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: living-systems-v142-live-full-proof-20261007
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact deployed Living Systems carrier
+        uses: actions/checkout@v4
+        with:
+          ref: 4f9f4e100874dd94bf59490097f0e67f54f3b961
+          fetch-depth: 0
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Re-prove release authority and exact source blobs
+        run: node scripts/live-promotion-authority-gate.mjs
+
+      - name: Rebuild exact expected v1.4.2 export
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          npm run build
+          routes=$(find dist/livingsystems -type f -name index.html | wc -l | tr -d ' ')
+          assets=$(find dist/livingsystems/_next -type f | wc -l | tr -d ' ')
+          test "$routes" = "173"
+          test "$assets" = "47"
+          echo "EXPECTED_LS_HTML_ROUTES=$routes"
+          echo "EXPECTED_LS_NEXT_ASSETS=$assets"
+
+      - name: Verify immutable Pages deployment root
+        shell: bash
+        run: |
+          set -euo pipefail
+          page=$(curl -fsS https://1778029a.4planet-05.pages.dev/livingsystems/)
+          grep -Fq 'LIVING SYSTEMS INTELLIGENCE' <<<"$page"
+          grep -Fq 'A system for understanding how nature' <<<"$page"
+          grep -Fq '/livingsystems/start' <<<"$page"
+          echo 'IMMUTABLE_PAGES_LS_V142_PASS'
+
+      - name: Verify 173 of 173 routes on 4planet.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(find dist/livingsystems -type f -name index.html | wc -l | tr -d ' ')
+          live=0
+          while IFS= read -r file; do
+            rel="${file#dist}"
+            rel="${rel%index.html}"
+            url="https://4planet.org${rel}"
+            code=$(curl -sS --max-time 20 -o /tmp/ls-live.html -w '%{http_code}' "$url")
+            test "$code" = "200"
+            grep -Fq 'LIVING SYSTEMS INTELLIGENCE' /tmp/ls-live.html
+            live=$((live+1))
+          done < <(find dist/livingsystems -type f -name index.html | sort)
+          test "$live" = "$expected"
+          test "$live" = "173"
+          echo "LIVE_LS_HTML_ROUTES=$live"
+          echo 'LS_V142_ALL_ROUTES_LIVE_PASS'
+
+      - name: Verify 47 of 47 Next assets on 4planet.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=$(find dist/livingsystems/_next -type f | wc -l | tr -d ' ')
+          live=0
+          while IFS= read -r file; do
+            rel="${file#dist}"
+            code=$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' "https://4planet.org${rel}")
+            test "$code" = "200"
+            live=$((live+1))
+          done < <(find dist/livingsystems/_next -type f | sort)
+          test "$live" = "$expected"
+          test "$live" = "47"
+          echo "LIVE_LS_NEXT_ASSETS=$live"
+          echo 'LS_V142_ALL_ASSETS_LIVE_PASS'
+
+      - name: Verify intelligence surfaces, canonical URL and compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://4planet.org/livingsystems/start/ | grep -Fq 'Start with a question'
+          curl -fsS https://4planet.org/livingsystems/dependencies/ | grep -Fq 'Dependencies'
+          curl -fsS https://4planet.org/livingsystems/decisions/ | grep -Fq 'Decision'
+          curl -fsS https://4planet.org/livingsystems/learning/ | grep -Fq 'Learning'
+          curl -fsS https://4planet.org/livingsystems/trust/ | grep -Fq 'Trust'
+          curl -fsS https://4planet.org/livingsystems/sources/ | grep -Fq 'Source'
+          curl -fsS https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/ | grep -Fq 'Amazon'
+          curl -fsS https://4planet.org/livingsystems/species/western-honey-bee/ | grep -Fq 'Honey'
+          sm=$(curl -fsS https://4planet.org/sitemap.xml)
+          grep -Fq '<loc>https://4planet.org/livingsystems/</loc>' <<<"$sm"
+          legacy=$(curl -sSI https://4planet.org/living-systems | tr -d '\r')
+          grep -qi '^location: */livingsystems/' <<<"$legacy"
+          echo 'LS_V142_INTELLIGENCE_CANONICAL_COMPAT_PASS'
+
+      - name: Final receipt
+        run: |
+          echo 'LIVING_SYSTEMS_V1.4.2_ZERO_LOSS_LIVE=PASS'
+          echo 'SOURCE_BLOBS=88/88'
+          echo 'LIVE_HTML_ROUTES=173/173'
+          echo 'LIVE_NEXT_ASSETS=47/47'
+          echo 'PUBLIC_URL=https://4planet.org/livingsystems/'
+          echo 'IMMUTABLE_DEPLOYMENT=https://1778029a.4planet-05.pages.dev'
