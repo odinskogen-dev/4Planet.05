@@ -75,6 +75,37 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
+      - name: Verify ATLAS Place indexability live
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
+          atlas=$(curl -fsS https://4planetatlas.com/)
+          grep -Fq 'https://4planetatlas.com/places' <<<"$atlas"
+          grep -Fq 'https://4planetatlas.com/place/berlin' <<<"$atlas"
+          places=$(curl -fsS https://4planetatlas.com/places)
+          grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
+          grep -Fq 'numberOfItems' <<<"$places"
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "50"
+          berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
+          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
+          grep -Fq 'name="viewport"' <<<"$berlin"
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
+          grep -Fq 'BreadcrumbList' <<<"$berlin"
+          grep -Fq '"@type":"City"' <<<"$berlin"
+          grep -Fq 'Natural Earth 1:10m Populated Places' <<<"$berlin"
+          grep -Fq 'Related places in the current index' <<<"$berlin"
+          grep -Fq 'Truth boundary:' <<<"$berlin"
+          norway=$(curl -fsS https://4planetatlas.com/place/norway)
+          grep -Fq '"@type":"Country"' <<<"$norway"
+          grep -Fq 'Places within this geography' <<<"$norway"
+          sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          kenya_h=$(curl -sSI https://4planet.org/place/kenya | tr -d '\r')
+          grep -Fqi '^location: https://4planetatlas.com/place/kenya' <<<"$kenya_h"
+          echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
+
       - name: Verify production public discovery
         shell: bash
         run: |
