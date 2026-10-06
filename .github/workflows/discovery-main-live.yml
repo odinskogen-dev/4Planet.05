@@ -31,6 +31,7 @@ on:
       - src/data/discoveryInventory.json
       - src/planet/proofs/planetProofs.ts
       - functions/_middleware.js
+      - functions/atlas-promoted-places.generated.js
       - src/content/missions.ts
 
 permissions:
@@ -146,7 +147,7 @@ jobs:
           places=$(curl -fsS https://4planetatlas.com/places)
           grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
           grep -Fq 'numberOfItems' <<<"$places"
-          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
           echo 'ATLAS_PLACE_INDEX_HUB_PASS'
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
           grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
@@ -163,6 +164,12 @@ jobs:
           grep -Fq 'Related places in the current index' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
           echo 'ATLAS_BERLIN_ENTITY_PASS'
+          manila=$(curl -fsS https://4planetatlas.com/place/manila)
+          grep -Fq '<h1>Manila</h1>' <<<"$manila"
+          grep -Fq 'Q1461' <<<"$manila"
+          grep -Fq '1701668' <<<"$manila"
+          grep -Fq 'South-Eastern Asia' <<<"$manila"
+          echo 'ATLAS_PROMOTED_MANILA_PASS'
           norway=$(curl -fsS https://4planetatlas.com/place/norway)
           grep -Fq '"@type":"Country"' <<<"$norway"
           grep -Fq 'Places within this geography' <<<"$norway"
@@ -174,9 +181,9 @@ jobs:
           grep -Fq 'Evidence sources' <<<"$kenya"
           echo 'ATLAS_KENYA_EVIDENCE_GRAPH_PASS'
           sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "50"
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
-          echo 'ATLAS_PLACE_SITEMAP_50_PASS'
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "250"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "250"
+          echo 'ATLAS_PLACE_SITEMAP_250_PASS'
           kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
           echo 'ATLAS_PLACE_CANONICAL_REDIRECT_PASS'
@@ -219,8 +226,8 @@ jobs:
           grep -Fq '<loc>https://4planetatlas.com/place/berlin</loc>' <<<"$atlas_sm"
           grep -Fq '<loc>https://4planetatlas.com/place/oslo</loc>' <<<"$atlas_sm"
           grep -Fq '<loc>https://4planetatlas.com/place/tokyo</loc>' <<<"$atlas_sm"
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | wc -l | tr -d ' ')" = "50"
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | wc -l | tr -d ' ')" = "250"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$atlas_sm" | sort -u | wc -l | tr -d ' ')" = "250"
           echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
           brands=$(curl -fsS https://4brands.org/)
           grep -Fq '4BRANDS — Understand Any Company. Improve Your Own.' <<<"$brands"
@@ -262,17 +269,21 @@ jobs:
           set -euo pipefail
           places=$(curl -fsS https://4planetatlas.com/places)
           grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
-          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
           grep -Fq '1159151529' <<<"$berlin"
           grep -Fq 'Q64' <<<"$berlin"
           grep -Fq '2950159' <<<"$berlin"
           grep -Fq 'Verified geographic hierarchy' <<<"$berlin"
+          manila=$(curl -fsS https://4planetatlas.com/place/manila)
+          grep -Fq 'Q1461' <<<"$manila"
+          grep -Fq 'South-Eastern Asia' <<<"$manila"
           kenya=$(curl -fsS https://4planetatlas.com/place/kenya)
           grep -Fq 'Connected Living Planet Intelligence' <<<"$kenya"
           grep -Fq 'African Savanna Elephant' <<<"$kenya"
           sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "50"
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "250"
           unknown=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' https://4planetatlas.com/place/__atlas-live-proof-unknown__)
           test "$unknown" = "404"
           echo 'ATLAS_ENTITY_AUTHORITY_LIVE_PASS'
+          echo 'ATLAS_250_LIVE_PROOF_PASS'
