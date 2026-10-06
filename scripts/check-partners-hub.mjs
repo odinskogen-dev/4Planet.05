@@ -24,7 +24,7 @@ const corpus = `${JSON.stringify(data)}\n${page}`.toLowerCase();
 
 const assert = (condition, message) => { if (!condition) throw new Error(`PARTNERS_FAIL ${message}`); };
 
-assert(data.meta?.version === "PARTNERS-GOLD-01", "unexpected content version");
+assert(data.meta?.version === "PARTNERS-ECOSYSTEM-PITCH-01", "unexpected content version");
 assert(data.meta?.canonicalHost === "partners.4planet.org", "canonical host mismatch");
 assert(Array.isArray(data.products) && data.products.length === 4, "public core must contain exactly four current core products");
 assert(data.products.map((x) => x.name).join("|") === "ATLAS|SPECIES|LIVING SYSTEMS|IMPACT", "core product order drift");

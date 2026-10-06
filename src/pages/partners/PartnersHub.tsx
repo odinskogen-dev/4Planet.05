@@ -234,50 +234,141 @@ function TrustStrip() {
 
 function HomePage() {
   useDocumentMeta();
+  const livingPlanet = [
+    ["NATUREBRAIN", "Shared source-grounded intelligence about life, places, evidence and ecological reality."],
+    ["SAPIENSBRAIN / S4PIENS", "Human systems on the same planet: food, energy, cities, industry, materials, trade and economy."],
+    ["ATLAS", "Where is it? What is here? What is happening across place and time?"],
+    ["SPECIES", "What is this living being, and what do we actually know about it?"],
+    ["LIVING SYSTEMS", "How does life connect: dependencies, functions, pressures and possible responses?"],
+  ];
+  const actorWorlds = [
+    ["4SAPIEN", "BETTER PERSON", "/for/active"],
+    ["4BRANDS", "BETTER COMPANY", "/for/company"],
+    ["4NATION", "BETTER NATION", "/for/public"],
+    ["4NGO", "BETTER NGO", "/for/field"],
+  ];
+  const partnerRoutes = [
+    ["PHILANTHROPY + FOUNDATIONS", "Fund reusable public intelligence, bounded missions and proof — with clear restrictions and transparent evidence.", "/for/foundation"],
+    ["COMPANIES", "Connect real company objectives to better decisions, measurable value and separately evidenced planetary outcomes.", "/for/company"],
+    ["SCIENCE + DATA", "Strengthen sources, methods, rights, review and the shared intelligence infrastructure used across products.", "/for/science"],
+    ["PUBLIC INSTITUTIONS", "Improve decision understanding without turning 4PLANET into a partisan policy verdict engine.", "/for/public"],
+    ["FIELD + IMPLEMENTATION", "Connect needs and solutions to capable actors, delivery reality, proof and learning.", "/for/field"],
+    ["CULTURE + DISTRIBUTION", "Help serious living-planet intelligence travel through stories, film, art, design and public attention.", "/for/culture"],
+  ];
   return (
-    <main className="ph-home-short">
-      <section className="ph-hero ph-hero-compact" aria-labelledby="ph-home-heading">
+    <main className="ph-home-short ph-ecosystem-home">
+      <section className="ph-hero ph-hero-compact ph-ecosystem-hero" aria-labelledby="ph-home-heading">
         <div className="ph-hero-copy">
           <p className="ph-eyebrow">4PLANET / FOR A LIVING PLANET</p>
-          <h1 id="ph-home-heading">A living planet.<br />A connected way forward.</h1>
-          <p className="ph-hero-body">Ecological knowledge is fragmented. 4PLANET connects evidence, relationships and the people who can act — from understanding to decisions, action and transparent proof.</p>
+          <h1 id="ph-home-heading">A force for nature.<br />An ecosystem to help the ecosystem.</h1>
+          <p className="ph-hero-body">4PLANET connects living-planet intelligence, human systems, people, capital and action — so fragmented knowledge can become better decisions, useful work, transparent proof and learning.</p>
           <div className="ph-actions">
             <a className="ph-button ph-button-primary" href="/for">Find your role</a>
-            <a className="ph-button" href="/portfolio">Explore the platform</a>
+            <a className="ph-button" href="/portfolio">Explore the ecosystem</a>
           </div>
-          <p className="ph-hero-footnote">Source-aware intelligence. Human judgement. Measurable outcomes.</p>
+          <p className="ph-hero-footnote">One planet. Many worlds. Shared infrastructure. Controlled depth.</p>
         </div>
         <PlanetImage imageKey="heroEarth" className="ph-hero-image" />
       </section>
 
-      <section className="ph-short-pathways" aria-labelledby="ph-short-pathways">
+      <section className="ph-ecosystem-section" aria-labelledby="ph-ecosystem-heading">
+        <div className="ph-ecosystem-intro">
+          <p className="ph-eyebrow">THE 4PLANET ECOSYSTEM</p>
+          <h2 id="ph-ecosystem-heading">Understand one living planet through different, connected worlds.</h2>
+          <p>Humans are not outside nature. S4PIENS therefore sits inside the living-planet model: mapping the systems created by our species, what they depend on, what pressures they create and what may need to change for them to endure.</p>
+        </div>
+
+        <div className="ph-architecture" role="group" aria-label="4PLANET ecosystem architecture">
+          <div className="ph-arch-core">
+            <span className="ph-arch-label">SHARED CORE</span>
+            <strong>ONE LIVING PLANET / SHARED TRUTH + PROVENANCE</strong>
+            <p>NATUREBRAIN · SAPIENSBRAIN · canonical entities · sources · claims · evidence · rights · place · time · relationships · 4PLANET ID · proof</p>
+          </div>
+
+          <div className="ph-arch-layer ph-arch-living">
+            <div className="ph-arch-heading">
+              <span>01</span>
+              <div><strong>LIVING PLANET ENGINE</strong><small>Map and understand the planet — including human systems.</small></div>
+            </div>
+            <div className="ph-arch-cells">
+              {livingPlanet.map(([name, body]) => <article key={name}><h3>{name}</h3><p>{body}</p></article>)}
+            </div>
+          </div>
+
+          <div className="ph-arch-connector" aria-hidden>UNDERSTANDING → DECISION → INCENTIVE → ACTION → PROOF → LEARNING</div>
+
+          <div className="ph-arch-split">
+            <div className="ph-arch-layer">
+              <div className="ph-arch-heading">
+                <span>02</span>
+                <div><strong>ACTOR VALUE WORLDS</strong><small>Make shared intelligence genuinely useful to different actors.</small></div>
+              </div>
+              <div className="ph-actor-grid">
+                {actorWorlds.map(([name, promise, href]) => <a href={href} key={name}><h3>{name}</h3><p>{promise}</p></a>)}
+              </div>
+            </div>
+            <div className="ph-arch-layer ph-arch-action">
+              <div className="ph-arch-heading">
+                <span>03</span>
+                <div><strong>ACTION ENGINE</strong><small>Move from a problem towards legitimate implementation and proof.</small></div>
+              </div>
+              <div className="ph-action-chain">
+                <span>PROBLEM</span><b>→</b><span>SOLUTION</span><b>→</b><span>ACTOR</span><b>→</b><span>CAPITAL</span><b>→</b><span>IMPACT</span><b>→</b><span>PROOF</span><b>→</b><span>LEARNING</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="ph-arch-layer ph-arch-distribution">
+            <div className="ph-arch-heading">
+              <span>04</span>
+              <div><strong>DISTRIBUTION + CULTURE</strong><small>MAGAZINE / NEWS / EXPOSURE + 4CULTURE bring people into useful product journeys.</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="ph-public-core">
+          <span className="ph-eyebrow">PUBLIC CORE</span>
+          <div>
+            <a href="https://4planet.org/"><strong>4PLANET</strong><small>Front door</small></a>
+            <i>→</i>
+            <a href="https://4planet.org/living-systems"><strong>LIVING SYSTEMS</strong><small>How it connects</small></a>
+            <a href="https://4planet.org/atlas"><strong>ATLAS</strong><small>Where / what is happening</small></a>
+            <a href="https://4planet.org/species"><strong>SPECIES</strong><small>Meet life</small></a>
+            <i>→</i>
+            <a href="https://4planet.org/impact"><strong>IMPACT</strong><small>Act / prove / learn</small></a>
+          </div>
+        </div>
+      </section>
+
+      <section className="ph-partner-layers" aria-labelledby="ph-partner-layers-heading">
         <div className="ph-short-intro">
-          <p className="ph-eyebrow">ONE SYSTEM / THREE SCALES</p>
-          <h2 id="ph-short-pathways">Discover where you fit.</h2>
-          <p>Follow the work that matters to you. More detail is one click away.</p>
+          <p className="ph-eyebrow">PARTNER WITH THE SYSTEM</p>
+          <h2 id="ph-partner-layers-heading">One 4PLANET. Different reasons to participate.</h2>
+          <p>A foundation, company, scientist or field organisation should not receive four conflicting versions of 4PLANET. The whole-system thesis stays constant; the relevant value, object, role and proof boundary change.</p>
         </div>
-        <div className="ph-short-grid">
-          <a href="https://4planet.org/" className="ph-short-card"><span className="ph-short-index">01 / PLANET</span><h3>4PLANET</h3><p>Explore places, species, relationships and credible action.</p><strong>Explore living systems</strong></a>
-          <a href="https://4sapien.com" className="ph-short-card"><span className="ph-short-index">02 / PERSON</span><h3>4SAPIEN</h3><p>Make personal decisions with context and evidence. Facts, not advice.</p><strong>Explore personal intelligence</strong></a>
-          <a href="https://4brands.org" className="ph-short-card"><span className="ph-short-index">03 / COMPANY</span><h3>4BRANDS</h3><p>Connect business objectives, better decisions and measurable value.</p><strong>Explore company intelligence</strong></a>
+        <div className="ph-partner-route-grid">
+          {partnerRoutes.map(([name, body, href], index) => (
+            <a href={href} key={name}>
+              <span>0{index + 1}</span>
+              <h3>{name}</h3>
+              <p>{body}</p>
+              <strong>See your route <Arrow /></strong>
+            </a>
+          ))}
         </div>
       </section>
 
-      <section className="ph-short-partner" aria-labelledby="ph-short-partner-heading">
+      <section className="ph-short-last ph-ecosystem-close">
         <div>
-          <p className="ph-eyebrow">WORK WITH 4PLANET</p>
-          <h2 id="ph-short-partner-heading">Bring one real problem. Build one useful result.</h2>
+          <p className="ph-eyebrow">UNDERSTAND / ACT / PROVE / LEARN</p>
+          <h2>Build one useful piece of infrastructure for a living planet.</h2>
+          <p>Start with a real problem, a bounded object and an honest proof standard. Funding, activity, delivery, outcome and verified impact remain separate states.</p>
         </div>
-        <div className="ph-short-partner-copy">
-          <p>Data, funding, field capability, research or a company decision: a collaboration starts with a clear role, a bounded deliverable and evidence of what actually changed.</p>
-          <div className="ph-short-links"><a href="/for">Find your partner pathway</a><a href="/opportunities">Explore opportunities</a><a href="/proof">See current proof</a></div>
+        <div className="ph-actions">
+          <a className="ph-button ph-button-primary" href="/for">Explore partnership pathways</a>
+          <a className="ph-button" href="/proof">Inspect current proof</a>
+          <a className="ph-text-link" href="/briefs/overview">Read the 4PLANET brief <Arrow /></a>
         </div>
-      </section>
-
-      <section className="ph-short-last">
-        <p className="ph-eyebrow">UNDERSTAND / ACT / PROVE</p>
-        <h2>For a living planet.</h2>
-        <a className="ph-button ph-button-primary" href="/briefs/overview">Read the 4PLANET brief</a>
       </section>
     </main>
   );
@@ -287,7 +378,7 @@ function SystemPage() {
   useDocumentMeta("System");
   return (
     <main className="ph-page">
-      <section className="ph-page-hero"><p className="ph-eyebrow">SYSTEM / 01</p><h1>Make the relationships visible — then keep the route to action and proof intact.</h1><p className="ph-lead">4PLANET is not a collection of environmental websites. It is a working hypothesis for connecting planetary reality, human decisions, competent actors, resources, action, evidence and learning.</p></section>
+      <section className="ph-page-hero"><p className="ph-eyebrow">SYSTEM / 01</p><h1>One living planet. Many connected worlds.</h1><p className="ph-lead">4PLANET connects ecological and human-system reality to actor value, solutions, resources, action, proof and learning. S4PIENS belongs inside this planetary model because human systems are part of nature and depend on it.</p></section>
       <section className="ph-panel ph-hypothesis"><div><p className="ph-eyebrow">CORE HYPOTHESIS</p><h2>{hub.hypothesis.headline}</h2></div><div><p className="ph-lead">{hub.hypothesis.body}</p><p className="ph-boundary">{hub.hypothesis.status}</p></div></section>
       <section className="ph-panel"><SectionTitle index="01" label="THE LOOP" title="Seven steps. Every transition has a truth boundary." /><SystemFlow /></section>
       <section className="ph-panel ph-panel-ink"><SectionTitle index="02" label="PUBLIC INTERFACES" title="The products are different windows into the same logic." /><ProductRows includeDeveloping /></section>

@@ -5,6 +5,18 @@ on:
     branches:
       - build/partners-decision-system-20260919
       - build/partners-live-ux-iteration-20260921
+      - build/partners-ecosystem-pitch-20261007
+    paths:
+      - src/pages/partners/**
+      - src/content/partnersHub.json
+      - vite.config.ts
+      - src/styles/partners-hub.css
+      - scripts/check-partners-hub.mjs
+      - scripts/partners-decision-smoke.mjs
+      - .github/workflows/partners-decision-candidate.yml
+  pull_request:
+    branches:
+      - king/test
     paths:
       - src/pages/partners/**
       - src/content/partnersHub.json
