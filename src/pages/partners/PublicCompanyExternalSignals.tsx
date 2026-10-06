@@ -284,3 +284,85 @@ export function PublicBusinessSources({ organizationNumber, companyName }: { org
     </div>
   );
 }
+
+
+type EuProject = {
+  id: string;
+  title: string;
+  startDate: string | null;
+  endDate: string | null;
+  organisationName: string;
+  fundingAmount: number | null;
+  sourceUrl: string;
+};
+
+export function PublicEuProjectIntelligence({
+  organizationNumber,
+  companyName,
+  mode,
+}: {
+  organizationNumber: string;
+  companyName: string;
+  mode: "innovation" | "capital";
+}) {
+  const [state, setState] = useState<"IDLE" | "LOADING" | "READY" | "NO_MATCH" | "ERROR">("IDLE");
+  const [projects, setProjects] = useState<EuProject[]>([]);
+  const [boundary, setBoundary] = useState("");
+
+  async function load() {
+    setState("LOADING");
+    setProjects([]);
+    try {
+      const response = await fetch(`/api/company-eu-projects?orgnr=${encodeURIComponent(organizationNumber)}`);
+      const payload = await response.json() as { ok?: boolean; projects?: EuProject[]; truthBoundary?: string };
+      if (!response.ok || !payload.ok) throw new Error("CORDIS_SOURCE_FAILED");
+      const next = Array.isArray(payload.projects) ? payload.projects : [];
+      setProjects(next);
+      setBoundary(payload.truthBoundary || "");
+      setState(next.length ? "READY" : "NO_MATCH");
+    } catch {
+      setState("ERROR");
+    }
+  }
+
+  const totalFunding = projects.reduce((sum, project) => sum + (project.fundingAmount || 0), 0);
+  const heading = mode === "innovation" ? "EU-funded research relationships." : "Public EU project-funding signals.";
+  const kicker = mode === "innovation" ? "INNOVATION / CORDIS" : "CAPITAL / CORDIS";
+  const action = mode === "innovation" ? "Load EU project records" : "Load EU funding records";
+
+  return (
+    <div className="fbi-external-tool" aria-label={mode === "innovation" ? "Innovation intelligence" : "Capital intelligence"}>
+      <div className="fbi-section-head">
+        <div><span>{kicker}</span><h2>{heading}</h2></div>
+        <p>CORDIS is joined only after exact BRREG legal-entity resolution and an exact case-insensitive legal-name match in EURIO.</p>
+      </div>
+      {state === "IDLE" && <button className="fbi-tool-action" type="button" onClick={() => void load()}>{action}</button>}
+      {state === "LOADING" && <p className="fbi-tool-state" role="status">Querying the public CORDIS EURIO knowledge graph…</p>}
+      {state === "NO_MATCH" && <p className="fbi-tool-state" role="status">No exact legal-name CORDIS project match was returned. This is not evidence that {companyName} has no innovation activity or public funding.</p>}
+      {state === "ERROR" && <p className="fbi-tool-state" role="status">CORDIS is unavailable for this lookup. No innovation or funding conclusion is inferred.</p>}
+      {state === "READY" && (
+        <>
+          {mode === "capital" && (
+            <div className="fbi-tool-summary">
+              <strong>{totalFunding > 0 ? new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 }).format(totalFunding) : "—"}</strong>
+              <span>{totalFunding > 0 ? "sum of CORDIS role/grant amounts present in returned records — not company revenue" : "no numeric role/grant amount returned in this bounded source result"}</span>
+            </div>
+          )}
+          <div className="fbi-tool-results">
+            {projects.map((project) => (
+              <article key={project.id + "-" + mode}>
+                <span>CORDIS {project.id} · EXACT LEGAL-NAME JOIN</span>
+                <h3>{project.title}</h3>
+                <p>{project.startDate || "START UNKNOWN"} → {project.endDate || "END UNKNOWN"}</p>
+                {mode === "capital" && <strong>{project.fundingAmount === null ? "FUNDING AMOUNT UNKNOWN" : new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 }).format(project.fundingAmount)}</strong>}
+                <small>{project.organisationName}</small>
+                <a href={project.sourceUrl} target="_blank" rel="noreferrer">Open CORDIS project ↗</a>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+      <div className="fbi-truth-boundary"><span>{mode === "innovation" ? "INNOVATION BOUNDARY" : "CAPITAL BOUNDARY"}</span><p>{boundary || "EU project participation and grant-role values are source records. They do not prove commercial product success, current funding availability, company revenue, cash received or realised innovation value."}</p></div>
+    </div>
+  );
+}
