@@ -12,6 +12,7 @@ const PUBLIC_HOSTS = {
     fallbackLinks: [
       ["Impact", "https://4planet.org/impact"],
       ["Places", "https://4planet.org/places"],
+      ["World Place Index", "https://4planetatlas.com/places"],
       ["Missions", "https://4planet.org/missions"],
       ["ATLAS", "https://4planetatlas.com/"],
       ["SPECIES", "https://4species.com/species/"],
@@ -38,6 +39,11 @@ const PUBLIC_HOSTS = {
     ],
     fallbackLinks: [
       ["World Place Index", "https://4planetatlas.com/places"],
+      ["Berlin", "https://4planetatlas.com/place/berlin"],
+      ["Oslo", "https://4planetatlas.com/place/oslo"],
+      ["London", "https://4planetatlas.com/place/london"],
+      ["Tokyo", "https://4planetatlas.com/place/tokyo"],
+      ["Kenya", "https://4planetatlas.com/place/kenya"],
       ["4PLANET", "https://4planet.org/"],
       ["SPECIES", "https://4species.com/species/"],
       ["Living Systems", "https://4planet.org/living-systems"],
