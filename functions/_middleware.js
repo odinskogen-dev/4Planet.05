@@ -1,3 +1,4 @@
+// ATLAS_ENTITY_AUTHORITY_CLOSURE_01
 const PUBLIC_HOSTS = {
   "4planet.org": {
     title: "4PLANET — For a Living Planet",
