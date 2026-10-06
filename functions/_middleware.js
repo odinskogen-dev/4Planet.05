@@ -42,7 +42,7 @@ const PUBLIC_HOSTS = {
       ["Living Systems", "https://4planet.org/living-systems"],
     ],
     schemaType: "WebApplication",
-    sitemap: ["/"],
+    sitemap: ["/", ...ATLAS_WORLD_PLACES.map((place) => `/place/${place.slug}`)],
   },
   "4brands.org": {
     title: "4BRANDS — Understand Any Company. Improve Your Own.",
@@ -82,6 +82,59 @@ const PUBLIC_HOSTS = {
   },
 };
 
+
+const ATLAS_WORLD_PLACES = [
+  ["berlin","Berlin","City","Germany",52.52,13.405,"Berlin is the capital and a major urban centre of Germany."],
+  ["oslo","Oslo","City","Norway",59.9139,10.7522,"Oslo is the capital and a major urban centre of Norway."],
+  ["bergen","Bergen","City","Norway",60.3913,5.3221,"Bergen is a city on Norway's west coast."],
+  ["london","London","City","United Kingdom",51.5072,-0.1276,"London is the capital and a major urban centre of the United Kingdom."],
+  ["new-york","New York","City","United States",40.7128,-74.0060,"New York is a major city in the United States."],
+  ["tokyo","Tokyo","City","Japan",35.6762,139.6503,"Tokyo is the capital and a major urban centre of Japan."],
+  ["nairobi","Nairobi","City","Kenya",-1.2864,36.8172,"Nairobi is the capital and a major urban centre of Kenya."],
+  ["paris","Paris","City","France",48.8566,2.3522,"Paris is the capital and a major urban centre of France."],
+  ["rome","Rome","City","Italy",41.9028,12.4964,"Rome is the capital and a major urban centre of Italy."],
+  ["madrid","Madrid","City","Spain",40.4168,-3.7038,"Madrid is the capital and a major urban centre of Spain."],
+  ["lisbon","Lisbon","City","Portugal",38.7223,-9.1393,"Lisbon is the capital and a major urban centre of Portugal."],
+  ["copenhagen","Copenhagen","City","Denmark",55.6761,12.5683,"Copenhagen is the capital and a major urban centre of Denmark."],
+  ["stockholm","Stockholm","City","Sweden",59.3293,18.0686,"Stockholm is the capital and a major urban centre of Sweden."],
+  ["helsinki","Helsinki","City","Finland",60.1699,24.9384,"Helsinki is the capital and a major urban centre of Finland."],
+  ["reykjavik","Reykjavík","City","Iceland",64.1466,-21.9426,"Reykjavík is the capital and a major urban centre of Iceland."],
+  ["amsterdam","Amsterdam","City","Netherlands",52.3676,4.9041,"Amsterdam is the capital and a major urban centre of the Netherlands."],
+  ["brussels","Brussels","City","Belgium",50.8503,4.3517,"Brussels is the capital and a major urban centre of Belgium."],
+  ["vienna","Vienna","City","Austria",48.2082,16.3738,"Vienna is the capital and a major urban centre of Austria."],
+  ["prague","Prague","City","Czechia",50.0755,14.4378,"Prague is the capital and a major urban centre of Czechia."],
+  ["warsaw","Warsaw","City","Poland",52.2297,21.0122,"Warsaw is the capital and a major urban centre of Poland."],
+  ["athens","Athens","City","Greece",37.9838,23.7275,"Athens is the capital and a major urban centre of Greece."],
+  ["cairo","Cairo","City","Egypt",30.0444,31.2357,"Cairo is the capital and a major urban centre of Egypt."],
+  ["cape-town","Cape Town","City","South Africa",-33.9249,18.4241,"Cape Town is a major coastal city in South Africa."],
+  ["lagos","Lagos","City","Nigeria",6.5244,3.3792,"Lagos is a major coastal city in Nigeria."],
+  ["accra","Accra","City","Ghana",5.6037,-0.1870,"Accra is the capital and a major urban centre of Ghana."],
+  ["addis-ababa","Addis Ababa","City","Ethiopia",8.9806,38.7578,"Addis Ababa is the capital and a major urban centre of Ethiopia."],
+  ["delhi","Delhi","City","India",28.6139,77.2090,"Delhi is a major urban region and national capital territory of India."],
+  ["mumbai","Mumbai","City","India",19.0760,72.8777,"Mumbai is a major coastal city in India."],
+  ["beijing","Beijing","City","China",39.9042,116.4074,"Beijing is the capital and a major urban centre of China."],
+  ["shanghai","Shanghai","City","China",31.2304,121.4737,"Shanghai is a major coastal city in China."],
+  ["seoul","Seoul","City","South Korea",37.5665,126.9780,"Seoul is the capital and a major urban centre of South Korea."],
+  ["singapore","Singapore","City-state","Singapore",1.3521,103.8198,"Singapore is a city-state in Southeast Asia."],
+  ["jakarta","Jakarta","City","Indonesia",-6.2088,106.8456,"Jakarta is a major urban centre of Indonesia."],
+  ["sydney","Sydney","City","Australia",-33.8688,151.2093,"Sydney is a major coastal city in Australia."],
+  ["melbourne","Melbourne","City","Australia",-37.8136,144.9631,"Melbourne is a major coastal city in Australia."],
+  ["auckland","Auckland","City","New Zealand",-36.8509,174.7645,"Auckland is a major urban centre of New Zealand."],
+  ["toronto","Toronto","City","Canada",43.6532,-79.3832,"Toronto is a major city in Canada."],
+  ["vancouver","Vancouver","City","Canada",49.2827,-123.1207,"Vancouver is a major coastal city in Canada."],
+  ["mexico-city","Mexico City","City","Mexico",19.4326,-99.1332,"Mexico City is the capital and a major urban centre of Mexico."],
+  ["sao-paulo","São Paulo","City","Brazil",-23.5505,-46.6333,"São Paulo is a major city in Brazil."],
+  ["rio-de-janeiro","Rio de Janeiro","City","Brazil",-22.9068,-43.1729,"Rio de Janeiro is a major coastal city in Brazil."],
+  ["buenos-aires","Buenos Aires","City","Argentina",-34.6037,-58.3816,"Buenos Aires is the capital and a major urban centre of Argentina."],
+  ["lima","Lima","City","Peru",-12.0464,-77.0428,"Lima is the capital and a major coastal urban centre of Peru."],
+  ["bogota","Bogotá","City","Colombia",4.7110,-74.0721,"Bogotá is the capital and a major urban centre of Colombia."],
+  ["santiago","Santiago","City","Chile",-33.4489,-70.6693,"Santiago is the capital and a major urban centre of Chile."],
+  ["kenya","Kenya","Country","Africa",-0.0236,37.9062,"Kenya is a country in East Africa."],
+  ["norway","Norway","Country","Europe",60.4720,8.4689,"Norway is a country in Northern Europe."],
+  ["brazil","Brazil","Country","South America",-14.2350,-51.9253,"Brazil is a country in South America."],
+  ["australia","Australia","Country","Oceania",-25.2744,133.7751,"Australia is a country and continent in Oceania."],
+  ["japan","Japan","Country","East Asia",36.2048,138.2529,"Japan is an island country in East Asia."],
+].map(([slug,name,type,context,lat,lon,summary])=>({slug,name,type,context,lat,lon,summary,source:"Natural Earth Populated Places / public-domain geographic reference cohort"}));
 
 const FOURPLANET_ROUTES = {
   "/about": {
@@ -511,6 +564,24 @@ export async function onRequest(context) {
     if (pathname.startsWith("/magazine/")) {
       const suffix = pathname.slice("/magazine/".length);
       return Response.redirect("https://4planetmagazine.com/magazine/" + suffix + url.search, 308);
+    }
+  }
+
+  if (host === "4planetatlas.com" && url.pathname === "/places") {
+    const items = ATLAS_WORLD_PLACES.map((place) => `<li><a href="/place/${escapeHtml(place.slug)}">${escapeHtml(place.name)}</a> — ${escapeHtml(place.type)}, ${escapeHtml(place.context)}</li>`).join("");
+    const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="index,follow,max-image-preview:large"><title>World Place Index — 4PLANET ATLAS</title><meta name="description" content="Explore verified geographic places in 4PLANET ATLAS, with progressive Living Planet Intelligence as evidence becomes available."><link rel="canonical" href="https://4planetatlas.com/places"></head><body><main><p>4PLANET ATLAS / WORLD PLACE INDEX</p><h1>Explore the world by place</h1><p>Every page begins with a verified geographic identity. Living systems, species, pressures, missions, evidence and solutions are added progressively only when supported.</p><ul>${items}</ul><p>Geographic reference cohort: Natural Earth populated places and public-domain geographic reference data. Ecological enrichment is a separate evidence layer.</p></main></body></html>`;
+    return new Response(body,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
+  }
+
+  if (host === "4planetatlas.com" && normaliseHost(url.hostname) === host && url.pathname.startsWith("/place/")) {
+    const slug = url.pathname.replace(/^\\/place\\//,"").replace(/\\/+$/,"");
+    const place = ATLAS_WORLD_PLACES.find((item) => item.slug === slug);
+    if (place) {
+      const canonical = `https://4planetatlas.com/place/${place.slug}`;
+      const mapHref = `https://4planetatlas.com/?place=${encodeURIComponent(place.slug)}&lat=${place.lat}&lon=${place.lon}`;
+      const data = {"@context":"https://schema.org","@type":"Place","name":place.name,"geo":{"@type":"GeoCoordinates","latitude":place.lat,"longitude":place.lon},"containedInPlace":{"@type":"Place","name":place.context},"url":canonical};
+      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(place.name)} — Explore in 4PLANET ATLAS</title><meta name="description" content="Explore ${escapeHtml(place.name)} in 4PLANET ATLAS. Verified geography first; living systems, species, pressures, evidence and missions are added as source-grounded intelligence becomes available."><link rel="canonical" href="${canonical}"><meta property="og:title" content="${escapeHtml(place.name)} — 4PLANET ATLAS"><meta property="og:url" content="${canonical}"><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><p>4PLANET ATLAS / PLACE</p><h1>${escapeHtml(place.name)}</h1><p>${escapeHtml(place.type)} · ${escapeHtml(place.context)}</p><p>${escapeHtml(place.summary)}</p><h2>Geographic reference</h2><dl><dt>Latitude</dt><dd>${place.lat}</dd><dt>Longitude</dt><dd>${place.lon}</dd><dt>Source class</dt><dd>${escapeHtml(place.source)}</dd></dl><h2>Living Planet Intelligence</h2><p>Ecological enrichment is progressive. Unknown relationships are not filled with generic claims. As evidence is connected, this place can expose Living Systems, Species, Pressures, Missions, Evidence and Solutions.</p><p><a href="${mapHref}">Open ${escapeHtml(place.name)} in ATLAS</a> · <a href="/places">World Place Index</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p><p>Geographic identity and coordinates are separate from ecological evidence. A place page does not imply species presence, ecosystem condition or verified ecological outcome.</p></main></body></html>`;
+      return new Response(body,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
     }
   }
 
