@@ -141,7 +141,9 @@ const ATLAS_WORLD_PLACE_ROWS = [
   ["brazil","Brazil","Country","South America",-14.2350,-51.9253,"Brazil is a country in South America."],
   ["australia","Australia","Country","Oceania",-25.2744,133.7751,"Australia is a country and continent in Oceania."],
   ["japan","Japan","Country","East Asia",36.2048,138.2529,"Japan is an island country in East Asia."],
-];\n\nconst ATLAS_ENTITY_METADATA = {
+];
+
+const ATLAS_ENTITY_METADATA = {
   "berlin": {
     "sourceKind": "populated_place",
     "neId": "1159151529",
@@ -1843,7 +1845,9 @@ export async function onRequest(context) {
     const place = ATLAS_INDEXABLE_PLACES.find((item) => item.slug === slug);
     if (place) {
       const canonical = `https://4planetatlas.com/place/${place.slug}`;
-      const mapLat=place.sourceCoordinate?.lat ?? place.lat;\n      const mapLon=place.sourceCoordinate?.lon ?? place.lon;\n      const mapHref = `https://4planetatlas.com/?place=${encodeURIComponent(place.slug)}&lat=${mapLat}&lon=${mapLon}&z=${place.type === "Country" ? 4 : 10}`;
+      const mapLat=place.sourceCoordinate?.lat ?? place.lat;
+      const mapLon=place.sourceCoordinate?.lon ?? place.lon;
+      const mapHref = `https://4planetatlas.com/?place=${encodeURIComponent(place.slug)}&lat=${mapLat}&lon=${mapLon}&z=${place.type === "Country" ? 4 : 10}`;
       const {parent,children,related}=atlasPlaceRelations(place);
       const schemaType=place.type==="City"||place.type==="City-state"?"City":place.type==="Country"?"Country":"Place";
       const description=`Explore ${place.name} in 4PLANET ATLAS: verified location, geographic context and a direct map view, with source-grounded intelligence added over time.`;
