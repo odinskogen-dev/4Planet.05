@@ -870,6 +870,27 @@
       "indexable": true,
       "state": "CURATED",
       "description": "Explore Emperor Penguin identity, Antarctic sea-ice context, reported GBIF observations and connected ATLAS context."
+    },
+    {
+      "slug": "acropora-palmata",
+      "commonName": "Elkhorn Coral",
+      "scientificName": "Acropora palmata",
+      "indexable": true,
+      "state": "CURATED",
+      "description": "Explore Elkhorn Coral identity, Caribbean reef habitat, NOAA-backed conservation context, reported observations and connected ATLAS context.",
+      "title": "Elkhorn Coral (Acropora palmata) — species profile | 4PLANET",
+      "atlasHref": "/atlas?entity=taxon%3Agbif%3A5184657&journey=acropora-palmata",
+      "sourceUrls": [
+        "https://www.gbif.org/species/5184657",
+        "https://obis.org/taxon/288227",
+        "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+      ],
+      "limitations": [
+        "Occurrence records are not coral cover or abundance.",
+        "A sighting does not establish reef health, bleaching, mortality or live condition.",
+        "Range-wide threats do not establish current local pressure intensity."
+      ],
+      "reviewedAt": "2026-10-06"
     }
   ]
 }

@@ -1077,3 +1077,42 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **MAKER ≠ JUDGE / ANDON:** AXE is maker for this bounded candidate, never Gold judge. Stop on source mismatch, rights regression, structured-data invalidity, authority failure, hydration duplication or exact-head CI failure.
 
 ---
+
+
+## SPECIES GOLD PLANK 02 — QA_ACCEPT + FIRST FACTORY BATCH / 2026-10-06
+
+JOB: Q4-REALITY-SPECIES-GOLD-PLANK-20261003-01.
+ACCEPTED CANDIDATE: PR #390 exact SHA `300bec3246f489b3e2f42a062bdd728a0c89eae2`.
+INDEPENDENT JUDGE: QA_ACCEPT at Slack message `1791247818.791819` after QA_CORRECT → minimal fix → exact-SHA reverify.
+MAKER ≠ JUDGE: AXE/ChatGPT authored the successor; Cursor operated read-only verifier/Judge on the final exact SHA.
+
+GOLD PLANK RESULT:
+- one shared Human-First `SpeciesEditorialProfile`; no Orca/Jaguar layout fork and no `isOrca` shared-layout authority;
+- child differences remain data/config/media/source driven;
+- Jaguar unsupported ecosystem-health inference is absent and conflicting population estimates remain withheld/UNKNOWN;
+- curated first read excludes the technical SpeciesEvidenceSeam while controlled source/truth/rights depth remains;
+- ATLAS canonical taxon handoff preserves occurrence ≠ range / abundance / trend / migration / live position;
+- parent-owned truthful no-photo fallback handles missing rights-cleared photography;
+- Chromium + WebKit desktop/390/430 Gold Plank matrix = 30/30 on accepted SHA;
+- typecheck PASS, production build PASS, smoke 317/317;
+- inherited whole-app >1.8 MB bundle debt remains open and is not a SPECIES candidate-caused defect.
+
+FIRST FACTORY BATCH 01:
+10 source-envelope-bound species are contract/browser-proven through the same plank:
+African Savanna Elephant; Cheetah; Blue Whale; Tiger; Polar Bear; Whale Shark; Green Turtle; Emperor Penguin; Giant Panda; Elkhorn Coral.
+Factory browser matrix = 4/4 on accepted SHA.
+
+NEW COMPOUNDING ASSET PROOF:
+Elkhorn Coral (`taxon:gbif:5184657`, `/species/acropora-palmata`) was materialised from an already-existing canonical source envelope into the normal SPECIES object + discovery inventory + same shared renderer. No coral-specific renderer/layout was created. This is physical evidence that the plank can convert additional source-grounded species knowledge into a public product asset with lower marginal technical work.
+
+DISCOVERY:
+Accepted build prerenders 26 indexable curated species. Discovery contract now explicitly requires 26 and includes `acropora-palmata`. Ranking, organic traffic, AI-discovery reach and user value remain UNKNOWN until observed after release.
+
+ASSET STATE AT HEIR INTEGRATION:
+CONNECTED / PRODUCTISED / TEST-GOLD. Not LIVE until targeted release is separately authorised, deployed and physically verified.
+CONSUMERS: SPECIES, NATUREBRAIN/PLANETBRAIN source graph, ATLAS taxon handoff, Search/AI discovery, Factory.
+VALUE PATH: verified knowledge → shared plank → indexable species asset → discovery/user → ATLAS/deeper exploration → behavioural evidence → learning → next species.
+FACTORY ECONOMICS: reuse/marginal-code reduction is proven qualitatively; exact compute/time/founder-minute economics are not yet instrumented and must not be invented.
+
+NEXT AFTER HEIR LANDED + LIVE GATE:
+targeted SPECIES release from current real LIVE/main baseline only; do not promote unrelated TEST HEIR changes. After LIVE verification, continue 25 → 50 → 100 using the same plank; floor +1 genuine Gold species/day, 3–5/day only if source/rights/product/Gold quality remains intact.
