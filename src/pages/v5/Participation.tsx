@@ -52,6 +52,11 @@ function FinancialReality({ opportunity }: { opportunity: ParticipationOpportuni
 }
 
 export function OpportunityCard({ opportunity, compact = false }: { opportunity: ParticipationOpportunity; compact?: boolean }) {
+  const actorProfilePath = opportunity.actorId === "P17-A036"
+    ? "/actors/orca"
+    : opportunity.actorId === "P17-A011"
+      ? "/actors/coral-restoration-foundation"
+      : undefined;
   return (
     <article className={`participation-card${compact ? " participation-card-compact" : ""}`}>
       <div className="participation-card-top">
@@ -80,7 +85,7 @@ export function OpportunityCard({ opportunity, compact = false }: { opportunity:
       <SourceMark opportunity={opportunity} />
       <div className="participation-card-actions">
         <a href={opportunity.applicationUrl} target="_blank" rel="noreferrer">OPEN OFFICIAL SOURCE <span aria-hidden>↗</span></a>
-        {opportunity.actorId === "P17-A036" && <Link to="/actors/orca">ACTOR PROFILE →</Link>}
+        {actorProfilePath && <Link to={actorProfilePath}>ACTOR PROFILE →</Link>}
       </div>
     </article>
   );
@@ -188,7 +193,7 @@ export function FindYourWayToHelp() {
     <main className="participation-discovery">
       <Seo
         title="Find your way to help — 4PLANET"
-        description="Match what you care about, what you can bring and the constraints you actually have to real ways to contribute."
+        description="Match what you care about, what you can bring and your real constraints to current, source-backed ways to contribute."
         path="/get-involved"
         robots="noindex,follow"
       />
