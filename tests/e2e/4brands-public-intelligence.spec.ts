@@ -87,6 +87,28 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
     });
   });
 
+  await page.route("**/api/company-eu-projects?**", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        state: "EXACT_LEGAL_NAME_PROJECTS",
+        company: { organizationNumber: "927124238", legalName: "TOMRA SYSTEMS ASA" },
+        projects: [{
+          id: "101234567",
+          title: "Circular resource intelligence",
+          startDate: "2025-01-01",
+          endDate: "2028-12-31",
+          organisationName: "TOMRA SYSTEMS ASA",
+          fundingAmount: 1250000,
+          sourceUrl: "https://cordis.europa.eu/project/id/101234567",
+        }],
+        truthBoundary: "CORDIS project participation and grant-role amounts are public source records, not company revenue.",
+      }),
+    });
+  });
+
   await page.route("**/api/company-first-party?**", async (route) => {
     await route.fulfill({
       status: 200,
@@ -175,6 +197,15 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
   await expect(page.getByText("BRREG-ANCHORED FIRST PARTY", { exact: true })).toBeVisible();
   await expect(page.getByText("Investor Relations", { exact: true })).toBeVisible();
   await expect(page.getByText(/not independently verified fact/i)).toBeVisible();
+
+  await page.getByRole("button", { name: "Innovation", exact: true }).click();
+  await page.getByRole("button", { name: "Load EU project records" }).click();
+  await expect(page.getByText("Circular resource intelligence", { exact: true })).toBeVisible();
+  await expect(page.getByText(/CORDIS 101234567/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Capital", exact: true }).click();
+  await page.getByRole("button", { name: "Load EU funding records" }).click();
+  await expect(page.getByText(/not company revenue/i)).toBeVisible();
 
   await page.getByRole("button", { name: "Procurement", exact: true }).click();
   await page.getByLabel("Procurement keywords").fill("reverse vending");
