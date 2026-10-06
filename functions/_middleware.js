@@ -42,7 +42,7 @@ const PUBLIC_HOSTS = {
       ["Living Systems", "https://4planet.org/living-systems"],
     ],
     schemaType: "WebApplication",
-    sitemap: ["/", ...ATLAS_WORLD_PLACES.map((place) => `/place/${place.slug}`)],
+    sitemap: ["/", "/places", ...ATLAS_WORLD_PLACES.map((place) => `/place/${place.slug}`)],
   },
   "4brands.org": {
     title: "4BRANDS — Understand Any Company. Improve Your Own.",
