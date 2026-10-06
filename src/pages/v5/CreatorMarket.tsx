@@ -85,14 +85,14 @@ function CreatorHeader() {
   return (
     <section style={{ background: "#f5f3ee", color: T.ink, borderBottom: `1px solid ${T.lineStrong}` }}>
       <div style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(96px,11vw,170px) clamp(20px,5vw,72px) clamp(52px,7vw,92px)" }}>
-        <div style={{ ...mono, color: T.blue }}>CRE4TOR_01 · ODIN ODDEKALV</div>
+        <div style={{ ...mono, color: T.blue }}>CRE4TOR_01_ ODIN ODDEKALV</div>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.2fr) minmax(280px,.8fr)", gap: "clamp(34px,8vw,120px)", alignItems: "end", marginTop: 22 }}>
-          <h1 style={{ ...display, margin: 0, fontSize: "clamp(54px,9vw,132px)", lineHeight: .82, maxWidth: "8ch" }}>Nature as witness.</h1>
+          <h1 style={{ ...display, margin: 0, fontSize: "clamp(42px,6.5vw,78px)", lineHeight: .82, maxWidth: "8ch" }}>Nature as witness.</h1>
           <div>
             <p style={{ margin: 0, maxWidth: 560, fontSize: "clamp(17px,1.5vw,21px)", lineHeight: 1.62, color: T.dim }}>
               Photography by Odin Oddekalv. The first creator in 4PLANET MARKET — a shared home for work made from, with and for the living planet.
             </p>
-            <div style={{ ...mono, marginTop: 22, color: T.dim }}>PHOTOGRAPHY · LIMITED PRINT RELEASE / FIRST COLLECTION</div>
+            <div style={{ ...mono, marginTop: 22, color: T.dim }}>PHOTOGRAPHY_ LIMITED PRINT RELEASE_ FIRST COLLECTION</div>
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@ function WorkCard({ work, index }: { work: typeof WORKS[number]; index: number }
         <div style={{ ...mono, color: T.blue }}>{work.id}</div>
       </div>
       <div style={{ marginTop: 14, padding: "13px 0 0", borderTop: `1px solid ${T.lineStrong}` }}>
-        <div style={{ ...mono, color: T.dim }}>PRINT RELEASE · PRICE / SIZE / FULFILMENT LOCK IN PROGRESS</div>
+        <div style={{ ...mono, color: T.dim }}>PRINT RELEASE_ PRICE_ SIZE_ FULFILMENT LOCK IN PROGRESS</div>
       </div>
     </article>
   );
@@ -128,7 +128,7 @@ export function OdinCreatorPage() {
         <section style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(52px,7vw,96px) clamp(20px,5vw,72px)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 24, alignItems: "baseline", marginBottom: 34 }}>
             <div style={{ ...mono, color: T.blue }}>SELECTED WORKS_</div>
-            <div style={{ ...mono, color: T.dim }}>01 / FIRST CREATOR PROOF</div>
+            <div style={{ ...mono, color: T.dim }}>01_ FIRST CREATOR PROOF</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,320px),1fr))", gap: "clamp(34px,5vw,74px) clamp(22px,3vw,44px)" }}>
             {WORKS.map((work, index) => <WorkCard key={work.id} work={work} index={index} />)}
@@ -139,7 +139,7 @@ export function OdinCreatorPage() {
           <div style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(70px,9vw,132px) clamp(20px,5vw,72px)", display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(280px,.7fr)", gap: "clamp(36px,8vw,120px)", alignItems: "end" }}>
             <div>
               <div style={{ ...mono, color: "#85a7ff" }}>4PLANET MARKET_</div>
-              <h2 style={{ ...display, margin: "16px 0 0", fontSize: "clamp(44px,7vw,96px)", lineHeight: .88, maxWidth: "9ch" }}>Creators for a living planet.</h2>
+              <h2 style={{ ...display, margin: "16px 0 0", fontSize: "clamp(38px,5.4vw,68px)", lineHeight: .88, maxWidth: "9ch" }}>Creators for a living planet.</h2>
             </div>
             <div>
               <p style={{ margin: 0, color: "rgba(255,255,255,.76)", fontSize: "clamp(16px,1.4vw,19px)", lineHeight: 1.65 }}>
@@ -169,7 +169,7 @@ function LivePrintCard({ product }: { product: typeof LIVE_PRINTS[number] }) {
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "baseline", paddingTop: 14 }}>
           <div>
             <h3 style={{ ...display, margin: 0, fontSize: "clamp(22px,2.3vw,32px)", lineHeight: 1 }}>{product.title}</h3>
-            <div style={{ ...mono, marginTop: 8, color: T.dim }}>FINE ART PRINT · FOURTHWALL FULFILLED</div>
+            <div style={{ ...mono, marginTop: 8, color: T.dim }}>FINE ART PRINT_ FOURTHWALL FULFILLED</div>
           </div>
           <div style={{ ...mono, color: T.blue }}>{product.price}</div>
         </div>
@@ -184,12 +184,12 @@ export function MarketHome() {
     <PublicShell>
       <main style={{ background: "#f5f3ee", color: T.ink, minHeight: "100vh" }}>
         <section style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(110px,13vw,190px) clamp(20px,5vw,72px) clamp(56px,7vw,92px)" }}>
-          <div style={{ ...mono, color: T.blue }}>4PLANET MARKET_ · FIRST CREATOR PROOF</div>
-          <h1 style={{ ...display, margin: "18px 0 0", fontSize: "clamp(62px,10vw,148px)", lineHeight: .8, maxWidth: "8ch" }}>Made by people who care.</h1>
+          <div style={{ ...mono, color: T.blue }}>4PLANET MARKET_ FIRST CREATOR PROOF</div>
+          <h1 style={{ ...display, margin: "18px 0 0", fontSize: "clamp(46px,7vw,84px)", lineHeight: .8, maxWidth: "8ch" }}>Made by people who care.</h1>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1.15fr) minmax(260px,.65fr)", gap: "clamp(30px,7vw,100px)", alignItems: "end", marginTop: "clamp(42px,7vw,88px)" }}>
             <img src={LIVE_PRINTS[0].image} alt="Summit at Sunset — Fine Art Print" decoding="async" style={{ width: "100%", display: "block", aspectRatio: "4 / 3", objectFit: "cover" }} />
             <div>
-              <div style={{ ...mono, color: T.dim }}>FIRST CREATOR · FIVE LIVE PRINTS</div>
+              <div style={{ ...mono, color: T.dim }}>FIRST CREATOR_ FIVE LIVE PRINTS</div>
               <h2 style={{ ...display, margin: "12px 0 0", fontSize: "clamp(34px,4.5vw,60px)", lineHeight: .92 }}>Odin Oddekalv</h2>
               <p style={{ margin: "18px 0 0", color: T.dim, fontSize: 17, lineHeight: 1.62 }}>Five existing fine-art prints are public and available through the current Fourthwall fulfilment path. 4PLANET MARKET now exposes the real product path instead of presenting unfinished catalogue placeholders.</p>
               <a
@@ -199,7 +199,7 @@ export function MarketHome() {
                 rel="noopener noreferrer"
                 style={{ ...mono, display: "inline-flex", marginTop: 26, color: T.ink, textDecoration: "none", borderBottom: `1px solid ${T.ink}`, paddingBottom: 5 }}
               >BUY SUMMIT AT SUNSET · {LIVE_PRINTS[0].price} →</a>
-              <div style={{ ...mono, color: T.dim, marginTop: 12 }}>SECURE CHECKOUT + FULFILMENT ON FOURTHWALL · OPENS IN A NEW TAB</div>
+              <div style={{ ...mono, color: T.dim, marginTop: 12 }}>SECURE CHECKOUT + FULFILMENT ON FOURTHWALL_ OPENS IN A NEW TAB</div>
               <Link to="/cre4tor/odin" style={{ ...mono, display: "inline-flex", marginTop: 18, color: T.ink, textDecoration: "none" }}>VIEW CREATOR →</Link>
             </div>
           </div>
@@ -209,7 +209,7 @@ export function MarketHome() {
           <div style={{ maxWidth: 1440, margin: "0 auto", padding: "clamp(54px,7vw,96px) clamp(20px,5vw,72px) clamp(84px,10vw,140px)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 20, alignItems: "baseline", marginBottom: 32 }}>
               <div style={{ ...mono, color: T.blue }}>LIVE PRODUCTS_</div>
-              <div style={{ ...mono, color: T.dim }}>5 PUBLIC · USD 50.50 · VERIFIED 27 SEP 2026</div>
+              <div style={{ ...mono, color: T.dim }}>5 PUBLIC_ USD 50.50_ VERIFIED 27 SEP 2026</div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,240px),1fr))", gap: "clamp(28px,4vw,54px) clamp(18px,2.4vw,34px)" }}>
               {LIVE_PRINTS.map((product) => <LivePrintCard key={product.slug} product={product} />)}
