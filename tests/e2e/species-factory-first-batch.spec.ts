@@ -7,7 +7,7 @@ const batch = [
   { slug: "tiger", name: "Tiger", taxon: "5219416" },
   { slug: "polar-bear", name: "Polar Bear", taxon: "2433451" },
   { slug: "whale-shark", name: "Whale Shark", taxon: "2417522" },
-  { slug: "green-sea-turtle", name: "Green Sea Turtle", taxon: "2442225" },
+  { slug: "green-sea-turtle", name: "Green Turtle", taxon: "2442225" },
   { slug: "emperor-penguin", name: "Emperor Penguin", taxon: "2481661" },
   { slug: "giant-panda", name: "Giant Panda", taxon: "2433399" },
   { slug: "acropora-palmata", name: "Elkhorn Coral", taxon: "5184657" },
