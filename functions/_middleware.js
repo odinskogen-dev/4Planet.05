@@ -1928,7 +1928,14 @@ export async function onRequest(context) {
         description: mission[1],
         fallbackTitle: mission[0],
         fallbackParagraphs: [mission[2], mission[3], "This mission uses shared 4PLANET intelligence and evidence infrastructure rather than a separate truth store."],
-        fallbackLinks: [["Missions","https://4planet.org/missions"],["Living Systems","https://4planet.org/living-systems"],["Impact","https://4planet.org/impact"]],
+        fallbackLinks: [
+          ["Missions","https://4planet.org/missions"],
+          ["Living Systems","https://4planet.org/living-systems"],
+          ["Impact","https://4planet.org/impact"],
+          ...(["species","clim4te","rewild-land"].includes(missionSlug)
+            ? [["Kenya — ATLAS Place","https://4planetatlas.com/place/kenya"]]
+            : [])
+        ],
         schemaType: "WebPage",
       };
     }
