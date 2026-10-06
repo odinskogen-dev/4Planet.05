@@ -12,6 +12,8 @@ const lineage = read('docs/control/CODE_LINEAGE_REGISTER.md');
 const regressions = read('docs/control/AXE_CONTEXT_REGRESSION_TESTS.md');
 const agents = read('AGENTS.md');
 const workflow = read('.github/workflows/convergence-gate.yml');
+const goldPolicy = read('scripts/gold-policy-check.mjs');
+const livePromotionGuard = read('scripts/live-promotion-authority-gate.mjs');
 
 const EXPECTED_ALGORITHM = [
   'QUESTION REQUIREMENTS',
@@ -78,6 +80,12 @@ test('LIVE remains fail-closed and Founder-gated', () => {
   assert.equal(liveManifest.founderDecisionRef, null);
   assert.equal(candidate.safety.no_live_or_main_development_by_this_register, true);
   assert.match(candidate.promotion_contract.live_promotion, /FOUNDER_AUTHORITY_REQUIRED/);
+});
+
+test('LIVE authorised status token is singular across release guards', () => {
+  assert.match(goldPolicy, /manifest\.status !== ["']FOUNDER_AUTHORISED["']/);
+  assert.match(livePromotionGuard, /manifest\.status !== ["']FOUNDER_AUTHORISED["']/);
+  assert.doesNotMatch(goldPolicy, /FOUNDER_ACCEPTED/);
 });
 
 test('minimal semantic BRAIN contract is stable and cutover is evidence-gated', () => {

@@ -1,3 +1,48 @@
+# LIVE PROMOTION AUTHORITY TOKEN CONVERGENCE — 07 OCT 2026
+
+**STATUS:** RELEASE-CONTROL REPAIR / NO PRODUCT BYTE CHANGE / NO LIVE BYPASS.
+
+## USER ARRIVES BECAUSE
+A Founder-authorised, fully tested public product change must be able to move from the sole TEST KING to LIVE through one internally consistent release contract.
+
+## ONE THING TO UNDERSTAND
+Two existing release guards used different success tokens for the same Founder decision: `FOUNDER_ACCEPTED` and `FOUNDER_AUTHORISED`. One manifest cannot satisfy both. The canonical token is now `FOUNDER_AUTHORISED` in both guards.
+
+## PRIMARY ACTION
+Require one exact Founder-authorised manifest status across GOLD PR-to-main validation and the LIVE exact-artifact guard.
+
+## SECONDARY DEPTH
+Preserve every other exact-artifact condition: source branch `king/test`, tested SHA, prior LIVE SHA, Founder decision reference, evidence reference and rollback reference.
+
+## P1 DOMINANT
+Release-control consistency. No application route, content, design, data or product runtime changes.
+
+## P2 ORIENTATION
+The current Discovery Engine candidate remains the tested product objective; this change only makes the existing release gates mutually satisfiable.
+
+## P3 ACTION / NEXT
+Run the full exact-SHA gate set again, then create the manifest-only release-control child commit after all required product gates pass.
+
+## P4 DEPTH
+A regression test reads both release guards and fails if the authorised status token diverges again.
+
+## WHAT CAN BE REMOVED
+The obsolete `FOUNDER_ACCEPTED` token from the GOLD promotion path.
+
+## WHAT MUST BE REUSED
+Existing LIVE_PROMOTION_MANIFEST, sole TEST KING authority, exact-artifact law, rollback identity, GOLD policy and live-promotion guard.
+
+## TRUTH BOUNDARY
+This control repair does not authorise a release by itself. LIVE still requires explicit Founder authority already given for DISCOVERY ENGINE 01, successful exact-SHA evidence, and the manifest-only release-control commit.
+
+## MOBILE-FIRST RISK
+None. No user-facing runtime byte changes.
+
+## HUMAN SUCCESS
+A valid Founder-authorised artifact can pass both release guards without weakening either guard or bypassing any evidence requirement.
+
+---
+
 # DISCOVERY ENGINE 01 — ROUTE-LEVEL BUNDLE SPLIT — 07 OCT 2026
 
 **STATUS:** BOUNDED PERFORMANCE / RELEASE-GATE FIX FOR THE FOUNDER-AUTHORISED DISCOVERY LIVE OBJECTIVE.
