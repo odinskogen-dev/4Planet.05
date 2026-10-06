@@ -135,7 +135,7 @@ export function ActorsIndex() {
       <section className="actor-index-method">
         <p>GOLD METHOD</p>
         <h2>One exceptional system. Ten unlike actors. Then scale.</h2>
-        <span>ORCA is Gold 01. Get Involved is now part of the same profile grammar: identity → trust → real participation, with source and cost reality intact.</span>
+        <span>ORCA proves monitoring; Coral Restoration Foundation adds a restoration archetype. Both use the same identity → evidence → solution → real participation grammar, with sources, relationship state and cost reality intact.</span>
       </section>
     </main>
   );
