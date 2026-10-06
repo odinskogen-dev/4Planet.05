@@ -234,7 +234,7 @@ export default function Home() {
               <div className="home-kicker home-kicker--blue">WHAT WE BELIEVE</div>
               <h2>We believe the future can be better.</h2>
               <p>Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real, use power for good — and leave things better.</p>
-              <Link to="/about/what-we-believe" className="home-text-link">WHAT WE BELIEVE →</Link>
+              <Link to="/about" className="home-text-link">WHAT WE BELIEVE →</Link>
             </div>
             <div className="home-belief-join__join">
               <div className="home-kicker">JOIN US</div>
