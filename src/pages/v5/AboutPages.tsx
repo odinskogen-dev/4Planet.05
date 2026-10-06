@@ -40,9 +40,9 @@ export function AboutStory() {
     <PublicShell>
       <section style={{ minHeight: "88svh", background: "#050805", color: "#fff", display: "flex", alignItems: "flex-end" }}>
         <div style={{ ...max, width: "100%", paddingTop: 120, paddingBottom: "clamp(54px,8vw,110px)" }}>
-          <div style={{ ...mono, color: T.acid }}>ABOUT_ · THE STORY</div>
-          <h1 style={{ ...display, marginTop: 18, fontSize: "clamp(50px,9vw,138px)", lineHeight: .82, maxWidth: "10ch" }}>The living planet is not an abstract issue.</h1>
-          <p style={{ marginTop: 32, maxWidth: 760, fontSize: "clamp(18px,2vw,25px)", lineHeight: 1.55, color: "rgba(255,255,255,.82)" }}>It is the system beneath food, water, health, prosperity, freedom and almost everything people care about.</p>
+          <div style={{ ...mono, color: T.acid }}>ABOUT_ THE STORY</div>
+          <h1 style={{ ...display, marginTop: 18, fontSize: "clamp(42px,6.4vw,76px)", lineHeight: .82, maxWidth: "10ch" }}>We live inside a living planet.</h1>
+          <p style={{ marginTop: 32, maxWidth: 760, fontSize: "clamp(18px,2vw,25px)", lineHeight: 1.55, color: "rgba(255,255,255,.82)" }}>Food, water, health, economies and societies depend on the living systems around us.</p>
         </div>
       </section>
       <AboutNav active="story" />
@@ -52,7 +52,7 @@ export function AboutStory() {
       <section style={{ background: T.blue, color: "#fff" }}>
         <div style={{ ...max, paddingTop: "clamp(70px,10vw,150px)", paddingBottom: "clamp(70px,10vw,150px)" }}>
           <div style={{ ...mono, color: "rgba(255,255,255,.72)" }}>4PLANET_</div>
-          <p style={{ ...display, marginTop: 22, fontSize: "clamp(36px,6.5vw,94px)", lineHeight: .94, maxWidth: "15ch" }}>For a living planet where humans and the rest of life can thrive together.</p>
+          <p style={{ ...display, marginTop: 22, fontSize: "clamp(34px,5vw,64px)", lineHeight: .94, maxWidth: "15ch" }}>For a future where people and the rest of nature can thrive together.</p>
         </div>
       </section>
       <style>{`@media(max-width:760px){.about-split{grid-template-columns:1fr!important}}`}</style>
@@ -71,15 +71,15 @@ export function AboutSystem() {
     <PublicShell>
       <section style={{ background: "#fff", color: T.ink }}>
         <div style={{ ...max, paddingTop: "clamp(120px,15vw,210px)", paddingBottom: "clamp(64px,9vw,120px)" }}>
-          <div style={{ ...mono, color: T.blue }}>ABOUT_ · THE SYSTEM</div>
-          <h1 style={{ ...display, marginTop: 18, fontSize: "clamp(48px,8vw,118px)", lineHeight: .86, maxWidth: "10ch" }}>One planet. One shared intelligence core.</h1>
-          <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(18px,1.9vw,24px)", lineHeight: 1.55, color: T.dim }}>Different ways in should not create different versions of reality. 4PLANET is built around shared identities, sources and relationships, rendered through different public lenses.</p>
+          <div style={{ ...mono, color: T.blue }}>ABOUT_ THE SYSTEM</div>
+          <h1 style={{ ...display, marginTop: 18, fontSize: "clamp(42px,6.2vw,76px)", lineHeight: .86, maxWidth: "10ch" }}>Different ways in. One connected picture.</h1>
+          <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(18px,1.9vw,24px)", lineHeight: 1.55, color: T.dim }}>ATLAS, SPECIES, LIVING SYSTEMS and IMPACT are different ways to explore the same source-grounded relationships — not separate versions of reality.</p>
         </div>
       </section>
       <AboutNav active="system" />
       <section style={{ background: "#050805", color: "#fff" }}>
         <div style={{ ...max, paddingTop: "clamp(64px,9vw,120px)", paddingBottom: "clamp(64px,9vw,120px)" }}>
-          <div style={{ ...mono, color: T.acid }}>THE PUBLIC PRODUCT FAMILY</div>
+          <div style={{ ...mono, color: T.acid }}>FOUR PUBLIC LENSES</div>
           <div style={{ marginTop: 36, borderTop: "1px solid rgba(255,255,255,.18)" }}>
             {products.map(([no, name, line]) => (
               <div key={name} style={{ display: "grid", gridTemplateColumns: "80px minmax(160px,.5fr) minmax(0,1fr)", gap: "clamp(16px,4vw,60px)", padding: "clamp(26px,4vw,50px) 0", borderBottom: "1px solid rgba(255,255,255,.18)" }} className="system-row">
@@ -106,8 +106,8 @@ export function Founder() {
           <img className="founder-hero__image" src="/assets/brand/founder-grass.jpg" alt="Odin Oddekalv sitting in grass wearing a dark beanie" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "54% 50%" }} />
           <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.18) 35%,rgba(0,0,0,.76) 78%,rgba(0,0,0,.94) 100%)" }} />
           <div style={{ ...max, position: "relative", zIndex: 1, width: "100%", paddingTop: 140, paddingBottom: "clamp(58px,8vw,110px)" }}>
-            <div style={{ ...mono, color: T.blue }}>FOUNDER_ · ODIN ODDEKALV</div>
-            <h1 style={{ ...display, marginTop: 22, fontSize: "clamp(54px,9.5vw,146px)", lineHeight: .82, maxWidth: "8.5ch", textWrap: "balance" }}>Everything I love is alive.</h1>
+            <div style={{ ...mono, color: T.blue }}>FOUNDER_ ODIN ODDEKALV</div>
+            <h1 style={{ ...display, marginTop: 22, fontSize: "clamp(44px,6.6vw,80px)", lineHeight: .82, maxWidth: "8.5ch", textWrap: "balance" }}>Everything I love is alive.</h1>
             <p style={{ marginTop: 30, maxWidth: 720, fontSize: "clamp(18px,2vw,25px)", lineHeight: 1.55, color: "rgba(255,255,255,.86)", textWrap: "pretty" }}>4PLANET began long before it had a name. It began with a simple fact: the places, animals and people worth fighting for are not separate from one another.</p>
           </div>
         </header>
@@ -129,14 +129,14 @@ export function Founder() {
         <section style={{ background: T.blue, color: "#fff" }}>
           <div style={{ ...max, paddingTop: "clamp(76px,11vw,160px)", paddingBottom: "clamp(76px,11vw,160px)" }}>
             <div style={{ ...mono, color: "rgba(255,255,255,.68)" }}>ALT JEG ELSKER LEVER</div>
-            <p style={{ ...display, marginTop: 22, fontSize: "clamp(38px,7vw,104px)", lineHeight: .91, maxWidth: "13ch" }}>Love is not a strategy. But it is a reason to build one.</p>
+            <p style={{ ...display, marginTop: 22, fontSize: "clamp(36px,5.4vw,68px)", lineHeight: .91, maxWidth: "13ch" }}>Love is not a strategy. But it is a reason to build one.</p>
           </div>
         </section>
 
         <section>
           <div style={{ ...max, paddingTop: "clamp(64px,9vw,130px)", paddingBottom: "clamp(64px,9vw,130px)" }}>
             <div style={{ display: "grid", gridTemplateColumns: "minmax(140px,.35fr) minmax(0,1fr)", gap: "clamp(32px,8vw,120px)" }} className="founder-split">
-              <div style={{ ...mono, color: T.blue }}>BUILDER · STORYTELLER · PHOTOGRAPHER</div>
+              <div style={{ ...mono, color: T.blue }}>BUILDER_ STORYTELLER_ PHOTOGRAPHER</div>
               <div style={{ maxWidth: 800 }}>
                 <p style={{ ...display, fontSize: "clamp(30px,4.4vw,62px)", lineHeight: 1.02 }}>The other half of my life was building systems that move people.</p>
                 <p style={{ marginTop: 28, fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.72, color: T.dim }}>I spent more than fifteen years working across entrepreneurship, strategy, communication and brand building, alongside photography and environmental work. That combination made a gap increasingly obvious: people care, scientists know a great deal, field organisations are doing real work and capital exists — but the path between understanding and credible participation is fragmented.</p>
@@ -149,8 +149,8 @@ export function Founder() {
         <section style={{ background: "#050805", color: "#fff" }}>
           <div style={{ ...max, paddingTop: "clamp(74px,10vw,150px)", paddingBottom: "clamp(74px,10vw,150px)" }}>
             <div style={{ ...mono, color: T.blue }}>WHY 4PLANET</div>
-            <h2 style={{ ...display, marginTop: 20, fontSize: "clamp(38px,6vw,88px)", lineHeight: .93, maxWidth: "14ch" }}>The goal is not to make people care about an environmental abstraction.</h2>
-            <p style={{ marginTop: 30, maxWidth: 760, fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.65, color: "rgba(255,255,255,.76)" }}>It is to help people see the living systems already underneath their own lives — and give that understanding somewhere credible to go.</p>
+            <h2 style={{ ...display, marginTop: 20, fontSize: "clamp(36px,5vw,64px)", lineHeight: .93, maxWidth: "14ch" }}>The goal is to make the living systems beneath our lives easier to see.</h2>
+            <p style={{ marginTop: 30, maxWidth: 760, fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.65, color: "rgba(255,255,255,.76)" }}>And to give that understanding somewhere credible to go.</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 34 }}>
               <Link to="/about/system" style={{ ...mono, background: T.blue, color: "#fff", padding: "13px 17px", textDecoration: "none" }}>SEE THE SYSTEM →</Link>
               <Link to="/" style={{ ...mono, border: "1px solid rgba(255,255,255,.38)", color: "#fff", padding: "12px 17px", textDecoration: "none" }}>ENTER 4PLANET →</Link>
