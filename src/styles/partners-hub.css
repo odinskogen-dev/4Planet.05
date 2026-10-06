@@ -789,3 +789,11 @@ a:hover .ph-arrow { transform: translate(2px,-2px); }
     display: none;
   }
 }
+
+/* Keep 4PLANET ID clear of the mobile navigation control. */
+@media (max-width:700px) {
+  .ph-id-entry {
+    right:82px !important;
+    top:calc(15px + env(safe-area-inset-top,0px)) !important;
+  }
+}
