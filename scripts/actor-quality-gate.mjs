@@ -65,7 +65,7 @@ for (const profile of profiles) {
   if (solutions.length < 1) fail(`${key}: at least one source-bounded solution / method required`);
   if (!sourceAuthority || sourceAuthority.length < 20) fail(`${key}: source authority required`);
   if (sourceLinks.length < 1) fail(`${key}: at least one direct source link required`);
-  if (!lastReviewed || !/^20\\d\\d-\\d\\d-\\d\\d$/.test(lastReviewed)) fail(`${key}: ISO last-reviewed date required`);
+  if (!lastReviewed || !/^20\d\d-\d\d-\d\d$/.test(lastReviewed)) fail(`${key}: ISO last-reviewed date required`);
   if (!correctionsPath?.startsWith("/")) fail(`${key}: corrections path required`);
   if (work.length < 2) fail(`${key}: at least two concrete work classes required`);
   if (places.length < 1) fail(`${key}: at least one geography role required`);
@@ -79,7 +79,7 @@ for (const profile of profiles) {
     if (!source) { fail(`${key}: source links must be literal objects`); continue; }
     const url = text(property(source, "url"));
     const checkedAt = text(property(source, "checkedAt"));
-    if (!text(property(source, "label")) || !url?.startsWith("https://") || !/^20\\d\\d-\\d\\d-\\d\\d$/.test(checkedAt ?? "")) {
+    if (!text(property(source, "label")) || !url?.startsWith("https://") || !/^20\d\d-\d\d-\d\d$/.test(checkedAt ?? "")) {
       fail(`${key}: source links need label, https URL and ISO checked date`);
     }
   }
