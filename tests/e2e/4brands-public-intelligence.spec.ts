@@ -191,6 +191,10 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
   await expect(page.getByRole("heading", { name: "TOMRA SYSTEMS ASA", exact: true })).toBeVisible();
   await expect(page.getByText(/ORG 927124238/)).toBeVisible();
   await expect(page.getByText("549300TOMRATEST00001", { exact: true })).toBeVisible();
+  await expect(page.getByText("DECISION BRIEF", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What is worth investigating next?" })).toBeVisible();
+  await expect(page.getByText("FROM PUBLIC FACTS TO MEASURABLE VALUE", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Turn one finding into a bounded Value Cell." })).toBeVisible();
 
   await page.getByRole("button", { name: "Business", exact: true }).click();
   await page.getByRole("button", { name: "Map official company sources" }).click();
