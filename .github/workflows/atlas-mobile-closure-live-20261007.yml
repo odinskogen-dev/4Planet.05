@@ -136,10 +136,10 @@ jobs:
       - name: Mobile viewport and surface proof before LIVE
         shell: bash
         run: |
-          node --input-type=module <<'NODE'
+          xvfb-run -a node --input-type=module <<'NODE'
           import { chromium, webkit } from '@playwright/test';
           const cases = [
-            { name: 'chromium', engine: chromium, launch: { args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] }, interactiveRequired: true },
+            { name: 'chromium', engine: chromium, launch: { headless: false, args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] }, interactiveRequired: true },
             { name: 'webkit', engine: webkit, launch: {}, interactiveRequired: false },
           ];
           for (const item of cases) {
@@ -212,9 +212,9 @@ jobs:
           set -euo pipefail
           code=$(curl -sS -L --max-time 25 -o /tmp/atlas-preview-origin.html -w '%{http_code}' "$ATLAS_PREVIEW_ORIGIN/")
           test "$code" = "200"
-          node --input-type=module <<'NODE'
+          xvfb-run -a node --input-type=module <<'NODE'
           import { chromium } from '@playwright/test';
-          const browser = await chromium.launch({ args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] });
+          const browser = await chromium.launch({ headless: false, args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
           await page.goto(process.env.ATLAS_PREVIEW_ORIGIN + '/atlas', { waitUntil: 'domcontentloaded' });
           await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ timeout: 30000 });
@@ -266,10 +266,10 @@ jobs:
             sleep 3
           done
           grep -qi "^x-4planet-atlas-release: $GITHUB_SHA$" <<<"$headers"
-          node --input-type=module <<'NODE'
+          xvfb-run -a node --input-type=module <<'NODE'
           import { chromium, webkit } from '@playwright/test';
           const cases = [
-            { name: 'chromium', engine: chromium, launch: { args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] }, interactiveRequired: true },
+            { name: 'chromium', engine: chromium, launch: { headless: false, args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] }, interactiveRequired: true },
             { name: 'webkit', engine: webkit, launch: {}, interactiveRequired: false },
           ];
           for (const item of cases) {
