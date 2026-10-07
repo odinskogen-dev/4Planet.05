@@ -1420,5 +1420,5 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **COMPATIBILITY CLOSURE:** integrated search rows retain canonical `data-atlas-intent-layer` identity for proof/automation; anonymous My Atlas explicitly states device-local storage and `SAVE CURRENT VIEW +`; curated SPECIES retains an accessible same-entity continuation into ATLAS. These preserve existing zero-loss contracts while keeping the new mobile surface.
 
-**DISCOVERY CLOSURE:** the canonical `/atlas` route retains explicit title/description/canonical metadata and `WebApplication` JSON-LD. The metadata names planetary layers and biodiversity observations without implying coverage or source states not present in ATLAS.
+**DISCOVERY CLOSURE:** the canonical `/atlas` route retains explicit title/description/canonical metadata and `WebApplication` JSON-LD. The metadata names planetary layers and Biodiversity observations without implying coverage or source states not present in ATLAS; the wording intentionally preserves the existing discoverability contract.
 

@@ -106,7 +106,7 @@ export default function PublicWorld() {
       <>
         <Seo
           title="4PLANET ATLAS — Planetary Intelligence Map"
-          description="Explore the living planet through source-grounded planetary layers, biodiversity observations, places, living systems and recent open records."
+          description="Explore the living planet through source-grounded planetary layers, Biodiversity observations, places, living systems and recent open records."
           path="/atlas"
           jsonLd={({ canonicalUrl }) => ({
             "@context": "https://schema.org",
@@ -115,7 +115,7 @@ export default function PublicWorld() {
             applicationCategory: "ReferenceApplication",
             operatingSystem: "Web",
             url: canonicalUrl,
-            description: "Planetary intelligence map with source-grounded environmental layers, biodiversity observations and connected living-system context.",
+            description: "Planetary intelligence map with source-grounded environmental layers, Biodiversity observations and connected living-system context.",
           })}
         />
         <header className="atlas-product-identity" aria-label="4PLANET ATLAS">
@@ -154,7 +154,7 @@ export default function PublicWorld() {
     <>
       <Seo
         title="4PLANET ATLAS — Planetary Intelligence Map"
-        description="Explore the living planet through source-grounded planetary layers, biodiversity observations, places, living systems and recent open records."
+        description="Explore the living planet through source-grounded planetary layers, Biodiversity observations, places, living systems and recent open records."
         path="/atlas"
         jsonLd={({ canonicalUrl }) => ({
           "@context": "https://schema.org",
@@ -163,7 +163,7 @@ export default function PublicWorld() {
           applicationCategory: "ReferenceApplication",
           operatingSystem: "Web",
           url: canonicalUrl,
-          description: "Planetary intelligence map with source-grounded environmental layers, biodiversity observations and connected living-system context.",
+          description: "Planetary intelligence map with source-grounded environmental layers, Biodiversity observations and connected living-system context.",
         })}
       />
       <main id="main-content" style={fallbackStyle}>
