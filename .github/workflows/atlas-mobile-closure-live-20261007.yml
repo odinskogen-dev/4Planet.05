@@ -149,15 +149,18 @@ jobs:
             page.on('pageerror', e => pageErrors.push(String(e)));
             await page.goto('http://127.0.0.1:4173/atlas?atlasCiWebgl=1', { waitUntil: 'domcontentloaded' });
             const world = page.locator('.world[data-atlas-mobile-closure="v1"]');
-            const interactive = await world.isVisible().catch(() => false);
-            if (!interactive) {
-              if (item.interactiveRequired) throw new Error(item.name + ' did not expose interactive ATLAS');
-              await page.getByText('The living planet needs a capable canvas.').waitFor({ timeout: 15000 });
+            const fallback = page.getByText('The living planet needs a capable canvas.');
+            const outcome = await Promise.race([
+              world.waitFor({ state: 'visible', timeout: 20000 }).then(() => 'interactive').catch(() => null),
+              fallback.waitFor({ state: 'visible', timeout: 20000 }).then(() => 'fallback').catch(() => null),
+            ]);
+            if (outcome === 'fallback') {
               const fallbackOverflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
-              if (fallbackOverflow > 1) throw new Error('WebKit fallback creates horizontal overflow');
+              if (fallbackOverflow > 1) throw new Error(item.name + ' capability fallback creates horizontal overflow');
               await browser.close();
               continue;
             }
+            if (outcome !== 'interactive') throw new Error(item.name + ' exposed neither interactive ATLAS nor the canonical capability fallback');
             await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
             const geometry = await page.evaluate(() => {
               const world = document.querySelector('.world')?.getBoundingClientRect();
@@ -217,10 +220,16 @@ jobs:
           const browser = await chromium.launch({ headless: false, args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
           await page.goto(process.env.ATLAS_PREVIEW_ORIGIN + '/atlas?atlasCiWebgl=1', { waitUntil: 'domcontentloaded' });
-          await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ timeout: 30000 });
-          await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
+          const world = page.locator('.world[data-atlas-mobile-closure="v1"]');
+          const fallback = page.getByText('The living planet needs a capable canvas.');
+          const outcome = await Promise.race([
+            world.waitFor({ state: 'visible', timeout: 20000 }).then(() => 'interactive').catch(() => null),
+            fallback.waitFor({ state: 'visible', timeout: 20000 }).then(() => 'fallback').catch(() => null),
+          ]);
+          if (!outcome) throw new Error('Exact preview exposed neither ATLAS nor capability fallback');
+          if (outcome === 'interactive') await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
           await browser.close();
-          console.log('ATLAS_EXACT_PREVIEW_BROWSER_PASS');
+          console.log('ATLAS_EXACT_PREVIEW_BROWSER_PASS ' + outcome);
           NODE
 
       - name: Route only 4planetatlas.com to exact preview origin
@@ -278,14 +287,17 @@ jobs:
             const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
             await page.goto('https://4planetatlas.com/', { waitUntil: 'domcontentloaded' });
             const world = page.locator('.world[data-atlas-mobile-closure="v1"]');
-            const interactive = await world.isVisible().catch(() => false);
-            if (!interactive) {
-              if (item.interactiveRequired) throw new Error(item.name + ' did not expose interactive LIVE ATLAS');
-              await page.getByText('The living planet needs a capable canvas.').waitFor({ timeout: 15000 });
-              if ((await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) > 1) throw new Error('LIVE WebKit fallback overflow');
+            const fallback = page.getByText('The living planet needs a capable canvas.');
+            const outcome = await Promise.race([
+              world.waitFor({ state: 'visible', timeout: 20000 }).then(() => 'interactive').catch(() => null),
+              fallback.waitFor({ state: 'visible', timeout: 20000 }).then(() => 'fallback').catch(() => null),
+            ]);
+            if (outcome === 'fallback') {
+              if ((await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) > 1) throw new Error(item.name + ' LIVE fallback overflow');
               await browser.close();
               continue;
             }
+            if (outcome !== 'interactive') throw new Error(item.name + ' LIVE surface exposed neither ATLAS nor capability fallback');
             await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
             const g = await page.evaluate(() => {
               const w = document.querySelector('.world')?.getBoundingClientRect();
