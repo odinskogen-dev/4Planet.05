@@ -39,7 +39,8 @@ jobs:
           dns_id=$(jq -r '.result[0].id' <<<"$dns"); old_dns=$(jq -r '.result[0].content' <<<"$dns")
           deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${NEW_PROJECT}/deployments?env=production&page=1&per_page=5" "${auth[@]}")
           origin=$(jq -r '[.result[]? | select(.latest_stage.status=="success")][0].url // empty' <<<"$deployments")
-          [ -n "$origin" ]
+          origin_sha=$(jq -r '[.result[]? | select(.latest_stage.status=="success")][0].deployment_trigger.metadata.commit_hash // empty' <<<"$deployments")
+          [ -n "$origin" ] && [ -n "$origin_sha" ]
           {
             echo "CLOUDFLARE_API_TOKEN=$TOKEN"
             echo "CLOUDFLARE_ACCOUNT_ID=$account_id"
@@ -47,8 +48,9 @@ jobs:
             echo "ATLAS_DNS_ID=$dns_id"
             echo "ATLAS_OLD_DNS_CONTENT=$old_dns"
             echo "ATLAS_ORIGIN=$origin"
+            echo "ATLAS_ORIGIN_SHA=$origin_sha"
           } >> "$GITHUB_ENV"
-          echo "origin=$origin old_dns=$old_dns"
+          echo "origin=$origin origin_sha=$origin_sha old_dns=$old_dns"
 
       - name: Verify exact dedicated origin
         shell: bash
@@ -61,9 +63,11 @@ jobs:
           done
           test "$code" = "200"; grep -q 'id="root"' /tmp/origin.html
           script=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/origin.html | head -1 | cut -d'"' -f2)
+          [ -n "$script" ]
           curl -fsS "$ATLAS_ORIGIN$script" -o /tmp/origin.js
-          grep -Fq 'data-atlas-mobile-closure' /tmp/origin.js
-          echo "ATLAS_DEDICATED_ORIGIN_VERIFIED"
+          test -s /tmp/origin.js
+          sha256sum /tmp/origin.js | awk '{print $1}' > /tmp/origin-js.sha
+          echo "ATLAS_DEDICATED_ORIGIN_VERIFIED commit=$ATLAS_ORIGIN_SHA"
 
       - name: Transfer standalone domain
         id: move
@@ -94,7 +98,10 @@ jobs:
           test "$ok" = "1"
           script=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/live.html | head -1 | cut -d'"' -f2)
           curl -fsS "https://$ATLAS_DOMAIN$script" -o /tmp/live.js
-          grep -Fq 'data-atlas-mobile-closure' /tmp/live.js
+          test -s /tmp/live.js
+          origin_hash=$(cat /tmp/origin-js.sha)
+          live_hash=$(sha256sum /tmp/live.js | awk '{print $1}')
+          test "$live_hash" = "$origin_hash"
           root_code=$(curl -sS -L --max-time 20 -o /tmp/root.html -w '%{http_code}' "https://$ATLAS_DOMAIN/")
           test "$root_code" = "200"
           grep -q 'id="root"' /tmp/root.html
