@@ -88,17 +88,20 @@ jobs:
         run: |
           set -euo pipefail
           ready=false
+          root_code=000
+          health_code=000
+          release_code=000
           for attempt in $(seq 1 30); do
-            root_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-root -D /tmp/supersapien-headers -w '%{http_code}' https://supersapien.org/ || true)
+            root_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-root -w '%{http_code}' https://supersapien.org/ || true)
             health_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-health -w '%{http_code}' https://supersapien.org/api/_healthcheck || true)
+            release_code=$(curl -sS --max-time 20 -o /tmp/supersapien-release -w '%{http_code}' https://supersapien.org/__supersapien_release || true)
             if [ "$root_code" = 200 ] && [ "$health_code" = 200 ] && [ "$release_code" = 200 ] && grep -q '<div id="root"' /tmp/supersapien-root && grep -q '"release":"mvp05"' /tmp/supersapien-release; then
               ready=true
               break
             fi
             sleep 5
           done
-          [ "$ready" = true ] || { echo "SUPERSAPIEN_LIVE_VERIFY_FAIL=root:$root_code health:$health_code"; exit 5; }
-          grep -qi 'x-supersapien-origin: capital-lab-mvp05' /tmp/supersapien-headers || { echo 'SUPERSAPIEN_PROXY_HEADER_MISSING'; exit 6; }
-          www_code=$(curl -sS -o /dev/null -D /tmp/supersapien-www -w '%{http_code}' https://www.supersapien.org/ || true)
+          [ "$ready" = true ] || { echo "SUPERSAPIEN_LIVE_VERIFY_FAIL=root:$root_code health:$health_code release:$release_code"; exit 5; }
+          www_code=$(curl -sS -o /dev/null -w '%{http_code}' https://www.supersapien.org/ || true)
           [ "$www_code" = 308 ] || [ "$www_code" = 301 ] || { echo "SUPERSAPIEN_WWW_REDIRECT_FAIL=$www_code"; exit 6; }
-          echo 'SUPERSAPIEN_LIVE_TLS_ROOT_API_WWW=PASS'
+          echo 'SUPERSAPIEN_LIVE_TLS_ROOT_API_RELEASE_WWW=PASS'
