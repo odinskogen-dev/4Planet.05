@@ -12,7 +12,10 @@ export interface StoryPathway {
   kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine" | "actor";
 }
 
+export type StorySourceKind = "primary_research" | "organisational_summary" | "organisational_report" | "field_account";
+
 export interface StorySource {
+  kind: StorySourceKind;
   label: string;
   publisher: string;
   url: string;
@@ -37,6 +40,7 @@ export interface Story {
   tags: string[];
   pathway?: StoryPathway;
   sources?: StorySource[];
+  publicationState?: "PRE_PUBLICATION" | "PUBLISHED";
   gold?: boolean;
   blocks: Block[];
 }
@@ -108,36 +112,49 @@ export const STORIES: Story[] = [
     franchise: "THE_LIVING_WORLD",
     editorialType: "ORGANISATIONAL_EXPLAINER",
     byline: "4PLANET Editorial Desk",
-    image: "wh4lesHero",
+    image: "whaleSurveyStoryHero",
     readMins: 6,
     tags: ["whales", "Bay of Biscay", "ORCA", "monitoring", "citizen science", "survey effort"],
     pathway: { label: "Enter the ORCA Living System", to: "/living-systems/orca", kind: "living_systems" },
-    gold: true,
+    publicationState: "PRE_PUBLICATION",
     sources: [
       {
+        kind: "primary_research",
+        label: "Likely year-round presence of beaked whales in the Bay of Biscay",
+        publisher: "Hydrobiologia",
+        url: "https://doi.org/10.1007/s10750-022-04822-y",
+        publishedAt: "2022-03-10",
+        checkedAt: "2026-10-07",
+        supports: "The analysed 2006–2018 ferry-survey effort, 419 recorded beaked-whale encounters, spatial and seasonal encounter patterns, and the authors' cautious inference that beaked whales may be present year-round.",
+        limitation: "The paper analyses encounter records and survey effort. It does not provide a Bay-wide population estimate, prove a migration route or establish a cause for later year-to-year differences.",
+      },
+      {
+        kind: "organisational_summary",
         label: "Beaked whales in the Bay of Biscay",
         publisher: "ORCA",
         url: "https://orca.org.uk/news-blog/beaked-whales-in-the-bay-of-biscay",
         publishedAt: "2022-03-16",
-        checkedAt: "2026-09-01",
+        checkedAt: "2026-10-07",
         supports: "Long-term ferry survey effort, beaked-whale encounters and the distinction between observations, effort and inferred distribution.",
         limitation: "ORCA summary of a published analysis; this story does not turn encounter records into population estimates.",
       },
       {
+        kind: "organisational_report",
         label: "Brittany Ferries End of Season Roundup 2025",
         publisher: "ORCA",
         url: "https://orca.org.uk/news-blog/brittany-ferries-end-of-season-roundup-2025",
         publishedAt: "2025",
-        checkedAt: "2026-09-01",
+        checkedAt: "2026-10-07",
         supports: "2025 survey programme scale, repeated ferry-route monitoring and ORCA's report that the Bay appeared unusually quiet that season.",
         limitation: "A quiet survey season is an observation requiring follow-up, not proof of a population decline or identified cause.",
       },
       {
+        kind: "field_account",
         label: "Survey Highlights — Portsmouth–Santander 22/06/2026",
         publisher: "ORCA",
         url: "https://orca.org.uk/news-blog/survey-highlights-portsmouth-santander-22-06-2026",
         publishedAt: "2026-07-13",
-        checkedAt: "2026-09-01",
+        checkedAt: "2026-10-07",
         supports: "A recent 2026 example of trained surveyors repeatedly observing cetaceans while crossing the Bay of Biscay.",
         limitation: "One survey account is a snapshot, not a trend or abundance estimate.",
       },
@@ -146,7 +163,7 @@ export const STORIES: Story[] = [
       L("A ferry is designed to move people across water. Run the same route again and again with trained observers on the bridge, and it can become something else as well: a repeatable line through a living sea."),
       P("That is the useful idea behind ORCA's ferry surveys. Surveyors record what they see, but the sightings are only half the evidence. The other half is effort: where the ship travelled, how much water was surveyed, when observations were possible and under what conditions."),
       S("The map is not the animals"),
-      P("ORCA has described a long Bay of Biscay dataset in which 244,400 kilometres of surveyed water and 419 beaked-whale encounters from 2006 to 2018 were analysed to investigate how encounter rates varied across space and time. The result can inform questions about distribution and seasonality. It does not mean 419 whales lived there, and the route is not a migration track."),
+      P("Researchers analysing ORCA survey data reported approximately 244,400 kilometres of survey effort and 419 recorded beaked-whale encounters from 2006 to 2018. They examined how encounter rates varied across space and time. The result can inform questions about distribution and seasonality. It does not mean 419 whales lived there, and the route is not a migration track."),
       Q("A point on a map is an observation. A kilometre surveyed is effort. A population trend is a different claim."),
       P("That distinction sounds technical until it changes the story. More sightings can mean more animals, more observation effort, different routes, better conditions or some combination. Less can mean the reverse. Long-running monitoring becomes valuable because it gives analysts a better chance of separating those possibilities instead of treating every dot as equal."),
       S("A year that looked different"),
