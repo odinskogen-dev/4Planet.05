@@ -1,0 +1,41 @@
+name: ATLAS Domain Diagnostic
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/atlas-domain-diagnostic-20261007.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Inspect Atlas DNS and Cloudflare routing
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n'); TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+          zone=$(curl -fsS "${api}/zones?name=4planetatlas.com&status=active" "${auth[@]}")
+          zone_id=$(jq -r '.result[0].id' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id' <<<"$zone")
+          echo "DNS:"
+          curl -fsS "${api}/zones/${zone_id}/dns_records?name=4planetatlas.com" "${auth[@]}" | jq '{result:[.result[]|{id,type,name,content,proxied,proxiable}]}'
+          echo "ROUTES:"
+          curl -fsS "${api}/zones/${zone_id}/workers/routes" "${auth[@]}" | jq '{result:[.result[]|{id,pattern,script}]}'
+          echo "PAGES DOMAINS:"
+          curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}" | jq '{name:.result.name,domains:.result.domains,production_branch:.result.production_branch}'
