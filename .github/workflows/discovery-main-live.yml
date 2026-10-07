@@ -15,6 +15,7 @@ on:
       - src/pages/integrated/Species.tsx
       - src/pages/integrated/SpeciesRoute.tsx
       - src/components/layout/PublicShell.tsx
+      - src/pages/v5/AboutPages.tsx
       - src/pages/v5/Home.tsx
       - src/pages/v5/AtlasHero.tsx
       - src/styles/home-brand-reset.css
@@ -94,6 +95,30 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
+      - name: Verify WHAT WE BELIEVE custom-domain runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 45); do
+            beliefs=$(curl -fsS --max-time 15 https://4planet.org/about/what-we-believe || true)
+            if grep -Fq 'We believe the future can be better.' <<<"$beliefs" \
+              && grep -Fq 'people and the rest of nature can thrive together' <<<"$beliefs" \
+              && grep -Fq 'EVERYONE HAS A PART TO PLAY.' <<<"$beliefs" \
+              && grep -Fq 'Love life. Care deeply for the living world.' <<<"$beliefs" \
+              && grep -Fq 'There is a place for everyone who wants to help' <<<"$beliefs"; then
+              break
+            fi
+            sleep 4
+          done
+          grep -Fq 'We believe the future can be better.' <<<"$beliefs"
+          grep -Fq 'people and the rest of nature can thrive together' <<<"$beliefs"
+          grep -Fq 'We seek solutions that create broad, durable value' <<<"$beliefs"
+          grep -Fq 'EVERYONE HAS A PART TO PLAY.' <<<"$beliefs"
+          grep -Fq 'No one solves problems this big alone. Together, we can.' <<<"$beliefs"
+          grep -Fq 'Love life. Care deeply for the living world.' <<<"$beliefs"
+          grep -Fq 'There is a place for everyone who wants to help' <<<"$beliefs"
+          echo 'WHAT_WE_BELIEVE_CUSTOM_DOMAIN_PASS'
+
       - name: Verify Living Systems v1.4.2 ZERO LOSS custom-domain runtime
         shell: bash
         run: |
