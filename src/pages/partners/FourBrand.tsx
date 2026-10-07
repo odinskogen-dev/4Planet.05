@@ -524,15 +524,6 @@ export default function FourBrand() {
     }
   }
 
-  async function continueWithoutNorwegianIdentity() {
-    const query = company.trim();
-    if (query.length < 2) return;
-    setIdentityCandidates([]);
-    setIdentityResolution(null);
-    setIdentityState("READY");
-    await analyseResolved(query, null);
-  }
-
   function saveTwin() {
     if (!analysis || typeof window === "undefined") return;
     window.localStorage.setItem(storageKey("twin", companyKey), JSON.stringify(twin));
@@ -669,10 +660,10 @@ export default function FourBrand() {
                   </button>
                 ))}
               </div>
-              <button type="button" className="fb-identity-fallback" onClick={() => void continueWithoutNorwegianIdentity()}>Not a Norwegian entity / continue unresolved</button>
+              <p className="fb-identity-fallback">International legal-entity coverage is not yet available in this public profile. No unsupported company match is inferred.</p>
             </section>
           )}
-          {identityState === "NO_MATCH" && <div className="fb-identity-state"><p>No Norwegian legal-entity match was found. That does not mean the company does not exist.</p><button type="button" onClick={() => void continueWithoutNorwegianIdentity()}>Continue without Norwegian legal identity</button></div>}
+          {identityState === "NO_MATCH" && <div className="fb-identity-state"><p>No Norwegian legal-entity match was found. That does not mean the company does not exist.</p><span>International legal-entity coverage is not yet available in this public profile.</span></div>}
           {identityResolution && !analysis && !publicProfile && publicProfileState === "LOADING" && <div className="fb-identity-state" role="status">Exact BRREG identity resolved. Building the public intelligence profile…</div>}
 
           {loading && <div className="fb-loading" role="status"><span /><p>Reading the company. Building the value map.</p></div>}
@@ -697,7 +688,6 @@ export default function FourBrand() {
             setIdentityState("IDLE");
             setError(null);
           }}
-          onDeepAnalysis={() => void analyseResolved(publicProfile.company.name, identityResolution)}
           onPrivate={() => {
             if (typeof window === "undefined") return;
             const returnTo = window.location.origin + "/4brands#company-brain";
@@ -740,7 +730,6 @@ export default function FourBrand() {
             ))}
           </section>
 
-          <CompanyClimateTracePanel analysis={analysis} />
 
           <ProcurementDemandPanel analysis={analysis} />
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "@/styles/fourbrand-intelligence.css";
-import { PublicBusinessSources, PublicEuProjectIntelligence, PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
+import { PublicBusinessSources, PublicEuProjectIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
 
 export type PublicCompanySource = {
   id: string;
@@ -143,12 +143,11 @@ function Unknowns({ items }: { items: string[] }) {
 }
 
 export default function PublicCompanyProfile({
-  profile, gleif, onReset, onDeepAnalysis, onPrivate,
+  profile, gleif, onReset, onPrivate,
 }: {
   profile: PublicCompanyProfileData;
   gleif?: { state: string; verified: { lei: string; legalName: string; registeredAs: string | null; sourceUrl: string } | null } | null;
   onReset: () => void;
-  onDeepAnalysis: () => void;
   onPrivate: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("OVERVIEW");
@@ -209,6 +208,43 @@ export default function PublicCompanyProfile({
     return signals;
   }, [profile.financials]);
 
+  const decisionBrief = useMemo(() => {
+    const items: Array<{ label: string; title: string; detail: string }> = [];
+    const latestChange = recentChanges[0];
+    if (latestChange) items.push({
+      label: "CHANGED · FACT",
+      title: latestChange.title,
+      detail: latestChange.detail,
+    });
+    const firstSignal = investigationSignals[0];
+    if (firstSignal) items.push({
+      label: firstSignal.basis,
+      title: firstSignal.title,
+      detail: firstSignal.detail,
+    });
+    if (profile.coverage.groupRelationCount > 0) items.push({
+      label: "STRUCTURE · FACT",
+      title: `${profile.coverage.groupRelationCount} public group relation${profile.coverage.groupRelationCount === 1 ? "" : "s"} resolved`,
+      detail: "Group structure can change where revenue, cost, procurement and decision authority actually sit. Verify material value questions at the correct legal entity.",
+    });
+    if (profile.coverage.locationCount > 1) items.push({
+      label: "OPERATING FOOTPRINT · FACT",
+      title: `${profile.coverage.locationCount} registered operating locations resolved`,
+      detail: "Multiple registered locations create a concrete starting point for checking where costs, demand, assets or environmental exposure differ.",
+    });
+    if (items.length < 3 && profile.unknowns.length > 0) items.push({
+      label: "EVIDENCE GAP · UNKNOWN",
+      title: "Public evidence stops before the operating answer",
+      detail: profile.unknowns[0],
+    });
+    if (!items.length) items.push({
+      label: "BOUNDED RESULT",
+      title: "No material public-data flag cleared the current threshold",
+      detail: "That is still useful: 4BRANDS does not manufacture a finding when the connected evidence does not support one.",
+    });
+    return items.slice(0, 3);
+  }, [recentChanges, investigationSignals, profile.coverage.groupRelationCount, profile.coverage.locationCount, profile.unknowns]);
+
   return (
     <section className="fbi" aria-label="4BRANDS public company intelligence">
       <header className="fbi-masthead">
@@ -232,7 +268,7 @@ export default function PublicCompanyProfile({
             <p>Public register intelligence first. Every material field below is either source-grounded or explicitly unknown.</p>
             <div className="fbi-actions">
               <button type="button" onClick={onPrivate}>This is my company</button>
-              <button type="button" className="fbi-actions__secondary" onClick={onDeepAnalysis}>Research deeper</button>
+              <button type="button" className="fbi-actions__secondary" onClick={() => setTab("FINDINGS")}>Find value</button>
             </div>
           </div>
         </div>
@@ -244,6 +280,25 @@ export default function PublicCompanyProfile({
           <Fact label="PUBLIC ROLES" value={String(profile.coverage.roleCount)} meta="This entity only" />
           <Fact label="GROUP LINKS" value={String(profile.coverage.groupRelationCount)} meta="BRREG child relations" />
           <Fact label="SOURCES LIVE" value={String(readySourceCount) + "/" + String(totalSourceLaneCount)} meta={"Fetched " + dateLabel(profile.generatedAt)} />
+        </div>
+
+        <div className="fbi-decision-brief" aria-label="Decision brief">
+          <div className="fbi-decision-brief__head">
+            <div>
+              <span>DECISION BRIEF</span>
+              <h2>What is worth investigating next?</h2>
+            </div>
+            <button type="button" onClick={() => setTab("FINDINGS")}>Open findings →</button>
+          </div>
+          <div className="fbi-decision-brief__grid">
+            {decisionBrief.map((item) => (
+              <article key={item.label + item.title}>
+                <span>{item.label}</span>
+                <strong>{item.title}</strong>
+                <p>{item.detail}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -378,7 +433,16 @@ export default function PublicCompanyProfile({
         )}
 
         {tab === "PLANET" && (
-          <PublicPlanetIntelligence companyName={profile.company.name} />
+          <>
+            <div className="fbi-section-head">
+              <div><span>PLANET / SOURCE STATUS</span><h2>Facility emissions intelligence is unavailable right now.</h2></div>
+              <p>4BRANDS will not infer company emissions from a name match or from an unavailable external owner index. Existing company evidence remains unchanged.</p>
+            </div>
+            <div className="fbi-truth-boundary">
+              <span>FAIL-CLOSED BOUNDARY</span>
+              <p>This lane stays closed until the external source is live and a human can review the company-to-owner identity join. No emissions figure, facility ownership claim or planetary conclusion is manufactured in the meantime.</p>
+            </div>
+          </>
         )}
 
         {tab === "STRUCTURE" && (
@@ -494,6 +558,24 @@ export default function PublicCompanyProfile({
           </>
         )}
       </div>
+
+      <section className="fbi-value-cell" aria-label="4BRANDS measurable value path">
+        <div>
+          <span>FROM PUBLIC FACTS TO MEASURABLE VALUE</span>
+          <h2>Turn one finding into a bounded Value Cell.</h2>
+          <p>Connect the company context, choose one decision owner and test one MAKE MORE or SPEND BETTER opportunity against a baseline. Measure the result before any value claim is made.</p>
+        </div>
+        <div className="fbi-value-cell__steps" aria-label="Value Cell steps">
+          <span><b>01</b> FIND</span>
+          <span><b>02</b> TEST</span>
+          <span><b>03</b> PROVE</span>
+        </div>
+        <div className="fbi-value-cell__actions">
+          <button type="button" onClick={onPrivate}>Use Company Brain →</button>
+          <button type="button" className="fbi-value-cell__secondary" onClick={() => setTab("FINDINGS")}>Review public findings</button>
+        </div>
+        <small>No ROI, saving, growth or ecological outcome is claimed until a baseline, intervention and measurement support it.</small>
+      </section>
     </section>
   );
 }

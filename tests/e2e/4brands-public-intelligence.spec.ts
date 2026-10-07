@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evidence, procurement and reviewed planet signals", async ({ page }) => {
+test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evidence, procurement and fail-closed planet status", async ({ page }) => {
   const candidate = {
     organizationNumber: "927124238",
     entityName: "TOMRA SYSTEMS ASA",
@@ -191,6 +191,10 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
   await expect(page.getByRole("heading", { name: "TOMRA SYSTEMS ASA", exact: true })).toBeVisible();
   await expect(page.getByText(/ORG 927124238/)).toBeVisible();
   await expect(page.getByText("549300TOMRATEST00001", { exact: true })).toBeVisible();
+  await expect(page.getByText("DECISION BRIEF", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What is worth investigating next?" })).toBeVisible();
+  await expect(page.getByText("FROM PUBLIC FACTS TO MEASURABLE VALUE", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Turn one finding into a bounded Value Cell." })).toBeVisible();
 
   await page.getByRole("button", { name: "Business", exact: true }).click();
   await page.getByRole("button", { name: "Map official company sources" }).click();
@@ -214,14 +218,12 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
   await expect(page.getByText(/not proof that TOMRA SYSTEMS ASA is eligible/i)).toBeVisible();
 
   await page.getByRole("button", { name: "Planet", exact: true }).click();
-  await page.getByRole("button", { name: "Find owner candidates" }).click();
-  await expect(page.getByText("Review this owner →", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: /Review this owner/ }).click();
-  await expect(page.getByText("USER-REVIEWED SOURCE JOIN", { exact: true })).toBeVisible();
-  await expect(page.getByText("facility:climatetrace:source-1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Facility emissions intelligence is unavailable right now." })).toBeVisible();
+  await expect(page.getByText("FAIL-CLOSED BOUNDARY", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Find owner candidates" })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Findings", exact: true }).click();
-  await expect(page.getByText("Register record changed", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Direct competitors are not established/i)).toBeVisible();
+  await expect(page.getByText("Register record changed", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/Direct competitors are not established/i).first()).toBeVisible();
 });
 

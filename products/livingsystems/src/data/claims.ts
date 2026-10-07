@@ -12,13 +12,13 @@ export const CLAIMS: Record<string, ClaimNode> = {
   CLAIM_ORCA_POPULATION: {
     id: "CLAIM_ORCA_POPULATION",
     statement:
-      "The global orca population is estimated at at least ~50,000 individuals.",
-    nodeId: "SP_ORCA",
-    sourceIds: ["IUCN_RED_LIST"],
-    confidence: "Medium",
-    reviewStatus: "Verified",
-    lastReviewed: "2026-06-07",
-    dataGaps: ["Estimates vary widely between regions and surveys."],
+      "A single global orca population figure is not promoted as current cross-product truth; population status and trend must be scoped to population, place, method and date.",
+    nodeId: "taxon:gbif:2440483",
+    sourceIds: [],
+    confidence: "High",
+    reviewStatus: "Reviewed",
+    lastReviewed: "2026-10-07",
+    dataGaps: ["Population-specific estimates require method-, place- and date-scoped evidence before use."],
   },
   CLAIM_JAGUAR_RANGE_LOSS: {
     id: "CLAIM_JAGUAR_RANGE_LOSS",

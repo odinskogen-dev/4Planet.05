@@ -31,12 +31,13 @@ test("BRREG exact lookup fails closed on identity mismatch",async()=>{
   );
 });
 
-test("4BRANDS requires user legal-entity selection before Norwegian identity join",async()=>{
+test("4BRANDS requires exact legal-entity selection and fails closed outside current Norwegian coverage",async()=>{
   const ui=await readFile(new URL("../src/pages/partners/FourBrand.tsx",import.meta.url),"utf8");
   assert.match(ui,/Which legal entity do you mean\?/);
   assert.match(ui,/Name search is discovery only/);
   assert.match(ui,/confirmIdentity\(candidate\)/);
-  assert.match(ui,/continueWithoutNorwegianIdentity/);
+  assert.match(ui,/International legal-entity coverage is not yet available in this public profile/);
+  assert.doesNotMatch(ui,/continueWithoutNorwegianIdentity/);
   assert.doesNotMatch(ui,/autoSelectBrreg|firstCandidate.*analyseResolved/);
 });
 

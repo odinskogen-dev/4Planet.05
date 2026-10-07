@@ -10,8 +10,12 @@ on:
       - "src/data/species.ts"
       - "src/content/mediaManifest.ts"
       - "src/components/species/**"
-      - "tests/e2e/species-gold-plank.spec.ts"\n      - "tests/e2e/species-factory-first-batch.spec.ts"
-      - "scripts/species-gold-plank-01.test.mjs"\n      - "scripts/species-factory-first-batch.test.mjs"
+      - "tests/e2e/species-gold-plank.spec.ts"
+      - "tests/e2e/species-factory-first-batch.spec.ts"
+      - "tests/e2e/living-planet-orca-journey.spec.ts"
+      - "products/livingsystems/src/**"
+      - "scripts/species-gold-plank-01.test.mjs"
+      - "scripts/species-factory-first-batch.test.mjs"
       - ".github/workflows/test-king-species-lens-proof.yml"
   push:
     branches:
@@ -76,6 +80,8 @@ jobs:
         run: npx playwright test tests/e2e/species-engine-registry.spec.ts tests/e2e/species-canonical-media.spec.ts tests/e2e/species-engine.spec.ts tests/e2e/shared-capture.spec.ts --project=webkit-390 --project=webkit-430
       - name: Gold Plank — Orca + Jaguar Human-First browser proof
         run: npx playwright test tests/e2e/species-gold-plank.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430 --project=webkit-desktop --project=webkit-390 --project=webkit-430
+      - name: Living Planet — Orca flagship journey browser proof
+        run: npx playwright test tests/e2e/living-planet-orca-journey.spec.ts --project=desktop-1440 --project=mobile-390 --project=mobile-430 --project=webkit-desktop --project=webkit-390 --project=webkit-430
       - name: Factory batch 01 — ten strategic species through same plank
         run: npx playwright test tests/e2e/species-factory-first-batch.spec.ts --project=desktop-1440 --project=mobile-390
       - name: TEST KING truth boundary control
