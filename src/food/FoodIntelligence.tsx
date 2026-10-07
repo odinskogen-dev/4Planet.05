@@ -303,7 +303,7 @@ function GenericFoodReferencePanel({ product }: { product: CanonicalFoodProduct 
   };
 
   return (
-    <section className="food-card food-generic-reference" aria-labelledby="food-generic-title">
+    <section className="food-card food-generic-reference" aria-label="Norwegian composition reference">
       <div className="food-generic-reference__head">
         <div>
           <span className="food-kicker">Official Norwegian composition reference</span>

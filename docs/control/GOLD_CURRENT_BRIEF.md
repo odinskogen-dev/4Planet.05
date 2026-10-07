@@ -1422,3 +1422,5 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **DISCOVERY CLOSURE:** the canonical `/atlas` route retains explicit title/description/canonical metadata and `WebApplication` JSON-LD. The metadata names planetary layers and Biodiversity observations without implying coverage or source states not present in ATLAS; the wording intentionally preserves the existing discoverability contract.
 
+**CROSS-PRODUCT GATE REPAIR:** Browser Product Proof exposed two real contract mismatches outside the ATLAS runtime. FOOD's generic-reference region no longer shares the input's accessible name, so "Generic food" resolves to the intended textbox only. 4NATION's official Stortinget/SSB tools remain intentionally collapsed behind progressive disclosure; the browser proof now opens that disclosure before exercising the tools instead of treating hidden content as visible. No 4NATION product disclosure was removed or forced open.
+

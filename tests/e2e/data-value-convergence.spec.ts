@@ -358,6 +358,9 @@ test("DATA VALUE / 4NATION: user can inspect neutral Stortinget case state and s
   });
 
   await page.goto("/4nation");
+  // Official source discovery is intentionally progressive disclosure in the
+  // human-first Nation surface. Open it as a person would before testing it.
+  await page.locator(".nt-discovery > summary").click();
   await expect(page.getByText(/does not rank policy choices/i)).toBeVisible();
 
   await page.getByLabel("Search current Storting cases").fill("natur");
