@@ -34,7 +34,7 @@ export default {
     const responseHeaders = new Headers(upstream.headers);
     responseHeaders.delete('content-length');
     responseHeaders.delete('content-encoding');
-    responseHeaders.set('x-supersapien-origin', 'capital-lab-mvp04');
+    responseHeaders.set('x-supersapien-origin', 'capital-lab-mvp05');
     responseHeaders.set('x-content-type-options', 'nosniff');
 
     const location = responseHeaders.get('location');
