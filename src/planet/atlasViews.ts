@@ -41,6 +41,7 @@ export function writeAtlasSavedViews(state: AtlasSavedViewsState) {
   if (typeof window === "undefined") return;
   try { window.localStorage.setItem(KEY, JSON.stringify({ version: 1, views: state.views.slice(0, 30) })); }
   catch { /* private/locked storage: fail closed without breaking ATLAS */ }
+  window.dispatchEvent(new CustomEvent("4p:atlas-views"));
 }
 
 function cameraHref(): string {
