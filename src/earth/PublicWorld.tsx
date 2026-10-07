@@ -3,43 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import { AtlasBasemapSync } from "./AtlasBasemapSync";
-import { AtlasSearchIntentBridge } from "./AtlasSearchIntentBridge";
 import { AtlasLiveEvidenceBridge } from "./AtlasLiveEvidenceBridge";
-import { Seo } from "@/components/Seo";
 
 const World = lazy(() => import("./World"));
-
-const ATLAS_SEARCH_TITLE = "4PLANET ATLAS — Planetary Intelligence Map";
-const ATLAS_SEARCH_DESCRIPTION = "Explore the living planet through source-grounded Earth signals, biodiversity observations, species, places and 4PLANET ATLAS.";
-function AtlasSearchMetadata() {
-  return (
-    <Seo
-      title={ATLAS_SEARCH_TITLE}
-      description={ATLAS_SEARCH_DESCRIPTION}
-      path="/atlas"
-      image="/og.png"
-      imageAlt="4PLANET ATLAS — planetary intelligence"
-      siteName="4PLANET ATLAS"
-      jsonLd={({ canonicalUrl }) => ({
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        name: "4PLANET ATLAS",
-        alternateName: "4Planet Atlas",
-        description: ATLAS_SEARCH_DESCRIPTION,
-        url: canonicalUrl,
-        applicationCategory: "ScienceApplication",
-        operatingSystem: "Any modern web browser",
-        isAccessibleForFree: true,
-        creator: { "@type": "Organization", name: "4PLANET_", url: new URL("/", canonicalUrl).toString() },
-        about: [
-          { "@type": "Thing", name: "Earth observation" },
-          { "@type": "Thing", name: "Biodiversity observations" },
-          { "@type": "Thing", name: "Living systems" },
-        ],
-      })}
-    />
-  );
-}
 
 const fallbackStyle = {
   minHeight: "calc(100vh - 44px)",
@@ -79,9 +45,16 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
-  const homepageEmbed = location.pathname === "/embed/atlas";
+  const homepageEmbed = location.pathname.startsWith("/embed/atlas");
   const [homepageLayersOpen, setHomepageLayersOpen] = useState(false);
 
+  // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
+  // mounted at the BrowserRouter level. PublicWorld must never run a second
+  // startup/resize camera reconciler against the same MapLibre instance; two
+  // owners race on narrow responsive layouts and can overwrite the user-created
+  // cross-product return camera. World still initialises directly from URL z/c,
+  // while the single global authority protects that exact state through startup
+  // settling and releases on genuine user camera input.
   if (supported && homepageEmbed) {
     return (
       <>
@@ -127,17 +100,9 @@ export default function PublicWorld() {
     );
   }
 
-  // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
-  // mounted at the BrowserRouter level. PublicWorld must never run a second
-  // startup/resize camera reconciler against the same MapLibre instance; two
-  // owners race on narrow responsive layouts and can overwrite the user-created
-  // cross-product return camera. World still initialises directly from URL z/c,
-  // while the single global authority protects that exact state through startup
-  // settling and releases on genuine user camera input.
   if (supported) {
     return (
       <>
-        <AtlasSearchMetadata />
         <header className="atlas-product-identity" aria-label="4PLANET ATLAS">
           <Link to="/" className="atlas-product-identity-link" aria-label="4PLANET home">
             <span>4PLANET_</span><strong>ATLAS</strong>
@@ -147,7 +112,6 @@ export default function PublicWorld() {
             without adding a duplicate visual shell or competing state model. */}
         <AtlasPlaceNameBridge />
         <AtlasBasemapSync />
-        <AtlasSearchIntentBridge />
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
@@ -172,9 +136,7 @@ export default function PublicWorld() {
   const context = retainedContext(location.search);
 
   return (
-    <>
-      <AtlasSearchMetadata />
-      <main id="main-content" style={fallbackStyle}>
+    <main id="main-content" style={fallbackStyle}>
       <section style={{ width: "min(820px, 100%)" }} aria-labelledby="atlas-fallback-title">
         <p style={{ fontFamily: "monospace", fontSize: 12, letterSpacing: ".13em", color: "#3AE86F" }}>
           ATLAS_ · PUBLIC PREVIEW · CAPABILITY LIMIT
@@ -203,7 +165,6 @@ export default function PublicWorld() {
           STATUS: INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE · NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED.
         </p>
       </section>
-      </main>
-    </>
+    </main>
   );
 }
