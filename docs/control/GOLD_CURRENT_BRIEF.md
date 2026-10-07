@@ -1,5 +1,21 @@
 # ATLAS GOOGLE EXPOSURE CLOSURE — 08 OCT 2026
 
+## PLACE RUNTIME ROUTE IMMUNITY — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR REGRESSION CONTRACT / NO PRODUCT BYTE OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person or search crawler opens one verified Place URL and needs the canonical page, its real map image and the same-object ATLAS handoff to resolve consistently.
+
+**ONE THING TO UNDERSTAND / PRIMARY ACTION:** `/place/<slug>` is the sole canonical Place page; duplicate trailing-slash variants permanently collapse to it while preserving the query, and `/place/<slug>/map.svg` serves the corresponding image rather than a page or fallthrough.
+
+**SECONDARY DEPTH / P1–P4:** P1 canonical Place identity; P2 verified geography and provenance; P3 same-object interactive ATLAS continuation; P4 related-place and source depth. The test changes none of those layers.
+
+**REMOVE / REUSE:** Create no new router, fixture, Place store or release workflow. Exercise the exported existing Cloudflare middleware directly through the standard Node test runner.
+
+**TRUTH BOUNDARY:** The contract proves deterministic HTTP routing, metadata and fail-closed unknown slugs on the HEIR source. It does not prove search indexing, traffic, ecological relationships, user value, deployment or LIVE release.
+
+**MOBILE-FIRST RISK:** None introduced; no rendered byte changes. **HUMAN SUCCESS:** canonical Place page and image stay reachable while duplicates and unknowns cannot create competing indexable surfaces.
+
 **STATUS:** BOUNDED ATLAS EXPOSURE / INDEXABILITY CORRECTION. No ATLAS interface redesign in this change.
 
 **FOUNDER OBJECTIVE:** Make 4PLANET ATLAS and its verified World Place Index discoverable through Google while Claude independently improves the ATLAS user experience.
