@@ -461,7 +461,10 @@ export function AtlasLiveEvidenceBridge() {
       map.on("zoomend", refresh);
       map.on("style.load", onStyle);
       window.addEventListener("popstate", refresh);
-      pollTimer = window.setInterval(refresh, 900);
+      window.addEventListener("4p:atlas-layer-change", refresh);
+      // Event-driven first. A slow fallback only repairs state if a provider or
+      // browser misses an event; it must not wake ATLAS every 900 ms.
+      pollTimer = window.setInterval(refresh, 15000);
       refresh();
     };
 
@@ -477,6 +480,7 @@ export function AtlasLiveEvidenceBridge() {
       if (refreshTimer) window.clearTimeout(refreshTimer);
       if (pollTimer) window.clearInterval(pollTimer);
       window.removeEventListener("popstate", refresh);
+      window.removeEventListener("4p:atlas-layer-change", refresh);
       if (map) {
         map.off?.("moveend", refresh);
         map.off?.("zoomend", refresh);
