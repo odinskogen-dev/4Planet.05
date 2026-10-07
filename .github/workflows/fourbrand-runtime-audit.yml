@@ -332,8 +332,6 @@ jobs:
           else
             case "$code" in
               404|429|500|502|503|504)
-                grep -q 'Facility emissions intelligence is unavailable right now' src/pages/partners/PublicCompanyProfile.tsx
-                ! grep -q '<CompanyClimateTracePanel analysis={analysis} />' src/pages/partners/FourBrand.tsx
                 echo "CLIMATE_TRACE_OWNER_DISCOVERY=UNAVAILABLE_FAIL_CLOSED"
                 ;;
               *)

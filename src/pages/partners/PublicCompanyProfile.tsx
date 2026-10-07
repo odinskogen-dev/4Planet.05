@@ -286,7 +286,7 @@ export default function PublicCompanyProfile({
           <div className="fbi-decision-brief__head">
             <div>
               <span>DECISION BRIEF</span>
-              <strong>What is worth investigating next?</strong>
+              <h2>What is worth investigating next?</h2>
             </div>
             <button type="button" onClick={() => setTab("FINDINGS")}>Open findings →</button>
           </div>
