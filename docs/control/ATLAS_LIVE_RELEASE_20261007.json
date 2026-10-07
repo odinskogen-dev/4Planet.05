@@ -10,6 +10,6 @@
   "isolationRule": "DEPLOY_EXACT_HEIR_TO_NON_PRODUCTION_PAGES_PREVIEW_THEN_ROUTE_ONLY_4PLANETATLAS.COM_THROUGH_A_ROLLBACKABLE_WORKER",
   "rollbackRule": "DELETE_THE_NEW_ATLAS_ONLY_WORKER_ROUTE_TO_RESTORE_EXISTING_PAGES_CUSTOM_DOMAIN",
   "note": "Founder-authorised ATLAS-only release. Shared Pages production must not move; standalone ATLAS is switched to an exact HEIR preview origin through an Atlas-domain-only Worker route.",
-  "retry": 7,
-  "retryReason": "WebGL capability probe now uses default context creation only; renderer preference is left to MapLibre/browser."
+  "retry": 8,
+  "retryReason": "CI can now bypass only the preliminary WebGL probe on localhost/Pages preview to test MapLibre itself; canonical hosts cannot use the bypass. Atlas-domain root routing is explicitly mapped to /atlas."
 }

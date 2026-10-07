@@ -147,7 +147,7 @@ jobs:
             const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
             const pageErrors = [];
             page.on('pageerror', e => pageErrors.push(String(e)));
-            await page.goto('http://127.0.0.1:4173/atlas', { waitUntil: 'domcontentloaded' });
+            await page.goto('http://127.0.0.1:4173/atlas?atlasCiWebgl=1', { waitUntil: 'domcontentloaded' });
             const world = page.locator('.world[data-atlas-mobile-closure="v1"]');
             const interactive = await world.isVisible().catch(() => false);
             if (!interactive) {
@@ -216,7 +216,7 @@ jobs:
           import { chromium } from '@playwright/test';
           const browser = await chromium.launch({ headless: false, args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-          await page.goto(process.env.ATLAS_PREVIEW_ORIGIN + '/atlas', { waitUntil: 'domcontentloaded' });
+          await page.goto(process.env.ATLAS_PREVIEW_ORIGIN + '/atlas?atlasCiWebgl=1', { waitUntil: 'domcontentloaded' });
           await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ timeout: 30000 });
           await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
           await browser.close();
@@ -235,7 +235,8 @@ jobs:
           addEventListener("fetch", event => event.respondWith(handle(event.request)));
           async function handle(request) {
             const incoming = new URL(request.url);
-            const target = new URL(incoming.pathname + incoming.search, ORIGIN);
+            const atlasPath = incoming.pathname === "/" ? "/atlas" : incoming.pathname;
+            const target = new URL(atlasPath + incoming.search, ORIGIN);
             const response = await fetch(new Request(target.toString(), request));
             const headers = new Headers(response.headers);
             headers.set("x-4planet-atlas-release", "${GITHUB_SHA}");

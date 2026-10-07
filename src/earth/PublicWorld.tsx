@@ -47,7 +47,15 @@ function webglAvailable() {
 
 export default function PublicWorld() {
   const location = useLocation();
-  const supported = useMemo(webglAvailable, []);
+  const supported = useMemo(() => {
+    if (webglAvailable()) return true;
+    // Non-production browser proof only. This bypasses the preliminary capability
+    // probe so CI can exercise MapLibre itself under a software renderer. It is
+    // deliberately unavailable on canonical/public hosts.
+    const host = window.location.hostname.toLowerCase();
+    const proofHost = host === "127.0.0.1" || host === "localhost" || host.endsWith(".pages.dev");
+    return proofHost && new URLSearchParams(window.location.search).get("atlasCiWebgl") === "1";
+  }, []);
   const homepageEmbed = location.pathname.startsWith("/embed/atlas");
   const [homepageLayersOpen, setHomepageLayersOpen] = useState(false);
 
