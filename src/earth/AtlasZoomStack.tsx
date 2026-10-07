@@ -45,8 +45,8 @@ export default function AtlasZoomStack() {
     // animation frame; apply() already clears readiness if projection or the
     // requested Blue Marble handoff is actually invalid.
     const reconcileStyle = () => { schedule(); };
-    const attach = () => { if (disposed) return; map = sharedMap(); if (!map) { attachTimer = window.setTimeout(attach, 100); return; } for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.on(event, schedule); for (const event of ["styledata", "style.load"]) map.on(event, reconcileStyle); schedule(); for (const delay of [160, 420, 900, 1600, 2600]) startupTimers.push(window.setTimeout(schedule, delay)); };
+    const attach = () => { if (disposed) return; map = sharedMap(); if (!map) { attachTimer = window.setTimeout(attach, 100); return; } for (const event of ["zoom", "zoomend"]) map.on(event, schedule); for (const event of ["styledata", "style.load"]) map.on(event, reconcileStyle); schedule(); for (const delay of [160, 420, 900, 1600, 2600]) startupTimers.push(window.setTimeout(schedule, delay)); };
     attach();
-    return () => { disposed = true; if (attachTimer) window.clearTimeout(attachTimer); if (scheduled) window.cancelAnimationFrame(scheduled); for (const timer of startupTimers) window.clearTimeout(timer); if (map) { for (const event of ["zoom", "zoomend", "moveend", "sourcedata", "idle"]) map.off(event, schedule); for (const event of ["styledata", "style.load"]) map.off(event, reconcileStyle); } clearReadiness(); };
+    return () => { disposed = true; if (attachTimer) window.clearTimeout(attachTimer); if (scheduled) window.cancelAnimationFrame(scheduled); for (const timer of startupTimers) window.clearTimeout(timer); if (map) { for (const event of ["zoom", "zoomend"]) map.off(event, schedule); for (const event of ["styledata", "style.load"]) map.off(event, reconcileStyle); } clearReadiness(); };
   }, []); return null;
 }
