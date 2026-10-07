@@ -159,3 +159,26 @@ test("search foundation keeps sitemap, RSS, static route metadata and canonical 
   assert.match(seo, /og:site_name/);
   assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every story route");
 });
+
+
+test("Magazine prerender exposes meaningful crawler-readable editorial bodies", () => {
+  assert.match(prerender, /data-4planet-prerender-fallback/);
+  assert.match(prerender, /function storyBody/);
+  assert.match(prerender, /Reporting boundary/);
+  assert.match(prerender, /<h2>Sources<\/h2>/);
+});
+
+test("Magazine publication dates never fall back to synthetic launch or source snapshot dates", () => {
+  assert.doesNotMatch(prerender, /PUBLIC_LAUNCH_DATE/);
+  assert.doesNotMatch(prerender, /story\.asOf\s*\|\|/);
+  assert.match(prerender, /story\.publishedAt \? \{ datePublished: story\.publishedAt \}/);
+  assert.doesNotMatch(sitemap, /new Date\(signal\.publishedAt/);
+});
+
+test("Magazine discovery URLs resolve to trailing-slash canonical documents and only advertise real News output", () => {
+  assert.match(sitemap, /function canonicalRoute/);
+  assert.match(sitemap, /newsStories\.length > 0/);
+  assert.match(sitemap, /User-agent: OAI-SearchBot/);
+  assert.match(sitemap, /User-agent: Googlebot/);
+  assert.match(sitemap, /User-agent: Bingbot/);
+});
