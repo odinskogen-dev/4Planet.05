@@ -1,9 +1,6 @@
 name: AXE GitHub event → Slack wake bridge
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'
-  workflow_dispatch:
   push:
     branches:
       - "system/cloudflare-axe-wake-canary-20261003"
@@ -74,39 +71,6 @@ jobs:
           set -euo pipefail
           SUBDOMAIN=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | jq -r '.result.subdomain')
           curl --fail-with-body --silent --show-error "https://4planet-axe-wake-canary.$SUBDOMAIN.workers.dev/canary"
-
-  portfolio-pulse:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    env:
-      SLACK_AXE_WEBHOOK_URL: ${{ secrets.SLACK_AXE_WEBHOOK_URL }}
-    steps:
-      - name: Send quarter-hour AXE portfolio pulse
-        run: |
-          set -euo pipefail
-          test -n "${SLACK_AXE_WEBHOOK_URL:-}" || {
-            echo "SLACK_AXE_WEBHOOK_URL repository secret is missing."
-            exit 2
-          }
-
-          EVENT_ID="clock:${GITHUB_REPOSITORY}:${GITHUB_RUN_ID}:${GITHUB_RUN_ATTEMPT}"
-          TEXT="$(printf '%s\n' \
-            '[GITHUB / EVENT]' \
-            "event_id: ${EVENT_ID}" \
-            'kind: PORTFOLIO_CLOCK' \
-            'action: quarter_hour_wake' \
-            "repository: ${GITHUB_REPOSITORY}" \
-            "run_id: ${GITHUB_RUN_ID}" \
-            "run_attempt: ${GITHUB_RUN_ATTEMPT}" \
-            "trigger: ${GITHUB_EVENT_NAME}" \
-            'WAKE SIGNAL ONLY — not proof. This is the autonomous portfolio clock, not task truth. Treat the affected scope as GLOBAL 4PLANET OPERATIONS: fresh-read the top AXE AUTONOMOUS OPERATOR CONSTITUTION + current Project Lead/Programme Control/Agent Ledger; supervise the whole portfolio; close returns first; create/execute 1–3 highest-value safe NEXT moves; produce directly and/or delegate; preserve Maker != Judge and Founder gates; write RESULT | EVIDENCE | STATE CHANGE | LEARNING | NEXT | OWNER | WAKE CONDITION before sleep. Founder did not schedule this pulse.')"
-
-          jq -n --arg text "$TEXT" '{text:$text}' > /tmp/slack-payload.json
-          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error \
-            -H 'Content-Type: application/json' \
-            --data-binary @/tmp/slack-payload.json \
-            "$SLACK_AXE_WEBHOOK_URL"
 
   pr-event:
     if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == github.repository
