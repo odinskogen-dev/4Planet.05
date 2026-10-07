@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "@/styles/fourbrand-intelligence.css";
-import { PublicBusinessSources, PublicEuProjectIntelligence, PublicPlanetIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
+import { PublicBusinessSources, PublicEuProjectIntelligence, PublicProcurementIntelligence } from "@/pages/partners/PublicCompanyExternalSignals";
 
 export type PublicCompanySource = {
   id: string;
@@ -433,7 +433,16 @@ export default function PublicCompanyProfile({
         )}
 
         {tab === "PLANET" && (
-          <PublicPlanetIntelligence companyName={profile.company.name} />
+          <>
+            <div className="fbi-section-head">
+              <div><span>PLANET / SOURCE STATUS</span><h2>Facility emissions intelligence is unavailable right now.</h2></div>
+              <p>4BRANDS will not infer company emissions from a name match or from an unavailable external owner index. Existing company evidence remains unchanged.</p>
+            </div>
+            <div className="fbi-truth-boundary">
+              <span>FAIL-CLOSED BOUNDARY</span>
+              <p>This lane stays closed until the external source is live and a human can review the company-to-owner identity join. No emissions figure, facility ownership claim or planetary conclusion is manufactured in the meantime.</p>
+            </div>
+          </>
         )}
 
         {tab === "STRUCTURE" && (
