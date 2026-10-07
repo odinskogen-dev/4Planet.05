@@ -1,6 +1,13 @@
 import type { StorySource } from "@/content/stories";
 import "@/styles/magazine-story-sources.css";
 
+const SOURCE_LINK_LABEL: Record<StorySource["kind"], string> = {
+  primary_research: "OPEN PRIMARY RESEARCH",
+  organisational_summary: "OPEN ORGANISATIONAL SUMMARY",
+  organisational_report: "OPEN ORGANISATIONAL REPORT",
+  field_account: "OPEN FIELD ACCOUNT",
+};
+
 export function StorySources({ sources }: { sources: StorySource[] }) {
   if (!sources.length) return null;
   return (
@@ -17,7 +24,7 @@ export function StorySources({ sources }: { sources: StorySource[] }) {
               <div>
                 <span className="mag-story-source__meta">{source.publisher}{source.publishedAt ? ` · ${source.publishedAt}` : ""}</span>
                 <h3>{source.label}</h3>
-                <a className="mag-story-source__open" href={source.url} target="_blank" rel="noreferrer">OPEN PRIMARY SOURCE ↗</a>
+                <a className="mag-story-source__open" href={source.url} target="_blank" rel="noreferrer">{SOURCE_LINK_LABEL[source.kind]} ↗</a>
               </div>
               <div className="mag-story-source__copy">
                 <strong>Supports</strong>
