@@ -75,18 +75,36 @@ export default function AtlasTimeControls() {
   });
 
   useEffect(() => {
+    let disposed = false;
+    let map: any = null;
+    let attachTimer = 0;
+
     const readActive = () => {
-      const map = atlasMap();
-      if (!map) return;
+      if (disposed || !map) return;
       const next = ATLAS_TIME_AXES.filter((axis) => Boolean(map.getSource(axis.layerId))).map((axis) => axis.layerId);
       for (const axis of ATLAS_TIME_AXES) {
         if (!next.includes(axis.layerId)) applied.current.delete(axis.layerId);
       }
       setActiveIds((current) => current.join("|") === next.join("|") ? current : next);
     };
-    readActive();
-    const timer = window.setInterval(readActive, 600);
-    return () => window.clearInterval(timer);
+
+    const attach = () => {
+      if (disposed) return;
+      map = atlasMap();
+      if (!map?.on) {
+        attachTimer = window.setTimeout(attach, 120);
+        return;
+      }
+      for (const event of ["style.load", "sourcedata", "idle"]) map.on(event, readActive);
+      readActive();
+    };
+
+    attach();
+    return () => {
+      disposed = true;
+      if (attachTimer) window.clearTimeout(attachTimer);
+      if (map?.off) for (const event of ["style.load", "sourcedata", "idle"]) map.off(event, readActive);
+    };
   }, []);
 
   const activeAxes = useMemo(() => ATLAS_TIME_AXES.filter((axis) => activeIds.includes(axis.layerId)), [activeIds]);
