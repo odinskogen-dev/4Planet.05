@@ -13,8 +13,8 @@ test('SUPERSAPIEN custom domain uses live source adapters through the real brows
   page.on('requestfailed', request => seen.push('FAILED ' + request.method() + ' ' + request.url() + ' ' + (request.failure()?.errorText ?? '')));
 
   await page.goto('https://supersapien.org/', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('button', { name: 'Analyse' })).toBeVisible();
-  await page.getByRole('button', { name: 'Analyse' }).click();
+  await expect(page.getByRole('button', { name: 'Analyse', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Analyse', exact: true }).click();
 
   await expect(page.getByText('LIVE PRIMARY SOURCES')).toBeVisible();
 
