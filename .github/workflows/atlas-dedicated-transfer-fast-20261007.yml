@@ -1,0 +1,113 @@
+name: ATLAS Dedicated Transfer Fast
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/atlas-dedicated-transfer-fast-20261007.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      OLD_PROJECT: 4planet-05
+      NEW_PROJECT: 4planet-atlas
+      ATLAS_DOMAIN: 4planetatlas.com
+    steps:
+      - name: Resolve Cloudflare and exact dedicated deployment
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n'); TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          echo "::add-mask::$TOKEN"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+          zone=$(curl -fsS "${api}/zones?name=$ATLAS_DOMAIN&status=active" "${auth[@]}")
+          zone_id=$(jq -r '.result[0].id' <<<"$zone"); account_id=$(jq -r '.result[0].account.id' <<<"$zone")
+          dns=$(curl -fsS "${api}/zones/${zone_id}/dns_records?name=$ATLAS_DOMAIN&type=CNAME" "${auth[@]}")
+          dns_id=$(jq -r '.result[0].id' <<<"$dns"); old_dns=$(jq -r '.result[0].content' <<<"$dns")
+          deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${NEW_PROJECT}/deployments?env=production&page=1&per_page=5" "${auth[@]}")
+          origin=$(jq -r '[.result[]? | select(.latest_stage.status=="success")][0].url // empty' <<<"$deployments")
+          [ -n "$origin" ]
+          {
+            echo "CLOUDFLARE_API_TOKEN=$TOKEN"
+            echo "CLOUDFLARE_ACCOUNT_ID=$account_id"
+            echo "ATLAS_ZONE_ID=$zone_id"
+            echo "ATLAS_DNS_ID=$dns_id"
+            echo "ATLAS_OLD_DNS_CONTENT=$old_dns"
+            echo "ATLAS_ORIGIN=$origin"
+          } >> "$GITHUB_ENV"
+          echo "origin=$origin old_dns=$old_dns"
+
+      - name: Verify exact dedicated origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 20); do
+            code=$(curl -sS -L --max-time 20 -o /tmp/origin.html -w '%{http_code}' "$ATLAS_ORIGIN/atlas" || true)
+            [ "$code" = "200" ] && grep -q 'id="root"' /tmp/origin.html && break
+            sleep 2
+          done
+          test "$code" = "200"; grep -q 'id="root"' /tmp/origin.html
+          script=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/origin.html | head -1 | cut -d'"' -f2)
+          curl -fsS "$ATLAS_ORIGIN$script" -o /tmp/origin.js
+          grep -Fq 'data-atlas-mobile-closure' /tmp/origin.js
+          echo "ATLAS_DEDICATED_ORIGIN_VERIFIED"
+
+      - name: Transfer standalone domain
+        id: move
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          curl -fsS -X DELETE "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${OLD_PROJECT}/domains/${ATLAS_DOMAIN}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null
+          curl -fsS -X PUT "${api}/zones/${ATLAS_ZONE_ID}/dns_records/${ATLAS_DNS_ID}" "${auth[@]}"             --data "$(jq -nc --arg name "$ATLAS_DOMAIN" --arg content "$NEW_PROJECT.pages.dev" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')" | jq -e '.success==true' >/dev/null
+          curl -fsS -X POST "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${NEW_PROJECT}/domains" "${auth[@]}"             --data "$(jq -nc --arg name "$ATLAS_DOMAIN" '{name:$name}')" | jq -e '.success==true' >/dev/null
+          echo "ATLAS_DOMAIN_MOVED"
+
+      - name: Verify public standalone ATLAS
+        id: live
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          ok=0
+          for i in $(seq 1 60); do
+            state=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${NEW_PROJECT}/domains/${ATLAS_DOMAIN}" "${auth[@]}" | jq -r '.result.status // empty' || true)
+            code=$(curl -sS -L --max-time 20 -o /tmp/live.html -w '%{http_code}' "https://$ATLAS_DOMAIN/atlas" || true)
+            if [ "$code" = "200" ] && grep -q 'id="root"' /tmp/live.html; then ok=1; echo "domain_state=$state"; break; fi
+            sleep 3
+          done
+          test "$ok" = "1"
+          script=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/live.html | head -1 | cut -d'"' -f2)
+          curl -fsS "https://$ATLAS_DOMAIN$script" -o /tmp/live.js
+          grep -Fq 'data-atlas-mobile-closure' /tmp/live.js
+          root_code=$(curl -sS -L --max-time 20 -o /tmp/root.html -w '%{http_code}' "https://$ATLAS_DOMAIN/")
+          test "$root_code" = "200"
+          grep -q 'id="root"' /tmp/root.html
+          dns=$(curl -fsS "${api}/zones/${ATLAS_ZONE_ID}/dns_records/${ATLAS_DNS_ID}" "${auth[@]}" | jq -r '.result.content')
+          test "$dns" = "$NEW_PROJECT.pages.dev"
+          echo "ATLAS_LIVE_PASS"
+
+      - name: Rollback on transfer failure
+        if: failure() && steps.move.outcome == 'success' && steps.live.outcome != 'success'
+        shell: bash
+        run: |
+          api="https://api.cloudflare.com/client/v4"; auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          curl -sS -X DELETE "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${NEW_PROJECT}/domains/${ATLAS_DOMAIN}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null || true
+          curl -sS -X PUT "${api}/zones/${ATLAS_ZONE_ID}/dns_records/${ATLAS_DNS_ID}" "${auth[@]}" --data "$(jq -nc --arg name "$ATLAS_DOMAIN" --arg content "$ATLAS_OLD_DNS_CONTENT" '{type:"CNAME",name:$name,content:$content,ttl:1,proxied:true}')" >/dev/null || true
+          curl -sS -X POST "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${OLD_PROJECT}/domains" "${auth[@]}" --data "$(jq -nc --arg name "$ATLAS_DOMAIN" '{name:$name}')" >/dev/null || true
+          echo "ATLAS_TRANSFER_ROLLBACK"
