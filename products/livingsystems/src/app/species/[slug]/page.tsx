@@ -91,6 +91,28 @@ export default function SpeciesProfilePage({
         </div>
       ) : null}
 
+      {s.slug === "orca" ? (
+        <section className="mt-8 border-y border-line py-6" aria-label="Orca Living Planet journey">
+          <div className="micro-brand">ONE ORCA · SHARED INTELLIGENCE</div>
+          <h2 className="mt-2 max-w-3xl text-[clamp(1.5rem,3vw,2.4rem)] font-semibold leading-tight tracking-tight">
+            Move from the animal to relationships, place, actors and action without changing the underlying identity.
+          </h2>
+          <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-muted">
+            Canonical entity <span className="font-mono">taxon:gbif:2440483</span>. Each surface answers a different question; none turns an occurrence point, candidate solution or participation path into an ecological outcome claim.
+          </p>
+          <div className="mt-5 grid grid-cols-1 gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+            <a href="/species/orca" className="bg-paper p-4 transition-colors hover:text-brand"><span className="micro">01 · SPECIES</span><strong className="mt-2 block text-[13px]">What is an Orca?</strong></a>
+            <div className="bg-ink p-4 text-paper"><span className="micro opacity-60">02 · LIVING SYSTEMS</span><strong className="mt-2 block text-[13px]">How does it connect?</strong></div>
+            <a href="/atlas/whales" className="bg-paper p-4 transition-colors hover:text-brand"><span className="micro">03 · ATLAS</span><strong className="mt-2 block text-[13px]">Where are records?</strong></a>
+            <a href="/actors/orca" className="bg-paper p-4 transition-colors hover:text-brand"><span className="micro">04 · ACTOR</span><strong className="mt-2 block text-[13px]">Who can act?</strong></a>
+            <a href="/impact/actions/bay-of-biscay-survey" className="bg-paper p-4 transition-colors hover:text-brand"><span className="micro">05 · IMPACT</span><strong className="mt-2 block text-[13px]">What can be proved?</strong></a>
+          </div>
+          <p className="mt-3 text-[11px] leading-relaxed text-muted">
+            Current action path is a bounded monitoring/proof case. It is not presented as a universal Orca-conservation solution.
+          </p>
+        </section>
+      ) : null}
+
       <NodeTrustSummary nodeId={s.id} />
 
       {/* RELATIONSHIP CHAIN — the dominant narrative, surfaced first */}

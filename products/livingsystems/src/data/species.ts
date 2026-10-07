@@ -214,7 +214,7 @@ export const jaguar: SpeciesProfile = {
   },
 
   connections: {
-    species: [sid("SP_ORCA"), sid("SP_ELEPHANT"), sid("SP_POLAR_BEAR")],
+    species: [sid("taxon:gbif:2440483"), sid("SP_ELEPHANT"), sid("SP_POLAR_BEAR")],
     missions: [
       mid("MS_AMAZONIA"),
       mid("MS_SPECIES"),
@@ -234,7 +234,7 @@ export const jaguar: SpeciesProfile = {
 };
 
 export const orca: SpeciesProfile = {
-  id: sid("SP_ORCA"),
+  id: sid("taxon:gbif:2440483"),
   referenceCode: "REFERENCE_002",
   slug: "orca",
   status: "active",
@@ -244,7 +244,7 @@ export const orca: SpeciesProfile = {
   scientificName: "Orcinus orca",
   roleLabel: "Marine apex predator",
   whyItMatters:
-    "As an ocean apex predator, the orca is associated with the balance of marine food webs that ocean productivity and fisheries depend on.",
+    "As an apex predator, the orca is linked to marine food webs; ecological role and pressure vary strongly by population, prey system and place.",
   summary:
     "The largest member of the dolphin family and a top predator in every ocean. Orcas are associated with shaping marine food webs from the top down, though their role varies sharply between populations, which differ in diet, calls and hunting behaviour.",
 
@@ -261,7 +261,7 @@ export const orca: SpeciesProfile = {
   conservation: {
     iucnStatus: "Data Deficient",
     populationTrend: "Unknown globally",
-    estimatedWildPopulation: "At least ~50,000 individuals (reported estimate)",
+    estimatedWildPopulation: "UNKNOWN — no single global figure is promoted as current canonical 4PLANET truth",
     mainConservationIssue:
       "Varies by population — some local groups are highly threatened even where the species globally is not assessed.",
     citesStatus: "CITES Appendix II",
@@ -323,7 +323,7 @@ export const orca: SpeciesProfile = {
     ecologicalRole:
       "Apex marine predator, often regarded as a keystone species in its food web.",
     keystoneSpecies:
-      "Frequently — its predation is linked to the structure of marine communities.",
+      "Population- and ecosystem-dependent; no universal keystone effect is claimed here.",
     trophicLevel: "Apex consumer (top of the marine food chain)",
     humanTranslation:
       "As an ocean apex predator, the orca's hunting is associated with regulating populations of prey such as seals and fish, which is linked to the balance of marine ecosystems.",
@@ -850,7 +850,7 @@ export const polarBear: SpeciesProfile = {
   },
 
   connections: {
-    species: [sid("SP_ORCA"), sid("SP_JAGUAR")],
+    species: [sid("taxon:gbif:2440483"), sid("SP_JAGUAR")],
     missions: [mid("MS_CLIMATE"), mid("MS_SPECIES"), mid("MS_REWILD")],
   },
 

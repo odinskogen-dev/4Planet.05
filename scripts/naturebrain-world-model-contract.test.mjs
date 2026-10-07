@@ -9,6 +9,9 @@ const gbifMigration = await readFile(new URL("../supabase/migrations/20261004175
 const orcaMigration = await readFile(new URL("../supabase/migrations/20261004180550_naturebrain_orca_world_model_gold_slice_v01.sql", import.meta.url), "utf8");
 const contextMigration = await readFile(new URL("../supabase/migrations/20261004180906_naturebrain_entity_context_graph_v03.sql", import.meta.url), "utf8");
 const rpcMigration = await readFile(new URL("../supabase/migrations/20261004181516_naturebrain_internal_entity_context_rpc_v01.sql", import.meta.url), "utf8");
+const publicSpeciesSource = await readFile(new URL("../src/data/species.ts", import.meta.url), "utf8");
+const livingSystemsSpeciesSource = await readFile(new URL("../products/livingsystems/src/data/species.ts", import.meta.url), "utf8");
+const livingSystemsOrcaPage = await readFile(new URL("../products/livingsystems/src/app/species/[slug]/page.tsx", import.meta.url), "utf8");
 
 const compiled = ts.transpileModule(adapterSource, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
@@ -146,4 +149,16 @@ test("NATUREBRAIN read seam is server-only and does not expose private schema di
   assert.match(rpcMigration, /revoke all .* from authenticated/i);
   assert.match(rpcMigration, /grant execute .* to service_role/i);
   assert.match(rpcMigration, /planetbrain\.api_entity_context/);
+});
+
+
+test("Orca keeps one canonical identity across SPECIES, NATUREBRAIN and Living Systems", () => {
+  const canonical = "taxon:gbif:2440483";
+  assert.ok(publicSpeciesSource.includes(`id: "${canonical}"`));
+  assert.ok(orcaMigration.includes(`'${canonical}'`));
+  assert.ok(livingSystemsSpeciesSource.includes(`sid("${canonical}")`));
+  assert.match(publicSpeciesSource, /href: "\/livingsystems\/species\/orca"/);
+  assert.match(livingSystemsOrcaPage, /\/atlas\/whales/);
+  assert.match(livingSystemsOrcaPage, /\/actors\/orca/);
+  assert.match(livingSystemsOrcaPage, /\/impact\/actions\/bay-of-biscay-survey/);
 });
