@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Seo } from "@/components/Seo";
 import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import { AtlasBasemapSync } from "./AtlasBasemapSync";
@@ -103,6 +104,20 @@ export default function PublicWorld() {
   if (supported) {
     return (
       <>
+        <Seo
+          title="4PLANET ATLAS — Planetary Intelligence Map"
+          description="Explore the living planet through source-grounded planetary layers, biodiversity observations, places, living systems and recent open records."
+          path="/atlas"
+          jsonLd={({ canonicalUrl }) => ({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "4PLANET ATLAS",
+            applicationCategory: "ReferenceApplication",
+            operatingSystem: "Web",
+            url: canonicalUrl,
+            description: "Planetary intelligence map with source-grounded environmental layers, biodiversity observations and connected living-system context.",
+          })}
+        />
         <header className="atlas-product-identity" aria-label="4PLANET ATLAS">
           <Link to="/" className="atlas-product-identity-link" aria-label="4PLANET home">
             <span>4PLANET_</span><strong>ATLAS</strong>
@@ -136,7 +151,22 @@ export default function PublicWorld() {
   const context = retainedContext(location.search);
 
   return (
-    <main id="main-content" style={fallbackStyle}>
+    <>
+      <Seo
+        title="4PLANET ATLAS — Planetary Intelligence Map"
+        description="Explore the living planet through source-grounded planetary layers, biodiversity observations, places, living systems and recent open records."
+        path="/atlas"
+        jsonLd={({ canonicalUrl }) => ({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "4PLANET ATLAS",
+          applicationCategory: "ReferenceApplication",
+          operatingSystem: "Web",
+          url: canonicalUrl,
+          description: "Planetary intelligence map with source-grounded environmental layers, biodiversity observations and connected living-system context.",
+        })}
+      />
+      <main id="main-content" style={fallbackStyle}>
       <section style={{ width: "min(820px, 100%)" }} aria-labelledby="atlas-fallback-title">
         <p style={{ fontFamily: "monospace", fontSize: 12, letterSpacing: ".13em", color: "#3AE86F" }}>
           ATLAS_ · PUBLIC PREVIEW · CAPABILITY LIMIT
@@ -165,6 +195,7 @@ export default function PublicWorld() {
           STATUS: INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE · NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED.
         </p>
       </section>
-    </main>
+      </main>
+    </>
   );
 }
