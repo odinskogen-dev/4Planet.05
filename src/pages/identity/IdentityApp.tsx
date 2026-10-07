@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { trackEvent } from "@/analytics/Analytics";
 import {
   bridgeSessionTo,
@@ -49,6 +49,7 @@ export default function IdentityApp() {
   const [busy, setBusy] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [oauthDetails, setOauthDetails] = useState<OAuthAuthorizationDetails | null>(null);
+  const redirectInProgress = useRef(false);
 
   const returnTo = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -62,13 +63,21 @@ export default function IdentityApp() {
   }
 
   async function continueWith(active: FourPlanetSession, destination = returnTo) {
+    if (redirectInProgress.current) return;
+    redirectInProgress.current = true;
     const target = safeReturnTo(destination, "https://4planet.org/");
     if (new URL(target).origin === window.location.origin && new URL(target).pathname === window.location.pathname) {
+      redirectInProgress.current = false;
       setSession(active);
       setMode("account");
       return;
     }
-    await bridgeSessionTo(target, active);
+    try {
+      await bridgeSessionTo(target, active);
+    } catch (error) {
+      redirectInProgress.current = false;
+      throw error;
+    }
   }
 
   async function hydrateAccount(active: FourPlanetSession) {
@@ -87,6 +96,7 @@ export default function IdentityApp() {
   useEffect(() => {
     let alive = true;
     let unsubscribe = () => {};
+    let bootstrapped = false;
     (async () => {
       try {
         const client = await getIdentityClient();
@@ -94,6 +104,13 @@ export default function IdentityApp() {
           if (!alive) return;
           setSession(next);
           if (event === "PASSWORD_RECOVERY") setMode("reset");
+          // OAuth can complete after the initial getSession check. Continue when
+          // the SDK emits the authenticated session instead of leaving login idle.
+          if (event === "SIGNED_IN" && next && bootstrapped && mode === "login") {
+            void continueWith(next).catch((error) => {
+              if (alive) showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
+            });
+          }
         });
         unsubscribe = () => listener.data.subscription.unsubscribe();
 
@@ -110,7 +127,9 @@ export default function IdentityApp() {
         }
 
         const result = await client.auth.getSession();
+        if (result.error) throw new Error(result.error.message);
         if (!alive) return;
+        bootstrapped = true;
         setSession(result.data.session);
 
         if (mode === "consent") {
@@ -399,15 +418,15 @@ export default function IdentityApp() {
 function IdentityStyles() {
   return <style>{`
     :root{color-scheme:light}
-    .identity-shell{min-height:100svh;display:grid;place-items:center;background:#fff;color:#080808;padding:42px 20px calc(42px + env(safe-area-inset-bottom));font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif}
+    .identity-shell{min-height:100svh;display:grid;place-items:center;background:#fff;color:#0A0A0A;padding:42px 20px calc(42px + env(safe-area-inset-bottom));font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif}
     .identity-card{width:min(100%,500px)}
-    .identity-brand{display:inline-block;color:#080808;text-decoration:none;font-size:25px;font-weight:760;letter-spacing:-.035em}
+    .identity-brand{display:inline-block;color:#0A0A0A;text-decoration:none;font-size:25px;font-weight:760;letter-spacing:-.035em}
     .identity-kicker{margin-top:8px;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.18em;color:#666}
     .identity-card h1{font-size:clamp(38px,7vw,52px);line-height:1;letter-spacing:-.05em;margin:48px 0 12px;font-weight:760}
     .identity-lead{font-size:18px;line-height:1.5;color:#333;margin:0 0 30px}
     .identity-google,.identity-primary,.identity-secondary{width:100%;min-height:54px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer}
     .identity-google{background:#fff;border:1px solid #d8d8d4;color:#080808}
-    .identity-primary{background:#39e86f;border:0;color:#07170b;margin-top:8px}
+    .identity-primary{background:#2E2EFF;border:0;color:#FFFFFF;margin-top:8px}
     .identity-secondary{background:#fff;border:1px solid #d8d8d4;color:#080808;margin-top:10px}
     .identity-danger{border-color:#e2b6b2;color:#9b1c12}
     button:disabled{opacity:.55;cursor:wait}
@@ -416,10 +435,10 @@ function IdentityStyles() {
     .identity-field{margin-bottom:18px}
     .identity-field label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
     .identity-field input{width:100%;height:56px;border:1px solid #d8d8d4;border-radius:14px;background:#f7f7f4;padding:0 16px;font:inherit;font-size:17px;outline:none;box-sizing:border-box}
-    .identity-field input:focus{border-color:#111;box-shadow:0 0 0 3px rgba(0,0,0,.07)}
+    .identity-field input:focus{border-color:#2E2EFF;box-shadow:0 0 0 3px rgba(46,46,255,.14)}
     .identity-label-row{display:flex;justify-content:space-between;align-items:center;gap:16px}
     .identity-password{position:relative}.identity-password input{padding-right:76px}.identity-password>button{position:absolute;right:8px;top:8px;height:40px;border:0;background:transparent;font-weight:700;cursor:pointer}
-    .identity-link{border:0;background:transparent;padding:0;color:#159c46;font:inherit;cursor:pointer;text-decoration:none}
+    .identity-link{border:0;background:transparent;padding:0;color:#2E2EFF;font:inherit;cursor:pointer;text-decoration:none}
     .identity-link:hover{text-decoration:underline}
     .identity-switch{text-align:center;margin-top:25px;color:#666}
     .identity-status{min-height:22px;margin-top:16px;font-size:14px;line-height:1.45}.identity-status.err{color:#b42318}.identity-status.ok{color:#137333}
@@ -429,6 +448,6 @@ function IdentityStyles() {
     .identity-meta-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#777;margin-top:14px}.identity-value{font-size:16px;margin-top:5px;overflow-wrap:anywhere}
     .identity-links{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px}.identity-links a{color:#159c46;text-decoration:none;font-size:14px}
     @media(max-width:560px){.identity-shell{place-items:start center;padding-top:36px}.identity-card h1{margin-top:42px}}
-    @media(prefers-color-scheme:dark){:root{color-scheme:dark}.identity-shell{background:#000;color:#fff}.identity-brand{color:#fff}.identity-lead{color:#e8e8e8}.identity-google,.identity-secondary{background:#080808;border-color:#333;color:#fff}.identity-field input,.identity-section>input{background:#0d0d0d;border-color:#333;color:#fff}.identity-password>button{color:#ddd}.identity-section{border-color:#333}.identity-divider:before,.identity-divider:after{background:#333}}
+    @media(prefers-color-scheme:dark){:root{color-scheme:dark}.identity-shell{background:#0A0A0A;color:#fff}.identity-brand{color:#fff}.identity-lead{color:#e8e8e8}.identity-google,.identity-secondary{background:#0A0A0A;border-color:#333;color:#fff}.identity-field input,.identity-section>input{background:#0d0d0d;border-color:#333;color:#fff}.identity-password>button{color:#ddd}.identity-section{border-color:#333}.identity-divider:before,.identity-divider:after{background:#333}}
   `}</style>;
 }
