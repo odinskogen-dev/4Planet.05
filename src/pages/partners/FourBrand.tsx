@@ -730,7 +730,6 @@ export default function FourBrand() {
             ))}
           </section>
 
-          <CompanyClimateTracePanel analysis={analysis} />
 
           <ProcurementDemandPanel analysis={analysis} />
 
