@@ -1393,3 +1393,28 @@ FACTORY ECONOMICS: reuse/marginal-code reduction is proven qualitatively; exact 
 
 NEXT AFTER HEIR LANDED + LIVE GATE:
 targeted SPECIES release from current real LIVE/main baseline only; do not promote unrelated TEST HEIR changes. After LIVE verification, continue 25 → 50 → 100 using the same plank; floor +1 genuine Gold species/day, 3–5/day only if source/rights/product/Gold quality remains intact.
+
+---
+
+# ATLAS MOBILE HUMAN + PERFORMANCE CLOSURE 01 — 7 OCT 2026
+
+**STATUS:** TEST HEIR CANDIDATE / NO LIVE RELEASE CLAIM.
+
+**FOUNDER FAILURE EVIDENCE:** real iPhone use showed overlapping Search, EARTH/NOW/WATCH, Layers, My Atlas and Context surfaces; keyboard search clipping/duplicate taxon rows; misleading LIVE labels on source-query records; and severe interaction jank.
+
+**BOUNDED OUTCOME:** preserve the existing ATLAS map engine, layers, source semantics and product depth while converging mobile interaction to one owning work surface at a time: SEARCH / CONTEXT / LAYERS / NOW-WATCH / MY ATLAS. At rest Earth remains primary. Controls are smaller and rounded rather than large rectangular chrome.
+
+**PERFORMANCE LAW — NO INVISIBLE WORK:** remove the body-wide search MutationObserver; integrate data-layer intent directly into the existing React search path; stop one-second whole-ATLAS clock renders; replace sub-second Time polling with MapLibre events; reduce evidence fallback polling from 900 ms to 15 s; stop Zoom Stack work on tile/source churn; use a smaller mobile tile cache and shorter raster fade. Hidden surfaces do not earn recurring CPU/network work.
+
+**SEARCH:** mobile search owns the interaction plane while active, uses dynamic viewport height for the iOS keyboard, hides competing controls, de-duplicates provider taxon rows by scientific identity, and resolves existing data-layer intents without page reload.
+
+**TRUTH:** query-derived GBIF/source results are labelled RECORDS / RECENT RECORDS / SOURCE RECORD rather than implying that the underlying biological or event state itself is live. Coordinate-event search radius becomes zoom-sensitive instead of a fixed 400 km label.
+
+**4PLANET ID / MY ATLAS:** anonymous use remains local-first. Signed-in users use the existing canonical 4PLANET ID/Supabase authority; follows and saved ATLAS views merge with the local copy and sync to the user-owned `four_planet_atlas_state` row. RLS restricts that row to `auth.uid()`; anonymous database access is revoked. No second identity system, Brain or account store is created.
+
+**DATABASE:** one user-state projection only: `public.four_planet_atlas_state(user_id, follows, saved_views, updated_at)`. It stores explicit user choices, not location history, inferred interests or background tracking.
+
+**ZERO-LOSS:** no existing public ATLAS layer, source, map engine, context type, Follow target, Saved View primitive, NOW/WATCH data path or provenance boundary is intentionally removed.
+
+**ACCEPTANCE:** exact TEST HEIR SHA must pass typecheck, build, smoke including `atlas-mobile-human-performance-contract.test.mjs`, ATLAS Zero Loss, mobile browser proof at 390×844 and 430×932, and visual review showing no competing panel overlap. Production remains Founder/release-gated; do not call this LIVE before the canonical promotion path passes.
+
