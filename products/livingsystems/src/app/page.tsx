@@ -1,5 +1,52 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HowItWorks, WhyThisMatters, ProofCase } from "@/components/Explain";
+
+
+export const metadata: Metadata = {
+  title: "Living Systems Intelligence | 4PLANET",
+  description:
+    "Explore source-grounded relationships between species, ecosystems, ecological functions, human systems, threats, solutions and evidence.",
+  alternates: {
+    canonical: "https://4planet.org/livingsystems/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: "https://4planet.org/livingsystems/",
+    title: "Living Systems Intelligence | 4PLANET",
+    description:
+      "Explore source-grounded relationships between species, ecosystems, ecological functions, human systems, threats, solutions and evidence.",
+    siteName: "4PLANET",
+  },
+};
+
+const LIVING_SYSTEMS_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Living Systems Intelligence",
+  url: "https://4planet.org/livingsystems/",
+  description:
+    "Explore source-grounded relationships between species, ecosystems, ecological functions, human systems, threats, solutions and evidence.",
+  isPartOf: {
+    "@type": "WebSite",
+    name: "4PLANET",
+    url: "https://4planet.org/",
+  },
+  about: [
+    { "@type": "Thing", name: "Living systems" },
+    { "@type": "Thing", name: "Biodiversity" },
+    { "@type": "Thing", name: "Ecological dependencies" },
+  ],
+};
 
 const CORE = [
   { n: "01", title: "See what exists", desc: "Species, ecosystems, ecological functions and services." },
@@ -20,7 +67,12 @@ const EXPLORE = [
 
 export default function HomePage() {
   return (
-    <div className="pb-10 pt-16">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(LIVING_SYSTEMS_JSON_LD) }}
+      />
+      <div className="pb-10 pt-16">
       <div className="max-w-3xl">
         <div className="micro-brand mb-6">4PLANET</div>
         <h1 className="text-[clamp(2.4rem,6vw,4.3rem)] font-semibold leading-[0.98] tracking-tight">
@@ -151,6 +203,7 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
