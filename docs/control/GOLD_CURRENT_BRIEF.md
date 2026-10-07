@@ -1393,3 +1393,58 @@ FACTORY ECONOMICS: reuse/marginal-code reduction is proven qualitatively; exact 
 
 NEXT AFTER HEIR LANDED + LIVE GATE:
 targeted SPECIES release from current real LIVE/main baseline only; do not promote unrelated TEST HEIR changes. After LIVE verification, continue 25 → 50 → 100 using the same plank; floor +1 genuine Gold species/day, 3–5/day only if source/rights/product/Gold quality remains intact.
+
+
+---
+
+## 100M VALUE STEP-UP — PREMIUM PRODUCT + MARKET READINESS CLOSURE 01 — 07 OCT 2026
+
+**OBJECTIVE:** move the current 4PLANET HEIR closer to external proof by finishing two bounded market-facing paths instead of expanding the portfolio. This receipt adds no Brain, database, control plane, design system or product.
+
+### 4BRANDS — MARKET PACKAGE
+
+**ONE-SENTENCE VALUE:** Source-grounded company intelligence that resolves the exact legal entity, shows what the public world actually knows and changed, and turns one material finding into a measurable MAKE MORE or SPEND BETTER Value Cell.
+
+**FIRST TARGET BUYER:** CEO / CFO / COO / strategy or transformation owner at a Norwegian registered company where one bounded revenue, margin, procurement or operating-cost decision has a named owner and measurable economic baseline.
+
+**FIRST PAID TEST:** fixed-fee VALUE CELL PROOF PILOT. Internal pricing hypothesis remains NOK 25,000 ex VAT; not public pricing and not an offer. Scope = one company + one decision owner + one MAKE MORE or SPEND BETTER Value Cell + baseline + intervention/decision contract + measurement window + result/learning readback. No bespoke connector, custom software, assurance or outcome promise.
+
+**UNIT GATES:** expected recoverable value >= 3x fixed fee; expected delivery gross margin >= 60%. Expected value, observed movement, realised value, attributable value, invoice, cash and repeat purchase remain separate states. Value share stays deferred until a fixed-fee proof creates a usable baseline and attributable realised result.
+
+**WHAT TO MEASURE:** exact company resolution; source coverage; decision owner; baseline; selected Value Cell; intervention/adoption; verified incremental contribution profit or realised net saving where applicable; time-to-value; delivery hours/cost; gross margin; customer-confirmed usefulness; repeat / expansion decision. No ROI or causal claim without the agreed baseline and attribution review.
+
+**DEMO PATH:** search Norwegian company -> choose exact BRREG organisation number -> source-grounded public profile -> Decision Brief -> Findings / source inspection -> FIND / TEST / PROVE Value Cell -> authorised Company Brain for private context.
+
+**PUBLIC BOUNDARY:** current public profile fails closed for unsupported international legal-entity coverage rather than inferring an entity. Generative deep research is not required for the primary public value path. Company Brain remains permissioned private context.
+
+**LANDING PATH AFTER RELEASE:** 4brands.org / 4planet.org/4brands. No production release or outreach is authorised by this receipt.
+
+### LIVING PLANET INTELLIGENCE — ORCA FLAGSHIP PACKAGE
+
+**PUBLIC VALUE PROPOSITION:** Understand one living being in context — what it is, how it connects, where evidence exists, what pressures matter, who can act and what can actually be proved.
+
+**FLAGSHIP DEMO:** 4PLANET -> SPECIES / Orca -> Living Systems / Orca -> ATLAS / Whales -> Orca actor context -> Bay of Biscay action/proof case.
+
+**CANONICAL OBJECT:** `taxon:gbif:2440483` / *Orcinus orca*. The same identifier is now required across NATUREBRAIN, public SPECIES and the recovered Living Systems product. A GBIF occurrence remains an occurrence record, not range, abundance, trend, live position or ecological condition.
+
+**PARTNER / FUNDER / SCIENCE USE CASE:** a bounded Orca monitoring/proof journey where a scientific or field actor can expose source records, pressure context, action state and evidence without converting participation, payment or an occurrence into an ecological outcome claim.
+
+**PROOF OBJECT:** canonical Orca identity + source/claim/evidence boundary + relationship context + ATLAS occurrence boundary + existing Orca Actor Gold context + existing Bay of Biscay Action/Proof route.
+
+**SHAREABLE JOURNEY AFTER RELEASE:** `/species/orca` -> `/livingsystems/species/orca` -> `/atlas/whales` -> `/actors/orca` -> `/impact/actions/bay-of-biscay-survey`.
+
+### SHARED-CORE ECONOMIC PROOF
+
+**PHYSICAL REUSE:** this sprint reuses the current NATUREBRAIN Orca canonical identity, existing public SPECIES renderer/data grammar, recovered Living Systems 1.4.2, existing ATLAS whales route, existing Actor Gold Orca context and existing Bay of Biscay IMPACT proof route. No new map engine, species database, actor model, evidence model, Brain or proof system was created.
+
+**SOURCE -> CLAIM -> EVIDENCE -> ENTITY -> RELATIONSHIP -> CONSUMERS:** NATUREBRAIN source/evidence contracts anchor the canonical Orca entity; the same entity is asserted by contract across public SPECIES and Living Systems, then routed into ATLAS / Actor / IMPACT consumers. Living Systems still contains recovered product-local presentation data; this receipt does not falsely claim that every recovered Living Systems field is already runtime-read from NATUREBRAIN.
+
+**4BRANDS TRUTH REUSE:** BRREG exact organisation identity -> source state / public records -> company entity -> changes / structure / accounts -> Public Company Intelligence -> Company Brain / Value Cell. Public facts remain distinct from private tenant context and from inferred opportunities.
+
+**REUSE ECONOMICS:** duplicate architecture avoided and existing components reused are physically demonstrable. Exact production-time, compute saving and founder-minute saving are not instrumented and remain UNKNOWN.
+
+### RELEASE / PROOF BOUNDARY
+
+PR #411 is the bounded candidate lineage. Product changes may enter TEST HEIR only after exact-head contracts/build/browser gates are green enough for the affected paths. LIVE promotion, external outreach, public pilot offer, pricing publication, payment and partnership remain Founder-gated. A production deployment is not authorised by this receipt.
+
+**NEXT VALUE GATE AFTER PRODUCT ACCEPTANCE:** one real 4BRANDS Value Cell interaction and one real Living Planet user/partner journey. Market proof — payment, repeated use, documented decision value and action/proof integrity — is the next enterprise-value evidence, not another roadmap expansion.
