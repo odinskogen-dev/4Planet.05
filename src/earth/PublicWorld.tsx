@@ -32,7 +32,16 @@ function webglAvailable() {
   if (typeof document === "undefined") return false;
   try {
     const canvas = document.createElement("canvas");
-    const options: WebGLContextAttributes = { failIfMajorPerformanceCaveat: true };
+    // Capability, not a benchmark: a browser that can create a valid WebGL
+    // context should reach MapLibre. Rejecting "major performance caveat"
+    // contexts incorrectly sent software-backed and some power-constrained
+    // devices to the static fallback even though the map could run. Runtime
+    // performance is controlled separately through smaller mobile caches,
+    // lazy data work and reduced rendering churn.
+    const options: WebGLContextAttributes = {
+      failIfMajorPerformanceCaveat: false,
+      powerPreference: "high-performance",
+    };
     return Boolean(
       canvas.getContext("webgl2", options) ||
       canvas.getContext("webgl", options) ||

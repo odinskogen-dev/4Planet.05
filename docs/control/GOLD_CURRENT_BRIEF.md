@@ -1489,3 +1489,4 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **MOBILE VIEWPORT CLOSURE:** MapLibre now resizes on actual window/orientation/VisualViewport changes and after ATLAS work-surface transitions. The root map uses dynamic viewport units with a legacy fallback, preventing the iOS/Safari canvas from retaining a stale height and appearing cut after browser chrome or keyboard changes. TIME no longer listens to tile-level sourcedata churn, and TIME / MY ATLAS explicitly close each other so two external sheets cannot own the phone viewport simultaneously.
 
+**WEBGL CAPABILITY CLOSURE:** ATLAS no longer equates a browser-reported major performance caveat with absence of WebGL. A valid WebGL context may run the map; actual mobile cost remains bounded by the ATLAS performance controls. This prevents capable software-backed or power-constrained devices from being incorrectly forced into the static fallback.
