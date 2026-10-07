@@ -1,18 +1,18 @@
-/* 4PLANET Brand OS tokens. Master: white / black / brand-blue #2E2EFF. */
+/* 4PLANET Brand OS tokens. Master: White #FFFFFF / Black #000000 / brand-blue #2E2EFF. */
 import type { DomainKey } from "@/types";
 
 export const T = {
-  ink: "#080808",
+  ink: "#000000",
   paper: "#FFFFFF",
   blue: "#2E2EFF",        // brand blue
   acid: "#3AE86F",        // acid green
   red: "#FF4D22",         // signal red
   pink: "#FF5ACD",        // culture pink
-  line: "rgba(8,8,8,.16)",        // line-subtle
-  lineStrong: "rgba(8,8,8,.30)",  // stronger hairline
+  line: "rgba(0,0,0,.16)",        // line-subtle
+  lineStrong: "rgba(0,0,0,.30)",  // stronger hairline
   lineOnDark: "rgba(255,255,255,.22)",
-  dim: "#080808",              // v25: grey abolished — was rgba(8,8,8,.60)
-  faint: "rgba(8,8,8,.40)",
+  dim: "#000000",              // v25: grey abolished — was rgba(8,8,8,.60)
+  faint: "rgba(0,0,0,.40)",
   radius: 0,
   sans: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
   display: "'Instrument Sans', 'DM Sans', sans-serif",
