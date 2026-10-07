@@ -1,3 +1,50 @@
+# WHAT WE BELIEVE — CANON WORDING SYNC + HUMAN INVITATION — 07 OCT 2026
+
+**STATUS:** BOUNDED HEIR CANDIDATE / FOUNDER-APPROVED VALUES CANON SYNC / LIVE RELEASE REQUIRES EXACT TESTED ARTIFACT.
+
+## USER ARRIVES BECAUSE
+A person wants to understand why 4PLANET exists, what it believes, how it behaves and whether there is a meaningful place for them to contribute.
+
+## ONE THING TO UNDERSTAND
+The website is a public projection of the single canonical WHAT WE BELIEVE Founder Thesis. It does not own or fork the values.
+
+## PRIMARY ACTION
+Read `/about/what-we-believe`, understand the seven values and continue through `FIND YOUR PART` if the person wants to contribute.
+
+## SECONDARY DEPTH
+The page exposes purpose, ambition, beliefs, values, behaviours, brand law and invitation without replacing The Story, The System or The Founder.
+
+## P1 DOMINANT
+FOR A LIVING PLANET: “people and the rest of nature can thrive together.” People are explicitly part of nature, not outside it.
+
+## P2 ORIENTATION
+BETTER. FOR EVERYONE. now uses solutions language: create broad, durable value without quietly moving costs to other people, species, places or generations.
+
+## P3 ACTION / NEXT
+EVERYONE HAS A PART TO PLAY: “No one solves problems this big alone. Together, we can.” The invitation is explicitly for everyone who wants to help, including the reader.
+
+## P4 DEPTH
+HOW WE BEHAVE starts with “Love life. Care deeply for the living world.” Curiosity, truth, courage, welcome, listening, sharing, mutual help, ownership, finishing, correction and learning remain behaviours under the values rather than competing top-level values.
+
+## WHAT CAN BE REMOVED
+No new values document, no second manifesto, no alternative values list, no generic empowerment slogan.
+
+## WHAT MUST BE REUSED
+Canonical Drive authority `1dzdFFP_9IxJSORKxRgcxeZ5TKgJaQwDMD3XFcu8YoVE`; existing About architecture; existing public route; existing 7-value structure; existing Join route.
+
+## TRUTH BOUNDARY
+“Including you” applies to people who want to help in good faith. Inclusion does not waive truth, safety, dignity, law or responsible-conduct standards. “Together, we can” is an agency statement, not a claim that every problem is solvable or that 4PLANET has already solved it.
+
+## MOBILE-FIRST RISK
+Long invitation heading and behaviour copy must wrap cleanly at 390/430 without horizontal overflow or hierarchy collapse.
+
+## HUMAN SUCCESS
+A first-time visitor can explain purpose, values and expected behaviour, and feels invited into a meaningful contribution path without being told they must become an activist or expert.
+
+**RELEASE:** Founder has explicitly asked to get this values work LIVE, but production promotion remains bound to exact candidate QA and bounded release so unrelated TEST KING work is not promoted.
+
+---
+
 # LIVE PROMOTION AUTHORITY TOKEN CONVERGENCE — 07 OCT 2026
 
 **STATUS:** RELEASE-CONTROL REPAIR / NO PRODUCT BYTE CHANGE / NO LIVE BYPASS.

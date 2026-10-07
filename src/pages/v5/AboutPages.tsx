@@ -53,7 +53,7 @@ export function AboutStory() {
       <section style={{ background: T.blue, color: "#fff" }}>
         <div style={{ ...max, paddingTop: "clamp(70px,10vw,150px)", paddingBottom: "clamp(70px,10vw,150px)" }}>
           <div style={{ ...mono, color: "rgba(255,255,255,.72)" }}>4PLANET_</div>
-          <p style={{ ...display, marginTop: 22, fontSize: "clamp(36px,6.5vw,94px)", lineHeight: .94, maxWidth: "15ch" }}>For a living planet where humans and the rest of life can thrive together.</p>
+          <p style={{ ...display, marginTop: 22, fontSize: "clamp(36px,6.5vw,94px)", lineHeight: .94, maxWidth: "15ch" }}>For a living planet where people and the rest of nature can thrive together.</p>
         </div>
       </section>
       <style>{`@media(max-width:760px){.about-split{grid-template-columns:1fr!important}}`}</style>
@@ -104,14 +104,14 @@ export function WhatWeBelieve() {
   const beliefs = [
     ["01", "WE ARE ONE SPECIES ON ONE LIVING PLANET.", "We share basic needs and live inside the same planetary systems. What we share is deeper than many of the divisions we create."],
     ["02", "LIFE IS WORTH CARING ABOUT.", "Living things and living systems matter for more than their economic utility. Wonder, fascination, love and respect are reasons to understand and care."],
-    ["03", "TOGETHER, WE CAN DO MORE.", "No individual, company, government, organisation or technology solves planetary problems alone. Collaboration is one of our core methods."],
+    ["03", "TOGETHER, WE CAN DO MORE.", "No one solves problems this big alone. Together, we can. Collaboration is one of our core methods."],
     ["04", "THE FUTURE CAN BE BETTER.", "The problems are real. So is uncertainty. But decline is not the only possible direction. We choose informed optimism and work to make better futures more likely."],
   ] as const;
 
   const values = [
     ["01", "CARE DEEPLY.", "Pay attention to what is alive. Stay curious. Care about people, animals, nature and those who come after us. Have the courage to care when indifference would be easier."],
     ["02", "TRUTH FIRST.", "Reality comes before reputation, ideology or convenience. Show what we know, what we do not know and how confident we are. Correct mistakes and change with better evidence."],
-    ["03", "EVERYONE HAS A PART TO PLAY.", "No one fixes a planet alone. People who want to help should be able to find a meaningful way in. Welcome people, share what we know and help contribution grow."],
+    ["03", "EVERYONE HAS A PART TO PLAY.", "No one solves problems this big alone. Together, we can. People who want to help should be able to find a meaningful way in. We help people contribute with knowledge, tools, connections and opportunities."],
     ["04", "BE USEFUL.", "Create real value for people or the living world. Activity, attention, complexity and good intentions are not value by themselves."],
     ["05", "MAKE IT REAL.", "Build. Test. Measure. Prove. Finish. Own the outcome, not only the task. Prefer useful reality to impressive plans."],
     ["06", "USE POWER FOR GOOD.", "Technology, capital, knowledge, data, AI, distribution, brand and influence are forms of power. More capability creates more responsibility."],
@@ -136,10 +136,10 @@ export function WhatWeBelieve() {
             <div style={{ ...mono, color: T.blue }}>OUR PURPOSE</div>
             <div style={{ maxWidth: 840 }}>
               <p style={{ ...display, fontSize: "clamp(34px,5vw,72px)", lineHeight: .98 }}>For a Living Planet.</p>
-              <p style={{ marginTop: 28, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.7, color: T.dim }}>4PLANET exists to help build a future in which people and the rest of life can thrive together. Humans are part of the living planet, not outside it.</p>
+              <p style={{ marginTop: 28, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.7, color: T.dim }}>4PLANET exists to help build a future in which people and the rest of nature can thrive together. People are part of nature, not outside it.</p>
               <div style={{ ...mono, color: T.blue, marginTop: 34 }}>OUR AMBITION</div>
               <p style={{ ...display, marginTop: 12, fontSize: "clamp(28px,4vw,54px)", lineHeight: 1 }}>Better. For Everyone.</p>
-              <p style={{ marginTop: 22, fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.7, color: T.dim }}>We seek progress that creates broad, durable value instead of quietly moving costs onto other people, species, places or generations.</p>
+              <p style={{ marginTop: 22, fontSize: "clamp(16px,1.45vw,20px)", lineHeight: 1.7, color: T.dim }}>We seek solutions that create broad, durable value instead of quietly moving costs onto other people, species, places or generations.</p>
             </div>
           </div>
         </div>
@@ -176,6 +176,18 @@ export function WhatWeBelieve() {
         </div>
       </section>
 
+      <section style={{ background: "#fff", color: T.ink, borderTop: `1px solid ${T.line}` }}>
+        <div style={{ ...max, paddingTop: "clamp(64px,9vw,120px)", paddingBottom: "clamp(64px,9vw,120px)" }}>
+          <div className="belief-split" style={{ display: "grid", gridTemplateColumns: "minmax(140px,.35fr) minmax(0,1fr)", gap: "clamp(32px,8vw,120px)" }}>
+            <div style={{ ...mono, color: T.blue }}>HOW WE BEHAVE</div>
+            <div style={{ maxWidth: 840 }}>
+              <p style={{ ...display, fontSize: "clamp(32px,4.8vw,68px)", lineHeight: 1 }}>Love life. Care deeply for the living world.</p>
+              <p style={{ marginTop: 28, fontSize: "clamp(17px,1.55vw,21px)", lineHeight: 1.75, color: T.dim }}>Stay curious. Ask before assuming. Look closer. Tell the truth. Be brave when it matters. Welcome people in. Listen. Share what you know. Help each other. Own the outcome. Finish what you start. Admit mistakes. Correct them. Learn.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section style={{ background: "#fff", color: T.ink }}>
         <div style={{ ...max, paddingTop: "clamp(64px,9vw,130px)", paddingBottom: "clamp(64px,9vw,130px)" }}>
           <div className="belief-split" style={{ display: "grid", gridTemplateColumns: "minmax(140px,.35fr) minmax(0,1fr)", gap: "clamp(32px,8vw,120px)" }}>
@@ -195,8 +207,8 @@ export function WhatWeBelieve() {
       <section style={{ background: T.blue, color: "#fff" }}>
         <div style={{ ...max, paddingTop: "clamp(76px,11vw,160px)", paddingBottom: "clamp(76px,11vw,160px)" }}>
           <div style={{ ...mono, color: "rgba(255,255,255,.68)" }}>THE INVITATION</div>
-          <p style={{ ...display, marginTop: 22, fontSize: "clamp(38px,7vw,104px)", lineHeight: .91, maxWidth: "12ch" }}>There is a place for you.</p>
-          <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.65, color: "rgba(255,255,255,.84)" }}>You do not need to be a scientist, activist, billionaire or expert to care about life on Earth. If you care, there should be a way in. No one fixes a planet alone. We can do more together.</p>
+          <p style={{ ...display, marginTop: 22, fontSize: "clamp(38px,7vw,104px)", lineHeight: .91, maxWidth: "12ch" }}>There is a place for everyone who wants to help — including you.</p>
+          <p style={{ marginTop: 28, maxWidth: 760, fontSize: "clamp(17px,1.7vw,22px)", lineHeight: 1.65, color: "rgba(255,255,255,.84)" }}>You do not need to be a scientist, activist, billionaire or expert to care about life on Earth. If you care, there should be a meaningful way in. We help people who want to contribute gain the knowledge, tools, connections and opportunities to make their effort count. No one solves problems this big alone. Together, we can.</p>
           <Link to="/join" style={{ ...mono, display: "inline-flex", marginTop: 30, background: "#fff", color: T.blue, padding: "13px 17px", textDecoration: "none" }}>FIND YOUR PART →</Link>
         </div>
       </section>
