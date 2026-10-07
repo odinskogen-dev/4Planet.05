@@ -1871,6 +1871,19 @@ export async function onRequest(context) {
     return Response.redirect("https://4planet.org/livingsystems/" + url.search, 308);
   }
 
+  if (host === "4planetatlas.com" && (url.pathname === "/place" || url.pathname === "/place/")) {
+    return Response.redirect("https://4planetatlas.com/places" + url.search, 308);
+  }
+
+  if (host === "4planetatlas.com" && url.pathname === "/places/") {
+    return Response.redirect("https://4planetatlas.com/places" + url.search, 308);
+  }
+
+  if (host === "4planetatlas.com" && /^\/place\/[^/]+\/$/.test(url.pathname)) {
+    const canonicalPath=url.pathname.replace(/\/$/,"");
+    return Response.redirect(`https://4planetatlas.com${canonicalPath}${url.search}`,308);
+  }
+
   if (host === "4planetatlas.com" && url.pathname === "/places") {
     const continentGroups=[...new Set(ATLAS_INDEXABLE_PLACES.map((p)=>p.continent||"Other"))].sort();
     const items = continentGroups.map((continent)=>{
