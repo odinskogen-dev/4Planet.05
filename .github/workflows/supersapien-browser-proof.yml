@@ -19,7 +19,7 @@ concurrency:
 jobs:
   browser-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,9 +31,9 @@ jobs:
           set -euo pipefail
           npm ci
           npx playwright install --with-deps chromium
-      - name: Real custom-domain source journey
+      - name: Real custom-domain full-MVP journey
         env:
           BASE_URL: https://supersapien.org
         run: |
           set -euo pipefail
-          npx playwright test tests/e2e/supersapien-live.spec.ts --project=desktop-1440
+          npx playwright test tests/e2e/supersapien-live.spec.ts --project=desktop-1440 --project=mobile-390
