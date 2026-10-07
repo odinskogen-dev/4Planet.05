@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { LAYERS } from "./layers";
 import { repairAtlasLayerRegistry } from "./atlasRuntimeRepairs";
 
@@ -126,73 +125,4 @@ function makeIntentRow(intent: AtlasLayerIntent) {
     }
   });
   return row;
-}
-
-/**
- * Adds data-layer intent to the ONE existing ATLAS search input. It does not
- * create another search UI, place registry, identity model or layer engine.
- * A selected result rewrites the canonical existing `l=` URL state and lets
- * World restore the layer through its normal source/truth machinery.
- */
-export function AtlasSearchIntentBridge() {
-  useEffect(() => {
-    let frame = 0;
-
-    const render = () => {
-      frame = 0;
-      const input = document.querySelector<HTMLInputElement>('input[aria-label^="Search the living planet"]');
-      const results = document.querySelector<HTMLElement>(".results");
-      if (!input || !results) return;
-
-      const matches = atlasLayerIntentMatches(input.value);
-      const key = `${norm(input.value)}|${matches.map((match) => match.layerId).join(",")}`;
-      const existing = results.querySelectorAll("[data-atlas-intent-bridge]");
-
-      if (!matches.length) {
-        if (existing.length) existing.forEach((node) => node.remove());
-        delete results.dataset.atlasIntentBridgeKey;
-        return;
-      }
-
-      // MutationObserver also sees our own inserts. Do no DOM work when the
-      // intended bridge rows are already intact; this prevents self-triggered
-      // render loops while still allowing recovery after a React re-render.
-      if (results.dataset.atlasIntentBridgeKey === key && existing.length === matches.length + 1) return;
-
-      existing.forEach((node) => node.remove());
-      const fragment = document.createDocumentFragment();
-      const group = document.createElement("div");
-      group.className = "rgrp";
-      group.dataset.atlasIntentBridge = "group";
-      group.textContent = "DATA LAYERS · ACTIVATE";
-      fragment.append(group);
-      for (const match of matches) fragment.append(makeIntentRow(match));
-      results.dataset.atlasIntentBridgeKey = key;
-      results.prepend(fragment);
-    };
-
-    const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(render);
-    };
-
-    const onInput = (event: Event) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.matches?.('input[aria-label^="Search the living planet"]')) schedule();
-    };
-
-    document.addEventListener("input", onInput, true);
-    const observer = new MutationObserver(schedule);
-    observer.observe(document.body, { childList: true, subtree: true });
-    schedule();
-
-    return () => {
-      document.removeEventListener("input", onInput, true);
-      observer.disconnect();
-      if (frame) window.cancelAnimationFrame(frame);
-      document.querySelectorAll("[data-atlas-intent-bridge]").forEach((node) => node.remove());
-    };
-  }, []);
-
-  return null;
 }
