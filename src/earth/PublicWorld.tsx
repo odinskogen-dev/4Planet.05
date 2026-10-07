@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import { AtlasBasemapSync } from "./AtlasBasemapSync";
-import { AtlasSearchIntentBridge } from "./AtlasSearchIntentBridge";
 import { AtlasLiveEvidenceBridge } from "./AtlasLiveEvidenceBridge";
 
 const World = lazy(() => import("./World"));
@@ -113,7 +112,6 @@ export default function PublicWorld() {
             without adding a duplicate visual shell or competing state model. */}
         <AtlasPlaceNameBridge />
         <AtlasBasemapSync />
-        <AtlasSearchIntentBridge />
         <Suspense fallback={<div style={{ position: "fixed", inset: 0, background: "#080808" }} />}>
           <World />
         </Suspense>
