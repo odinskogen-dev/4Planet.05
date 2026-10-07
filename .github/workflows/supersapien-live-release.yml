@@ -1,0 +1,104 @@
+name: SUPERSAPIEN Explicit Live Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ops/supersapien/supersapien-live-worker.js
+      - .github/workflows/supersapien-live-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: supersapien-live-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_4: ${{ secrets.CF_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Resolve existing Cloudflare credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=''
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$candidate" ]; then TOKEN="$candidate"; break; fi
+          done
+          [ -n "$TOKEN" ] || { echo 'SUPERSAPIEN_BLOCKED=cloudflare_token_missing'; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n' | sed -e 's/^Bearer //' -e 's/^bearer //' -e 's/^CLOUDFLARE_API_TOKEN=//' -e 's/^CF_API_TOKEN=//' -e 's/^"//' -e 's/"$//')
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Resolve SUPERSAPIEN zone and fail closed on conflicting worker owner
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          zone=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=supersapien.org")
+          jq -e '.success==true and (.result|length)==1 and .result[0].status=="active"' <<<"$zone" >/dev/null || { echo 'SUPERSAPIEN_BLOCKED=zone_not_active_or_not_unique'; exit 3; }
+          aid=$(jq -r '.result[0].account.id' <<<"$zone")
+          echo "CLOUDFLARE_ACCOUNT_ID=$aid" >> "$GITHUB_ENV"
+
+          domains=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$aid/workers/domains")
+          jq -e '.success==true' <<<"$domains" >/dev/null
+          owners=$(jq -r '[.result[]? | select(.hostname=="supersapien.org" or .hostname=="www.supersapien.org") | .service] | unique | join(",")' <<<"$domains")
+          if [ -n "$owners" ] && [ "$owners" != 'supersapien-live' ]; then
+            echo "SUPERSAPIEN_BLOCKED=worker_domain_collision/$owners"; exit 4
+          fi
+
+      - name: Deploy isolated SUPERSAPIEN Worker custom domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > supersapien-live-wrangler.toml <<'EOF'
+          name = "supersapien-live"
+          main = "ops/supersapien/supersapien-live-worker.js"
+          compatibility_date = "2026-10-08"
+          workers_dev = true
+
+          [[routes]]
+          pattern = "supersapien.org"
+          custom_domain = true
+
+          [[routes]]
+          pattern = "www.supersapien.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@4.128.0 deploy --config supersapien-live-wrangler.toml
+          echo 'SUPERSAPIEN_CLOUDFLARE_SUBMITTED=YES'
+
+      - name: Verify live TLS, product and backend route
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 30); do
+            root_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-root -D /tmp/supersapien-headers -w '%{http_code}' https://supersapien.org/ || true)
+            health_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-health -w '%{http_code}' https://supersapien.org/api/_healthcheck || true)
+            if [ "$root_code" = 200 ] && [ "$health_code" = 200 ] && grep -Eq 'SUPERSAPIEN|CAPITAL LAB' /tmp/supersapien-root && grep -q '"ok":true' /tmp/supersapien-health; then
+              ready=true
+              break
+            fi
+            sleep 5
+          done
+          [ "$ready" = true ] || { echo "SUPERSAPIEN_LIVE_VERIFY_FAIL=root:$root_code health:$health_code"; exit 5; }
+          grep -qi 'x-supersapien-origin: capital-lab-mvp03' /tmp/supersapien-headers || { echo 'SUPERSAPIEN_PROXY_HEADER_MISSING'; exit 6; }
+          www_code=$(curl -sS -o /dev/null -D /tmp/supersapien-www -w '%{http_code}' https://www.supersapien.org/ || true)
+          [ "$www_code" = 308 ] || [ "$www_code" = 301 ] || { echo "SUPERSAPIEN_WWW_REDIRECT_FAIL=$www_code"; exit 7; }
+          echo 'SUPERSAPIEN_LIVE_TLS_ROOT_API_WWW=PASS'
