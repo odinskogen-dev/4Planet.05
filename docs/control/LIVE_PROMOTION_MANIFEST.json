@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "2003637420de884c4d67c9198712cb4749cc4924",
-  "priorLiveSha": "c80b1edcbf46542ebbbf2a01224f3762f3c7b44f",
-  "releaseCommitSha": "23064dfbf4a775b3f22ec361b32d5ddee5a63556",
+  "testKingSha": "68c3c0290acc5d132cc91a6fbbbd374b21d1181b",
+  "priorLiveSha": "5b5858d931a3426c70aa84069b826fe62af5b0a0",
+  "releaseCommitSha": "2e40c628d79a8b1398f5865fbd030640a12e395a",
   "boundedRelease": true,
-  "sourceCommit": "0a849ff3fd28e6cc6abcd04c95c5292410443502",
-  "founderDecisionRef": "Founder instruction 2026-10-07 — “Dette må gjøres helt ferdig. Ikke stopp før 100% av LS 1.4.2 er live på 4Planet.”",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37541957544",
-  "rollbackRef": "main@c80b1edcbf46542ebbbf2a01224f3762f3c7b44f",
-  "releaseControlCommit": false,
-  "note": "Bounded Living Systems v1.4.2 ZERO LOSS LIVE release. The release commit is a direct child of prior LIVE and overlays only the approved Living Systems recovery/deploy seams. Current main may contain later independent commits; release authority is bound to releaseCommitSha."
+  "releaseKind": "VALUES_CANON_SYNC",
+  "founderDecisionRef": "Founder 2026-10-05: “Enig i at vi nå må få dette ut live” + 2026-10-07: “Fullfør eller stopp og rapporter.”",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37623454306",
+  "rollbackRef": "main@5b5858d931a3426c70aa84069b826fe62af5b0a0",
+  "releaseControlCommit": true,
+  "note": "Bounded WHAT WE BELIEVE / Values LIVE release. Only values page, route/navigation/home discovery seams, GOLD receipt and fail-closed values release guard are overlaid. No wholesale TEST KING promotion."
 }
