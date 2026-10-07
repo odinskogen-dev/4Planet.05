@@ -1418,3 +1418,5 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **ACCEPTANCE:** exact TEST HEIR SHA must pass typecheck, build, smoke including `atlas-mobile-human-performance-contract.test.mjs`, ATLAS Zero Loss, mobile browser proof at 390×844 and 430×932, and visual review showing no competing panel overlap. Production remains Founder/release-gated; do not call this LIVE before the canonical promotion path passes.
 
+**COMPATIBILITY CLOSURE:** integrated search rows retain canonical `data-atlas-intent-layer` identity for proof/automation; anonymous My Atlas explicitly states device-local storage and `SAVE CURRENT VIEW +`; curated SPECIES retains an accessible same-entity continuation into ATLAS. These preserve existing zero-loss contracts while keeping the new mobile surface.
+

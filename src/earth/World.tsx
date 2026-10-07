@@ -1175,7 +1175,7 @@ function WorldInner() {
   const searchActive = open;
 
   return (
-    <div className={`world ${light ? "light" : ""} ${searchActive ? "search-active" : ""} ${ctx ? "context-active" : ""} ${!collapsed ? "layers-active" : ""} ${lens !== "EARTH" && !ctx ? "lens-active" : ""}`}>
+    <div data-atlas-mobile-closure="v1" className={`world ${light ? "light" : ""} ${searchActive ? "search-active" : ""} ${ctx ? "context-active" : ""} ${!collapsed ? "layers-active" : ""} ${lens !== "EARTH" && !ctx ? "lens-active" : ""}`}>
       <div ref={boxRef} style={{ position: "absolute", inset: 0 }} />
 
       {/* ── SEARCH THE LIVING PLANET_ ───────────────────────────────────── */}
