@@ -1277,3 +1277,8 @@ Show source, as-of time, missing values, currency boundaries, bank consent/sync 
 **ROLLBACK:** revert the bounded neutral commits after the exact pre-change HEIR `5dc63fe8ddd1daea32d62d102066705d3c7efbfe`.
 
 **HUMAN EFFECT:** white surfaces are true white, primary black text is true black, and the homepage no longer carries an unintended near-black / warm-neutral drift.
+
+
+## 4PLANET ID Google OAuth incident — 08 Oct 2026
+
+Founder observed Google account selection returning to /login without authenticated session on 4planet.org. Supabase auth logs at 2026-10-07 23:08 UTC show Google login accepted, but end-to-end cross-origin session handoff is not verified. Scoped candidate updates IdentityApp to react to late SIGNED_IN after bootstrap, guard duplicate transfers, and use canonical #2E2EFF / #FFFFFF / #0A0A0A colours instead of green. Preserves existing Supabase Auth, endpoint and user IDs. No production acceptance until verified actual Google OAuth, bridge function, callback, mobile Safari, 4planet.org session and rollback. Never claim live from repository commit alone.
