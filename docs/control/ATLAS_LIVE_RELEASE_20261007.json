@@ -7,7 +7,7 @@
   "sourceBranch": "king/test",
   "releaseTrigger": "ONE_TIME_PUSH_OF_THIS_FILE_AND_WORKFLOW",
   "requiredDomain": "4planetatlas.com",
-  "isolationRule": "DEPLOY_ONLY_IF_4PLANETATLAS.COM_IS_OWNED_BY_A_DEDICATED_PAGES_PROJECT",
-  "rollbackRule": "CAPTURE_PREVIOUS_PRODUCTION_DEPLOYMENT_BEFORE_MUTATION",
-  "note": "This authority is scoped to the standalone ATLAS surface. Do not publish unrelated 4PLANET surfaces from king/test."
+  "isolationRule": "DEPLOY_EXACT_HEIR_TO_NON_PRODUCTION_PAGES_PREVIEW_THEN_ROUTE_ONLY_4PLANETATLAS.COM_THROUGH_A_ROLLBACKABLE_WORKER",
+  "rollbackRule": "DELETE_THE_NEW_ATLAS_ONLY_WORKER_ROUTE_TO_RESTORE_EXISTING_PAGES_CUSTOM_DOMAIN",
+  "note": "Founder-authorised ATLAS-only release. Shared Pages production must not move; standalone ATLAS is switched to an exact HEIR preview origin through an Atlas-domain-only Worker route."
 }

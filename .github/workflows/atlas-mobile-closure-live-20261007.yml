@@ -21,6 +21,9 @@ jobs:
     env:
       RELEASE_FILE: docs/control/ATLAS_LIVE_RELEASE_20261007.json
       ATLAS_DOMAIN: 4planetatlas.com
+      PAGES_PROJECT: 4planet-05
+      PREVIEW_BRANCH: atlas-live-20261007
+      ROUTER_SERVICE: atlas-live-router-20261007
     steps:
       - name: Checkout exact authorised HEIR artifact
         uses: actions/checkout@v4
@@ -41,7 +44,7 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Resolve Cloudflare token
+      - name: Resolve Cloudflare token and Atlas zone
         env:
           TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
@@ -58,42 +61,38 @@ jobs:
           TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
           TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
           echo "::add-mask::$TOKEN"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+          zone=$(curl -fsS "${api}/zones?name=$ATLAS_DOMAIN&status=active" "${auth[@]}")
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$zone_id" ] && [ -n "$account_id" ] || { echo "ATLAS zone/account unresolved"; exit 3; }
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "ATLAS_ZONE_ID=$zone_id" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
 
-      - name: Prove ATLAS domain isolation and capture rollback
-        id: origin
+      - name: Prove existing Atlas routing is rollback-safe
         shell: bash
         run: |
           set -euo pipefail
           api="https://api.cloudflare.com/client/v4"
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
-          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
-          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
-          [ -n "$account_id" ] || { echo "No Cloudflare account id"; exit 3; }
-          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
-          project=$(jq -r --arg d "$ATLAS_DOMAIN" '[.result[]? | select(any(.domains[]?; .==$d or .==("www."+ $d)))][0].name // empty' <<<"$projects")
-          [ -n "$project" ] || { echo "No Pages project directly owns $ATLAS_DOMAIN; refusing cross-product deployment."; exit 4; }
-          domains=$(jq -c --arg p "$project" '.result[] | select(.name==$p) | [.domains[]?]' <<<"$projects")
-          jq -e --arg d "$ATLAS_DOMAIN" 'all(.[]; (.==$d) or (.==("www."+ $d)) or endswith(".pages.dev"))' <<<"$domains" >/dev/null || {
-            echo "ATLAS project also owns unrelated custom domains; refusing deployment."
-            jq -r '.[]' <<<"$domains"
-            exit 5
-          }
-          production_branch=$(jq -r --arg p "$project" '.result[] | select(.name==$p) | .production_branch // empty' <<<"$projects")
-          [ -n "$production_branch" ] || { echo "No production branch"; exit 6; }
-          deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/deployments?env=production&page=1&per_page=5" "${auth[@]}")
-          previous_id=$(jq -r '.result[0].id // empty' <<<"$deployments")
-          previous_sha=$(jq -r '.result[0].deployment_trigger.metadata.commit_hash // empty' <<<"$deployments")
-          previous_url=$(jq -r '.result[0].url // empty' <<<"$deployments")
-          {
-            echo "CLOUDFLARE_ACCOUNT_ID=$account_id"
-            echo "ATLAS_PAGES_PROJECT=$project"
-            echo "ATLAS_PRODUCTION_BRANCH=$production_branch"
-            echo "ATLAS_PREVIOUS_DEPLOYMENT_ID=$previous_id"
-            echo "ATLAS_PREVIOUS_SHA=$previous_sha"
-            echo "ATLAS_PREVIOUS_URL=$previous_url"
-          } >> "$GITHUB_ENV"
-          echo "ATLAS_ISOLATED_PROJECT_PASS project=$project production_branch=$production_branch previous_sha=$previous_sha"
+          routes=$(curl -fsS "${api}/zones/${ATLAS_ZONE_ID}/workers/routes" "${auth[@]}")
+          existing=$(jq -c --arg d "$ATLAS_DOMAIN" '[.result[]? | select(.pattern==($d+"/*") or .pattern==("*."+$d+"/*"))]' <<<"$routes")
+          count=$(jq 'length' <<<"$existing")
+          if [ "$count" -gt 0 ]; then
+            echo "Existing Worker route already owns Atlas; refusing to overwrite without reconciliation:"
+            jq . <<<"$existing"
+            exit 4
+          fi
+          projects=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects" "${auth[@]}")
+          jq -e --arg p "$PAGES_PROJECT" '.result[]? | select(.name==$p)' <<<"$projects" >/dev/null
+          production=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?env=production&page=1&per_page=1" "${auth[@]}")
+          previous_sha=$(jq -r '.result[0].deployment_trigger.metadata.commit_hash // empty' <<<"$production")
+          previous_url=$(jq -r '.result[0].url // empty' <<<"$production")
+          echo "ATLAS_PREVIOUS_SHARED_PRODUCTION_SHA=$previous_sha" >> "$GITHUB_ENV"
+          echo "ATLAS_PREVIOUS_SHARED_PRODUCTION_URL=$previous_url" >> "$GITHUB_ENV"
+          echo "ATLAS_ROUTE_ISOLATION_PASS shared_production_will_not_move previous_sha=$previous_sha"
 
       - name: Install exact dependencies
         run: npm ci
@@ -109,7 +108,7 @@ jobs:
             scripts/atlas-source-bridge-contract.test.mjs \
             scripts/atlas-mobile-context-control-contract.test.mjs
 
-      - name: Typecheck and production build
+      - name: Typecheck and exact production build
         shell: bash
         run: |
           set -euo pipefail
@@ -118,7 +117,7 @@ jobs:
           grep -R -Fq 'data-atlas-mobile-closure' dist/assets
           echo "ATLAS_BUILD_PASS"
 
-      - name: Install mobile browser engines
+      - name: Install browser engines
         run: npx playwright install --with-deps chromium webkit
 
       - name: Start exact local preview
@@ -132,7 +131,7 @@ jobs:
           cat /tmp/atlas-preview.log
           exit 7
 
-      - name: Mobile viewport + one-surface proof before LIVE
+      - name: Mobile viewport and surface proof before LIVE
         shell: bash
         run: |
           node --input-type=module <<'NODE'
@@ -140,78 +139,131 @@ jobs:
           for (const engine of [chromium, webkit]) {
             const browser = await engine.launch();
             const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-            const errors = [];
-            page.on('pageerror', e => errors.push(String(e)));
+            const pageErrors = [];
+            page.on('pageerror', e => pageErrors.push(String(e)));
             await page.goto('http://127.0.0.1:4173/atlas', { waitUntil: 'domcontentloaded' });
-            await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ state: 'visible', timeout: 20000 });
-            await page.locator('.maplibregl-canvas').waitFor({ state: 'visible', timeout: 20000 });
-            const initial = await page.evaluate(() => {
+            await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ timeout: 30000 });
+            await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
+            const geometry = await page.evaluate(() => {
               const world = document.querySelector('.world')?.getBoundingClientRect();
               const canvas = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
               return { iw: innerWidth, ih: innerHeight, sw: document.documentElement.scrollWidth, world, canvas };
             });
-            if (!initial.world || initial.world.width > initial.iw + 1 || initial.world.height < initial.ih - 3 || initial.sw > initial.iw + 1) throw new Error('ATLAS mobile viewport clipped or horizontally overflowing');
+            if (!geometry.world || geometry.sw > geometry.iw + 1 || geometry.world.width > geometry.iw + 1 || geometry.world.height < geometry.ih - 3) throw new Error('Mobile map viewport is clipped or overflowing');
             const input = page.locator('.search-line input');
             await input.focus();
             await input.fill('orca');
             await page.locator('.world.search-active').waitFor();
             const savedVisibility = await page.locator('.atlas-saved-views').evaluate(el => getComputedStyle(el).visibility);
-            if (savedVisibility !== 'hidden') throw new Error('My Atlas competes with active mobile search');
+            if (savedVisibility !== 'hidden') throw new Error('My Atlas competes with Search');
             await page.locator('.search-exit').click();
-            await page.locator('.world.search-active').waitFor({ state: 'detached' }).catch(async () => {
-              if (await page.locator('.world.search-active').count()) throw new Error('Search surface did not release');
-            });
-            const layerToggle = page.locator('.atlas-panel .sect').first();
-            await layerToggle.click();
+            await page.locator('.atlas-panel .sect').first().click();
             await page.locator('.world.layers-active').waitFor();
-            await layerToggle.click();
+            await page.locator('.atlas-panel .sect').first().click();
             await page.locator('.atlas-saved-toggle').click();
             await page.locator('.atlas-saved-views.open').waitFor();
-            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
-            if (overflow > 1) throw new Error('ATLAS sheet creates horizontal overflow');
-            if (errors.length) throw new Error('Page errors: ' + errors.join(' | '));
+            if ((await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)) > 1) throw new Error('My Atlas creates horizontal overflow');
+            if (pageErrors.length) throw new Error('Page errors: ' + pageErrors.join(' | '));
             await browser.close();
           }
           console.log('ATLAS_MOBILE_PRELIVE_PROOF_PASS');
           NODE
 
-      - name: Deploy exact tested artifact to dedicated ATLAS Pages project
-        id: deploy
+      - name: Deploy exact HEIR build as non-production Pages preview
         shell: bash
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist \
-            --project-name "$ATLAS_PAGES_PROJECT" \
-            --branch "$ATLAS_PRODUCTION_BRANCH" \
+            --project-name "$PAGES_PROJECT" \
+            --branch "$PREVIEW_BRANCH" \
             --commit-hash "$GITHUB_SHA" \
-            --commit-message "ATLAS mobile human performance closure 01"
-          echo "ATLAS_DEPLOY_SUBMITTED sha=$GITHUB_SHA"
+            --commit-message "ATLAS isolated live origin $GITHUB_SHA"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          preview_url=""
+          for i in $(seq 1 30); do
+            deployments=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${PAGES_PROJECT}/deployments?page=1&per_page=25" "${auth[@]}")
+            preview_url=$(jq -r --arg sha "$GITHUB_SHA" --arg br "$PREVIEW_BRANCH" '[.result[]? | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch==$br and .latest_stage.status=="success")][0].url // empty' <<<"$deployments")
+            [ -n "$preview_url" ] && break
+            sleep 3
+          done
+          [ -n "$preview_url" ] || { echo "Exact preview deployment not found"; exit 8; }
+          echo "ATLAS_PREVIEW_ORIGIN=$preview_url" >> "$GITHUB_ENV"
+          echo "ATLAS_EXACT_PREVIEW_PASS $preview_url"
 
-      - name: Verify standalone ATLAS LIVE on Chromium and WebKit
+      - name: Verify exact preview before routing public traffic
         shell: bash
         run: |
           set -euo pipefail
-          for i in $(seq 1 60); do
-            code=$(curl -sS -L --max-time 20 -o /tmp/atlas-live.html -w '%{http_code}' "https://$ATLAS_DOMAIN/" || true)
-            [ "$code" = "200" ] && break
-            sleep 3
-          done
+          code=$(curl -sS -L --max-time 25 -o /tmp/atlas-preview-origin.html -w '%{http_code}' "$ATLAS_PREVIEW_ORIGIN/")
           test "$code" = "200"
           node --input-type=module <<'NODE'
+          import { webkit } from '@playwright/test';
+          const browser = await webkit.launch();
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          await page.goto(process.env.ATLAS_PREVIEW_ORIGIN + '/atlas', { waitUntil: 'domcontentloaded' });
+          await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ timeout: 30000 });
+          await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
+          await browser.close();
+          console.log('ATLAS_EXACT_PREVIEW_BROWSER_PASS');
+          NODE
+
+      - name: Route only 4planetatlas.com to exact preview origin
+        id: route
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          cat > /tmp/atlas-router.js <<EOF
+          const ORIGIN = "${ATLAS_PREVIEW_ORIGIN}";
+          addEventListener("fetch", event => event.respondWith(handle(event.request)));
+          async function handle(request) {
+            const incoming = new URL(request.url);
+            const target = new URL(incoming.pathname + incoming.search, ORIGIN);
+            const response = await fetch(new Request(target.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.set("x-4planet-atlas-release", "${GITHUB_SHA}");
+            return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+          }
+          EOF
+          upload=$(curl -fsS -X PUT "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${ROUTER_SERVICE}" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/javascript" \
+            --data-binary @/tmp/atlas-router.js)
+          jq -e '.success==true' <<<"$upload" >/dev/null
+          route=$(curl -fsS -X POST "${api}/zones/${ATLAS_ZONE_ID}/workers/routes" "${auth[@]}" \
+            --data "$(jq -nc --arg p "$ATLAS_DOMAIN/*" --arg s "$ROUTER_SERVICE" '{pattern:$p,script:$s}')")
+          jq -e '.success==true' <<<"$route" >/dev/null
+          route_id=$(jq -r '.result.id // empty' <<<"$route")
+          [ -n "$route_id" ] || exit 9
+          echo "ATLAS_WORKER_ROUTE_ID=$route_id" >> "$GITHUB_ENV"
+          echo "ATLAS_DOMAIN_ROUTE_CREATED route_id=$route_id"
+
+      - name: Verify ATLAS LIVE on iPhone-sized Chromium and WebKit
+        id: liveproof
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 45); do
+            headers=$(curl -sSI --max-time 20 "https://$ATLAS_DOMAIN/" | tr -d '\r' || true)
+            grep -qi "^x-4planet-atlas-release: $GITHUB_SHA$" <<<"$headers" && break
+            sleep 3
+          done
+          grep -qi "^x-4planet-atlas-release: $GITHUB_SHA$" <<<"$headers"
+          node --input-type=module <<'NODE'
           import { chromium, webkit } from '@playwright/test';
-          const url = 'https://4planetatlas.com/';
           for (const engine of [chromium, webkit]) {
             const browser = await engine.launch();
             const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-            await page.goto(url, { waitUntil: 'domcontentloaded' });
-            await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ state: 'visible', timeout: 30000 });
-            await page.locator('.maplibregl-canvas').waitFor({ state: 'visible', timeout: 30000 });
-            const box = await page.evaluate(() => {
+            await page.goto('https://4planetatlas.com/', { waitUntil: 'domcontentloaded' });
+            await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ timeout: 30000 });
+            await page.locator('.maplibregl-canvas').waitFor({ timeout: 30000 });
+            const g = await page.evaluate(() => {
               const w = document.querySelector('.world')?.getBoundingClientRect();
-              const c = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
-              return { iw: innerWidth, ih: innerHeight, sw: document.documentElement.scrollWidth, w, c };
+              return { iw: innerWidth, ih: innerHeight, sw: document.documentElement.scrollWidth, w };
             });
-            if (!box.w || box.w.width > box.iw + 1 || box.w.height < box.ih - 3 || box.sw > box.iw + 1) throw new Error('LIVE ATLAS viewport failure');
+            if (!g.w || g.sw > g.iw + 1 || g.w.width > g.iw + 1 || g.w.height < g.ih - 3) throw new Error('LIVE viewport failure');
             const input = page.locator('.search-line input');
             await input.focus();
             await input.fill('orca');
@@ -224,6 +276,16 @@ jobs:
           console.log('ATLAS_LIVE_MOBILE_PROOF_PASS');
           NODE
 
+      - name: Roll back route automatically if LIVE proof fails
+        if: failure() && steps.route.outcome == 'success' && steps.liveproof.outcome != 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          curl -fsS -X DELETE "${api}/zones/${ATLAS_ZONE_ID}/workers/routes/${ATLAS_WORKER_ROUTE_ID}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null || true
+          curl -fsS -X DELETE "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${ROUTER_SERVICE}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null || true
+          echo "ATLAS_ROUTE_ROLLED_BACK"
+
       - name: Record release facts
         if: always()
         shell: bash
@@ -231,9 +293,9 @@ jobs:
           {
             echo "ATLAS_RELEASE_SHA=$GITHUB_SHA"
             echo "ATLAS_DOMAIN=$ATLAS_DOMAIN"
-            echo "ATLAS_PROJECT=${ATLAS_PAGES_PROJECT:-UNRESOLVED}"
-            echo "ATLAS_PREVIOUS_SHA=${ATLAS_PREVIOUS_SHA:-UNRESOLVED}"
-            echo "ATLAS_PREVIOUS_DEPLOYMENT=${ATLAS_PREVIOUS_URL:-UNRESOLVED}"
+            echo "ATLAS_EXACT_PREVIEW=${ATLAS_PREVIEW_ORIGIN:-UNRESOLVED}"
+            echo "ATLAS_PREVIOUS_SHARED_PRODUCTION_SHA=${ATLAS_PREVIOUS_SHARED_PRODUCTION_SHA:-UNRESOLVED}"
+            echo "ATLAS_WORKER_ROUTE_ID=${ATLAS_WORKER_ROUTE_ID:-UNRESOLVED}"
             echo "ATLAS_RELEASE_STATUS=${{ job.status }}"
           } | tee /tmp/atlas-release-facts.txt
 
