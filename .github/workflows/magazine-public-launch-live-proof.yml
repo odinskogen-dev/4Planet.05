@@ -111,4 +111,9 @@ jobs:
           grep -q 'Sitemap: https://4planetmagazine.com/magazine-sitemap.xml' "$RUNNER_TEMP/robots.txt"
           grep -q 'Disallow: /magazine/saved' "$RUNNER_TEMP/robots.txt"
           curl -fsS 'https://4planetmagazine.com/rss.xml' | grep -q '<title>4PLANET MAGAZINE</title>'
-          curl -fsS 'https://4planetmagazine.com/news-sitemap.xml' | grep -q '<urlset'
+          if grep -q 'news-sitemap.xml' "$RUNNER_TEMP/robots.txt"; then
+            curl -fsS 'https://4planetmagazine.com/news-sitemap.xml' | grep -q 'news:news'
+          else
+            news_code=$(curl -sS -o /dev/null -w '%{http_code}' 'https://4planetmagazine.com/news-sitemap.xml')
+            [ "$news_code" = '404' ] || [ "$news_code" = '410' ]
+          fi
