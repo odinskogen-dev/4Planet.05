@@ -34,12 +34,14 @@ const PUBLIC_HOSTS = {
   "4planetatlas.com": {
     title: "4PLANET ATLAS — Explore the Living Planet",
     description: "Explore places, species, living systems and source-grounded planetary data through 4PLANET ATLAS.",
-    canonical: "https://4planetatlas.com/atlas",
+    canonical: "https://4planetatlas.com/atlas/",
     fallbackTitle: "Explore the Living Planet with 4PLANET ATLAS",
     fallbackParagraphs: [
       "4PLANET ATLAS is the spatial exploration surface for Living Planet Intelligence. It connects places, species and living systems so users can move from a location on the map into the source-grounded context that helps explain what lives there, what is changing and how different ecological and human systems connect.",
       "ATLAS is designed to work with the same canonical objects used elsewhere in 4PLANET rather than creating a separate map-only truth store. A species shown in ATLAS should resolve to the same species identity used in SPECIES, while places and living systems should keep their provenance, uncertainty and update state visible.",
-      "The public product is still developing. Interactive map behaviour may evolve, but the search-readable surface is intended to remain clear about sources, context and product maturity without turning dynamic map states into thousands of low-value search pages."
+      "The public product is still developing. Interactive map behaviour may evolve, but the search-readable surface is intended to remain clear about sources, context and product maturity without turning dynamic map states into thousands of low-value search pages.",
+      "The World Place Index provides stable entry points for verified cities and countries. Each Place keeps a canonical URL, source identity, reference coordinate and crawlable geographic relationships, then hands the user into the same location in the interactive ATLAS.",
+      "ATLAS separates observations, historical records, analysis, forecast and climatology rather than presenting every data layer as live. Public sources visible across the product include NASA Earth observation, GBIF biodiversity records, OBIS marine records, USGS and NOAA where applicable."
     ],
     fallbackLinks: [
       ["World Place Index", "https://4planetatlas.com/places"],
@@ -48,6 +50,10 @@ const PUBLIC_HOSTS = {
       ["London", "https://4planetatlas.com/place/london"],
       ["Tokyo", "https://4planetatlas.com/place/tokyo"],
       ["Kenya", "https://4planetatlas.com/place/kenya"],
+      ["Paris", "https://4planetatlas.com/place/paris"],
+      ["New York", "https://4planetatlas.com/place/new-york"],
+      ["Nairobi", "https://4planetatlas.com/place/nairobi"],
+      ["Sydney", "https://4planetatlas.com/place/sydney"],
       ["4PLANET", "https://4planet.org/"],
       ["SPECIES", "https://4species.com/species/"],
       ["Living Systems", "https://4planet.org/living-systems"],
@@ -1841,7 +1847,7 @@ export async function onRequest(context) {
   // ATLAS canonical home: /atlas. Root remains a permanent convenience redirect
   // until the standalone router itself is moved to / without changing product behaviour.
   if (host === "4planetatlas.com" && url.pathname === "/") {
-    const target = new URL("https://4planetatlas.com/atlas");
+    const target = new URL("https://4planetatlas.com/atlas/");
     target.search = url.search;
     return Response.redirect(target.toString(), 308);
   }
@@ -2016,7 +2022,7 @@ export async function onRequest(context) {
 
   if (config?.sitemap && url.pathname === "/sitemap.xml") {
     const sitemapPaths = config.sitemap === "ATLAS_WORLD_PLACE_INDEX"
-      ? ["/atlas", "/places", ...ATLAS_INDEXABLE_PLACES.map((place) => `/place/${place.slug}`)]
+      ? ["/atlas/", "/places", ...ATLAS_INDEXABLE_PLACES.map((place) => `/place/${place.slug}`)]
       : config.sitemap;
     return new Response(sitemapXml(host, sitemapPaths), {
       status: 200,

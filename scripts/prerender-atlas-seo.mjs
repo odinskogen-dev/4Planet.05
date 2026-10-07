@@ -7,7 +7,7 @@ const indexPath = path.join(dist, "index.html");
 if (!fs.existsSync(indexPath)) throw new Error("dist/index.html missing; run Vite build first");
 
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
-const route = "/atlas";
+const route = "/atlas/";
 const canonical = origin + route;
 const title = "4PLANET ATLAS — Planetary Intelligence Map";
 const description = "Explore the living planet through source-grounded Earth signals, biodiversity observations, species, places and 4PLANET ATLAS.";
@@ -35,7 +35,7 @@ const structured = {
   applicationCategory: "ScienceApplication",
   operatingSystem: "Any modern web browser",
   isAccessibleForFree: true,
-  creator: { "@type": "Organization", name: "4PLANET_", url: origin + "/" },
+  creator: { "@type": "Organization", name: "4PLANET_", url: "https://4planet.org/", logo: origin + "/favicon.svg" },
   about: [
     { "@type": "Thing", name: "Earth observation" },
     { "@type": "Thing", name: "Biodiversity observations" },
@@ -78,6 +78,11 @@ const crawlableBody = `
   <h2>Data sources visible in ATLAS</h2>
   <p>ATLAS surfaces public source data from providers including NASA Earthdata/GIBS, GBIF, OBIS, USGS and NOAA. Each layer retains its own scope and limitations.</p>
   <p>Occurrence records are reported observations, not complete range, abundance, population trend or live animal tracking.</p>
+  <h2>Enter through place</h2>
+  <p>The World Place Index provides stable search and navigation entry points into the same interactive ATLAS. Place pages preserve geographic provenance, reference coordinates and crawlable relationships before handing the user into the map at the matching place.</p>
+  <p><a href="/places">Explore the World Place Index</a> · <a href="/place/berlin">Berlin</a> · <a href="/place/oslo">Oslo</a> · <a href="/place/london">London</a> · <a href="/place/tokyo">Tokyo</a> · <a href="/place/kenya">Kenya</a></p>
+  <h2>Truth before spectacle</h2>
+  <p>ATLAS distinguishes observations, historical records, analysis, forecast and climatology. A source being visible in ATLAS does not mean every record is current, complete or a direct measurement of ecological condition.</p>
 </main>`.trim();
 
 html = html.replace('<div id="root"></div>', `<div id="root">${crawlableBody}</div>`);

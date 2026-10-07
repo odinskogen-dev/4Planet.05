@@ -42,12 +42,12 @@ jobs:
           npm run build
 
           test -f dist/atlas/index.html
-          grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas"' dist/atlas/index.html
-          grep -Fq 'property="og:url" content="https://4planetatlas.com/atlas"' dist/atlas/index.html
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas/"' dist/atlas/index.html
+          grep -Fq 'property="og:url" content="https://4planetatlas.com/atlas/"' dist/atlas/index.html
           ! grep -Fq 'rel="canonical" href="https://4planet.org/atlas"' dist/atlas/index.html
 
           # Current standalone router lives at /atlas. Root is a permanent convenience redirect.
-          printf '/ /atlas 308\n' > dist/_redirects
+          printf '/ /atlas/ 308\n' > dist/_redirects
 
           test -f functions/_middleware.js
           grep -Fq 'ATLAS_PLACE_COHORT_01_50' functions/_middleware.js
@@ -77,7 +77,7 @@ jobs:
             robots=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/robots.txt" || true)
             sitemap=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/sitemap.xml" || true)
             if grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap.xml" <<<"$robots" \
-              && grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas</loc>" <<<"$sitemap"; then
+              && grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas/</loc>" <<<"$sitemap"; then
               break
             fi
             sleep 3
@@ -88,18 +88,18 @@ jobs:
 
           place_count=$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sitemap" | sort -u | wc -l | tr -d ' ')
           test "$place_count" = "250"
-          grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas</loc>" <<<"$sitemap"
+          grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas/</loc>" <<<"$sitemap"
           grep -Fq "<loc>https://$ATLAS_DOMAIN/places</loc>" <<<"$sitemap"
           ! grep -Fq 'https://4planet.org/place/' <<<"$sitemap"
 
           root_final=$(curl -sS -L -o /dev/null -w '%{url_effective}' "https://$ATLAS_DOMAIN/")
           case "$root_final" in
-            "https://$ATLAS_DOMAIN/atlas"|"https://$ATLAS_DOMAIN/atlas/") ;;
+            "https://$ATLAS_DOMAIN/atlas/"|"https://$ATLAS_DOMAIN/atlas/") ;;
             *) echo "unexpected root target: $root_final"; exit 1 ;;
           esac
 
-          atlas=$(curl -fsSL --max-time 20 "https://$ATLAS_DOMAIN/atlas")
-          grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas"' <<<"$atlas"
+          atlas=$(curl -fsSL --max-time 20 "https://$ATLAS_DOMAIN/atlas/")
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas/"' <<<"$atlas"
           ! grep -Fq 'rel="canonical" href="https://4planet.org/atlas"' <<<"$atlas"
 
           places=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/places")
@@ -116,7 +116,7 @@ jobs:
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
           grep -Fq '"@type":"City"' <<<"$berlin"
           grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
-          grep -Fq 'Related places in the current index' <<<"$berlin"
+          grep -Fq 'Connected places in the World Place Index' <<<"$berlin"
 
           unknown_code=$(curl -sS --max-time 20 -o /tmp/atlas-unknown.html -w '%{http_code}' "https://$ATLAS_DOMAIN/place/__not-a-real-place__")
           test "$unknown_code" = "404"
