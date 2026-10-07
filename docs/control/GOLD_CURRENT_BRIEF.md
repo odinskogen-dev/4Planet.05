@@ -1404,7 +1404,7 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **BOUNDED OUTCOME:** preserve the existing ATLAS map engine, layers, source semantics and product depth while converging mobile interaction to one owning work surface at a time: SEARCH / CONTEXT / LAYERS / NOW-WATCH / MY ATLAS. At rest Earth remains primary. Controls are smaller and rounded rather than large rectangular chrome.
 
-**PERFORMANCE LAW — NO INVISIBLE WORK:** remove the body-wide search MutationObserver; integrate data-layer intent directly into the existing React search path; stop one-second whole-ATLAS clock renders; replace sub-second Time polling with MapLibre events; reduce evidence fallback polling from 900 ms to 15 s; stop Zoom Stack work on tile/source churn; use a smaller mobile tile cache and shorter raster fade. Hidden surfaces do not earn recurring CPU/network work.
+**PERFORMANCE LAW — NO INVISIBLE WORK:** remove the body-wide search MutationObserver; integrate data-layer intent directly into the existing React search path; stop one-second whole-ATLAS clock renders; replace sub-second Time polling with MapLibre events; reduce evidence fallback polling from 900 ms to 15 s; stop Zoom Stack work on tile/source churn; use a smaller mobile tile cache and shorter raster fade; do not fetch the shared EONET/USGS signal pool until NOW/WATCH or an explicit place/coordinate question needs it. Hidden surfaces do not earn recurring CPU/network work.
 
 **SEARCH:** mobile search owns the interaction plane while active, uses dynamic viewport height for the iOS keyboard, hides competing controls, de-duplicates provider taxon rows by scientific identity, and resolves existing data-layer intents without page reload.
 
