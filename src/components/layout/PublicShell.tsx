@@ -473,7 +473,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <main id="main-content" tabIndex={-1}>{children}</main>
       <Footer />
       <style>{`
-        .skip-link{position:fixed;left:16px;top:8px;z-index:1000;transform:translateY(-180%);background:#fff;color:#000000;padding:10px 14px;font:11px ${T.mono};letter-spacing:.12em;text-decoration:none}
+        .skip-link{position:fixed;left:16px;top:8px;z-index:1000;transform:translateY(-180%);background:#FFFFFF;color:#000000;padding:10px 14px;font:11px ${T.mono};letter-spacing:.12em;text-decoration:none}
         .skip-link:focus{transform:translateY(0)}
         .public-header{position:fixed;z-index:90;top:0;left:0;right:0;border:0;transition:transform .24s cubic-bezier(.4,0,.2,1),background-color .22s ease,color .22s ease;padding-top:env(safe-area-inset-top,0px)}
         .public-header__bar{height:64px;padding:0 clamp(18px,4vw,56px);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px}
@@ -487,13 +487,13 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .public-header__join{font-family:${T.mono};font-size:10px;letter-spacing:.12em;border:0;padding:8px 2px;text-decoration:none;white-space:nowrap}
         .public-header__join:hover{text-decoration:underline;text-underline-offset:5px}
         .public-header__menu{display:none;appearance:none;border:0;background:transparent;font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:12px 0;cursor:pointer}
-        .nav-panel{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;height:clamp(318px,29vw,382px);overflow:hidden;background:#fff;color:${T.ink};border-top:1px solid ${T.line};border-bottom:1px solid ${T.lineStrong};box-shadow:0 18px 42px rgba(0,0,0,.08)}
+        .nav-panel{position:absolute;top:calc(64px + env(safe-area-inset-top,0px));left:0;right:0;height:clamp(318px,29vw,382px);overflow:hidden;background:#FFFFFF;color:${T.ink};border-top:1px solid ${T.line};border-bottom:1px solid ${T.lineStrong};box-shadow:0 18px 42px rgba(0,0,0,.08)}
         .nav-panel__inner{height:100%;max-width:1440px;margin:0 auto;padding:clamp(30px,3.4vw,48px) clamp(20px,4vw,56px);display:grid;grid-template-columns:minmax(190px,.24fr) minmax(0,1fr);gap:clamp(44px,6vw,96px);align-items:stretch}
         .nav-panel__rail{padding-top:2px}
         .nav-panel-grid{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line}}
         .nav-panel-grid--2{grid-template-columns:repeat(2,minmax(0,1fr))}
         .nav-panel-grid--4{grid-template-columns:repeat(4,minmax(0,1fr));background:transparent;border:0;gap:clamp(20px,3vw,42px)}
-        .nav-panel-link{position:relative;display:grid;grid-template-columns:4px 1fr auto;gap:16px;align-items:start;background:#fff;padding:clamp(18px,1.7vw,24px);text-decoration:none;color:${T.ink};min-height:0}
+        .nav-panel-link{position:relative;display:grid;grid-template-columns:4px 1fr auto;gap:16px;align-items:start;background:#FFFFFF;padding:clamp(18px,1.7vw,24px);text-decoration:none;color:${T.ink};min-height:0}
         .nav-panel-link__bar{width:4px;height:100%}
         .nav-panel-link:hover strong{color:${T.blue}!important}.nav-panel-link:focus-visible{outline:3px solid ${T.blue};outline-offset:-3px}
         .nav-domain-col{min-width:0}
@@ -501,7 +501,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .nav-domain-head:focus-visible,.nav-mission-link:focus-visible{outline:3px solid currentColor;outline-offset:4px}
         .nav-mission-link{display:flex;align-items:center;gap:9px;padding:7px 0;color:${T.ink};font-size:13px;line-height:1.32;text-decoration:none}
         .nav-mission-link:hover{text-decoration:underline;text-underline-offset:3px}
-        .mobile-nav{display:none;position:fixed;z-index:80;inset:0;background:#fff;color:${T.ink};overflow:auto;padding-top:calc(64px + env(safe-area-inset-top,0px))}
+        .mobile-nav{display:none;position:fixed;z-index:80;inset:0;background:#FFFFFF;color:${T.ink};overflow:auto;padding-top:calc(64px + env(safe-area-inset-top,0px))}
         .mobile-nav__inner{padding:36px 20px 80px}
         .mobile-nav__lenses{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line};margin-top:18px}
         .mobile-nav__about{display:grid;margin-top:14px;border-top:1px solid ${T.line}}
