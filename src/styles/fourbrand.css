@@ -3,7 +3,7 @@
 /* DATA VALUE CONVERGENCE 01 — legal identity before company analysis */
 .fb-identity-state,.fb-identity-results{margin:18px 0 0;padding:18px;border:1px solid #d4d4ce;background:#fff}
 .fb-identity-state{display:flex;justify-content:space-between;gap:18px;align-items:center;font-size:13px}
-.fb-identity-state p{margin:0;color:#555}.fb-identity-state button,.fb-identity-fallback{border:1px solid #111;background:#fff;padding:10px 12px;cursor:pointer;font:9px "Fragment Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em}
+.fb-identity-state p{margin:0;color:#555}.fb-identity-state button{border:1px solid #111;background:#fff;padding:10px 12px;cursor:pointer;font:9px "Fragment Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em}.fb-identity-fallback{margin:12px 0 0;color:#666;font:10px/1.5 "Fragment Mono",ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em}
 .fb-identity-results>div:first-child h2{font:500 clamp(26px,4vw,44px)/1 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.04em;margin:6px 0 8px}
 .fb-identity-results>div:first-child p:last-child{font-size:13px;color:#555;max-width:700px}
 .fb-identity-list{display:grid;gap:6px;margin:18px 0}
