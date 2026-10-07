@@ -1,0 +1,247 @@
+name: ATLAS Mobile Closure LIVE
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/atlas-mobile-closure-live-20261007.yml"
+      - "docs/control/ATLAS_LIVE_RELEASE_20261007.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-mobile-closure-live-20261007
+  cancel-in-progress: false
+
+jobs:
+  verify-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      RELEASE_FILE: docs/control/ATLAS_LIVE_RELEASE_20261007.json
+      ATLAS_DOMAIN: 4planetatlas.com
+    steps:
+      - name: Checkout exact authorised HEIR artifact
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Verify Founder-scoped release authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '.status=="FOUNDER_AUTHORISED" and .scope=="ATLAS_ONLY" and .sourceBranch=="king/test" and .requiredDomain=="4planetatlas.com"' "$RELEASE_FILE" >/dev/null
+          echo "ATLAS_RELEASE_AUTHORITY_PASS sha=$GITHUB_SHA"
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo "No Cloudflare token"; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Prove ATLAS domain isolation and capture rollback
+        id: origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account_id" ] || { echo "No Cloudflare account id"; exit 3; }
+          projects=$(curl -fsS "${api}/accounts/${account_id}/pages/projects" "${auth[@]}")
+          project=$(jq -r --arg d "$ATLAS_DOMAIN" '[.result[]? | select(any(.domains[]?; .==$d or .==("www."+ $d)))][0].name // empty' <<<"$projects")
+          [ -n "$project" ] || { echo "No Pages project directly owns $ATLAS_DOMAIN; refusing cross-product deployment."; exit 4; }
+          domains=$(jq -c --arg p "$project" '.result[] | select(.name==$p) | [.domains[]?]' <<<"$projects")
+          jq -e --arg d "$ATLAS_DOMAIN" 'all(.[]; (.==$d) or (.==("www."+ $d)) or endswith(".pages.dev"))' <<<"$domains" >/dev/null || {
+            echo "ATLAS project also owns unrelated custom domains; refusing deployment."
+            jq -r '.[]' <<<"$domains"
+            exit 5
+          }
+          production_branch=$(jq -r --arg p "$project" '.result[] | select(.name==$p) | .production_branch // empty' <<<"$projects")
+          [ -n "$production_branch" ] || { echo "No production branch"; exit 6; }
+          deployments=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/${project}/deployments?env=production&page=1&per_page=5" "${auth[@]}")
+          previous_id=$(jq -r '.result[0].id // empty' <<<"$deployments")
+          previous_sha=$(jq -r '.result[0].deployment_trigger.metadata.commit_hash // empty' <<<"$deployments")
+          previous_url=$(jq -r '.result[0].url // empty' <<<"$deployments")
+          {
+            echo "CLOUDFLARE_ACCOUNT_ID=$account_id"
+            echo "ATLAS_PAGES_PROJECT=$project"
+            echo "ATLAS_PRODUCTION_BRANCH=$production_branch"
+            echo "ATLAS_PREVIOUS_DEPLOYMENT_ID=$previous_id"
+            echo "ATLAS_PREVIOUS_SHA=$previous_sha"
+            echo "ATLAS_PREVIOUS_URL=$previous_url"
+          } >> "$GITHUB_ENV"
+          echo "ATLAS_ISOLATED_PROJECT_PASS project=$project production_branch=$production_branch previous_sha=$previous_sha"
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: ATLAS static contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test \
+            scripts/atlas-mobile-human-performance-contract.test.mjs \
+            scripts/atlas-recovery-contract.test.mjs \
+            scripts/atlas-search-discovery-contract.test.mjs \
+            scripts/atlas-source-bridge-contract.test.mjs \
+            scripts/atlas-mobile-context-control-contract.test.mjs
+
+      - name: Typecheck and production build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          npm run build
+          grep -R -Fq 'data-atlas-mobile-closure' dist/assets
+          echo "ATLAS_BUILD_PASS"
+
+      - name: Install mobile browser engines
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Start exact local preview
+        shell: bash
+        run: |
+          nohup npx vite preview --host 127.0.0.1 --port 4173 > /tmp/atlas-preview.log 2>&1 &
+          for i in $(seq 1 45); do
+            curl -fsS http://127.0.0.1:4173/atlas >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/atlas-preview.log
+          exit 7
+
+      - name: Mobile viewport + one-surface proof before LIVE
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          for (const engine of [chromium, webkit]) {
+            const browser = await engine.launch();
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            const errors = [];
+            page.on('pageerror', e => errors.push(String(e)));
+            await page.goto('http://127.0.0.1:4173/atlas', { waitUntil: 'domcontentloaded' });
+            await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ state: 'visible', timeout: 20000 });
+            await page.locator('.maplibregl-canvas').waitFor({ state: 'visible', timeout: 20000 });
+            const initial = await page.evaluate(() => {
+              const world = document.querySelector('.world')?.getBoundingClientRect();
+              const canvas = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
+              return { iw: innerWidth, ih: innerHeight, sw: document.documentElement.scrollWidth, world, canvas };
+            });
+            if (!initial.world || initial.world.width > initial.iw + 1 || initial.world.height < initial.ih - 3 || initial.sw > initial.iw + 1) throw new Error('ATLAS mobile viewport clipped or horizontally overflowing');
+            const input = page.locator('.search-line input');
+            await input.focus();
+            await input.fill('orca');
+            await page.locator('.world.search-active').waitFor();
+            const savedVisibility = await page.locator('.atlas-saved-views').evaluate(el => getComputedStyle(el).visibility);
+            if (savedVisibility !== 'hidden') throw new Error('My Atlas competes with active mobile search');
+            await page.locator('.search-exit').click();
+            await page.locator('.world.search-active').waitFor({ state: 'detached' }).catch(async () => {
+              if (await page.locator('.world.search-active').count()) throw new Error('Search surface did not release');
+            });
+            const layerToggle = page.locator('.atlas-panel .sect').first();
+            await layerToggle.click();
+            await page.locator('.world.layers-active').waitFor();
+            await layerToggle.click();
+            await page.locator('.atlas-saved-toggle').click();
+            await page.locator('.atlas-saved-views.open').waitFor();
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+            if (overflow > 1) throw new Error('ATLAS sheet creates horizontal overflow');
+            if (errors.length) throw new Error('Page errors: ' + errors.join(' | '));
+            await browser.close();
+          }
+          console.log('ATLAS_MOBILE_PRELIVE_PROOF_PASS');
+          NODE
+
+      - name: Deploy exact tested artifact to dedicated ATLAS Pages project
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist \
+            --project-name "$ATLAS_PAGES_PROJECT" \
+            --branch "$ATLAS_PRODUCTION_BRANCH" \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "ATLAS mobile human performance closure 01"
+          echo "ATLAS_DEPLOY_SUBMITTED sha=$GITHUB_SHA"
+
+      - name: Verify standalone ATLAS LIVE on Chromium and WebKit
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            code=$(curl -sS -L --max-time 20 -o /tmp/atlas-live.html -w '%{http_code}' "https://$ATLAS_DOMAIN/" || true)
+            [ "$code" = "200" ] && break
+            sleep 3
+          done
+          test "$code" = "200"
+          node --input-type=module <<'NODE'
+          import { chromium, webkit } from '@playwright/test';
+          const url = 'https://4planetatlas.com/';
+          for (const engine of [chromium, webkit]) {
+            const browser = await engine.launch();
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            await page.goto(url, { waitUntil: 'domcontentloaded' });
+            await page.locator('.world[data-atlas-mobile-closure="v1"]').waitFor({ state: 'visible', timeout: 30000 });
+            await page.locator('.maplibregl-canvas').waitFor({ state: 'visible', timeout: 30000 });
+            const box = await page.evaluate(() => {
+              const w = document.querySelector('.world')?.getBoundingClientRect();
+              const c = document.querySelector('.maplibregl-canvas')?.getBoundingClientRect();
+              return { iw: innerWidth, ih: innerHeight, sw: document.documentElement.scrollWidth, w, c };
+            });
+            if (!box.w || box.w.width > box.iw + 1 || box.w.height < box.ih - 3 || box.sw > box.iw + 1) throw new Error('LIVE ATLAS viewport failure');
+            const input = page.locator('.search-line input');
+            await input.focus();
+            await input.fill('orca');
+            await page.locator('.world.search-active').waitFor();
+            await page.locator('.search-exit').click();
+            await page.locator('.atlas-saved-toggle').click();
+            await page.locator('.atlas-saved-views.open').waitFor();
+            await browser.close();
+          }
+          console.log('ATLAS_LIVE_MOBILE_PROOF_PASS');
+          NODE
+
+      - name: Record release facts
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "ATLAS_RELEASE_SHA=$GITHUB_SHA"
+            echo "ATLAS_DOMAIN=$ATLAS_DOMAIN"
+            echo "ATLAS_PROJECT=${ATLAS_PAGES_PROJECT:-UNRESOLVED}"
+            echo "ATLAS_PREVIOUS_SHA=${ATLAS_PREVIOUS_SHA:-UNRESOLVED}"
+            echo "ATLAS_PREVIOUS_DEPLOYMENT=${ATLAS_PREVIOUS_URL:-UNRESOLVED}"
+            echo "ATLAS_RELEASE_STATUS=${{ job.status }}"
+          } | tee /tmp/atlas-release-facts.txt
+
+      - name: Upload release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-mobile-closure-live-${{ github.sha }}
+          path: |
+            /tmp/atlas-release-facts.txt
+            /tmp/atlas-preview.log

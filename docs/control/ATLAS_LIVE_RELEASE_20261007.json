@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "status": "FOUNDER_AUTHORISED",
+  "scope": "ATLAS_ONLY",
+  "releaseName": "ATLAS MOBILE HUMAN + PERFORMANCE CLOSURE 01",
+  "founderDecisionRef": "Chat instruction 2026-10-07: complete known ATLAS fixes and put the changes LIVE",
+  "sourceBranch": "king/test",
+  "releaseTrigger": "ONE_TIME_PUSH_OF_THIS_FILE_AND_WORKFLOW",
+  "requiredDomain": "4planetatlas.com",
+  "isolationRule": "DEPLOY_ONLY_IF_4PLANETATLAS.COM_IS_OWNED_BY_A_DEDICATED_PAGES_PROJECT",
+  "rollbackRule": "CAPTURE_PREVIOUS_PRODUCTION_DEPLOYMENT_BEFORE_MUTATION",
+  "note": "This authority is scoped to the standalone ATLAS surface. Do not publish unrelated 4PLANET surfaces from king/test."
+}

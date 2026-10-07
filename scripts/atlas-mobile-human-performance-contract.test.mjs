@@ -43,6 +43,11 @@ test("one mobile work surface owns the viewport and controls are rounded", () =>
   ]) assert.ok(worldCss.includes(token), `missing ${token}`);
   assert.match(leadingCss, /atlas-saved-views\.open/);
   assert.match(leadingCss, /body:has\(\.atlas-saved-views\.open\)/);
+  assert.match(worldCss, /height:\s*100dvh/);
+  assert.match(world, /window\.visualViewport\?\.addEventListener\("resize"/);
+  assert.match(saved, /4p:atlas-surface-open/);
+  assert.match(time, /4p:atlas-surface-open/);
+  assert.doesNotMatch(time, /"sourcedata"/);
 });
 
 test("My Atlas remains anonymous-capable but syncs through user-owned RLS when signed in", () => {
