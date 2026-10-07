@@ -28,6 +28,9 @@ test("ATLAS eliminates the worst invisible recurring work", () => {
   assert.match(time, /style\.load/);
   assert.doesNotMatch(evidence, /setInterval\(refresh, 900\)/);
   assert.match(evidence, /setInterval\(refresh, 15000\)/);
+  assert.match(world, /ONE SIGNAL POOL, ON DEMAND/);
+  assert.match(world, /ensureSignalPool/);
+  assert.match(world, /if \(lens === "EARTH"\) return/);
 });
 
 test("one mobile work surface owns the viewport and controls are rounded", () => {
