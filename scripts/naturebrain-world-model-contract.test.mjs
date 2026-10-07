@@ -157,7 +157,7 @@ test("Orca keeps one canonical identity across SPECIES, NATUREBRAIN and Living S
   assert.ok(publicSpeciesSource.includes(`id: "${canonical}"`));
   assert.ok(orcaMigration.includes(`'${canonical}'`));
   assert.ok(livingSystemsSpeciesSource.includes(`sid("${canonical}")`));
-  assert.match(publicSpeciesSource, /href: "\/livingsystems\/species\/orca"/);
+  assert.match(publicSpeciesSource, /href: "\/living-systems"/);
   assert.match(livingSystemsOrcaPage, /\/atlas\/whales/);
   assert.match(livingSystemsOrcaPage, /\/actors\/orca/);
   assert.match(livingSystemsOrcaPage, /\/impact\/actions\/bay-of-biscay-survey/);
