@@ -768,3 +768,20 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 
 
 4NATION 08 QA NOTE / 28 SEP 2026: Browser assertions are explicitly scoped to the intended decision surface and ATLAS iframe. This preserves both the new place-level map and the existing deep Oslofjord map without weakening either product contract. Real-domain proof now also triggers on canonical Worker source changes.
+
+
+## 2026-10-07 — FOUNDER COLOUR NEUTRAL LOCK / HOMEPAGE SYNC
+
+**FOUNDER DECISION:** Current 4PLANET neutral naming and production code are White / Black. White = `#FFFFFF`. Black = `#000000`. Former Paper / Ink naming is superseded for current use; former Ink `#0A0A0A` is superseded by Black `#000000`.
+
+**BOUNDED LIVE IMPLEMENTATION:** Production main receives only the neutral token/base correction plus the current homepage and PublicShell neutral literals. No other HEIR product delta is promoted.
+
+**BRAND AUTHORITY:** 4PLANET BRAND OS — MASTER CANON, PLATFORM, IDENTITY & PRODUCTION SYSTEM, Founder Colour Naming + True Black Lock, 07 October 2026.
+
+**PROTECTED INVARIANTS:** 4PLANET Blue remains `#2E2EFF`; contextual domain colours remain unchanged; semantic/secondary grey remains bounded where functionally required; natural Earth/map/documentary colour is not flattened into the neutral system.
+
+**HEIR EVIDENCE:** `king/test@a316359185472e9a419a17773af897bfe764f0a1`; production build completed successfully in Public Preview Gate before a pre-existing ATLAS prototype contract failed on `failIfMajorPerformanceCaveat`.
+
+**ROLLBACK:** exact prior production main `29734be2ea1646364f0e82ede7cc2804d53c741c`.
+
+**HUMAN EFFECT:** white surfaces are true white and primary black text is true black; no near-black / warm-neutral reinterpretation is introduced.

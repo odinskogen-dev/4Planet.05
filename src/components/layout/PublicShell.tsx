@@ -330,8 +330,8 @@ function Header() {
   const menuMode = Boolean(panel || mobileOpen);
   const dark = topIsDark(pathname) && !scrolled && !menuMode;
   const detachedDark = topIsDark(pathname) && scrolled && !menuMode;
-  const fg = menuMode ? T.ink : dark || detachedDark ? "#fff" : T.ink;
-  const bg = menuMode ? "#fff" : scrolled ? (detachedDark ? "rgba(5,5,7,.9)" : "rgba(255,255,255,.9)") : "transparent";
+  const fg = menuMode ? T.ink : dark || detachedDark ? "#FFFFFF" : T.ink;
+  const bg = menuMode ? "#FFFFFF" : scrolled ? (detachedDark ? "rgba(5,5,7,.9)" : "rgba(255,255,255,.9)") : "transparent";
 
   return (
     <>
@@ -421,7 +421,7 @@ function Footer() {
     ["4PLANET", [["The Story", "/about/story"], ["What We Believe", "/about/what-we-believe"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/join"]]],
   ];
   return (
-    <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+    <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#FFFFFF", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
       <picture>
         <source media="(max-width: 640px)" srcSet={img("footerPlanet").srcMobile} />
         <img src={img("footerPlanet").src} alt={img("footerPlanet").alt} loading="lazy" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%" }} />
@@ -430,7 +430,7 @@ function Footer() {
       <div aria-hidden style={{ position: "absolute", top: 0, left: 0, width: 96, height: 4, background: acc, zIndex: 3 }} />
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 1320, margin: "0 auto", width: "100%", padding: "clamp(64px,10vw,140px) clamp(20px,5vw,72px) clamp(28px,4vw,44px)" }}>
-        <div style={{ fontFamily: T.display, fontWeight: 500, color: "#fff", fontSize: "clamp(30px,5vw,64px)", letterSpacing: "-.04em", lineHeight: .98, maxWidth: 820 }}>For a Living Planet.</div>
+        <div style={{ fontFamily: T.display, fontWeight: 500, color: "#FFFFFF", fontSize: "clamp(30px,5vw,64px)", letterSpacing: "-.04em", lineHeight: .98, maxWidth: 820 }}>For a Living Planet.</div>
         <div style={{ marginTop: 18, maxWidth: 640 }}>
           <p style={{ color: "rgba(255,255,255,.9)", fontSize: "clamp(15px,1.4vw,19px)", lineHeight: 1.5 }}>One planet. One connected living system.</p>
           <p style={{ color: "rgba(255,255,255,.9)", fontSize: "clamp(15px,1.4vw,19px)", lineHeight: 1.5 }}>The work has only just begun.</p>
@@ -439,7 +439,7 @@ function Footer() {
 
         <div className="foot-grid" style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: "clamp(28px,4vw,56px)", alignItems: "start", marginTop: "clamp(44px,6vw,84px)" }}>
           <div>
-            <Mark size={20} color="#fff" accent={acc} />
+            <Mark size={20} color="#FFFFFF" accent={acc} />
             <p style={{ fontSize: 14, color: "rgba(255,255,255,.82)", marginTop: 16, maxWidth: 260, lineHeight: 1.55 }}>For a living planet. One connected system, made easier to understand, support and follow.</p>
           </div>
           {cols.map(([head, items]) => (
@@ -471,7 +471,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
       <main id="main-content" tabIndex={-1}>{children}</main>
       <Footer />
       <style>{`
-        .skip-link{position:fixed;left:16px;top:8px;z-index:1000;transform:translateY(-180%);background:#fff;color:#080808;padding:10px 14px;font:11px ${T.mono};letter-spacing:.12em;text-decoration:none}
+        .skip-link{position:fixed;left:16px;top:8px;z-index:1000;transform:translateY(-180%);background:#fff;color:#000000;padding:10px 14px;font:11px ${T.mono};letter-spacing:.12em;text-decoration:none}
         .skip-link:focus{transform:translateY(0)}
         .public-header{position:fixed;z-index:90;top:0;left:0;right:0;border:0;transition:transform .24s cubic-bezier(.4,0,.2,1),background-color .22s ease,color .22s ease;padding-top:env(safe-area-inset-top,0px)}
         .public-header__bar{height:64px;padding:0 clamp(18px,4vw,56px);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px}
