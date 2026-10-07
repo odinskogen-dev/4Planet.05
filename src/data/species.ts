@@ -356,7 +356,7 @@ export const SPECIES_PROFILES: SpeciesProfile[] = [
     journey: "orca",
     missionSlug: "wh4les",
     atlasJourney: "orca-gbif",
-    continuation: { href: "/livingsystems/species/orca", label: "CONTINUE TO LIVING SYSTEMS →", toProduct: "living_systems", testId: "species-to-ls" },
+    continuation: { href: "/living-systems", label: "CONTINUE TO LIVING SYSTEMS →", toProduct: "living_systems", testId: "species-to-ls" },
     fieldEyebrow: "FROM THE FIELD · FOUNDER-SUPPLIED",
     fieldImages: [
       { src: "/assets/species/orca/detail-fjord.jpg", alt: "A wild orca surfacing off a green Norwegian coast" },
