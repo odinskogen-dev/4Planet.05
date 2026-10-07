@@ -73,7 +73,7 @@ test("SPECIES-GP-01 Orca and Jaguar both populate the shared evidence/data gramm
     assert.match(block, /truthBoundary:/);
   }
   assert.match(orca, /atlasJourney:\s*"orca-gbif"/);
-  assert.match(orca, /href:\s*"\/livingsystems\/species\/orca"/);
+  assert.match(orca, /href:\s*"\/livingsystems\/species\/orca\/"/);
   assert.match(page, /Public occurrence records are historical source records/);
   assert.match(page, /not live positions, complete range maps, population counts, abundance estimates or migration routes/);
 });

@@ -1431,7 +1431,7 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **PROOF OBJECT:** canonical Orca identity + source/claim/evidence boundary + relationship context + ATLAS occurrence boundary + existing Orca Actor Gold context + existing Bay of Biscay Action/Proof route.
 
-**SHAREABLE JOURNEY AFTER RELEASE:** `/species/orca` -> `/livingsystems/species/orca` -> `/atlas/whales` -> `/actors/orca` -> `/impact/actions/bay-of-biscay-survey`.
+**SHAREABLE JOURNEY AFTER RELEASE:** `/species/orca` -> `/livingsystems/species/orca/` -> `/atlas/whales` -> `/actors/orca` -> `/impact/actions/bay-of-biscay-survey`.
 
 ### SHARED-CORE ECONOMIC PROOF
 

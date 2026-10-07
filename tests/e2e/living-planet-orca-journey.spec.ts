@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const journey = [
   { path: "/species/orca", label: "SPECIES" },
-  { path: "/livingsystems/species/orca", label: "LIVING SYSTEMS" },
+  { path: "/livingsystems/species/orca/", label: "LIVING SYSTEMS" },
   { path: "/atlas/whales", label: "ATLAS" },
   { path: "/actors/orca", label: "ACTOR" },
   { path: "/impact/actions/bay-of-biscay-survey", label: "IMPACT" },
@@ -16,9 +16,9 @@ test("Living Planet Orca flagship journey stays connected, truthful and usable",
   expect(species?.ok()).toBeTruthy();
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
   const continuation = page.getByTestId("species-to-ls");
-  await expect(continuation).toHaveAttribute("href", "/livingsystems/species/orca");
+  await expect(continuation).toHaveAttribute("href", "/livingsystems/species/orca/");
 
-  const living = await page.goto("/livingsystems/species/orca", { waitUntil: "domcontentloaded" });
+  const living = await page.goto("/livingsystems/species/orca/", { waitUntil: "domcontentloaded" });
   expect(living?.ok()).toBeTruthy();
   await expect(page.getByText("ONE ORCA · SHARED INTELLIGENCE", { exact: true })).toBeVisible();
   await expect(page.getByText("taxon:gbif:2440483", { exact: true })).toBeVisible();
