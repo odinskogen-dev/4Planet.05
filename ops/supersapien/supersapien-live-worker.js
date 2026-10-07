@@ -11,7 +11,7 @@ export default {
       return new Response('Not found', { status: 404 });
     }
 
-    if (incoming.hostname === 'www.supersapien.org') {
+    if (incoming.pathname === '/__supersapien_release') {\n      return new Response(JSON.stringify({ ok: true, release: 'mvp05', origin: 'capital-lab' }), { status: 200, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });\n    }\n\n    if (incoming.hostname === 'www.supersapien.org') {
       incoming.hostname = 'supersapien.org';
       return Response.redirect(incoming.toString(), 308);
     }
