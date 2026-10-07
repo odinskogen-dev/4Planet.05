@@ -12,7 +12,10 @@ export default {
     }
 
     if (incoming.pathname === '/__supersapien_release') {
-      return new Response(JSON.stringify({ ok: true, release: 'mvp06', origin: 'capital-lab' }), { status: 200, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+      return new Response(JSON.stringify({ ok: true, release: 'mvp07', origin: 'capital-lab' }), {
+        status: 200,
+        headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+      });
     }
 
     if (incoming.hostname === 'www.supersapien.org') {
@@ -38,7 +41,7 @@ export default {
     const responseHeaders = new Headers(upstream.headers);
     responseHeaders.delete('content-length');
     responseHeaders.delete('content-encoding');
-    responseHeaders.set('x-supersapien-origin', 'capital-lab-mvp06');
+    responseHeaders.set('x-supersapien-origin', 'capital-lab-mvp07');
     responseHeaders.set('x-content-type-options', 'nosniff');
 
     const location = responseHeaders.get('location');
