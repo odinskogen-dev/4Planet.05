@@ -224,6 +224,6 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
 
   await page.getByRole("button", { name: "Findings", exact: true }).click();
   await expect(page.getByText("Register record changed", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(/Direct competitors are not established/i)).toBeVisible();
+  await expect(page.getByText(/Direct competitors are not established/i).first()).toBeVisible();
 });
 
