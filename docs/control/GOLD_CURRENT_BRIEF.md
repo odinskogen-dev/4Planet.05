@@ -1,3 +1,48 @@
+# DISCOVERY ENGINE 01 — HEIR BROWSER PROOF RESTORATION — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR TEST-CONTROL FIX / NO PRODUCT BYTE CHANGE / NO LIVE AUTHORITY.
+
+## USER ARRIVES BECAUSE
+A person entering through `/now`, `/wildfires` or `/earthquakes` needs the Discovery page to render its source boundary, canonical ATLAS continuation and indexable canonical identity on desktop and mobile.
+
+## ONE THING TO UNDERSTAND
+The current HEIR contains the Discovery product and deterministic contract, but no longer contains or runs the earlier accepted route-level Playwright journey from donor PR #403.
+
+## PRIMARY ACTION
+Restore that exact bounded journey to the sole HEIR and execute it in the existing Browser Product Proof workflow.
+
+## SECONDARY DEPTH
+The test checks HTTP success, the expected heading/source, canonical ATLAS iframe, canonical URL, indexable robots state, no horizontal overflow and no page exceptions.
+
+## P1 DOMINANT
+Regression-proof restoration only; no route, content, design, source or runtime implementation changes.
+
+## P2 ORIENTATION
+The same three representative routes cover Earth Now, one satellite/fire topic and one seismic topic.
+
+## P3 ACTION / NEXT
+Run the exact test on Chromium desktop, 390, 430 and WebKit 390; route the resulting candidate to independent Gold.
+
+## P4 DEPTH
+PR #403 remains read-only donor evidence. The test is copied into `king/test`; the donor is not repaired, promoted or made authoritative.
+
+## WHAT CAN BE REMOVED
+No new workflow, fixture, product branch or release carrier. Reuse the existing Browser Product Proof job.
+
+## WHAT MUST BE REUSED
+Existing Discovery routes and content registry, canonical `4planetatlas.com` embed, Playwright projects, sole HEIR and PR #403's bounded accepted journey.
+
+## TRUTH BOUNDARY
+Passing this synthetic browser proof demonstrates route/rendering invariants only. It does not prove search indexing, traffic, real-user value, LIVE deployment or release authority.
+
+## MOBILE-FIRST RISK
+Horizontal overflow or hidden source/map continuation at 390/430 must fail the journey.
+
+## HUMAN SUCCESS
+The representative Discovery entry renders correctly and exposes its evidence boundary and ATLAS continuation without page errors or overflow.
+
+---
+
 # WHAT WE BELIEVE — HOMEPAGE DISCOVERY SYNC — 07 OCT 2026
 
 **STATUS:** BOUNDED HEIR FOLLOW-UP / SAME VALUES CANDIDATE / NO NEW CANON.

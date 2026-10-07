@@ -69,6 +69,17 @@ jobs:
           cat /tmp/4planet-preview.log || true
           exit 1
 
+      - name: Run Discovery Engine 01 browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/discovery-engine-01.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --project=mobile-430
+          --project=webkit-390
+
       - name: Run ASTRA three-product focused proof
         env:
           BASE_URL: http://127.0.0.1:4173
