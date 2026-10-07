@@ -1,4 +1,5 @@
 name: ATLAS Exposure LIVE
+# exposure-rerun: place-image-regex-fix
 
 on:
   push:
