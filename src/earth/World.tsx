@@ -1267,8 +1267,15 @@ function WorldInner() {
           <div className="results" role="listbox" aria-label="Search results">
             {layerHits.length > 0 && <div className="rgrp">DATA LAYERS</div>}
             {layerHits.map((hit) => (
-              <div key={hit.layerId} className="ritem" role="option" tabIndex={0}
-                onClick={() => activateLayerIntent(hit.layerId)} onKeyDown={onKeyActivate(() => activateLayerIntent(hit.layerId))}>
+              <div
+                key={hit.layerId}
+                className="ritem"
+                role="option"
+                tabIndex={0}
+                data-atlas-intent-layer={hit.layerId}
+                onClick={() => activateLayerIntent(hit.layerId)}
+                onKeyDown={onKeyActivate(() => activateLayerIntent(hit.layerId))}
+              >
                 <span className="rdot" style={{ background: C.blue }} />
                 <span className="rmain">
                   <span className="rname">{hit.label}</span>
