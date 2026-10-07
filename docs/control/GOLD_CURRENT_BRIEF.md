@@ -785,3 +785,6 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **ROLLBACK:** exact prior production main `29734be2ea1646364f0e82ede7cc2804d53c741c`.
 
 **HUMAN EFFECT:** white surfaces are true white and primary black text is true black; no near-black / warm-neutral reinterpretation is introduced.
+
+
+**FOLLOW-UP NORMALISATION:** PublicShell and shared global literals were normalised so current neutral code uses explicit `#FFFFFF` / `#000000` rather than abbreviated `#fff` or legacy `#080808`. This is code-normalisation inside the same Founder colour lock, not a new visual decision.
