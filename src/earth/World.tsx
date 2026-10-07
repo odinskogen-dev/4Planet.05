@@ -238,7 +238,7 @@ function WorldInner() {
   }, [stripOpen]);
 
   /* ── ONE SIGNAL POOL, ON DEMAND ─────────────────────────────────────────
-     NO INVISIBLE WORK: EONET + USGS are not fetched simply because ATLAS opened.
+     NO INVISIBLE WORK: EONET + USGS are not fetched simply because ATLAS opened (mobile closure contract).
      NOW/WATCH or a place/coordinate question earns the network work. */
   const publishSignalPool = useCallback((nextPool) => {
     poolRef.current = nextPool;
