@@ -92,10 +92,13 @@ jobs:
           grep -Fq "<loc>https://$ATLAS_DOMAIN/places</loc>" <<<"$sitemap"
           ! grep -Fq 'https://4planet.org/place/' <<<"$sitemap"
 
-          root_target=$(curl -sS -o /dev/null -w '%{redirect_url}' "https://$ATLAS_DOMAIN/")
-          test "$root_target" = "https://$ATLAS_DOMAIN/atlas"
+          root_final=$(curl -sS -L -o /dev/null -w '%{url_effective}' "https://$ATLAS_DOMAIN/")
+          case "$root_final" in
+            "https://$ATLAS_DOMAIN/atlas"|"https://$ATLAS_DOMAIN/atlas/") ;;
+            *) echo "unexpected root target: $root_final"; exit 1 ;;
+          esac
 
-          atlas=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/atlas")
+          atlas=$(curl -fsSL --max-time 20 "https://$ATLAS_DOMAIN/atlas")
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas"' <<<"$atlas"
           ! grep -Fq 'rel="canonical" href="https://4planet.org/atlas"' <<<"$atlas"
 
@@ -112,7 +115,10 @@ jobs:
           unknown_code=$(curl -sS --max-time 20 -o /tmp/atlas-unknown.html -w '%{http_code}' "https://$ATLAS_DOMAIN/place/__not-a-real-place__")
           test "$unknown_code" = "404"
 
-          species_target=$(curl -sS -o /dev/null -w '%{redirect_url}' "https://$ATLAS_DOMAIN/species")
-          test "$species_target" = "https://4species.com/species/"
+          species_final=$(curl -sS -L -o /dev/null -w '%{url_effective}' "https://$ATLAS_DOMAIN/species")
+          case "$species_final" in
+            "https://4species.com/species/"|"https://4species.com/species") ;;
+            *) echo "unexpected species target: $species_final"; exit 1 ;;
+          esac
 
           echo "ATLAS_GOOGLE_EXPOSURE_LIVE_PASS places=$place_count"
