@@ -182,7 +182,7 @@ export function AtlasSavedViews() {
                 {copied ? "LINK COPIED" : "SHARE VIEW"}
               </button>
               <button type="button" onClick={save} className="atlas-action atlas-action-green">
-                SAVE VIEW +
+                SAVE CURRENT VIEW +
               </button>
             </div>
 
@@ -196,7 +196,9 @@ export function AtlasSavedViews() {
 
             {state.views.length === 0 ? (
               <p className="atlas-saved-empty">
-                Save useful map views here. Places and species you follow remain in Watch. Signed-in users keep both across supported 4PLANET surfaces.
+                {session
+                  ? "Save useful map views here. Places and species you follow remain in Watch and sync with your 4PLANET ID across supported 4PLANET surfaces."
+                  : "Save useful map views on this device. Nothing is uploaded or shared unless you choose to share a link. Places and species you follow remain in Watch."}
               </p>
             ) : (
               <div className="atlas-saved-list">
