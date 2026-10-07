@@ -83,7 +83,13 @@ jobs:
         run: |
           test -s public/sitemap.xml
           test -s public/magazine-sitemap.xml
-          test -s public/news-sitemap.xml
+          if [ -f public/news-sitemap.xml ]; then
+            test -s public/news-sitemap.xml
+            grep -q 'news:news' public/news-sitemap.xml
+            grep -q 'news-sitemap.xml' public/magazine-robots.txt
+          else
+            ! grep -q 'news-sitemap.xml' public/magazine-robots.txt
+          fi
           test -s public/rss.xml
           test -s public/magazine-robots.txt
           test -f dist/magazine/index.html
