@@ -1,3 +1,23 @@
+# ATLAS GOOGLE EXPOSURE CLOSURE — 08 OCT 2026
+
+**STATUS:** BOUNDED ATLAS EXPOSURE / INDEXABILITY CORRECTION. No ATLAS interface redesign in this change.
+
+**FOUNDER OBJECTIVE:** Make 4PLANET ATLAS and its verified World Place Index discoverable through Google while Claude independently improves the ATLAS user experience.
+
+**SEARCH TRUTH AT START:** Search Console sitemap submitted 52 URLs and reported 0 indexed; inspected sample Place URLs were "URL is unknown to Google" with no last crawl time.
+
+**CANONICAL OWNERSHIP:** `4planetatlas.com` owns ATLAS and canonical Place pages. Current interactive application canonical = `https://4planetatlas.com/atlas`. Root `/` permanently redirects to `/atlas` until the standalone router itself is intentionally migrated to root.
+
+**PLACE COHORT:** Preserve the already calibrated World Place Index: 50 base verified places + 200 promoted Natural Earth candidates = 250 indexable place URLs. Unknown place slugs fail closed with 404.
+
+**SEO CONTRACT:** `robots.txt` advertises only `https://4planetatlas.com/sitemap.xml`; sitemap exposes `/atlas`, `/places` and exactly 250 canonical `/place/*` URLs; each place exposes canonical metadata, structured data, provenance and crawlable related-place links without requiring JavaScript.
+
+**SEPARATION:** Claude owns ATLAS UI/UX work. This closure only modifies exposure/runtime SEO infrastructure and must not overwrite Claude's interface work.
+
+**TRUTH BOUNDARY:** Sitemap submission and crawlability do not equal Google indexing or ranking. Search Console state remains the authority for crawl/index status.
+
+---
+
 # DISCOVERY ENGINE 01 — HEIR BROWSER PROOF RESTORATION — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR TEST-CONTROL FIX / NO PRODUCT BYTE CHANGE / NO LIVE AUTHORITY.

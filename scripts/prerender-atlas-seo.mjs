@@ -72,8 +72,8 @@ const crawlableBody = `
   <h2>Explore the living planet</h2>
   <ul>
     <li><a href="/places">Places — source-grounded ecological context</a></li>
-    <li><a href="/species">Species — identity, evidence and reported observations</a></li>
-    <li><a href="/living-systems">Living Systems — relationships, pressures and responses</a></li>
+    <li><a href="https://4species.com/species/">Species — identity, evidence and reported observations</a></li>
+    <li><a href="https://4planet.org/livingsystems/">Living Systems — relationships, pressures and responses</a></li>
   </ul>
   <h2>Data sources visible in ATLAS</h2>
   <p>ATLAS surfaces public source data from providers including NASA Earthdata/GIBS, GBIF, OBIS, USGS and NOAA. Each layer retains its own scope and limitations.</p>

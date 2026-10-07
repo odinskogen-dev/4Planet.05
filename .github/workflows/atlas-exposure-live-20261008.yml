@@ -1,0 +1,118 @@
+name: ATLAS Exposure LIVE
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/atlas-exposure-live-20261008.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-exposure-live-20261008
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ATLAS_PROJECT: 4planet-atlas
+      ATLAS_DOMAIN: 4planetatlas.com
+      PUBLIC_SITE_ORIGIN: https://4planetatlas.com
+      VITE_PUBLIC_SITE_ORIGIN: https://4planetatlas.com
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Build ATLAS canonical carrier
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          npm run build
+
+          test -f dist/atlas/index.html
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas"' dist/atlas/index.html
+          grep -Fq 'property="og:url" content="https://4planetatlas.com/atlas"' dist/atlas/index.html
+          ! grep -Fq 'rel="canonical" href="https://4planet.org/atlas"' dist/atlas/index.html
+
+          # Current standalone router lives at /atlas. Root is a permanent convenience redirect.
+          printf '/ /atlas 308\n' > dist/_redirects
+
+          test -f functions/_middleware.js
+          grep -Fq 'ATLAS_PLACE_COHORT_01_50' functions/_middleware.js
+          grep -Fq 'ATLAS_PROMOTED_PLACES' functions/_middleware.js
+          grep -Fq 'ATLAS_PLACE_COHORT_02_200' functions/atlas-promoted-places.generated.js
+          echo 'ATLAS_EXPOSURE_BUILD_PASS'
+
+      - name: Deploy exact ATLAS exposure carrier
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.128.0 pages deploy dist \
+            --project-name "$ATLAS_PROJECT" \
+            --branch main \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-message "ATLAS exposure live $GITHUB_SHA"
+          echo 'ATLAS_EXPOSURE_DEPLOY_PASS'
+
+      - name: Verify canonical host, crawl graph and 250 Place URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for i in $(seq 1 40); do
+            robots=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/robots.txt" || true)
+            sitemap=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/sitemap.xml" || true)
+            if grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap.xml" <<<"$robots" \
+              && grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas</loc>" <<<"$sitemap"; then
+              break
+            fi
+            sleep 3
+          done
+
+          grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap.xml" <<<"$robots"
+          ! grep -Fq '4planet.org/sitemap.xml' <<<"$robots"
+
+          place_count=$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sitemap" | sort -u | wc -l | tr -d ' ')
+          test "$place_count" = "250"
+          grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas</loc>" <<<"$sitemap"
+          grep -Fq "<loc>https://$ATLAS_DOMAIN/places</loc>" <<<"$sitemap"
+          ! grep -Fq 'https://4planet.org/place/' <<<"$sitemap"
+
+          root_target=$(curl -sS -o /dev/null -w '%{redirect_url}' "https://$ATLAS_DOMAIN/")
+          test "$root_target" = "https://$ATLAS_DOMAIN/atlas"
+
+          atlas=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/atlas")
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/atlas"' <<<"$atlas"
+          ! grep -Fq 'rel="canonical" href="https://4planet.org/atlas"' <<<"$atlas"
+
+          places=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/places")
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/places"' <<<"$places"
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
+
+          berlin=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/place/berlin")
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
+          grep -Fq '"@type":"City"' <<<"$berlin"
+          grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
+          grep -Fq 'Related places in the current index' <<<"$berlin"
+
+          unknown_code=$(curl -sS --max-time 20 -o /tmp/atlas-unknown.html -w '%{http_code}' "https://$ATLAS_DOMAIN/place/__not-a-real-place__")
+          test "$unknown_code" = "404"
+
+          species_target=$(curl -sS -o /dev/null -w '%{redirect_url}' "https://$ATLAS_DOMAIN/species")
+          test "$species_target" = "https://4species.com/species/"
+
+          echo "ATLAS_GOOGLE_EXPOSURE_LIVE_PASS places=$place_count"
