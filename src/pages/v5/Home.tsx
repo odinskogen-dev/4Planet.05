@@ -271,7 +271,7 @@ export default function Home() {
                 Care deeply. Truth first. Everyone has a part to play. Build things that are useful, make them real,
                 use power for good — and leave things better.
               </p>
-              <Link to="/about" className="home-text-link home-text-link--blue">What we believe →</Link>
+              <Link to="/about/what-we-believe" className="home-text-link home-text-link--blue">What we believe →</Link>
             </div>
 
             <figure className="home-belief-visual">
@@ -284,7 +284,7 @@ export default function Home() {
             </figure>
 
             <div className="home-belief-join__join">
-              <h3>There is a place for everyone. You too.</h3>
+              <h3>There is a place for everyone who wants to help — including you.</h3>
               <p>
                 4Planet is for people and organisations who want to understand more, contribute meaningfully and
                 follow what happens next.

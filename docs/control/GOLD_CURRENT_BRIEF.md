@@ -1,3 +1,19 @@
+# WHAT WE BELIEVE — HOMEPAGE DISCOVERY SYNC — 07 OCT 2026
+
+**STATUS:** BOUNDED HEIR FOLLOW-UP / SAME VALUES CANDIDATE / NO NEW CANON.
+
+**DELTA:** The existing homepage belief section now routes directly to `/about/what-we-believe` instead of generic `/about`, and its invitation matches canonical intent: “There is a place for everyone who wants to help — including you.”
+
+**WHY:** Values must be discoverable in normal product journeys, not hidden only inside About navigation. Reuse the existing homepage belief block; create no new campaign or duplicate values source.
+
+**TRUTH / SCOPE:** Homepage language remains a short public derivative. Canon remains the single Drive Founder Thesis authority. No product claim, impact claim or new value is introduced.
+
+**MOBILE RISK:** Longer invitation heading must wrap without overflow.
+
+**RELEASE:** Same exact-artifact QA and bounded LIVE release as the owning WHAT WE BELIEVE candidate.
+
+---
+
 # WHAT WE BELIEVE — CANON WORDING SYNC + HUMAN INVITATION — 07 OCT 2026
 
 **STATUS:** BOUNDED HEIR CANDIDATE / FOUNDER-APPROVED VALUES CANON SYNC / LIVE RELEASE REQUIRES EXACT TESTED ARTIFACT.
