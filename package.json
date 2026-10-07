@@ -30,7 +30,8 @@
     "test:atlas-search": "node --test scripts/atlas-search-discovery-contract.test.mjs",
     "test:discovery-world-class": "node --test scripts/discovery-world-class-contract.test.mjs",
     "test:discovery-engine": "node --test scripts/discovery-engine-01-contract.test.mjs",
-    "test:living-systems-v142": "node scripts/living-systems-v142-zero-loss.test.mjs"
+    "test:living-systems-v142": "node scripts/living-systems-v142-zero-loss.test.mjs",
+    "test:atlas-place-runtime": "node --test scripts/atlas-place-runtime-contract.test.mjs"
   },
   "dependencies": {
     "maplibre-gl": "6.10.0",
