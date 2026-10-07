@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "status": "FOUNDER_AUTHORISED",
+  "scope": "ATLAS_ONLY",
+  "artifactSha": "e60c3ee72ccc9fe97f1f092a0b1f7be6246942b9",
+  "previewOrigin": "https://0526e748.4planet-05.pages.dev",
+  "domain": "4planetatlas.com",
+  "evidence": {
+    "staticContracts": "PASS",
+    "typecheck": "PASS",
+    "productionBuild": "PASS",
+    "mobilePreLiveProof": "PASS",
+    "exactPreviewBrowserProof": "PASS_INTERACTIVE",
+    "previousRouteAttempt": "ROLLED_BACK_AFTER_POST_ROUTE_RUNNER_BROWSER_FAILURE"
+  },
+  "founderDecisionRef": "Chat instruction 2026-10-07: publish the actual ATLAS upgrades live, then hand off to Claude",
+  "rollback": "Delete atlas-live-router-20261007 route and worker script."
+}
