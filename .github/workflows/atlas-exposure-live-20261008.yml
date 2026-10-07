@@ -107,6 +107,12 @@ jobs:
           test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
 
           berlin=$(curl -fsS --max-time 20 "https://$ATLAS_DOMAIN/place/berlin")
+          grep -Fq 'Berlin, Germany — map &amp; geography | 4PLANET ATLAS' <<<"$berlin"
+          grep -Fq 'Explore Berlin in the interactive ATLAS' <<<"$berlin"
+          grep -Fq 'https://4planetatlas.com/atlas?place=berlin' <<<"$berlin"
+          grep -Fq 'More places in Germany' <<<"$berlin"
+          grep -Fq 'Nearby places to explore' <<<"$berlin"
+          grep -Fq 'map and geography' <<<"$berlin"
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
           grep -Fq '"@type":"City"' <<<"$berlin"
           grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
