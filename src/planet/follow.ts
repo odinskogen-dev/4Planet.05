@@ -54,6 +54,9 @@ export const addFollow = (ref: EntityRef) => {
 
 export const removeFollow = (id: string) => write(read().filter((f) => f.id !== id));
 
+export const replaceFollows = (rows: Follow[]) =>
+  write(Array.isArray(rows) ? rows.filter((f) => f && f.id && f.type).slice(0, 200) : []);
+
 export const toggleFollow = (ref: EntityRef) =>
   isFollowing(ref.id) ? removeFollow(ref.id) : addFollow(ref);
 
