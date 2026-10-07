@@ -69,7 +69,7 @@ jobs:
           cat > supersapien-live-wrangler.toml <<'EOF'
           name = "supersapien-live"
           main = "ops/supersapien/supersapien-live-worker.js"
-          compatibility_date = "2026-10-08"
+          compatibility_date = "2026-10-07"
           workers_dev = true
 
           [[routes]]
