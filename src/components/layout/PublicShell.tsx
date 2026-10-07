@@ -32,9 +32,10 @@ const LENSES = [
 ] as const;
 
 const ABOUT = [
-  ["THE STORY", "Why 4PLANET exists.", "/about#story"],
-  ["THE SYSTEM", "How the public product family fits together.", "/about#system"],
-  ["THE FOUNDER", "Odin Oddekalv and the origin of the work.", "/about#founder"],
+  ["THE STORY", "Why 4PLANET exists.", "/about/story"],
+  ["THE SYSTEM", "How the public product family fits together.", "/about/system"],
+  ["WHAT WE BELIEVE", "The principles and purpose behind the work.", "/about/what-we-believe"],
+  ["THE FOUNDER", "Odin Oddekalv and the origin of the work.", "/about/founder"],
   ["THE ROAD AHEAD", "What has to become true next.", "/about#road"],
 ] as const;
 
@@ -168,7 +169,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 }
 
 function topIsDark(pathname: string) {
-  if (pathname === "/" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/founder") return true;
+  if (pathname === "/" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/what-we-believe" || pathname === "/about/founder") return true;
   if (pathname === "/atlas" || pathname === "/impact" || pathname.startsWith("/impact/")) return true;
   if (pathname.startsWith("/domains/") || pathname.startsWith("/missions/")) return true;
   if (pathname === "/domains" || pathname.startsWith("/species/") || pathname.startsWith("/ecosystems/")) return true;
@@ -417,7 +418,7 @@ function Footer() {
   const cols: [string, [string, string][]][] = [
     ["EXPLORE", [["Enter the living world", "/domains"], ["Missions", "/missions"], ["Impact", "/impact"], ["4Culture", "/domains/4culture"]]],
     ["PARTICIPATE", [["4People", "/join"], ["4Brands", "/brands"], ["4Partners", "/partners"], ["4Funders", "/funders"]]],
-    ["4PLANET", [["The Story", "/about"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/join"]]],
+    ["4PLANET", [["The Story", "/about/story"], ["What We Believe", "/about/what-we-believe"], ["Living Systems", "/living-systems"], ["Proof & Reports", "/reports"], ["Join 4Planet", "/join"]]],
   ];
   return (
     <footer style={{ position: "relative", minHeight: "clamp(600px,86vh,880px)", background: "#000", color: "#fff", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>

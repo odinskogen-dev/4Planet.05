@@ -43,12 +43,88 @@ if (manifest.boundedRelease === true) {
     fail(`bounded release parent ${releaseParent || "MISSING"} is not priorLiveSha ${manifest.priorLiveSha}`);
   }
   if (git(["merge-base", "--is-ancestor", manifest.releaseCommitSha, head], "FAIL") === "FAIL") {
-    // merge-base --is-ancestor is silent on success, so verify using merge-base equality instead.
     const mb = git(["merge-base", manifest.releaseCommitSha, head]);
     if (mb !== manifest.releaseCommitSha) fail("current main does not descend from bounded release commit");
   }
 
   const changed = git(["diff", "--name-only", manifest.priorLiveSha, manifest.releaseCommitSha]).split("\n").filter(Boolean);
+  const releaseKind = manifest.releaseKind || "LIVING_SYSTEMS_V142_ZERO_LOSS";
+
+  if (releaseKind === "VALUES_CANON_SYNC") {
+    const exactAllowed = new Set([
+      "src/pages/v5/AboutPages.tsx",
+      "src/routes/router.tsx",
+      "src/components/layout/PublicShell.tsx",
+      "src/pages/v5/Home.tsx",
+      "docs/control/GOLD_CURRENT_BRIEF.md",
+      "scripts/live-promotion-authority-gate.mjs",
+    ]);
+    const unexpected = changed.filter((file) => !exactAllowed.has(file));
+    if (unexpected.length) fail(`VALUES bounded release contains unexpected files: ${unexpected.join(", ")}`);
+
+    const requiredChanged = [
+      "src/pages/v5/AboutPages.tsx",
+      "src/routes/router.tsx",
+      "src/components/layout/PublicShell.tsx",
+      "src/pages/v5/Home.tsx",
+      "docs/control/GOLD_CURRENT_BRIEF.md",
+      "scripts/live-promotion-authority-gate.mjs",
+    ];
+    for (const file of requiredChanged) {
+      if (!changed.includes(file)) fail(`VALUES bounded release missing required file: ${file}`);
+    }
+
+    const markersByFile = {
+      "src/pages/v5/AboutPages.tsx": [
+        "export function WhatWeBelieve()",
+        "people and the rest of nature can thrive together",
+        "EVERYONE HAS A PART TO PLAY.",
+        "Love life. Care deeply for the living world.",
+        "There is a place for everyone who wants to help — including you.",
+      ],
+      "src/routes/router.tsx": ["/about/what-we-believe", "WhatWeBelieve"],
+      "src/components/layout/PublicShell.tsx": ["WHAT WE BELIEVE", "/about/what-we-believe"],
+      "src/pages/v5/Home.tsx": [
+        "We believe the future can be better.",
+        "/about/what-we-believe",
+        "There is a place for everyone who wants to help — including you.",
+      ],
+    };
+
+    for (const [file, markers] of Object.entries(markersByFile)) {
+      const releaseText = git(["show", `${manifest.releaseCommitSha}:${file}`]);
+      const testText = git(["show", `${manifest.testKingSha}:${file}`]);
+      if (!releaseText || !testText) fail(`VALUES cannot read bounded source file: ${file}`);
+      for (const marker of markers) {
+        if (!releaseText.includes(marker)) fail(`VALUES release missing marker in ${file}: ${marker}`);
+        if (!testText.includes(marker)) fail(`VALUES TEST KING evidence missing marker in ${file}: ${marker}`);
+      }
+    }
+
+    const brief = git(["show", `${manifest.releaseCommitSha}:docs/control/GOLD_CURRENT_BRIEF.md`]);
+    if (!brief.includes("WHAT WE BELIEVE") || !brief.includes("FOUNDER_ACCEPTED")) {
+      fail("VALUES bounded release GOLD brief is missing explicit WHAT WE BELIEVE Founder acceptance");
+    }
+
+    console.log("LIVE PROMOTION AUTHORITY GUARD: PASS — BOUNDED VALUES CANON SYNC");
+    console.log(JSON.stringify({
+      branch,
+      currentHead: head,
+      releaseCommit: manifest.releaseCommitSha,
+      exactTestedArtifact: manifest.testKingSha,
+      priorLiveSha: manifest.priorLiveSha,
+      changedFiles: changed,
+      founderDecisionRef: manifest.founderDecisionRef,
+      evidenceRef: manifest.evidenceRef,
+      rollbackRef: manifest.rollbackRef
+    }, null, 2));
+    process.exit(0);
+  }
+
+  if (releaseKind !== "LIVING_SYSTEMS_V142_ZERO_LOSS") {
+    fail(`unknown bounded releaseKind: ${releaseKind}`);
+  }
+
   const exactAllowed = new Set([
     "package.json",
     "src/pages/v5/Home.tsx",

@@ -1,3 +1,65 @@
+# WHAT WE BELIEVE — BOUNDED LIVE RELEASE — 07 OCT 2026
+
+**STATUS:** FOUNDER_ACCEPTED / EXACT TEST KING VALUES CANDIDATE GREEN / BOUNDED LIVE PROMOTION AUTHORISED.
+
+**FOUNDER DECISION:** “Enig i at vi nå må få dette ut live” followed by “Fullfør eller stopp og rapporter.” Scope = canonical WHAT WE BELIEVE / values page + existing homepage discoverability; no general portfolio release.
+
+**CANON AUTHORITY:** Drive ID `1dzdFFP_9IxJSORKxRgcxeZ5TKgJaQwDMD3XFcu8YoVE` — ODDEKALV_ FOUNDER THESIS — WHAT WE BELIEVE — LOCKED CANON 2.0.
+
+**EXACT TESTED HEIR:** `king/test@68c3c0290acc5d132cc91a6fbbbd374b21d1181b`. Public Preview Gate PASS run 37623454306; GOLD / WORLD CLASS PASS 37623454516; FOUR STATE Product Authority PASS 37623454635; GOLD Human Craft PASS 37623454507. Browser Product Proof failed only on the pre-existing Oslofjord `MAP · READY` contract; the immediately prior HEIR `45422a2803642a6c8f6adc0635f59622f6edc961` failed the same step before this values delta.
+
+**LIVE SCOPE:** overlay only the tested WHAT WE BELIEVE public component and bounded route/navigation/home discoverability onto current LIVE. Preserve current main architecture outside those exact seams. Add one fail-closed release-guard profile that verifies the bounded file set and required tested values markers against exact TEST KING.
+
+**PURPOSE COPY:** “people and the rest of nature can thrive together.” People are explicitly part of nature.
+
+**AMBITION COPY:** “We seek solutions that create broad, durable value…” rather than abstract progress language.
+
+**INCLUSION COPY:** “EVERYONE HAS A PART TO PLAY.” “No one solves problems this big alone. Together, we can.” “There is a place for everyone who wants to help — including you.”
+
+**HOW WE BEHAVE:** begins “Love life. Care deeply for the living world.” Curiosity, truth, courage, welcome, listening, sharing, mutual help, ownership, finishing, correction and learning remain behaviours under the seven values.
+
+**ROLLBACK:** exact prior main `5b5858d931a3426c70aa84069b826fe62af5b0a0`.
+
+**TRUTH BOUNDARY:** Values are an institutional commitment and decision framework, not proof that 4PLANET has already achieved good outcomes. Brand law remains DO GOOD → PROVE IT → LET PEOPLE TELL THE STORY.
+
+## USER ARRIVES BECAUSE
+A person wants to understand why 4PLANET exists, what it believes, how it behaves and whether there is a meaningful place for them to contribute.
+
+## ONE THING TO UNDERSTAND
+There is one canonical values authority in BRAIN. Public copy is a projection of it, not a competing source.
+
+## PRIMARY ACTION
+Open `/about/what-we-believe`; understand the values; continue through FIND YOUR PART if relevant.
+
+## SECONDARY DEPTH
+The Story, System, Founder, Impact and Join provide origin, architecture, proof and participation depth.
+
+## P1 DOMINANT
+FOR A LIVING PLANET.
+
+## P2 ORIENTATION
+BETTER. FOR EVERYONE. + four foundational beliefs.
+
+## P3 ACTION / NEXT
+FIND YOUR PART.
+
+## P4 DEPTH
+Seven values, HOW WE BEHAVE, brand law and proof logic.
+
+## WHAT CAN BE REMOVED
+No duplicate manifesto, no second values authority, no generic virtue list.
+
+## WHAT MUST BE REUSED
+Existing About architecture, Home belief block, PublicShell, Join, Impact and canonical Drive thesis.
+
+## MOBILE-FIRST RISK
+Long invitation heading must wrap at 390/430 without overflow.
+
+## HUMAN SUCCESS
+A first-time visitor can explain why 4PLANET exists, what it values and how they can participate.
+
+---
+
 # LIVING SYSTEMS v1.4.2 ZERO LOSS — BOUNDED LIVE RELEASE — 07 OCT 2026
 
 **STATUS:** FOUNDER_ACCEPTED / EXACT TEST KING ARTIFACT GREEN / BOUNDED LIVE PROMOTION AUTHORISED.
