@@ -88,6 +88,8 @@ jobs:
 
           place_count=$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sitemap" | sort -u | wc -l | tr -d ' ')
           test "$place_count" = "250"
+          image_count=$(grep -o "<image:loc>https://$ATLAS_DOMAIN/place/[^<]*/map.svg</image:loc>" <<<"$sitemap" | sort -u | wc -l | tr -d ' ')
+          test "$image_count" = "250"
           grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas/</loc>" <<<"$sitemap"
           grep -Fq "<loc>https://$ATLAS_DOMAIN/places</loc>" <<<"$sitemap"
           ! grep -Fq 'https://4planet.org/place/' <<<"$sitemap"
@@ -113,7 +115,11 @@ jobs:
           grep -Fq 'More places in Germany' <<<"$berlin"
           grep -Fq 'Nearby places to explore' <<<"$berlin"
           grep -Fq 'map and geography' <<<"$berlin"
+          grep -Fq 'property="og:image" content="https://4planetatlas.com/place/berlin/map.svg"' <<<"$berlin"
+          grep -Fq 'src="https://4planetatlas.com/place/berlin/map.svg"' <<<"$berlin"
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
+          image_type=$(curl -fsSI "https://$ATLAS_DOMAIN/place/berlin/map.svg" | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print tolower($2)}')
+          case "$image_type" in image/svg+xml*) ;; *) echo "unexpected image type: $image_type"; exit 1 ;; esac
           grep -Fq '"@type":"City"' <<<"$berlin"
           grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
           grep -Fq 'Connected places in the World Place Index' <<<"$berlin"
@@ -127,4 +133,4 @@ jobs:
             *) echo "unexpected species target: $species_final"; exit 1 ;;
           esac
 
-          echo "ATLAS_GOOGLE_EXPOSURE_LIVE_PASS places=$place_count"
+          echo "ATLAS_GOOGLE_EXPOSURE_LIVE_PASS places=$place_count images=$image_count"
