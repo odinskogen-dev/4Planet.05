@@ -15,13 +15,16 @@ test("V37CX layer/search capability already present in current Earth", () => {
   assert.match(connectors, /searchTaxa/);
 });
 
-test("missing V37CX My Atlas saved-view primitive is recovered locally", () => {
+test("My Atlas remains local-first and adds optional 4PLANET ID persistence", () => {
   assert.match(views, /4planet-atlas-saved-views-v1/);
   assert.match(views, /readAtlasSavedViews/);
   assert.match(views, /captureAtlasView/);
+  assert.match(views, /4p:atlas-views/);
   assert.match(views, /malformed|catch/i);
   assert.match(ui, /MY ATLAS/);
-  assert.match(ui, /SAVE THIS VIEW/);
-  assert.match(ui, /Follow \/ Watch/);
+  assert.match(ui, /SAVE VIEW/);
+  assert.match(ui, /4PLANET ID/);
+  assert.match(ui, /readAtlasAccountState/);
+  assert.match(ui, /writeAtlasAccountState/);
   assert.match(publicWorld, /<AtlasSavedViews/);
 });
