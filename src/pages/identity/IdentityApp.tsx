@@ -425,9 +425,9 @@ function IdentityStyles() {
     .identity-card h1{font-size:clamp(38px,7vw,52px);line-height:1;letter-spacing:-.05em;margin:48px 0 12px;font-weight:760}
     .identity-lead{font-size:18px;line-height:1.5;color:#333;margin:0 0 30px}
     .identity-google,.identity-primary,.identity-secondary{width:100%;min-height:54px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer}
-    .identity-google{background:#fff;border:1px solid #d8d8d4;color:#080808}
+    .identity-google{background:#fff;border:1px solid #d8d8d4;color:#0A0A0A}
     .identity-primary{background:#2E2EFF;border:0;color:#FFFFFF;margin-top:8px}
-    .identity-secondary{background:#fff;border:1px solid #d8d8d4;color:#080808;margin-top:10px}
+    .identity-secondary{background:#fff;border:1px solid #d8d8d4;color:#0A0A0A;margin-top:10px}
     .identity-danger{border-color:#e2b6b2;color:#9b1c12}
     button:disabled{opacity:.55;cursor:wait}
     .identity-divider{display:flex;align-items:center;gap:14px;margin:24px 0;color:#777;font-size:12px;letter-spacing:.09em}
@@ -446,7 +446,7 @@ function IdentityStyles() {
     .identity-section{padding:22px 0;border-top:1px solid #e2e2de}.identity-section:first-child{border-top:0}.identity-section h2{font-size:20px;margin:0 0 14px}
     .identity-section>label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}.identity-section>input{width:100%;height:54px;border:1px solid #d8d8d4;border-radius:14px;background:#f7f7f4;padding:0 16px;font:inherit;font-size:17px;box-sizing:border-box}
     .identity-meta-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#777;margin-top:14px}.identity-value{font-size:16px;margin-top:5px;overflow-wrap:anywhere}
-    .identity-links{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px}.identity-links a{color:#159c46;text-decoration:none;font-size:14px}
+    .identity-links{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px}.identity-links a{color:#2E2EFF;text-decoration:none;font-size:14px}
     @media(max-width:560px){.identity-shell{place-items:start center;padding-top:36px}.identity-card h1{margin-top:42px}}
     @media(prefers-color-scheme:dark){:root{color-scheme:dark}.identity-shell{background:#0A0A0A;color:#fff}.identity-brand{color:#fff}.identity-lead{color:#e8e8e8}.identity-google,.identity-secondary{background:#0A0A0A;border-color:#333;color:#fff}.identity-field input,.identity-section>input{background:#0d0d0d;border-color:#333;color:#fff}.identity-password>button{color:#ddd}.identity-section{border-color:#333}.identity-divider:before,.identity-divider:after{background:#333}}
   `}</style>;
