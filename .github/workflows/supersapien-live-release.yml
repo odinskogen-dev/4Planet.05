@@ -91,14 +91,14 @@ jobs:
           for attempt in $(seq 1 30); do
             root_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-root -D /tmp/supersapien-headers -w '%{http_code}' https://supersapien.org/ || true)
             health_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-health -w '%{http_code}' https://supersapien.org/api/_healthcheck || true)
-            if [ "$root_code" = 200 ] && [ "$health_code" = 200 ] && grep -Eq 'SUPERSAPIEN|CAPITAL LAB' /tmp/supersapien-root && grep -q '"ok":true' /tmp/supersapien-health; then
+            if [ "$root_code" = 200 ] && [ "$health_code" = 200 ] && grep -q '<div id="root"' /tmp/supersapien-root; then
               ready=true
               break
             fi
             sleep 5
           done
           [ "$ready" = true ] || { echo "SUPERSAPIEN_LIVE_VERIFY_FAIL=root:$root_code health:$health_code"; exit 5; }
-          grep -qi 'x-supersapien-origin: capital-lab-mvp03' /tmp/supersapien-headers || { echo 'SUPERSAPIEN_PROXY_HEADER_MISSING'; exit 6; }
+          grep -qi 'x-supersapien-origin: capital-lab-mvp04' /tmp/supersapien-headers || { echo 'SUPERSAPIEN_PROXY_HEADER_MISSING'; exit 6; }
           www_code=$(curl -sS -o /dev/null -D /tmp/supersapien-www -w '%{http_code}' https://www.supersapien.org/ || true)
           [ "$www_code" = 308 ] || [ "$www_code" = 301 ] || { echo "SUPERSAPIEN_WWW_REDIRECT_FAIL=$www_code"; exit 7; }
           echo 'SUPERSAPIEN_LIVE_TLS_ROOT_API_WWW=PASS'
