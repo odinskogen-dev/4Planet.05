@@ -99,9 +99,13 @@ test("Gold Plank renders Jaguar through the same truth-bounded parent", async ({
 
 test("Orca and Jaguar share the same mandatory parent section grammar", async ({ page }) => {
   await page.goto("/species/orca");
+  await expect(page.locator('[data-species-section="hero"]')).toBeVisible();
+  await expect(page.locator('[data-species-section="sources"]')).toBeVisible();
   const orca = await sectionOrder(page);
 
   await page.goto("/species/jaguar");
+  await expect(page.locator('[data-species-section="hero"]')).toBeVisible();
+  await expect(page.locator('[data-species-section="sources"]')).toBeVisible();
   const jaguar = await sectionOrder(page);
 
   expect(orca).toEqual(jaguar);
