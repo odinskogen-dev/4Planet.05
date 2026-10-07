@@ -83,31 +83,27 @@ jobs:
           npx --yes wrangler@4.128.0 deploy --config supersapien-live-wrangler.toml
           echo 'SUPERSAPIEN_CLOUDFLARE_SUBMITTED=YES'
 
-      - name: Verify live TLS, product and backend route
+      - name: Verify live TLS, shell, health and release marker
         shell: bash
         run: |
           set -euo pipefail
           ready=false
-          root_code=000
-          health_code=000
-          release_code=000
           for attempt in $(seq 1 30); do
             root_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-root -w '%{http_code}' https://supersapien.org/ || true)
             health_code=$(curl -L -sS --max-time 20 -o /tmp/supersapien-health -w '%{http_code}' https://supersapien.org/api/_healthcheck || true)
             release_code=$(curl -sS --max-time 20 -o /tmp/supersapien-release -w '%{http_code}' https://supersapien.org/__supersapien_release || true)
-            if [ "$root_code" = 200 ] && [ "$health_code" = 200 ] && [ "$release_code" = 200 ] && grep -q '<div id="root"' /tmp/supersapien-root && grep -q '"release":"mvp06"' /tmp/supersapien-release; then
+            if [ "$root_code" = 200 ] && [ "$health_code" = 200 ] && [ "$release_code" = 200 ] && grep -q '<div id="root"' /tmp/supersapien-root && grep -q '"release":"mvp07"' /tmp/supersapien-release; then
               ready=true
               break
             fi
             sleep 5
           done
           [ "$ready" = true ] || { echo "SUPERSAPIEN_LIVE_VERIFY_FAIL=root:$root_code health:$health_code release:$release_code"; exit 5; }
-          brreg_code=$(curl -sS --max-time 30 -o /tmp/brreg -w '%{http_code}' -H 'Content-Type: application/json' -X POST https://supersapien.org/api/source/brreg --data '{"query":"Equinor"}' || true)
-          [ "$brreg_code" = 200 ] && jq -e '.provider=="Brønnøysundregistrene" and (.companies|length)>=1' /tmp/brreg >/dev/null || { echo "SUPERSAPIEN_BRREG_FAIL=$brreg_code"; cat /tmp/brreg || true; exit 6; }
-
-          sec_code=$(curl -sS --max-time 45 -o /tmp/sec -w '%{http_code}' -H 'Content-Type: application/json' -X POST https://supersapien.org/api/source/sec --data '{"query":"MSFT"}' || true)
-          [ "$sec_code" = 200 ] && jq -e '.provider=="SEC EDGAR" and (.result.facts|length)>=1 and (.result.history|length)>=3' /tmp/sec >/dev/null || { echo "SUPERSAPIEN_SEC_FAIL=$sec_code"; cat /tmp/sec || true; exit 7; }
-
           www_code=$(curl -sS -o /dev/null -w '%{http_code}' https://www.supersapien.org/ || true)
-          [ "$www_code" = 308 ] || [ "$www_code" = 301 ] || { echo "SUPERSAPIEN_WWW_REDIRECT_FAIL=$www_code"; exit 8; }
-          echo 'SUPERSAPIEN_LIVE_TLS_ROOT_API_RELEASE_SOURCES_WWW=PASS'
+          [ "$www_code" = 308 ] || [ "$www_code" = 301 ] || { echo "SUPERSAPIEN_WWW_REDIRECT_FAIL=$www_code"; exit 6; }
+          echo 'SUPERSAPIEN_LIVE_TLS_SHELL_HEALTH_RELEASE_WWW=PASS'
+
+      - name: Note browser proof authority
+        run: |
+          echo 'Live BRREG + SEC source journeys are certified by SUPERSAPIEN Real Browser Proof.'
+          echo 'Do not replace browser proof with direct curl POST against the frontend origin.'
