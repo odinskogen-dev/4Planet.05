@@ -10,10 +10,12 @@ on:
       - "src/data/species.ts"
       - "src/content/mediaManifest.ts"
       - "src/components/species/**"
-      - "tests/e2e/species-gold-plank.spec.ts"\n      - "tests/e2e/species-factory-first-batch.spec.ts"
+      - "tests/e2e/species-gold-plank.spec.ts"
+      - "tests/e2e/species-factory-first-batch.spec.ts"
       - "tests/e2e/living-planet-orca-journey.spec.ts"
       - "products/livingsystems/src/**"
-      - "scripts/species-gold-plank-01.test.mjs"\n      - "scripts/species-factory-first-batch.test.mjs"
+      - "scripts/species-gold-plank-01.test.mjs"
+      - "scripts/species-factory-first-batch.test.mjs"
       - ".github/workflows/test-king-species-lens-proof.yml"
   push:
     branches:
