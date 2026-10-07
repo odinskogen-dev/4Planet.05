@@ -143,12 +143,11 @@ function Unknowns({ items }: { items: string[] }) {
 }
 
 export default function PublicCompanyProfile({
-  profile, gleif, onReset, onDeepAnalysis, onPrivate,
+  profile, gleif, onReset, onPrivate,
 }: {
   profile: PublicCompanyProfileData;
   gleif?: { state: string; verified: { lei: string; legalName: string; registeredAs: string | null; sourceUrl: string } | null } | null;
   onReset: () => void;
-  onDeepAnalysis: () => void;
   onPrivate: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("OVERVIEW");
@@ -269,7 +268,7 @@ export default function PublicCompanyProfile({
             <p>Public register intelligence first. Every material field below is either source-grounded or explicitly unknown.</p>
             <div className="fbi-actions">
               <button type="button" onClick={onPrivate}>This is my company</button>
-              <button type="button" className="fbi-actions__secondary" onClick={onDeepAnalysis}>Find value</button>
+              <button type="button" className="fbi-actions__secondary" onClick={() => setTab("FINDINGS")}>Find value</button>
             </div>
           </div>
         </div>
