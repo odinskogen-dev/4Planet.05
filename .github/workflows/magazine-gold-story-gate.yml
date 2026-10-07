@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "src/content/stories.ts"
+      - "src/content/imageRegistry.ts"
       - "src/components/StorySources.tsx"
       - "src/pages/v5/StoryArticle.tsx"
       - "src/styles/magazine-story-sources.css"
@@ -14,6 +15,7 @@ on:
       - "work/giga02-magazine-gold-story-01"
     paths:
       - "src/content/stories.ts"
+      - "src/content/imageRegistry.ts"
       - "src/components/StorySources.tsx"
       - "src/pages/v5/StoryArticle.tsx"
       - "src/styles/magazine-story-sources.css"
