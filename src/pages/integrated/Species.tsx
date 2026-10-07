@@ -322,6 +322,7 @@ function SpeciesEditorialProfile({
                 <Link
                   to={atlasHref}
                   data-testid="species-to-atlas"
+                  aria-label={`OPEN SAME ENTITY IN ATLAS — ${profile.commonName}`}
                   onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
                   style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
                 >{`EXPLORE ${profile.commonName.toUpperCase()} IN ATLAS →`}</Link>
