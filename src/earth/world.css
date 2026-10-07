@@ -451,3 +451,217 @@
 .legacy-preview .when { opacity: .7; font-size: 10px; }
 .legacy-preview img { width: 100%; height: 92px; object-fit: cover; display: block; margin: 7px 0 3px; }
 .legacy-preview .pl { display: inline-block; margin-top: 6px; color: var(--blue); font-size: 10px; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ATLAS MOBILE HUMAN + PERFORMANCE CLOSURE
+   One work surface owns a phone viewport at a time. Controls are deliberately
+   smaller, rounded and quieter so Earth remains the primary interface.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.site-btn,
+.lens,
+.ctx-close,
+.sect,
+.mbtn,
+.chip,
+.follow-btn,
+.tier-btn,
+.recenter-btn,
+.status-strip .strip-toggle {
+  border-radius: 999px;
+}
+.search-line,
+.results,
+.site-menu,
+.atlas-panel {
+  border-radius: 16px;
+}
+.follow-btn { border-radius: 14px; }
+.atlas-row { border-radius: 10px; }
+.drawer { border-radius: 0 0 10px 10px; }
+.ctx { border-radius: 18px; }
+
+@media (max-width: 760px) {
+  .world .search-wrap {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    transform: none;
+    top: calc(env(safe-area-inset-top, 0px) + 52px);
+  }
+  .search-line {
+    height: 46px;
+    gap: 7px;
+    padding: 0 10px;
+    border-radius: 15px;
+  }
+  .search-line input {
+    font-size: 11px;
+    letter-spacing: .025em;
+  }
+  .search-line > .search-glyph:first-child { display: none; }
+  .site-btn {
+    min-height: 34px;
+    padding: 5px 10px;
+    font-size: 9px;
+  }
+
+  .lens-rail {
+    gap: 5px;
+    margin-top: 7px;
+  }
+  .lens {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 9px;
+  }
+
+  .atlas-panel.rest {
+    top: calc(env(safe-area-inset-top, 0px) + 147px) !important;
+    left: 10px;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+  .atlas-panel.rest .sect {
+    min-height: 38px;
+    padding: 0 13px;
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(8,8,8,.82);
+    backdrop-filter: blur(12px);
+    border-radius: 999px;
+    font-size: 9px;
+    letter-spacing: .12em;
+  }
+  .world.light .atlas-panel.rest .sect {
+    background: rgba(255,255,255,.94);
+    border-color: rgba(8,8,8,.16);
+  }
+
+  .world.layers-active .atlas-panel {
+    position: fixed;
+    left: 6px;
+    right: 6px;
+    top: auto !important;
+    bottom: max(0px, env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    max-height: min(76dvh, 690px);
+    z-index: 76;
+    border-radius: 24px 24px 0 0;
+    padding: 18px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+    background: rgba(8,8,8,.98);
+    box-shadow: 0 -18px 54px rgba(0,0,0,.42);
+    overscroll-behavior: contain;
+  }
+  .world.light.layers-active .atlas-panel { background: rgba(255,255,255,.99); }
+  .world.layers-active .atlas-panel .sect {
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid rgba(255,255,255,.2);
+    margin-bottom: 10px;
+  }
+
+  .world.context-active .ctx,
+  .world.lens-active .ctx {
+    position: fixed;
+    left: 6px;
+    right: 6px;
+    bottom: max(0px, env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    max-height: min(78dvh, 710px);
+    z-index: 76;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -18px 54px rgba(0,0,0,.42);
+  }
+  .world.context-active .ctx::before,
+  .world.lens-active .ctx::before {
+    top: 9px;
+    width: 38px;
+    height: 4px;
+  }
+  .world.context-active .ctx-head,
+  .world.lens-active .ctx-head { padding-top: 22px; }
+  .ctx-title { overflow-wrap: anywhere; }
+  .ctx-body { overscroll-behavior: contain; }
+
+  /* Search becomes a dedicated mobile task instead of another layer floating
+     above the map. Safari's dynamic viewport shrinks with the keyboard. */
+  .world.search-active .search-wrap {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 8px);
+    left: 8px;
+    right: 8px;
+    z-index: 84;
+  }
+  .world.search-active .search-line {
+    height: 50px;
+    border-radius: 18px;
+    background: rgba(8,8,8,.98);
+  }
+  .world.search-active .site-btn { display: none; }
+  .world.search-active .results {
+    margin-top: 7px;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 74px);
+    border-radius: 18px;
+    background: rgba(8,8,8,.985);
+    box-shadow: 0 18px 54px rgba(0,0,0,.42);
+    overscroll-behavior: contain;
+  }
+  .world.search-active .ritem { min-height: 52px; box-sizing: border-box; }
+  .world.search-active .rname { font-size: 14px; }
+  .world.search-active .rsub { font-size: 9px; }
+
+  /* No competing chrome: the active task owns the mobile interaction plane. */
+  body:has(.world.search-active) .atlas-product-identity,
+  body:has(.world.search-active) .world .lens-rail,
+  body:has(.world.search-active) .world .atlas-panel,
+  body:has(.world.search-active) .world .ctx,
+  body:has(.world.search-active) .world .recenter-btn,
+  body:has(.world.search-active) .world .status-strip,
+  body:has(.world.search-active) .world .maplibregl-ctrl-bottom-right,
+  body:has(.world.context-active) .atlas-product-identity,
+  body:has(.world.context-active) .world .search-wrap,
+  body:has(.world.context-active) .world .lens-rail,
+  body:has(.world.context-active) .world .atlas-panel,
+  body:has(.world.context-active) .world .status-strip,
+  body:has(.world.lens-active) .atlas-product-identity,
+  body:has(.world.lens-active) .world .search-wrap,
+  body:has(.world.lens-active) .world .lens-rail,
+  body:has(.world.lens-active) .world .atlas-panel,
+  body:has(.world.lens-active) .world .status-strip,
+  body:has(.world.layers-active) .atlas-product-identity,
+  body:has(.world.layers-active) .world .search-wrap,
+  body:has(.world.layers-active) .world .lens-rail,
+  body:has(.world.layers-active) .world .status-strip {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .world.context-active .recenter-btn {
+    display: none;
+  }
+
+  .status-strip {
+    height: calc(22px + env(safe-area-inset-bottom, 0px));
+    padding: 0 10px env(safe-area-inset-bottom, 0px);
+    gap: 8px;
+    font-size: 8px;
+  }
+  .status-strip .s:first-child { display: none; }
+  .status-strip .spacer { min-width: 4px; }
+
+  .ctx-close,
+  .mbtn,
+  .tier-btn {
+    min-height: 36px;
+    padding: 7px 11px;
+  }
+  .follow-btn {
+    min-height: 42px;
+    padding: 10px 14px;
+  }
+}
