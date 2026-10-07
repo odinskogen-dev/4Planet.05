@@ -54,6 +54,7 @@ import {
 
 import { ContextLayer, TYPE_COLOR, type ContextState } from "./Context";
 import { WorldBoundary } from "./Boundary";
+import { atlasLayerIntentMatches } from "./AtlasSearchIntentBridge";
 
 import { field } from "@/planet/types";
 import { DEMO_WHALE_OBSERVATION, DEMO_WHALE_OCCURRENCE } from "@/data/demoWhaleOccurrence";
@@ -157,6 +158,7 @@ function WorldInner() {
   const writeUrlRef = useRef(() => {});
   const openEntityRef = useRef((_id: string) => {});
   const openLegacyRef = useRef((_p: any) => {});
+  const searchRequestSeq = useRef(0);
   // V40 P0: has the user taken the camera since the last intentional focus?
   const userMoved = useRef(false);
   // The place/point the current context focused on, for the RECENTER control.
@@ -213,10 +215,25 @@ function WorldInner() {
 
   const { follows, toggle: toggleFollow, following } = useFollows();
 
+  // One mobile work surface at a time. Context owns the screen when an object
+  // is opened; stale search/layer/menu surfaces must not remain tappable behind it.
   useEffect(() => {
-    const t = setInterval(() => setUtc(new Date().toISOString().slice(11, 19) + "Z"), 1000);
-    return () => clearInterval(t);
-  }, []);
+    if (!ctx) return;
+    setOpen(false);
+    setCollapsed(true);
+    setSiteMenu(false);
+    if (lens !== "EARTH") setLens("EARTH");
+  }, [ctx]);
+
+  // Updating a clock once per second re-rendered the entire ATLAS React tree even
+  // while the source strip was closed. Only run a coarse clock when it is visible.
+  useEffect(() => {
+    if (!stripOpen) return;
+    const tick = () => setUtc(new Date().toISOString().slice(11, 19) + "Z");
+    tick();
+    const t = window.setInterval(tick, 30000);
+    return () => window.clearInterval(t);
+  }, [stripOpen]);
 
   /* ── ONE SIGNAL POOL, loaded once, read by NOW / WATCH / PLACE ─────────── */
   useEffect(() => {
@@ -680,7 +697,9 @@ function WorldInner() {
       } catch { /* offline / blocked → keep coordinates as header */ }
     })();
 
-    const near = signalsNear(pool, { lat, lng }, 400);
+    const zoom = Number(map.current?.getZoom?.() ?? 5);
+    const nearbyRadiusKm = Math.max(30, Math.min(220, Math.round(900 / Math.pow(2, Math.max(0, zoom - 3)))));
+    const near = signalsNear(pool, { lat, lng }, nearbyRadiusKm);
     const sigField = poolLoading
       ? field("LOADING")
       : near.length ? field("LIVE", near) : field("NO_RECORDS");
@@ -758,22 +777,37 @@ function WorldInner() {
 
   useEffect(() => {
     const text = q.trim();
+    const requestId = ++searchRequestSeq.current;
     if (text.length < 3) { setTaxaHits([]); setSearching(false); setTaxaSearchFailed(false); return; }
     setSearching(true);
-    const t = setTimeout(async () => {
+    const t = window.setTimeout(async () => {
       const r = await searchTaxa(text);
-      // P0 (V38R): a GBIF failure is not "no life matched". Record it distinctly
-      // so the results panel can say the source is down rather than imply zero.
+      if (requestId !== searchRequestSeq.current) return;
+      // P0: a GBIF failure is not "no life matched". Also collapse provider
+      // synonyms that resolve to the same scientific name so mobile search does
+      // not show three visually identical Orca rows.
       setTaxaSearchFailed(!r.ok);
-      setTaxaHits(r.ok ? r.data : []);
+      if (r.ok) {
+        const seen = new Set<string>();
+        const unique = r.data.filter((hit) => {
+          const key = String(hit.scientificName || hit.id).trim().toLowerCase();
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setTaxaHits(unique);
+      } else {
+        setTaxaHits([]);
+      }
       setSearching(false);
-    }, 260);
-    return () => clearTimeout(t);
+    }, 300);
+    return () => window.clearTimeout(t);
   }, [q]);
 
   const placeHits = useMemo(() => searchPlaces(q), [q]);
   const systemHits = useMemo(() => searchSystems(q), [q]);
-  const hasResults = placeHits.length || systemHits.length || taxaHits.length;
+  const layerHits = useMemo(() => atlasLayerIntentMatches(q), [q]);
+  const hasResults = placeHits.length || systemHits.length || taxaHits.length || layerHits.length;
 
   /* ── LENSES ────────────────────────────────────────────────────────────── */
 
@@ -861,8 +895,8 @@ function WorldInner() {
       zoom: init.current.zoom, minZoom: 1, maxZoom: 22,
       attributionControl: { compact: true },
       canvasContextAttributes: { antialias: false, powerPreference: "high-performance" },
-      maxTileCacheSize: 128,
-      fadeDuration: 160,
+      maxTileCacheSize: window.matchMedia("(max-width: 760px)").matches ? 64 : 128,
+      fadeDuration: window.matchMedia("(max-width: 760px)").matches ? 80 : 160,
       // V40 P0: the persistent world must never freeze when context is open.
       // Every interaction is turned on explicitly so no default can silently drop.
       interactive: true,
@@ -1025,6 +1059,18 @@ function WorldInner() {
       const next = { ...on, [l.id]: true };
       setOn(next); writeUrl({ on: next }); addLayer(l);
     }
+    window.dispatchEvent(new CustomEvent("4p:atlas-layer-change"));
+  };
+
+  const activateLayerIntent = (layerId) => {
+    const layer = LAYERS.find((item) => item.id === layerId);
+    if (!layer) return;
+    if (!on[layer.id]) toggle(layer);
+    setQ("");
+    setOpen(false);
+    setCollapsed(true);
+    setCtx(null);
+    setLens("EARTH");
   };
 
   const isolate = (l) => {
@@ -1095,8 +1141,10 @@ function WorldInner() {
   const sources = pool.status;
   const liveCount = Object.values(sources).filter((s) => s === "LIVE").length;
 
+  const searchActive = open && q.trim().length >= 2;
+
   return (
-    <div className={`world ${light ? "light" : ""}`}>
+    <div className={`world ${light ? "light" : ""} ${searchActive ? "search-active" : ""} ${ctx ? "context-active" : ""} ${!collapsed ? "layers-active" : ""} ${lens !== "EARTH" && !ctx ? "lens-active" : ""}`}>
       <div ref={boxRef} style={{ position: "absolute", inset: 0 }} />
 
       {/* ── SEARCH THE LIVING PLANET_ ───────────────────────────────────── */}
@@ -1105,8 +1153,21 @@ function WorldInner() {
           <span className="search-glyph">4P_</span>
           <input
             value={q}
-            onChange={(e) => { setQ(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setOpen(true);
+              setCollapsed(true);
+              setCtx(null);
+              setLens("EARTH");
+              setSiteMenu(false);
+            }}
+            onFocus={() => {
+              setOpen(true);
+              setCollapsed(true);
+              setCtx(null);
+              setLens("EARTH");
+              setSiteMenu(false);
+            }}
             placeholder="SEARCH THE LIVING PLANET_"
             aria-label="Search the living planet — life, places and living systems"
             spellCheck={false}
@@ -1123,7 +1184,16 @@ function WorldInner() {
             className="site-btn"
             aria-label="Open 4PLANET site menu"
             aria-expanded={siteMenu}
-            onClick={() => setSiteMenu((v) => !v)}
+            onClick={() => {
+              const next = !siteMenu;
+              setSiteMenu(next);
+              if (next) {
+                setOpen(false);
+                setCollapsed(true);
+                setCtx(null);
+                setLens("EARTH");
+              }
+            }}
           >
             {siteMenu ? "CLOSE" : "4PLANET_"}
           </button>
@@ -1154,7 +1224,19 @@ function WorldInner() {
 
         {open && q.trim().length >= 2 && (
           <div className="results" role="listbox" aria-label="Search results">
-            {placeHits.length > 0 && <div className="rgrp">PLACES · SEEDED REGISTRY</div>}
+            {layerHits.length > 0 && <div className="rgrp">DATA LAYERS</div>}
+            {layerHits.map((hit) => (
+              <div key={hit.layerId} className="ritem" role="option" tabIndex={0}
+                onClick={() => activateLayerIntent(hit.layerId)} onKeyDown={onKeyActivate(() => activateLayerIntent(hit.layerId))}>
+                <span className="rdot" style={{ background: C.blue }} />
+                <span className="rmain">
+                  <span className="rname">{hit.label}</span>
+                  <div className="rsub">{hit.source}</div>
+                </span>
+              </div>
+            ))}
+
+            {placeHits.length > 0 && <div className="rgrp">PLACES</div>}
             {placeHits.map((p) => (
               <div key={p.id} className="ritem" role="option" tabIndex={0}
                 onClick={() => openPlace(p)} onKeyDown={onKeyActivate(() => openPlace(p))}>
@@ -1178,7 +1260,7 @@ function WorldInner() {
               </div>
             ))}
 
-            {taxaHits.length > 0 && <div className="rgrp">LIFE · GBIF · LIVE</div>}
+            {taxaHits.length > 0 && <div className="rgrp">LIFE · GBIF</div>}
             {taxaHits.map((h) => (
               <div key={h.id} className="ritem" role="option" tabIndex={0}
                 onClick={() => openTaxon(h)} onKeyDown={onKeyActivate(() => openTaxon(h))}>
@@ -1224,7 +1306,14 @@ function WorldInner() {
               key={L.id}
               className={`lens ${lens === L.id ? "on" : ""}`}
               style={lens === L.id ? { color: L.color } : undefined}
-              onClick={() => { setLens(L.id); writeUrl({ lens: L.id }); }}
+              onClick={() => {
+                setOpen(false);
+                setCollapsed(true);
+                setCtx(null);
+                setSiteMenu(false);
+                setLens(L.id);
+                writeUrl({ lens: L.id });
+              }}
             >
               {L.id !== "EARTH" && <span className="pip" />}
               {L.label}
@@ -1239,7 +1328,16 @@ function WorldInner() {
           context. The full technical layer console is no longer an equal-weight
           dashboard — it collapses to a single line you open when you want it. */}
       <div className={`atlas-panel ${collapsed ? "rest" : ""}`} style={{ top: 112 }}>
-        <button className="sect" onClick={() => setCollapsed(!collapsed)} aria-expanded={!collapsed}>
+        <button className="sect" onClick={() => {
+          const next = !collapsed;
+          setCollapsed(next);
+          if (!next) {
+            setOpen(false);
+            setCtx(null);
+            setLens("EARTH");
+            setSiteMenu(false);
+          }
+        }} aria-expanded={!collapsed}>
           <span>Layers</span>
           <span>{collapsed ? "+" : "\u2212"}</span>
         </button>
@@ -1383,7 +1481,7 @@ function WorldInner() {
                     <div className="sec-h">
                       <span>LIVING PLANET</span>
                       <span className={`stat ${poolLoading ? "load" : living.length ? "live" : "none"}`}>
-                        {poolLoading ? "···" : living.length ? "LIVE" : "NO RECORDS"}
+                        {poolLoading ? "···" : living.length ? "OPEN RECORDS" : "NO RECORDS"}
                       </span>
                     </div>
                     <div className="sec-body">
@@ -1402,7 +1500,7 @@ function WorldInner() {
                     <div className="sec-h">
                       <span>PLANETARY CONTEXT</span>
                       <span className={`stat ${poolLoading ? "load" : seismic.length ? "live" : "none"}`}>
-                        {poolLoading ? "···" : seismic.length ? "LIVE" : "NO RECORDS"}
+                        {poolLoading ? "···" : seismic.length ? "24H RECORDS" : "NO RECORDS"}
                       </span>
                     </div>
                     <div className="sec-body">
