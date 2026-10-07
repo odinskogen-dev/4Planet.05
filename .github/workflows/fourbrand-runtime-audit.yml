@@ -212,7 +212,7 @@ jobs:
           grep -q 'INDUSTRY COHORT' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'PublicBusinessSources' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'PublicProcurementIntelligence' src/pages/partners/PublicCompanyProfile.tsx
-          grep -q 'PublicPlanetIntelligence' src/pages/partners/PublicCompanyProfile.tsx
+          grep -q 'Facility emissions intelligence is unavailable right now' src/pages/partners/PublicCompanyProfile.tsx
           grep -q 'BRREG_REGISTERED_WEBSITE' functions/api/company-first-party.ts
           grep -q 'CORDIS_SPARQL' functions/api/company-eu-projects.ts
           grep -q 'EXACT_CASE_INSENSITIVE_LEGAL_NAME_AFTER_BRREG_RESOLUTION' functions/api/company-eu-projects.ts
@@ -316,7 +316,7 @@ jobs:
             https://api.ted.europa.eu/v3/notices/search -o /tmp/ted.json
           jq -e 'type == "object"' /tmp/ted.json >/dev/null
 
-      - name: Climate TRACE public owner discovery responds
+      - name: Climate TRACE beta availability stays fail-closed
         shell: bash
         run: |
           set -euo pipefail
@@ -326,8 +326,22 @@ jobs:
             -o /tmp/climate-owners.json -w '%{http_code}' \
             https://api.climatetrace.org/v7/owners || true)
           echo "Climate TRACE HTTP=$code"
-          test "$code" = "200"
-          jq -e 'type == "array" or type == "object"' /tmp/climate-owners.json >/dev/null
+          if [ "$code" = "200" ]; then
+            jq -e 'type == "array" or type == "object"' /tmp/climate-owners.json >/dev/null
+            echo 'CLIMATE_TRACE_OWNER_DISCOVERY=LIVE'
+          else
+            case "$code" in
+              404|429|500|502|503|504)
+                grep -q 'Facility emissions intelligence is unavailable right now' src/pages/partners/PublicCompanyProfile.tsx
+                ! grep -q '<CompanyClimateTracePanel analysis={analysis} />' src/pages/partners/FourBrand.tsx
+                echo "CLIMATE_TRACE_OWNER_DISCOVERY=UNAVAILABLE_FAIL_CLOSED"
+                ;;
+              *)
+                echo "Unexpected Climate TRACE status: $code"
+                exit 1
+                ;;
+            esac
+          fi
 
   public-intelligence-real-brreg:
     runs-on: ubuntu-latest
