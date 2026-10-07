@@ -1,0 +1,158 @@
+name: ATLAS LIVE Finalize
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ".github/workflows/atlas-live-finalize-20261007.yml"
+      - "docs/control/ATLAS_LIVE_FINALIZE_20261007.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-live-finalize-20261007
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      RELEASE_FILE: docs/control/ATLAS_LIVE_FINALIZE_20261007.json
+      ATLAS_DOMAIN: 4planetatlas.com
+      ROUTER_SERVICE: atlas-live-router-20261007
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify exact already-tested artifact authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '.status=="FOUNDER_AUTHORISED" and .scope=="ATLAS_ONLY" and .artifactSha=="e60c3ee72ccc9fe97f1f092a0b1f7be6246942b9" and .evidence.mobilePreLiveProof=="PASS" and .evidence.exactPreviewBrowserProof=="PASS_INTERACTIVE"' "$RELEASE_FILE" >/dev/null
+          PREVIEW=$(jq -r '.previewOrigin' "$RELEASE_FILE")
+          echo "ATLAS_PREVIEW_ORIGIN=$PREVIEW" >> "$GITHUB_ENV"
+
+      - name: Resolve Cloudflare authority
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || exit 2
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          echo "::add-mask::$TOKEN"
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json")
+          zone=$(curl -fsS "${api}/zones?name=$ATLAS_DOMAIN&status=active" "${auth[@]}")
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$zone_id" ] && [ -n "$account_id" ]
+          {
+            echo "CLOUDFLARE_API_TOKEN=$TOKEN"
+            echo "ATLAS_ZONE_ID=$zone_id"
+            echo "CLOUDFLARE_ACCOUNT_ID=$account_id"
+          } >> "$GITHUB_ENV"
+
+      - name: Reverify tested preview bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -L --max-time 20 -o /tmp/atlas-preview.html -w '%{http_code}' "$ATLAS_PREVIEW_ORIGIN/atlas")
+          test "$code" = "200"
+          grep -q 'id="root"' /tmp/atlas-preview.html
+          script=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/atlas-preview.html | head -1 | cut -d'"' -f2)
+          [ -n "$script" ]
+          curl -fsS --max-time 20 "$ATLAS_PREVIEW_ORIGIN$script" -o /tmp/atlas-app.js
+          test -s /tmp/atlas-app.js
+          echo "ATLAS_PREVIEW_BYTES_PASS"
+
+      - name: Install Atlas-only route
+        id: route
+        shell: bash
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          routes=$(curl -fsS "${api}/zones/${ATLAS_ZONE_ID}/workers/routes" "${auth[@]}")
+          stale=$(jq -r --arg d "$ATLAS_DOMAIN" '.result[]? | select(.pattern==($d+"/*")) | .id' <<<"$routes")
+          for id in $stale; do
+            curl -fsS -X DELETE "${api}/zones/${ATLAS_ZONE_ID}/workers/routes/$id" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null
+          done
+          cat > /tmp/atlas-router.js <<EOF
+          const ORIGIN = "${ATLAS_PREVIEW_ORIGIN}";
+          const RELEASE = "e60c3ee72ccc9fe97f1f092a0b1f7be6246942b9";
+          addEventListener("fetch", event => event.respondWith(handle(event.request)));
+          async function handle(request) {
+            const incoming = new URL(request.url);
+            const path = incoming.pathname === "/" ? "/atlas" : incoming.pathname;
+            const target = new URL(path + incoming.search, ORIGIN);
+            const response = await fetch(new Request(target.toString(), request));
+            const headers = new Headers(response.headers);
+            headers.set("x-4planet-atlas-release", RELEASE);
+            return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+          }
+          EOF
+          upload=$(curl -fsS -X PUT "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${ROUTER_SERVICE}"             -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"             -H "Content-Type: application/javascript"             --data-binary @/tmp/atlas-router.js)
+          jq -e '.success==true' <<<"$upload" >/dev/null
+          route=$(curl -fsS -X POST "${api}/zones/${ATLAS_ZONE_ID}/workers/routes" "${auth[@]}"             --data "$(jq -nc --arg p "$ATLAS_DOMAIN/*" --arg s "$ROUTER_SERVICE" '{pattern:$p,script:$s}')")
+          jq -e '.success==true' <<<"$route" >/dev/null
+          route_id=$(jq -r '.result.id' <<<"$route")
+          echo "ATLAS_WORKER_ROUTE_ID=$route_id" >> "$GITHUB_ENV"
+
+      - name: Verify public ATLAS bytes and release identity
+        id: proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 25); do
+            headers=$(curl -sS -D /tmp/atlas-live.headers -o /tmp/atlas-live.html --max-time 20 "https://$ATLAS_DOMAIN/" || true)
+            if grep -qi '^x-4planet-atlas-release: e60c3ee72ccc9fe97f1f092a0b1f7be6246942b9' /tmp/atlas-live.headers && grep -q 'id="root"' /tmp/atlas-live.html; then
+              ok=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ok" = "1"
+          script=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/atlas-live.html | head -1 | cut -d'"' -f2)
+          [ -n "$script" ]
+          curl -fsS --max-time 20 "https://$ATLAS_DOMAIN$script" -o /tmp/atlas-live.js
+          test -s /tmp/atlas-live.js
+          grep -Fq 'data-atlas-mobile-closure' /tmp/atlas-live.js
+          echo "ATLAS_LIVE_BYTES_PASS"
+
+      - name: Roll back if public proof fails
+        if: failure() && steps.route.outcome == 'success' && steps.proof.outcome != 'success'
+        shell: bash
+        run: |
+          api="https://api.cloudflare.com/client/v4"
+          curl -fsS -X DELETE "${api}/zones/${ATLAS_ZONE_ID}/workers/routes/${ATLAS_WORKER_ROUTE_ID}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null || true
+          curl -fsS -X DELETE "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${ROUTER_SERVICE}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" >/dev/null || true
+          echo "ATLAS_FINALIZE_ROLLBACK"
+
+      - name: Release evidence
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "artifact=e60c3ee72ccc9fe97f1f092a0b1f7be6246942b9"
+            echo "preview=${ATLAS_PREVIEW_ORIGIN:-UNRESOLVED}"
+            echo "domain=https://4planetatlas.com"
+            echo "route_id=${ATLAS_WORKER_ROUTE_ID:-UNRESOLVED}"
+            echo "status=${{ job.status }}"
+          } | tee /tmp/atlas-finalize.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atlas-live-finalize-${{ github.sha }}
+          path: /tmp/atlas-finalize.txt
