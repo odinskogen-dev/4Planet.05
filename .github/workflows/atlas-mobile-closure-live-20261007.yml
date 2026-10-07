@@ -6,6 +6,8 @@ on:
     paths:
       - ".github/workflows/atlas-mobile-closure-live-20261007.yml"
       - "docs/control/ATLAS_LIVE_RELEASE_20261007.json"
+      - "scripts/atlas-recovery-contract.test.mjs"
+      - "scripts/atlas-mobile-human-performance-contract.test.mjs"
 
 permissions:
   contents: read
