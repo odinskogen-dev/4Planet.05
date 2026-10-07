@@ -1,6 +1,22 @@
 name: 4BRAND Runtime Audit
 
 on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - .github/workflows/fourbrand-runtime-audit.yml
+      - src/App.tsx
+      - src/pages/partners/FourBrand.tsx
+      - src/pages/partners/FourBrandsLive.tsx
+      - src/styles/fourbrand.css
+      - functions/api/brand-analysis.ts
+      - src/styles/fourbrand-intelligence.css
+      - src/pages/partners/PublicCompanyProfile.tsx
+      - src/pages/partners/PublicCompanyExternalSignals.tsx
+      - functions/api/company-public-profile.ts
+      - functions/api/company-first-party.ts
+      - functions/api/company-eu-projects.ts
+      - tests/e2e/4brands-public-intelligence.spec.ts
   push:
     branches: [king/test]
     paths:
