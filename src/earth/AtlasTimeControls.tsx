@@ -95,7 +95,7 @@ export default function AtlasTimeControls() {
         attachTimer = window.setTimeout(attach, 120);
         return;
       }
-      for (const event of ["style.load", "sourcedata", "idle"]) map.on(event, readActive);
+      for (const event of ["style.load", "idle"]) map.on(event, readActive);
       readActive();
     };
 
@@ -103,8 +103,17 @@ export default function AtlasTimeControls() {
     return () => {
       disposed = true;
       if (attachTimer) window.clearTimeout(attachTimer);
-      if (map?.off) for (const event of ["style.load", "sourcedata", "idle"]) map.off(event, readActive);
+      if (map?.off) for (const event of ["style.load", "idle"]) map.off(event, readActive);
     };
+  }, []);
+
+  useEffect(() => {
+    const closeForOtherSurface = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail && detail !== "TIME") setOpen(false);
+    };
+    window.addEventListener("4p:atlas-surface-open", closeForOtherSurface as EventListener);
+    return () => window.removeEventListener("4p:atlas-surface-open", closeForOtherSurface as EventListener);
   }, []);
 
   const activeAxes = useMemo(() => ATLAS_TIME_AXES.filter((axis) => activeIds.includes(axis.layerId)), [activeIds]);
@@ -157,7 +166,11 @@ export default function AtlasTimeControls() {
 
   return (
     <aside className={`atlas-leading-time ${open ? "open" : ""}`} aria-label="ATLAS time controls">
-      <button className="atlas-leading-time-toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+      <button className="atlas-leading-time-toggle" onClick={() => setOpen((value) => {
+        const next = !value;
+        if (next) window.dispatchEvent(new CustomEvent("4p:atlas-surface-open", { detail: "TIME" }));
+        return next;
+      })} aria-expanded={open}>
         <span>TIME</span><span>{open ? "−" : "+"}</span>
       </button>
       {open && (

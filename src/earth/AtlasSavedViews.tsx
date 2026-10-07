@@ -105,6 +105,15 @@ export function AtlasSavedViews() {
   }, [session?.user.id]);
 
   useEffect(() => {
+    const closeForOtherSurface = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail && detail !== "MY_ATLAS") setOpen(false);
+    };
+    window.addEventListener("4p:atlas-surface-open", closeForOtherSurface as EventListener);
+    return () => window.removeEventListener("4p:atlas-surface-open", closeForOtherSurface as EventListener);
+  }, []);
+
+  useEffect(() => {
     const scheduleSync = () => {
       setState(readAtlasSavedViews());
       const active = sessionRef.current;
@@ -159,7 +168,11 @@ export function AtlasSavedViews() {
   return (
     <>
       <aside className={`atlas-saved-views ${open ? "open" : ""}`} aria-label="My Atlas saved views">
-        <button type="button" className="atlas-saved-toggle" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+        <button type="button" className="atlas-saved-toggle" onClick={() => setOpen((value) => {
+          const next = !value;
+          if (next) window.dispatchEvent(new CustomEvent("4p:atlas-surface-open", { detail: "MY_ATLAS" }));
+          return next;
+        })} aria-expanded={open}>
           MY ATLAS{state.views.length ? ` · ${state.views.length}` : ""}{open ? " −" : " +"}
         </button>
 

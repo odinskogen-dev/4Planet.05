@@ -997,14 +997,35 @@ function WorldInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // V40 P0: when the context panel opens/closes or the breakpoint changes, the
-  // map may need to recompute its canvas box. A missed resize is a classic cause
-  // of a "dead" map. rAF lets the layout settle first.
+  // Mobile Safari changes the visual viewport when browser chrome, orientation
+  // and the keyboard change. MapLibre does not always receive a layout resize
+  // for those transitions, which can leave the canvas visibly cut. Keep one
+  // lightweight resize authority bound to real viewport changes only.
+  useEffect(() => {
+    let frame = 0;
+    const resize = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => map.current?.resize());
+    };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("orientationchange", resize, { passive: true });
+    window.visualViewport?.addEventListener("resize", resize, { passive: true });
+    window.visualViewport?.addEventListener("scroll", resize, { passive: true });
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("orientationchange", resize);
+      window.visualViewport?.removeEventListener("resize", resize);
+      window.visualViewport?.removeEventListener("scroll", resize);
+    };
+  }, []);
+
   useEffect(() => {
     const m = map.current; if (!m) return;
     const id = requestAnimationFrame(() => m.resize());
     return () => cancelAnimationFrame(id);
-  }, [ctx, lens]);
+  }, [ctx, lens, collapsed, open]);
 
   useEffect(() => {
     if (!ready) return;

@@ -1487,3 +1487,5 @@ targeted SPECIES release from current real LIVE/main baseline only; do not promo
 
 **CROSS-PRODUCT GATE REPAIR:** Browser Product Proof exposed two real contract mismatches outside the ATLAS runtime. FOOD's generic-reference region no longer shares the input's accessible name, so "Generic food" resolves to the intended textbox only. 4NATION's official Stortinget/SSB tools remain intentionally collapsed behind progressive disclosure; the browser proof now opens that disclosure before exercising the tools instead of treating hidden content as visible. No 4NATION product disclosure was removed or forced open.
 
+**MOBILE VIEWPORT CLOSURE:** MapLibre now resizes on actual window/orientation/VisualViewport changes and after ATLAS work-surface transitions. The root map uses dynamic viewport units with a legacy fallback, preventing the iOS/Safari canvas from retaining a stale height and appearing cut after browser chrome or keyboard changes. TIME no longer listens to tile-level sourcedata churn, and TIME / MY ATLAS explicitly close each other so two external sheets cannot own the phone viewport simultaneously.
+

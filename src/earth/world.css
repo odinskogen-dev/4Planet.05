@@ -26,6 +26,9 @@
   --amber: #ff7d50;
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100svh;
   background: #080808;
   color: #fff;
   font-family: var(--mono);
@@ -664,4 +667,10 @@
     min-height: 42px;
     padding: 10px 14px;
   }
+}
+
+
+/* iOS/browser fallback for engines without dynamic viewport units. */
+@supports not (height: 100dvh) {
+  .world { height: 100vh; min-height: 100vh; }
 }
