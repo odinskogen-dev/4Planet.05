@@ -92,7 +92,7 @@ jobs:
           for i in $(seq 1 60); do
             state=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${NEW_PROJECT}/domains/${ATLAS_DOMAIN}" "${auth[@]}" | jq -r '.result.status // empty' || true)
             code=$(curl -sS -L --max-time 20 -o /tmp/live.html -w '%{http_code}' "https://$ATLAS_DOMAIN/atlas" || true)
-            if [ "$code" = "200" ] && grep -q 'id="root"' /tmp/live.html; then ok=1; echo "domain_state=$state"; break; fi
+            if [ "$state" = "active" ] && [ "$code" = "200" ] && grep -q 'id="root"' /tmp/live.html; then ok=1; echo "domain_state=$state"; break; fi
             sleep 3
           done
           test "$ok" = "1"
