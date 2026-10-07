@@ -194,23 +194,24 @@ const STATUS_MEANING: Partial<Record<DataStatus, string>> = {
     "A real source record shipped with the app as a checked historical snapshot. It is not a live read and not the animal's current position.",
 };
 
-export const Stat = ({ s }: { s: DataStatus }) => (
-  <span className={`stat ${STATUS_CLASS[s]}`}>{STATUS_TEXT[s]}</span>
+export const Stat = ({ s, label }: { s: DataStatus; label?: string }) => (
+  <span className={`stat ${STATUS_CLASS[s]}`}>{label || STATUS_TEXT[s]}</span>
 );
 
 const Section: React.FC<{
   title: string;
   status: DataStatus;
   children?: React.ReactNode;
+  statusLabel?: string;
   /** Force the meaning note even when LIVE (used for caveats). */
   note?: string;
-}> = ({ title, status, children, note }) => {
+}> = ({ title, status, children, statusLabel, note }) => {
   const meaning = note ?? STATUS_MEANING[status];
   return (
     <div className="sec">
       <div className="sec-h">
         <span>{title}</span>
-        <Stat s={status} />
+        <Stat s={status} label={statusLabel} />
       </div>
       <div className="sec-body">
         {status === "LIVE" || status === "SEEDED" ? children : null}
@@ -485,6 +486,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
           <Section
             title="RECORDED OBSERVATIONS"
             status={occ.status}
+            statusLabel={occ.status === "LIVE" ? "RECORDS" : undefined}
             note={
               occ.status === "LIVE"
                 ? "Records show where people have looked and reported. Sparse dots mean sparse observers — not absent life. This is not a range map."
@@ -594,6 +596,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
           <Section
             title="RECORDS IN THIS MAP AREA"
             status={life.status}
+            statusLabel={life.status === "LIVE" ? "RECORDS" : undefined}
             note={
               life.status === "LIVE"
                 ? `These are the biodiversity records GBIF returned for a rectangular area around ${place.name} — not records verified as belonging to it. A bounding box is a box on a map, not the boundary of the place.${
@@ -637,6 +640,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
             <Section
               title="RECENT SIGNALS"
               status={signals.status}
+              statusLabel={signals.status === "LIVE" ? "RECENT RECORDS" : undefined}
               note={
                 signals.status === "NO_RECORDS"
                   ? "No fire, natural event or seismic record from NASA EONET or USGS falls within range of this area right now. Those are the only event feeds 4PLANET currently reads. Quiet feeds are not a quiet planet."
@@ -796,7 +800,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
             <div className="sec">
               <div className="sec-h">
                 <span>WHAT HAPPENED</span>
-                <Stat s="LIVE" />
+                <Stat s="LIVE" label="SOURCE RECORD" />
               </div>
               <div className="sec-body">
                 <p className="prose">{s.summary}</p>
@@ -807,7 +811,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
           <div className="sec">
             <div className="sec-h">
               <span>RECORD</span>
-              <Stat s="LIVE" />
+              <Stat s="LIVE" label="SOURCE RECORD" />
             </div>
             <div className="sec-body">
               <div className="hrow">
@@ -1291,6 +1295,7 @@ export const ContextLayer: React.FC<ContextProps> = ({
           <Section
             title="LIFE RECORDED NEARBY"
             status={life.status}
+            statusLabel={life.status === "LIVE" ? "RECORDS" : undefined}
             note={
               life.status === "LIVE"
                 ? "GBIF records within roughly 40 km of this point."
@@ -1318,9 +1323,10 @@ export const ContextLayer: React.FC<ContextProps> = ({
           <Section
             title="SIGNALS NEARBY"
             status={signals.status}
+            statusLabel={signals.status === "LIVE" ? "RECENT RECORDS" : undefined}
             note={
               signals.status === "NO_RECORDS"
-                ? "No open natural event or recorded earthquake within 400 km. Nothing here does not mean nothing is here — it means no source 4PLANET reads reported anything in this window."
+                ? "No open natural event or recorded earthquake fell inside the current nearby search window. Nothing here does not mean nothing is here — it means no source 4PLANET reads reported anything in this window."
                 : undefined
             }
           >
