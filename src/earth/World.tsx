@@ -200,7 +200,9 @@ function WorldInner() {
     });
   }, [ctx]);
   const [pool, setPool] = useState(EMPTY_POOL);
-  const [poolLoading, setPoolLoading] = useState(true);
+  const [poolLoading, setPoolLoading] = useState(false);
+  const poolRef = useRef(EMPTY_POOL);
+  const poolPromiseRef = useRef(null);
   const [q, setQ] = useState("");
   const [taxaHits, setTaxaHits] = useState([]);
   const [taxaSearchFailed, setTaxaSearchFailed] = useState(false);
@@ -235,17 +237,39 @@ function WorldInner() {
     return () => window.clearInterval(t);
   }, [stripOpen]);
 
-  /* ── ONE SIGNAL POOL, loaded once, read by NOW / WATCH / PLACE ─────────── */
-  useEffect(() => {
-    let alive = true;
-    loadSignalPool().then((p) => {
-      if (!alive) return;
-      setPool(p);
-      setPoolLoading(false);
-    });
-    const t = setInterval(() => loadSignalPool().then((p) => alive && setPool(p)), 5 * 60 * 1000);
-    return () => { alive = false; clearInterval(t); };
+  /* ── ONE SIGNAL POOL, ON DEMAND ─────────────────────────────────────────
+     NO INVISIBLE WORK: EONET + USGS are not fetched simply because ATLAS opened.
+     NOW/WATCH or a place/coordinate question earns the network work. */
+  const publishSignalPool = useCallback((nextPool) => {
+    poolRef.current = nextPool;
+    setPool(nextPool);
+    return nextPool;
   }, []);
+
+  const ensureSignalPool = useCallback(async () => {
+    if (poolRef.current.fetchedAt) return poolRef.current;
+    if (poolPromiseRef.current) return poolPromiseRef.current;
+    setPoolLoading(true);
+    const pending = loadSignalPool()
+      .then(publishSignalPool)
+      .finally(() => {
+        poolPromiseRef.current = null;
+        setPoolLoading(false);
+      });
+    poolPromiseRef.current = pending;
+    return pending;
+  }, [publishSignalPool]);
+
+  useEffect(() => {
+    if (lens === "EARTH") return;
+    let alive = true;
+    ensureSignalPool();
+    const t = window.setInterval(async () => {
+      const next = await loadSignalPool();
+      if (alive) publishSignalPool(next);
+    }, 5 * 60 * 1000);
+    return () => { alive = false; window.clearInterval(t); };
+  }, [lens, ensureSignalPool, publishSignalPool]);
 
   // Stable id for the open context, written to the URL as ?entity= so a deep
   // link (and the cross-product returnTo) can reopen it. Undefined-safe: any
@@ -573,13 +597,16 @@ function WorldInner() {
       catch { m.flyTo({ center: [place.lng, place.lat], zoom: place.zoom, duration: 1600 }); }
     }
 
-    // Signals from the shared pool — no second network call, one source of truth.
-    const near = signalsNear(pool, place, placeRadiusKm(place));
-    const sigField = poolLoading
-      ? field("LOADING")
-      : near.length ? field("LIVE", near) : field("NO_RECORDS");
-
-    const life = await occurrencesInWkt(bboxWkt(place), { limit: 300 });
+    // Signals are earned by this explicit place question, not preloaded on ATLAS open.
+    const [life, activePool] = await Promise.all([
+      occurrencesInWkt(bboxWkt(place), { limit: 300 }),
+      ensureSignalPool(),
+    ]);
+    const near = signalsNear(activePool, place, placeRadiusKm(place));
+    const signalSourcesUnavailable = ["eonet", "usgs"].some((id) => activePool.status[id] === "SOURCE_UNAVAILABLE");
+    const sigField = near.length
+      ? field("LIVE", near)
+      : signalSourcesUnavailable ? field("SOURCE_UNAVAILABLE") : field("NO_RECORDS");
 
     if (life.ok) {
       const rows = life.data.rows.map((o) => ({
@@ -602,7 +629,7 @@ function WorldInner() {
               : field("NO_RECORDS"),
         }
       : c));
-  }, [pool, poolLoading]);
+  }, [ensureSignalPool]);
 
   // V40 P0: RECENTER / FOCUS SELECTED — the user's escape hatch. The camera is
   // never locked to context; instead this puts it back on demand.
@@ -699,14 +726,17 @@ function WorldInner() {
 
     const zoom = Number(map.current?.getZoom?.() ?? 5);
     const nearbyRadiusKm = Math.max(30, Math.min(220, Math.round(900 / Math.pow(2, Math.max(0, zoom - 3)))));
-    const near = signalsNear(pool, { lat, lng }, nearbyRadiusKm);
-    const sigField = poolLoading
-      ? field("LOADING")
-      : near.length ? field("LIVE", near) : field("NO_RECORDS");
-
     const d = 0.35;
     const wkt = `POLYGON((${lng - d} ${lat - d},${lng + d} ${lat - d},${lng + d} ${lat + d},${lng - d} ${lat + d},${lng - d} ${lat - d}))`;
-    const life = await occurrencesInWkt(wkt, { limit: 100 });
+    const [life, activePool] = await Promise.all([
+      occurrencesInWkt(wkt, { limit: 100 }),
+      ensureSignalPool(),
+    ]);
+    const near = signalsNear(activePool, { lat, lng }, nearbyRadiusKm);
+    const signalSourcesUnavailable = ["eonet", "usgs"].some((id) => activePool.status[id] === "SOURCE_UNAVAILABLE");
+    const sigField = near.length
+      ? field("LIVE", near)
+      : signalSourcesUnavailable ? field("SOURCE_UNAVAILABLE") : field("NO_RECORDS");
 
     setCtx((c) => (c && c.kind === "COORDINATE" && c.lat === lat && c.lng === lng
       ? {
@@ -719,7 +749,7 @@ function WorldInner() {
               : field("NO_RECORDS"),
         }
       : c));
-  }, [pool, poolLoading]);
+  }, [ensureSignalPool]);
 
   /** Resolve ANY canonical id and open it. This is what makes the world one world. */
   const openEntity = useCallback(async (id) => {
@@ -730,7 +760,8 @@ function WorldInner() {
     if (t === "SOLUTION") { const s = solutionById(id); if (s) { setOpen(false); setCtx({ kind: "SOLUTION", solution: s }); } return; }
     if (t === "MISSION") { const m = missionById(id); if (m) { setOpen(false); setCtx({ kind: "MISSION", mission: m }); } return; }
     if (t === "SIGNAL") {
-      const s = pool.signals.find((x) => x.id === id);
+      const activePool = await ensureSignalPool();
+      const s = activePool.signals.find((x) => x.id === id);
       if (s) openSignal(s);
       return;
     }
@@ -771,7 +802,7 @@ function WorldInner() {
     // source record, so they are shown inside the relationship chain, never
     // opened as a standalone spatial object. Doing nothing here is the honest
     // behaviour — better than inventing a coordinate.
-  }, [openPlace, openSystem, openPressure, openSignal, openTaxon, pool, watchTaxaMatches]);
+  }, [openPlace, openSystem, openPressure, openSignal, openTaxon, ensureSignalPool, watchTaxaMatches]);
 
   /* ── SEARCH THE LIVING PLANET_ ─────────────────────────────────────────── */
 
@@ -1141,7 +1172,7 @@ function WorldInner() {
   const sources = pool.status;
   const liveCount = Object.values(sources).filter((s) => s === "LIVE").length;
 
-  const searchActive = open && q.trim().length >= 2;
+  const searchActive = open;
 
   return (
     <div className={`world ${light ? "light" : ""} ${searchActive ? "search-active" : ""} ${ctx ? "context-active" : ""} ${!collapsed ? "layers-active" : ""} ${lens !== "EARTH" && !ctx ? "lens-active" : ""}`}>
@@ -1173,9 +1204,19 @@ function WorldInner() {
             spellCheck={false}
           />
           {searching && <span className="search-glyph">···</span>}
-          {q && (
-            <button className="ctx-close" onClick={() => { setQ(""); setTaxaHits([]); clearFocus("focus"); }}>
-              CLEAR
+          {open && (
+            <button
+              className="ctx-close search-exit"
+              aria-label="Close search"
+              onClick={() => {
+                setQ("");
+                setTaxaHits([]);
+                setOpen(false);
+                clearFocus("focus");
+                if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+              }}
+            >
+              ×
             </button>
           )}
           {/* The world is the door — but the door must open onto the rest of the house.
