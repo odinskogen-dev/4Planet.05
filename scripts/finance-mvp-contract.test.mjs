@@ -36,6 +36,8 @@ test('funder, programme, separate call cycle IDs and deduplicated pipeline',()=>
 test('premium responsive design and accessible navigation',()=>{
  assert.match(css,/#2e2eff/i);
  assert.match(css,/@media\(max-width:760px\)/);
- assert.match(ui,/aria-label="Toggle navigation"/);
+ assert.match(ui,/aria-label="Open profile and settings"/);
+ assert.match(ui,/aria-label="Primary mobile navigation"/);
+ assert.match(ui,/data-theme=\{appearance\}/);
  assert.match(ui,/aria-label="Select year"/);
 });

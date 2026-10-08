@@ -11,7 +11,7 @@ import "./finance-shell.css";
 
 function currentPath(path:string){return path.replace(/^\/finance(?=\/|$)/,"")||"/"}
 function toPath(p:string){return window.location.pathname.startsWith("/finance")?"/finance"+p:p}
-function Nav({to,children,className=""}:{to:string;children:ReactNode;className?:string}){return <Link className={className} to={toPath(to)}>{children}</Link>}
+function Nav({to,children,className="",ariaLabel}:{to:string;children:ReactNode;className?:string;ariaLabel?:string}){return <Link className={className} aria-label={ariaLabel} to={toPath(to)}>{children}</Link>}
 function Icon({name}:{name:string}){const strokes:Record<string,ReactNode>={overview:<><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,discover:<><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></>,calendar:<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></>,pipeline:<><path d="M4 6h16M4 12h16M4 18h10"/></>,project:<><path d="M3 7V5a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></>,actors:<><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></>,graph:<><circle cx="5" cy="6" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="19" r="2"/><path d="m7 6 10 1M6 8l5 9M18 9l-5 8"/></>,applications:<><path d="M7 4h10l4 4v13H3V4zM17 4v5h4M7 14h10M7 18h7"/></>,settings:<><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.93 4.93l2.13 2.13m9.88 9.88 2.13 2.13M4.93 19.07l2.13-2.13M16.94 7.06l2.13-2.13"/></>,arrow:<><path d="M5 12h14m-6-6 6 6-6 6"/></>,chevron:<><path d="m9 5 7 7-7 7"/></>,back:<><path d="m15 5-7 7 7 7M8 12h13"/></>,plus:<><path d="M12 4v16M4 12h16"/></>,close:<><path d="M5 5 19 19M19 5 5 19"/></>,menu:<><path d="M4 6h16M4 12h16M4 18h16"/></>};return <svg className="fc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{strokes[name]||strokes.arrow}</svg>}
 function Initial({name}:{name:string}){return <span className="fc-initial" aria-hidden="true">{name.split(" ").map(w=>w[0]).slice(0,2).join("")}</span>}
 function Section({label,title,children,aside}:{label?:string;title:string;children?:ReactNode;aside?:ReactNode}){return <section className="fc-section"><div className="fc-sectionheading"><div>{label&&<p className="fc-eyebrow">{label}</p>}<h2>{title}</h2></div>{aside}</div>{children}</section>}
@@ -50,7 +50,7 @@ export default function FinanceHub(){
  useEffect(()=>{let active=true;let unsubscribe=()=>{};getIdentityClient().then(client=>{client.auth.getSession().then(r=>{if(active){setSession(r.data.session);setAuthChecked(true)}}).catch(()=>{if(active)setAuthChecked(true)});unsubscribe=client.auth.onAuthStateChange((_ev,s)=>{if(active)setSession(s)}).data.subscription.unsubscribe}).catch(()=>{if(active)setAuthChecked(true)});return()=>{active=false;unsubscribe()}},[]);
  useEffect(()=>{setMenu(false);setProfileOpen(false)},[loc.pathname]);
  useEffect(()=>{try{localStorage.setItem("4planet-finance-theme",appearance)}catch{/* browser blocked */}},[appearance]);
- const activePath=(p:string)=>p==="/" ? path==="/" : path===p||path.startsWith(p+"/");
+ const activePath=(p:string)=>p==="/" ? path==="/" :p==="/my"?path==="/my":path===p||path.startsWith(p+"/");
  const isMine=path==="/my"||path.startsWith("/my/");
  const upperTabs=isMine?[
    {path:"/my",title:"Overview"},{path:"/my/pipeline",title:"CRM"},
@@ -97,7 +97,7 @@ export default function FinanceHub(){
         <button type="button" className={appearance==="dark"?"active":""} onClick={()=>setAppearance("dark")}>Dark</button>
       </div>
       <div className="fc-header-right">
-        <Nav to="/my/calendar" className="fc-topbar-action" aria-label="Open deadline calendar"><Icon name="calendar"/></Nav>
+        <Nav to="/my/calendar" className="fc-topbar-action" ariaLabel="Open deadline calendar"><Icon name="calendar"/></Nav>
         <div className="fc-profile-anchor">
           <button type="button" className="fc-topbar-action" aria-label="Open profile and settings" aria-expanded={profileOpen} onClick={()=>setProfileOpen(!profileOpen)}><Icon name="actors"/></button>
           {profileOpen&&<div className="fc-profile-menu" role="menu" aria-label="Profile and settings">
