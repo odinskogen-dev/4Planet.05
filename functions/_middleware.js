@@ -15,7 +15,7 @@ const PUBLIC_HOSTS = {
     ],
     fallbackLinks: [
       ["Impact", "https://4planet.org/impact"],
-      ["Places", "https://4planet.org/places"],
+      ["Places", "https://4planetatlas.com/places"],
       ["World Place Index", "https://4planetatlas.com/places"],
       ["Missions", "https://4planet.org/missions"],
       ["ATLAS", "https://4planetatlas.com/atlas"],
@@ -74,7 +74,7 @@ const PUBLIC_HOSTS = {
     fallbackLinks: [
       ["4PLANET", "https://4planet.org/"],
       ["Impact", "https://4planet.org/impact"],
-      ["ATLAS", "https://4planetatlas.com/"],
+      ["ATLAS", "https://4planetatlas.com/atlas/"],
     ],
     schemaType: "WebApplication",
     sitemap: ["/"],
@@ -92,7 +92,7 @@ const PUBLIC_HOSTS = {
     fallbackLinks: [
       ["4PLANET", "https://4planet.org/"],
       ["4SAPIEN", "https://4sapien.com/"],
-      ["ATLAS", "https://4planetatlas.com/"],
+      ["ATLAS", "https://4planetatlas.com/atlas/"],
     ],
     schemaType: "WebApplication",
     sitemap: ["/"],
@@ -1417,7 +1417,7 @@ const FOURPLANET_ROUTES = {
       "The ecosystem connects source-grounded knowledge, places, species, living systems and human systems across products such as ATLAS, SPECIES, 4SAPIEN, 4BRANDS, 4NATION, MAGAZINE and Impact. The products are at different stages of development, and public prototypes are labelled as such rather than presented as finished systems.",
       "The underlying direction is simple: better understanding should support better decisions; better decisions should make useful action easier; and action should be connected to evidence so the system can learn without confusing contribution with proven ecological outcome."
     ],
-    fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
+    fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
     schemaType: "AboutPage",
   },
   "/impact": {
@@ -1429,7 +1429,7 @@ const FOURPLANET_ROUTES = {
       "4PLANET is not trying to replace field organisations. The intended model is to help expert organisations reach more supporters, connect funding to understandable actions and present delivery evidence with clear boundaries between contribution, work completed and independently supported ecological outcomes.",
       "This is an early public platform direction. Partner candidates are not presented as partners until an agreement exists, and no contribution is described as a verified ecological outcome unless the available evidence supports that claim."
     ],
-    fallbackLinks: [["4PLANET","https://4planet.org/"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Partners","https://4planet.org/partners"]],
+    fallbackLinks: [["4PLANET","https://4planet.org/"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"],["Partners","https://4planet.org/partners"]],
     schemaType: "WebPage",
   },
   "/domains": {
@@ -1453,7 +1453,7 @@ const FOURPLANET_ROUTES = {
       "Its current mission pathways include CLE4N_, WH4LES_, COR4L_ and RE:WILD_ Marine. Public support opens only where delivery, evidence and reporting requirements are sufficiently resolved.",
       "Ocean intelligence connects through shared 4PLANET infrastructure to ATLAS, SPECIES, Living Systems, Impact and MAGAZINE rather than creating a separate marine truth store."
     ],
-    fallbackLinks: [["Missions","https://4planet.org/missions"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Living Systems","https://4planet.org/living-systems"]],
+    fallbackLinks: [["Missions","https://4planet.org/missions"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"],["Living Systems","https://4planet.org/living-systems"]],
     schemaType: "CollectionPage",
   },
   "/domains/e4rth": {
@@ -1465,7 +1465,7 @@ const FOURPLANET_ROUTES = {
       "Its current mission pathways include CLIM4TE_, AM4ZONIA_, SPECIES_ and RE:WILD_ Land. The Tree Unit is an operational proof path under development; public support remains closed until its launch requirements are complete.",
       "E4RTH_ connects land-system understanding to shared places, species, evidence and action infrastructure across 4PLANET."
     ],
-    fallbackLinks: [["Missions","https://4planet.org/missions"],["SPECIES","https://4species.com/species/"],["ATLAS","https://4planetatlas.com/"],["Impact","https://4planet.org/impact"]],
+    fallbackLinks: [["Missions","https://4planet.org/missions"],["SPECIES","https://4species.com/species/"],["ATLAS","https://4planetatlas.com/atlas/"],["Impact","https://4planet.org/impact"]],
     schemaType: "CollectionPage",
   },
   "/domains/s4piens": {
@@ -1501,7 +1501,7 @@ const FOURPLANET_ROUTES = {
       "The mission names are OCE4N_, E4RTH_, S4PIENS_ and 4CULTURE_. They are separate public worlds with shared infrastructure rather than isolated projects. Their role is to make complex planetary challenges understandable and connect them to practical products, actors, solutions and evidence.",
       "Mission pages are developed progressively. Public prototypes may expose only part of the intended system, and missing evidence or unfinished capabilities should remain visible rather than being filled with unsupported claims."
     ],
-    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["Impact","https://4planet.org/impact"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
+    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/atlas/"],["Impact","https://4planet.org/impact"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
     schemaType: "CollectionPage",
   },
   "/places": {
@@ -1513,7 +1513,7 @@ const FOURPLANET_ROUTES = {
       "Canonical Place pages now live in the ATLAS World Place Index. Verified geography can publish first; ecological intelligence is added progressively only where source-grounded relationships exist. Arbitrary map states and machine-generated variants are not search pages.",
       "ATLAS provides the spatial exploration layer while canonical place pages provide stable, human-readable entry points into the connected system."
     ],
-    fallbackLinks: [["World Place Index","https://4planetatlas.com/places"],["ATLAS","https://4planetatlas.com/"],["Living Systems","https://4planet.org/living-systems"],["SPECIES","https://4species.com/species/"]],
+    fallbackLinks: [["World Place Index","https://4planetatlas.com/places"],["ATLAS","https://4planetatlas.com/atlas/"],["Living Systems","https://4planet.org/living-systems"],["SPECIES","https://4species.com/species/"]],
     schemaType: "CollectionPage",
   },
   "/place/kenya": {
@@ -1525,7 +1525,7 @@ const FOURPLANET_ROUTES = {
       "Place intelligence is intended to preserve source boundaries and uncertainty while connecting users to the relevant ATLAS, SPECIES and Living Systems views.",
       "Coverage remains selective and developing. Missing evidence should remain visible rather than being replaced by generic environmental claims."
     ],
-    fallbackLinks: [["Places","https://4planet.org/places"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Living Systems","https://4planet.org/living-systems"]],
+    fallbackLinks: [["Places","https://4planetatlas.com/places"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"],["Living Systems","https://4planet.org/living-systems"]],
     schemaType: "WebPage",
   },
   "/living-systems": {
@@ -1537,7 +1537,7 @@ const FOURPLANET_ROUTES = {
       "The aim is not to reduce nature to one score. Each public surface should preserve sources, uncertainty and the distinction between observation, interpretation and verified outcome. ATLAS provides the spatial lens, SPECIES provides species-level journeys and NATUREBRAIN provides the shared source-grounded intelligence underneath them.",
       "As the system grows, living-system pages are intended to connect understanding with credible actions and evidence without overstating what is known."
     ],
-    fallbackLinks: [["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"],["Places","https://4planet.org/places"],["Impact","https://4planet.org/impact"]],
+    fallbackLinks: [["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"],["Places","https://4planetatlas.com/places"],["Impact","https://4planet.org/impact"]],
     schemaType: "CollectionPage",
   },
   "/reports": {
@@ -1597,7 +1597,7 @@ const FOURPLANET_ROUTES = {
       "NIVA reporting is used to describe a specific oxygen-condition change associated with lowering the Nordre Follo wastewater outfall. That evidence is not presented as proof that the whole Oslofjord ecosystem was restored.",
       "Bathymetry, water-status layers, physical interventions, monitoring and assessment remain attributable to their respective source authorities rather than being merged into an unsupported synthetic score."
     ],
-    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["Impact","https://4planet.org/impact"]],
+    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/atlas/"],["Impact","https://4planet.org/impact"]],
     schemaType: "WebPage",
   },
   "/living-systems/great-barrier-reef": {
@@ -1609,7 +1609,7 @@ const FOURPLANET_ROUTES = {
       "AIMS field monitoring and NOAA Coral Reef Watch thermal-stress observations are kept as separate evidence modes. Regional coral-cover estimates do not describe every reef or every dimension of reef health.",
       "Actor roles and intervention fit remain open where the evidence has not yet been resolved. The page therefore exposes incomplete knowledge instead of manufacturing a generic reef solution."
     ],
-    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"]],
+    fallbackLinks: [["Living Systems","https://4planet.org/living-systems"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"]],
     schemaType: "WebPage",
   },
   "/impact/actions/bay-of-biscay-survey": {
@@ -1621,7 +1621,7 @@ const FOURPLANET_ROUTES = {
       "The purpose of the action layer is to connect a defined activity to who performs it, what evidence is produced and what later conclusions that evidence can legitimately support.",
       "4PLANET keeps contribution, delivery, observation and verified ecological outcome as separate states. Stronger outcome claims require evidence beyond completion of a survey."
     ],
-    fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/"],["SPECIES","https://4species.com/species/"]],
+    fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"]],
     schemaType: "WebPage",
   },
   "/privacy": {
@@ -1952,7 +1952,7 @@ export async function onRequest(context) {
       const imageUrl = `${canonical}/map.svg`;
       const mapLat=place.sourceCoordinate?.lat ?? place.lat;
       const mapLon=place.sourceCoordinate?.lon ?? place.lon;
-      const mapHref = `https://4planetatlas.com/atlas?place=${encodeURIComponent(place.slug)}&lat=${mapLat}&lon=${mapLon}&z=${place.type === "Country" ? 4 : 10}`;
+      const mapHref = `https://4planetatlas.com/atlas/?place=${encodeURIComponent(place.slug)}&lat=${mapLat}&lon=${mapLon}&z=${place.type === "Country" ? 4 : 10}`;
       const {parent,children,sameCountry,nearby,related}=atlasPlaceRelations(place);
       const schemaType=place.type==="City"||place.type==="City-state"?"City":place.type==="Country"?"Country":"Place";
       const displayContext=place.type==="Country"?(place.continent||place.region||place.context):(place.country||place.context);
@@ -2070,7 +2070,7 @@ export async function onRequest(context) {
           "The journey is a navigation layer across shared canonical species and place intelligence. It does not create a second species record or duplicate the standalone 4SPECIES canonical profile.",
           "Species facts, conservation context and ecological relationships should remain attributable to their underlying sources and evidence state."
         ],
-        fallbackLinks: [["4SPECIES",`https://4species.com/species/${journeySlug}`],["ATLAS","https://4planetatlas.com/"],["Living Systems","https://4planet.org/living-systems"]],
+        fallbackLinks: [["4SPECIES",`https://4species.com/species/${journeySlug}`],["ATLAS","https://4planetatlas.com/atlas/"],["Living Systems","https://4planet.org/living-systems"]],
         schemaType: "WebPage",
       };
     }
