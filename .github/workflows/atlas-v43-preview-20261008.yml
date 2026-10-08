@@ -85,3 +85,49 @@ jobs:
           jq '{ecoregion: .ecoregion.status, about: .about.status}' /tmp/place.json
           echo "V43_PREVIEW_PASS $url/atlas"
           echo "V43 preview: $url/atlas" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Founder-approved direct ATLAS production release
+        run: |
+          set -euo pipefail
+          echo "Confirming dedicated ATLAS domain is already attached (no DNS writes)"
+          token="$CLOUDFLARE_API_TOKEN"
+          zone=$(curl -fsS 'https://api.cloudflare.com/client/v4/zones?name=4planetatlas.com&status=active' -H "Authorization: Bearer $token")
+          id=$(jq -r '.result[0].id // empty' <<< "$zone")
+          dns=$(curl -fsS "https://api.cloudflare.com/client/v4/zones/$id/dns_records?name=4planetatlas.com&type=CNAME" -H "Authorization: Bearer $token")
+          route=$(jq -r '.result[0].content // empty' <<< "$dns")
+          test "$route" = '4planet-atlas.pages.dev'
+          curl -fsS "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-atlas/domains/4planetatlas.com" -H "Authorization: Bearer $token" -o /tmp/atlas-domain-association.json
+          jq -e '.success==true' /tmp/atlas-domain-association.json >/dev/null
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-atlas --branch main --commit-hash "$GITHUB_SHA" --commit-message "ATLAS v43 R1.1 FOUNDER OVERRIDE live $GITHUB_SHA"
+          echo 'ATLAS_V43_PRODUCTION_DEPLOY_SUBMITTED'
+      - name: Verify 4planetatlas.com production, real-place sources and time
+        run: |
+          set -euo pipefail
+          root='https://4planetatlas.com'
+          js=$(grep -oE 'src="/assets/[^"]+\.js"' dist/index.html | head -1 | cut -d'"' -f2)
+          [ -n "$js" ]
+          for i in $(seq 1 35); do
+            code=$(curl -sS --max-time 30 -o /tmp/atlas-live-v43.html -w '%{http_code}' "$root/" || true)
+            if [ "$code" = 200 ] && grep -Fq "$js" /tmp/atlas-live-v43.html; then break; fi
+            sleep 3
+          done
+          test "$code" = 200
+          grep -Fq "$js" /tmp/atlas-live-v43.html
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/"' /tmp/atlas-live-v43.html
+          curl -fsS --max-time 30 "$root/atlas-data/places/v1/manifest.json" -o /tmp/live-places.json
+          jq -e '.v==1 and .cellDegrees==5' /tmp/live-places.json >/dev/null
+          curl -fsS --max-time 30 "$root/api/atlas-place?lat=60.39&lon=5.32&land=1&town=Bergen&tlat=60.392&tlon=5.324" -o /tmp/live-bergen.json
+          jq -e '.ecoregion.status!=null and .about.status!=null' /tmp/live-bergen.json >/dev/null
+          jq '{ecoregion: .ecoregion.status, about: .about.status}' /tmp/live-bergen.json
+          curl -fsS --max-time 20 "$root/robots.txt" | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
+          curl -fsS --max-time 20 "$root/sitemap.xml" | grep -Fq '<loc>https://4planetatlas.com/'
+          echo "ATLAS_V43_REAL_PRODUCTION_PASS $root/"
+          node scripts/atlas-time-probe.mjs "$root" || true
+          {
+            echo '### FOUNDER APPROVED: ATLAS v43 R1.1 is LIVE'
+            echo "Live: $root/"
+            echo "Compatible ATLAS path: $root/atlas"
+            echo 'Worldwide places and server-side Wikipedia/ecoregion checks included.'
+            echo 'DNS untouched; dedicated Cloudflare project only. king/test not changed.'
+            echo "Source: $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
