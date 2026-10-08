@@ -1,6 +1,9 @@
 const SUPABASE_URL = "https://ghvdzetmplqkdtfqiror.supabase.co";
 const SUPABASE_KEY = "sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE";
-const SDK_SRC = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.min.js";
+const SDK_SOURCES = [
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0",
+  "https://unpkg.com/@supabase/supabase-js@2.115.0",
+] as const;
 
 export type FourPlanetUser = {
   id: string;
@@ -31,7 +34,7 @@ type SupabaseClientLike = {
     signUp(input: { email: string; password: string; options?: { emailRedirectTo?: string } }): Promise<SessionResponse>;
     resetPasswordForEmail(email: string, options?: { redirectTo?: string }): Promise<{ data: unknown; error: AuthError }>;
     updateUser(input: { password?: string; data?: Record<string, unknown> }): Promise<{ data: { user?: FourPlanetUser | null }; error: AuthError }>;
-    signInWithOAuth(input: { provider: string; options?: { redirectTo?: string } }): Promise<{ data: { url?: string | null }; error: AuthError }>;
+    signInWithOAuth(input: { provider: string; options?: { redirectTo?: string; skipBrowserRedirect?: boolean } }): Promise<{ data: { url?: string | null }; error: AuthError }>;
     signOut(input?: { scope?: "global" | "local" | "others" }): Promise<{ error: AuthError }>;
     verifyOtp(input: { token_hash: string; type: "email" }): Promise<SessionResponse>;
     getUserIdentities(): Promise<{ data: { identities: UserIdentity[] } | null; error: AuthError }>;
@@ -59,39 +62,72 @@ declare global {
 }
 
 let sdkPromise: Promise<void> | null = null;
+let clientPromise: Promise<SupabaseClientLike> | null = null;
 let singleton: SupabaseClientLike | null = null;
 
-function loadSdk() {
+function loadSdk(): Promise<void> {
   if (window.supabase?.createClient) return Promise.resolve();
   if (sdkPromise) return sdkPromise;
   sdkPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>('script[data-fourplanet-auth-sdk="1"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Auth SDK failed to load")), { once: true });
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = SDK_SRC;
-    script.async = true;
-    script.dataset.fourplanetAuthSdk = "1";
-    script.crossOrigin = "anonymous";
-    script.referrerPolicy = "no-referrer";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Auth SDK failed to load"));
-    document.head.appendChild(script);
+    let sourceIndex = 0;
+    const tryNext = () => {
+      const previous = document.querySelector<HTMLScriptElement>('script[data-fourplanet-auth-sdk="1"]');
+      if (previous) previous.remove();
+      const source = SDK_SOURCES[sourceIndex++];
+      if (!source) {
+        reject(new Error("Auth SDK failed to load"));
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = source;
+      script.async = true;
+      script.dataset.fourplanetAuthSdk = "1";
+      script.crossOrigin = "anonymous";
+      script.referrerPolicy = "no-referrer";
+      let settled = false;
+      const timer = window.setTimeout(() => fail(), 9000);
+      const fail = () => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        tryNext();
+      };
+      script.onload = () => {
+        if (settled) return;
+        if (!window.supabase?.createClient) return fail();
+        settled = true;
+        window.clearTimeout(timer);
+        resolve();
+      };
+      script.onerror = fail;
+      document.head.appendChild(script);
+    };
+    tryNext();
+  }).catch((error) => {
+    sdkPromise = null;
+    throw error;
   });
   return sdkPromise;
 }
 
 export async function getIdentityClient(): Promise<SupabaseClientLike> {
   if (singleton) return singleton;
-  await loadSdk();
-  if (!window.supabase?.createClient) throw new Error("Auth SDK unavailable");
-  singleton = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-  });
-  return singleton;
+  if (!clientPromise) {
+    clientPromise = (async () => {
+      await loadSdk();
+      if (!window.supabase?.createClient) throw new Error("Auth SDK unavailable");
+      singleton = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      });
+      return singleton;
+    })();
+  }
+  try {
+    return await clientPromise;
+  } catch (error) {
+    clientPromise = null;
+    throw error;
+  }
 }
 
 const TRUSTED_HOSTS = new Set([
