@@ -1,7 +1,7 @@
 /* CAP-PLATFORM-01 — GitHub-built universal finance interface. Demonstration until canonical data+RLS are integrated. */
 import {useEffect,useMemo,useRef,useState,type FormEvent,type ReactNode} from "react";
 import {Link,useLocation,useNavigate} from "react-router-dom";
-import {getIdentityClient,identityLoginUrl,type FourPlanetSession} from "@/identity/identityClient";
+import {getIdentityClient,type FourPlanetSession} from "@/identity/identityClient";
 import {CALLS,FUNDERS,PROGRAMMES,REGIONS,THEMES,STATUS,amount,prettyDate,programmeFor,funderFor,readState,saveState,emptyState,validTransition,type Call,type FinanceState,type PipelineItem,type Project,type Status,type Theme} from "./financeData";
 import {readFinanceWorkspace,writeFinanceWorkspace} from "./financeRemote";
 import "./finance.css";
@@ -57,7 +57,7 @@ export default function FinanceHub(){
  const switchWorkspace=(next:"4planet"|"personal")=>change(s=>({...s,active:next}));
  const addProject=(p:Project)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:[...w.projects,p]}}};});
  const deleteProject=(id:string)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:w.projects.filter(p=>p.id!==id),pipeline:w.pipeline.map(i=>i.projectId===id?{...i,projectId:""}:i)}}};});
- const signIn=()=>{window.location.href=identityLoginUrl(window.location.href)};
+ const signIn=()=>{navigate(toPath("/sign-in"))};
  const isMine=path==="/my"||path.startsWith("/my/");
  return <div className="fc-root">
   <DemoNote signedIn={!!session}/>
@@ -71,6 +71,7 @@ export default function FinanceHub(){
     {session&&remoteStatus!=="ready"&&remoteStatus!=="saving"?null:<>
 
     {path==="/"&&<><div className="fc-hero"><p className="fc-eyebrow">FINANCING INTELLIGENCE FOR CHANGE</p><h1>Find the funding<br/>behind <em>change.</em></h1><p>Discover funders. Understand recurring programmes. Build your own pipeline and organise funding around real projects.</p><div className="fc-actions"><Nav className="fc-btn fc-btn-primary" to="/discover">Explore opportunities <Icon name="arrow"/></Nav><Nav className="fc-btn" to="/my">Open my workspace</Nav></div><div className="fc-hero-meta"><span>ONE GLOBAL DIRECTORY</span><span>ANNUAL FUNDING CYCLES</span><span>YOUR OWN WORKSPACE</span></div></div><div className="fc-landing-grid"><div><p className="fc-eyebrow">DISCOVER</p><h2>Funding intelligence that compounds.</h2><p>Each funder has a durable profile. Each programme has its own history. Each annual call can be saved to your projects and deadline calendar.</p></div><div className="fc-category-grid">{THEMES.slice(0,6).map((t,i)=><Nav key={t} to={"/discover?theme="+encodeURIComponent(t)} className="fc-category"><span>0{(i+1)}</span><strong>{t}</strong><Icon name="arrow"/></Nav>)}</div></div></>}
+    {path==="/sign-in"&&<FinanceSignIn onSignedIn={()=>navigate(toPath("/my"))} signedIn={!!session}/>}
     {path==="/discover"&&<Discover saved={savedSet} save={save}/>}
     {path==="/funders"&&<FunderDirectory/>}
     {path.startsWith("/funders/")&&<FunderDetail slug={path.split("/")[2]} saved={savedSet} save={save}/>}
@@ -86,7 +87,7 @@ export default function FinanceHub(){
     {path==="/my/applications"&&<Applications pipeline={workspace.pipeline}/>}
     {path==="/my/graph"&&<Graph workspace={workspace}/>}
     {path==="/my/settings"&&<Settings state={state} changeWorkspace={switchWorkspace} reset={()=>{const s=emptyState();saveState(s);setState(s)}} session={session} signIn={signIn}/>}
-    {!["/","/discover","/funders","/calendar","/my","/my/pipeline","/my/calendar","/my/projects","/my/applications","/my/graph","/my/settings"].includes(path)&&!["/funders/","/programmes/","/opportunities/","/my/projects/"].some(p=>path.startsWith(p))&&<Empty title="Page not found" text="This route does not exist."/>}
+    {!["/","/sign-in","/discover","/funders","/calendar","/my","/my/pipeline","/my/calendar","/my/projects","/my/applications","/my/graph","/my/settings"].includes(path)&&!["/funders/","/programmes/","/opportunities/","/my/projects/"].some(p=>path.startsWith(p))&&<Empty title="Page not found" text="This route does not exist."/>}
    </>}
    </main>
   </div>
@@ -113,3 +114,26 @@ function ProjectDetail({id,workspace,patch}:{id:string;workspace:{projects:Proje
 function Applications({pipeline}:{pipeline:PipelineItem[]}){return <><Section label="APPLICATION CASES · DEMO" title="Applications & decisions"/><p className="fc-muted">A saved opportunity is not an application. Formal submissions require external receipts and explicit human authorisation.</p><div className="fc-resultshead"><strong>Recorded stages</strong><span>No provider integrations or payments</span></div>{pipeline.filter(i=>["Submitted","Awaiting decision","Awarded","Rejected"].includes(i.status)).map(i=>{const c=CALLS.find(x=>x.id===i.callId);return c?<div key={i.id} className="fc-application-row"><Nav to={"/opportunities/"+c.id}>{c.title}</Nav><Tag>{i.status}</Tag><span>{i.receipt||"No external receipt recorded"}</span></div>:null})}{!pipeline.some(i=>["Submitted","Awaiting decision","Awarded","Rejected"].includes(i.status))&&<Empty title="No application cases recorded" text="Applications and receipt evidence will be preserved here once integrated with the canonical Capital Control Tower."/>}</>}
 function Graph({workspace}:{workspace:{projects:Project[];pipeline:PipelineItem[]}}){const [selected,setSelected]=useState<string>("");const nodes:({id:string;label:string;kind:string;href:string})[]=[],edges:[string,string][]=[];workspace.projects.forEach(p=>nodes.push({id:p.id,label:p.name,kind:"Project",href:"/my/projects/"+p.id}));workspace.pipeline.forEach(i=>{const c=CALLS.find(x=>x.id===i.callId);if(!c)return;const pr=programmeFor(c),f=funderFor(c);[{id:c.id,label:c.title,kind:"Opportunity",href:"/opportunities/"+c.id},{id:pr.id,label:pr.name,kind:"Programme",href:"/programmes/"+pr.id},{id:f.id,label:f.name,kind:"Funder",href:"/funders/"+f.slug}].forEach(n=>{if(!nodes.some(x=>x.id===n.id))nodes.push(n)});edges.push([i.projectId||"workspace",c.id],[c.id,pr.id],[pr.id,f.id])});if(workspace.pipeline.some(i=>!i.projectId))nodes.push({id:"workspace",label:"Unassigned pipeline",kind:"Workspace",href:"/my/pipeline"});const chosen=nodes.find(n=>n.id===selected);const width=760,height=470;return <><Section label="ECONOMIC ORGANISATION MAP" title="Relationship graph"/><p className="fc-muted">Graph is an optional view of your saved projects and financing relationships, not another database.</p>{nodes.length?<><div className="fc-graph"><svg viewBox={"0 0 "+width+" "+height} role="img" aria-label="Funding actors, programmes, opportunities and projects graph">{edges.map(([a,b],i)=>{const ia=nodes.findIndex(n=>n.id===a),ib=nodes.findIndex(n=>n.id===b);if(ia<0||ib<0)return null;const point=(index:number)=>{const angle=(index/nodes.length)*Math.PI*2;return {x:width/2+260*Math.cos(angle),y:height/2+175*Math.sin(angle)}};const x=point(ia),y=point(ib);return <line key={i} x1={x.x} y1={x.y} x2={y.x} y2={y.y} stroke="#bbc0c9" strokeWidth="1.5"/>})}{nodes.map((n,i)=>{const angle=i/nodes.length*Math.PI*2,x=width/2+260*Math.cos(angle),y=height/2+175*Math.sin(angle);return <g key={n.id} onClick={()=>setSelected(n.id)} role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter")setSelected(n.id)}} style={{cursor:"pointer"}}><circle cx={x} cy={y} r={n.kind==="Funder"?30:23} fill={selected===n.id?"#2e2eff":n.kind==="Project"?"#161a21":"#fff"} stroke={selected===n.id?"#2e2eff":"#abb3c2"} strokeWidth="2"/><text x={x} y={y+4} fontSize="9" fill={selected===n.id||n.kind==="Project"?"white":"#151515"} textAnchor="middle">{n.kind.slice(0,4)}</text><text x={x} y={y+45} fill="#262b37" textAnchor="middle" fontSize="10">{n.label.slice(0,27)}</text></g>})}</svg></div>{chosen&&<div className="fc-graph-inspector"><strong>{chosen.label}</strong><Tag>{chosen.kind}</Tag><Nav to={chosen.href}>Open profile →</Nav></div>}<div className="fc-graph-list">{nodes.map(n=><Nav to={n.href} key={n.id}>{n.kind} — {n.label} ↗</Nav>)}</div></>:<Empty title="Your graph is empty" text="Save funding opportunities and connect them to projects to create relationships."/>}</>}
 function Settings({state,changeWorkspace,reset,session,signIn}:{state:FinanceState;changeWorkspace:(v:"4planet"|"personal")=>void;reset:()=>void;session:FourPlanetSession|null;signIn:()=>void}){return <><Section label="USER CONTROL" title="Workspace settings"/><div className="fc-settings-panel"><h3>Active workspace</h3><select value={state.active} onChange={e=>changeWorkspace(e.target.value as "4planet"|"personal")}><option value="4planet">4PLANET (demo only)</option><option value="personal">Personal (demo only)</option></select><p>These two workspaces are separate views owned by this one user account. Organisation/team multi-tenancy is not yet enabled.</p><hr/><h3>4PLANET ID</h3><p>{session?"Identity session detected: "+(session.user.email||"signed in"):"No verified identity session detected."} Existing 4PLANET ID is used. Private account state is RLS-backed when signed in; shared organisation roles and source-backed funding remain pending.</p>{!session&&<button className="fc-btn" onClick={signIn}>Sign in through 4PLANET ID</button>}<hr/><h3>Reset demonstration</h3><p>Reset only guest/device-local demo projects. Do not use this button for an authenticated account reset.</p><button className="fc-btn" disabled={!!session} onClick={()=>{if(window.confirm("Erase all finance demonstration data stored on this device?"))reset()}}>Clear demonstration data</button></div></>}
+
+function FinanceSignIn({onSignedIn,signedIn}:{onSignedIn:()=>void;signedIn:boolean}){
+ const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState("");
+ async function submit(event:FormEvent){event.preventDefault();if(busy)return;setBusy(true);setError("");
+  try {const client=await getIdentityClient();const response=await client.auth.signInWithPassword({email:email.trim(),password});
+   if(response.error||!response.data.session)throw new Error(response.error?.message||"Unable to authenticate");
+   setPassword("");onSignedIn();
+  }catch(err){setError(err instanceof Error?err.message:"Authentication unavailable");}finally{setBusy(false)}
+ }
+ return <div className="fc-signin">
+  <p className="fc-eyebrow">CANONICAL ACCOUNT · 4PLANET ID</p>
+  <h1>Sign in to Finance.</h1>
+  <p className="fc-lead">Use your existing 4PLANET ID. Finance uses the same Supabase Auth account as other 4PLANET products — no second identity is created.</p>
+  {signedIn?<div className="fc-login-note">You are signed in. <Nav to="/my">Open private workspace →</Nav></div>:
+   <form onSubmit={submit} className="fc-form-panel">
+    <label>Email address<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
+    <label>Password<input type="password" minLength={1} required autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)}/></label>
+    {error&&<p role="alert" className="fc-sync-error">{error}</p>}
+    <button disabled={busy} className="fc-btn fc-btn-primary" type="submit">{busy?"Signing in…":"Sign in with 4PLANET ID"}</button>
+    <p className="fc-muted fc-small">Account recovery and registration remain under the existing <a href="https://id.4planet.org/login?mode=forgot">4PLANET ID account service ↗</a>. Seamless cross-domain single-sign-on is pending the canonical ID site release; this direct sign-in uses the same account and avoids a duplicate auth provider.</p>
+   </form>}
+ </div>;
+}
