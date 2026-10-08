@@ -27,3 +27,7 @@ jobs:
       - run: node --test scripts/finance-mvp-contract.test.mjs
       - name: Build frontend
         run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile E2E
+        run: node scripts/finance-mvp.e2e.mjs
