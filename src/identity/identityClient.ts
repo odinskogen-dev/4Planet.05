@@ -114,6 +114,7 @@ const TRUSTED_HOSTS = new Set([
   "4planetatlas.com",
   "www.4planetatlas.com",
   "labs.4planet.org",
+  "finance.4planet.org",
   "4brain.app",
   "4species.com",
   "www.4species.com",

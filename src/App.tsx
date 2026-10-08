@@ -23,6 +23,7 @@ import "@/styles/premium-completion.css";
 const PartnersHub = lazy(() => import("@/pages/partners/PartnersHub"));
 const NationPage = lazy(() => import("@/pages/nation/NationPage"));
 const FourBrand = lazy(() => import("@/pages/partners/FourBrand"));
+const FinanceHub = lazy(() => import("@/pages/finance/FinanceHub"));
 
 function isPartnersHost() {
   if (typeof window === "undefined") return false;
@@ -55,6 +56,14 @@ function isIdentitySurface() {
   return host === "id.4planet.org" || path === "/id" || path.startsWith("/id/") || path === "/auth/4planet/callback" || path === "/oauth/consent";
 }
 
+function isFinanceHost() {
+  if (typeof window === "undefined") return false;
+  return window.location.hostname.toLowerCase() === "finance.4planet.org";
+}
+function isFinancePreviewPath() {
+  if (typeof window === "undefined") return false;
+  return window.location.pathname === "/finance" || window.location.pathname.startsWith("/finance/");
+}
 function isCreatorHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
@@ -123,6 +132,7 @@ export default function App() {
   if (isNationHost()) return <MeasuredStandalone><NationPage /></MeasuredStandalone>;
   if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
   if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;
+  if (isFinanceHost() || isFinancePreviewPath()) return <MeasuredStandalone><FinanceHub /></MeasuredStandalone>;
   if (isCreatorHost()) return <MeasuredStandalone><OdinCreatorPage /></MeasuredStandalone>;
 
   return (

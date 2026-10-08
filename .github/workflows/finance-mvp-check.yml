@@ -1,0 +1,34 @@
+name: Finance MVP Preview QA
+on:
+  push:
+    branches:
+      - build/finance-intelligence-mvp-20261008
+      - work/finance-id-release-20261008
+  pull_request:
+    paths:
+      - 'src/pages/finance/**'
+      - 'src/App.tsx'
+      - 'src/identity/identityClient.ts'
+      - 'scripts/finance-mvp-contract.test.mjs'
+      - '.github/workflows/finance-mvp-check.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: node --test scripts/finance-mvp-contract.test.mjs
+      - name: Build frontend
+        run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile E2E
+        run: node scripts/finance-mvp.e2e.mjs
