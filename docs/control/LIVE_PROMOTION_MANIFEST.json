@@ -2,18 +2,19 @@
   "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "71be55759e920316195cc025e87981330af75c6c",
-  "priorLiveSha": "6fb53f473d6f57d8031cc7ea23555367ca78f7f5",
+  "testKingSha": "2918a44648f781e0d67e82e74b86ba1c86418a38",
+  "priorLiveSha": "f5ab684036ea8db0b2964f1f703e5e7b14dd1767",
   "releaseCommitSha": null,
   "boundedRelease": true,
-  "releaseKind": "P0_ID_AUTH_HOTFIX",
-  "hotfixBranch": "release/p0-id-founder-authorised-20261008",
+  "releaseKind": "P0_ID_GOOGLE_SINGLE_REDIRECT",
+  "hotfixBranch": "release/p0-id-single-redirect-20261009",
   "hotfixPaths": [
-    "src/pages/identity/IdentityApp.tsx"
+    "src/pages/identity/IdentityApp.tsx",
+    "src/identity/identityClient.ts"
   ],
-  "founderDecisionRef": "Founder 2026-10-08: AXE ID må fikses live; Jeg bestemmer reglene og jeg bestemmer at du kan ta ID fiks live. Explicit scoped production authorization; no other product changes.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/416",
-  "rollbackRef": "main@6fb53f473d6f57d8031cc7ea23555367ca78f7f5",
+  "founderDecisionRef": "Founder 2026-10-08: Jeg bestemmer reglene og jeg bestemmer at du kan ta ID fiks live. Founder 2026-10-09: 4PLANET ID Google login still bounces; expressly requires learning working 4SAPIEN code and fixing.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/420",
+  "rollbackRef": "main@f5ab684036ea8db0b2964f1f703e5e7b14dd1767",
   "releaseControlCommit": true,
-  "note": "P0 OAuth login loop, late SIGNED_IN and duplicate redirect protection plus brand colors only. Source blob on king/test 20002dc6da1d7918363de3b30018bd57edfc4050. Explicit founder-approved bounded emergency hotfix. Requires downstream deployed asset and live OAuth evidence before DONE."
+  "note": "Only exact two king/test source blobs cb219785ed72018c0c79175105d4010df0a64a09 and 8a0e45441f4a9971065e63fb2ccfa5a47b86d718 with P0 contract and scoped policy. Verified Node OAuth contract and TypeScript pass at PR #420. Live Google click and cross-domain return remain to be verified before DONE."
 }
