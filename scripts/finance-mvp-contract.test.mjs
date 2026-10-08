@@ -11,7 +11,8 @@ test('standalone finance host and existing identity host allowlist',()=>{
  assert.match(app,/<FinanceHub/);
  assert.match(auth,/"finance\.4planet\.org"/);
  assert.match(ui,/getIdentityClient/);
- assert.match(ui,/identityLoginUrl/);
+ assert.match(ui,/signInWithPassword/);
+ assert.match(ui,/FinanceSignIn/);
 });
 test('public and private demo routes without fake production auth',()=>{
  for(const p of ['/discover','/funders','/opportunities/','/my/calendar','/my/pipeline','/my/projects','/my/graph','/my/applications'])assert.ok(ui.includes(p),p);

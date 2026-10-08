@@ -13,6 +13,10 @@ try{
   const errs=[];page.on('pageerror',error=>errs.push(error.message));
   await page.goto(base+'/finance',{waitUntil:'domcontentloaded'});
   await page.getByRole('heading',{name:/Find the funding/i}).waitFor();
+  await page.goto(base+'/finance/sign-in',{waitUntil:'domcontentloaded'});
+  await page.getByRole('heading',{name:/Sign in to Finance/i}).waitFor();
+  await page.getByRole('textbox',{name:'Email address'}).waitFor();
+  await page.goto(base+'/finance',{waitUntil:'domcontentloaded'});
   await page.getByRole('link',{name:/Explore opportunities/i}).click();
   assert.match(page.url(),/\/finance\/discover/);
   await page.getByRole('textbox',{name:'Search opportunities'}).fill('Blue');
