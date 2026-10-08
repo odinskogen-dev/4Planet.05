@@ -17,6 +17,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
   const map = useRef<maplibregl.Map | null>(null);
   const [active, setActive] = useState<Record<string, boolean>>(() => Object.fromEntries(proof.mapLayers.map((layer, i) => [layer.id, i === 0])));
   const [degraded, setDegraded] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (!box.current) return;
@@ -32,6 +33,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     m.on("load", () => {
       if (!alive) return;
+      setReady(true);
       m.fitBounds(proof.bounds, { padding: 28, duration: 0, maxZoom: proof.zoom + 1.2 });
       for (const layer of proof.mapLayers) {
         try {
@@ -89,6 +91,9 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
         {degraded && <p className="editorial-note" style={{ marginTop: 10 }}>Some map layers are temporarily unavailable.</p>}
       </div>
       <div ref={box} className="proof-map-canvas" />
+      <div role="status" aria-live="polite" className="editorial-note" style={{ margin: "10px 0 0" }}>
+        {ready ? "MAP · READY" : "MAP · LOADING"}
+      </div>
       {proof.mapLayers.length > 0 && (
         <div className="proof-map-controls">
           {proof.mapLayers.map((layer) => (
