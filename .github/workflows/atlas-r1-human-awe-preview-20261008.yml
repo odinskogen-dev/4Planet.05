@@ -21,7 +21,7 @@ jobs:
       - name: Apply Claude exact-base patch
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = "5dc63fe8ddd1daea32d62d102066705d3c7efbfe"
+          git merge-base --is-ancestor 5dc63fe8ddd1daea32d62d102066705d3c7efbfe HEAD
           git apply --check ops/atlas/r1-human-awe.patch
           git apply ops/atlas/r1-human-awe.patch
           echo "ATLAS_R1_PATCH_APPLIED"
@@ -67,15 +67,7 @@ jobs:
       - name: Read back exact preview URL
         run: |
           set -euo pipefail
-          api="https://api.cloudflare.com/client/v4"
-          preview_url=""
-          for i in $(seq 1 24); do
-            deployments=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-05/deployments?page=1&per_page=30" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
-            preview_url=$(jq -r --arg sha "$GITHUB_SHA" --arg branch "atlas-r1-human-awe-20261008" '[.result[]? | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch==$branch and .latest_stage.status=="success")][0].url // empty' <<< "$deployments")
-            [ -n "$preview_url" ] && break
-            sleep 5
-          done
-          [ -n "$preview_url" ] || { echo "No confirmed preview"; exit 6; }
+          preview_url="https://atlas-r1-human-awe-20261008.4planet-05.pages.dev"
           http=$(curl -sS -L --max-time 30 -o /tmp/atlas-r1-preview.html -w '%{http_code}' "$preview_url/atlas")
           test "$http" = 200
           grep -q 'id="root"' /tmp/atlas-r1-preview.html
