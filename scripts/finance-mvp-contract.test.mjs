@@ -17,7 +17,7 @@ test('standalone finance host and existing identity host allowlist',()=>{
 test('public and private demo routes without fake production auth',()=>{
  for(const p of ['/discover','/funders','/opportunities/','/my/calendar','/my/pipeline','/my/projects','/my/graph','/my/applications'])assert.ok(ui.includes(p),p);
  assert.match(ui,/DEMONSTRATION/);
- assert.match(ui,/funding actors, dates and amounts are fictional/i);
+ assert.match(ui,/funding actors, calls and amounts are fictional/i);
  assert.match(ui,/readFinanceWorkspace/);
  assert.match(ui,/remoteStatus==="error"/);
  assert.doesNotMatch(ui,/createClient\(/);
