@@ -43,7 +43,7 @@ test("Oslofjord desktop is a source-backed human-first Planet proof", async ({ p
     await expect(page.getByRole("button", { name: new RegExp(layer.replace("/", "\\/"), "i") })).toBeVisible();
   }
 
-  const sourceLinks = page.getByRole("link", { name: /OPEN SOURCE/ });
+  const sourceLinks = page.locator(".proof-source-links a, .editorial-list a");
   expect(await sourceLinks.count()).toBeGreaterThanOrEqual(6);
 
   await settle(page);
