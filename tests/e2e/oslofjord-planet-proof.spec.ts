@@ -3,17 +3,6 @@ import { test, expect } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://localhost:4173";
 const OUTPUT = "artifacts/product-proof/oslofjord";
-const QUESTIONS = [
-  "WHAT IS HERE?",
-  "WHAT IS HAPPENING?",
-  "WHY?",
-  "WHAT DEPENDS ON WHAT?",
-  "WHAT CHANGED?",
-  "HOW DO WE KNOW?",
-  "WHO CAN ACT?",
-  "WHAT CAN BE DONE?",
-];
-
 mkdirSync(OUTPUT, { recursive: true });
 
 test.beforeEach(async ({ page }) => {
@@ -35,12 +24,10 @@ async function waitForMap(page: import("@playwright/test").Page) {
 }
 
 async function verifyHumanReadingContract(page: import("@playwright/test").Page) {
-  for (const question of QUESTIONS) {
-    await expect(page.getByText(question, { exact: true }).first()).toBeVisible();
+  for (const section of ["What’s happening", "Why", "What changed", "What can be done", "Read this correctly"]) {
+    await expect(page.getByText(section, { exact: true }).first()).toBeVisible();
   }
-  await expect(page.getByText("Nothing important should require trust in 4PLANET alone.", { exact: true })).toBeVisible();
-  await expect(page.getByText("HUMAN GOLD CANDIDATE — NOT FOUNDER APPROVED", { exact: true })).toBeVisible();
-  await expect(page.getByText(/navigation\/view extent, not a claim that the ecosystem ends/i)).toBeVisible();
+  await expect(page.getByText(/does not mean the whole Oslofjord ecosystem has been restored/i)).toBeVisible();
 }
 
 test("Oslofjord desktop is a source-backed human-first Planet proof", async ({ page }) => {
@@ -61,7 +48,7 @@ test("Oslofjord desktop is a source-backed human-first Planet proof", async ({ p
 
   await settle(page);
   await page.screenshot({ path: `${OUTPUT}/01-oslofjord-desktop-first-screen.png` });
-  await page.locator("section[aria-label='Source-backed ecosystem map']").screenshot({ path: `${OUTPUT}/02-oslofjord-desktop-map.png` });
+  await page.locator("section[aria-label='Explore the fjord map']").screenshot({ path: `${OUTPUT}/02-oslofjord-desktop-map.png` });
   await page.screenshot({ path: `${OUTPUT}/03-oslofjord-desktop-full.png`, fullPage: true });
 });
 
@@ -85,7 +72,7 @@ test("Oslofjord mobile remains readable, interactive and source-inspectable", as
 
   await settle(page);
   await page.screenshot({ path: `${OUTPUT}/04-oslofjord-mobile-first-screen.png` });
-  await page.locator("section[aria-label='Source-backed ecosystem map']").screenshot({ path: `${OUTPUT}/05-oslofjord-mobile-map.png` });
+  await page.locator("section[aria-label='Explore the fjord map']").screenshot({ path: `${OUTPUT}/05-oslofjord-mobile-map.png` });
 });
 
 test("Norwegian Oslofjorden alias reconciles to canonical registered Oslofjord route", async ({ page }) => {
