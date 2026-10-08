@@ -1440,3 +1440,20 @@ Founder observed Google account selection returning to /login without authentica
 **TRUTH BOUNDARY:** Code, CI and synthetic session tests do not prove real Google user completed browser handoff.
 **MOBILE-FIRST RISK:** Safari callback event order; localStorage persistence and auth SDK lifecycle.
 **HUMAN SUCCESS:** After picking Google account, founder is transparently informed and lands on requested 4planet.org logged in without a loop.
+
+## P0 4PLANET ID — CLOUDFLARE CSP BLOCKS SUPABASE — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** Google approves sign-in, but id.4planet.org returns to login without a retained session at 4planet.org.
+**ONE THING TO UNDERSTAND:** Cloudflare Pages public/_headers CSP connect-src on both general and Jaguar paths does not permit https://ghvdzetmplqkdtfqiror.supabase.co. Therefore browser calls to Supabase Auth and /functions/v1/four-planet-id-bridge are blocked by policy, explaining the observed absence of bridge logs even when Google callback succeeds.
+**PRIMARY ACTION:** Add only this existing 4PLANET Supabase origin to existing connect-src directives. Preserve all other CSP directives and limits.
+**SECONDARY DEPTH:** Maintain Google provider, application logic, working 4SAPIEN Claude login and existing 4PLANET session bridge.
+**P1 DOMINANT:** Browser permits valid authenticated Supabase fetch and sends bridge request after Google session.
+**P2 ORIENTATION:** Add exact origin CSP contract test. Do not widen to *.supabase.co.
+**P3 ACTION / NEXT:** Release verified king/test policy to main as bounded P0, verify served HTTP CSP, rerun live synthetic bridge test and real founder Google callback.
+**P4 DEPTH:** Check that browser can perform preflight and POST without CSP violations or token leaks.
+**WHAT CAN BE REMOVED:** Missing Supabase allowlist entry only.
+**WHAT MUST BE REUSED:** Existing Cloudflare Pages, Supabase project, first-party session bridge and secure origin list.
+**TRUTH BOUNDARY:** A CSP allowlist update fixes a proven browser enforcement blocker; this alone does not certify every third-party account callback or every site.
+**MOBILE-FIRST RISK:** Safari and chat in-app browsers may also have distinct storage/redirect behaviour.
+**HUMAN SUCCESS:** Google account approval → transparent ID success → actual bridge POST → authenticated 4planet.org.
+**FOUNDER RELEASE:** Founder authorised emergency ID production repair 08–09 Oct 2026. Scope public/_headers plus one regression test and existing GOLD release control only. No 4SAPIEN changes.
