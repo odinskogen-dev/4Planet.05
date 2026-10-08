@@ -1,0 +1,80 @@
+name: Finance 2.0 Controlled Live Release
+on:
+  push:
+    branches: [work/finance-nordic-mobile-shell-20261009]
+    paths: ['.github/workflows/finance-nordic-live.yml']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: finance-4planet-beta-domain
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Confirm exact previous tested snapshot and noindex
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          grep -q 'PINNED_ORIGIN = "https://9c896b3a.4planet-05.pages.dev"' deploy/finance-router/src/index.js
+          result=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/37860046318")
+          [ "$(jq -r '.conclusion' <<<"$result")" = success ]
+          [ "$(jq -r '.head_sha' <<<"$result")" = 3f23670801d21aa9644a3bfd728f01b5947f91cc ]
+          origin_status=$(curl -LsS -D /tmp/pin-headers -o /tmp/pin-index -w '%{http_code}' https://9c896b3a.4planet-05.pages.dev/finance)
+          [ "$origin_status" = 200 ]
+          { grep -Eiq '^x-robots-tag:.*noindex' /tmp/pin-headers || grep -qi noindex /tmp/pin-index; }
+          echo 'FINANCE_VERIFIED_PINNED_PREVIEW=PASS'
+      - name: Finance-only DNS guard and previously working site
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          zone_json=$(curl -fsS "$api/zones?name=4planet.org" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          zone=$(jq -r '.result[0].id // empty' <<<"$zone_json")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone_json")
+          test -n "$zone" && test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          dns=$(curl -fsS "$api/zones/$zone/dns_records?name=finance.4planet.org" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          jq -e '[.result[] | select(.type=="CNAME" and .name=="finance.4planet.org" and .content=="4planet-05.pages.dev" and .proxied==true)] | length==1' <<<"$dns" >/dev/null
+          [ "$(jq -r '.result | length' <<<"$dns")" = 1 ]
+          previous=$(curl -LsS -D /tmp/old-headers -o /tmp/old-index -w '%{http_code}' https://finance.4planet.org/)
+          [ "$previous" = 200 ] && grep -Eiq '^x-robots-tag:.*noindex' /tmp/old-headers
+          echo 'FINANCE_EXISTING_LIVE_HOST=PASS'
+      - name: Deploy only finance.4planet.org Worker
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --config deploy/finance-router/wrangler.toml --outdir /tmp/finance-2-live
+          echo 'FINANCE_ONLY_DEPLOYED'
+      - name: Verify pinned JS assets and live noindex
+        id: live
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 24); do
+            code=$(curl -LsS -D /tmp/new-headers -o /tmp/new-index -w '%{http_code}' https://finance.4planet.org/ || true)
+            asset=$(grep -Eo 'src="/assets/[^"]+\.js"' /tmp/new-index | head -n1 || true)
+            pinned=$(grep -Eo 'src="/assets/[^"]+\.js"' /tmp/pin-index | head -n1 || true)
+            if [ "$code" = 200 ] && grep -Eiq '^x-robots-tag:.*noindex' /tmp/new-headers && [ -n "$asset" ] && [ "$asset" = "$pinned" ]; then ok=1;break;fi
+            sleep 4
+          done
+          [ "$ok" = 1 ] || { echo 'LIVE_FINANCE_ASSET_MISMATCH';exit 31; }
+          [ "$(curl -LsS -o /dev/null -w '%{http_code}' https://finance.4planet.org/my/graph)" = 200 ]
+          echo 'FINANCE_NORDIC_DESIGN_2_LIVE=PASS'
+          echo 'https://finance.4planet.org/' >> "$GITHUB_STEP_SUMMARY"
+      - name: Roll back finance-only Worker if live verification fails
+        if: failure() && steps.live.outcome == 'failure'
+        run: |
+          set -euo pipefail
+          sed -i 's/9c896b3a.4planet-05.pages.dev/7ac99599.4planet-05.pages.dev/g' deploy/finance-router/src/index.js
+          npx --yes wrangler@4.128.0 deploy --config deploy/finance-router/wrangler.toml --outdir /tmp/finance-rollback
+          echo 'FINANCE_ROLLED_BACK_TO_PREVIOUS'

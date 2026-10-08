@@ -1,6 +1,6 @@
 // CAP-PLATFORM-01 — isolated routing layer; no auth, data, grant intelligence or database here.
 // Pinned immutable Cloudflare Pages Finance preview release, not a mutable preview alias.
-const PINNED_ORIGIN = "https://7ac99599.4planet-05.pages.dev";
+const PINNED_ORIGIN = "https://9c896b3a.4planet-05.pages.dev";
 const ALLOWED_HOST = "finance.4planet.org";
 export default {
   async fetch(request) {
