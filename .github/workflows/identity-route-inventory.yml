@@ -42,4 +42,9 @@ jobs:
           deployments=$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5")
           echo '--- Recent production deployments ---'
           jq -r '.result[]? | [.id, (.deployment_trigger.metadata.commit_hash // "none"), (.deployment_trigger.metadata.branch // "none"), (.latest_stage.status // "none"), .created_on, .url] | @tsv' <<<"$deployments"
+          echo '--- Current release stage details ---'
+          jq -r '.result[0] | "id=\(.id) status=\(.latest_stage.status) stage=\(.latest_stage.name) deployment_status=\(.deployment_trigger.type) commit=\(.deployment_trigger.metadata.commit_hash)"' <<<"$deployments"
+          jq -r '.result[0].stages[]? | [.name,.status,(.started_on // ""),(.ended_on // "")] | @tsv' <<<"$deployments"
+          echo '--- ID response headers ---'
+          curl -sSI --max-time 15 https://id.4planet.org/login | grep -Ei '^(HTTP/|cf-cache-status:|etag:|last-modified:|age:)' || true
           echo 'READ_ONLY_COMPLETE'
