@@ -16,9 +16,16 @@ test('standalone finance host and existing identity host allowlist',()=>{
 test('public and private demo routes without fake production auth',()=>{
  for(const p of ['/discover','/funders','/opportunities/','/my/calendar','/my/pipeline','/my/projects','/my/graph','/my/applications'])assert.ok(ui.includes(p),p);
  assert.match(ui,/DEMONSTRATION/);
- assert.match(ui,/demo data only/i);
+ assert.match(ui,/funding actors, dates and amounts are fictional/i);
+ assert.match(ui,/readFinanceWorkspace/);
+ assert.match(ui,/remoteStatus==="error"/);
  assert.doesNotMatch(ui,/createClient\(/);
  assert.doesNotMatch(ui,/service_role/);
+ const remote=readFileSync('src/pages/finance/financeRemote.ts','utf8');
+ assert.match(remote,/finance_user_state/);
+ assert.match(remote,/session\.access_token/);
+ assert.match(remote,/revision/);
+ assert.doesNotMatch(remote,/localStorage/);
 });
 test('funder, programme, separate call cycle IDs and deduplicated pipeline',()=>{
  for(const entity of ['FUNDERS','PROGRAMMES','CALLS','programmeId','funderId','deadline','confidence','STORAGE_KEY','projectId','validTransition'])assert.ok(data.includes(entity),entity);
