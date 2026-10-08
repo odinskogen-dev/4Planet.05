@@ -1,0 +1,93 @@
+name: Finance Nordic Shell QA
+on:
+  push:
+    branches: [work/finance-nordic-mobile-shell-20261009]
+    paths:
+      - 'src/pages/finance/**'
+      - 'scripts/finance-shell.e2e.mjs'
+      - '.github/workflows/finance-nordic-shell.yml'
+permissions:
+  contents: read
+concurrency:
+  group: finance-nordic-shell
+  cancel-in-progress: true
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: node --test scripts/finance-mvp-contract.test.mjs scripts/finance-identity-and-design-contract.test.mjs
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/finance-mvp.e2e.mjs
+      - name: Responsive screen tests and captures
+        run: node scripts/finance-shell.e2e.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finance-nordic-shell-screenshots
+          path: artifacts/finance-shell
+          if-no-files-found: ignore
+          retention-days: 7
+  preview:
+    needs: qa
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify nonproduction Pages branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          zone=$(curl -fsS "$api/zones?name=4planet.org" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          projects=$(curl -fsS "$api/accounts/$account/pages/projects" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          production=$(jq -r '[.result[]? | select(.name=="4planet-05")][0].production_branch // empty' <<<"$projects")
+          test -n "$production" && test "$production" != "finance-nordic-shell"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - name: Write noindex preview headers
+        run: |
+          printf '/* /index.html 200\n' > dist/_redirects
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' > dist/_headers
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('dist/index.html')
+          p.write_text(p.read_text().replace('content="index,follow,max-image-preview:large"','content="noindex,nofollow,noarchive"'))
+          PY
+      - name: Deploy design preview to isolated branch
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch finance-nordic-shell --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee /tmp/finance-nordic-preview.txt
+          url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/finance-nordic-preview.txt | head -n1)
+          test -n "$url"
+          echo "FINANCE_NORDIC_URL=$url" >> "$GITHUB_ENV"
+          echo "PREVIEW=$url/finance" >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify remote HTTP and noindex
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 20); do
+            http=$(curl -LsS -D /tmp/fn-h -o /tmp/fn-page -w '%{http_code}' "$FINANCE_NORDIC_URL/finance" || true)
+            if [ "$http" = 200 ] && { grep -Eiq '^x-robots-tag:.*noindex' /tmp/fn-h || grep -qi noindex /tmp/fn-page; }; then ok=1; break; fi
+            sleep 4
+          done
+          test "$ok" = 1 || exit 16
+          echo "FINANCE_NORDIC_PREVIEW_HTTP=PASS"
