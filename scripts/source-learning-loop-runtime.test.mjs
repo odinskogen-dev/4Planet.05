@@ -152,8 +152,12 @@ test('timestamp ordering uses instants rather than ISO text order', () => {
 });
 
 test('timezone offsets cannot disguise an older source snapshot as newer', () => {
+  const currentCheckedAt = '2026-08-28T06:00:00Z';
+  const olderCheckedAtWithLaterText = '2026-08-28T07:00:00+02:00';
+  assert.ok(Date.parse(olderCheckedAtWithLaterText) < Date.parse(currentCheckedAt));
+
   const result = evaluateSourceRefresh(baseRecord(), snapshot({
-    checkedAt: '2026-08-28T08:00:00+02:00',
+    checkedAt: olderCheckedAtWithLaterText,
     verification: 'VERIFIED',
   }), context);
   assert.equal(result.audit.status, 'CONFLICT');
@@ -174,8 +178,12 @@ test('invalid source timestamps fail closed', () => {
 });
 
 test('different fingerprints at the same instant require review', () => {
+  const currentCheckedAt = '2026-08-28T06:00:00Z';
+  const sameInstantWithOffset = '2026-08-28T08:00:00+02:00';
+  assert.equal(Date.parse(sameInstantWithOffset), Date.parse(currentCheckedAt));
+
   const result = evaluateSourceRefresh(baseRecord(), snapshot({
-    checkedAt: '2026-08-28T08:00:00+02:00',
+    checkedAt: sameInstantWithOffset,
     verification: 'VERIFIED',
   }), context);
   assert.equal(result.audit.status, 'CONFLICT');
