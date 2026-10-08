@@ -1,3 +1,14 @@
+# CROSS-PRODUCT URL OWNERSHIP — SPECIES RETURN RELOAD CORRECTION — 08 OCT 2026
+
+**STATUS:** SAME BOUNDED HEIR INTEGRATION CORRECTION / NO GOLD / NO LIVE RELEASE.
+**OBSERVED ROOT CAUSE:** after ATLAS navigated to SPECIES, MapLibre could emit a final `moveend` or `idle` during unmount. The stale ATLAS URL writer then used the new SPECIES pathname and replaced its encoded `returnTo` token with raw camera parameters. The visible return control existed before that late write but disappeared after reload.
+**CHANGE:** the existing ATLAS URL writer now fails closed unless the current pathname is an ATLAS route.
+**UNCHANGED:** camera serialization while on ATLAS, product routes, return token schema, map interaction, data, test requirements and release authority.
+**TRUTH BOUNDARY:** this protects URL ownership at the product boundary. It does not accept the separate Living Systems canonical-route drift observed later in the same vertical journey.
+**HUMAN SUCCESS:** leaving ATLAS cannot allow a detached map lifecycle event to overwrite the receiving product URL; reloading SPECIES retains the governed return path.
+**ROLLBACK:** exact pre-change parent `efc462313a65926d2d96aa3238c458e67813d6e0`.
+**GOLD:** Maker correction only; independent Judge and exact browser evidence remain required.
+
 # SPECIES → ATLAS RETURN-CONTROL CONTINUITY — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR INTEGRATION CORRECTION / NO GOLD / NO LIVE RELEASE.

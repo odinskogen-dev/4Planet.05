@@ -290,6 +290,10 @@ function WorldInner() {
   };
 
   const writeUrl = useCallback((patch = {}) => {
+    // MapLibre may emit a final moveend/idle while the ATLAS tree is unmounting.
+    // Never let that stale map lifecycle rewrite a downstream product URL and
+    // replace its encoded returnTo contract with raw ATLAS camera parameters.
+    if (!window.location.pathname.startsWith("/atlas")) return;
     const m = map.current; if (!m) return;
     const current = new URLSearchParams(window.location.search);
     const p = new URLSearchParams();
