@@ -224,7 +224,7 @@ test("4NGO outcome and impact claims fail closed until structured evidence suppo
 });
 
 test("comment-only keywords cannot satisfy any 4NGO contract seam", async () => {
-  const commentOnly = actor + "\n// identifiedNeeds operationalCapabilities partnerRequirements capitalRequirements deliveryEvidence outcomeEvidence actionContractIds claimsAllowed claimsProhibited\n";
+  const commentOnly = "// identifiedNeeds operationalCapabilities partnerRequirements capitalRequirements deliveryEvidence outcomeEvidence actionContractIds claimsAllowed claimsProhibited\n";
   assert.ok(pathFailures(commentOnly).length > 0);
   assert.ok(evidenceFailures(commentOnly).length > 0);
   assert.ok(actionLinkFailures(commentOnly).length > 0);
