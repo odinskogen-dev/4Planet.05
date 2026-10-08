@@ -25,7 +25,7 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
-      - run: node --test scripts/finance-mvp-contract.test.mjs
+      - run: node --test scripts/finance-mvp-contract.test.mjs scripts/finance-identity-and-design-contract.test.mjs
       - name: Build frontend
         run: npm run build
       - name: Install Chromium
