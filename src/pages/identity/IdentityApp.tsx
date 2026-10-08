@@ -6,6 +6,7 @@ import {
   getIdentityClient,
   identityCallbackUrl,
   readProfile,
+  recoverOAuthSessionFromLocation,
   safeReturnTo,
   saveProfile,
   type FourPlanetSession,
@@ -155,7 +156,13 @@ export default function IdentityApp() {
         const result = await client.auth.getSession();
         if (result.error) throw new Error(result.error.message);
         if (!alive) return;
-        const active = result.data.session || latestSession;
+        let active = result.data.session || latestSession;
+        if (!active && mode === "login" && googleCallback) {
+          // Supabase normally detects the OAuth fragment. Validate and recover
+          // it explicitly only when no session survived that normal path.
+          active = await recoverOAuthSessionFromLocation();
+          if (!alive) return;
+        }
         setSession(active);
 
         if (mode === "consent") {
