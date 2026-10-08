@@ -26,11 +26,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          grep -q 'PINNED_ORIGIN = "https://9c896b3a.4planet-05.pages.dev"' deploy/finance-router/src/index.js
-          result=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/37860046318")
+          grep -q 'PINNED_ORIGIN = "https://863c47a7.4planet-05.pages.dev"' deploy/finance-router/src/index.js
+          result=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/37861714761")
           [ "$(jq -r '.conclusion' <<<"$result")" = success ]
-          [ "$(jq -r '.head_sha' <<<"$result")" = 3f23670801d21aa9644a3bfd728f01b5947f91cc ]
-          origin_status=$(curl -LsS -D /tmp/pin-headers -o /tmp/pin-index -w '%{http_code}' https://9c896b3a.4planet-05.pages.dev/finance)
+          [ "$(jq -r '.head_sha' <<<"$result")" = bf9b934953989e56e69cd69981ee8f3ce394b996 ]
+          origin_status=$(curl -LsS -D /tmp/pin-headers -o /tmp/pin-index -w '%{http_code}' https://863c47a7.4planet-05.pages.dev/finance)
           [ "$origin_status" = 200 ]
           { grep -Eiq '^x-robots-tag:.*noindex' /tmp/pin-headers || grep -qi noindex /tmp/pin-index; }
           echo 'FINANCE_VERIFIED_PINNED_PREVIEW=PASS'
@@ -75,6 +75,6 @@ jobs:
         if: failure() && steps.live.outcome == 'failure'
         run: |
           set -euo pipefail
-          sed -i 's/9c896b3a.4planet-05.pages.dev/7ac99599.4planet-05.pages.dev/g' deploy/finance-router/src/index.js
+          sed -i 's/863c47a7.4planet-05.pages.dev/9c896b3a.4planet-05.pages.dev/g' deploy/finance-router/src/index.js
           npx --yes wrangler@4.128.0 deploy --config deploy/finance-router/wrangler.toml --outdir /tmp/finance-rollback
           echo 'FINANCE_ROLLED_BACK_TO_PREVIOUS'

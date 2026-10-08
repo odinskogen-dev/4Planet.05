@@ -1,6 +1,6 @@
 // CAP-PLATFORM-01 — isolated routing layer; no auth, data, grant intelligence or database here.
 // Pinned immutable Cloudflare Pages Finance preview release, not a mutable preview alias.
-const PINNED_ORIGIN = "https://9c896b3a.4planet-05.pages.dev";
+const PINNED_ORIGIN = "https://863c47a7.4planet-05.pages.dev";
 const ALLOWED_HOST = "finance.4planet.org";
 export default {
   async fetch(request) {
@@ -18,7 +18,7 @@ export default {
     if(location && location.startsWith(PINNED_ORIGIN))headers.set("Location",location.replace(PINNED_ORIGIN,original.origin));
     if ((headers.get("Content-Type")||"").includes("text/html") && request.method==="GET") {
       let html=await upstream.text();
-      html=html.replace(/<title>[^<]*<\/title>/i,"<title>4PLANET FINANCE — Funding Intelligence</title>");
+      html=html.replace(/<title>[^<]*<\/title>/i,"<title>4Finance — Funding Intelligence</title>");
       html=html.replace(/<meta name="robots" content="[^"]*"\s*\/?>/i,'<meta name="robots" content="noindex,nofollow,noarchive" />');
       html=html.replace(/<meta name="theme-color" content="[^"]*"\s*\/?>/i,'<meta name="theme-color" content="#ffffff" />');
       html=html.replace(/<link href="https:\/\/fonts\.googleapis\.com\/css2[^"]*" rel="stylesheet"\s*\/?>/i,'<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />');
