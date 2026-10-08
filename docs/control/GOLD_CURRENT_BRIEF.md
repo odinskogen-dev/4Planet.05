@@ -1,3 +1,15 @@
+# 4SAPIEN LIFE-8 STABLE TODAY NAVIGATION — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR SHELL + BROWSER REGRESSION FIX / NO LIVE RELEASE.
+**USER GAP:** “I dag” points to root, while root inferred sign-in from any non-empty `sb-*-auth-token` localStorage string and could redirect a stale-token visitor to Money.
+**ONE THING TO PRESERVE:** the existing five-world shell and explicit destinations remain unchanged.
+**CHANGE:** remove token-string sign-in inference and keep root as the stable “I dag” destination; add a mobile browser regression with stale token text.
+**UNCHANGED:** Supabase authentication, FOOD, Finance, Brain, Meg, persistence and all product data paths.
+**TRUTH BOUNDARY:** this removes an unsafe navigation heuristic only. It does not prove a valid session, a returning user, user value, Gold acceptance or LIVE deployment.
+**HUMAN SUCCESS:** opening “I dag” or loading root remains on root for anonymous, signed-in and stale-token browser state until an authenticated product flow explicitly navigates elsewhere.
+**ROLLBACK:** exact pre-change `king/test` parent `19fa1edb76ac7c82825227968c7b1317d393da32`.
+**GOLD:** Maker change only. Independent Judge remains required; no merge, promotion or LIVE authority follows.
+
 # IMPACT TERMINAL REMEDY LIFECYCLE — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR PRODUCT LOGIC + REGRESSION FIX / NO LIVE RELEASE.

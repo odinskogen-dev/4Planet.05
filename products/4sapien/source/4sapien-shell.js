@@ -160,20 +160,6 @@
     }
   }
 
-  function landing() {
-    if (path() !== '/') return;
-    try {
-      if (sessionStorage.getItem('fs-landed') === '1') return;
-      var signedIn = false;
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf('sb-') === 0 && k.indexOf('auth-token') > -1 && localStorage.getItem(k)) signedIn = true;
-      }
-      sessionStorage.setItem('fs-landed', '1');
-      if (signedIn) location.replace('/app/money/');
-    } catch (e) {}
-  }
-
   function pass() { subnav(); contain(); opaque(); openHashTarget(); }
 
   function boot() {
@@ -186,7 +172,6 @@
     [400, 1200, 2500].forEach(function (ms) { setTimeout(pass, ms); });
   }
 
-  landing();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
   window.FourSapienShell = { pass: pass, worlds: WORLDS };
