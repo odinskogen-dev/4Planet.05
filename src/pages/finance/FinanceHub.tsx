@@ -4,6 +4,7 @@ import {Link,useLocation,useNavigate} from "react-router-dom";
 import {getIdentityClient,type FourPlanetSession} from "@/identity/identityClient";
 import {CALLS,FUNDERS,PROGRAMMES,REGIONS,THEMES,STATUS,amount,prettyDate,programmeFor,funderFor,readState,saveState,emptyState,validTransition,type Call,type FinanceState,type PipelineItem,type Project,type Status,type Theme} from "./financeData";
 import {readFinanceWorkspace,writeFinanceWorkspace} from "./financeRemote";
+import FinanceTeamDesk from "./FinanceTeamDesk";
 import "./finance.css";
 
 function currentPath(path:string){return path.replace(/^\/finance(?=\/|$)/,"")||"/"}
@@ -18,7 +19,7 @@ function DemoNote({signedIn}:{signedIn:boolean}){return <div className="fc-demo"
 function MonthLabel({value}:{value:string}){return <>{new Intl.DateTimeFormat("en-GB",{month:"long",year:"numeric",timeZone:"UTC"}).format(new Date(value+"-01T12:00:00Z"))}</>}
 function OpportunityRow({call,saved,onSave,compact=false}:{call:Call;saved:boolean;onSave:(id:string)=>void;compact?:boolean}){const f=funderFor(call);return <article className={"fc-opportunity "+(compact?"fc-opportunity-compact":"")}><div className="fc-opp-date"><strong>{call.deadline.slice(8,10)}</strong><span>{new Date(call.deadline+"T12:00:00Z").toLocaleString("en-GB",{month:"short",timeZone:"UTC"})}</span></div><div className="fc-opp-body"><div className="fc-kicker">{f.name} <span className="fc-dot">·</span> {call.instrument}</div><Nav to={"/opportunities/"+call.id} className="fc-opp-title">{call.title} <span></span></Nav><div className="fc-inline"><Tag>{call.region}</Tag>{call.themes.slice(0,compact?1:2).map(t=><Tag key={t}>{t}</Tag>)}<span className="fc-muted fc-small">{call.confidence}</span></div></div><div className="fc-opp-right"><strong>{amount(call)}</strong><span className="fc-muted fc-small">{call.amountKind}</span><button className={"fc-save "+(saved?"is-saved":"")} onClick={()=>onSave(call.id)}>{saved?"Saved":"Save"}</button></div></article>}
 const CATALOGUE_NAV=[{path:"/",title:"Home"},{path:"/discover",title:"Discover"},{path:"/funders",title:"Funders"},{path:"/calendar",title:"Year wheel"}];
-const WORKSPACE_NAV=[{path:"/my",title:"Overview",icon:"overview"},{path:"/my/pipeline",title:"My CRM",icon:"pipeline"},{path:"/my/calendar",title:"Year wheel",icon:"calendar"},{path:"/my/projects",title:"My projects",icon:"project"},{path:"/my/applications",title:"Applications",icon:"applications"},{path:"/my/graph",title:"Relationship graph",icon:"graph"}];
+const WORKSPACE_NAV=[{path:"/my",title:"Overview",icon:"overview"},{path:"/my/pipeline",title:"My CRM",icon:"pipeline"},{path:"/my/calendar",title:"Year wheel",icon:"calendar"},{path:"/my/projects",title:"My projects",icon:"project"},{path:"/my/applications",title:"Applications",icon:"applications"},{path:"/my/graph",title:"Relationship graph",icon:"graph"},{path:"/my/teams",title:"Team finance",icon:"actors"}];
 export default function FinanceHub(){
  const loc=useLocation(),navigate=useNavigate(),path=currentPath(loc.pathname);
  const [state,setState]=useState<FinanceState>(readState),[menu,setMenu]=useState(false),[session,setSession]=useState<FourPlanetSession|null>(null),[authChecked,setAuthChecked]=useState(false);
@@ -86,8 +87,9 @@ export default function FinanceHub(){
     {path.startsWith("/my/projects/")&&<ProjectDetail id={path.split("/")[3]} workspace={workspace} patch={patchItem}/>}
     {path==="/my/applications"&&<Applications pipeline={workspace.pipeline}/>}
     {path==="/my/graph"&&<Graph workspace={workspace}/>}
+    {path==="/my/teams"&&<FinanceTeamDesk session={session}/>}
     {path==="/my/settings"&&<Settings state={state} changeWorkspace={switchWorkspace} reset={()=>{const s=emptyState();saveState(s);setState(s)}} session={session} signIn={signIn}/>}
-    {!["/","/sign-in","/discover","/funders","/calendar","/my","/my/pipeline","/my/calendar","/my/projects","/my/applications","/my/graph","/my/settings"].includes(path)&&!["/funders/","/programmes/","/opportunities/","/my/projects/"].some(p=>path.startsWith(p))&&<Empty title="Page not found" text="This route does not exist."/>}
+    {!["/","/sign-in","/discover","/funders","/calendar","/my","/my/pipeline","/my/calendar","/my/projects","/my/applications","/my/graph","/my/teams","/my/settings"].includes(path)&&!["/funders/","/programmes/","/opportunities/","/my/projects/"].some(p=>path.startsWith(p))&&<Empty title="Page not found" text="This route does not exist."/>}
    </>}
    </main>
   </div>
