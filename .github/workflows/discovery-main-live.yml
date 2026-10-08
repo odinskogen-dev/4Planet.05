@@ -191,7 +191,7 @@ jobs:
           grep -Fq 'Truth boundary:' <<<"$berlin"
           echo 'ATLAS_BERLIN_ENTITY_PASS'
           manila=$(curl -fsS https://4planetatlas.com/place/manila)
-          grep -Fq '<h1>Manila</h1>' <<<"$manila"
+          grep -Fq '<h1>Manila, Philippines</h1>' <<<"$manila"
           grep -Fq 'Q1461' <<<"$manila"
           grep -Fq '1701668' <<<"$manila"
           grep -Fq 'South-Eastern Asia' <<<"$manila"
