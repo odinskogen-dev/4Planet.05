@@ -17,7 +17,7 @@ test('standalone finance host and existing identity host allowlist',()=>{
 test('public and private demo routes without fake production auth',()=>{
  for(const p of ['/discover','/funders','/opportunities/','/my/calendar','/my/pipeline','/my/projects','/my/graph','/my/applications'])assert.ok(ui.includes(p),p);
  assert.match(ui,/DEMONSTRATION/);
- assert.match(ui,/funding actors, dates and amounts are fictional/i);
+ assert.match(ui,/funding actors, calls and amounts are fictional/i);
  assert.match(ui,/readFinanceWorkspace/);
  assert.match(ui,/remoteStatus==="error"/);
  assert.doesNotMatch(ui,/createClient\(/);
@@ -36,6 +36,8 @@ test('funder, programme, separate call cycle IDs and deduplicated pipeline',()=>
 test('premium responsive design and accessible navigation',()=>{
  assert.match(css,/#2e2eff/i);
  assert.match(css,/@media\(max-width:760px\)/);
- assert.match(ui,/aria-label="Toggle navigation"/);
+ assert.match(ui,/aria-label="Open profile and settings"/);
+ assert.match(ui,/aria-label="Primary mobile navigation"/);
+ assert.match(ui,/data-theme=\{appearance\}/);
  assert.match(ui,/aria-label="Select year"/);
 });
