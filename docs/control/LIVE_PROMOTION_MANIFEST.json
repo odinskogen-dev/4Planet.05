@@ -2,19 +2,18 @@
   "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "e6fd8ff4c7976f5467447cab4c9e9ba92de2dfa1",
-  "priorLiveSha": "15835d7ce47475342bc8d6f99d26a5a342cd1b82",
+  "testKingSha": "9f4a917d6837953e494d15d927697316119df968",
+  "priorLiveSha": "8c78be69266f2bf6ecae4b3147fe9b6791c85375",
   "releaseCommitSha": null,
   "boundedRelease": true,
-  "releaseKind": "P0_ID_GOOGLE_CALLBACK_RETURN",
-  "hotfixBranch": "release/p0-id-google-return-20261009",
+  "releaseKind": "P0_ID_CLOUDFLARE_CSP_AUTH",
+  "hotfixBranch": "release/p0-id-cloudflare-csp-20261009",
   "hotfixPaths": [
-    "src/pages/identity/IdentityApp.tsx",
-    "src/identity/identityClient.ts"
+    "public/_headers"
   ],
-  "founderDecisionRef": "Founder 2026-10-08 explicitly approved 4PLANET ID live fixes. Founder 2026-10-09 confirmed Google account selection redirects back to the login screen without session and orders immediate correction; preserve 4SAPIEN.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/423",
-  "rollbackRef": "main@15835d7ce47475342bc8d6f99d26a5a342cd1b82",
+  "founderDecisionRef": "Founder 2026-10-08: explicitly authorised urgent ID production repair. Founder 2026-10-09: Google returns to login after account selection; resolve ASAP without changes to 4SAPIEN.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/427",
+  "rollbackRef": "main@8c78be69266f2bf6ecae4b3147fe9b6791c85375",
   "releaseControlCommit": true,
-  "note": "Bounded post-Google callback session transfer correction. Exact tested blobs 0c72d4aece1f581896ab2e45db93f76bac2ff691 and d5aaf87e8ebda4c528558143c79320848889bedd. Proven CI synthetic early signed-in, OAuth fragment recovery and explicit no-session failure; real user Google callback remains to be verified."
+  "note": "Exact public/_headers CSP blob 3f4d0dfc836131462ad7bc02ac9dd9d551292ce4 from test king. Adds only https://ghvdzetmplqkdtfqiror.supabase.co to connect-src (2 existing policies). Retains all other CSP directives, no 4SAPIEN files changed. Live CSP header + browser auth bridge must pass before DONE."
 }

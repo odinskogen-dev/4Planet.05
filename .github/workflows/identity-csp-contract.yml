@@ -1,0 +1,16 @@
+name: 4PLANET ID CSP Origin Contract
+on:
+  pull_request:
+    paths:
+      - 'public/_headers'
+      - 'scripts/identity-csp-contract.test.mjs'
+      - '.github/workflows/identity-csp-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  identity-csp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --test scripts/identity-csp-contract.test.mjs
