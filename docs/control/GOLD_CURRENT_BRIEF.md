@@ -1,3 +1,16 @@
+# SPECIES → ATLAS RETURN-CONTROL CONTINUITY — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR INTEGRATION CORRECTION / NO GOLD / NO LIVE RELEASE.
+**USER GAP:** the editorial SPECIES redesign preserved the stateful `returnTo` URL and visible “BACK TO ATLAS” link, but dropped the governed `return-to-atlas` control identity used to prove the shared ATLAS→SPECIES→Living Systems→Mission→Join→ATLAS journey.
+**ONE THING TO PRESERVE:** SPECIES remains a NATUREBRAIN lens and returns to the existing ATLAS context; no second map, species store, router or truth model is created.
+**CHANGE:** add `data-testid="return-to-atlas"` to the existing visible editorial `returnHref` link in `src/pages/integrated/Species.tsx`.
+**UNCHANGED:** URL parsing, destination, copy, layout, taxonomy, provenance, source data, tests, routes and release authority.
+**TRUTH BOUNDARY:** this restores a stable interaction contract only. It does not prove real-user value, ecological truth, Gold acceptance, deployment or LIVE state.
+**HUMAN SUCCESS:** a person returning from a SPECIES profile can use the same visible control to recover the preserved ATLAS context, and the existing cross-product browser journey can verify that continuity on desktop and mobile.
+**OBSERVED BASELINE:** Browser Product Proof run 37744116387 / job 113201693553 produced eight shared-journey failures across desktop 1440/1280 and mobile 390/430 because the receiving page could not locate the governed visible return control.
+**ROLLBACK:** exact pre-change `king/test` parent `9c8a6b99b0fd1f4c7fc8c4abe0b67f5f3adc21aa`.
+**GOLD:** Maker correction only. Existing browser acceptance remains unchanged; independent Judge is still required before any merge, promotion or LIVE claim.
+
 # NATUREBRAIN SOURCE-TO-UNDERSTANDING PROVENANCE — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR SHARED-CORE CANDIDATE / NO LIVE RELEASE.
