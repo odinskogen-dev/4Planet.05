@@ -226,10 +226,24 @@ if (mode === "pr-main") {
     && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
     && git(["hash-object", "src/pages/identity/IdentityApp.tsx"]) === "0c72d4aece1f581896ab2e45db93f76bac2ff691"
     && git(["hash-object", "src/identity/identityClient.ts"]) === "d5aaf87e8ebda4c528558143c79320848889bedd";
-  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix) {
+  const p0IdCspHotfix = head === "release/p0-id-cloudflare-csp-20261009"
+    && manifest.status === "FOUNDER_ACCEPTED"
+    && manifest.boundedRelease === true
+    && manifest.releaseKind === "P0_ID_CLOUDFLARE_CSP_AUTH"
+    && manifest.hotfixBranch === head
+    && manifest.sourceBranch === "king/test"
+    && manifest.testKingSha === "9f4a917d6837953e494d15d927697316119df968"
+    && manifest.priorLiveSha === "8c78be69266f2bf6ecae4b3147fe9b6791c85375"
+    && manifest.founderDecisionRef?.includes("Founder 2026-10-09")
+    && JSON.stringify(manifest.hotfixPaths) === JSON.stringify(["public/_headers"])
+    && JSON.stringify(files.filter(isProductFacing)) === JSON.stringify(["public/_headers"])
+    && files.includes("scripts/identity-csp-contract.test.mjs")
+    && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
+    && git(["hash-object", "public/_headers"]) === "3f4d0dfc836131462ad7bc02ac9dd9d551292ce4";
+  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
-  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix) && !draft) validateLivePromotion();
+  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix || p0IdCspHotfix) && !draft) validateLivePromotion();
 }
 
 if (mode === "main-push" && files.some(isProductFacing)) validateLivePromotion();
