@@ -4,7 +4,7 @@ test('SUPERSAPIEN live search is relevant, one-step and human-first', async ({ p
   await page.goto('https://supersapien.org/', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: 'Analyse', exact: true }).click();
 
-  await expect(page.getByText('Find a company')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Find a company', exact: true })).toBeVisible();
   await expect(page.getByText('Nordic Demo Co.')).toHaveCount(0);
 
   const norway = page.getByLabel('Company or organisation number');
