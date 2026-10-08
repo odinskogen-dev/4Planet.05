@@ -11,7 +11,7 @@
   "hotfixPaths": [
     "public/_headers"
   ],
-  "founderDecisionRef": "Founder 2026-10-08 and 2026-10-09 explicitly authorised urgent ID production repair and demanded correct Google return, while preserving 4SAPIEN.",
+  "founderDecisionRef": "Founder 2026-10-08: explicitly authorised urgent ID production repair. Founder 2026-10-09: Google returns to login after account selection; resolve ASAP without changes to 4SAPIEN.",
   "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/427",
   "rollbackRef": "main@8c78be69266f2bf6ecae4b3147fe9b6791c85375",
   "releaseControlCommit": true,
