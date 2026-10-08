@@ -22,6 +22,8 @@ try{
   await page.getByRole('textbox',{name:'Search opportunities'}).fill('Blue');
   await page.getByText('Blue Coast 2026').first().waitFor();
   await page.getByRole('button',{name:/save/i}).first().click();
+  await page.goto(base+'/finance/my/teams',{waitUntil:'domcontentloaded'});
+  await page.getByRole('heading',{name:/Team workspaces/i}).waitFor();
   await page.goto(base+'/finance/my/pipeline',{waitUntil:'domcontentloaded'});
   await page.getByText('Blue Coast 2026').first().waitFor();
   await page.goto(base+'/finance/my/projects',{waitUntil:'domcontentloaded'});
