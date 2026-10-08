@@ -2,14 +2,18 @@
   "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "68c3c0290acc5d132cc91a6fbbbd374b21d1181b",
-  "priorLiveSha": "5b5858d931a3426c70aa84069b826fe62af5b0a0",
-  "releaseCommitSha": "2e40c628d79a8b1398f5865fbd030640a12e395a",
+  "testKingSha": "71be55759e920316195cc025e87981330af75c6c",
+  "priorLiveSha": "6fb53f473d6f57d8031cc7ea23555367ca78f7f5",
+  "releaseCommitSha": null,
   "boundedRelease": true,
-  "releaseKind": "VALUES_CANON_SYNC",
-  "founderDecisionRef": "Founder 2026-10-05: “Enig i at vi nå må få dette ut live” + 2026-10-07: “Fullfør eller stopp og rapporter.”",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/37623454306",
-  "rollbackRef": "main@5b5858d931a3426c70aa84069b826fe62af5b0a0",
+  "releaseKind": "P0_ID_AUTH_HOTFIX",
+  "hotfixBranch": "release/p0-id-founder-authorised-20261008",
+  "hotfixPaths": [
+    "src/pages/identity/IdentityApp.tsx"
+  ],
+  "founderDecisionRef": "Founder 2026-10-08: AXE ID må fikses live; Jeg bestemmer reglene og jeg bestemmer at du kan ta ID fiks live. Explicit scoped production authorization; no other product changes.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/416",
+  "rollbackRef": "main@6fb53f473d6f57d8031cc7ea23555367ca78f7f5",
   "releaseControlCommit": true,
-  "note": "Bounded WHAT WE BELIEVE / Values LIVE release. Only values page, route/navigation/home discovery seams, GOLD receipt and fail-closed values release guard are overlaid. No wholesale TEST KING promotion."
+  "note": "P0 OAuth login loop, late SIGNED_IN and duplicate redirect protection plus brand colors only. Source blob on king/test 20002dc6da1d7918363de3b30018bd57edfc4050. Explicit founder-approved bounded emergency hotfix. Requires downstream deployed asset and live OAuth evidence before DONE."
 }
