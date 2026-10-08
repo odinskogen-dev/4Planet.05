@@ -3,8 +3,9 @@ import { test, expect } from '@playwright/test';
 test('SUPERSAPIEN live company workspace is relevant, source-first and human-first', async ({ page }) => {
   await page.goto('https://supersapien.org/', { waitUntil: 'domcontentloaded' });
 
-  await expect(page.getByRole('button', { name: 'Analyse', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Analyse', exact: true }).click();
+  const primaryResearchTab = page.viewportSize()?.width && page.viewportSize()!.width < 900 ? 'Explore' : 'Analyse';
+  await expect(page.getByRole('button', { name: primaryResearchTab, exact: true })).toBeVisible();
+  await page.getByRole('button', { name: primaryResearchTab, exact: true }).click();
 
   await expect(page.getByRole('heading', { name: 'Start with the company.', exact: true })).toBeVisible();
   await expect(page.getByText('Nordic Demo Co.')).toHaveCount(0);
