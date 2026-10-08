@@ -50,4 +50,7 @@ test("Google return never waits on profile hydration or loses early auth events"
   assert.ok(!startup.includes("await hydrateAccount(result.data.session)"));
   assert.ok(startup.includes("ingen innlogget sesjon ble funnet"));
   assert.ok(client.includes('url.searchParams.set("auth_return", "google")'));
+  assert.ok(startup.includes("recoverOAuthSessionFromLocation()"));
+  assert.ok(client.includes("await client.auth.setSession("));
+  assert.ok(client.includes('window.history.replaceState({}, "", window.location.pathname + window.location.search)'));
 });
