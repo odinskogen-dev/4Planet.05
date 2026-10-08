@@ -51,8 +51,9 @@ jobs:
           echo "ZONE_ID=$zone" >> "$GITHUB_ENV"
           echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
           dns=$(curl -fsS "$api/zones/$zone/dns_records?name=finance.4planet.org" "${auth[@]}")
-          [ "$(jq -r '.result | length' <<<"$dns")" = 0 ] || { echo 'Existing finance DNS detected — FAIL CLOSED'; exit 24; }
-          preview=$(curl -LsS -D /tmp/finance-preflight-headers -o /tmp/finance-preflight.html -w '%{http_code}' https://255d593e.4planet-05.pages.dev/finance)
+          [ "$(jq -r '.result | length' <<<"$dns")" = 1 ] || { echo 'Expected single finance-only DNS record'; exit 24; }
+          jq -e '[.result[] | select(.type=="CNAME" and .name=="finance.4planet.org" and .content=="4planet-05.pages.dev" and .proxied==true)] | length==1' <<<"$dns" >/dev/null || { echo 'Unexpected finance DNS baseline'; exit 24; }
+          preview=$(curl -LsS -D /tmp/finance-preflight-headers -o /tmp/finance-preflight.html -w '%{http_code}' https://7ac99599.4planet-05.pages.dev/finance)
           [ "$preview" = 200 ] && { grep -Eiq '^x-robots-tag:.*noindex' /tmp/finance-preflight-headers || grep -qi noindex /tmp/finance-preflight.html; } || { echo 'Pinned Pages deployment unverified'; exit 25; }
           echo 'ROUTING_BASELINE_PASS_EXISTING_HOSTS_UNCHANGED'
       - name: Deploy isolated read-only Finance edge router
@@ -60,17 +61,6 @@ jobs:
           set -euo pipefail
           npx --yes wrangler@4.128.0 deploy --config deploy/finance-router/wrangler.toml --outdir /tmp/finance-router-build
           echo 'FINANCE_ROUTER_CODE_DEPLOYED_NO_OTHER_SITE_EDIT'
-      - name: Provision finance-only DNS, no existing domain modifications
-        id: dns
-        run: |
-          set -euo pipefail
-          api=https://api.cloudflare.com/client/v4
-          payload='{"type":"CNAME","name":"finance.4planet.org","content":"4planet-05.pages.dev","proxied":true,"ttl":1}'
-          result=$(curl -fsS -X POST "$api/zones/$ZONE_ID/dns_records" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data "$payload")
-          if ! jq -e '.success == true and .result.id != null' <<<"$result" >/dev/null; then echo 'FINANCE_DNS_CREATE_FAIL'; exit 26; fi
-          id=$(jq -r '.result.id' <<<"$result")
-          echo "finance_dns_id=$id" >> "$GITHUB_OUTPUT"
-          echo 'FINANCE_ONLY_CNAME_CREATED'
       - name: Remote host + noindex + identity entry response
         id: remote
         run: |
@@ -82,12 +72,17 @@ jobs:
             sleep 5
           done
           [ "$passed" = 1 ] || { echo 'FINANCE_DOMAIN_HTTP_NOT_VERIFIED'; exit 27; }
+          grep -q "4PLANET FINANCE" /tmp/finance-home || { echo 'Finance title missing'; exit 31; }
+          grep -q "family=DM+Sans:wght" /tmp/finance-home || { echo 'DM Sans-only host stylesheet missing'; exit 32; }
+          if grep -q "Instrument+Sans" /tmp/finance-home; then echo 'Foreign font on finance host'; exit 33; fi
           code2=$(curl -L -sS -o /tmp/finance-my -w '%{http_code}' https://finance.4planet.org/my || true)
           [ "$code2" = 200 ] || { echo 'FINANCE_PRIVATE_CLIENT_ENTRY_MISSING'; exit 28; }
           echo 'FINANCE_4PLANET_DOMAIN_HTTP_200_NOINDEX=PASS'
           echo 'https://finance.4planet.org/' >> "$GITHUB_STEP_SUMMARY"
-      - name: Automatic finance-only DNS rollback if remote check failed
-        if: failure() && steps.dns.outputs.finance_dns_id != '' && steps.remote.outcome == 'failure'
+      - name: Restore previous finance-only worker if remote check failed
+        if: failure() && steps.remote.outcome == 'failure'
         run: |
-          curl -fsS -X DELETE "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/${{ steps.dns.outputs.finance_dns_id }}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" >/dev/null
-          echo 'FINANCE_ONLY_DNS_ROLLBACK_EXECUTED'
+          set -euo pipefail
+          sed -i 's/7ac99599.4planet-05.pages.dev/255d593e.4planet-05.pages.dev/g' deploy/finance-router/src/index.js
+          npx --yes wrangler@4.128.0 deploy --config deploy/finance-router/wrangler.toml --outdir /tmp/finance-router-rollback
+          echo 'FINANCE_ROUTER_ROLLED_BACK_TO_PREVIOUS_VERIFIED_ORIGIN'
