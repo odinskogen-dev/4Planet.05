@@ -73,3 +73,41 @@ test("Pappas Planke owns missing-media truth instead of child-specific hacks", (
   assert.ok(!parentFile.includes('profile.slug === "acropora-palmata"'));
   assert.ok(!parentFile.includes('profile.slug === "tiger"'));
 });
+
+function stringField(record, field, slug) {
+  const match = record.match(new RegExp(`\\b${field}:\\s*"([^"]+)"`));
+  assert.ok(match, `${slug} missing parseable ${field}`);
+  return match[1];
+}
+
+function integerField(record, field, slug) {
+  const match = record.match(new RegExp(`\\b${field}:\\s*(\\d+)`));
+  assert.ok(match, `${slug} missing parseable ${field}`);
+  return match[1];
+}
+
+test("Factory batch 01 preserves one canonical identity across profile and discovery", () => {
+  const ids = new Set();
+  const gbifKeys = new Set();
+
+  for (const slug of FIRST_FACTORY_BATCH) {
+    const record = recordFor(slug);
+    const id = stringField(record, "id", slug);
+    const commonName = stringField(record, "commonName", slug);
+    const scientificName = stringField(record, "scientificName", slug);
+    const gbifKey = integerField(record, "gbifKey", slug);
+    const taxonSourceUrl = stringField(record, "taxonSourceUrl", slug);
+
+    assert.equal(id, `taxon:gbif:${gbifKey}`, `${slug} canonical ID does not match its GBIF key`);
+    assert.equal(taxonSourceUrl, `https://www.gbif.org/species/${gbifKey}`, `${slug} GBIF source URL drifted from its key`);
+    assert.equal(ids.has(id), false, `duplicate canonical ID in batch: ${id}`);
+    assert.equal(gbifKeys.has(gbifKey), false, `duplicate GBIF key in batch: ${gbifKey}`);
+    ids.add(id);
+    gbifKeys.add(gbifKey);
+
+    const discoveryMatches = discovery.species.filter((entry) => entry.slug === slug);
+    assert.equal(discoveryMatches.length, 1, `${slug} must have exactly one discovery object`);
+    assert.equal(discoveryMatches[0].commonName, commonName, `${slug} common name drifted between profile and discovery`);
+    assert.equal(discoveryMatches[0].scientificName, scientificName, `${slug} scientific name drifted between profile and discovery`);
+  }
+});

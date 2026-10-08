@@ -1,3 +1,20 @@
+# SPECIES FACTORY IDENTITY CONTRACT — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR DATA + REGRESSION FIX / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** they search or open one of the first ten Factory species and expect the discovery label to describe the same canonical taxon as the profile.
+**ONE THING TO UNDERSTAND:** a profile, its GBIF identity and its discovery object are one species object, not loosely related copies.
+**PRIMARY ACTION:** open the species profile from discovery.
+**SECONDARY DEPTH:** inspect source, limitations, ATLAS context and provenance on the existing Human-First plank.
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** living species identity / common + scientific name / open profile / sources, limits and ATLAS.
+**WHAT CAN BE REMOVED:** the duplicate “Green Sea Turtle” discovery label that drifted from the canonical profile name “Green Turtle”.
+**WHAT MUST BE REUSED:** existing SPECIES profiles, GBIF IDs, source URLs, discovery inventory, source envelopes and Factory batch gate.
+**TRUTH BOUNDARY:** this fixes internal identity consistency only. It does not assert taxonomy freshness, local presence, range, abundance, trend, rights clearance, user value or LIVE deployment.
+**MOBILE-FIRST RISK:** none introduced; no layout or interaction changes.
+**HUMAN SUCCESS:** discovery and profile both name Chelonia mydas “Green Turtle”; every first-batch profile has a unique canonical ID and GBIF key, an exact matching GBIF URL and exactly one matching discovery object.
+**DONOR DECISION:** PR #390 remains a read-only diverged donor. The accepted shared plank is already present on the sole HEIR; this correction changes only current HEIR data/control.
+**ROLLBACK:** exact pre-change king/test parent `8e425994c00bc9282faaa1681df586126c6ac9da`.
+**GOLD:** Maker change only. Independent Judge remains required; no merge, custom-domain promotion or LIVE authority follows.
+
 # ATLAS GOOGLE EXPOSURE CLOSURE — 08 OCT 2026
 
 ## PLACE RUNTIME ROUTE IMMUNITY — 08 OCT 2026
