@@ -1,0 +1,90 @@
+name: ATLAS R1 Human Awe - isolated preview
+on:
+  push:
+    branches:
+      - review/atlas-r1-human-awe-20261008
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: atlas-r1-human-awe-preview-20261008
+  cancel-in-progress: false
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Exact review checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply Claude exact-base patch
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "5dc63fe8ddd1daea32d62d102066705d3c7efbfe"
+          git apply --check ops/atlas/r1-human-awe.patch
+          git apply ops/atlas/r1-human-awe.patch
+          echo "ATLAS_R1_PATCH_APPLIED"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install and verify source
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          node --test scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs
+          npm run build
+          grep -R -Fq 'data-atlas-mobile-closure' dist/assets
+          echo "ATLAS_R1_REVIEW_BUILD_PASS"
+      - name: Resolve isolated Cloudflare preview credentials
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo "Cloudflare token unavailable"; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          zone=$(curl -fsS 'https://api.cloudflare.com/client/v4/zones?name=4planetatlas.com&status=active' -H "Authorization: Bearer $TOKEN")
+          account_id=$(jq -r '.result[0].account.id // empty' <<< "$zone")
+          [ -n "$account_id" ] || exit 3
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+      - name: Deploy non-production review branch only
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch atlas-r1-human-awe-20261008 --commit-hash "$GITHUB_SHA" --commit-message "ATLAS R1 isolated preview $GITHUB_SHA"
+          echo "PREVIEW_DEPLOY_SUBMITTED"
+      - name: Read back exact preview URL
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4"
+          preview_url=""
+          for i in $(seq 1 24); do
+            deployments=$(curl -fsS "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-05/deployments?page=1&per_page=30" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+            preview_url=$(jq -r --arg sha "$GITHUB_SHA" --arg branch "atlas-r1-human-awe-20261008" '[.result[]? | select(.deployment_trigger.metadata.commit_hash==$sha and .deployment_trigger.metadata.branch==$branch and .latest_stage.status=="success")][0].url // empty' <<< "$deployments")
+            [ -n "$preview_url" ] && break
+            sleep 5
+          done
+          [ -n "$preview_url" ] || { echo "No confirmed preview"; exit 6; }
+          http=$(curl -sS -L --max-time 30 -o /tmp/atlas-r1-preview.html -w '%{http_code}' "$preview_url/atlas")
+          test "$http" = 200
+          grep -q 'id="root"' /tmp/atlas-r1-preview.html
+          {
+            echo "## Isolated ATLAS R1 preview"
+            echo "URL: $preview_url/atlas"
+            echo "Base: 5dc63fe8ddd1daea32d62d102066705d3c7efbfe"
+            echo "Patch blob: 5a13addbc26a4e1d7a95712a9fb4a8e0e88aa8d9"
+            echo "Review commit: $GITHUB_SHA"
+            echo "Production domain and DNS unchanged"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "PREVIEW_READY $preview_url/atlas"
