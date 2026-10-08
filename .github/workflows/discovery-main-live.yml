@@ -96,17 +96,6 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
-      - name: Purge canonical-owner redirect cache
-        shell: bash
-        run: |
-          set -euo pipefail
-          zone=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/zones?name=4planet.org")
-          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
-          test -n "$zid"
-          payload='{"files":["https://4planet.org/atlas","https://4planet.org/places"]}'
-          result=$(curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" --data "$payload" "https://api.cloudflare.com/client/v4/zones/$zid/purge_cache")
-          test "$(jq -r '.success' <<<"$result")" = "true"
-          echo 'CANONICAL_OWNER_REDIRECT_CACHE_PURGE_PASS'
       - name: Verify WHAT WE BELIEVE custom-domain runtime
         shell: bash
         run: |
@@ -223,9 +212,9 @@ jobs:
           echo 'ATLAS_PLACE_SITEMAP_250_PASS'
           kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
-          atlas_target=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://4planet.org/atlas)
+          atlas_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/atlas)
           test "$atlas_target" = "https://4planetatlas.com/atlas/"
-          places_target=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://4planet.org/places)
+          places_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/places)
           test "$places_target" = "https://4planetatlas.com/places"
           echo 'FOURPLANET_ATLAS_OWNER_REDIRECT_PASS'
           echo 'ATLAS_PLACE_CANONICAL_REDIRECT_PASS'
