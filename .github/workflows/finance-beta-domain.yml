@@ -52,8 +52,8 @@ jobs:
           echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
           dns=$(curl -fsS "$api/zones/$zone/dns_records?name=finance.4planet.org" "${auth[@]}")
           [ "$(jq -r '.result | length' <<<"$dns")" = 0 ] || { echo 'Existing finance DNS detected — FAIL CLOSED'; exit 24; }
-          preview=$(curl -LsS -o /tmp/finance-preflight.html -w '%{http_code}' https://f5edd0cd.4planet-05.pages.dev/finance)
-          [ "$preview" = 200 ] && grep -q noindex /tmp/finance-preflight.html || { echo 'Pinned Pages deployment unverified'; exit 25; }
+          preview=$(curl -LsS -D /tmp/finance-preflight-headers -o /tmp/finance-preflight.html -w '%{http_code}' https://05a52930.4planet-05.pages.dev/finance)
+          [ "$preview" = 200 ] && { grep -Eiq '^x-robots-tag:.*noindex' /tmp/finance-preflight-headers || grep -qi noindex /tmp/finance-preflight.html; } || { echo 'Pinned Pages deployment unverified'; exit 25; }
           echo 'ROUTING_BASELINE_PASS_EXISTING_HOSTS_UNCHANGED'
       - name: Deploy isolated read-only Finance edge router
         run: |

@@ -75,7 +75,7 @@ jobs:
       - name: Verify external remote HTTP and noindex
         run: |
           set -euo pipefail
-          code=$(curl -LsS -w "%{http_code}" -o /tmp/finance-preview.html "$FINANCE_PREVIEW_URL/finance")
+          code=$(curl -LsS -D /tmp/finance-preview-headers -w '%{http_code}' -o /tmp/finance-preview.html "$FINANCE_PREVIEW_URL/finance")
           test "$code" = 200
-          grep -q noindex /tmp/finance-preview.html
+          { grep -Eiq '^x-robots-tag:.*noindex' /tmp/finance-preview-headers || grep -qi noindex /tmp/finance-preview.html; } || { echo "NOINDEX_HEADER_AND_META_MISSING"; exit 29; }
           echo "PREVIEW_PUBLIC_HTTP=PASS; NO DNS OR PRODUCTION REFS MODIFIED"
