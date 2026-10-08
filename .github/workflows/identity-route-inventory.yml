@@ -1,0 +1,50 @@
+name: 4PLANET ID Cloudflare Routing Inventory
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/identity-route-inventory.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect ID domain routing and exact LIVE Pages provenance (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CF_TOKEN" || { echo 'CLOUDFLARE_TOKEN_NOT_CONNECTED'; exit 2; }
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CF_TOKEN}")
+          zone=$(curl -fsS "${auth[@]}" "${api}/zones?name=4planet.org")
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$zone_id" && test -n "$account_id"
+          echo '--- ID DNS ---'
+          dns=$(curl -fsS "${auth[@]}" "${api}/zones/${zone_id}/dns_records?name=id.4planet.org")
+          jq -r '.result[]? | [.type, .name, .content, (.proxied|tostring)] | @tsv' <<<"$dns"
+          echo '--- ID Workers routes ---'
+          routes=$(curl -fsS "${auth[@]}" "${api}/zones/${zone_id}/workers/routes")
+          jq -r '.result[]? | select(.pattern | contains("id.4planet.org")) | [.pattern, .script] | @tsv' <<<"$routes"
+          echo '--- ID Workers custom domain bindings ---'
+          domains=$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/workers/domains")
+          jq -r '.result[]? | select(.hostname=="id.4planet.org") | [.hostname, .service, .environment] | @tsv' <<<"$domains"
+          echo '--- Pages project 4planet-05 ---'
+          project=$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/4planet-05")
+          jq -r '.result | "Project=\(.name) production_branch=\(.production_branch) domains=\((.domains // [])|join(","))"' <<<"$project"
+          deployments=$(curl -fsS "${auth[@]}" "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5")
+          echo '--- Recent production deployments ---'
+          jq -r '.result[]? | [.id, (.deployment_trigger.metadata.commit_hash // "none"), (.deployment_trigger.metadata.branch // "none"), (.latest_stage.status // "none"), .created_on, .url] | @tsv' <<<"$deployments"
+          echo '--- Current release stage details ---'
+          jq -r '.result[0] | "id=\(.id) status=\(.latest_stage.status) stage=\(.latest_stage.name) deployment_status=\(.deployment_trigger.type) commit=\(.deployment_trigger.metadata.commit_hash)"' <<<"$deployments"
+          jq -r '.result[0].stages[]? | [.name,.status,(.started_on // ""),(.ended_on // "")] | @tsv' <<<"$deployments"
+          echo '--- ID response headers ---'
+          curl -sSI --max-time 15 https://id.4planet.org/login | grep -Ei '^(HTTP/|cf-cache-status:|etag:|last-modified:|age:)' || true
+          echo 'READ_ONLY_COMPLETE'
