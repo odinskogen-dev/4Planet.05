@@ -181,9 +181,14 @@ export function natureBrainEvidenceFrame(context: NatureBrainEntityContext) {
     citations: claim.evidence
       .filter((e) => typeof e.citation === "string" && e.citation.startsWith("https://"))
       .map((e) => ({
+        evidenceId: e.evidence_id,
+        relation: e.relation ?? null,
+        evidenceType: e.evidence_type ?? null,
         sourceId: e.source_id ?? null,
+        datasetId: e.dataset_id ?? null,
         sourceRecordId: e.source_record_id ?? null,
         citation: e.citation!,
+        reviewedAt: e.reviewed_at ?? null,
       })),
   }));
 }

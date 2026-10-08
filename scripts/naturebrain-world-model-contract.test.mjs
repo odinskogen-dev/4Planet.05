@@ -60,9 +60,13 @@ const orca = {
       interpretation_status: "source_paraphrase",
       evidence: [{
         evidence_id: "evidence:naturebrain:orca:imr-killer-whale",
+        relation: "supports",
+        evidence_type: "citation",
         source_id: "source:imr_no",
+        dataset_id: "dataset:imr:killer-whale-topic",
         source_record_id: "source_record:imr:killer-whale-topic:2024-12-03",
         citation: "https://www.hi.no/en/hi/temasider/species/killer-whale",
+        reviewed_at: "2026-10-04T18:05:50Z",
       }],
     },
   ],
@@ -86,6 +90,15 @@ test("answer evidence frame returns stored claims and recorded HTTPS citations o
   assert.equal(frame[0].claimId, "claim:naturebrain:orca:preys-on-nssh");
   assert.equal(frame[0].citations.length, 1);
   assert.match(frame[0].citations[0].citation, /^https:\/\//);
+  assert.equal(frame[0].citations[0].evidenceId, "evidence:naturebrain:orca:imr-killer-whale");
+  assert.equal(frame[0].citations[0].datasetId, "dataset:imr:killer-whale-topic");
+  assert.equal(frame[0].citations[0].reviewedAt, "2026-10-04T18:05:50Z");
+});
+
+test("Node Intelligence exposes the canonical evidence frame without a second claim store", () => {
+  assert.match(nodeSource, /natureBrainEvidenceFrame/);
+  assert.match(nodeSource, /evidenceFrame: ReturnType<typeof natureBrainEvidenceFrame>/);
+  assert.match(nodeSource, /currentNatureContext \? natureBrainEvidenceFrame\(currentNatureContext\) : \[\]/);
 });
 
 test("truth boundary forbids the central ecological overclaims", () => {
