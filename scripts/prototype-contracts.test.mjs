@@ -33,7 +33,11 @@ test("integrated controls expose keyboard and assistive-technology contracts", (
   assert.match(world, /keyboard: true/);
   assert.match(publicWorld, /document\.createElement\("canvas"\)/);
   assert.match(publicWorld, /getContext\("webgl2"/);
-  assert.match(publicWorld, /failIfMajorPerformanceCaveat: true/);
+  // WebGL admission is a capability check, not a GPU benchmark or denylist.
+  // A browser-provided context must reach MapLibre; runtime cost is bounded separately.
+  assert.doesNotMatch(publicWorld, /failIfMajorPerformanceCaveat/);
+  assert.match(publicWorld, /Capability, not a benchmark or GPU policy/);
+  assert.match(publicWorld, /getContext\("experimental-webgl"/);
   assert.match(publicWorld, /INTERACTIVE ATLAS UNAVAILABLE ON THIS DEVICE/);
   assert.match(publicWorld, /NO SOURCE, DELIVERY OR IMPACT STATUS HAS BEEN INFERRED/);
 });
