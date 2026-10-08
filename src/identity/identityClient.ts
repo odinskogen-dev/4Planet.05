@@ -258,10 +258,11 @@ export async function saveProfile(session: FourPlanetSession, displayName: strin
   if (!response.ok) throw new Error("Could not save account profile");
 }
 
-export function identityCallbackUrl(mode: "login" | "reset", returnTo?: string) {
+export function identityCallbackUrl(mode: "login" | "reset", returnTo?: string, source?: "google") {
   const target = safeReturnTo(returnTo || "https://4planet.org/");
   const url = new URL("https://id.4planet.org/login");
   if (mode === "reset") url.searchParams.set("mode", "reset");
+  if (source === "google") url.searchParams.set("auth_return", "google");
   url.searchParams.set("return_to", target);
   return url.href;
 }
