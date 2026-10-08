@@ -187,10 +187,29 @@ if (mode === "pr-main") {
     && files.filter(isProductFacing).length === 1
     && files.filter(isProductFacing)[0] === "src/pages/identity/IdentityApp.tsx"
     && git(["hash-object", "src/pages/identity/IdentityApp.tsx"]) === "20002dc6da1d7918363de3b30018bd57edfc4050";
-  if (hasProductDelta && head !== "king/test" && !p0IdHotfix) {
+  const p0IdGoogleHotfix = head === "release/p0-id-single-redirect-20261009"
+    && manifest.status === "FOUNDER_ACCEPTED"
+    && manifest.boundedRelease === true
+    && manifest.releaseKind === "P0_ID_GOOGLE_SINGLE_REDIRECT"
+    && manifest.hotfixBranch === head
+    && manifest.sourceBranch === "king/test"
+    && manifest.testKingSha === "2918a44648f781e0d67e82e74b86ba1c86418a38"
+    && manifest.priorLiveSha === "f5ab684036ea8db0b2964f1f703e5e7b14dd1767"
+    && manifest.founderDecisionRef?.includes("Founder 2026-10-08")
+    && Array.isArray(manifest.hotfixPaths)
+    && JSON.stringify([...manifest.hotfixPaths].sort()) === JSON.stringify([
+      "src/pages/identity/IdentityApp.tsx", "src/identity/identityClient.ts"
+    ].sort())
+    && JSON.stringify(files.filter(isProductFacing).sort()) === JSON.stringify([
+      "src/pages/identity/IdentityApp.tsx", "src/identity/identityClient.ts"
+    ].sort())
+    && files.includes("scripts/identity-oauth-contract.test.mjs")
+    && git(["hash-object", "src/pages/identity/IdentityApp.tsx"]) === "cb219785ed72018c0c79175105d4010df0a64a09"
+    && git(["hash-object", "src/identity/identityClient.ts"]) === "8a0e45441f4a9971065e63fb2ccfa5a47b86d718";
+  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
-  if (hasProductDelta && (head === "king/test" || p0IdHotfix) && !draft) validateLivePromotion();
+  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix) && !draft) validateLivePromotion();
 }
 
 if (mode === "main-push" && files.some(isProductFacing)) validateLivePromotion();
