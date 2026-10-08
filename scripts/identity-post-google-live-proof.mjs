@@ -22,6 +22,11 @@ const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   let bridgeCalls = 0;
+  const errors = [];
+  const failedRequests = [];
+  page.on("pageerror", e => errors.push(String(e).slice(0,220)));
+  page.on("console", m => { if (m.type() === "error") errors.push("console: " + m.text().slice(0,220)); });
+  page.on("requestfailed", r => { try { const u = new URL(r.url()); failedRequests.push(u.hostname + u.pathname); } catch {} });
   await page.addInitScript(() => {
     const session = { access_token: "test-nonreal", refresh_token: "test-nonreal", user: { id: "synthetic", email: "test@example.invalid" } };
     window.supabase = { createClient: () => ({ auth: {
@@ -44,6 +49,15 @@ try {
   await page.goto(loginUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
   const timeout = Date.now() + 12000;
   while (bridgeCalls < 1 && Date.now() < timeout) await page.waitForTimeout(100);
+  if (bridgeCalls !== 1) {
+    const snapshot = await page.evaluate(() => ({
+      path: window.location.pathname,
+      host: window.location.hostname,
+      hasMock: !!window.supabase?.createClient,
+      body: document.body?.innerText?.slice(0, 900) || "",
+    })).catch(e => ({ evaluateError: String(e).slice(0, 250) }));
+    console.log("LIVE_AUTH_DEBUG", JSON.stringify({ snapshot, errors: errors.slice(0, 12), failedRequests: failedRequests.slice(0, 12) }));
+  }
   assert.equal(bridgeCalls, 1, "LIVE early SIGNED_IN did not invoke first-party session bridge");
   console.log("PASS LIVE BROWSER: Early authenticated callback triggers exactly one cross-domain bridge");
 } finally {
