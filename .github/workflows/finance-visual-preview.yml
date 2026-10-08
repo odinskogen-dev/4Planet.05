@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/pages/finance/**'
       - 'src/App.tsx'
+      - 'scripts/finance-mvp-contract.test.mjs'
       - 'src/identity/identityClient.ts'
       - '.github/workflows/finance-visual-preview.yml'
   workflow_dispatch:
