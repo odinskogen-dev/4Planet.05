@@ -25,10 +25,11 @@ export default function FinanceHub(){
  const [state,setState]=useState<FinanceState>(readState),[menu,setMenu]=useState(false),[session,setSession]=useState<FourPlanetSession|null>(null),[authChecked,setAuthChecked]=useState(false);
  const [remoteStatus,setRemoteStatus]=useState<"demo"|"loading"|"ready"|"saving"|"error">("demo"),[remoteError,setRemoteError]=useState("");
  const revision=useRef(0),pending=useRef(0),writeQueue=useRef<Promise<void>>(Promise.resolve());
+ const stateRef=useRef(state);
  const workspace=state.workspaces[state.active];
  const change=(mutator:(s:FinanceState)=>FinanceState)=>{
   if(session && (remoteStatus==="loading"||remoteStatus==="error"))return;
-  const next=mutator(state);setState(next);
+  const next=mutator(stateRef.current);stateRef.current=next;setState(next);
   if(!session){saveState(next);return}
   pending.current+=1;setRemoteStatus("saving");const currentSession=session;
   writeQueue.current=writeQueue.current.then(async ()=>{
@@ -42,12 +43,12 @@ export default function FinanceHub(){
  useEffect(()=>{setMenu(false)},[loc.pathname]);
  useEffect(()=>{
   if(!authChecked)return;
-  if(!session){setState(readState());setRemoteStatus("demo");setRemoteError("");return}
+  if(!session){const guest=readState();stateRef.current=guest;setState(guest);setRemoteStatus("demo");setRemoteError("");return}
   let alive=true;setRemoteStatus("loading");setRemoteError("");
   readFinanceWorkspace(session).then(record=>{
    if(!alive)return;
    revision.current=record.revision;pending.current=0;writeQueue.current=Promise.resolve();
-   setState(record.app_state);setRemoteStatus("ready");
+   stateRef.current=record.app_state;setState(record.app_state);setRemoteStatus("ready");
   }).catch(error=>{if(alive){setRemoteStatus("error");setRemoteError(error instanceof Error?error.message:"Cannot access finance account")}}); 
   return()=>{alive=false};
  },[authChecked,session?.user.id]);
@@ -88,7 +89,7 @@ export default function FinanceHub(){
     {path==="/my/applications"&&<Applications pipeline={workspace.pipeline}/>}
     {path==="/my/graph"&&<Graph workspace={workspace}/>}
     {path==="/my/teams"&&<FinanceTeamDesk session={session}/>}
-    {path==="/my/settings"&&<Settings state={state} changeWorkspace={switchWorkspace} reset={()=>{const s=emptyState();saveState(s);setState(s)}} session={session} signIn={signIn}/>}
+    {path==="/my/settings"&&<Settings state={state} changeWorkspace={switchWorkspace} reset={()=>{const s=emptyState();stateRef.current=s;saveState(s);setState(s)}} session={session} signIn={signIn}/>}
     {!["/","/sign-in","/discover","/funders","/calendar","/my","/my/pipeline","/my/calendar","/my/projects","/my/applications","/my/graph","/my/teams","/my/settings"].includes(path)&&!["/funders/","/programmes/","/opportunities/","/my/projects/"].some(p=>path.startsWith(p))&&<Empty title="Page not found" text="This route does not exist."/>}
    </>}
    </main>
