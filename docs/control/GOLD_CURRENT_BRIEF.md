@@ -1420,3 +1420,23 @@ Founder observed Google account selection returning to /login without authentica
 **TRUTH BOUNDARY:** Code merge and static tests cannot prove that production Cloudflare deployed, browser opened Google, or 4planet.org received a session.
 **MOBILE-FIRST RISK:** Safari same-site and cross-site storage, delayed redirect and OAuth account-selection behaviour.
 **HUMAN SUCCESS:** Google account chooser opens once, authenticated landing succeeds and survives reload.
+
+## 4PLANET ID — POST-GOOGLE RETURN P0 — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** Google approves account on id.4planet.org but returns to the same login form without confirmation or forwarding; founder verified this in external browser. 4SAPIEN must remain intact.
+
+**ONE THING TO UNDERSTAND:** In prior ID code SIGNED_IN/INITIAL_SESSION during bootstrap was ignored unless `bootstrapped` was already true; `getSession` then waited for nonessential profile hydration before starting cross-domain session bridge. Supabase auth logs confirm Google callback succeeded but function_edge_logs show no bridge calls in observed window. These are evidenced code-path risks, exact production browser root cause requires authenticated end-to-end evidence.
+
+**PRIMARY ACTION:** Accept the earliest authenticated session event, asynchronously queue one secure handoff without waiting on readProfile/getUserIdentities, retain existing account and bridge architecture; provide explicit Google return progress and no-session error.
+
+**SECONDARY DEPTH:** Preserve 4SAPIEN unchanged. Google callback now carries first-party auth_return marker for status. Keep SDK session handling, CORS and origin allowlist.
+
+**P1 DOMINANT:** Google accepts → ID callback receives browser session → bridge POST → target callback verifies OTP → target URL with persisted session.
+**P2 ORIENTATION:** No extra identity brains/databases. No raw tokens in telemetry or diagnostics.
+**P3 ACTION / NEXT:** Tested king/test patch → bounded production PR → live deploy verified by asset and browser → user authentically retries.
+**P4 DEPTH:** Track anonymous phase, not personally identifying data; revisit bridge only after POST is seen.
+**WHAT CAN BE REMOVED:** Bootstrap discard and profile-before-bridge dependency.
+**WHAT MUST BE REUSED:** Existing Supabase Google provider, profile backend, active four-planet-id-bridge function, original 4SAPIEN login.
+**TRUTH BOUNDARY:** Code, CI and synthetic session tests do not prove real Google user completed browser handoff.
+**MOBILE-FIRST RISK:** Safari callback event order; localStorage persistence and auth SDK lifecycle.
+**HUMAN SUCCESS:** After picking Google account, founder is transparently informed and lands on requested 4planet.org logged in without a loop.
