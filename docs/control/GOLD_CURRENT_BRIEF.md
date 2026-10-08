@@ -1,3 +1,15 @@
+# 4SAPIEN MONEY MOBILE SUBNAV INTEGRATION — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR TEST-INTEGRATION CORRECTION / NO PRODUCT BYTE / NO GOLD / NO LIVE RELEASE.
+**OBSERVED ROOT CAUSE:** the Money regression sampled the React product navigation as soon as it became visible. On WebKit that can occur before the shared shell MutationObserver marks the bottom-authored product navigation as `data-fs-subnav` and applies the required fixed-top integration contract; the reported `top=784` was the pre-integration position.
+**ONE THING TO PRESERVE:** the Money product navigation remains a fixed top field on mobile after the shared shell has integrated it; the independent world bar remains fixed at the bottom.
+**CHANGE:** wait for the existing `data-fs-subnav` integration state before measuring the unchanged fixed-position and top-offset requirements.
+**UNCHANGED:** product HTML, CSS, JavaScript, navigation geometry, Finance behaviour, shell timing, user data, tests' final geometry requirements and release authority.
+**TRUTH BOUNDARY:** this removes a browser-test race only. It does not assert a real user, product value, Gold acceptance, deployment or LIVE state.
+**HUMAN SUCCESS:** Chromium and WebKit verify the final integrated Money navigation state rather than racing the shared shell observer.
+**ROLLBACK:** exact pre-change `king/test` parent `9da2d4d7b76b69045ae09955b35ad64315959f4e`.
+**GOLD:** Maker correction only. Independent Judge remains required before merge, promotion or LIVE claim.
+
 # IMPACT EVIDENCE-TIME INTEGRITY — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR TRUTH-CORRECTION / NO GOLD / NO LIVE RELEASE.

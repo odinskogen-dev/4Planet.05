@@ -68,6 +68,7 @@ test("Money keeps all proven Finance guards and a usable navigation",async({page
  if(width<900){
    const productNav=page.locator("body.w-money #root nav").first();
    await expect(productNav).toBeVisible();
+   await expect(productNav).toHaveAttribute("data-fs-subnav","");
    const navState=await productNav.evaluate((el)=>{
      const cs=getComputedStyle(el);
      return {position:cs.position,top:parseFloat(cs.top)||0};
