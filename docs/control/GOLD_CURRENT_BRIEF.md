@@ -879,3 +879,20 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **HUMAN SUCCESS:** Google selection leads to logged-in account on 4planet.org, not a silent login screen.
 
 **FOUNDER RELEASE:** Explicit founder ID hotfix approval 08–09 October 2026. Bounded production source from king/test merge e6fd8ff4c7976f5467447cab4c9e9ba92de2dfa1. Exactly src/pages/identity/IdentityApp.tsx and src/identity/identityClient.ts are the product changes; test, release-control and policy only otherwise. Rollback main@15835d7ce47475342bc8d6f99d26a5a342cd1b82.
+
+## 4PLANET ID — FOUNDER-APPROVED CLOUDFLARE CSP HOTFIX — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** Google account is accepted, yet the browser returns to the ID login screen with no confirmation and no authenticated bridge to 4planet.org.
+**ONE THING TO UNDERSTAND:** Cloudflare's currently deployed global Content-Security-Policy explicitly omitted the existing Supabase Auth origin from connect-src; this prevents the front-end from calling four-planet-id-bridge and other Supabase Auth API methods. All previous OAuth code-path fixes cannot override browser CSP.
+**PRIMARY ACTION:** Add exact Supabase project origin https://ghvdzetmplqkdtfqiror.supabase.co to both existing connect-src policies in public/_headers, nothing else.
+**SECONDARY DEPTH:** Keep existing 4SAPIEN Claude sign-in untouched; no provider, RLS, DB or OAuth client changes.
+**P1 DOMINANT:** Permit secure Supabase auth and Edge Function requests from the first-party ID browser.
+**P2 ORIENTATION:** The ID CSP contract must remain part of CI and assert no wildcard.
+**P3 ACTION / NEXT:** Deploy exact tested policy from king/test then inspect live response CSP header and rerun authenticated synthetic cross-domain handoff.
+**P4 DEPTH:** Review actual user login and count real Edge Function bridge calls after founder retests.
+**WHAT CAN BE REMOVED:** Missing Supabase origin from connect-src only.
+**WHAT MUST BE REUSED:** Existing locked public CSP, brand, Supabase ID project and active four-planet-id-bridge.
+**TRUTH BOUNDARY:** A safe CSP release proves previously forbidden browser requests are now permitted, not necessarily a full real Google session on every 4PLANET domain.
+**MOBILE-FIRST RISK:** iOS Safari has additional cookie/localStorage behaviour independent of CSP.
+**HUMAN SUCCESS:** Login via Google leads from provider to 4PLANET ID to target 4planet.org with session retained.
+**RELEASE:** Exact public/_headers blob 3f4d0dfc836131462ad7bc02ac9dd9d551292ce4 verified on king/test commit 9f4a917d6837953e494d15d927697316119df968. Rollback main@8c78be69266f2bf6ecae4b3147fe9b6791c85375. Explicit founder hotfix authorisation 08–09 Oct 2026. No 4SAPIEN product changes.
