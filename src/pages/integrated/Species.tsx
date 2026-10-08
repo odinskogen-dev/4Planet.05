@@ -312,7 +312,7 @@ function SpeciesEditorialProfile({
           <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(3,8,18,.12),rgba(3,8,18,.24) 40%,rgba(3,8,18,.84) 100%)" }} />
           <div style={{ position: "relative", zIndex: 1, minHeight: "82svh", display: "flex", alignItems: "flex-end", padding: "clamp(42px,8vw,104px) clamp(20px,6vw,86px)" }}>
             <div style={{ maxWidth: 980, color: "#FFFFFF" }}>
-              {returnHref && <Link to={returnHref} style={{ ...mono, color: "#FFFFFF", display: "inline-block", marginBottom: 18 }}>← BACK TO ATLAS</Link>}
+              {returnHref && <Link to={returnHref} data-testid="return-to-atlas" style={{ ...mono, color: "#FFFFFF", display: "inline-block", marginBottom: 18 }}>← BACK TO ATLAS</Link>}
               <div style={{ ...mono, color: "#FFFFFF", opacity: .82 }}>4PLANET SPECIES_</div>
               <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontWeight: 520, fontSize: "clamp(64px,12vw,148px)", lineHeight: .82, letterSpacing: "-.07em" }}>{profile.commonName}</h1>
               <p style={{ margin: "18px 0 0", fontSize: "clamp(18px,2vw,25px)", fontStyle: "italic", opacity: .9 }}>{profile.scientificName}</p>
