@@ -63,6 +63,7 @@ jobs:
           npm run build
           printf "/* /index.html 200\n" > dist/_redirects
           printf "/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n" > dist/_headers
+          sed -i 's/content="index,follow,max-image-preview:large"/content="noindex,nofollow,noarchive"/' dist/index.html
           python -c "from pathlib import Path; p=Path('dist/index.html');p.write_text(p.read_text().replace('</head>','<meta name=\"robots\" content=\"noindex,nofollow,noarchive\" /></head>'))"
       - name: Deploy to existing Pages origin, isolated preview branch only
         run: |
@@ -75,7 +76,12 @@ jobs:
       - name: Verify external remote HTTP and noindex
         run: |
           set -euo pipefail
-          code=$(curl -LsS -D /tmp/finance-preview-headers -w '%{http_code}' -o /tmp/finance-preview.html "$FINANCE_PREVIEW_URL/finance")
-          test "$code" = 200
-          { grep -Eiq '^x-robots-tag:.*noindex' /tmp/finance-preview-headers || grep -qi noindex /tmp/finance-preview.html; } || { echo "NOINDEX_HEADER_AND_META_MISSING"; exit 29; }
+          passed=0
+          for attempt in $(seq 1 20); do
+            code=$(curl -LsS -D /tmp/finance-preview-headers -w '%{http_code}' -o /tmp/finance-preview.html "$FINANCE_PREVIEW_URL/finance" || true)
+            echo "PREVIEW_CHECK_ATTEMPT=$attempt HTTP=$code"
+            if [ "$code" = 200 ] && { grep -Eiq '^x-robots-tag:.*noindex' /tmp/finance-preview-headers || grep -qi noindex /tmp/finance-preview.html; }; then passed=1; break; fi
+            sleep 3
+          done
+          [ "$passed" = 1 ] || { echo "REMOTE_FINANCE_PREVIEW_NOT_VERIFIED"; exit 29; }
           echo "PREVIEW_PUBLIC_HTTP=PASS; NO DNS OR PRODUCTION REFS MODIFIED"
