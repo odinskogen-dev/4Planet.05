@@ -41,8 +41,10 @@ const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   let oauthRequests = 0;
+  let authorizeUrl = "";
   await page.route("**/auth/v1/authorize?**", async route => {
     oauthRequests++;
+    authorizeUrl = route.request().url();
     await route.fulfill({
       status: 200,
       contentType: "text/html",
@@ -59,6 +61,14 @@ try {
   assert.equal(oauthRequests, 1, "Expected exactly one Google OAuth launch");
   assert.equal(errors.length, 0, "Uncaught ID browser errors: " + errors.join(" | "));
   console.log("PASS: Live mobile browser Google button navigates to Supabase authorize exactly once");
+  // Verify the real provider leg without accessing or signing into a Google account.
+  assert.ok(authorizeUrl.startsWith("https://ghvdzetmplqkdtfqiror.supabase.co/auth/v1/authorize?"));
+  const provider = await fetch(authorizeUrl, { redirect: "manual", signal: AbortSignal.timeout(30000) });
+  assert.ok(provider.status >= 300 && provider.status < 400, "Supabase authorize did not redirect to provider: " + provider.status);
+  const destination = provider.headers.get("location");
+  assert.ok(destination && new URL(destination).hostname === "accounts.google.com",
+    "Supabase authorize did not direct to real Google sign-in");
+  console.log("PASS: Supabase OAuth authorize redirects to accounts.google.com (without user credentials)");
 } finally {
   await browser.close();
 }
