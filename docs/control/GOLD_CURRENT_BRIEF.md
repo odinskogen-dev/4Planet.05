@@ -788,3 +788,34 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 
 
 **FOLLOW-UP NORMALISATION:** PublicShell and shared global literals were normalised so current neutral code uses explicit `#FFFFFF` / `#000000` rather than abbreviated `#fff` or legacy `#080808`. This is code-normalisation inside the same Founder colour lock, not a new visual decision.
+
+
+## P0 4PLANET ID OAUTH LIVE HOTFIX — 08 OCT 2026
+
+**USER ARRIVES BECAUSE:** Founder selected his Google account on 4planet.org, but was returned to login without a usable authenticated session.
+
+**ONE THING TO UNDERSTAND:** Google OAuth succeeded in Supabase on 2026-10-07 23:08Z; a late SIGNED_IN event after the initial session read was not forwarded from id.4planet.org through the existing first-party auth bridge. This is a bounded candidate fix; not yet an end-to-end production proof.
+
+**PRIMARY ACTION:** Port precisely src/pages/identity/IdentityApp.tsx from king/test (source blob 20002dc6da1d7918363de3b30018bd57edfc4050) onto production main, with explicit founder authorisation dated 2026-10-08.
+
+**SECONDARY DEPTH:** Guards against duplicate redirect, getSession errors; updates ID green accents to 4PLANET blue #2E2EFF / white #FFFFFF / black #0A0A0A.
+
+**P1 DOMINANT:** Actual Google login → callback → 4PLANET ID session → bridge → 4planet.org authenticated session.
+
+**P2 ORIENTATION:** Keep original Supabase Auth, Google provider, shared 4PLANET ID, RLS and trusted-origin contracts unchanged.
+
+**P3 ACTION / NEXT:** Confirm Cloudflare deployed commit matches source, no callback loops, session sticks across refresh and Safari, then founder's actual authenticated login.
+
+**P4 DEPTH:** Verify bridge endpoint, identity callback and exact target-origin allowlist after deployment; log reproducible evidence without user tokens or PII.
+
+**WHAT CAN BE REMOVED:** Login-loop bug and green identity accents only.
+
+**WHAT MUST BE REUSED:** Supabase project ghvdzetmplqkdtfqiror, id.4planet.org identity product, existing Edge Function bridge, canonical 4PLANET brand colours.
+
+**TRUTH BOUNDARY:** Git merge or CI success is not proof that Cloudflare production deployed or that an end user successfully logged in.
+
+**MOBILE-FIRST RISK:** Google/Apple Safari redirect, local-storage, cross-domain OTP bridge and callback reentrancy.
+
+**HUMAN SUCCESS:** The same person selects their Google account once, lands on 4planet.org logged in, remains authenticated after refresh, and sees 4PLANET's intended brand style.
+
+**EMERGENCY POLICY SCOPE:** Founder explicitly overrode the current ban on bounded direct-main product hotfixes on 2026-10-08. Authorisation applies only to src/pages/identity/IdentityApp.tsx copied exactly from the tested king/test patch, plus release manifest, this brief and narrowly scoped GOLD emergency exception. No wholesale branch merge, no other live product change. Rollback main@6fb53f473d6f57d8031cc7ea23555367ca78f7f5.

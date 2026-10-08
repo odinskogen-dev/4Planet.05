@@ -168,10 +168,29 @@ if (mode === "pr-main") {
   const head = process.env.GOLD_HEAD_REF || process.env.GITHUB_HEAD_REF || "";
   const draft = String(process.env.GOLD_PR_DRAFT || "false").toLowerCase() === "true";
   const hasProductDelta = files.some(isProductFacing);
-  if (hasProductDelta && head !== "king/test") {
-    fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test`);
+  // Founder-authorised P0 emergency lane. The exception is pinned to one
+  // source blob, one production file, one source king/test merge and rollback.
+  // Do not use this for portfolio promotion or unapproved feature changes.
+  const manifest = readPromotionManifest();
+  const p0IdHotfix = head === "release/p0-id-founder-authorised-20261008"
+    && manifest.status === "FOUNDER_ACCEPTED"
+    && manifest.boundedRelease === true
+    && manifest.releaseKind === "P0_ID_AUTH_HOTFIX"
+    && manifest.hotfixBranch === head
+    && manifest.sourceBranch === "king/test"
+    && manifest.testKingSha === "71be55759e920316195cc025e87981330af75c6c"
+    && manifest.priorLiveSha === "6fb53f473d6f57d8031cc7ea23555367ca78f7f5"
+    && manifest.founderDecisionRef?.includes("Founder 2026-10-08")
+    && Array.isArray(manifest.hotfixPaths)
+    && manifest.hotfixPaths.length === 1
+    && manifest.hotfixPaths[0] === "src/pages/identity/IdentityApp.tsx"
+    && files.filter(isProductFacing).length === 1
+    && files.filter(isProductFacing)[0] === "src/pages/identity/IdentityApp.tsx"
+    && git(["hash-object", "src/pages/identity/IdentityApp.tsx"]) === "20002dc6da1d7918363de3b30018bd57edfc4050";
+  if (hasProductDelta && head !== "king/test" && !p0IdHotfix) {
+    fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
-  if (hasProductDelta && head === "king/test" && !draft) validateLivePromotion();
+  if (hasProductDelta && (head === "king/test" || p0IdHotfix) && !draft) validateLivePromotion();
 }
 
 if (mode === "main-push" && files.some(isProductFacing)) validateLivePromotion();
