@@ -1,3 +1,16 @@
+# NATUREBRAIN SOURCE-TO-UNDERSTANDING PROVENANCE — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR SHARED-CORE CANDIDATE / NO LIVE RELEASE.
+**SYSTEM GAP:** the canonical NATUREBRAIN evidence adapter retained source and record identifiers but dropped dataset identity, evidence identity/type/relation and review time before generic Node Intelligence could consume the claim.
+**ONE THING TO PRESERVE:** NATUREBRAIN remains the single shared living-planet world model; products receive a read-only projection and create no second claim or graph store.
+**CHANGE:** carry existing evidence provenance fields through `natureBrainEvidenceFrame` and expose that same frame on `NodeIntel`; extend the existing NATUREBRAIN contract.
+**UNCHANGED:** canonical entities, claims, relationships, review status, database schema, service-only RPC, public routes and LIVE runtime.
+**TRUTH BOUNDARY:** the adapter passes through recorded provenance only. It does not verify a source, upgrade review status, synthesize causality, prove freshness, infer ecological state or claim LIVE/user value.
+**HUMAN SUCCESS:** a downstream SPECIES, ATLAS or LSI explanation can retain the exact evidence, dataset, source record and review time attached to a canonical stored claim instead of reducing it to an uncoupled URL.
+**ROLLBACK:** exact pre-change `king/test` parent `664383b4264c43de4deaeb7e1d0cbb18f42cfcd2`.
+**TEST:** targeted NATUREBRAIN contract 9/9 pass; exact-SHA CI typecheck and production build pass. Full smoke remains blocked by inherited ATLAS `failIfMajorPerformanceCaveat` contract drift outside this package.
+**GOLD:** Maker change only. Independent Judge remains required; no merge, promotion or LIVE authority follows.
+
 # 4SAPIEN LIFE-8 STABLE TODAY NAVIGATION — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR SHELL + BROWSER REGRESSION FIX / NO LIVE RELEASE.
