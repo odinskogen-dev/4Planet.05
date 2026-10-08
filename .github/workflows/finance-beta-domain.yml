@@ -1,0 +1,93 @@
+name: Finance Isolated Beta Domain Release
+on:
+  push:
+    branches: [work/finance-id-release-20261008]
+    paths:
+      - '.github/workflows/finance-beta-domain.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: finance-4planet-beta-domain
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Exact SHA QA + independent nonproduction preview proof
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 75); do
+            data=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=90")
+            qa=$(jq -r '[.workflow_runs[] | select(.name=="Finance MVP Preview QA" and .event=="push")][0].conclusion // "pending"' <<<"$data")
+            preview=$(jq -r '[.workflow_runs[] | select(.name=="Finance Premium Visual Preview" and .event=="push")][0].conclusion // "pending"' <<<"$data")
+            if [ "$qa" = success ] && [ "$preview" = success ]; then echo 'EXACT_SHA_FINANCE_CI_AND_PREVIEW_PASS'; exit 0; fi
+            if [ "$qa" != pending ] && [ "$qa" != success ]; then echo "FINANCE_QA_BLOCKED=$qa"; exit 21; fi
+            if [ "$preview" != pending ] && [ "$preview" != success ]; then echo "FINANCE_PREVIEW_BLOCKED=$preview"; exit 22; fi
+            sleep 10
+          done
+          echo 'Exact SHA evidence unavailable'; exit 23
+      - name: Read only deployment preflight and existing host guard
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          zone_response=$(curl -fsS "$api/zones?name=4planet.org" "${auth[@]}")
+          zone=$(jq -r '.result[0].id // empty' <<<"$zone_response")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone_response")
+          test -n "$zone" && test -n "$account"
+          echo "ZONE_ID=$zone" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          dns=$(curl -fsS "$api/zones/$zone/dns_records?name=finance.4planet.org" "${auth[@]}")
+          [ "$(jq -r '.result | length' <<<"$dns")" = 0 ] || { echo 'Existing finance DNS detected — FAIL CLOSED'; exit 24; }
+          preview=$(curl -LsS -o /tmp/finance-preflight.html -w '%{http_code}' https://f5edd0cd.4planet-05.pages.dev/finance)
+          [ "$preview" = 200 ] && grep -q noindex /tmp/finance-preflight.html || { echo 'Pinned Pages deployment unverified'; exit 25; }
+          echo 'ROUTING_BASELINE_PASS_EXISTING_HOSTS_UNCHANGED'
+      - name: Deploy isolated read-only Finance edge router
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --config deploy/finance-router/wrangler.toml --outdir /tmp/finance-router-build
+          echo 'FINANCE_ROUTER_CODE_DEPLOYED_NO_OTHER_SITE_EDIT'
+      - name: Provision finance-only DNS, no existing domain modifications
+        id: dns
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          payload='{"type":"CNAME","name":"finance.4planet.org","content":"4planet-05.pages.dev","proxied":true,"ttl":1}'
+          result=$(curl -fsS -X POST "$api/zones/$ZONE_ID/dns_records" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' --data "$payload")
+          if ! jq -e '.success == true and .result.id != null' <<<"$result" >/dev/null; then echo 'FINANCE_DNS_CREATE_FAIL'; exit 26; fi
+          id=$(jq -r '.result.id' <<<"$result")
+          echo "finance_dns_id=$id" >> "$GITHUB_OUTPUT"
+          echo 'FINANCE_ONLY_CNAME_CREATED'
+      - name: Remote host + noindex + identity entry response
+        id: remote
+        run: |
+          set -euo pipefail
+          passed=0
+          for attempt in $(seq 1 24); do
+            code=$(curl -L -sS -D /tmp/finance-headers -o /tmp/finance-home -w '%{http_code}' https://finance.4planet.org/ || true)
+            if [ "$code" = 200 ] && grep -Eiq '^x-robots-tag:.*noindex' /tmp/finance-headers && grep -q '<html' /tmp/finance-home; then passed=1; break; fi
+            sleep 5
+          done
+          [ "$passed" = 1 ] || { echo 'FINANCE_DOMAIN_HTTP_NOT_VERIFIED'; exit 27; }
+          code2=$(curl -L -sS -o /tmp/finance-my -w '%{http_code}' https://finance.4planet.org/my || true)
+          [ "$code2" = 200 ] || { echo 'FINANCE_PRIVATE_CLIENT_ENTRY_MISSING'; exit 28; }
+          echo 'FINANCE_4PLANET_DOMAIN_HTTP_200_NOINDEX=PASS'
+          echo 'https://finance.4planet.org/' >> "$GITHUB_STEP_SUMMARY"
+      - name: Automatic finance-only DNS rollback if remote check failed
+        if: failure() && steps.dns.outputs.finance_dns_id != '' && steps.remote.outcome == 'failure'
+        run: |
+          curl -fsS -X DELETE "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/${{ steps.dns.outputs.finance_dns_id }}" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" >/dev/null
+          echo 'FINANCE_ONLY_DNS_ROLLBACK_EXECUTED'
