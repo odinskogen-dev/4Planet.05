@@ -33,13 +33,14 @@ export function assessImportGate(source:FinanceEntitySource,cycle:FundingCallCyc
  const reasons:string[]=[];
  if(derivedViewStatus==="REF_ERROR")reasons.push("The canonical derived submissions view contains #REF; reconcile without deleting independent receipt evidence");
  if(derivedViewStatus==="STALE"||derivedViewStatus==="UNKNOWN")reasons.push("Canonical source freshness not established");
- if(source.licence==="REVIEW_REQUIRED")reasons.push("Reuse rights have not been assessed");
+ if(source.licence!=="PUBLIC_REUSE")reasons.push("Public reuse not authorised; source is internal-only or requires licence review");
  if(!source.canonicalId||!source.canonicalTrack||!source.owningMaster)reasons.push("Missing canonical BRAIN identity or owning master");
  if(!source.sourceUrl)reasons.push("No original source link");
  if(!source.verifiedAt||source.confidence!=="VERIFIED_CURRENT")reasons.push("No verified current-source state");
  if(cycle.deadlineAt&&!cycle.timezone)reasons.push("Deadline timezone missing");
+ if(cycle.deadlineAt&&!/(?:Z|[+\-]\d{2}:\d{2})$/.test(cycle.deadlineAt))reasons.push("Deadline needs explicit UTC offset or Z");
  if(cycle.status==="OPEN"&&(!cycle.deadlineAt||cycle.deadlineEvidence!=="VERIFIED_CURRENT"))reasons.push("Cannot label open with unverified deadline");
- const blocked=reasons.some(x=>x.includes("#REF")||x.includes("Missing canonical")||x.includes("Reuse rights"));
+ const blocked=reasons.some(x=>x.includes("#REF")||x.includes("Missing canonical")||x.includes("Public reuse"));
  return {status:blocked?"BLOCKED":reasons.length?"HOLD":"READY",reasons,canPublish:reasons.length===0};
 }
 export type FundingTransaction={eventId:string;actorId:string;programmeId:string|null;callId:string|null;kind:"PLANNED_ASK"|"FORMAL_SUBMISSION"|"AWARDED"|"CONTRACTED"|"RECEIVED_CASH";amount:number|null;currency:string|null;evidence:AwardEvidence;sourceUrl:string|null;asOf:string};
@@ -55,7 +56,7 @@ export function validateFinanceEvent(event:FundingTransaction):{accepted:boolean
 }
 export type DeadlineTask={id:string;cycleId:string;kind:"SOURCE_CHECK"|"AI_PREP"|"QUALITY_REVIEW"|"FOUNDER_ACTION"|"EXTERNAL_DEADLINE";dueAt:string|null;confirmed:boolean;state:"PENDING"|"HOLD"|"DONE";source:string|null};
 export function deadlineAssurance(cycle:FundingCallCycle,leadDays={source:45,prep:28,qa:14,founder:7}):DeadlineTask[]{
- const accepted=cycle.deadlineEvidence==="VERIFIED_CURRENT"&&cycle.deadlineAt!==null&&cycle.timezone!==null;
+ const accepted=cycle.deadlineEvidence==="VERIFIED_CURRENT"&&cycle.deadlineAt!==null&&cycle.timezone!==null&&/(?:Z|[+\-]\d{2}:\d{2})$/.test(cycle.deadlineAt);
  function back(days:number){if(!accepted||!cycle.deadlineAt)return null;const raw=Date.parse(cycle.deadlineAt);if(!Number.isFinite(raw))return null;return new Date(raw-days*86400000).toISOString()}
  return [
   {id:cycle.cycleId+":source",cycleId:cycle.cycleId,kind:"SOURCE_CHECK",dueAt:back(leadDays.source),confirmed:accepted,state:accepted?"PENDING":"HOLD",source:cycle.source.sourceUrl},
