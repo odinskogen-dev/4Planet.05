@@ -1400,3 +1400,23 @@ Show source, as-of time, missing values, currency boundaries, bank consent/sync 
 ## 4PLANET ID Google OAuth incident — 08 Oct 2026
 
 Founder observed Google account selection returning to /login without authenticated session on 4planet.org. Supabase auth logs at 2026-10-07 23:08 UTC show Google login accepted, but end-to-end cross-origin session handoff is not verified. Scoped candidate updates IdentityApp to react to late SIGNED_IN after bootstrap, guard duplicate transfers, and use canonical #2E2EFF / #FFFFFF / #0A0A0A colours instead of green. Preserves existing Supabase Auth, endpoint and user IDs. No production acceptance until verified actual Google OAuth, bridge function, callback, mobile Safari, 4planet.org session and rollback. Never claim live from repository commit alone.
+
+## 4PLANET ID — SINGLE GOOGLE REDIRECT P0 — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** Founder taps "Fortsett med Google" at id.4planet.org, immediately bounces to login or never observes Google account selection, while 4SAPIEN Claude auth flow works.
+
+**ONE THING TO UNDERSTAND:** Previous IdentityApp invoked supabase.auth.signInWithOAuth without skipBrowserRedirect (SDK auto-navigates) AND explicitly assigned result.data.url (second navigation). Browser auth callback could race and lose handoff. The ID-specific dynamic SDK loader also used a non-canonical CDN UMD filename and retained rejected promises.
+
+**PRIMARY ACTION:** Invoke Supabase OAuth with skipBrowserRedirect:true, validate the returned Supabase /auth/v1/authorize URL, and navigate exactly once. Use the pinned package CDN entrypoints documented by Supabase, with failover, timeout and singleton client.
+
+**SECONDARY DEPTH:** Preserve 4SAPIEN's lesson: simple redirect, persist session, prove user via Supabase and keep post-login return path. No replacement auth system, no change to Supabase provider, no user migration.
+
+**P1 DOMINANT:** Google account choice reliably opens, callback writes session, first-party identity bridge returns to 4planet.org.
+**P2 ORIENTATION:** Dedicated Node ID contract ensures OAuth single navigation, retryable SDK and retained bridge.
+**P3 ACTION / NEXT:** Merge tested candidate to king/test, then founder-authorised bounded P0 hotfix main; verify live deployed asset and authenticated browser callback.
+**P4 DEPTH:** Record CDN fallback errors, redirect loop evidence, actual bridge function invocations and matching deployment hash, without recording secrets.
+**WHAT CAN BE REMOVED:** Second conflicting OAuth navigation, unsafe SDK loading failure.
+**WHAT MUST BE REUSED:** Existing unified Supabase Auth, 4PLANET ID bridge, original account IDs, Claude 4SAPIEN's proven OAuth/session principles.
+**TRUTH BOUNDARY:** Code merge and static tests cannot prove that production Cloudflare deployed, browser opened Google, or 4planet.org received a session.
+**MOBILE-FIRST RISK:** Safari same-site and cross-site storage, delayed redirect and OAuth account-selection behaviour.
+**HUMAN SUCCESS:** Google account chooser opens once, authenticated landing succeeds and survives reload.

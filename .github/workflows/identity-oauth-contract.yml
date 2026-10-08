@@ -1,0 +1,31 @@
+name: 4PLANET ID Google OAuth Contract
+
+on:
+  pull_request:
+    paths:
+      - 'src/pages/identity/IdentityApp.tsx'
+      - 'src/identity/identityClient.ts'
+      - 'scripts/identity-oauth-contract.test.mjs'
+      - '.github/workflows/identity-oauth-contract.yml'
+  push:
+    branches: [king/test, main]
+    paths:
+      - 'src/pages/identity/IdentityApp.tsx'
+      - 'src/identity/identityClient.ts'
+      - 'scripts/identity-oauth-contract.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oauth-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Google OAuth single redirect, SDK delivery, bridge contract
+        run: node --test scripts/identity-oauth-contract.test.mjs
+      - name: Verify TS types
+        run: |
+          npm ci --no-audit --no-fund
+          npm run typecheck

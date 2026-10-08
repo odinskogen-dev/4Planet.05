@@ -32,6 +32,8 @@ function friendlyError(message: string) {
   if (/User already registered/i.test(message)) return "Det finnes allerede en konto med denne e-postadressen.";
   if (/Password should be at least|weak password/i.test(message)) return "Velg et sterkere passord med minst 8 tegn.";
   if (/rate limit/i.test(message)) return "For mange forsøk. Vent litt og prøv igjen.";
+  if (/Auth SDK failed|Auth SDK unavailable/i.test(message)) return "Innloggingstjenesten kunne ikke lastes. Sjekk nettforbindelsen og prøv igjen.";
+  if (/Google sign-in URL missing|Google sign-in URL invalid/i.test(message)) return "Google-innloggingen kunne ikke startes. Prøv igjen.";
   if (/expired|invalid.*token|otp/i.test(message)) return "Lenken er ugyldig eller utløpt. Be om en ny.";
   return "Noe gikk galt. Prøv igjen.";
 }
@@ -230,12 +232,23 @@ export default function IdentityApp() {
     showStatus("");
     try {
       const client = await getIdentityClient();
+      // Supabase normally navigates by itself. Disable its automatic redirect
+      // so this browser has exactly one Google OAuth navigation, not two.
       const result = await client.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: identityCallbackUrl("login", returnTo) },
+        options: {
+          redirectTo: identityCallbackUrl("login", returnTo),
+          skipBrowserRedirect: true,
+        },
       });
       if (result.error) throw new Error(result.error.message);
-      if (result.data.url) window.location.assign(result.data.url);
+      if (!result.data.url) throw new Error("Google sign-in URL missing");
+      const oauthUrl = new URL(result.data.url);
+      if (oauthUrl.origin !== "https://ghvdzetmplqkdtfqiror.supabase.co" ||
+          oauthUrl.pathname !== "/auth/v1/authorize") {
+        throw new Error("Google sign-in URL invalid");
+      }
+      window.location.assign(oauthUrl.href);
     } catch (error) {
       showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
       setBusy(false);
