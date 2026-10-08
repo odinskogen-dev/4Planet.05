@@ -54,6 +54,54 @@ try {
   assert.deepEqual(errors, [], "No uncaught errors expected");
   console.log("PASS early SIGNED_IN bridges immediately, before any profile hydration");
 
+  // Fallback: browser returns with implicit OAuth fragment but the SDK misses it.
+  const recovery = await browser.newPage();
+  let recoveredBridge = 0;
+  await recovery.addInitScript(() => {
+    window.supabase = {
+      createClient: () => ({
+        auth: {
+          onAuthStateChange(callback) {
+            callback("INITIAL_SESSION", null);
+            return { data: { subscription: { unsubscribe() {} } } };
+          },
+          async getSession() { return { data: { session: null }, error: null }; },
+          async setSession(tokens) {
+            if (tokens.access_token !== "synthetic-access" || tokens.refresh_token !== "synthetic-refresh") {
+              return { data: { session: null }, error: { message: "test tokens missing" } };
+            }
+            return {
+              data: { session: {
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token,
+                user: { id: "synthetic-only", email: "test@example.invalid" },
+              }},
+              error: null,
+            };
+          },
+        },
+      }),
+    };
+  });
+  await recovery.route("**/functions/v1/four-planet-id-bridge", async route => {
+    recoveredBridge++;
+    await route.fulfill({
+      status: 200,
+      headers: { "access-control-allow-origin": origin, "content-type": "application/json" },
+      body: JSON.stringify({ token_hash: "synthetic-test-only-hash" }),
+    });
+  });
+  await recovery.route("https://4planet.org/**", async route => route.fulfill({
+    status: 200, contentType: "text/html", body: "<title>Recovered OAuth callback captured</title>",
+  }));
+  await recovery.goto(url + "#access_token=synthetic-access&refresh_token=synthetic-refresh", {
+    waitUntil: "domcontentloaded", timeout: 30000,
+  });
+  const recoveryDeadline = Date.now() + 12000;
+  while (recoveredBridge !== 1 && Date.now() < recoveryDeadline) await recovery.waitForTimeout(100);
+  assert.equal(recoveredBridge, 1, "Implicit Google OAuth fragment must be validated and bridged");
+  console.log("PASS missed Google fragment is validated by Supabase setSession and bridged");
+
   const noSession = await browser.newPage();
   await noSession.addInitScript(() => {
     window.supabase = {
