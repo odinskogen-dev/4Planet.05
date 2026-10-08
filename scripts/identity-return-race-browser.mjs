@@ -2,7 +2,7 @@ import { strict as assert } from "node:assert";
 import { chromium } from "@playwright/test";
 
 const origin = "http://127.0.0.1:4178";
-const url = origin + "/login?auth_return=google&return_to=https%3A%2F%2F4planet.org%2F";
+const url = origin + "/id/login?auth_return=google&return_to=https%3A%2F%2F4planet.org%2F";
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
