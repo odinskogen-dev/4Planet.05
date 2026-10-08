@@ -67,4 +67,4 @@ export function readState():FinanceState {
  return emptyState();
 }
 export function saveState(s:FinanceState){localStorage.setItem(STORAGE_KEY,JSON.stringify(s))}
-export function validTransition(next:Status,receipt:string){return !["Submitted","Awaiting decision","Awarded"].includes(next)||!!receipt.trim()}
+export function validTransition(next:Status,_receipt:string){return ["Saved","Qualified","Preparing","Quality review","Ready for release"].includes(next)}
