@@ -1,0 +1,23 @@
+name: Finance Live Domain Browser QA
+on:
+  push:
+    branches: [work/finance-id-release-20261008]
+    paths:
+      - 'scripts/finance-live.e2e.mjs'
+      - '.github/workflows/finance-live-browser-proof.yml'
+permissions:
+  contents: read
+jobs:
+  live-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: External finance.4planet.org guest journeys, desktop and mobile
+        run: node scripts/finance-live.e2e.mjs

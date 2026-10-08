@@ -1,3 +1,13 @@
+# CAPITAL INTELLIGENCE PLATFORM — FINANCE MVP INTEGRATION CANDIDATE — 08 OCT 2026
+**STATUS:** BOUNDED FINANCE / ID INTEGRATION BRANCH / NOT GOLD CERTIFIED / NOT LIVE / REAL CATALOGUE NOT YET CONNECTED.
+**FOUNDER REQUIREMENT:** capital.4planet.org is superseded by finance.4planet.org. Universal public funding actors and annual programme profiles; private signed-in 4PLANET/PERSONAL workspaces for projects, CRM, month wheel, applications, graph.
+**ONE THING TO PRESERVE:** 4PLANET ID is the single authentication source. x500/BRAIN remain funding-actor and opportunity truth. No parallel login, core, master or funding database.
+**CHANGE:** isolated FinanceHub frontend, canonical login return allowlist, server-owned user drafts in existing 4Planet OS public.finance_user_state with RLS+revision checks; test-only fictional public actor/call fixtures clearly labelled DEMONSTRATION; isolated branch preview.
+**UNFINISHED:** no official actor catalogue; no actual cross-domain user login on final finance domain; organisation team roles are NOT covered by per-user draft storage; no production DNS/Cloudflare receiver proof. Existing GOLD / maker-judge/release/zero-loss gates remain. Private project state is distinct from verified public funding and official applications.
+**QA:** Finance branch typecheck, contract and desktop+390px E2E passed on head fd1c18be20517d567645e50cebd4f1bf9eac5b21; test on exact king/test derived integration SHA required anew. RLS enabled with four owner policies in existing 4PLANET OS; only source-header bridge allowlist updated to add finance host.
+**ROLLBACK:** exact king/test base 7e15c0009c6d5a757b289713a50ed5881ffa87a9; production routing must not be altered until GOLD. Source Project Home: https://docs.google.com/document/d/1kvvQNv5ZjMKHMny_mVDlH2kILSaA0Bj0cfCUjsgmrWk/edit
+**OWNER:** CAPITAL + TECH + PRODUCT. **FOUNDER RELEASE:** user requested live and ID completion; apply safety and QA gates before release.
+
 # 4SAPIEN MONEY MOBILE SUBNAV INTEGRATION — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR TEST-INTEGRATION CORRECTION / NO PRODUCT BYTE / NO GOLD / NO LIVE RELEASE.
