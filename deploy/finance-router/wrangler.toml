@@ -1,0 +1,5 @@
+name = "4planet-finance-router"
+main = "src/index.js"
+compatibility_date = "2026-10-08"
+workers_dev = false
+routes = [{ pattern = "finance.4planet.org/*", zone_name = "4planet.org" }]
