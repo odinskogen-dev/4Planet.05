@@ -85,7 +85,7 @@ export default function FinanceHub(){
   <DemoNote signedIn={!!session}/>
   <header className="fc-header">
     <div className="fc-wrap fc-header-inner">
-      <Nav to="/my" className="fc-brand" aria-label="4PLANET Finance" ><span className="fc-brandmark">4P<span>.</span></span><span className="fc-brandname">FINANCE <small>by 4PLANET</small></span></Nav>
+      <Nav to="/my" className="fc-brand"><span className="fc-brandmark">4P<span>.</span></span><span className="fc-brandname">FINANCE <small>by 4PLANET</small></span></Nav>
       <form className="fc-topbar-search" role="search" onSubmit={searchSubmit}>
         <Icon name="discover"/>
         <input aria-label="Search all funding opportunities" placeholder="Search funders, funding, projects…" value={searchText} onChange={event=>setSearchText(event.target.value)}/>
