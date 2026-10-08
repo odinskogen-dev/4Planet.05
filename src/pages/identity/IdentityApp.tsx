@@ -34,6 +34,7 @@ function friendlyError(message: string) {
   if (/rate limit/i.test(message)) return "For mange forsøk. Vent litt og prøv igjen.";
   if (/Auth SDK failed|Auth SDK unavailable/i.test(message)) return "Innloggingstjenesten kunne ikke lastes. Sjekk nettforbindelsen og prøv igjen.";
   if (/Google sign-in URL missing|Google sign-in URL invalid/i.test(message)) return "Google-innloggingen kunne ikke startes. Prøv igjen.";
+  if (/Secure sign-in handoff|bridge_unavailable|target_not_allowed/i.test(message)) return "Google-innloggingen er godkjent, men forbindelsen til nettsiden kunne ikke fullføres. Prøv igjen.";
   if (/expired|invalid.*token|otp/i.test(message)) return "Lenken er ugyldig eller utløpt. Be om en ny.";
   return "Noe gikk galt. Prøv igjen.";
 }
@@ -52,6 +53,7 @@ export default function IdentityApp() {
   const [showPassword, setShowPassword] = useState(false);
   const [oauthDetails, setOauthDetails] = useState<OAuthAuthorizationDetails | null>(null);
   const redirectInProgress = useRef(false);
+  const googleCallback = new URLSearchParams(window.location.search).get("auth_return") === "google";
 
   const returnTo = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
@@ -98,20 +100,42 @@ export default function IdentityApp() {
   useEffect(() => {
     let alive = true;
     let unsubscribe = () => {};
-    let bootstrapped = false;
+    let latestSession: FourPlanetSession | null = null;
+    let oauthFollowup: number | null = null;
+
+    // Never make async Supabase auth calls inside onAuthStateChange:
+    // the Supabase auth lock can deadlock. Handoff is queued outside the callback.
+    function queueHandoff(active: FourPlanetSession) {
+      latestSession = active;
+      if (mode !== "login" || redirectInProgress.current) return;
+      setBusy(true);
+      showStatus("Innlogging bekreftet. Kobler deg sikkert videre…", "ok");
+      if (oauthFollowup !== null) window.clearTimeout(oauthFollowup);
+      oauthFollowup = window.setTimeout(() => {
+        if (!alive) return;
+        void continueWith(active).catch(error => {
+          if (!alive) return;
+          showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
+          setBusy(false);
+        });
+      }, 0);
+    }
+
     (async () => {
       try {
+        if (mode === "login" && googleCallback) {
+          showStatus("Fullfører Google-innlogging…");
+        }
         const client = await getIdentityClient();
         const listener = client.auth.onAuthStateChange((event, next) => {
           if (!alive) return;
+          latestSession = next;
           setSession(next);
           if (event === "PASSWORD_RECOVERY") setMode("reset");
-          // OAuth can complete after the initial getSession check. Continue when
-          // the SDK emits the authenticated session instead of leaving login idle.
-          if (event === "SIGNED_IN" && next && bootstrapped && mode === "login") {
-            void continueWith(next).catch((error) => {
-              if (alive) showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
-            });
+          // INITIAL_SESSION or SIGNED_IN can arrive before getSession resolves.
+          // Do not drop the authenticated session because bootstrap isn't finished.
+          if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && next && mode === "login") {
+            queueHandoff(next);
           }
         });
         unsubscribe = () => listener.data.subscription.unsubscribe();
@@ -131,13 +155,13 @@ export default function IdentityApp() {
         const result = await client.auth.getSession();
         if (result.error) throw new Error(result.error.message);
         if (!alive) return;
-        bootstrapped = true;
-        setSession(result.data.session);
+        const active = result.data.session || latestSession;
+        setSession(active);
 
         if (mode === "consent") {
           const authorizationId = new URLSearchParams(window.location.search).get("authorization_id");
           if (!authorizationId) throw new Error("Missing authorization request");
-          if (!result.data.session) {
+          if (!active) {
             window.location.replace(`https://id.4planet.org/login?return_to=${encodeURIComponent(window.location.href)}`);
             return;
           }
@@ -148,28 +172,36 @@ export default function IdentityApp() {
             return;
           }
           setOauthDetails(details.data);
-          setBusy(false);
           return;
         }
 
-        if (result.data.session) {
-          setEmail(result.data.session.user.email || "");
-          await hydrateAccount(result.data.session);
+        if (active) {
+          setEmail(active.user.email || "");
           if (mode === "login") {
-            await continueWith(result.data.session);
+            // CRITICAL: bridge immediately. Profile hydration is nonessential and
+            // must not block login/session transfer to the destination website.
+            queueHandoff(active);
             return;
           }
-          if (mode === "account") setMode("account");
+          if (mode === "account") await hydrateAccount(active);
         } else if (mode === "account") {
           setMode("login");
+        } else if (mode === "login" && googleCallback) {
+          // A successful Google provider callback is not proof of an app session.
+          // Tell the user explicitly when the browser fails to retain it.
+          showStatus("Google returnerte til 4PLANET, men ingen innlogget sesjon ble funnet. Prøv igjen, eller bruk innloggingen på 4SAPIEN.", "err");
         }
       } catch (error) {
         if (alive) showStatus(friendlyError(error instanceof Error ? error.message : String(error)), "err");
       } finally {
-        if (alive) setBusy(false);
+        if (alive && !redirectInProgress.current && oauthFollowup === null) setBusy(false);
       }
     })();
-    return () => { alive = false; unsubscribe(); };
+    return () => {
+      alive = false;
+      unsubscribe();
+      if (oauthFollowup !== null) window.clearTimeout(oauthFollowup);
+    };
   }, []);
 
   async function submit(event: FormEvent) {
@@ -237,7 +269,7 @@ export default function IdentityApp() {
       const result = await client.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: identityCallbackUrl("login", returnTo),
+          redirectTo: identityCallbackUrl("login", returnTo, "google"),
           skipBrowserRedirect: true,
         },
       });
@@ -326,7 +358,7 @@ export default function IdentityApp() {
       ? "Kontroller hvilken 4PLANET-tjeneste som får tilgang til identiteten din."
       : "Én sikker innlogging på tvers av 4PLANET.";
 
-  if (busy && mode === "callback") return <main className="identity-shell"><div className="identity-card"><div className="identity-brand">4PLANET ID</div><p>Fullfører sikker innlogging…</p><IdentityStyles /></div></main>;
+  if (busy && (mode === "callback" || (mode === "login" && googleCallback))) return <main className="identity-shell"><div className="identity-card"><div className="identity-brand">4PLANET ID</div><p role="status" aria-live="polite">{googleCallback ? "Fullfører Google-innlogging…" : "Fullfører sikker innlogging…"}</p><IdentityStyles /></div></main>;
 
   return (
     <main className="identity-shell">
