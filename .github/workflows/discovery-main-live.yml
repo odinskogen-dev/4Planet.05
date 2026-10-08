@@ -85,6 +85,7 @@ jobs:
           test -f dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/atlas</loc>' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/species</loc>' dist/sitemap.xml
+          ! grep -Fq '<loc>https://4planet.org/places</loc>' dist/sitemap.xml
           test -f dist/_headers
           test -f dist/robots.txt
           if [ ! -f dist/news-sitemap.xml ]; then
@@ -95,6 +96,17 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
+      - name: Purge canonical-owner redirect cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          zone=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/zones?name=4planet.org")
+          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+          test -n "$zid"
+          payload='{"files":["https://4planet.org/atlas","https://4planet.org/places"]}'
+          result=$(curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" --data "$payload" "https://api.cloudflare.com/client/v4/zones/$zid/purge_cache")
+          test "$(jq -r '.success' <<<"$result")" = "true"
+          echo 'CANONICAL_OWNER_REDIRECT_CACHE_PURGE_PASS'
       - name: Verify WHAT WE BELIEVE custom-domain runtime
         shell: bash
         run: |
@@ -165,7 +177,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
-          atlas=$(curl -fsS https://4planetatlas.com/)
+          atlas=$(curl -fsSL https://4planetatlas.com/atlas/)
           grep -Fq 'https://4planetatlas.com/places' <<<"$atlas"
           grep -Fq 'https://4planetatlas.com/place/berlin' <<<"$atlas"
           echo 'ATLAS_ROOT_CRAWL_PATH_PASS'
@@ -175,7 +187,7 @@ jobs:
           test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
           echo 'ATLAS_PLACE_INDEX_HUB_PASS'
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
-          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
+          grep -Fq '<h1>Berlin, Germany</h1>' <<<"$berlin"
           grep -Fq 'name="viewport"' <<<"$berlin"
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
           grep -Fq 'BreadcrumbList' <<<"$berlin"
@@ -186,7 +198,7 @@ jobs:
           grep -Fq 'Q64' <<<"$berlin"
           grep -Fq '2950159' <<<"$berlin"
           grep -Fq 'Verified geographic hierarchy' <<<"$berlin"
-          grep -Fq 'Related places in the current index' <<<"$berlin"
+          grep -Fq 'Connected places in the World Place Index' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
           echo 'ATLAS_BERLIN_ENTITY_PASS'
           manila=$(curl -fsS https://4planetatlas.com/place/manila)
@@ -211,6 +223,11 @@ jobs:
           echo 'ATLAS_PLACE_SITEMAP_250_PASS'
           kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
+          atlas_target=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://4planet.org/atlas)
+          test "$atlas_target" = "https://4planetatlas.com/atlas/"
+          places_target=$(curl -fsS -o /dev/null -w '%{redirect_url}' https://4planet.org/places)
+          test "$places_target" = "https://4planetatlas.com/places"
+          echo 'FOURPLANET_ATLAS_OWNER_REDIRECT_PASS'
           echo 'ATLAS_PLACE_CANONICAL_REDIRECT_PASS'
           echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
 
@@ -231,16 +248,16 @@ jobs:
           grep -Fq '<loc>https://4planet.org/</loc>' <<<"$sm"
           curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
           curl -fsS https://4brands.org/robots.txt | grep -Fq 'Sitemap: https://4brands.org/sitemap.xml'
-          atlas=$(curl -fsS https://4planetatlas.com/)
+          atlas=$(curl -fsSL https://4planetatlas.com/atlas/)
           grep -Fq '4PLANET ATLAS — Explore the Living Planet' <<<"$atlas"
           atlas_places=$(curl -fsS https://4planetatlas.com/places)
           grep -Fq 'World Place Index' <<<"$atlas_places"
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
-          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
-          grep -Fq 'Open Berlin in ATLAS' <<<"$berlin"
+          grep -Fq '<h1>Berlin, Germany</h1>' <<<"$berlin"
+          grep -Fq 'Explore Berlin in the interactive ATLAS' <<<"$berlin"
           grep -Fq 'application/ld+json' <<<"$berlin"
           grep -Fq 'name="viewport"' <<<"$berlin"
-          grep -Fq 'Related places in the current index' <<<"$berlin"
+          grep -Fq 'Connected places in the World Place Index' <<<"$berlin"
           grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
           grep -Fq 'Truth boundary:' <<<"$berlin"
           grep -Fq '/place/' <<<"$berlin"
