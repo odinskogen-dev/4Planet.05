@@ -6,6 +6,8 @@ on:
       - 'src/pages/finance/**'
       - 'src/App.tsx'
       - 'scripts/finance-mvp-contract.test.mjs'
+      - 'deploy/finance-router/**'
+      - '.github/workflows/finance-beta-domain.yml'
       - 'src/identity/identityClient.ts'
       - '.github/workflows/finance-visual-preview.yml'
   workflow_dispatch:
