@@ -2,19 +2,19 @@
   "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "2918a44648f781e0d67e82e74b86ba1c86418a38",
-  "priorLiveSha": "f5ab684036ea8db0b2964f1f703e5e7b14dd1767",
+  "testKingSha": "e6fd8ff4c7976f5467447cab4c9e9ba92de2dfa1",
+  "priorLiveSha": "15835d7ce47475342bc8d6f99d26a5a342cd1b82",
   "releaseCommitSha": null,
   "boundedRelease": true,
-  "releaseKind": "P0_ID_GOOGLE_SINGLE_REDIRECT",
-  "hotfixBranch": "release/p0-id-single-redirect-20261009",
+  "releaseKind": "P0_ID_GOOGLE_CALLBACK_RETURN",
+  "hotfixBranch": "release/p0-id-google-return-20261009",
   "hotfixPaths": [
     "src/pages/identity/IdentityApp.tsx",
     "src/identity/identityClient.ts"
   ],
-  "founderDecisionRef": "Founder 2026-10-08: Jeg bestemmer reglene og jeg bestemmer at du kan ta ID fiks live. Founder 2026-10-09: 4PLANET ID Google login still bounces; expressly requires learning working 4SAPIEN code and fixing.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/420",
-  "rollbackRef": "main@f5ab684036ea8db0b2964f1f703e5e7b14dd1767",
+  "founderDecisionRef": "Founder 2026-10-08 explicitly approved 4PLANET ID live fixes. Founder 2026-10-09 confirmed Google account selection redirects back to the login screen without session and orders immediate correction; preserve 4SAPIEN.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/423",
+  "rollbackRef": "main@15835d7ce47475342bc8d6f99d26a5a342cd1b82",
   "releaseControlCommit": true,
-  "note": "Only exact two king/test source blobs cb219785ed72018c0c79175105d4010df0a64a09 and 8a0e45441f4a9971065e63fb2ccfa5a47b86d718 with P0 contract and scoped policy. Verified Node OAuth contract and TypeScript pass at PR #420. Live Google click and cross-domain return remain to be verified before DONE."
+  "note": "Bounded post-Google callback session transfer correction. Exact tested blobs 0c72d4aece1f581896ab2e45db93f76bac2ff691 and d5aaf87e8ebda4c528558143c79320848889bedd. Proven CI synthetic early signed-in, OAuth fragment recovery and explicit no-session failure; real user Google callback remains to be verified."
 }

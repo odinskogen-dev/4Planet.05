@@ -1,0 +1,35 @@
+name: 4PLANET ID OAuth Return Race Proof
+
+on:
+  pull_request:
+    paths:
+      - 'src/pages/identity/IdentityApp.tsx'
+      - 'src/identity/identityClient.ts'
+      - 'scripts/identity-return-race-browser.mjs'
+      - '.github/workflows/identity-return-race.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  callback-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Test early Google auth callback against real React app
+        run: |
+          set -euo pipefail
+          npx vite --host 127.0.0.1 --port 4178 > /tmp/id-vite.log 2>&1 &
+          for attempt in $(seq 1 25); do
+            if curl -fsS http://127.0.0.1:4178/login >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/identity-return-race-browser.mjs

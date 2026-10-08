@@ -206,10 +206,30 @@ if (mode === "pr-main") {
     && files.includes("scripts/identity-oauth-contract.test.mjs")
     && git(["hash-object", "src/pages/identity/IdentityApp.tsx"]) === "cb219785ed72018c0c79175105d4010df0a64a09"
     && git(["hash-object", "src/identity/identityClient.ts"]) === "8a0e45441f4a9971065e63fb2ccfa5a47b86d718";
-  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix) {
+  const p0IdReturnHotfix = head === "release/p0-id-google-return-20261009"
+    && manifest.status === "FOUNDER_ACCEPTED"
+    && manifest.boundedRelease === true
+    && manifest.releaseKind === "P0_ID_GOOGLE_CALLBACK_RETURN"
+    && manifest.hotfixBranch === head
+    && manifest.sourceBranch === "king/test"
+    && manifest.testKingSha === "e6fd8ff4c7976f5467447cab4c9e9ba92de2dfa1"
+    && manifest.priorLiveSha === "15835d7ce47475342bc8d6f99d26a5a342cd1b82"
+    && manifest.founderDecisionRef?.includes("Founder 2026-10-09")
+    && JSON.stringify((manifest.hotfixPaths || []).slice().sort()) === JSON.stringify([
+      "src/pages/identity/IdentityApp.tsx", "src/identity/identityClient.ts"
+    ].sort())
+    && JSON.stringify(files.filter(isProductFacing).sort()) === JSON.stringify([
+      "src/pages/identity/IdentityApp.tsx", "src/identity/identityClient.ts"
+    ].sort())
+    && files.includes("scripts/identity-oauth-contract.test.mjs")
+    && files.includes("scripts/identity-return-race-browser.mjs")
+    && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
+    && git(["hash-object", "src/pages/identity/IdentityApp.tsx"]) === "0c72d4aece1f581896ab2e45db93f76bac2ff691"
+    && git(["hash-object", "src/identity/identityClient.ts"]) === "d5aaf87e8ebda4c528558143c79320848889bedd";
+  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
-  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix) && !draft) validateLivePromotion();
+  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix) && !draft) validateLivePromotion();
 }
 
 if (mode === "main-push" && files.some(isProductFacing)) validateLivePromotion();

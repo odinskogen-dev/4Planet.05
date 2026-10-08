@@ -849,3 +849,33 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **HUMAN SUCCESS:** Clicking Google once opens the actual provider, finishes authentication, returns to 4planet.org logged in and stays logged in after reload.
 
 **SCOPE & RELEASE AUTHORITY:** Founder explicit approval 08 Oct to override blanket blocks for ID repair; 09 Oct follow-up confirms still broken and directs copying working 4SAPIEN lessons. Only src/pages/identity/IdentityApp.tsx and src/identity/identityClient.ts from tested king/test SHA 2918a44648f781e0d67e82e74b86ba1c86418a38; supporting test, GOLD policy and this brief. Prior main f5ab684036ea8db0b2964f1f703e5e7b14dd1767 is rollback reference. Do not merge unrelated king/test.
+
+## P0 4PLANET ID — GOOGLE CALLBACK RETURN FIX — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** Google account selection worked in the external browser, but the browser silently returned to id.4planet.org/login, not authenticated at 4planet.org.
+
+**ONE THING TO UNDERSTAND:** Supabase logged valid Google callback while the previous ID runtime ignored early SIGNED_IN before bootstrap and awaited profile hydration before bridge. Missing implicit callback session is now safely recovered through Supabase setSession; previously no failure explanation.
+
+**PRIMARY ACTION:** Bridge on earliest authenticated event (including INITIAL_SESSION), never before validating session, without waiting on profile; show explicit Google-return progress or no-session error.
+
+**SECONDARY DEPTH:** 4SAPIEN original working login remains untouched. No new auth infrastructure.
+
+**P1 DOMINANT:** Real Google callback session → first-party bridge → 4planet.org authenticated session retained.
+
+**P2 ORIENTATION:** Test early event, missed OAuth fragment and error UX in headless browser with synthetic tokens only.
+
+**P3 ACTION / NEXT:** Deploy exact two ID source blobs from king/test, verify deployed JS with Cloudflare and run actual founder Google login and bridge verification.
+
+**P4 DEPTH:** Maintain no raw tokens or user PII in analytics/log reports.
+
+**WHAT CAN BE REMOVED:** Initial SIGNED_IN discard, delayed bridge behind profile reads.
+
+**WHAT MUST BE REUSED:** Existing Supabase users and Cloudflare Pages, four-planet-id-bridge Edge Function and original trusted origin set.
+
+**TRUTH BOUNDARY:** No synthetic browser proof substitutes for full real user login; release must not be labelled complete without live bridge POST and final authenticated target.
+
+**MOBILE-FIRST RISK:** Safari OAuth fragment/automatic SDK recovery and callback timing.
+
+**HUMAN SUCCESS:** Google selection leads to logged-in account on 4planet.org, not a silent login screen.
+
+**FOUNDER RELEASE:** Explicit founder ID hotfix approval 08–09 October 2026. Bounded production source from king/test merge e6fd8ff4c7976f5467447cab4c9e9ba92de2dfa1. Exactly src/pages/identity/IdentityApp.tsx and src/identity/identityClient.ts are the product changes; test, release-control and policy only otherwise. Rollback main@15835d7ce47475342bc8d6f99d26a5a342cd1b82.

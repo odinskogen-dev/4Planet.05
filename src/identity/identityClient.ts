@@ -30,6 +30,7 @@ export type OAuthAuthorizationDetails = {
 type SupabaseClientLike = {
   auth: {
     getSession(): Promise<SessionResponse>;
+    setSession(input: { access_token: string; refresh_token: string }): Promise<SessionResponse>;
     signInWithPassword(input: { email: string; password: string }): Promise<SessionResponse>;
     signUp(input: { email: string; password: string; options?: { emailRedirectTo?: string } }): Promise<SessionResponse>;
     resetPasswordForEmail(email: string, options?: { redirectTo?: string }): Promise<{ data: unknown; error: AuthError }>;
@@ -181,6 +182,27 @@ export function identityAccountUrl(returnTo?: string) {
   return `https://id.4planet.org/account?return_to=${encodeURIComponent(target)}`;
 }
 
+// Recovery only: SDK normally consumes the implicit OAuth fragment itself.
+// On browsers where the initial callback was missed, explicitly validate and
+// persist the SAME session with Supabase rather than silently discarding it.
+// Never log, transmit to analytics, or keep OAuth tokens in URLs.
+export async function recoverOAuthSessionFromLocation(): Promise<FourPlanetSession | null> {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const accessToken = hash.get("access_token");
+  const refreshToken = hash.get("refresh_token");
+  if (!accessToken || !refreshToken) return null;
+  const client = await getIdentityClient();
+  const result = await client.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  if (result.error || !result.data.session) {
+    throw new Error(result.error?.message || "Google callback session invalid");
+  }
+  window.history.replaceState({}, "", window.location.pathname + window.location.search);
+  return result.data.session;
+}
+
 export async function bridgeSessionTo(targetUrl: string, session: FourPlanetSession) {
   const target = new URL(safeReturnTo(targetUrl));
   if (target.origin === window.location.origin) {
@@ -258,10 +280,11 @@ export async function saveProfile(session: FourPlanetSession, displayName: strin
   if (!response.ok) throw new Error("Could not save account profile");
 }
 
-export function identityCallbackUrl(mode: "login" | "reset", returnTo?: string) {
+export function identityCallbackUrl(mode: "login" | "reset", returnTo?: string, source?: "google") {
   const target = safeReturnTo(returnTo || "https://4planet.org/");
   const url = new URL("https://id.4planet.org/login");
   if (mode === "reset") url.searchParams.set("mode", "reset");
+  if (source === "google") url.searchParams.set("auth_return", "google");
   url.searchParams.set("return_to", target);
   return url.href;
 }
