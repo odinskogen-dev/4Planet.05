@@ -2,6 +2,7 @@ name: ATLAS Exposure LIVE
 # exposure-rerun: place-image-regex-fix
 # exposure-rerun: canonical-variant-collapse
 # exposure-rerun: final-canonical-owner-sync
+# exposure-rerun: direct-crosslinks
 
 on:
   push:
