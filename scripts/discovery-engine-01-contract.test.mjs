@@ -10,6 +10,7 @@ const sitemap = read("scripts/generate-sitemap.mjs");
 const prerender = read("scripts/prerender-discovery-seo.mjs");
 const shell = read("src/components/layout/PublicShell.tsx");
 const css = read("src/styles/human-first-public.css");
+const deferredRoutes = read("src/routes/deferredRoutes.tsx");
 
 const REQUIRED = [
   "wildfires",
@@ -94,4 +95,15 @@ test("Earth Now is discoverable through the existing Master Brand OS navigation"
   assert.match(css, /--discovery-accent:#2E2EFF/);
   assert.match(css, /background:#080808/);
   assert.doesNotMatch(css.match(/\/\* DISCOVERY ENGINE 01[\s\S]*$/)?.[0] ?? "", /glassmorphism/i);
+});
+
+test("creator routes do not pretend a statically owned host module is lazy", () => {
+  assert.match(
+    deferredRoutes,
+    /import \{ MarketHome, OdinCreatorPage \} from "@\/pages\/v5\/CreatorMarket";/,
+  );
+  assert.doesNotMatch(
+    deferredRoutes,
+    /lazy\(\(\) => import\("@\/pages\/v5\/CreatorMarket"\)/,
+  );
 });

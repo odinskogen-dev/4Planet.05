@@ -1,4 +1,7 @@
 import { lazy } from "react";
+import { MarketHome, OdinCreatorPage } from "@/pages/v5/CreatorMarket";
+
+export { MarketHome, OdinCreatorPage };
 
 export const LabsOverview = lazy(() => import("@/pages/labs/LabsOverview"));
 export const DomainsIndex = lazy(() => import("@/pages/v5/Domains").then((m) => ({ default: m.DomainsIndex })));
@@ -49,8 +52,6 @@ export const AboutSystem = lazy(() => import("@/pages/v5/AboutPages").then((m) =
 export const WhatWeBelieve = lazy(() => import("@/pages/v5/AboutPages").then((m) => ({ default: m.WhatWeBelieve })));
 export const Founder = lazy(() => import("@/pages/v5/AboutPages").then((m) => ({ default: m.Founder })));
 export const CulturePlay = lazy(() => import("@/pages/v5/Culture").then((m) => ({ default: m.CulturePlay })));
-export const MarketHome = lazy(() => import("@/pages/v5/CreatorMarket").then((m) => ({ default: m.MarketHome })));
-export const OdinCreatorPage = lazy(() => import("@/pages/v5/CreatorMarket").then((m) => ({ default: m.OdinCreatorPage })));
 export const Privacy = lazy(() => import("@/pages/v5/Privacy"));
 export const PlanetSignal = lazy(() => import("@/pages/v5/PlanetSignal"));
 
