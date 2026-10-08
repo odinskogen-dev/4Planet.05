@@ -4,6 +4,11 @@ import { chromium } from "@playwright/test";
 const loginUrl = "https://id.4planet.org/login?auth_return=google&return_to=https%3A%2F%2F4planet.org%2F";
 const home = await fetch(loginUrl, { signal: AbortSignal.timeout(20000) });
 assert.equal(home.status, 200, "ID live homepage HTTP status");
+const csp = home.headers.get("content-security-policy") || "";
+const connectSrc = csp.split(";").find(part => part.trim().startsWith("connect-src")) || "";
+assert.ok(connectSrc.includes("https://ghvdzetmplqkdtfqiror.supabase.co"),
+  "LIVE browser CSP still blocks Supabase Auth and four-planet-id-bridge");
+console.log("PASS LIVE CSP: exact Supabase Auth origin permitted in connect-src");
 const html = await home.text();
 const jsPaths = [...html.matchAll(/<script[^>]+src=["']([^"']+\.js(?:\?[^"']*)?)["']/gi)].map(m => new URL(m[1], home.url));
 let checked = 0;
