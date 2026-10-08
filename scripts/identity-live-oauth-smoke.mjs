@@ -9,14 +9,32 @@ const scripts = [...html.matchAll(/<script[^>]+src=["']([^"']+\.js(?:\?[^"']*)?)
   .map(match => new URL(match[1], res.url))
   .filter(url => url.origin === new URL(ID_URL).origin);
 assert.ok(scripts.length, "No same-origin 4PLANET ID JavaScript assets found");
+console.log("LIVE_ID_HTTP", res.status, res.url, "HTML_LEN", html.length);
+console.log("LIVE_SCRIPT_URLS", scripts.map(u => u.href));
 const bundles = [];
-for (const url of scripts) {
+const queued = [...scripts];
+const scanned = new Set();
+while (queued.length && scanned.size < 40) {
+  const url = queued.shift();
+  if (scanned.has(url.href)) continue;
+  scanned.add(url.href);
   const resp = await fetch(url, { signal: AbortSignal.timeout(30000) });
-  if (resp.ok) bundles.push(await resp.text());
+  const code = resp.ok ? await resp.text() : "";
+  console.log("ASSET", url.href, "HTTP", resp.status, "BYTES", code.length,
+    "REDIRECT_FIX", code.includes("skipBrowserRedirect"),
+    "SDK_FALLBACK", code.includes("unpkg.com/@supabase/supabase-js@2.115.0"),
+    "IDENTITY", code.includes("Fortsett med Google"));
+  if (resp.ok) bundles.push(code);
+  for (const m of code.matchAll(/["']([^"'\\s]+\\.js(?:\\?[^"'\\s]*)?)["']/g)) {
+    try {
+      const linked = new URL(m[1], url);
+      if (linked.origin === url.origin && !scanned.has(linked.href)) queued.push(linked);
+    } catch { /* external string, not an asset */ }
+  }
 }
 const full = bundles.join("\n");
-assert.ok(full.includes("skipBrowserRedirect"), "LIVE asset is missing the P0 single-navigation Google fix");
-assert.ok(full.includes("unpkg.com/@supabase/supabase-js@2.115.0"), "LIVE asset is missing the repaired SDK loader");
+assert.ok(full.includes("skipBrowserRedirect"), "LIVE asset graph is missing the P0 single-navigation Google fix");
+assert.ok(full.includes("unpkg.com/@supabase/supabase-js@2.115.0"), "LIVE asset graph is missing the repaired SDK loader");
 console.log("PASS: Live ID bundle serves the Google P0 fix and supported Supabase SDK fallback");
 
 const browser = await chromium.launch({ headless: true });
