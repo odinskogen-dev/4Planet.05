@@ -193,8 +193,8 @@ export function actionStateIndex(state: ActionLifecycleState): number {
 }
 
 export function canTransitionAction(from: ActionLifecycleState, to: ActionLifecycleState): boolean {
-  if (to === "INVALIDATED_REMEDIED") return from !== "DISCOVERED";
   if (from === "INVALIDATED_REMEDIED") return false;
+  if (to === "INVALIDATED_REMEDIED") return from !== "DISCOVERED";
   return actionStateIndex(to) === actionStateIndex(from) + 1;
 }
 

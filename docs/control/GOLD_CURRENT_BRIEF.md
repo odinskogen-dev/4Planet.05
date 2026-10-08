@@ -1,3 +1,15 @@
+# IMPACT TERMINAL REMEDY LIFECYCLE — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR PRODUCT LOGIC + REGRESSION FIX / NO LIVE RELEASE.
+**USER/SYSTEM GAP:** A record already closed as `INVALIDATED_REMEDIED` could pass transition validation back into the same terminal state because the destination rule ran before the source-terminal guard.
+**ONE THING TO PRESERVE:** contribution/payment, delivery, evidence, outcome and impact remain distinct; invalidation/remedy is a terminal audit state, not a reopenable success state.
+**CHANGE:** evaluate the terminal source guard first and extend the existing lifecycle contract with self-transition and forward-transition regressions.
+**UNCHANGED:** normal forward transitions and transition from an eligible non-discovered state into `INVALIDATED_REMEDIED`.
+**TRUTH BOUNDARY:** This fixes deterministic lifecycle validation only. It does not assert a payment, delivery, evidence item, outcome, impact, provider relationship or LIVE deployment.
+**HUMAN SUCCESS:** a remedied action cannot be reopened or repeatedly remedied by the transition helper; its history remains closed for audit.
+**ROLLBACK:** exact pre-change `king/test` parent `82330b15fde72f04f2a7dfa6d0ab51e92097239a`.
+**GOLD:** Maker change only. Independent Judge remains required; no merge, promotion or LIVE authority follows.
+
 # SPECIES FACTORY IDENTITY CONTRACT — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR DATA + REGRESSION FIX / NO LIVE RELEASE.

@@ -45,6 +45,8 @@ test("forward lifecycle advances one state at a time and supports invalidation/r
   assert.equal(action.canTransitionAction("DISCOVERED", "SELECTED"), false);
   assert.equal(action.canTransitionAction("PAID", "DELIVERED"), false);
   assert.equal(action.canTransitionAction("DELIVERED", "INVALIDATED_REMEDIED"), true);
+  assert.equal(action.canTransitionAction("INVALIDATED_REMEDIED", "INVALIDATED_REMEDIED"), false);
+  assert.equal(action.canTransitionAction("INVALIDATED_REMEDIED", "EVIDENCED"), false);
   assert.equal(action.canTransitionAction("INVALIDATED_REMEDIED", "VERIFIED"), false);
 });
 
