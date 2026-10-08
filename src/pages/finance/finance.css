@@ -34,3 +34,17 @@
 .fc-team-item select{min-width:138px;font-size:11px}
 .fc-team-item .fc-textbutton{color:#525b69}
 @media(max-width:760px){.fc-team-create{min-width:100%;flex-wrap:wrap}.fc-team-actions>label{min-width:100%}.fc-team-item{align-items:stretch}.fc-team-item>div:first-child{min-width:100%}.fc-team-item select{flex:1;min-width:130px}.fc-team-add input{min-width:100%}}
+
+/* Precision audit, mobile legibility, defined affordances. */
+.fc-root{font-size:14.5px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.fc-root .fc-small,.fc-root .fc-kicker,.fc-root .fc-card-foot{font-size:12px}
+.fc-root .fc-opp-title{font-size:15px}
+.fc-root .fc-side-link{font-size:13px}
+.fc-root .fc-resultshead span{font-size:12px}
+.fc-root .fc-filters select,.fc-root .fc-pipe-row select,.fc-root .fc-pipe-row input{font-size:12px}
+.fc-root .fc-tag{font-size:11px;background:#f5f6f8}
+.fc-root .fc-initial{font-weight:600}
+.fc-root .fc-save{min-height:35px}
+.fc-root button:disabled,.fc-root select:disabled{cursor:not-allowed;opacity:.56}
+.fc-root .fc-form-panel label{font-size:12px}
+@media(max-width:760px){.fc-root .fc-opp-title{font-size:14px}.fc-root .fc-opportunity{gap:13px}.fc-root .fc-demo{font-size:11px;line-height:1.5}.fc-root .fc-team-subnav button{min-height:46px}}
