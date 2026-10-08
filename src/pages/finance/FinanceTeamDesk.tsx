@@ -3,7 +3,7 @@
  */
 import {useEffect,useRef,useState,type FormEvent} from "react";
 import type {FourPlanetSession} from "@/identity/identityClient";
-import {CALLS,THEMES,STATUS,FUNDERS,PROGRAMMES,amount,prettyDate,validTransition,type Project,type PipelineItem,type Status,type Theme,type Workspace} from "./financeData";
+import {CALLS,THEMES,STATUS,amount,prettyDate,validTransition,type Project,type PipelineItem,type Status,type Theme,type Workspace} from "./financeData";
 import {addTeamMember,createTeamSpace,getTeamMembers,getTeamSnapshot,getTeamSpaces,removeTeamMember,writeTeamSnapshot,type TeamMember,type TeamSpace} from "./financeTeams";
 const blank=():Workspace=>({projects:[],pipeline:[]});
 export default function FinanceTeamDesk({session}:{session:FourPlanetSession|null}){
