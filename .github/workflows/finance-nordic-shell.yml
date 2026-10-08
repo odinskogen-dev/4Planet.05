@@ -5,6 +5,8 @@ on:
     paths:
       - 'src/pages/finance/**'
       - 'scripts/finance-shell.e2e.mjs'
+      - 'scripts/finance-mvp.e2e.mjs'
+      - 'scripts/finance-mvp-contract.test.mjs'
       - '.github/workflows/finance-nordic-shell.yml'
 permissions:
   contents: read
