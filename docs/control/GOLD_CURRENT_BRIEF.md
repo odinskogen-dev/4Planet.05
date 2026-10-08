@@ -1,3 +1,15 @@
+# IMPACT EVIDENCE-TIME INTEGRITY — 08 OCT 2026
+
+**STATUS:** BOUNDED HEIR TRUTH-CORRECTION / NO GOLD / NO LIVE RELEASE.
+**USER/SYSTEM GAP:** Evidence dated after the validation time passed freshness checks because its negative age was treated as fresh.
+**ONE THING TO PRESERVE:** Evidence must exist at or before assessment time; future evidence cannot promote delivery, outcome or impact truth.
+**CHANGE:** reject a valid future timestamp as `future_evidence_timestamp`; preserve invalid, stale and current evidence handling.
+**UNCHANGED:** lifecycle states, contribution/payment/delivery/proof/outcome separation, provider data, network/payment/runtime behaviour and release authority.
+**TRUTH BOUNDARY:** deterministic validation only; no evidence, delivery, outcome, impact, user value or LIVE state is asserted.
+**HUMAN SUCCESS:** impossible future evidence fails closed instead of appearing fresh.
+**ROLLBACK:** exact pre-change `king/test` parent `e468496ec882f06bed9134ce4dbd6fca8065fa31`.
+**GOLD:** Maker correction only. Independent Judge remains required before merge, promotion or LIVE claim.
+
 # CROSS-PRODUCT URL OWNERSHIP — SPECIES RETURN RELOAD CORRECTION — 08 OCT 2026
 
 **STATUS:** SAME BOUNDED HEIR INTEGRATION CORRECTION / NO GOLD / NO LIVE RELEASE.

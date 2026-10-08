@@ -239,6 +239,8 @@ export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now
     const observed = Date.parse(integrity.evidenceObservedAt);
     if (!Number.isFinite(observed)) {
       failures.push("invalid_evidence_timestamp");
+    } else if (observed > now.getTime()) {
+      failures.push("future_evidence_timestamp");
     } else if ((now.getTime() - observed) / 3_600_000 > integrity.evidenceMaxAgeHours) {
       failures.push("stale_evidence");
     }

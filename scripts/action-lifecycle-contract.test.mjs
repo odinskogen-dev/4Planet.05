@@ -151,6 +151,20 @@ test("stale evidence is rejected at the configured evidence-age boundary", () =>
   assert.ok(action.validateActionLifecycleRecord(record, new Date("2026-09-08T00:00:00Z")).includes("stale_evidence"));
 });
 
+test("future evidence is rejected instead of being treated as fresh", () => {
+  const record = productionRecord({
+    integrity: { evidenceObservedAt: "2026-09-08T00:01:00Z", evidenceMaxAgeHours: 24 },
+  });
+  const failures = action.validateActionLifecycleRecord(record, new Date("2026-09-08T00:00:00Z"));
+  assert.ok(failures.includes("future_evidence_timestamp"));
+  assert.ok(!failures.includes("stale_evidence"));
+
+  const currentRecord = productionRecord({
+    integrity: { evidenceObservedAt: "2026-09-08T00:00:00Z", evidenceMaxAgeHours: 24 },
+  });
+  assert.ok(!action.validateActionLifecycleRecord(currentRecord, new Date("2026-09-08T00:00:00Z")).includes("future_evidence_timestamp"));
+});
+
 test("repeated submission is detectable by idempotency key before provider mutation", () => {
   const first = productionRecord();
   const second = { ...productionRecord(), actionId: "action:production:plastic:2" };
