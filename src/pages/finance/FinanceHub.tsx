@@ -10,7 +10,7 @@ function toPath(p:string){return window.location.pathname.startsWith("/finance")
 function Nav({to,children,className=""}:{to:string;children:ReactNode;className?:string}){return <Link className={className} to={toPath(to)}>{children}</Link>}
 function Icon({name}:{name:string}){const glyphs:Record<string,string>={overview:"▦",discover:"⌕",calendar:"▤",pipeline:"≡",project:"▧",actors:"◈",graph:"◇",applications:"▤",settings:"⚙",arrow:"↗",chevron:"›",back:"←",plus:"+",close:"×",menu:"☰"};return <span className="fc-icon" aria-hidden="true">{glyphs[name]||"·"}</span>}
 function Initial({name}:{name:string}){return <span className="fc-initial" aria-hidden="true">{name.split(" ").map(w=>w[0]).slice(0,2).join("")}</span>}
-function Section({label,title,children,aside}:{label?:string;title:string;children?:ReactNode;aside?:ReactNode}){return <section className="fc-section"><div className="fc-sectionheading"><div>{label&&<p className="fc-eyebrow">{label}</p>}<h2>{title}</h2>}</div>{aside}</div>{children}</section>}
+function Section({label,title,children,aside}:{label?:string;title:string;children?:ReactNode;aside?:ReactNode}){return <section className="fc-section"><div className="fc-sectionheading"><div>{label&&<p className="fc-eyebrow">{label}</p>}<h2>{title}</h2></div>{aside}</div>{children}</section>}
 function Tag({children,tone=""}:{children:ReactNode;tone?:string}){return <span className={"fc-tag "+tone}>{children}</span>}
 function Empty({title,text}:{title:string;text:string}){return <div className="fc-empty"><strong>{title}</strong><p>{text}</p></div>}
 function DemoNote(){return <div className="fc-demo" role="note"><span className="fc-demo-dot"/> <strong>DEMONSTRATION</strong><span>Illustrative organisations, calls, dates and amounts. No live funding data. Demo workspace saved on this device only.</span></div>}
@@ -29,6 +29,8 @@ export default function FinanceHub(){
  const save=(id:string)=>change(s=>{const w=s.workspaces[s.active];if(w.pipeline.some(i=>i.callId===id))return {...s,workspaces:{...s.workspaces,[s.active]:{...w,pipeline:w.pipeline.filter(i=>i.callId!==id)}}};const now=new Date().toISOString();const item:PipelineItem={id:"pipe-"+crypto.randomUUID(),callId:id,projectId:"",status:"Saved",createdAt:now,updatedAt:now,notes:"",receipt:""};return {...s,workspaces:{...s.workspaces,[s.active]:{...w,pipeline:[...w.pipeline,item]}}}});
  const patchItem=(id:string,patch:Partial<PipelineItem>)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,pipeline:w.pipeline.map(item=>item.id===id?{...item,...patch,updatedAt:new Date().toISOString()}:item)}}}});
  const switchWorkspace=(next:"4planet"|"personal")=>change(s=>({...s,active:next}));
+ const addProject=(p:Project)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:[...w.projects,p]}}};});
+ const deleteProject=(id:string)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:w.projects.filter(p=>p.id!==id),pipeline:w.pipeline.map(i=>i.projectId===id?{...i,projectId:""}:i)}}};});
  const signIn=()=>{window.location.href=identityLoginUrl(window.location.href)};
  const isMine=path==="/my"||path.startsWith("/my/");
  return <div className="fc-root">
@@ -48,7 +50,7 @@ export default function FinanceHub(){
     {path==="/my"&&<Dashboard state={state} saved={savedSet} save={save} signIn={signIn} hasSession={!!session}/>}
     {path==="/my/pipeline"&&<Pipeline workspace={workspace} patch={patchItem} remove={save}/>}
     {path==="/my/calendar"&&<Calendar saved={savedSet} save={save} mine pipeline={workspace.pipeline}/>}
-    {path==="/my/projects"&&<Projects workspace={workspace} onSave={p=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:[...w.projects,p]}}}})} onDelete={id=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{projects:w.projects.filter(p=>p.id!==id),pipeline:w.pipeline.map(i=>i.projectId===id?{...i,projectId:""}:i)}}})}/>}
+    {path==="/my/projects"&&<Projects workspace={workspace} onSave={addProject} onDelete={deleteProject}/> }
     {path.startsWith("/my/projects/")&&<ProjectDetail id={path.split("/")[3]} workspace={workspace} patch={patchItem}/>}
     {path==="/my/applications"&&<Applications pipeline={workspace.pipeline}/>}
     {path==="/my/graph"&&<Graph workspace={workspace}/>}
