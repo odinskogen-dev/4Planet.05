@@ -8,10 +8,13 @@ on:
       - "src/pages/integrated/Species.tsx"
       - "src/pages/integrated/SpeciesRoute.tsx"
       - "src/data/species.ts"
+      - "src/data/discoveryInventory.json"
       - "src/content/mediaManifest.ts"
       - "src/components/species/**"
-      - "tests/e2e/species-gold-plank.spec.ts"\n      - "tests/e2e/species-factory-first-batch.spec.ts"
-      - "scripts/species-gold-plank-01.test.mjs"\n      - "scripts/species-factory-first-batch.test.mjs"
+      - "tests/e2e/species-gold-plank.spec.ts"
+      - "tests/e2e/species-factory-first-batch.spec.ts"
+      - "scripts/species-gold-plank-01.test.mjs"
+      - "scripts/species-factory-first-batch.test.mjs"
       - ".github/workflows/test-king-species-lens-proof.yml"
   push:
     branches:
@@ -25,6 +28,7 @@ on:
       - "src/pages/integrated/Species.tsx"
       - "src/pages/integrated/SpeciesRoute.tsx"
       - "src/data/species.ts"
+      - "src/data/discoveryInventory.json"
       - "src/pages/integrated/UniversalSpeciesProfilePage.tsx"
       - "src/pages/lens/**"
       - "src/pages/sapiens/FoodCapture.tsx"
@@ -34,6 +38,8 @@ on:
       - "tests/e2e/species-engine.spec.ts"
       - "tests/e2e/species-gold-plank.spec.ts"
       - "tests/e2e/shared-capture.spec.ts"
+      - "scripts/species-gold-plank-01.test.mjs"
+      - "scripts/species-factory-first-batch.test.mjs"
       - ".github/workflows/test-king-species-lens-proof.yml"
   workflow_dispatch:
 
@@ -59,6 +65,8 @@ jobs:
         run: npm run build
       - name: Contract and smoke tests
         run: npm run test:smoke
+      - name: Species batch identity contract
+        run: node scripts/species-factory-first-batch.test.mjs
       - name: Start local preview
         run: |
           npm run preview -- --host 127.0.0.1 > species-preview.log 2>&1 &
