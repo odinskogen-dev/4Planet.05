@@ -1811,7 +1811,8 @@ export async function onRequest(context) {
       }
     }
     const exactRedirects = new Map([
-      ["/atlas", "https://4planetatlas.com/"],
+      ["/atlas", "https://4planetatlas.com/atlas/"],
+      ["/places", "https://4planetatlas.com/places"],
       ["/species", "https://4species.com/species/"],
       ["/4brands", "https://4brands.org/"],
       ["/4sapien", "https://4sapien.com/"],

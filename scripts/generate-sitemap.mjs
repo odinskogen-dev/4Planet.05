@@ -21,7 +21,6 @@ const staticRoutes = [
   "/missions",
   ...missionRoutes,
   "/livingsystems/",
-  "/places",
   "/impact/actions/bay-of-biscay-survey",
   "/cre4tor/odin",
   "/impact",
@@ -39,7 +38,7 @@ const staticRoutes = [
 
 // ATLAS and SPECIES have standalone canonical homes. Their 4planet.org routes
 // redirect to those product domains, so they are excluded from this sitemap.
-// Canonical PLACE ownership lives on 4planetatlas.com. 4planet.org keeps the /places gateway but does not compete with ATLAS place URLs.
+// Canonical PLACE ownership lives on 4planetatlas.com. /places and /place/* redirect there and are excluded from this sitemap.
 const discoveryRoutes = [];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 
