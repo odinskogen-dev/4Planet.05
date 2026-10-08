@@ -819,3 +819,33 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **HUMAN SUCCESS:** The same person selects their Google account once, lands on 4planet.org logged in, remains authenticated after refresh, and sees 4PLANET's intended brand style.
 
 **EMERGENCY POLICY SCOPE:** Founder explicitly overrode the current ban on bounded direct-main product hotfixes on 2026-10-08. Authorisation applies only to src/pages/identity/IdentityApp.tsx copied exactly from the tested king/test patch, plus release manifest, this brief and narrowly scoped GOLD emergency exception. No wholesale branch merge, no other live product change. Rollback main@6fb53f473d6f57d8031cc7ea23555367ca78f7f5.
+
+## FOUNDER APPROVED P0 — 4PLANET ID GOOGLE OAUTH — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** 4PLANET ID Google button bounces to login; 4SAPIEN's Claude-based existing Supabase login works.
+
+**ONE THING TO UNDERSTAND:** The old ID click invoked Supabase signInWithOAuth with its own automatic navigation AND executed window.location.assign on the same returned OAuth URL. Dynamic SDK entrypoint/failure handling was also fragile. Supabase logs accepted Google credentials but did not show a completed cross-domain bridge.
+
+**PRIMARY ACTION:** Exactly one Google OAuth browser redirect (skipBrowserRedirect:true and trusted URL assignment), reliable pinned SDK loader with alternate CDN and timeout, single Supabase client instance.
+
+**SECONDARY DEPTH:** Reuse existing authenticated Supabase ID/session and same bridge; do not alter 4SAPIEN or migrate accounts.
+
+**P1 DOMINANT:** One Google account selection → id.4planet.org callback → bridge → 4planet.org authenticated state.
+
+**P2 ORIENTATION:** New isolated Node regression and TypeScript tests passed in king/test PR #420.
+
+**P3 ACTION / NEXT:** Confirm deployed Cloudflare asset byte/version matches production, then browser-verify Google click, callback and retained session.
+
+**P4 DEPTH:** Follow bridge function and Supabase auth logs without exposing secrets or personal information.
+
+**WHAT CAN BE REMOVED:** Duplicate OAuth redirect and faulty SDK loading.
+
+**WHAT MUST BE REUSED:** Existing Supabase project, 4PLANET ID and trusted-origin bridge; Claude's proven 4SAPIEN auth principle.
+
+**TRUTH BOUNDARY:** Passing tests / GitHub main does not itself prove production Cloudflare deployment or successful interactive login.
+
+**MOBILE-FIRST RISK:** iOS Safari same-origin session and Google account switching.
+
+**HUMAN SUCCESS:** Clicking Google once opens the actual provider, finishes authentication, returns to 4planet.org logged in and stays logged in after reload.
+
+**SCOPE & RELEASE AUTHORITY:** Founder explicit approval 08 Oct to override blanket blocks for ID repair; 09 Oct follow-up confirms still broken and directs copying working 4SAPIEN lessons. Only src/pages/identity/IdentityApp.tsx and src/identity/identityClient.ts from tested king/test SHA 2918a44648f781e0d67e82e74b86ba1c86418a38; supporting test, GOLD policy and this brief. Prior main f5ab684036ea8db0b2964f1f703e5e7b14dd1767 is rollback reference. Do not merge unrelated king/test.
