@@ -36,7 +36,7 @@ try{
   await page.getByRole('combobox',{name:/Project for Blue Coast 2026/i}).waitFor();
   assert.equal(await page.getByRole('combobox',{name:/Project for Blue Coast 2026/i}).inputValue()!=='',true);
   await page.goto(base+'/finance/my/graph',{waitUntil:'domcontentloaded'});
-  await page.getByText('Ocean protection research').first().waitFor();
+  await page.getByRole('button',{name:/Project.*Ocean protection research/i}).first().waitFor();
   await page.goto(base+'/finance/my/calendar',{waitUntil:'domcontentloaded'});
   await page.getByRole('button',{name:'Next month'}).click();
   await page.getByText('November 2026').first().waitFor();
