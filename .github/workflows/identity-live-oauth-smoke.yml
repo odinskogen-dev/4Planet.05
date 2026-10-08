@@ -1,0 +1,31 @@
+name: 4PLANET ID LIVE Google Smoke
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/identity-live-oauth-smoke.mjs'
+      - '.github/workflows/identity-live-oauth-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/identity-live-oauth-smoke.mjs'
+      - '.github/workflows/identity-live-oauth-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-google-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Confirm currently deployed ID bundle and single browser redirect
+        run: node scripts/identity-live-oauth-smoke.mjs
