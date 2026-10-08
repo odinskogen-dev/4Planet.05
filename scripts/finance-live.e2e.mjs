@@ -27,14 +27,14 @@ try {
   assert.match(page.url(),/\/discover/);
   await page.getByRole("textbox",{name:"Search opportunities"}).fill("Blue");
   await page.getByText("Blue Coast 2026").first().waitFor();
-  const forbidden=page.getByRole("combobox",{name:/Stage for Blue Coast 2026/i}).locator("option",{hasText:"Submitted"});
-  assert.ok(await forbidden.isDisabled(),"Submitting a grant requires external verified evidence");
 
   await page.getByRole("button",{name:/save/i}).first().click();
   await page.goto(origin+"/my/teams",{waitUntil:"domcontentloaded"});
   await page.getByRole("heading",{name:/Team workspaces/i}).waitFor();
   await page.goto(origin+"/my/pipeline",{waitUntil:"domcontentloaded"});
   await page.getByText("Blue Coast 2026").first().waitFor();
+  const forbidden=page.getByRole("combobox",{name:/Stage for Blue Coast 2026/i}).locator("option",{hasText:"Submitted"});
+  assert.ok(await forbidden.isDisabled(),"Submitting a grant requires external verified evidence");
   await page.goto(origin+"/my/projects",{waitUntil:"domcontentloaded"});
   await page.getByRole("textbox",{name:"Project name"}).fill("Live-route guest verification");
   await page.getByRole("button",{name:/Create demo project/i}).click();
