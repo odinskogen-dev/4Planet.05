@@ -31,7 +31,7 @@ test('public and private demo routes without fake production auth',()=>{
 test('funder, programme, separate call cycle IDs and deduplicated pipeline',()=>{
  for(const entity of ['FUNDERS','PROGRAMMES','CALLS','programmeId','funderId','deadline','confidence','STORAGE_KEY','projectId','validTransition'])assert.ok(data.includes(entity),entity);
  assert.match(ui,/some\(i=>i\.callId===id\)/);
- assert.match(data,/receipt\.trim\(\)/);
+ assert.match(data,/return \["Saved","Qualified","Preparing","Quality review","Ready for release"\]\.includes\(next\)/);
 });
 test('premium responsive design and accessible navigation',()=>{
  assert.match(css,/#2e2eff/i);
