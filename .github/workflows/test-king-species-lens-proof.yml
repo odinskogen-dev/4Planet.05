@@ -63,10 +63,10 @@ jobs:
         run: npx tsc --noEmit --target ES2020 --module ESNext --moduleResolution bundler --lib ES2020,DOM,DOM.Iterable --skipLibCheck functions/api/species-identify.ts
       - name: Production build
         run: npm run build
-      - name: Contract and smoke tests
-        run: npm run test:smoke
       - name: Species batch identity contract
         run: node scripts/species-factory-first-batch.test.mjs
+      - name: Contract and smoke tests
+        run: npm run test:smoke
       - name: Start local preview
         run: |
           npm run preview -- --host 127.0.0.1 > species-preview.log 2>&1 &
