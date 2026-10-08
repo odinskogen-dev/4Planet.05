@@ -1,0 +1,35 @@
+name: Finance Domain Routing Preflight
+on:
+  push:
+    branches: [work/finance-id-release-20261008]
+    paths:
+      - '.github/workflows/finance-domain-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cloudflare-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Read-only finance DNS and pages inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CF_TOKEN" || { echo "CLOUDFLARE_TOKEN_UNAVAILABLE"; exit 3; }
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CF_TOKEN")
+          zones=$(curl -fsS "$api/zones?name=4planet.org" "${auth[@]}")
+          zone=$(jq -r '.result[0].id // empty' <<<"$zones")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zones")
+          test -n "$zone" && test -n "$account"
+          echo "ZONE_RESOLVED=YES"
+          echo "Finance DNS records:"
+          dns=$(curl -fsS "$api/zones/$zone/dns_records?name=finance.4planet.org" "${auth[@]}")
+          jq -c '[.result[]? | {type,name,content,proxied}]' <<<"$dns"
+          echo "Existing Pages projects/production branch names:"
+          projects=$(curl -fsS "$api/accounts/$account/pages/projects" "${auth[@]}")
+          jq -c '[.result[]? | {name,production_branch,subdomain,domains}]' <<<"$projects"
+          echo "Read-only preflight complete; NO WRITE or DNS changes."
