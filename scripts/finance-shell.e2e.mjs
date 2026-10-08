@@ -24,12 +24,24 @@ try{
   await page.getByRole("button",{name:/Use (light|dark) mode/i}).click();
   const changed=await page.locator(".fc-root").getAttribute("data-theme");
   assert.ok(changed==="dark"||changed==="light");
+  const background=await page.locator(".fc-root").evaluate(el=>getComputedStyle(el).backgroundColor);
+  assert.equal(background,changed==="dark"?"rgb(0, 0, 0)":"rgb(255, 255, 255)","Theme must use true black or pure white");
+  await page.getByRole("link",{name:"4Finance overview"}).waitFor();
+
   await page.reload({waitUntil:"domcontentloaded"});
   assert.equal(await page.locator(".fc-root").getAttribute("data-theme"),changed,"Saved appearance must persist");
   await page.getByRole("button",{name:"Open profile and settings"}).click();
   await page.getByRole("menu",{name:"Profile and settings"}).waitFor();
   await page.getByRole("button",{name:/Use (light|dark) mode/i}).click();
   await page.screenshot({path:"artifacts/finance-shell/"+label+"-home.png"});
+  await page.goto(host+"/finance/funders",{waitUntil:"domcontentloaded"});
+  await page.getByRole("heading",{name:"Funders"}).waitFor();
+  const rows=page.locator(".fc-funder-directory .fc-funder-row");
+  assert.ok(await rows.count()>=3,"A compact directory needs more than two demo funders");
+  const heights=await rows.evaluateAll(items=>items.slice(0,3).map(el=>el.getBoundingClientRect().height));
+  assert.ok(heights.every(h=>h<=85),"Funder rows should be compact: "+JSON.stringify(heights));
+  await page.screenshot({path:"artifacts/finance-shell/"+label+"-funders.png"});
+  await page.goto(host+"/finance",{waitUntil:"domcontentloaded"});
   await search.fill("Blue");
   await search.press("Enter");
   assert.match(page.url(),/discover\?q=Blue/);
