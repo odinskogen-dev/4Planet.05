@@ -51,6 +51,7 @@ export default function FinanceHub(){
  useEffect(()=>{setMenu(false);setProfileOpen(false)},[loc.pathname]);
  useEffect(()=>{try{localStorage.setItem("4planet-finance-theme",appearance)}catch{/* browser blocked */}},[appearance]);
  const activePath=(p:string)=>p==="/" ? path==="/" : path===p||path.startsWith(p+"/");
+ const isMine=path==="/my"||path.startsWith("/my/");
  const upperTabs=isMine?[
    {path:"/my",title:"Overview"},{path:"/my/pipeline",title:"CRM"},
    {path:"/my/projects",title:"Projects"},{path:"/my/calendar",title:"Year wheel"},
@@ -80,7 +81,7 @@ export default function FinanceHub(){
  const addProject=(p:Project)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:[...w.projects,p]}}};});
  const deleteProject=(id:string)=>change(s=>{const w=s.workspaces[s.active];return {...s,workspaces:{...s.workspaces,[s.active]:{...w,projects:w.projects.filter(p=>p.id!==id),pipeline:w.pipeline.map(i=>i.projectId===id?{...i,projectId:""}:i)}}};});
  const signIn=()=>{navigate(toPath("/sign-in"))};
- const isMine=path==="/my"||path.startsWith("/my/");
+
  return <div className="fc-root" data-theme={appearance}>
   <DemoNote signedIn={!!session}/>
   <header className="fc-header">
