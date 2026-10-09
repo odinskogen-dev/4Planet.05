@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import vm from "node:vm";
+import ts from "typescript";
 
 const source = readFileSync(new URL("../src/pages/v5/PlanetProof.tsx", import.meta.url), "utf8");
 
@@ -40,4 +42,24 @@ test("a WebGL constructor failure preserves the sourced page and disables map co
   assert.match(source, /MAP · UNAVAILABLE/);
   assert.match(source, /disabled=\{mapUnavailable\}/);
   assert.match(source, /The sourced Living Systems reading remains available below/);
+});
+
+
+test("zero active evidence layers fail closed in the product helper", () => {
+  const helperStart = source.indexOf("export function evidenceSourcesReady");
+  const helperEnd = source.indexOf("function EvidenceMap", helperStart);
+  assert.notEqual(helperStart, -1);
+  assert.notEqual(helperEnd, -1);
+  const helperSource = source.slice(helperStart, helperEnd);
+  const compiled = ts.transpileModule(helperSource, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  const sandbox = { exports: {} };
+  vm.runInNewContext(compiled, sandbox);
+  const ready = sandbox.exports.evidenceSourcesReady;
+
+  assert.equal(ready([], () => ({}), () => true), false);
+  assert.equal(ready(["proof-depth"], () => undefined, () => true), false);
+  assert.equal(ready(["proof-depth"], () => ({}), () => false), false);
+  assert.equal(ready(["proof-depth"], () => ({}), () => true), true);
 });
