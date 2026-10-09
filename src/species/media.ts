@@ -44,6 +44,11 @@ function normaliseLicence(value?: string): string {
   return String(value ?? "").trim();
 }
 
+/** Image rights must be proved by the media item itself; occurrence-level licences cannot be inherited. */
+export function resolveSpeciesImageLicence(mediaLicense?: string): string {
+  return normaliseLicence(mediaLicense);
+}
+
 /**
  * Conservative public-product rights gate.
  * We display only licences that clearly permit public reuse and modification/cropping.
@@ -114,7 +119,7 @@ async function queryGbifStillImages(
       if (format && !format.startsWith("image/")) continue;
       seen.add(identifier);
 
-      const license = normaliseLicence(media?.license ?? row?.license);
+      const license = resolveSpeciesImageLicence(media?.license);
       const rightsState = classifySpeciesMediaRights(license);
       if (rightsState !== "DISPLAYABLE") {
         blockedCount += 1;
