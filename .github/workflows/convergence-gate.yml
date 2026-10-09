@@ -92,9 +92,22 @@ jobs:
         shell: bash
         run: |
           find dist/assets -maxdepth 1 -type f -printf '%f,%s\n' | sort -t, -k2nr > bundle-sizes.csv
-          largest="$(awk -F, 'NR==1 {print $2}' bundle-sizes.csv)"
-          test -n "$largest"
-          test "$largest" -lt 1800000
+          largest_name="$(awk -F, 'NR==1 {print $1}' bundle-sizes.csv)"
+          largest_bytes="$(awk -F, 'NR==1 {print $2}' bundle-sizes.csv)"
+          test -n "$largest_name"
+          test -n "$largest_bytes"
+          {
+            echo "largest_bundle_name=$largest_name"
+            echo "largest_bundle_bytes=$largest_bytes"
+            echo "bundle_limit_bytes=1800000"
+          } | tee bundle-largest.txt
+          {
+            echo "### Bundle evidence"
+            echo "- Largest asset: \`$largest_name\`"
+            echo "- Largest bytes: \`$largest_bytes\`"
+            echo "- Required: below \`1800000\` bytes"
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$largest_bytes" -lt 1800000
 
       - name: Start local preview
         shell: bash
@@ -184,6 +197,7 @@ jobs:
             exact-sha.txt
             exact-branch.txt
             dependency-audit.txt
+            bundle-largest.txt
             bundle-sizes.csv
             lint.txt
             preview.log

@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const read = (relative) => readFileSync(new URL(`../${relative}`, import.meta.url), 'utf8');
 const json = (relative) => JSON.parse(read(relative));
@@ -14,6 +17,19 @@ const agents = read('AGENTS.md');
 const workflow = read('.github/workflows/convergence-gate.yml');
 const goldPolicy = read('scripts/gold-policy-check.mjs');
 const livePromotionGuard = read('scripts/live-promotion-authority-gate.mjs');
+
+const workflowRunBlock = (stepName) => {
+  const lines = workflow.split('\n');
+  const stepIndex = lines.findIndex((line) => line.trim() === `- name: ${stepName}`);
+  assert.notEqual(stepIndex, -1, `workflow step not found: ${stepName}`);
+  const nextStepIndex = lines.findIndex((line, index) => index > stepIndex && /^\s{6}- name: /.test(line));
+  const stepLines = lines.slice(stepIndex, nextStepIndex === -1 ? undefined : nextStepIndex);
+  const runIndex = stepLines.findIndex((line) => /^\s+run: \|\s*$/.test(line));
+  assert.notEqual(runIndex, -1, `run block not found: ${stepName}`);
+  const body = stepLines.slice(runIndex + 1).filter((line) => line.trim() !== '');
+  const indentation = Math.min(...body.map((line) => line.match(/^\s*/)[0].length));
+  return stepLines.slice(runIndex + 1).map((line) => line.slice(indentation)).join('\n');
+};
 
 const EXPECTED_ALGORITHM = [
   'QUESTION REQUIREMENTS',
@@ -167,6 +183,45 @@ test('control-of-control: convergence workflow executes this test', () => {
     'SOURCE_ISOLATION_GATE_ZERO',
     'NO_GBRAIN_CUTOVER_BY_ARCHITECTURE_CLAIM',
   ]) assert.ok(required.has(check), `control-of-control missing ${check}`);
+});
+
+test('bundle Andon emits exact evidence before preserving the existing threshold', () => {
+  assert.match(workflow, /largest_bundle_name=\$largest_name/);
+  assert.match(workflow, /largest_bundle_bytes=\$largest_bytes/);
+  assert.match(workflow, /bundle_limit_bytes=1800000/);
+  assert.match(workflow, /bundle-largest\.txt/);
+  assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /test "\$largest_bytes" -lt 1800000/);
+  assert.doesNotMatch(workflow, /test "\$largest_bytes" -lt (?!1800000)\d+/);
+});
+
+test('bundle Andon executes the strict threshold boundary and preserves failure evidence', () => {
+  const runBlock = workflowRunBlock('Record bundle evidence');
+  for (const fixture of [
+    { bytes: 1_799_999, expectedStatus: 0 },
+    { bytes: 1_800_000, expectedStatus: 1 },
+    { bytes: 1_901_678, expectedStatus: 1 },
+  ]) {
+    const directory = mkdtempSync(join(tmpdir(), 'bundle-andon-'));
+    try {
+      const assets = join(directory, 'dist', 'assets');
+      const summary = join(directory, 'step-summary.md');
+      mkdirSync(assets, { recursive: true });
+      writeFileSync(join(assets, 'fixture.js'), Buffer.alloc(fixture.bytes));
+      const result = spawnSync('bash', ['-e', '-o', 'pipefail', '-c', runBlock], {
+        cwd: directory,
+        env: { ...process.env, GITHUB_STEP_SUMMARY: summary },
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, fixture.expectedStatus, result.stderr);
+      assert.match(readFileSync(join(directory, 'bundle-largest.txt'), 'utf8'), /largest_bundle_name=fixture\.js/);
+      assert.match(readFileSync(join(directory, 'bundle-largest.txt'), 'utf8'), new RegExp(`largest_bundle_bytes=${fixture.bytes}`));
+      assert.match(readFileSync(join(directory, 'bundle-largest.txt'), 'utf8'), /bundle_limit_bytes=1800000/);
+      assert.ok(readFileSync(summary, 'utf8').includes(`Largest bytes: \`${fixture.bytes}\``));
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
 });
 
 test('activity volume is explicitly not accepted as progress', () => {
