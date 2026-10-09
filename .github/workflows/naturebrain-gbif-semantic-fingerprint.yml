@@ -1,0 +1,27 @@
+name: NATUREBRAIN GBIF Semantic Fingerprint
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261009062500_naturebrain_gbif_semantic_fingerprint_v02.sql'
+      - 'scripts/naturebrain-gbif-semantic-fingerprint-contract.test.mjs'
+      - '.github/workflows/naturebrain-gbif-semantic-fingerprint.yml'
+  push:
+    branches: ['king/test']
+    paths:
+      - 'supabase/migrations/20261009062500_naturebrain_gbif_semantic_fingerprint_v02.sql'
+      - 'scripts/naturebrain-gbif-semantic-fingerprint-contract.test.mjs'
+      - '.github/workflows/naturebrain-gbif-semantic-fingerprint.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-fingerprint-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify semantic no-op and positive-change regressions
+        run: node --test scripts/naturebrain-gbif-semantic-fingerprint-contract.test.mjs
