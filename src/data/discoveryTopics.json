@@ -22,8 +22,8 @@
         "layers": "USGS"
       },
       {
-        "label": "Natural events",
-        "detail": "Source-reported storms, volcanoes, fires and other open events.",
+        "label": "Fire event reports",
+        "detail": "Source-reported wildfire and fire events from NASA EONET.",
         "href": "/wildfires",
         "layers": "NASA EONET"
       },
@@ -40,14 +40,14 @@
         "layers": "Global Forest Watch / UMD + FAO"
       },
       {
-        "label": "Atmosphere",
-        "detail": "Satellite aerosol context; not a ground-level air-quality reading.",
+        "label": "Aerosol and air-quality context",
+        "detail": "Satellite aerosol context alongside air-quality evidence; not a ground-level reading.",
         "href": "/air-quality",
         "layers": "NASA GIBS + WHO context"
       },
       {
-        "label": "Ocean conditions",
-        "detail": "Sea-surface temperature and related marine context.",
+        "label": "Climate-related ocean conditions",
+        "detail": "Sea-surface temperature context used alongside broader climate evidence.",
         "href": "/climate-change",
         "layers": "NASA GIBS / GHRSST"
       },

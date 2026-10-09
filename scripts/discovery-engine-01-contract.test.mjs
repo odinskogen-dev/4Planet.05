@@ -35,6 +35,16 @@ const REQUIRED = [
   "environmental-jobs",
 ];
 
+const SIGNAL_DESTINATION_SCOPE = new Map([
+  ["/wildfires", /wildfire|fire|thermal/i],
+  ["/earthquakes", /earthquake|seismic/i],
+  ["/coral-bleaching", /coral|reef|bleaching/i],
+  ["/deforestation", /forest|tree-cover|deforestation/i],
+  ["/air-quality", /air-quality|aerosol/i],
+  ["/climate-change", /climate|sea-surface temperature/i],
+  ["/biodiversity", /biodiversity|life observation|occurrence/i],
+]);
+
 test("Discovery Engine 01 publishes exactly the first 20 canonical topics", () => {
   assert.equal(data.topics.length, 20);
   assert.deepEqual(data.topics.map((topic) => topic.slug), REQUIRED);
@@ -61,6 +71,18 @@ test("Earth Now is a bounded latest-available surface, not a fake real-time clai
   assert.match(data.earthNow.truthBoundary, /not one synchronized real-time Earth/i);
   assert.match(data.earthNow.atlasHref, /^\/atlas\?/);
   assert.equal(data.earthNow.embedKind, "NEWS");
+});
+
+test("every Earth Now signal promises the same subject as its destination", () => {
+  for (const signal of data.earthNow.signals) {
+    const expectedScope = SIGNAL_DESTINATION_SCOPE.get(signal.href);
+    assert.ok(expectedScope, `Earth Now signal has no governed destination scope: ${signal.href}`);
+    assert.match(
+      `${signal.label} ${signal.detail}`,
+      expectedScope,
+      `${signal.label} over-promises or differs from ${signal.href}`,
+    );
+  }
 });
 
 test("routes, sitemap and prerender all consume the same canonical discovery registry", () => {

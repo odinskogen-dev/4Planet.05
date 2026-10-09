@@ -1575,3 +1575,30 @@ Founder observed Google account selection returning to /login without authentica
 **HUMAN SUCCESS:** A missing independent-verification record cannot be silently presented as verified IMPACT.
 **BASE / ROLLBACK:** `king/test@15446ba4890613e1554e93644903d9806fe9d1a5`; revert the bounded correction commit if independent Gold finds a contract regression.
 **MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No main merge or production release is authorised by this brief.
+# DISCOVERY ENGINE 01 — EARTH NOW DESTINATION TRUTH CORRECTION — 10 OCT 2026
+
+**STATUS:** BOUNDED HEIR COPY + REGRESSION CORRECTION / NO GOLD / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person scans Earth Now for a current planetary signal and expects every signal promise to describe the page reached by its arrow.
+
+**ONE THING TO UNDERSTAND:** Earth Now is an index over existing canonical Discovery pages; a broad source layer must not make a narrower destination appear to cover storms, volcanoes or the whole ocean.
+
+**PRIMARY ACTION:** Choose a signal and continue to the matching evidence page or open the same configured view in full ATLAS.
+
+**SECONDARY DEPTH:** The existing iframe, source clock, limitations and permanent topic guides remain available without a new route, map or content system.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** latest-available Earth signals / explicit source clock / matching Discovery destination or full ATLAS / source and interpretation limits.
+
+**WHAT CAN BE REMOVED:** Broad “Natural events”, “Atmosphere” and “Ocean conditions” promises whose destinations only cover fire, air-quality context and climate evidence.
+
+**WHAT MUST BE REUSED:** Current Earth Now registry, existing canonical topic routes, shared ATLAS embed, PublicShell, Browser Product Proof and sole `king/test` HEIR. PR #403 remains read-only donor evidence.
+
+**TRUTH BOUNDARY:** Copy equivalence and deterministic/browser contracts do not prove source freshness, iframe delivery by the remote host, real-user value, Gold acceptance, deployment or LIVE state.
+
+**MOBILE-FIRST RISK:** Longer precise labels must wrap without horizontal overflow; the existing 390/430 browser projects retain that gate.
+
+**HUMAN SUCCESS:** Every signal label/detail is semantically bounded to its destination, and the visible full-ATLAS link preserves the same map mode, layers, centre and zoom as the embed.
+
+**ROLLBACK:** Exact pre-change HEIR parent `f8b1da5ba63836902ad2a7452bb66829b49f8c5e`.
+
+**GOLD:** Maker correction only. Independent Judge remains required before any promotion or LIVE claim.

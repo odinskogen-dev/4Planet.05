@@ -23,6 +23,16 @@ for (const item of CASES) {
     expect(src).toContain("https://4planetatlas.com/");
     expect(src).toContain("embed=");
 
+    const fullAtlas = page.getByRole("link", { name: /OPEN FULL ATLAS/ }).first();
+    await expect(fullAtlas).toBeVisible();
+    const fullHref = await fullAtlas.getAttribute("href");
+    expect(fullHref).toContain("/atlas?");
+    const embeddedUrl = new URL(src!);
+    const fullUrl = new URL(fullHref!, page.url());
+    for (const parameter of ["m", "l", "z", "c"]) {
+      expect(embeddedUrl.searchParams.get(parameter)).toBe(fullUrl.searchParams.get(parameter));
+    }
+
     const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
     const runtimeOrigin = new URL(page.url()).origin;
     expect(canonical).toBe(`${runtimeOrigin}${item.path}`);
