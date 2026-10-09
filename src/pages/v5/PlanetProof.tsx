@@ -22,6 +22,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
   const activeRef = useRef<Record<string, boolean>>(initialLayerState(proof));
   const [active, setActive] = useState<Record<string, boolean>>(() => activeRef.current);
   const [degraded, setDegraded] = useState(false);
+  const [mapUnavailable, setMapUnavailable] = useState(false);
   const [baseReady, setBaseReady] = useState(false);
   const [evidenceReady, setEvidenceReady] = useState(false);
 
@@ -32,15 +33,28 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     activeRef.current = nextActive;
     setActive(nextActive);
     setDegraded(false);
+    setMapUnavailable(false);
     setBaseReady(false);
     setEvidenceReady(false);
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
-    const m = new maplibregl.Map({
-      container: box.current,
-      style: VECTOR_STYLE,
-      center: proof.center,
-      zoom: proof.zoom,
-    });
+    let m: maplibregl.Map;
+    try {
+      m = new maplibregl.Map({
+        container: box.current,
+        style: VECTOR_STYLE,
+        center: proof.center,
+        zoom: proof.zoom,
+      });
+    } catch {
+      if (alive) {
+        setMapUnavailable(true);
+        setDegraded(true);
+        setBaseReady(false);
+        setEvidenceReady(false);
+      }
+      map.current = null;
+      return;
+    }
     map.current = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     const refreshEvidenceReady = () => {
@@ -113,8 +127,10 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     return next;
   });
 
-  const mapStatus = degraded
-    ? "MAP · EVIDENCE DEGRADED"
+  const mapStatus = mapUnavailable
+    ? "MAP · UNAVAILABLE"
+    : degraded
+      ? "MAP · EVIDENCE DEGRADED"
     : evidenceReady
       ? "MAP · EVIDENCE READY"
       : baseReady
@@ -131,7 +147,9 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
         <p className="editorial-note" style={{ marginTop: 16 }}>
           Use the map to move between depth, ecological status and mapped physical interventions.
         </p>
-        {degraded && <p className="editorial-note" style={{ marginTop: 10 }}>Some map layers are temporarily unavailable.</p>}
+        {mapUnavailable
+          ? <p className="editorial-note" style={{ marginTop: 10 }}>The interactive map is unavailable in this browser. The sourced Living Systems reading remains available below.</p>
+          : degraded && <p className="editorial-note" style={{ marginTop: 10 }}>Some map layers are temporarily unavailable.</p>}
       </div>
       <div ref={box} className="proof-map-canvas" />
       <div role="status" aria-live="polite" className="editorial-note" style={{ margin: "10px 0 0" }}>
@@ -146,6 +164,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
               className="proof-map-control"
               data-active={active[layer.id] ? "true" : "false"}
               aria-pressed={active[layer.id]}
+              disabled={mapUnavailable}
               onClick={() => toggle(layer)}
             >
               <strong>{layer.label}</strong>

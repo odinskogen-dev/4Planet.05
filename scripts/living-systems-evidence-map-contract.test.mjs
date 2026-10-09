@@ -32,3 +32,12 @@ test("layer toggles invalidate evidence readiness and expose pressed state", () 
   assert.match(source, /aria-pressed=\{active\[layer\.id\]\}/);
   assert.match(source, /setLayoutProperty\(id, "visibility"/);
 });
+
+
+test("a WebGL constructor failure preserves the sourced page and disables map controls", () => {
+  assert.match(source, /try \{\s*m = new maplibregl\.Map/s);
+  assert.match(source, /catch \{[\s\S]*setMapUnavailable\(true\)/);
+  assert.match(source, /MAP · UNAVAILABLE/);
+  assert.match(source, /disabled=\{mapUnavailable\}/);
+  assert.match(source, /The sourced Living Systems reading remains available below/);
+});
