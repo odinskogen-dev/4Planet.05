@@ -41,18 +41,21 @@ export default function RootLayout({
       </head>
       <body>
         <header className="sticky top-0 z-50 border-b border-line bg-paper/85 backdrop-blur">
-          <div className="mx-auto flex h-14 max-w-page items-center justify-between px-6">
-            <Link href="/" className="flex items-baseline gap-2">
+          <div className="mx-auto flex max-w-page flex-col items-stretch gap-3 px-6 py-3 md:h-14 md:flex-row md:items-center md:justify-between md:gap-6 md:py-0">
+            <Link href="/" className="flex shrink-0 items-baseline gap-2">
               <span className="text-[15px] font-semibold tracking-tight">
                 LIVING SYSTEMS INTELLIGENCE
               </span>
             </Link>
-            <nav className="flex items-center gap-6">
+            <nav
+              aria-label="Primary"
+              className="flex w-full min-w-0 max-w-full items-center gap-6 overflow-x-auto pb-1 md:w-auto md:overflow-visible md:pb-0"
+            >
               {NAV.map((n) => (
                 <Link
                   key={n.href}
                   href={n.href}
-                  className="micro-ink transition-colors hover:text-brand"
+                  className="micro-ink shrink-0 transition-colors hover:text-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
                   {n.label}
                 </Link>

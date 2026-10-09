@@ -32,6 +32,7 @@
     "test:discovery-engine": "node --test scripts/discovery-engine-01-contract.test.mjs",
     "test:living-systems-v142": "node scripts/living-systems-v142-zero-loss.test.mjs",
     "test:living-systems-evidence-map": "node --test scripts/living-systems-evidence-map-contract.test.mjs",
+    "test:living-systems-mobile-nav": "node --test scripts/living-systems-mobile-nav-contract.test.mjs",
     "test:atlas-place-runtime": "node --test scripts/atlas-place-runtime-contract.test.mjs"
   },
   "dependencies": {
