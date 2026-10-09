@@ -12,16 +12,28 @@ function sourceMap(proof: PlanetProof) {
   return Object.fromEntries(proof.sources.map((source) => [source.id, source]));
 }
 
+function initialLayerState(proof: PlanetProof) {
+  return Object.fromEntries(proof.mapLayers.map((layer, i) => [layer.id, i === 0]));
+}
+
 function EvidenceMap({ proof }: { proof: PlanetProof }) {
   const box = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const [active, setActive] = useState<Record<string, boolean>>(() => Object.fromEntries(proof.mapLayers.map((layer, i) => [layer.id, i === 0])));
+  const activeRef = useRef<Record<string, boolean>>(initialLayerState(proof));
+  const [active, setActive] = useState<Record<string, boolean>>(() => activeRef.current);
   const [degraded, setDegraded] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [baseReady, setBaseReady] = useState(false);
+  const [evidenceReady, setEvidenceReady] = useState(false);
 
   useEffect(() => {
     if (!box.current) return;
     let alive = true;
+    const nextActive = initialLayerState(proof);
+    activeRef.current = nextActive;
+    setActive(nextActive);
+    setDegraded(false);
+    setBaseReady(false);
+    setEvidenceReady(false);
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const m = new maplibregl.Map({
       container: box.current,
@@ -31,9 +43,20 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     });
     map.current = m;
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    const refreshEvidenceReady = () => {
+      if (!alive) return;
+      const activeSources = proof.mapLayers
+        .filter((layer) => activeRef.current[layer.id])
+        .map((layer) => `proof-${layer.id}`);
+      if (activeSources.length === 0) {
+        setEvidenceReady(true);
+        return;
+      }
+      setEvidenceReady(activeSources.every((id) => Boolean(m.getSource(id)) && m.isSourceLoaded(id)));
+    };
     m.on("load", () => {
       if (!alive) return;
-      setReady(true);
+      setBaseReady(true);
       m.fitBounds(proof.bounds, { padding: 28, duration: 0, maxZoom: proof.zoom + 1.2 });
       for (const layer of proof.mapLayers) {
         try {
@@ -48,16 +71,23 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
             type: "raster",
             source: `proof-${layer.id}`,
             paint: { "raster-opacity": layer.opacity },
-            layout: { visibility: active[layer.id] ? "visible" : "none" },
+            layout: { visibility: activeRef.current[layer.id] ? "visible" : "none" },
           });
         } catch {
           setDegraded(true);
+          setEvidenceReady(false);
         }
       }
+      refreshEvidenceReady();
     });
+    m.on("sourcedata", refreshEvidenceReady);
+    m.on("idle", refreshEvidenceReady);
     m.on("error", (event) => {
       const message = String(event.error?.message ?? "");
-      if (message && !message.includes("glyph")) setDegraded(true);
+      if (message && !message.includes("glyph")) {
+        setDegraded(true);
+        setEvidenceReady(false);
+      }
     });
     return () => {
       alive = false;
@@ -76,7 +106,20 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     }
   }, [active, proof.mapLayers]);
 
-  const toggle = (layer: ProofMapLayer) => setActive((current) => ({ ...current, [layer.id]: !current[layer.id] }));
+  const toggle = (layer: ProofMapLayer) => setActive((current) => {
+    const next = { ...current, [layer.id]: !current[layer.id] };
+    activeRef.current = next;
+    setEvidenceReady(false);
+    return next;
+  });
+
+  const mapStatus = degraded
+    ? "MAP · EVIDENCE DEGRADED"
+    : evidenceReady
+      ? "MAP · EVIDENCE READY"
+      : baseReady
+        ? "MAP · BASE READY · EVIDENCE LOADING"
+        : "MAP · LOADING";
 
   return (
     <section className="proof-map" aria-label="Explore the fjord map">
@@ -92,7 +135,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
       </div>
       <div ref={box} className="proof-map-canvas" />
       <div role="status" aria-live="polite" className="editorial-note" style={{ margin: "10px 0 0" }}>
-        {ready ? "MAP · READY" : "MAP · LOADING"}
+        {mapStatus}
       </div>
       {proof.mapLayers.length > 0 && (
         <div className="proof-map-controls">
@@ -102,6 +145,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
               type="button"
               className="proof-map-control"
               data-active={active[layer.id] ? "true" : "false"}
+              aria-pressed={active[layer.id]}
               onClick={() => toggle(layer)}
             >
               <strong>{layer.label}</strong>
