@@ -1868,8 +1868,13 @@ export async function onRequest(context) {
     return Response.redirect(target + url.search, 308);
   }
 
-  if (host === "4planetatlas.com" && (url.pathname === "/living-systems" || url.pathname === "/livingsystems" || url.pathname.startsWith("/livingsystems/"))) {
-    return Response.redirect("https://4planet.org/livingsystems/" + url.search, 308);
+  if (host === "4planetatlas.com" && (url.pathname === "/living-systems" || url.pathname.startsWith("/living-systems/") || url.pathname === "/livingsystems" || url.pathname.startsWith("/livingsystems/"))) {
+    const prefix = url.pathname.startsWith("/living-systems") ? "/living-systems" : "/livingsystems";
+    const suffix = url.pathname.slice(prefix.length).replace(/^\/+|\/+$/g, "");
+    const target = suffix
+      ? `https://4planet.org/livingsystems/${suffix}`
+      : "https://4planet.org/livingsystems/";
+    return Response.redirect(target + url.search, 308);
   }
 
   if (host === "4planetatlas.com" && (url.pathname === "/place" || url.pathname === "/place/")) {

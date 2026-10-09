@@ -1602,3 +1602,15 @@ Founder observed Google account selection returning to /login without authentica
 **ROLLBACK:** Exact pre-change HEIR parent `f8b1da5ba63836902ad2a7452bb66829b49f8c5e`.
 
 **GOLD:** Maker correction only. Independent Judge remains required before any promotion or LIVE claim.
+
+# ATLAS → LIVING SYSTEMS DEEP-LINK IDENTITY — 10 OCT 2026
+
+**STATUS:** TEST HEIR MAKER CANDIDATE / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+
+**USER JOB:** a person following a Living Systems object from an ATLAS-owned URL must reach the same canonical object, with explicit return/source query context intact.
+
+**DEFECT:** the ATLAS host redirected every `/livingsystems/*` request to the Living Systems root and did not recognise the equivalent `/living-systems/*` deep-path alias. Object identity was therefore discarded at the product boundary.
+
+**BOUNDED CORRECTION:** keep ATLAS and Living Systems as separate canonical owners; permanently redirect both aliases to `https://4planet.org/livingsystems/`, preserving a normalised deep-path suffix and the original query string. No data, map, source, route ownership or Living Systems content is duplicated.
+
+**ACCEPTANCE:** the executable middleware contract must prove root aliases, `/species/orca`, `/ecosystems/EC_AMAZON_RAINFOREST`, query preservation and canonical trailing-slash collapse. Typecheck, production build, doctrine and Product Authority gates must pass on the exact candidate. Independent Gold must judge the immutable SHA; no LIVE promotion is authorised here.

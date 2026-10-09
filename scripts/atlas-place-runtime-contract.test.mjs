@@ -40,6 +40,21 @@ test("ATLAS Place runtime collapses duplicate URL variants without losing querie
   }
 });
 
+test("ATLAS Living Systems aliases preserve deep-link identity and query context", async () => {
+  const cases = [
+    ["/living-systems?source=atlas", "https://4planet.org/livingsystems/?source=atlas"],
+    ["/livingsystems?source=atlas", "https://4planet.org/livingsystems/?source=atlas"],
+    ["/living-systems/species/orca/?returnTo=%2Fatlas", "https://4planet.org/livingsystems/species/orca?returnTo=%2Fatlas"],
+    ["/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/?source=atlas", "https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST?source=atlas"],
+  ];
+
+  for (const [path, expected] of cases) {
+    const response = await request(path);
+    assert.equal(response.status, 308, path);
+    assert.equal(response.headers.get("location"), expected, path);
+  }
+});
+
 test("ATLAS Place runtime fails closed for unknown place and image slugs", async () => {
   for (const [path, contentType] of [
     ["/place/__not-a-real-place__", /^text\/html\b/],
