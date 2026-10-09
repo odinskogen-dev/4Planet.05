@@ -76,10 +76,19 @@ export function ProductRouteAnalytics() {
       timer = null;
     };
 
-    const emitIfQualified = () => {
+    const settleOpenInterval = () => {
+      if (visibleSince === null) return;
+      accumulatedMs += performance.now() - visibleSince;
+      visibleSince = null;
+    };
+
+    const emitIfQualified = (resumeIfVisible = false) => {
       if (window.sessionStorage.getItem(engagedKey)) return;
-      const currentVisibleMs = visibleSince === null ? 0 : performance.now() - visibleSince;
-      if (accumulatedMs + currentVisibleMs < thresholdMs) return;
+      settleOpenInterval();
+      if (accumulatedMs < thresholdMs) {
+        if (resumeIfVisible && document.visibilityState === "visible") visibleSince = performance.now();
+        return;
+      }
       trackMeaningfulUse(product, "engaged_time", "route");
       window.sessionStorage.setItem(engagedKey, "1");
       clearTimer();
@@ -89,17 +98,19 @@ export function ProductRouteAnalytics() {
       clearTimer();
       if (document.visibilityState !== "visible" || window.sessionStorage.getItem(engagedKey)) return;
       const elapsed = accumulatedMs + (visibleSince === null ? 0 : performance.now() - visibleSince);
-      timer = window.setTimeout(emitIfQualified, Math.max(0, thresholdMs - elapsed));
+      timer = window.setTimeout(() => {
+        emitIfQualified(true);
+        if (!window.sessionStorage.getItem(engagedKey) && document.visibilityState === "visible") schedule();
+      }, Math.max(0, thresholdMs - elapsed));
     };
 
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        if (visibleSince !== null) accumulatedMs += performance.now() - visibleSince;
-        visibleSince = null;
+        settleOpenInterval();
         clearTimer();
         return;
       }
-      visibleSince = performance.now();
+      if (visibleSince === null) visibleSince = performance.now();
       schedule();
     };
 
@@ -107,8 +118,7 @@ export function ProductRouteAnalytics() {
     schedule();
 
     return () => {
-      if (visibleSince !== null) accumulatedMs += performance.now() - visibleSince;
-      emitIfQualified();
+      emitIfQualified(false);
       clearTimer();
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
