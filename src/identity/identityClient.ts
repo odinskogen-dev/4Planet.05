@@ -131,33 +131,33 @@ export async function getIdentityClient(): Promise<SupabaseClientLike> {
   }
 }
 
-const TRUSTED_HOSTS = new Set([
-  "id.4planet.org",
-  "4planet.org",
-  "www.4planet.org",
-  "4sapien.com",
-  "www.4sapien.com",
-  "s4piens.com",
-  "www.s4piens.com",
-  "4brands.org",
-  "www.4brands.org",
-  "4nation.org",
-  "www.4nation.org",
-  "partners.4planet.org",
-  "4planetmarket.com",
-  "www.4planetmarket.com",
-  "4planetmagazine.com",
-  "www.4planetmagazine.com",
-  "4planetatlas.com",
-  "www.4planetatlas.com",
-  "labs.4planet.org",
-  "4brain.app",
-  "4species.com",
-  "www.4species.com",
-  "cre4tors.com",
-  "www.cre4tors.com",
-  "n4turetech.com",
-  "www.n4turetech.com",
+const TRUSTED_RETURN_ORIGINS = new Set([
+  "https://id.4planet.org",
+  "https://4planet.org",
+  "https://www.4planet.org",
+  "https://4sapien.com",
+  "https://www.4sapien.com",
+  "https://s4piens.com",
+  "https://www.s4piens.com",
+  "https://4brands.org",
+  "https://www.4brands.org",
+  "https://4nation.org",
+  "https://www.4nation.org",
+  "https://partners.4planet.org",
+  "https://4planetmarket.com",
+  "https://www.4planetmarket.com",
+  "https://4planetmagazine.com",
+  "https://www.4planetmagazine.com",
+  "https://4planetatlas.com",
+  "https://www.4planetatlas.com",
+  "https://labs.4planet.org",
+  "https://4brain.app",
+  "https://4species.com",
+  "https://www.4species.com",
+  "https://cre4tors.com",
+  "https://www.cre4tors.com",
+  "https://n4turetech.com",
+  "https://www.n4turetech.com",
 ]);
 
 export function safeReturnTo(value: string | null | undefined, fallback = "https://4planet.org/") {
@@ -165,7 +165,8 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
   try {
     const url = new URL(value, window.location.origin);
     if (url.hostname === "oddekalv.org" || url.hostname.endsWith(".oddekalv.org")) return fallback;
-    if (url.origin === window.location.origin || TRUSTED_HOSTS.has(url.hostname)) return url.href;
+    if (url.username || url.password) return fallback;
+    if (url.origin === window.location.origin || TRUSTED_RETURN_ORIGINS.has(url.origin)) return url.href;
   } catch {
     return fallback;
   }
@@ -209,7 +210,7 @@ export async function bridgeSessionTo(targetUrl: string, session: FourPlanetSess
     window.location.replace(target.href);
     return;
   }
-  if (!TRUSTED_HOSTS.has(target.hostname) || target.hostname.endsWith("oddekalv.org")) {
+  if (!TRUSTED_RETURN_ORIGINS.has(target.origin) || target.hostname.endsWith("oddekalv.org")) {
     throw new Error("Untrusted return destination");
   }
   const response = await fetch(`${SUPABASE_URL}/functions/v1/four-planet-id-bridge`, {

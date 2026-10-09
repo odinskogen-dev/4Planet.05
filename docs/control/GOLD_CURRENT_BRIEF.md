@@ -1,3 +1,27 @@
+# 4PLANET ID — EXACT HTTPS RETURN-ORIGIN INTEGRITY — 09 OCT 2026
+
+**STATUS:** BOUNDED HEIR SECURITY CORRECTION / NO GOLD / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person signs into 4PLANET ID and must return only to the exact secure 4PLANET product origin they intended.
+
+**ONE THING TO UNDERSTAND:** A familiar hostname is not sufficient authority when the URL changes protocol, port or embeds credentials.
+
+**PRIMARY ACTION:** Replace hostname-only return acceptance with an explicit HTTPS origin allowlist shared by return validation and the cross-domain session bridge.
+
+**SECONDARY DEPTH:** Preserve same-origin relative paths, all existing approved product origins, the ODDEKALV exclusion and the current one-time bridge.
+
+**P1 DOMINANT:** Approved HTTPS product origins and same-origin relative routes continue to resolve.
+**P2 ORIENTATION:** HTTP, non-default ports, embedded credentials, deceptive subdomains and ODDEKALV destinations fail closed to the existing safe fallback.
+**P3 ACTION / NEXT:** Independent Gold reviews the exact HEIR SHA and runs the authenticated first/second-visit browser journey before any release.
+**P4 DEPTH:** Exact return-origin validation does not prove the Supabase session bridge, RLS, Stripe ownership, entitlement, production configuration or real-user value.
+**WHAT CAN BE REMOVED:** Hostname-only trust for cross-domain return destinations.
+**WHAT MUST BE REUSED:** Existing 4PLANET ID client, approved product-domain inventory, one-time bridge, issue #169 receiver and HEIR.
+**TRUTH BOUNDARY:** Deterministic URL tests prove only return-target validation. They do not establish authentication success, account persistence, payment state, deployment or production safety.
+**MOBILE-FIRST RISK:** OAuth and in-app browser callbacks must preserve the exact HTTPS return path; no layout or interaction geometry changes.
+**HUMAN SUCCESS:** A valid secure product return continues, while a lookalike or downgraded destination cannot receive the user.
+**BASE / ROLLBACK:** `king/test@f3c3ebf11a529f408ef31949aaa2cc8ed670ba8b`; revert this bounded correction if independent Gold finds a legitimate approved-origin regression.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No main merge or production release is authorised by this brief.
+
 # 4SAPIEN MONEY MOBILE SUBNAV INTEGRATION — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR TEST-INTEGRATION CORRECTION / NO PRODUCT BYTE / NO GOLD / NO LIVE RELEASE.
