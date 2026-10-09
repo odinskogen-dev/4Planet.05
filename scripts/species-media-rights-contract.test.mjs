@@ -15,7 +15,7 @@ function extractFunction(name) {
   );
   const match = source.match(pattern);
   assert.ok(match, `Expected ${name} in product source`);
-  return match[0];
+  return match[0].replace(/^export\\s+/, "");
 }
 
 const executableSource = [
