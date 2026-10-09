@@ -240,13 +240,16 @@ export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now
   if (integrity.providerClaimOnly && stateAtLeast(record.state, "VERIFIED")) failures.push("provider_claim_not_independent");
   if (integrity.refundState === "CONFIRMED" && record.state !== "INVALIDATED_REMEDIED") failures.push("refund_requires_remedy_state");
 
-  if (integrity.evidenceObservedAt && typeof integrity.evidenceMaxAgeHours === "number") {
+  if (integrity.evidenceObservedAt) {
     const observed = Date.parse(integrity.evidenceObservedAt);
     if (!Number.isFinite(observed)) {
       failures.push("invalid_evidence_timestamp");
     } else if (observed > now.getTime()) {
       failures.push("future_evidence_timestamp");
-    } else if ((now.getTime() - observed) / 3_600_000 > integrity.evidenceMaxAgeHours) {
+    } else if (
+      typeof integrity.evidenceMaxAgeHours === "number" &&
+      (now.getTime() - observed) / 3_600_000 > integrity.evidenceMaxAgeHours
+    ) {
       failures.push("stale_evidence");
     }
   }

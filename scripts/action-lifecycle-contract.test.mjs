@@ -186,6 +186,23 @@ test("future evidence is rejected instead of being treated as fresh", () => {
   assert.ok(!action.validateActionLifecycleRecord(currentRecord, new Date("2026-09-08T00:00:00Z")).includes("future_evidence_timestamp"));
 });
 
+test("timestamp integrity is enforced even when no maximum age is configured", () => {
+  const future = productionRecord({
+    integrity: { evidenceObservedAt: "2026-09-08T00:01:00Z" },
+  });
+  assert.ok(action.validateActionLifecycleRecord(future, new Date("2026-09-08T00:00:00Z")).includes("future_evidence_timestamp"));
+
+  const invalid = productionRecord({
+    integrity: { evidenceObservedAt: "not-a-date" },
+  });
+  assert.ok(action.validateActionLifecycleRecord(invalid, new Date("2026-09-08T00:00:00Z")).includes("invalid_evidence_timestamp"));
+
+  const historical = productionRecord({
+    integrity: { evidenceObservedAt: "2020-01-01T00:00:00Z" },
+  });
+  assert.ok(!action.validateActionLifecycleRecord(historical, new Date("2026-09-08T00:00:00Z")).includes("stale_evidence"));
+});
+
 test("repeated submission is detectable by idempotency key before provider mutation", () => {
   const first = productionRecord();
   const second = { ...productionRecord(), actionId: "action:production:plastic:2" };

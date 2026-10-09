@@ -1,3 +1,27 @@
+# IMPACT — EVIDENCE TIMESTAMP INTEGRITY WITHOUT AGE POLICY — 09 OCT 2026
+
+**STATUS:** BOUNDED HEIR TRUTH-CORRECTION / NO GOLD / NO PROVIDER OR PAYMENT ACTION / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person following an IMPACT action needs evidence chronology to remain truthful even when no staleness window has been configured.
+
+**ONE THING TO UNDERSTAND:** Maximum age is optional policy metadata; timestamp validity and non-futurity are unconditional integrity requirements.
+
+**PRIMARY ACTION:** Parse every present `evidenceObservedAt`, reject invalid and future instants, and apply `stale_evidence` only when a numeric maximum age exists.
+
+**SECONDARY DEPTH:** Preserve lifecycle, claim-distance, independent-verification, quantity, delivery, contradiction, refund and idempotency boundaries.
+
+**P1 DOMINANT:** Invalid or future evidence cannot bypass chronology checks by omitting `evidenceMaxAgeHours`.
+**P2 ORIENTATION:** A valid historical timestamp without an age policy remains valid chronology and is not automatically stale.
+**P3 ACTION / NEXT:** Independent Gold judges the exact HEIR correction and the with/without-age boundary before any release controller advances it.
+**P4 DEPTH:** Deterministic validation does not prove a provider, verifier, delivery, outcome, impact, payment or production runtime.
+**WHAT CAN BE REMOVED:** The conditional that parsed evidence time only when a maximum-age policy was present.
+**WHAT MUST BE REUSED:** Existing `ActionEvidenceIntegrity`, lifecycle validator, issue #151 receiver, HEIR and IMPACT contract suite.
+**TRUTH BOUNDARY:** This closes a metadata-validation bypass only; it does not promote any real record or claim.
+**MOBILE-FIRST RISK:** None; no UI, route, layout or interaction change.
+**HUMAN SUCCESS:** Evidence with an invalid or future instant fails closed regardless of whether the record defines a staleness window.
+**BASE / ROLLBACK:** `king/test@78c3edf48e442e386a950494bfe19e417981d2ea`; revert this bounded correction if independent Gold finds a legitimate no-age chronology regression.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No main merge, provider mutation, payment or production release is authorised by this brief.
+
 # NATUREBRAIN — SOURCE CHRONOLOGY INTEGRITY — 09 OCT 2026
 
 **STATUS:** BOUNDED HEIR TRUTH-CORRECTION / NO GOLD / NO DATABASE APPLY / NO LIVE RELEASE.
