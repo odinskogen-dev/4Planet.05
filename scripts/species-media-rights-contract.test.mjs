@@ -31,7 +31,7 @@ const transpiled = ts.transpileModule(executableSource, {
   },
 }).outputText;
 
-const sandbox = {};
+const sandbox = { exports: {} };
 vm.runInNewContext(transpiled, sandbox);
 const resolveSpeciesImageLicence = sandbox.__resolveSpeciesImageLicence;
 
