@@ -1,3 +1,27 @@
+# NATUREBRAIN — SOURCE CHRONOLOGY INTEGRITY — 09 OCT 2026
+
+**STATUS:** BOUNDED HEIR TRUTH-CORRECTION / NO GOLD / NO DATABASE APPLY / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** Living Systems and SPECIES depend on refreshed GBIF, OBIS and NOAA evidence without allowing stale or ambiguous provider snapshots to rewrite the current source state.
+
+**ONE THING TO UNDERSTAND:** ISO timestamp text order is not time order. Source chronology must compare instants and fail closed when either timestamp is invalid or contradictory fingerprints claim the same instant.
+
+**PRIMARY ACTION:** Parse the current and incoming `checkedAt` values, reject invalid chronology, reject strictly older snapshots and route same-instant fingerprint contradictions to `CONFLICT / REVIEW_REQUIRED`.
+
+**SECONDARY DEPTH:** Preserve append-only audit history, current source state, provider identity checks, rights/terms gates and the existing semantic-fingerprint contract.
+
+**P1 DOMINANT:** A stale snapshot whose ISO text sorts later cannot overwrite the current fingerprint.
+**P2 ORIENTATION:** Equivalent instants with the same fingerprint remain unchanged; equivalent instants with different fingerprints require review.
+**P3 ACTION / NEXT:** Independent Gold judges the exact HEIR SHA and distinct older/equal/invalid regressions before any database or release action.
+**P4 DEPTH:** Deterministic source-refresh tests do not prove provider availability, production ingest behaviour, canonical database state or ecological truth.
+**WHAT CAN BE REMOVED:** Raw string comparison of source timestamps.
+**WHAT MUST BE REUSED:** Existing `evaluateSourceRefresh`, PR #369 regression artifact, TRUTH-2 WBS, append-only audit model and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** A detected provider change is not verified truth. This correction only prevents chronology ambiguity from passing the existing propagation gate.
+**MOBILE-FIRST RISK:** None; no UI, route, layout or interaction change.
+**HUMAN SUCCESS:** Downstream evidence consumers retain the newest unambiguous source state and receive review-required status instead of silent stale/invalid propagation.
+**BASE / ROLLBACK:** `king/test@8d5c43936e48a709e4911635f4a3d9f862d1a925`; revert this bounded correction if independent Gold finds a valid provider chronology regression.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No main merge, production data mutation or public release is authorised by this brief.
+
 # 4BRANDS COMPANY BRAIN — ACCOUNT-SCOPED BROWSER RECOVERY — 09 OCT 2026
 
 **STATUS:** BOUNDED HEIR PRIVACY CORRECTION / NO GOLD / NO LIVE RELEASE.
