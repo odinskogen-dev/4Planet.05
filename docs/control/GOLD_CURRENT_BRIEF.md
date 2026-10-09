@@ -1,3 +1,27 @@
+# 4BRANDS COMPANY BRAIN — ACCOUNT-SCOPED BROWSER RECOVERY — 09 OCT 2026
+
+**STATUS:** BOUNDED HEIR PRIVACY CORRECTION / NO GOLD / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** An authorised company member may use 4BRANDS in a browser that another person used before them and must never inherit that person's private draft.
+
+**ONE THING TO UNDERSTAND:** A company name is not an account boundary. Browser recovery must be scoped to the current person and exact organisation identity, while canonical Company Brain state remains protected by workspace membership and RLS.
+
+**PRIMARY ACTION:** Scope local twin/ledger recovery by authenticated person plus organisation identity, refresh on every auth-state change, clear the prior private view immediately and ignore stale workspace responses.
+
+**SECONDARY DEPTH:** Preserve anonymous recovery, existing Company Brain APIs, workspace membership, RLS, public company analysis and canonical server readback.
+
+**P1 DOMINANT:** User A and user B receive distinct browser-recovery keys for the same company.
+**P2 ORIENTATION:** Sign-in, sign-out and account switch reset the in-memory company draft before workspace lookup completes.
+**P3 ACTION / NEXT:** Independent Gold runs user-A/user-B and organisation/person browser journeys against the exact HEIR SHA.
+**P4 DEPTH:** Deterministic tests do not prove production Supabase RLS, real tenant membership, browser deployment or live user value.
+**WHAT CAN BE REMOVED:** Company-name-only localStorage keys and auth state sampled only when the company name changes.
+**WHAT MUST BE REUSED:** Existing 4PLANET ID client, Company Brain workspace/RLS API, issue #318, BRN-08 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** Browser recovery is convenience state, never canonical authenticated company truth. Public analysis remains separate from private workspace data.
+**MOBILE-FIRST RISK:** OAuth return and account switching may reorder session events; stale responses must not repopulate a cleared view.
+**HUMAN SUCCESS:** Changing account in the same browser cannot show or save the previous person's private company draft.
+**BASE / ROLLBACK:** `king/test@d574d099dc0874ba499c01678304dc99003c944c`; revert this bounded correction if independent Gold finds an authorised recovery regression.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No main merge or production release is authorised by this brief.
+
 # 4PLANET ID — EXACT HTTPS RETURN-ORIGIN INTEGRITY — 09 OCT 2026
 
 **STATUS:** BOUNDED HEIR SECURITY CORRECTION / NO GOLD / NO LIVE RELEASE.

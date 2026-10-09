@@ -5,6 +5,7 @@ import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import CompanyBrainControls from "@/pages/partners/CompanyBrainControls";
 import type { CompanyBrainSnapshot } from "@/product/FourBrandBrainClient";
+import { ANONYMOUS_COMPANY_BRAIN_SCOPE, companyBrainRecoveryKey } from "@/product/companyBrainRecovery";
 import { identityLoginUrl } from "@/identity/identityClient";
 
 type TruthClass = "FACT" | "CALCULATION" | "ESTIMATE" | "ASSUMPTION" | "INTERPRETATION" | "UNKNOWN";
@@ -128,10 +129,6 @@ function parseScenarioNumber(value: string) {
   if (!normalized) return null;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function storageKey(kind: "twin" | "ledger", companyName: string) {
-  return `4brands:${kind}:${companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }
 
 function hydrateTwinFromCompanyBrain(snapshot: CompanyBrainSnapshot): TwinState {
@@ -389,6 +386,7 @@ export default function FourBrand() {
   const [identityState, setIdentityState] = useState<"IDLE" | "SEARCHING" | "CANDIDATES" | "NO_MATCH" | "RESOLVING" | "READY" | "ERROR">("IDLE");
   const [publicProfile, setPublicProfile] = useState<PublicCompanyProfileData | null>(null);
   const [publicProfileState, setPublicProfileState] = useState<"IDLE" | "LOADING" | "READY" | "ERROR">("IDLE");
+  const [recoveryActorScope, setRecoveryActorScope] = useState(ANONYMOUS_COMPANY_BRAIN_SCOPE);
 
   const baselineRevenue = parseScenarioNumber(twin.annualRevenue);
   const baselineMargin = parseScenarioNumber(twin.grossMargin);
@@ -407,13 +405,13 @@ export default function FourBrand() {
 
   const sourceCount = useMemo(() => analysis?.evidence.length ?? 0, [analysis]);
   const leadMetrics = useMemo(() => analysis?.economicBaseline.slice(0, 4) ?? [], [analysis]);
-  const companyKey = analysis?.company.legalName || analysis?.company.name || "company";
+  const companyKey = analysis?.company.organizationNumber || analysis?.company.legalName || analysis?.company.name || "company";
 
   useEffect(() => {
     if (!analysis || typeof window === "undefined") return;
     try {
-      const savedTwin = window.localStorage.getItem(storageKey("twin", companyKey));
-      const savedLedger = window.localStorage.getItem(storageKey("ledger", companyKey));
+      const savedTwin = window.localStorage.getItem(companyBrainRecoveryKey("twin", recoveryActorScope, companyKey));
+      const savedLedger = window.localStorage.getItem(companyBrainRecoveryKey("ledger", recoveryActorScope, companyKey));
       setTwin(savedTwin ? { ...EMPTY_TWIN, ...JSON.parse(savedTwin) } : EMPTY_TWIN);
       setLedger(savedLedger ? JSON.parse(savedLedger) : {});
       setSaveState("IDLE");
@@ -421,7 +419,7 @@ export default function FourBrand() {
       setTwin(EMPTY_TWIN);
       setLedger({});
     }
-  }, [analysis, companyKey]);
+  }, [analysis, companyKey, recoveryActorScope]);
 
   async function analyseResolved(query: string, identity: CompanyIdentityResolution | null) {
     setLoading(true);
@@ -535,8 +533,8 @@ export default function FourBrand() {
 
   function saveTwin() {
     if (!analysis || typeof window === "undefined") return;
-    window.localStorage.setItem(storageKey("twin", companyKey), JSON.stringify(twin));
-    window.localStorage.setItem(storageKey("ledger", companyKey), JSON.stringify(ledger));
+    window.localStorage.setItem(companyBrainRecoveryKey("twin", recoveryActorScope, companyKey), JSON.stringify(twin));
+    window.localStorage.setItem(companyBrainRecoveryKey("ledger", recoveryActorScope, companyKey), JSON.stringify(ledger));
     setSaveState("SAVED");
     trackEvent("company_twin_saved", {
       product_area: "4brands",
@@ -809,6 +807,7 @@ export default function FourBrand() {
               analysis={analysis}
               onSnapshot={applyCompanyBrainSnapshot}
               onLocalRecovery={saveTwin}
+              onActorScopeChange={setRecoveryActorScope}
             />
 
             <div className="fb-twin-boards" aria-label="Company operating twin boards">
