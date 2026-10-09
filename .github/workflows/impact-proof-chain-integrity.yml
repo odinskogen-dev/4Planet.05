@@ -1,0 +1,38 @@
+name: IMPACT Proof Chain Integrity
+
+on:
+  pull_request:
+    paths:
+      - 'src/impact/proofPassport.ts'
+      - 'scripts/impact-proof-chain-integrity-contract.test.mjs'
+      - '.github/workflows/impact-proof-chain-integrity.yml'
+  push:
+    branches: ['king/test']
+    paths:
+      - 'src/impact/proofPassport.ts'
+      - 'scripts/impact-proof-chain-integrity-contract.test.mjs'
+      - '.github/workflows/impact-proof-chain-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run accepted proof-chain regressions and existing IMPACT contracts
+        run: >-
+          node --test
+          scripts/impact-proof-chain-integrity-contract.test.mjs
+          scripts/impact-action-contract.test.mjs
+          scripts/impact-independent-evidence-contract.test.mjs
+          scripts/proof-passport-contract.test.mjs
+          scripts/action-lifecycle-contract.test.mjs

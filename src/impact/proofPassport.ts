@@ -183,27 +183,29 @@ export function deriveClaimDistance(input: Pick<ProofPassportInput, "contributio
   const { contribution, delivery, outcome, impact } = input;
 
   if (contribution.environment !== "PRODUCTION" || delivery.environment !== "PRODUCTION") return "D0";
+  if (contribution.status !== "CONFIRMED") return "D0";
 
-  if (
-    impact.status === "VERIFIED" &&
-    Boolean(impact.claim?.trim()) &&
-    Boolean(impact.method?.trim())
-  ) return "D4";
+  const deliveryIsLinkedAndEvidenced =
+    delivery.contributionId === contribution.id &&
+    delivery.status === "EVIDENCE_ATTACHED" &&
+    delivery.evidenceRefs.length > 0;
+  if (!deliveryIsLinkedAndEvidenced) return "D1";
 
-  if (
+  const outcomeIsLinkedAndEvidenced =
+    outcome.deliveryId === delivery.id &&
     (outcome.status === "INDEPENDENTLY_REVIEWED" || outcome.status === "PROVIDER_CLAIMED") &&
     Boolean(outcome.claim?.trim()) &&
-    outcome.evidenceRefs.length > 0
-  ) return "D3";
+    outcome.evidenceRefs.length > 0;
+  if (!outcomeIsLinkedAndEvidenced) return "D2";
 
-  if (
-    delivery.status === "EVIDENCE_ATTACHED" &&
-    delivery.evidenceRefs.length > 0
-  ) return "D2";
+  const impactIsLinkedAndVerified =
+    impact.outcomeIds.includes(outcome.id) &&
+    impact.status === "VERIFIED" &&
+    Boolean(impact.claim?.trim()) &&
+    Boolean(impact.method?.trim());
+  if (!impactIsLinkedAndVerified) return "D3";
 
-  if (contribution.status === "CONFIRMED") return "D1";
-
-  return "D0";
+  return "D4";
 }
 
 export function deriveProofPassportDepth(input: ProofPassportInput): ProofPassportDepth {
