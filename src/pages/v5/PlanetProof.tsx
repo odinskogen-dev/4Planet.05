@@ -16,6 +16,15 @@ function initialLayerState(proof: PlanetProof) {
   return Object.fromEntries(proof.mapLayers.map((layer, i) => [layer.id, i === 0]));
 }
 
+export function evidenceSourcesReady(
+  sourceIds: string[],
+  getSource: (id: string) => unknown,
+  isSourceLoaded: (id: string) => boolean,
+) {
+  return sourceIds.length > 0
+    && sourceIds.every((id) => Boolean(getSource(id)) && isSourceLoaded(id));
+}
+
 function EvidenceMap({ proof }: { proof: PlanetProof }) {
   const box = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -62,11 +71,11 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
       const activeSources = proof.mapLayers
         .filter((layer) => activeRef.current[layer.id])
         .map((layer) => `proof-${layer.id}`);
-      if (activeSources.length === 0) {
-        setEvidenceReady(true);
-        return;
-      }
-      setEvidenceReady(activeSources.every((id) => Boolean(m.getSource(id)) && m.isSourceLoaded(id)));
+      setEvidenceReady(evidenceSourcesReady(
+        activeSources,
+        (id) => m.getSource(id),
+        (id) => m.isSourceLoaded(id),
+      ));
     };
     m.on("load", () => {
       if (!alive) return;
