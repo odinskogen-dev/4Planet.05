@@ -119,6 +119,27 @@ test("missing evidence blocks delivered/verified states", () => {
   assert.ok(action.validateActionLifecycleRecord(record).includes("missing_delivery_or_outcome_evidence"));
 });
 
+test("VERIFIED requires an explicit independent verification reference", () => {
+  const omitted = productionRecord({
+    state: "VERIFIED",
+    proofClaimDistance: "D3",
+    evidenceRefs: ["evidence:provider"],
+  });
+  assert.ok(action.validateActionLifecycleRecord(omitted).includes("missing_independent_verification_reference"));
+
+  const empty = {
+    ...omitted,
+    integrity: { independentVerificationRef: "  " },
+  };
+  assert.ok(action.validateActionLifecycleRecord(empty).includes("missing_independent_verification_reference"));
+
+  const independentlyVerified = {
+    ...omitted,
+    integrity: { independentVerificationRef: "verification:third-party:plastic:1" },
+  };
+  assert.ok(!action.validateActionLifecycleRecord(independentlyVerified).includes("missing_independent_verification_reference"));
+});
+
 test("contradictory or provider-only evidence cannot be called VERIFIED", () => {
   const contradictory = productionRecord({
     state: "VERIFIED",

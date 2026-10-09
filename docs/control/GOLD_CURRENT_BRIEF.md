@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 36757)
+Total output lines: 1481
+
 # 4SAPIEN MONEY MOBILE SUBNAV INTEGRATION — 08 OCT 2026
 
 **STATUS:** BOUNDED HEIR TEST-INTEGRATION CORRECTION / NO PRODUCT BYTE / NO GOLD / NO LIVE RELEASE.
@@ -789,282 +792,7 @@ A first-time visitor can explain, in plain language, why 4PLANET exists, what it
 
 **FOUNDER DIRECTION:** "Kan du gjøre atlas søkbar i Google nå?" The bounded objective is to make the existing public ATLAS technically discoverable and legible to Google without creating a second ATLAS or SEO content farm.
 
-**OBSERVED EXTERNAL STATE:** fresh web search for `"4PLANET Atlas" 4planetatlas.com`, `site:4planetatlas.com` and `site:4planet.org/atlas 4PLANET` returned no 4PLANET ATLAS result. This is evidence of absent/very weak current search visibility, not a complete Google index export.
-
-**ROOT CAUSE FOUND:** the actual public `/atlas` route renders `PublicWorld` without route-specific `Seo` metadata. The source build has `/atlas` in the 4planet.org sitemap and allows Googlebot, but the raw `/atlas` HTML is otherwise the generic SPA shell and no ATLAS-specific prerender exists. This weakens title/description/entity/canonical/content signals.
-
-**BOUNDED FIX:**
-- add explicit runtime ATLAS title, description, canonical path, OG/Twitter metadata and WebApplication JSON-LD to `PublicWorld`;
-- add a raw HTML prerender for `/atlas` with a visible H1, product description, source names, truth boundary and crawlable links to Places, Species and Living Systems;
-- add the ATLAS prerender to the normal production build;
-- add a deterministic search-discovery contract to smoke tests;
-- keep existing `/atlas` sitemap entry and Googlebot allow policy.
-
-**PRIMARY INDEX URL:** `https://4planet.org/atlas` remains the source-controlled canonical target in this slice. The separate `4planetatlas.com` host exists in analytics but its edge/DNS routing is outside this repository and cannot be independently HTTP-read from the current runtime; do not invent a canonical-host migration without verified routing.
-
-**TRUTH BOUNDARY:** this makes ATLAS crawlable/indexable and materially more legible to Google. It does NOT guarantee Google will index or rank it. Google controls crawling/index selection. Search Console URL Inspection / Request Indexing can accelerate a single-page recrawl after LIVE; the currently available Search Console connector is read-only.
-
-**ACCEPTANCE:** exact HEIR SHA must pass ATLAS search contract, typecheck, production build, smoke/contracts, Gold/product authority and immutable Cloudflare preview. LIVE custom-domain promotion remains an exact-artifact Founder gate.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH — PHASE 03 EXISTING-ATLAS PLACE EXPANSION — 02 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / NO PHASE-03 LIVE AUTHORITY.
-
-**OBJECTIVE:** compound public discovery by promoting source-qualified discovery objects for five Places that already exist in the shared ATLAS registry: Amazon Basin, Congo Basin, Borneo, Svalbard and Oslofjord. No new Place engine, map renderer, truth store or geocoder is created.
-
-**GRAPH:** Amazon Basin → Jaguar; Congo Basin → Chimpanzee + Eastern Gorilla; Borneo → Bornean Orangutan; Svalbard → Polar Bear + Humpback Whale + Blue Whale; Oslofjord → Atlantic Cod + Blue Mussel.
-
-**SOURCE BOUNDARY:** Amazon/Congo/Borneo use public WWF ecological/species material for bounded discovery context; Svalbard uses Norwegian Polar Institute + Governor of Svalbard; Oslofjord uses current Norwegian Government and Environment Agency evidence. Monitoring samples, protected-area rules, source-published population estimates and occurrence records retain their distinct semantics.
-
-**PUBLICATION LAW:** no basin/island/fjord object claims one universal protected-area percentage where jurisdictions/designations differ. Navigation bboxes remain navigation only. Species relationships mean documented ecological/geographic relevance, never current individual presence or complete distribution.
-
-**ACCEPTANCE:** exact HEIR SHA must pass build, full smoke/discovery contracts, authority/Gold and immutable preview/browser gates. No production promotion, IndexNow submission, social schedule or email send is authorised by this phase.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH — PHASE 02 GLOBAL GRAPH EXPANSION — 02 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / NO PHASE-02 LIVE AUTHORITY.
-
-**FOUNDER DIRECTION:** continue production immediately after Sprint 01 LIVE release. This phase remains HEIR-only until a new exact-artifact Founder release.
-
-**P1 USER VALUE:** a person can enter 4PLANET through five source-qualified Places — Kenya, Serengeti, Costa Rica, Great Barrier Reef and Norway — and traverse real crawlable Place ↔ Species relationships into ATLAS and source evidence.
-
-**SPECIES INVENTORY:** close the controlled first inventory from 20/25 to 25/25 curated objects by adding Leopard, Eastern Gorilla, Chimpanzee, Bornean Orangutan and Emperor Penguin. Every added profile reuses the existing SPECIES engine and GBIF occurrence seam with a Source Envelope. Occurrence remains reported observation, never complete range, abundance, trend, residency or live location.
-
-**EASTERN GORILLA PROVIDER MIGRATION:** retain legacy numeric GBIF Backbone key `7262070` only for the current occurrence-adapter contract while documenting that current GBIF web taxonomy presents accepted `Gorilla beringei` under Catalogue-of-Life identifier `3H3C3`. Provider ID migration must be deliberate and tested; the system must not silently rebind identity.
-
-**PLACE INVENTORY:** add source-qualified public candidates for Serengeti and Costa Rica to the existing ATLAS Place registry and promote existing Norway / Great Barrier Reef registry objects into discovery inventory. Navigation bounding boxes are explicitly not official legal/ecological boundaries.
-
-**SOURCE SET:** IUCN SSC Cat Specialist Group (Leopard); current GBIF + WWF subspecies context (Eastern Gorilla); WWF (Chimpanzee, Bornean Orangutan); British Antarctic Survey + U.S. Fish & Wildlife Service (Emperor Penguin); UNESCO + Protected Planet + GBIF Tanzania (Serengeti); SINAC + CBD (Costa Rica); Great Barrier Reef Marine Park Authority + AIMS + UNESCO (Great Barrier Reef); CBD Norway + Artsdatabanken + Miljødirektoratet (Norway).
-
-**GRAPH / MACHINE READABILITY:** Place WebPage schema uses `citation` for provenance instead of incorrectly declaring source URLs as Place `sameAs`. Raw prerendered HTML carries related-species links; Species routes expose qualifying related Places; index pages use ItemList JSON-LD.
-
-**TRUTH BOUNDARIES:** draft CBD country profiles remain labelled draft; AIMS survey results are survey-bounded; Artskart/GBIF points are observations; World Heritage/national/protected-area designations and areas are not collapsed; species/global status never becomes a local-population diagnosis.
-
-**ACCEPTANCE:** exact HEIR SHA must pass typecheck, production build, full smoke/discovery contracts, product authority, Gold policy and immutable Pages/browser proof. No Phase-02 production release, search submission, social send or email send is authorised by this section.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — GLOBAL SPECIES BATCH 20 — 01 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.
-
-**DELTA:** promote seven source-qualified, high-interest species into the existing curated SPECIES engine: Blue Whale, Asian Elephant, Tiger, Polar Bear, Giant Panda, Whale Shark and Green Turtle. Together with the prior 13, the controlled discovery inventory now contains 20 indexable curated species out of 25 candidates.
-
-**SOURCE BOUNDARY:** NOAA Fisheries supplies Blue Whale and Green Turtle context; U.S. Fish & Wildlife Service supplies Asian Elephant, Polar Bear and Giant Panda context; IUCN SSC Cat Specialist Group supplies Tiger context; Convention on Migratory Species supplies Whale Shark context. GBIF numeric keys remain the existing engine's taxon/occurrence identifiers. Provider taxonomy changes are a refresh concern, not permission to silently rebind identity.
-
-**OCCURRENCE LAW:** every added species reuses the shared GBIF occurrence seam. A reported occurrence is not complete range, abundance, trend, residency, population condition or live position. Green Turtle regulatory status stays population-segment-aware rather than being collapsed into one global label.
-
-**QUALITY GATE:** Leopard, Eastern Gorilla, Chimpanzee, Bornean Orangutan and Emperor Penguin remain BUILD_NEXT/noindex instead of being promoted without the same source and product closure.
-
-**ACCEPTANCE:** exact-head typecheck + production build + full smoke/discovery contracts + authority/Gold policy + browser/preview proof. No custom-domain promotion without exact-artifact Founder release.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — OWNED RETURN QA CORRECTION — 01 OCT 2026
-
-**STATUS:** HEIR CONTROL CORRECTION / NO EXTERNAL SEND.
-
-**DELTA:** correct the owned-return privacy contract so it forbids an `email` analytics parameter rather than falsely matching the event name `email_signup`. Remove `/signal` from the discovery sitemap because its page-level contract is deliberately `noindex,follow`.
-
-**TRUTH:** PLANET SIGNAL remains a consented return/acquisition surface, not an SEO inventory object. No subscriber email, raw query string or raw referrer URL is added to analytics.
-
-**ACCEPTANCE:** exact-head typecheck + build + smoke + discovery contracts + authority/Gold policy.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — PLANET SIGNAL TYPECHECK FIX — 01 OCT 2026
-
-**STATUS:** HEIR CONTROL CORRECTION / NO EXTERNAL SEND.
-
-**DELTA:** replace one invalid presentation-only `T.body` reference in the PLANET SIGNAL email input with the existing public body-font stack. Consent, Resend writes, analytics and routing are unchanged.
-
-**ACCEPTANCE:** exact-head typecheck + build + smoke + owned-return contract.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — OWNED RETURN + DISTRIBUTION CLOSURE — 01 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / UNSENT / LIVE CONFIG UNTOUCHED.
-
-**PLANET SIGNAL:** add `/signal` plus `/api/planet-signal`. Explicit consent creates/updates the one Resend Contact, adds the dedicated PLANET SIGNAL Segment and sets the opt-out-by-default PLANET SIGNAL Topic to `opt_in`. No local subscriber database and no automatic welcome email. Missing `RESEND_API_KEY` fails closed; the UI does not claim collection.
-
-**MEASUREMENT:** successful signup emits only bounded `email_signup` metadata; the submitted email is not sent to analytics.
-
-**DISTRIBUTION:** production-ready MAGAZINE queue, Kenya social copy/storyboard, PLANET SIGNAL issue queue and P2 4SAPIEN/4BRANDS readiness are internal assets only. P4nther remains the only Metricool brand discovered; no content is scheduled there.
-
-**CLOUDFLARE ANALYTICS BLOCKER:** current repository workflow is production-connected and still omits `4brands.org`. Its mutation was deliberately not included in this HEIR product commit because changing/dispatching a production-linked workflow is a separate Founder-gated infrastructure action.
-
-**ACCEPTANCE:** typecheck + build + smoke + owned-return contract + product authority/Gold policy. External social/email publication, IndexNow submission, Cloudflare analytics mutation and custom-domain promotion remain Founder-gated.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — INDEXNOW KEY CONTROL FIX — 01 OCT 2026
-
-**STATUS:** HEIR / CONTROL CORRECTION / NO EXTERNAL SUBMISSION.
-
-**DELTA:** normalise the public IndexNow ownership-key file to the exact key text with no literal escape characters. This change exists solely to satisfy the ownership-file contract and is paired with this Gold receipt in the same bounded change.
-
-**TRUTH / RELEASE:** the key file alone does not notify a search engine or claim indexing. The submission script remains founder-gated behind `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW`.
-
-**ACCEPTANCE:** discovery contract + smoke + product authority + Gold policy on exact SHA.
-
----
-
-# 4SAPIEN FOOD FIRST PROVEN VALUE LOOP 02 — 01 OCT 2026
-
-**STATUS:** TECHNICAL LIVE CLOSURE VERIFIED / 4SAPIEN.COM LIVE / EMBLA V11 ACTIVE / HUMAN GOLD OPEN.
-
-**BOUNDED PRODUCT DELTA:** existing 4PLANET ID + existing owner-RLS `four_sapien_embla_memories` carry the FOOD pantry loop through explicit save/readback/supersession/delete and return reuse. Existing `four_sapien_decisions` stores an explicit private meal-choice state without claiming the meal was cooked or useful. Existing `four_sapien_embla_events` receives only bounded stage/timing/count metadata. Ingredient names, pantry contents, prompts and free text are excluded from value-loop analytics.
-
-**EMBLA LIVE SEAM:** production `embla-core-preview` is ACTIVE v11, hash `e94fe409d9b79f6cbef70954434e747d2ed705477d44b4c86cba7dac5ca5da1b`. The released delta changed only the existing `read_pantry` tool from `PANTRY_SCHEMA_NOT_IMPLEMENTED` to reading the same active user-confirmed `food_pantry_v1` Person memory under the caller's authenticated RLS context. Existing Brain reuse and Human Utility measurement events are preserved. The prior v10 runtime is the bounded rollback reference.
-
-**LIVE PRODUCT PROOF:** canonical 4SAPIEN was released through the existing Founder-authorised bounded LIVE workflow to the existing `four-sapien-embla` Worker. Exact live source is `edcf5b6bf75a6b6f9436ab68105700dfe0c90c1a`. GitHub Actions run `36888848059` passed HEIR intent, materialisation, zero-loss/pantry gates, desktop + mobile pre-deploy first-return proof, existing Worker authority, production deploy, and physical desktop + mobile readback at `https://4sapien.com`. The live browser gate was hardened to cache-bust the just-deployed HTML after the first post-deploy run exposed a transient stale-cache desktop mismatch; the hardened exact run passed 2/2 live browser projects.
-
-**MEASUREMENT:** bounded recruitment attribution accepts only `src=human_utility` → `human_utility_recruitment`, otherwise `direct_or_unknown`. The measured path separates identity, activation, first value, saved context, return, second value, saved decision and explicit useful outcome. The explicit useful/not-yet signal uses the existing `measurement_useful_outcome` Human Utility path; no second measurement truth system exists. Synthetic and Founder sessions never count as real-user or return proof.
-
-**TRUTH BOUNDARY:** current deterministic meal examples remain `DEMO_FIXTURE_NOT_VERIFIED`. Missing price/amount/context stays UNKNOWN. Purchased is not consumed. A saved choice is not a cooked meal, useful outcome, payment or ecological result.
-
-**CURRENT REAL-USER STATE:** production readback after release still shows 0 active `food_pantry_v1` rows/users, 0 FOOD decisions/users, 0 `measurement_useful_outcome` events/users and 0 `food_second_value_reached` events/users. Technical LIVE closure is therefore complete; Human Gold, independently attributable real return/value, NOK 100/month WTP/payment proof and source-grounded production recipe donors remain open.
-
-**NEXT GATE:** recruit the existing 6–8 consenting Human Utility testers through the already-defined bounded protocol, then separate first-use utility, actual return, WTP and payment evidence. External outreach remains a distinct Founder-release action; this technical LIVE release does not fabricate or substitute Human Gold.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — DISTRIBUTION + MEASUREMENT SEAM — 01 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / UNSENT / NO LIVE PROMOTION.
-
-**MEASUREMENT:** add one consent-bound, once-per-session `discovery_entry` classification for ChatGPT, Perplexity, Google, Bing, Instagram, Facebook, LinkedIn, email, direct and bounded other-referral. Raw query strings and raw referrer URLs are never emitted.
-
-**INDEXNOW:** host-verification key + submission script are prepared. The script refuses execution unless `FOUNDER_INDEXNOW_RELEASE=ENIG_INDEXNOW` and the target origin is exactly `https://4planet.org`. Only indexable discovery inventory routes are submitted. This is release preparation, not a claim of indexing, crawl, ranking or traffic.
-
-**EMAIL:** PLANET SIGNAL is created as a draft in the existing Resend account. Draft creation is internal preparation only; it is not published and no subscriber email has been sent.
-
-**ACCEPTANCE:** exact-head typecheck/build/smoke/discovery contracts. IndexNow invocation and any external email remain Founder-gated actions.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — KENYA SPECIES GRAPH CLOSURE — 01 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.
-
-**DELTA:** African Savanna Elephant (`Loxodonta africana`, GBIF 2435350), Lion (`Panthera leo`, GBIF 5219404) and Cheetah (`Acinonyx jubatus`, GBIF 2435270) are promoted from BUILD_NEXT into curated SPECIES objects. Each receives bounded source claims and a Source Envelope. The existing SPECIES page machinery supplies ATLAS embedding and GBIF occurrence retrieval; occurrence records remain reports of observations, never range, abundance, residency or live tracking.
-
-**KENYA GRAPH:** `/place/kenya` now links to these three SPECIES objects. Discovery inventory increases from 10 to 13 indexable species while total candidate inventory remains 25. Sitemap and raw discovery prerender automatically follow the controlled inventory.
-
-**SOURCE SET:** GBIF; Kenya Wildlife Service (Amboseli, lion recovery/action plan, 2026 lion census statement, historical cheetah strategy); U.S. Fish & Wildlife Service African Elephant; IUCN SSC Cat Specialist Group; Convention on Migratory Species. Historical Kenya cheetah sighting material is explicitly bounded as historical and non-residency evidence.
-
-**ACCEPTANCE:** typecheck + production build + discovery/smoke contracts + product authority + TEST KING/browser proof on exact candidate. No custom-domain promotion without Founder exact-artifact release.
-
----
-
-# DISCOVERY + TRAFFIC GROWTH SPRINT 01 — P0 DISCOVERY HEIR SLICE — 01 OCT 2026
-
-**STATUS:** HEIR CANDIDATE / NO LIVE PROMOTION / EXACT-SHA QA REQUIRED.
-
-**AUTHORITY:** one atomic product write to current `king/test` sole HEIR. No new branch, candidate class, truth store, Species engine or Atlas renderer is created.
-
-**FOUNDER NORTH STAR:** UNKNOWN PERSON → SEARCH / AI / SOCIAL / EDITORIAL DISCOVERY → USEFUL PUBLIC OBJECT → PRODUCT EXPLORATION → RETURN → LEARNING.
-
-**BOUNDED DELTA:** reusable Place routes + Kenya Gold candidate; 25-Species production inventory with only 10 existing curated profiles indexable; discovery-derived sitemap; raw HTML discovery prerender; runtime Species SEO/noindex threshold; explicit Search/AI crawler policy; non-production host noindex; and production GA4 isolation from TEST KING.
-
-**KENYA TRUTH BOUNDARY:** KWS, CBD, GBIF and Protected Planet remain named sources. CBD marks its Kenya profile text as draft. The ATLAS bbox is navigation geometry only. KWS land-coverage and Protected Planet area-count measures remain separate.
-
-**SPECIES TRUTH BOUNDARY:** occurrence records remain reported observations, not range, abundance, trend, population status or live location. BUILD_NEXT inventory is not publication approval.
-
-**ACCEPTANCE:** typecheck + production build + discovery contract + existing smoke/contracts + rendered HEIR browser verification. Public custom-domain promotion requires a separate exact-artifact Founder release after Gold.
-
----
-
-# MULTI-PRODUCT VALUE CONVERGENCE FINAL INTEGRATION + LIVE CLOSURE 02 — 28 SEP 2026
-
-**STATUS:** HEIR CANDIDATE / EXACT-SHA VERIFICATION REQUIRED / NO LIVE CLAIM FROM SOURCE ALONE.
-
-**AUTHORITY:** one atomic product write to the existing `king/test` sole HEIR. PR #347 / PR #345 are read-only donor provenance after this convergence; no new candidate class, second HEIR, parallel BRAIN, auth system, memory store or company database is created.
-
-**FOUNDER DIRECTION:** converge the already-tested universal identity, Person memory, Company Brain, ATLAS/SPECIES and measurement improvements onto fresh HEIR, preserve all newer `king/test` work, verify the exact merged SHA, then promote only the verified artifact to existing authorised 4PLANET-owned live surfaces.
-
-**BOUNDED USER VALUE:**
-- 4PLANET ID client trusted-host parity now covers the same priority cross-product destinations accepted by the active server bridge, including 4PLANET, 4SAPIEN/S4PIENS, 4BRANDS, ATLAS, SPECIES, Labs and 4BRAIN.
-- 4SAPIEN FOOD pantry reuses the existing private Person memory table under canonical 4PLANET ID. Persistence is explicit-consent only, requires server write/readback, supports supersession and deletion, and restores user-confirmed pantry context on return. Anonymous edits remain session-only.
-- 4BRANDS keeps the existing Company Brain architecture. Versioned migrations make workspace owner-membership creation idempotent and permit only member-scoped authenticated audit writes for canonical Company Brain save/analysis actions.
-- ATLAS and SPECIES keep the existing canonical context/return mechanisms; this change adds privacy-safe value-path instrumentation rather than a new router or camera authority.
-- Existing consented analytics gains signup/login, Person-memory return value, Company Brain creation/value actions, ATLAS context opens, SPECIES/source opens and cross-product navigation. Free text and precise location are not added to analytics.
-
-**DATABASE READBACK:** active `4Planet_ OS` has two auth users matched to two canonical profiles and two 4SAPIEN profiles. RLS readback shows the second sampled user can see its own canonical profile but zero of the first user's Person memories, Company workspaces or memberships. The two Company Brain audit policies are active. Prior transactional tests proved Person-memory write/readback/supersede/delete and Company Brain workspace → twin → metric → opportunity → decision → intervention → measured result → learning → audit, with rollback and zero synthetic value records retained.
-
-**EXTERNAL BLOCKER / TRUTH BOUNDARY:** model-backed Embla / Brain turns are NOT VERIFIED while the configured upstream model account returns HTTP 429 `credit_balance_exhausted`. No conversational PLANETBRAIN Gold claim is permitted from this change.
-
-**ACCEPTANCE:** exact HEIR SHA must pass typecheck, production build, full smoke/contracts, Chromium desktop + 390px mobile, WebKit desktop + 390px mobile, plus existing ATLAS/Species/pantry critical journeys. LIVE custom-domain status requires post-promotion runtime readback; a successful source commit or Pages build is not enough.
-
-**LIVE RELEASE:** this section does not itself claim LIVE. Founder has authorised promotion only after the exact merged SHA passes the acceptance gate. Rollback is the prior immutable LIVE artifact / prior HEIR SHA.
-
----
-
-# DATA VALUE CONVERGENCE 01 — SOURCE GATE RIGHTS / OPERATIONS HARDENING — 28 SEP 2026
-
-**STATUS:** HEIR CANDIDATE / OFFICIAL TERMS VERIFIED.
-
-Production-capable source responses now expose use boundaries directly: publisher/API, licence or rights state, commercial reuse, attribution, caching, access cost/rate where established, canonical mapping and limitations.
-
-Verified rights/read constraints:
-- Brønnøysundregistrene Enhetsregisteret: NLOD 2.0.
-- GLEIF LEI Access Service: CC0 1.0.
-- Climate TRACE core emissions data/metadata: CC BY 4.0; listed external and ownership sources can carry different terms and therefore remain review-gated.
-- TED published procurement notices: freely reusable commercially/non-commercially unless otherwise noted; SIMAP metadata CC0.
-- Stortinget Open Data: NLOD, Stortinget attribution, non-misleading presentation, 100 calls/min.
-- SSB PxWebApi v2: CC BY 4.0, 30 queries/min, 800,000-cell extract limit.
-- Matvaretabellen: official local caching permitted; clear source citation required. 4PLANET uses the publisher's requested 2026 citation and does not silently treat generic foods as branded-product facts.
-
-No new Source Registry or truth store was created.
-
----
-
-# DATA VALUE CONVERGENCE 01 — IMPACT / INDEPENDENT OBSERVATION + MRV RELATIONSHIP — 28 SEP 2026
-
-**STATUS:** HEIR CANDIDATE / SOURCE CONNECTED / NO CLAIM PROMOTION.
-
-**ACTION CONTRACT:** existing Bay of Biscay survey Action Contract now carries explicit independent evidence-source relationships. The existing OBIS adapter is attached as CONTEXT_ONLY over the existing Bay of Biscay navigation bounding box. A separate DELIVERY_LINKED independent survey-effort MRV requirement is present and truthfully remains NOT_CONNECTED.
-
-**PRODUCT VALUE:** the IMPACT proof surface exposes the bounded OBIS source path and its limitations alongside the current survey-effort semantics. A reviewer can inspect independent ecological occurrence context without confusing it with ORCA delivery.
-
-**PROOF PASSPORT HARDENING:** Passport VERIFIED / impact eligibility now requires a THIRD_PARTY VERIFICATION item explicitly marked IMPACT_LINKED. A third-party item marked CONTEXT_ONLY cannot increase verification depth or impact eligibility.
-
-**TRUTH LAW:** co-location, subject similarity and independent publisher status are not a join. OBIS occurrences do not verify ORCA survey effort, population trend, ecological change or impact. ORCA evidence remains provider/partner evidence. Independent delivery MRV is still an explicit gap.
-
-**NO DUPLICATE SYSTEM:** existing Action Contract + existing Proof Passport + existing OBIS adapter. No new MRV database or proof authority.
-
-**ACCEPTANCE:** typecheck/build/smoke; Proof Passport negative context-only test; IMPACT independent-evidence contract; browser/public-preview gates. No physical-delivery, outcome or impact state is promoted.
-
----
-
-# ATLAS MOBILE CONTEXT / NATIVE CONTROL COLLISION CLOSURE — 28 SEP 2026
-
-**SOURCE FAILURE:** exact deployed HEIR browser proof on mobile-430 timed out because `.ctx-head` intercepted pointer events intended for MapLibre's visible native zoom-in control. 69 deployed ATLAS tests had passed before this single geometry failure.
-
-**FIX:** no camera authority, test, MapLibre behavior or context model changed. On <=760px only while `.ctx` exists, move the existing bottom-right native navigation-control container above the maximum 72vh bottom sheet. No force-click, no hidden control, no parallel navigation UI.
-
-**ACCEPTANCE:** contract test + full ATLAS Zero Loss deployed browser proof on exact candidate. Do not call the ATLAS gate green before that exact run passes.
-
----
-
-# DATA VALUE CONVERGENCE 01 — 4NATION / SSB STATISTICAL CONTEXT — 27 SEP 2026
-
-**STATUS:** HEIR CANDIDATE / OFFICIAL STATISTICAL DISCOVERY + DEFAULT EXTRACT / PUBLIC LIVE UNTOUCHED.
-
-**SOURCE:** Statistics Norway PxWebApi v2. Search uses `/tables?query=...`; selected tables use `/tables/{id}` and the source-defined default/latest `/data` extract. SSB documents open access without registration, CC BY 4.0, 30 queries/minute and 800,000-cell extract limits. 4PLANET caches metadata/default extracts for fifteen minutes.
-
-**CANONICAL OBJECT:** `statistical-table:ssb:<5-digit-table-id>`. Returned data retain table label/update/periods/dimensions plus JSON-stat2 coordinates, cell values and source status markers.
-
-**USER LAW:** the user chooses the table. 4NATION does not silently decide which statistic proves or disproves a public policy. Default extracts are context, not causal models.
-
-**TRUTH BOUNDARY:** null/status/confidential values stay explicit. Units, dimensions, table metadata and footnotes remain necessary context. Statistical association does not establish policy causation or measured implementation outcome.
-
-**BEFORE → AFTER:** a 4NATION user can move from a public case to official measurable context, inspect the latest default source extract and open the original SSB table without model-generated statistics.
+**OBSERVED EXTERNAL STATE:** fresh web search for `"4PLANET Atlas" 4planetatlas.com`, `site:4planetatlas.…6757 tokens truncated…E → AFTER:** a 4NATION user can move from a public case to official measurable context, inspect the latest default source extract and open the original SSB table without model-generated statistics.
 
 **NO DUPLICATE SYSTEM:** read-through shared source adapter; no statistical warehouse or parallel public-decision store.
 
@@ -1457,3 +1185,25 @@ Founder observed Google account selection returning to /login without authentica
 **MOBILE-FIRST RISK:** Safari and chat in-app browsers may also have distinct storage/redirect behaviour.
 **HUMAN SUCCESS:** Google account approval → transparent ID success → actual bridge POST → authenticated 4planet.org.
 **FOUNDER RELEASE:** Founder authorised emergency ID production repair 08–09 Oct 2026. Scope public/_headers plus one regression test and existing GOLD release control only. No 4SAPIEN changes.
+
+## UNIVERSAL IMPACT — EXPLICIT INDEPENDENT VERIFICATION INTEGRITY — 09 OCT 2026
+
+**USER ARRIVES BECAUSE:** A person following an IMPACT action needs `VERIFIED` to mean that independent verification is physically referenced, not merely that some evidence link exists.
+
+**ONE THING TO UNDERSTAND:** `evidenceRefs` can identify provider or delivery material. It is not, by itself, proof that an independent verifier assessed the action.
+
+**PRIMARY ACTION:** Fail closed when a lifecycle record reaches `VERIFIED` or a later state without a non-empty `integrity.independentVerificationRef`.
+
+**SECONDARY DEPTH:** Preserve existing quantity, delivery, contradiction, provider-only, refund and evidence-time checks. Preserve TEST/PRODUCTION and D0–D4 separation.
+
+**P1 DOMINANT:** Missing independent-verification metadata is reported as `missing_independent_verification_reference`.
+**P2 ORIENTATION:** Empty and whitespace-only references fail exactly like omitted metadata.
+**P3 ACTION / NEXT:** Independent Gold judges the exact HEIR correction and regression before any release controller advances it.
+**P4 DEPTH:** A reference proves only that metadata is linked; it does not itself establish delivery, outcome, impact or external user value.
+**WHAT CAN BE REMOVED:** The fail-open path where `VERIFIED` accepts absent integrity metadata.
+**WHAT MUST BE REUSED:** Existing `ActionEvidenceIntegrity`, lifecycle validator, issue #151 receiver, HEIR and IMPACT test suite.
+**TRUTH BOUNDARY:** Code and deterministic tests do not certify a real provider, verifier, delivery, outcome, impact, payment or production runtime.
+**MOBILE-FIRST RISK:** Not applicable — no interface or layout changes. Existing UI must continue to render validator results without claim promotion.
+**HUMAN SUCCESS:** A missing independent-verification record cannot be silently presented as verified IMPACT.
+**BASE / ROLLBACK:** `king/test@15446ba4890613e1554e93644903d9806fe9d1a5`; revert the bounded correction commit if independent Gold finds a contract regression.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No main merge or production release is authorised by this brief.

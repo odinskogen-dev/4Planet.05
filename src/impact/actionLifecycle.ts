@@ -167,6 +167,7 @@ export interface ActionEvidenceIntegrity {
   evidenceMaxAgeHours?: number | null;
   providerClaimOnly?: boolean;
   contradictoryEvidence?: boolean;
+  independentVerificationRef?: string | null;
   refundState?: "NONE" | "REQUESTED" | "CONFIRMED";
 }
 
@@ -221,6 +222,10 @@ export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now
   if (["DELIVERED", "EVIDENCED", "VERIFIED", "OUTCOME_OBSERVED", "IMPACT_CLAIM_ELIGIBLE"].includes(record.state) && record.evidenceRefs.length === 0) failures.push("missing_delivery_or_outcome_evidence");
 
   const integrity = record.integrity;
+  if (
+    stateAtLeast(record.state, "VERIFIED") &&
+    !integrity?.independentVerificationRef?.trim()
+  ) failures.push("missing_independent_verification_reference");
   if (!integrity) return failures;
 
   if (typeof integrity.expectedQuantity === "number" && typeof integrity.reportedQuantity === "number") {
