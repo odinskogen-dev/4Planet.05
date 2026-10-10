@@ -1,3 +1,4 @@
+import englishOakPage from "../../public/species-data/v1/english-oak.json" with { type: "json" };
 const ORIGIN = "https://4planet-05.pages.dev";
 const SPECIES_V51_PREVIEW_ORIGIN = 'https://species-v50-orca-preview-3blykp.v2.appdeploy.ai';
 const SPECIES_V51_ASSET_PREFIX = '/__species_v51/';
@@ -68,6 +69,85 @@ async function serveOrcaV51Data(request, path) {
   return new Response(request.method === 'HEAD' ? null : upstream.body, {
     status: upstream.status,
     headers,
+  });
+}
+// Source-grounded, unreviewed oak proof on the same v52 UI as /orca.
+// Source of truth: public/species-data/v1/english-oak.json; bundled by Wrangler.
+const OAK_ORIGIN = 'https://species-v50-orca-preview-3blykp.v2.appdeploy.ai';
+const OAK_PREFIX = '/__species_oak/';
+
+async function serveEnglishOak(request) {
+  if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405 });
+  const upstream = await fetch(OAK_ORIGIN + '/', { method: request.method, headers: { Accept: 'text/html' }, redirect: 'follow' });
+  if (!upstream.ok) return new Response('SPECIES oak preview unavailable', { status: 503, headers: { 'cache-control': 'no-store' } });
+  const headers = new Headers(upstream.headers);
+  for (const h of ['set-cookie', 'content-length', 'content-encoding', 'etag', 'content-security-policy']) headers.delete(h);
+  headers.set('cache-control', 'no-store');
+  headers.set('x-robots-tag', 'noindex, nofollow');
+  headers.set('content-security-policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data: blob:; connect-src 'self' https://api.gbif.org https://api.obis.org https://api.inaturalist.org https://ghvdzetmplqkdtfqiror.supabase.co; font-src 'self' https: data:; frame-src 'self' https://4planetatlas.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'");
+  headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers });
+  const rewriteAsset = (el, name) => {
+    const value = el.getAttribute(name);
+    if (!value) return;
+    const target = new URL(value, OAK_ORIGIN + '/');
+    if (target.origin === OAK_ORIGIN && target.pathname.startsWith('/assets/')) {
+      el.setAttribute(name, OAK_PREFIX + target.pathname.slice(1));
+    }
+  };
+  return new HTMLRewriter()
+    .on('head', { element(el) { el.append('<script src="/__species_oak/boot.js"></script>', { html: true }); } })
+    .on('title', { element(el) { el.setInnerContent('English oak — SPECIES'); } })
+    .on('script[src]', { element(el) { rewriteAsset(el, 'src'); } })
+    .on('link[href]', { element(el) { rewriteAsset(el, 'href'); } })
+    .transform(new Response(upstream.body, { status: upstream.status, headers }));
+}
+
+async function serveEnglishOakAsset(request, pathname) {
+  if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405 });
+  const relative = pathname.slice(OAK_PREFIX.length);
+  if (relative === 'boot.js') {
+    const script = "if (!location.hash.startsWith('#/labs/species/english-oak')) location.hash = '#/labs/species/english-oak';";
+    return new Response(request.method === 'HEAD' ? null : script, { status: 200, headers: { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'no-store' } });
+  }
+  if (!relative.startsWith('assets/') || relative.includes('..')) return new Response('Not found', { status: 404 });
+  const target = new URL(relative, OAK_ORIGIN + '/');
+  const upstream = await fetch(target, { method: request.method, redirect: 'follow' });
+  const headers = new Headers(upstream.headers);
+  for (const h of ['set-cookie', 'content-security-policy']) headers.delete(h);
+  if (!upstream.ok || request.method === 'HEAD' || !relative.endsWith('.js')) {
+    return new Response(request.method === 'HEAD' ? null : upstream.body, { status: upstream.status, headers });
+  }
+  // This existing v52 standalone preview has an Orca-specific media adapter.
+  // Temporarily correct *only the oak-serving bundle*, never the /orca build.
+  // Eventually replace this bounded adapter with the canonical shared media service.
+  const oakImages = [englishOakPage.hero, ...englishOakPage.gallery];
+  const changes = [
+    ['https://upload.wikimedia.org/wikipedia/commons/1/17/Orcinus_orca_282690764.jpg', oakImages[0].url],
+    ['https://upload.wikimedia.org/wikipedia/commons/3/37/Killerwhales_jumping.jpg', oakImages[1].url],
+    ['https://commons.wikimedia.org/wiki/File:Orcinus_orca_282690764.jpg', oakImages[0].sourcePage],
+    ['https://commons.wikimedia.org/wiki/File:Killerwhales_jumping.jpg', oakImages[1].sourcePage],
+    ['Robert Pittman / NOAA', oakImages[1].credit],
+    ['steve b', oakImages[0].credit],
+    ['Public domain (US federal government)', oakImages[1].licence],
+    ['Wild orca', 'English oak'],
+    ['Orcas live in every ocean, with distinct social cultures and hunting strategies. This preview uses the referenced NOAA source document for its published facts.', 'English oaks grow in temperate woodlands and support many forms of life. For detailed facts, consult the sourced botanical profile.'],
+    ['https://www.fisheries.noaa.gov/species/killer-whale', 'https://www.kew.org/plants/oak-tree'],
+    ['commonName:"Orca"', 'commonName:"English oak"'],
+    ['title:"Orca"', 'title:"English oak"'],
+  ];
+  let js = await upstream.text();
+  for (const [from, to] of changes) js = js.replaceAll(from, to);
+  for (const h of ['content-length', 'content-encoding', 'etag']) headers.delete(h);
+  headers.set('content-type', 'application/javascript; charset=utf-8');
+  headers.set('cache-control', 'no-store');
+  return new Response(js, { status: upstream.status, headers });
+}
+
+function serveEnglishOakData(request) {
+  if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405 });
+  return new Response(request.method === 'HEAD' ? null : JSON.stringify(englishOakPage), {
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' },
   });
 }
 const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
@@ -214,6 +294,9 @@ export default {
     }
 
     if (path === "/orca" || path === "/orca/") return serveOrcaV51(request);
+    if (path === "/english-oak" || path === "/english-oak/") return serveEnglishOak(request);
+    if (path.startsWith(OAK_PREFIX)) return serveEnglishOakAsset(request, path);
+    if (path === "/species-data/v1/english-oak.json") return serveEnglishOakData(request);
     if (path.startsWith(SPECIES_V51_ASSET_PREFIX)) return serveOrcaV51Asset(request, path);
     if (path === "/species-data/v1/orca.json" || path === "/species-data/v1/index.json") return serveOrcaV51Data(request, path);
     if (isAsset(path)) return proxyRaw(request, path);
