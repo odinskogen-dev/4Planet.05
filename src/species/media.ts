@@ -88,7 +88,7 @@ function rightsNote(base: string, blockedCount: number): string {
 
 async function queryGbifStillImages(
   colXr: string,
-  options: { country?: string; limit?: number } = {},
+  options: { country?: string; limit?: number; blockedIdentifiers?: Set<string> } = {},
 ): Promise<SpeciesMediaResult> {
   const q = new URLSearchParams({
     taxonKey: colXr,
@@ -103,10 +103,10 @@ async function queryGbifStillImages(
   if (!result.ok) return { ok: false, error: `GBIF_MEDIA_${result.error}` };
 
   const seen = new Set<string>();
+  const blockedIdentifiers = options.blockedIdentifiers ?? new Set<string>();
   const images: ResolvedSpeciesImage[] = [];
   const rows = Array.isArray(result.data?.results) ? result.data.results : [];
   const rightsCheckedAt = new Date().toISOString();
-  let blockedCount = 0;
 
   for (const row of rows) {
     const mediaRows = Array.isArray(row?.media) ? row.media : [];
@@ -122,7 +122,7 @@ async function queryGbifStillImages(
       const license = resolveSpeciesImageLicence(media?.license);
       const rightsState = classifySpeciesMediaRights(license);
       if (rightsState !== "DISPLAYABLE") {
-        blockedCount += 1;
+        blockedIdentifiers.add(identifier);
         continue;
       }
 
@@ -155,9 +155,9 @@ async function queryGbifStillImages(
   return {
     ok: true,
     data: images,
-    blockedCount,
+    blockedCount: blockedIdentifiers.size,
     rightsCheckedAt,
-    note: rightsNote(baseNote, blockedCount),
+    note: rightsNote(baseNote, blockedIdentifiers.size),
   };
 }
 
@@ -166,17 +166,22 @@ export async function fetchResolvedSpeciesImages(
   options: { countryFirst?: string; limit?: number } = {},
 ): Promise<SpeciesMediaResult> {
   const countryFirst = options.countryFirst ?? "NO";
+  const blockedIdentifiers = new Set<string>();
   const countryResult = await queryGbifStillImages(colXr, {
     country: countryFirst,
     limit: options.limit ?? 8,
+    blockedIdentifiers,
   });
   if (!countryResult.ok) return countryResult;
   if (countryResult.data.length > 0) return countryResult;
 
-  const globalResult = await queryGbifStillImages(colXr, { limit: options.limit ?? 8 });
+  const globalResult = await queryGbifStillImages(colXr, {
+    limit: options.limit ?? 8,
+    blockedIdentifiers,
+  });
   if (!globalResult.ok) return globalResult;
 
-  const totalBlocked = countryResult.blockedCount + globalResult.blockedCount;
+  const totalBlocked = globalResult.blockedCount;
   return {
     ok: true,
     data: globalResult.data,

@@ -1816,3 +1816,13 @@ Founder observed Google account selection returning to /login without authentica
 **BASE / ROLLBACK:** `king/test@7ba56706d3fd56383c63d380ab398d34534a95f3`; revert the bounded local-week correction if independent Gold finds a calendar or hydration regression.
 
 **MAKER ≠ JUDGE:** Factory implements and regression-tests the correction. Independent Gold must judge the exact immutable SHA before any promotion; Founder-controlled LIVE remains unchanged.
+
+
+# SPECIES MEDIA RIGHTS — DISTINCT WITHHELD COUNT CORRECTION — 10 OCT 2026
+
+**STATUS:** RETURNED GOLD QA_CORRECT CONSUMED / MAKER_CORRECTED / GOLD RE-REVIEW REQUIRED / NO LIVE RELEASE.
+**RETURN:** exact candidate `9e11a2a76a31e6080fae0273dab777abb76c9103` proved the same unlicensed GBIF identifier could appear in both the Norway request and global fallback, but summed both encounters while the user-facing note described distinct media items.
+**BOUNDED CORRECTION:** reuse one blocked-identifier set across the existing country-first/global-fallback request pair. Repeated exact identifiers count once; different identifiers count separately. Rights classification, fail-closed withholding and displayable media selection are unchanged.
+**ACCEPTANCE:** the executable request-path contract proves repeated identifier → one withheld item, different identifiers → two withheld items, and item-level displayable licensing remains required. Independent Gold must rejudge the exact SHA; no merge, deployment, production or LIVE promotion is authorised.
+**BASE / ROLLBACK:** `king/test@c1b66166bab940a66cfd4f0f2fb5856cab9eb2cb`; revert this correction commit if the distinct-count invariant is rejected.
+**MAKER ≠ JUDGE:** Factory corrects the existing HEIR only. Gold decides.
