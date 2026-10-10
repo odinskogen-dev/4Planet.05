@@ -180,14 +180,39 @@ const LAYERS = [
     label: "WH4LES", color: C.blue, src: "OBIS", r: 4,
     note: "Recorded sightings and samples of cetaceans. These are occurrence records — not live positions or migration routes.",
     load: async () => {
-      const d = await (await fetch("https://api.obis.org/v3/occurrence?scientificname=Cetacea&hascoordinate=true&size=800")).json();
-      return (d.results || []).filter((o) => o.decimalLatitude && o.decimalLongitude).map((o) => {
-        const sci = o.scientificName || "Cetacea";
-        const common = o.vernacularName ? titleCase(o.vernacularName) : "";
-        const link = o.aphiaID ? `<a class="pl" href="https://www.marinespecies.org/aphia.php?p=taxdetails&id=${o.aphiaID}" target="_blank" rel="noopener">Read on WoRMS \u2197</a>` : "";
-        return { lon: o.decimalLongitude, lat: o.decimalLatitude, aphia: o.aphiaID || "",
-          html: `<b class="nm">${esc(common || sci)}</b><br><span class="lat">${esc(sci)}</span>${link}` };
-      });
+      const response = await fetch("/api/obis?scientificName=Cetacea&size=200");
+      if (!response.ok) throw new Error(`OBIS bridge failed: ${response.status}`);
+      const d = await response.json();
+      if (!d.ok || !Array.isArray(d.records)) throw new Error("OBIS bridge contract mismatch");
+      return d.records
+        .filter((o) =>
+          Number.isFinite(o.latitude) &&
+          Number.isFinite(o.longitude) &&
+          (o.licenceClass === "OPEN_CC0" || o.licenceClass === "OPEN_ATTRIBUTION"))
+        .map((o) => {
+          const sci = o.scientificName || "Cetacea";
+          const aphia = (String(o.scientificNameId || "").match(/\d+$/) || [])[0] || "";
+          const eventDate = o.eventDate ? String(o.eventDate).slice(0, 10) : "Date not supplied";
+          const uncertainty = Number.isFinite(o.coordinateUncertaintyM)
+            ? `±${Math.round(o.coordinateUncertaintyM).toLocaleString()} m`
+            : "Not supplied";
+          const dataset = o.datasetName || o.datasetId || "Dataset not supplied";
+          const licence = o.licence || "Licence not supplied";
+          const occurrenceId = o.occurrenceId ? String(o.occurrenceId) : "";
+          const worms = aphia
+            ? `<a class="pl" href="https://www.marinespecies.org/aphia.php?p=taxdetails&id=${aphia}" target="_blank" rel="noopener">Taxon on WoRMS \u2197</a>`
+            : "";
+          return {
+            lon: o.longitude,
+            lat: o.latitude,
+            aphia,
+            html: `<b class="nm">${esc(sci)}</b><br><span class="lat">${esc(sci)}</span>` +
+              `<div class="when">Observed ${esc(eventDate)} · uncertainty ${esc(uncertainty)}</div>` +
+              `<div class="note">Dataset: ${esc(dataset)}<br>Licence: ${esc(licence)}${occurrenceId ? `<br>Record: ${esc(occurrenceId)}` : ""}</div>` +
+              worms +
+              `<a class="pl" href="https://obis.org/" target="_blank" rel="noopener">Source: OBIS \u2197</a>`,
+          };
+        });
     } },
   { id: "species", dom: "E4RTH", group: "LIFE", kind: "point", domain: ["PLANET", "E4RTH"],
     label: "SPECIES", color: C.green, src: "GBIF", r: 3,

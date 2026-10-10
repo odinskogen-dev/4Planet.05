@@ -1,3 +1,37 @@
+# ATLAS — WH4LES ITEM TRUTH + OPEN-RIGHTS GATE — 10 OCT 2026
+
+**STATUS:** BOUNDED HEIR INTEGRATION CORRECTION / NO GOLD / NO DEPLOYMENT / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person opens one WH4LES point and needs to know when and how precisely the occurrence was recorded, which dataset supplied it, and under what licence it may be reused.
+
+**ONE THING TO UNDERSTAND:** An OBIS occurrence point is admissible only through the governed adapter and only when its per-record rights are explicitly open.
+
+**PRIMARY ACTION:** Replace the direct browser-to-OBIS query with the existing `/api/obis` bridge and render event date, coordinate uncertainty, dataset, licence, occurrence identifier and OBIS source per point.
+
+**SECONDARY DEPTH:** Preserve valid equator/prime-meridian coordinates by testing finiteness instead of truthiness; fail closed on unknown, non-commercial or no-derivatives rights.
+
+**P1 DOMINANT:** WH4LES accepts only `OPEN_CC0` or `OPEN_ATTRIBUTION` records from the governed bridge.
+
+**P2 ORIENTATION:** Latitude or longitude `0` remains a valid occurrence coordinate.
+
+**P3 ACTION:** Every admitted point exposes date, uncertainty, dataset, licence, record identifier when supplied, and provider source.
+
+**P4 DEPTH:** This bounded correction does not prove upstream availability, completeness, taxonomic correctness, independent Gold, deployment or LIVE behaviour.
+
+**WHAT CAN BE REMOVED:** Direct public OBIS fetches, truthy coordinate filters and rights-blind point popups.
+
+**WHAT MUST BE REUSED:** Existing `/api/obis` adapter, issue #244 receiver, ATLAS point renderer, source-bridge regression suite and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** Records remain occurrence evidence, not abundance, range, population trend or live position. Missing point fields are displayed as missing and are never invented.
+
+**MOBILE-FIRST RISK:** Popup detail grows; exact-head mobile/WebKit Gold must confirm it remains readable and dismissible.
+
+**HUMAN SUCCESS:** A WH4LES point can no longer hide its temporal, spatial, dataset or rights context, and valid zero coordinates are not discarded.
+
+**BASE / ROLLBACK:** `king/test@7ac8d12cf6073ff2f62578fff6c94e9f972f5d55`; revert this bounded correction if independent Gold finds a valid occurrence or mobile interaction regression.
+
+**MAKER ≠ JUDGE:** Factory implements F14; independent Gold judges the exact HEIR SHA. No product Gold, deployment or production release is authorised.
+
 # CROSS-PRODUCT STRUCTURED-DATA OWNERSHIP — 10 OCT 2026
 
 **STATUS:** BOUNDED HEIR SEO LIFECYCLE CORRECTION / NO GOLD / NO DEPLOYMENT / NO LIVE RELEASE.

@@ -9,6 +9,7 @@ const feed = read("functions/api/atlas-feed.ts");
 const climate = read("functions/api/climate-trace.ts");
 const firms = read("functions/api/firms.ts");
 const obis = read("functions/api/obis.ts");
+const atlas = read("src/pages/v5/Atlas.tsx");
 const inat = read("functions/api/inaturalist.ts");
 const truth = read("src/data/truthSpine.ts");
 const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(obis, {
@@ -149,6 +150,19 @@ test("OBIS accepts a real leap day and forwards both bounded dates", async () =>
     assert.equal(body.query.endDate, "2028-03-01");
   } finally {
     globalThis.fetch = originalFetch;
+  }
+});
+
+
+test("ATLAS WH4LES point detail consumes governed open-rights OBIS evidence", () => {
+  assert.match(atlas, /fetch\("\/api\/obis\?scientificName=Cetacea&size=200"\)/);
+  assert.doesNotMatch(atlas, /api\.obis\.org\/v3\/occurrence\?scientificname=Cetacea/);
+  assert.match(atlas, /Number\.isFinite\(o\.latitude\)/);
+  assert.match(atlas, /Number\.isFinite\(o\.longitude\)/);
+  assert.match(atlas, /o\.licenceClass === "OPEN_CC0"/);
+  assert.match(atlas, /o\.licenceClass === "OPEN_ATTRIBUTION"/);
+  for (const field of ["eventDate", "coordinateUncertaintyM", "datasetName", "datasetId", "licence", "occurrenceId"]) {
+    assert.ok(atlas.includes(`o.${field}`), `ATLAS WH4LES detail missing ${field}`);
   }
 });
 
