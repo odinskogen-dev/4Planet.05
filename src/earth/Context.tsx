@@ -284,7 +284,22 @@ const Chain: React.FC<{ rels: Relation[]; startId: EntityId; onOpen: (id: Entity
         const last = i === ids.length - 1;
         const color = TYPE_COLOR[String(n?.type ?? typeOf(id))] ?? "#fff";
         return (
-          <div key={id} className="chain-node" onClick={() => onOpen(id)} style={{ color }}>
+          <div
+            key={id}
+            className="chain-node"
+            role="button"
+            tabIndex={0}
+            aria-label={`Open ${n?.label ?? id}`}
+            onClick={() => onOpen(id)}
+            onKeyDown={(event) => {
+              if (event.repeat) return;
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onOpen(id);
+              }
+            }}
+            style={{ color }}
+          >
             <div className="chain-rail">
               <span className="chain-dot" />
               {!last && <span className="chain-line" />}
