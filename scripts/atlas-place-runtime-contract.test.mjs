@@ -17,7 +17,15 @@ test("ATLAS Place runtime serves one canonical page and one real map image", asy
   const html = await place.text();
   assert.match(html, /rel="canonical" href="https:\/\/4planetatlas\.com\/place\/berlin"/);
   assert.match(html, /property="og:image" content="https:\/\/4planetatlas\.com\/place\/berlin\/map\.svg"/);
-  assert.match(html, /Explore Berlin in the interactive ATLAS/);
+  assert.match(html, /data-acquisition-entry="organic-place"/);
+  assert.match(html, /class="map-entry"/);
+  assert.match(html, /href="https:\/\/4planetatlas\.com\/atlas\/\?place=berlin/);
+  assert.match(html, /EXPLORE Berlin IN ATLAS/);
+  assert.match(html, /Start with the place\. Follow what connects\./);
+  assert.match(html, /World Place Index/);
+  assert.match(html, /Explore SPECIES/);
+  assert.match(html, /Explore Living Systems/);
+  assert.doesNotMatch(html, /4PLANET ATLAS — Planetary Intelligence Map<\/title>/);
 
   const image = await request("/place/berlin/map.svg");
   assert.equal(image.status, 200);

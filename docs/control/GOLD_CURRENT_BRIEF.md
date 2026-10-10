@@ -1,3 +1,10 @@
+# ATLAS PLACE SEARCH ENTRY — EXECUTABLE CONTRACT — 10 OCT 2026
+
+**STATUS:** HEIR QA HARDENING / SAME PRODUCT CORRECTION / NO LIVE RELEASE.
+**ACCEPTANCE:** the ordinary smoke suite must execute the real middleware Place runtime contract. Berlin must resolve as a unique self-canonical Place object, expose the organic-entry marker, present the map as a dominant same-place ATLAS link, expose the primary ATLAS continuation, retain World Place Index / SPECIES / Living Systems graph links, and never fall back to the generic ATLAS-root document title.
+**ROLLBACK:** 62a6c042413cfaecd0d1fa3e8eada15ef94e7c15.
+**MAKER ≠ JUDGE:** contract inclusion proves regression coverage only; independent Gold + exact preview remain required.
+
 # PUBLIC SEARCH CANONICAL TRANSPORT — 10 OCT 2026
 
 **STATUS:** BOUNDED TECHNICAL SEARCH CORRECTION / HEIR ONLY / LIVE RELEASE NOT IMPLIED.
