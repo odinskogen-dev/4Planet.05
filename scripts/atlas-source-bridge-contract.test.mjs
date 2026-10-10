@@ -166,6 +166,35 @@ test("ATLAS WH4LES point detail consumes governed open-rights OBIS evidence", ()
   }
 });
 
+
+test("OBIS missing or blank size keeps the default and null total stays unknown", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedUrls = [];
+  globalThis.fetch = async (url) => {
+    requestedUrls.push(String(url));
+    return new Response(JSON.stringify({ results: [], total: null }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+
+  try {
+    for (const suffix of ["", "&size="]) {
+      const response = await obisRuntime.onRequestGet({
+        request: new Request(`https://test.4planet.org/api/obis?scientificName=Orcinus+orca${suffix}`),
+      });
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.query.size, 50);
+      assert.equal(body.total, null);
+    }
+    assert.equal(requestedUrls.length, 2);
+    for (const requestedUrl of requestedUrls) assert.match(requestedUrl, /size=50/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("Truth Spine can retain precision/generalisation/citation state from source adapters", () => {
   for (const needle of ["sourceAuthority", "datasetName", "citationIdentifier", "coordinateUncertaintyM", "locationGeneralised", "generalisationNote", "occurrenceStatus"]) {
     assert.ok(truth.includes(needle), `Truth Spine missing ${needle}`);

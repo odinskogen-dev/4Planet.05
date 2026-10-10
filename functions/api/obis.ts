@@ -42,7 +42,9 @@ const cleanIsoDate = (value: string | null) => {
 };
 
 const boundedInt = (value: string | null, fallback: number, max: number) => {
-  const n = Number(value);
+  const raw = String(value ?? "").trim();
+  if (!raw) return fallback;
+  const n = Number(raw);
   return Number.isInteger(n) && n >= 0 ? Math.min(n, max) : fallback;
 };
 
@@ -164,7 +166,9 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         licencePolicy: "evaluate_per_record_or_dataset_before_reuse",
       },
       count: records.length,
-      total: Number.isFinite(Number(payload?.total)) ? Number(payload.total) : null,
+      total: payload?.total !== null && payload?.total !== undefined && Number.isFinite(Number(payload.total))
+        ? Number(payload.total)
+        : null,
       records,
     }, 200, 900);
   } catch (error) {

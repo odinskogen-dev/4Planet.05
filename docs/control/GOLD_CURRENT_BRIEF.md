@@ -1,3 +1,29 @@
+# NATUREBRAIN / ATLAS — OBIS DEFAULT-COUNT TRUTH — 10 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON HEIR / NO GOLD / NO DEPLOYMENT / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person requests marine occurrence evidence without a count override and needs a truthful bounded default and truthful upstream total state.
+
+**ONE THING TO UNDERSTAND:** A missing query parameter and a numeric zero are different inputs; an unknown upstream total and a measured zero are different evidence states.
+
+**PRIMARY ACTION:** Preserve the declared default `size=50` when `size` is absent or blank, and preserve `total:null` as unknown.
+
+**P1 DOMINANT:** Missing/blank size reaches OBIS as 50, not 1.
+
+**P2 ORIENTATION:** Explicit numeric zero remains bounded by the endpoint minimum; it is not treated as a missing parameter.
+
+**P3 ACTION:** Upstream `total:null` is returned as null, never coerced to zero.
+
+**P4 DEPTH:** Targeted regression does not prove upstream availability, independent re-Gold, deployment or LIVE behaviour.
+
+**WHAT MUST BE REUSED:** Existing `/api/obis` bridge, issue #244, returned Gold row 482, source-bridge regression suite and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** Unknown is not zero. Default count is request control, not evidence of source completeness.
+
+**BASE / ROLLBACK:** `king/test@c3baa5cd866ca998c8d4699be9f7408e7719b4ed`; revert this bounded return correction if independent re-Gold finds a valid request-contract regression.
+
+**MAKER ≠ JUDGE:** Factory consumes the returned correction; independent Gold rejudges the exact HEIR SHA. No product Gold, deployment or production release is authorised.
+
 # ATLAS — WH4LES ITEM TRUTH + OPEN-RIGHTS GATE — 10 OCT 2026
 
 **STATUS:** BOUNDED HEIR INTEGRATION CORRECTION / NO GOLD / NO DEPLOYMENT / NO LIVE RELEASE.
