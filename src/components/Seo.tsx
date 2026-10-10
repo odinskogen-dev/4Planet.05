@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { removeOwnedJsonLd } from "./seoJsonLd";
 
 const DEFAULT_TITLE = "4PLANET_ — For a Living Planet";
 const DEFAULT_DESCRIPTION = "4PLANET is a system for ecological action — built to make participation understandable, trustworthy, measurable and easy.";
@@ -58,10 +59,6 @@ function upsertCanonical(url: string) {
   node.setAttribute("href", url);
 }
 
-function removeJsonLd() {
-  document.getElementById("4planet-page-jsonld")?.remove();
-}
-
 function clearArticleMetadata() {
   ["article:published_time", "article:modified_time", "article:section", "article:author", "article:tag"].forEach((key) => {
     removeMeta("property", key);
@@ -94,7 +91,7 @@ function resetDefaultMetadata() {
   removeMeta("name", "twitter:image:alt");
   clearArticleMetadata();
   document.head.querySelector('link[rel="canonical"]')?.remove();
-  removeJsonLd();
+  removeOwnedJsonLd();
 }
 
 export function Seo({
@@ -146,7 +143,7 @@ export function Seo({
       tags.forEach(appendArticleTag);
     }
 
-    removeJsonLd();
+    removeOwnedJsonLd();
     if (jsonLd) {
       const script = document.createElement("script");
       script.id = "4planet-page-jsonld";

@@ -59,7 +59,7 @@ const head = [
   `<meta name="twitter:title" content="${esc(title)}">`,
   `<meta name="twitter:description" content="${esc(description)}">`,
   `<meta name="twitter:image" content="${esc(image)}">`,
-  `<script type="application/ld+json" data-4planet-atlas-prerender="true">${json(structured)}</script>`
+  `<script type="application/ld+json" data-4planet-prerender="true">${json(structured)}</script>`
 ].join("\n    ");
 
 html = html.replace("</head>", `    ${head}\n  </head>`);

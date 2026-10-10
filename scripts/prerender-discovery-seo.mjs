@@ -39,7 +39,7 @@ function pageHtml({ pathName, title, description, body, jsonLd, image }) {
 
   html = html.replace(
     "</head>",
-    `    <link rel="canonical" href="${esc(canonical)}" />\n    <script type="application/ld+json">${json(jsonLd)}</script>\n  </head>`,
+    `    <link rel="canonical" href="${esc(canonical)}" />\n    <script type="application/ld+json" data-4planet-prerender="true">${json(jsonLd)}</script>\n  </head>`,
   );
   return html.replace('<div id="root"></div>', `<div id="root">${body}</div>`);
 }
