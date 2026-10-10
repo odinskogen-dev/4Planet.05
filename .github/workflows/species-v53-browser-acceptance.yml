@@ -56,43 +56,8 @@ jobs:
               const heading=await page.locator('h1').first().innerText({timeout:25000});
               assert.match(heading,new RegExp(name,'i'),engine+' wrong species '+slug+': '+heading);
               assert.ok(body.includes(sci),engine+' missing science '+slug);
-              assert.equal(new URL(page.url()).pathname.replace(new RegExp('/
-              assert.equal(new URL(page.url()).hash,'',engine+' hash leaked '+slug);
-              const canonical=await page.locator('link[rel=canonical]').first().getAttribute('href');
-              assert.equal(canonical,'https://4species.com/'+slug,'canonical '+slug);
-              await page.reload({waitUntil:'domcontentloaded'});
-              const after=await page.locator('h1').first().innerText({timeout:25000});
-              assert.match(after,new RegExp(name,'i'),engine+' reload incorrect '+slug);
-              await page.screenshot({path:'/tmp/species-v53-acceptance/'+engine+'-'+slug+'.png',fullPage:true});
-              console.log(JSON.stringify({engine,slug,name,canonical,route:page.url(),state:'PASS'}));
-            }
-            for (const [route,pattern] of [
-              ['/explore',/Explore|living world|species/i],
-              ['/group/whales',/Whales/i],
-              ['/group/fungi',/Fungi/i],
-              ['/quiz',/Quiz|questions/i],
-              ['/quiz?mode=night',/Quiz night|teams/i],
-              ['/about',/SPECIES/i]
-            ]){
-              body=await open(route);assert.match(body,pattern,engine+' '+route);
-              console.log(JSON.stringify({engine,route,state:'PASS'}));
-            }
-            await open('/');
-            assert.ok((await page.locator('a[href="https://4planet.org/"]').count())>0,engine+' 4PLANET wordmark link absent');
-            assert.equal(crashes.length,0,engine+' uncaught JavaScript error(s): '+crashes.join(' | '));
-            await browser.close();
-          }
-          console.log('SPECIES_V53_SAFARI_AND_CHROME_ACCEPTANCE_PASS');
-          NODE
-      - name: Preserve screenshots
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: species-v53-acceptance-screenshots
-          path: /tmp/species-v53-acceptance
-          retention-days: 21
-          if-no-files-found: ignore
-),''),'/'+slug,'preview directory alias');
+              const reviewedPath = new URL(page.url()).pathname;
+              assert.equal(reviewedPath.endsWith('/') ? reviewedPath.slice(0,-1) : reviewedPath, '/'+slug, 'preview slash normalization');
               assert.equal(new URL(page.url()).hash,'',engine+' hash leaked '+slug);
               const canonical=await page.locator('link[rel=canonical]').first().getAttribute('href');
               assert.equal(canonical,'https://4species.com/'+slug,'canonical '+slug);
