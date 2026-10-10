@@ -70,6 +70,9 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
+          # Existing main-app _redirects contains incompatible SPA loops for Workers Assets.
+          # Our SPECIES Worker owns short-path redirects; leave original build intact otherwise.
+          rm -f /tmp/species-v53/dist/_redirects
           npx --yes wrangler@4.128.0 deploy "$GITHUB_WORKSPACE/ops/species-v53-origin-worker.js" \
             --assets=/tmp/species-v53/dist \
             --name=species-v53-origin \
