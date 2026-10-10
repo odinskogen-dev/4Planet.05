@@ -1,0 +1,79 @@
+name: MAX EXPOSURE — Magazine zero-loss QA
+
+on:
+  push:
+    branches:
+      - work/magazine-max-exposure-zero-loss-20261010
+    paths:
+      - 'scripts/**'
+      - 'src/**'
+      - 'public/**'
+      - 'tests/e2e/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'playwright.magazine.config.ts'
+      - 'docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010.md'
+      - '.github/workflows/magazine-max-exposure-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  zero-loss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Magazine contracts
+        run: npm run test:magazine
+      - name: Production build
+        env:
+          VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+          MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
+        run: npm run build
+      - name: Crawler and canonical proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          story='dist/magazine/amazonia-more-than-a-forest/index.html'
+          film='dist/films/we-the-power/index.html'
+          [ -f "$story" ] && [ -f "$film" ]
+          grep -Fq 'data-4planet-static-prerender="magazine-story"' "$story"
+          grep -Fq 'The Amazon is more than a forest' "$story"
+          grep -Fq '<link rel="canonical" href="https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/">' "$story"
+          grep -Fq 'data-4planet-static-prerender="film-detail"' "$film"
+          grep -Fq '<link rel="canonical" href="https://4planetmagazine.com/films/we-the-power/">' "$film"
+          if grep -Fq '<noscript><article class="mag-static-prerender"' "$story"; then
+            echo 'Static story content is still trapped in noscript'
+            exit 21
+          fi
+          grep -Fq '<loc>https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/</loc>' public/magazine-sitemap.xml
+          grep -Fq '<loc>https://4planetmagazine.com/films/we-the-power/</loc>' public/magazine-sitemap.xml
+          if [ -f public/news-sitemap.xml ]; then
+            grep -q '<url>' public/news-sitemap.xml || { echo 'empty news sitemap must not exist'; exit 22; }
+          else
+            ! grep -Fq 'Sitemap: https://4planetmagazine.com/news-sitemap.xml' public/magazine-robots.txt
+          fi
+      - name: Human product browser regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium webkit
+          npm run preview -- --host 127.0.0.1 > "$RUNNER_TEMP/mag-preview.log" 2>&1 &
+          preview_pid=$!
+          trap 'kill $preview_pid 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 5 --max-time 10 'http://127.0.0.1:4173/magazine/' || true)
+            [ "$code" = '200' ] && break
+            sleep 1
+          done
+          npx playwright test tests/e2e/magazine-world-class.spec.ts --config playwright.magazine.config.ts --project=mag-desktop-1440 --project=mag-mobile-390 --project=mag-webkit-390
+          npx playwright test tests/e2e/magazine-films-gold.spec.ts --config playwright.magazine.config.ts --project=mag-desktop-1440 --project=mag-mobile-390 --project=mag-webkit-390
