@@ -1,0 +1,2 @@
+# SPECIES v53 staged source
+This branch is based on immutable commit 5dc63fe8ddd1daea32d62d102066705d3c7efbfe; the cumulative Claude patch is gzip/base64 sharded to avoid connector text upload limits. The CI job checks both SHA256 hashes before applying. The branch does not overwrite king/test, live 4species.com or any 4PLANET production site. After source build, the five newer source-grounded species articles are added and the index regenerated. Staging is always noindex; do not promote without Safari, routing, shared ID and data provenance QA.

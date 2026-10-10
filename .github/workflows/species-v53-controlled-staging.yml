@@ -1,0 +1,61 @@
+name: SPECIES v53 Controlled Staging Build
+on:
+  push:
+    branches: [work/species-v53-controlled-staging-20261011]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Reassemble authenticated Claude v53 patch on its exact historical base
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/staging/species-v53/part-*.b64 | sha256sum | grep -F 'ebb2c0f49733dc1ccfd62995a02e8dfa1abef57ecb0174c993cbfc768f863161'
+          cat ops/staging/species-v53/part-*.b64 | base64 -d | gzip -d > /tmp/species-v53.patch
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/species-v53.patch' | sha256sum -c
+          git apply --check /tmp/species-v53.patch
+          git apply /tmp/species-v53.patch
+          echo 'SPECIES_V53_PATCH_APPLIED'
+      - name: Preserve the five newer sourced SPECIES proof articles
+        shell: bash
+        run: |
+          set -euo pipefail
+          PIN=510ed2bb7d885286b907e5beaad9b5cfaebf9612
+          for slug in english-oak atlantic-puffin western-honey-bee fly-agaric common-octopus; do
+            curl -fsSL --retry 3 "https://raw.githubusercontent.com/odinskogen-dev/4Planet.05/$PIN/public/species-data/v1/$slug.json" -o "public/species-data/v1/$slug.json"
+            jq -e --arg slug "$slug" '.slug==$slug and .provenance.review=="DRAFT"' "public/species-data/v1/$slug.json"
+          done
+          node scripts/species-page-validate.mjs --write-index
+          echo 'SPECIES_ALL_SIX_PAGES_PRESERVED'
+      - name: Install and validate SPECIES v53
+        run: |
+          npm ci
+          npm run typecheck
+          npm run species:validate
+          npm run build
+      - name: Confirm root route and no indexing in staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/index.html
+          test -s dist/orca/index.html
+          grep -qi 'noindex' dist/index.html
+      - name: Publish separate Cloudflare Pages preview (never production)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.128.0 pages project create species-v53-isolated-preview-20261011 --production-branch work/species-v53-controlled-staging-20261011 || true
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name species-v53-isolated-preview-20261011 --branch work/species-v53-controlled-staging-20261011
+          echo 'SPECIES_V53_ISOLATED_PREVIEW_DEPLOYED'
