@@ -1,13 +1,3 @@
-# 4NATION SEARCH CANONICAL TRANSPORT — 10 OCT 2026
-
-**STATUS:** HEIR TECHNICAL DISCOVERY CORRECTION / NO LIVE RELEASE.
-**EVIDENCE:** Search Console has already recorded an impression for `http://4nation.org/`, while the canonical public object is HTTPS.
-**RULE:** HTTP and `www` variants converge in one permanent 308 hop to `https://4nation.org` with path and query preserved.
-**ACCEPTANCE:** existing public worker performs protocol+host normalisation before auth/content handling; ordinary 4NATION contract locks the transport rule.
-**PRODUCT PROTECTION:** no 4NATION human UI, decision logic, source adapter or content hierarchy is changed.
-**ROLLBACK:** parent `2cefcd3b9c0a292100207c8ba23bf3bb79b0f6cd`.
-**MAKER ≠ JUDGE:** exact build/contracts + live readback required before release. LIVE remains Founder-gated.
-
 # SEARCH DISCOVERY — EMPTY NEWS SITEMAP FAIL-CLOSED — 10 OCT 2026
 
 **STATUS:** HEIR TECHNICAL DISCOVERY CORRECTION / NO LIVE RELEASE.
