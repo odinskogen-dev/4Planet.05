@@ -81,11 +81,21 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
           rm -f /tmp/species-v53/dist/_redirects
-          npx --yes wrangler@4.128.0 deploy "$GITHUB_WORKSPACE/ops/species-v53-production-worker.js" \
-            --assets=/tmp/species-v53/dist \
-            --name=4species-router \
-            --compatibility-date=2026-10-05 \
-            --keep-vars
+          # Cloudflare asset-first routing bypassed /species/orca redirect.
+          # Force the Worker before every request so canonical paths are authoritative.
+          cat > "$GITHUB_WORKSPACE/ops/wrangler-v53-production.json" <<EOF
+          {
+            "name": "4species-router",
+            "main": "./species-v53-production-worker.js",
+            "compatibility_date": "2026-10-05",
+            "assets": {
+              "directory": "/tmp/species-v53/dist",
+              "binding": "ASSETS",
+              "run_worker_first": true
+            }
+          }
+          EOF
+          npx --yes wrangler@4.128.0 deploy --config "$GITHUB_WORKSPACE/ops/wrangler-v53-production.json" --keep-vars
           echo 'SPECIES_V53_CANONICAL_WORKER_DEPLOYED'
       - name: Verify canonical short routes, home and product pages
         shell: bash
