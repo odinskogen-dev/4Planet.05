@@ -45,7 +45,12 @@ test("client lifecycle removes current, prerender and legacy Atlas-owned graphs 
   assert.equal(thirdParty.removed, false);
 
   assert.doesNotThrow(() => removeOwnedJsonLd(documentRoot), "StrictMode cleanup must be idempotent");
-  assert.match(OWNED_JSON_LD_SELECTOR, /#4planet-page-jsonld/);
+  assert.match(OWNED_JSON_LD_SELECTOR, /script\[id="4planet-page-jsonld"\]/);
+  assert.doesNotMatch(
+    OWNED_JSON_LD_SELECTOR,
+    /#4planet-page-jsonld/,
+    "numeric-leading DOM ids must use an attribute selector so querySelectorAll cannot throw",
+  );
   assert.match(OWNED_JSON_LD_SELECTOR, /data-4planet-prerender/);
   assert.match(OWNED_JSON_LD_SELECTOR, /data-4planet-atlas-prerender/);
   assert.doesNotMatch(OWNED_JSON_LD_SELECTOR, /^script\[type=/, "selector must never target every JSON-LD script");
