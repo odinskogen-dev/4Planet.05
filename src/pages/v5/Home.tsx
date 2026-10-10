@@ -184,10 +184,9 @@ const GUIDED_ENTRIES = [
   {
     eyebrow: "Systems journey",
     title: "See what connects.",
-    line: "Explore how living and human systems depend on one another, change and come under pressure.",
-    to: "/livingsystems/",
-    action: "Understand Living Systems",
-    reloadDocument: true,
+    line: "Explore how a living system connects species, habitat, people, pressure and possible recovery.",
+    to: "/living-systems/oslofjord",
+    action: "Explore Oslofjord",
   },
   {
     eyebrow: "Action journey",
