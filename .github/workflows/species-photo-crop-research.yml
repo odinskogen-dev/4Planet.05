@@ -1,0 +1,62 @@
+name: SPECIES Photo Crop Research
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-photo-crop-research.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pillow requests
+      - name: Prepare 4 source-vetted photo alternatives and phone/desktop crops
+        shell: bash
+        run: |
+          mkdir -p /tmp/species-photo-crops
+          python - <<'PY'
+          import hashlib,io,json,time,urllib.parse
+          from pathlib import Path
+          from PIL import Image,ImageOps,ImageDraw
+          import requests
+          assets=[
+            ('bee-scabiosa','Apis mellifera on Scabiosa.jpg'),
+            ('bee-trepte','Apis mellifera Western honey bee.jpg'),
+            ('bee-shide','Apis mellifera - Western Honey Bee.jpg'),
+            ('octopus-delso-46','Pulpo común (Octopus vulgaris), Parque natural de la Arrábida, Portugal, 2020-07-21, DD 46.jpg'),
+            ('octopus-delso-108','Pulpo común (Octopus vulgaris), Parque natural de la Arrábida, Portugal, 2020-07-31, DD 108.jpg')
+          ]
+          out=Path('/tmp/species-photo-crops')
+          for label,filename in assets:
+            fn=filename.replace(' ','_')
+            md=hashlib.md5(fn.encode('utf-8')).hexdigest()
+            url='https://upload.wikimedia.org/wikipedia/commons/'+md[0]+'/'+md[:2]+'/'+urllib.parse.quote(fn)
+            print('SOURCE',label,url,flush=True)
+            response=None
+            for retry in range(5):
+              try:
+                r=requests.get(url,headers={'User-Agent':'4PLANET photo-selection audit (https://4species.com)'},timeout=55)
+                r.raise_for_status()
+                response=r.content
+                break
+              except Exception as e:
+                print('RETRY',label,str(e),flush=True); time.sleep(3)
+            if not response: raise RuntimeError('FAILED '+label)
+            im=Image.open(io.BytesIO(response)).convert('RGB')
+            for kind,size in [('phone',(390,844)),('desktop',(1280,800))]:
+              for centering in [(0.5,0.5),(0.65,0.42)]:
+                view=ImageOps.fit(im,size,method=Image.Resampling.LANCZOS,centering=centering)
+                pos='center' if centering[0]==0.5 else 'right'
+                view.save(out/f'{label}-{kind}-{pos}.jpg',quality=90)
+            print('OK',label,im.size,flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-photo-crop-candidates
+          path: /tmp/species-photo-crops
+          retention-days: 7
+          if-no-files-found: ignore
