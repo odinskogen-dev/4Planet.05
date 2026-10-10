@@ -1,0 +1,286 @@
+{
+  "schema": "4PLANET_SPECIES_PAGE_01",
+  "slug": "atlantic-puffin",
+  "domain": "OCE4N",
+  "identity": {
+    "commonName": "Atlantic puffin",
+    "scientificName": "Fratercula arctica",
+    "group": "Bird · Auk"
+  },
+  "hook": {
+    "text": "A bird of Atlantic cliffs that can carry several slippery fish in its brilliant bill.",
+    "state": "KNOWN",
+    "source": {
+      "label": "RSPB — Saving puffins",
+      "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+    }
+  },
+  "intro": [
+    {
+      "text": "An Atlantic puffin spends much of its life at sea, returning to colonies on northern Atlantic coasts to breed.",
+      "state": "KNOWN",
+      "source": {
+        "label": "BirdLife — Puffins in 2026",
+        "url": "https://www.birdlife.org/news/2026/03/31/puffins-cliffs-might-turn-quieter-this-year/"
+      }
+    },
+    {
+      "text": "Pairs often return to a nest site in a burrow or crevice. A female lays one egg, and parents carry small fish back to the chick.",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Saving puffins",
+        "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+      }
+    },
+    {
+      "text": "Outside the breeding season its bill and face become less colourful than the familiar summer portrait.",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Puffin",
+        "url": "https://www.rspb.org.uk/birds-and-wildlife/puffin"
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "value": "One egg",
+      "text": "A single egg is laid in a nesting burrow or suitable cliff crevice.",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Saving puffins",
+        "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+      }
+    },
+    {
+      "value": "Small fish",
+      "text": "Sandeels are among the fish brought back for chicks.",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Saving puffins",
+        "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+      }
+    },
+    {
+      "value": "At sea",
+      "text": "Puffins spend most of their year away from breeding land.",
+      "state": "KNOWN",
+      "source": {
+        "label": "BirdLife — Puffins in 2026",
+        "url": "https://www.birdlife.org/news/2026/03/31/puffins-cliffs-might-turn-quieter-this-year/"
+      }
+    }
+  ],
+  "hero": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Puffin_%28Fratercula_arctica%29.jpg",
+    "credit": "Charles J. Sharp",
+    "licence": "CC BY-SA 4.0",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Puffin_%28Fratercula_arctica%29.jpg",
+    "alt": "Close portrait of an Atlantic puffin on Skomer Island, Wales",
+    "focus": "50% 45%"
+  },
+  "glance": [
+    {
+      "label": "Nest",
+      "value": "burrow or crevice",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Saving puffins",
+        "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+      }
+    },
+    {
+      "label": "Diet",
+      "value": "small fish",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Saving puffins",
+        "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+      }
+    },
+    {
+      "label": "Breeding",
+      "value": "one egg",
+      "state": "KNOWN",
+      "source": {
+        "label": "RSPB — Saving puffins",
+        "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+      }
+    },
+    {
+      "label": "Habitat",
+      "value": "North Atlantic sea & cliffs",
+      "state": "KNOWN",
+      "source": {
+        "label": "BirdLife — Puffins in 2026",
+        "url": "https://www.birdlife.org/news/2026/03/31/puffins-cliffs-might-turn-quieter-this-year/"
+      }
+    }
+  ],
+  "story": [
+    {
+      "kind": "life",
+      "eyebrow": "A season ashore",
+      "title": "A life shaped by the sea",
+      "claims": [
+        {
+          "text": "Puffins return to northern Atlantic cliffs and islands to breed, after spending much of the year offshore.",
+          "state": "KNOWN",
+          "source": {
+            "label": "BirdLife — Puffins in 2026",
+            "url": "https://www.birdlife.org/news/2026/03/31/puffins-cliffs-might-turn-quieter-this-year/"
+          }
+        },
+        {
+          "text": "A pair may re-use a burrow or a suitable crevice and rear one chick.",
+          "state": "KNOWN",
+          "source": {
+            "label": "RSPB — Saving puffins",
+            "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "need",
+      "eyebrow": "Feeding a chick",
+      "title": "A beak built for fish",
+      "claims": [
+        {
+          "text": "Serrated parts of the bill help hold small fish, including sandeels, during the journey back to a chick.",
+          "state": "KNOWN",
+          "source": {
+            "label": "RSPB — Saving puffins",
+            "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "place",
+      "eyebrow": "Where it lives",
+      "title": "The North Atlantic",
+      "claims": [
+        {
+          "text": "Atlantic puffins are seabirds of the North Atlantic, with breeding colonies on coastal islands and cliffs.",
+          "state": "KNOWN",
+          "source": {
+            "label": "BirdLife — Puffins in 2026",
+            "url": "https://www.birdlife.org/news/2026/03/31/puffins-cliffs-might-turn-quieter-this-year/"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "pressure",
+      "eyebrow": "Pressures",
+      "title": "When the sea changes",
+      "claims": [
+        {
+          "text": "RSPB reports a decline of about 23% in the UK puffin population over two decades at comparable census sites; this is a UK measure, not a global count.",
+          "state": "KNOWN",
+          "source": {
+            "label": "RSPB — Saving puffins",
+            "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+          }
+        },
+        {
+          "text": "BirdLife documents severe mortality among seabirds after harsh North Atlantic winter conditions in 2026; impacts differ between colonies.",
+          "state": "KNOWN",
+          "source": {
+            "label": "BirdLife — Puffins in 2026",
+            "url": "https://www.birdlife.org/news/2026/03/31/puffins-cliffs-might-turn-quieter-this-year/"
+          }
+        }
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Atlantic_puffin_%28Fratercula_arctica%29.jpg",
+      "credit": "BouketenCate",
+      "licence": "CC BY-SA 4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Atlantic_puffin_%28Fratercula_arctica%29.jpg",
+      "alt": "Atlantic puffin in its coastal breeding habitat",
+      "focus": "50% 43%"
+    }
+  ],
+  "facts": {
+    "appearance": [
+      {
+        "label": "Breeding bill",
+        "text": "Brightly coloured, tall, laterally flattened bill; black and white body.",
+        "state": "KNOWN",
+        "source": {
+          "label": "RSPB — Puffin",
+          "url": "https://www.rspb.org.uk/birds-and-wildlife/puffin"
+        }
+      },
+      {
+        "label": "Winter plumage",
+        "text": "Bill and face are less brightly coloured outside the breeding season.",
+        "state": "KNOWN",
+        "source": {
+          "label": "RSPB — Puffin",
+          "url": "https://www.rspb.org.uk/birds-and-wildlife/puffin"
+        }
+      }
+    ],
+    "ecology": [
+      {
+        "label": "Food for chicks",
+        "text": "Small fish, including sandeels, carried to young in breeding colonies.",
+        "state": "KNOWN",
+        "source": {
+          "label": "RSPB — Saving puffins",
+          "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+        }
+      },
+      {
+        "label": "Nest sites",
+        "text": "Burrows and crevices on islands and rocky coastal slopes.",
+        "state": "KNOWN",
+        "source": {
+          "label": "RSPB — Saving puffins",
+          "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+        }
+      }
+    ],
+    "conservation": [
+      {
+        "label": "UK trend",
+        "text": "At comparable UK census sites, RSPB reports a 23% decline across two decades.",
+        "state": "KNOWN",
+        "source": {
+          "label": "RSPB — Saving puffins",
+          "url": "https://www.rspb.org.uk/helping-nature/what-we-do/protecting-species-and-habitats/species-spotlight/species-spotlight-puffin"
+        },
+        "context": "Country-specific survey result"
+      }
+    ]
+  },
+  "limits": [
+    "The 23% UK decline is not a global abundance estimate.",
+    "Colonies, feeding patterns and nesting seasons differ across the Atlantic.",
+    "Images document specific individuals and dates; they do not prove current populations."
+  ],
+  "atlas": {
+    "layers": [
+      "bluemarble",
+      "biodiv"
+    ]
+  },
+  "provenance": {
+    "review": "DRAFT",
+    "writtenBy": "AXE source-grounded SPECIES proof series 02–05",
+    "checkedAt": "2026-10-10"
+  },
+  "names": {
+    "nb": {
+      "name": "Lunde",
+      "source": {
+        "label": "RSPB — Puffin",
+        "url": "https://www.rspb.org.uk/birds-and-wildlife/puffin"
+      }
+    }
+  }
+}
