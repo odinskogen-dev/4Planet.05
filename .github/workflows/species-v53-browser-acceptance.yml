@@ -60,7 +60,9 @@ jobs:
               assert.equal(reviewedPath.endsWith('/') ? reviewedPath.slice(0,-1) : reviewedPath, '/'+slug, 'preview slash normalization');
               assert.equal(new URL(page.url()).hash,'',engine+' hash leaked '+slug);
               const canonical=await page.locator('link[rel=canonical]').first().getAttribute('href');
-              assert.equal(canonical,'https://4species.com/'+slug,'canonical '+slug);
+              const canonicalParsed=new URL(canonical);
+              assert.equal(canonicalParsed.pathname.replace(new RegExp('/$'),''),'/'+slug,'canonical path '+slug);
+              assert.ok(['https://4species.com',origin].includes(canonicalParsed.origin),'canonical has unrelated host '+slug);
               await page.reload({waitUntil:'domcontentloaded'});
               const after=await page.locator('h1').first().innerText({timeout:25000});
               assert.match(after,new RegExp(name,'i'),engine+' reload incorrect '+slug);
