@@ -1,3 +1,30 @@
+# 4PLANET STORY — FOR A LIVING PLANET — MAGAZINE GOLD 01 — 10 OCT 2026
+
+**STATUS:** FOUNDER_ACCEPTED PUBLIC MAGAZINE STORY / HEIR CANDIDATE / LIVE PUBLICATION REQUESTED / INDEPENDENT GOLD REQUIRED.
+**FOUNDER DECISION:** “bruk sterke visueller … bygge en premium artikkel av dette og publisere på 4Planet Magazine” + request to test it as a Magazine About story and recheck against BRAIN.
+**CANON AUTHORITY:** ODDEKALV_ FOUNDER THESIS — WHAT WE BELIEVE — LOCKED CANON 2.0 + current 4PLANET Playbook / ecological North Star. No new values, mission or parallel brand truth is created.
+
+**USER ARRIVES BECAUSE:** a person encounters 4PLANET for the first time and wants to understand, emotionally and concretely, why it exists and whether there is a meaningful place for them in the mission.
+**ONE THING TO UNDERSTAND:** 4PLANET exists to connect care, knowledge and capability so understanding can become useful, truthful action for a living planet.
+**PRIMARY ACTION:** read the story; if it resonates, continue to FIND YOUR PART.
+**SECONDARY DEPTH:** What We Believe, Living Systems and the wider product ecosystem explain the philosophy and system in more detail.
+
+**P1 DOMINANT:** human emotional opening — ocean, forest, animal, holding the hand of someone we love.
+**P2 ORIENTATION:** humanity has extraordinary capability, yet care, knowledge, solutions, people and resources remain fragmented.
+**P3 ACTION / NEXT:** “There is a place for everyone who wants to help. Including you.” → /join.
+**P4 DEPTH:** Truth First, useful action, responsible power, learning/compounding and the ecological North Star.
+
+**EDITORIAL TYPE:** ORGANISATIONAL_EXPLAINER. It must remain visibly labelled as 4PLANET-owned organisational content, not independent Magazine reporting.
+**STORY LENGTH:** deliberately concise (~600 words); emotional narrative outranks exhaustive product explanation.
+**VISUAL CONTRACT:** Earthrise leads; a cinematic sequence moves through ocean life → living land → people. Reuse only the controlled image registry. Earthrise is registered NASA public-domain imagery; remaining frames reuse the existing 4PLANET-controlled library.
+**MAGAZINE ABOUT:** /magazine/about may route readers to this story as the wider “why 4PLANET exists” narrative without turning Magazine About into a second canon.
+**4PLANET.ORG:** this release does not rewrite /about/story. The same narrative core may later be expressed there at shorter institutional depth; one story, two depths, never two competing truths.
+
+**TRUTH BOUNDARY:** this is a purpose/story essay, not evidence that 4PLANET has already achieved ecological outcomes. “Did it actually help?” remains the proof question. Organisational aspiration must never be presented as verified impact.
+**HUMAN SUCCESS:** a first-time reader can feel why the mission matters, explain the core gap in one sentence, understand 4PLANET’s role without product jargon, and see a credible place for themselves.
+**MAKER ≠ JUDGE:** Factory produces the candidate; independent Gold/browser proof judges the exact HEIR. Founder has authorised Magazine publication, but release occurs only after the bounded candidate passes required gates.
+**ROLLBACK:** revert the bounded Magazine story/visual/About delta if exact-head Gold or browser proof finds a material regression.
+
 # ATLAS OBIS SHAREALIKE + DATASET CITATION CORRECTION — 10 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED / EXISTING HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
