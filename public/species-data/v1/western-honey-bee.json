@@ -1,0 +1,277 @@
+{
+  "schema": "4PLANET_SPECIES_PAGE_01",
+  "slug": "western-honey-bee",
+  "domain": "E4RTH",
+  "identity": {
+    "commonName": "Western honey bee",
+    "scientificName": "Apis mellifera",
+    "group": "Insect · Bee"
+  },
+  "hook": {
+    "text": "A flower visitor that carries information back to an entire colony through movement.",
+    "state": "KNOWN",
+    "source": {
+      "label": "Smithsonian — Honeybee biology and behaviour",
+      "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+    }
+  },
+  "intro": [
+    {
+      "text": "Honey bees live in organised colonies that include a queen, workers and drones; pheromones help coordinate life in the hive.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "text": "Foraging workers collect nectar and pollen from flowers and can communicate the location of food using a waggle dance.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "text": "As bees visit flowers, pollen can move between plants, supporting their reproduction.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "value": "Waggle dance",
+      "text": "Worker bees communicate a discovered food source through movement.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "value": "Colony life",
+      "text": "Queens, workers and drones have different roles.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "value": "Pollination",
+      "text": "Visits to flowers can transfer pollen between plants.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    }
+  ],
+  "hero": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Apis_mellifera_on_flowers_%282026%29.jpg",
+    "credit": "AmoebaWasTaken",
+    "licence": "CC BY-SA 4.0",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Apis_mellifera_on_flowers_%282026%29.jpg",
+    "alt": "Western honey bee foraging among flowers",
+    "focus": "50% 48%"
+  },
+  "glance": [
+    {
+      "label": "Food",
+      "value": "nectar & pollen",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "label": "Colony",
+      "value": "queen · workers · drones",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "label": "Role",
+      "value": "flower pollinator",
+      "state": "KNOWN",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    },
+    {
+      "label": "Pressure",
+      "value": "Varroa mites",
+      "state": "KNOWN",
+      "source": {
+        "label": "USDA ARS — Varroa overview",
+        "url": "https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/research/varroa/varroa-overview/"
+      }
+    }
+  ],
+  "story": [
+    {
+      "kind": "life",
+      "eyebrow": "Inside the colony",
+      "title": "One colony, different lives",
+      "claims": [
+        {
+          "text": "A honey bee colony includes specialised workers, drones and a queen, and chemical signals are important for coordination.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Smithsonian — Honeybee biology and behaviour",
+            "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "need",
+      "eyebrow": "Flowers and memory",
+      "title": "Finding food together",
+      "claims": [
+        {
+          "text": "A successful forager can return to the colony and communicate the direction and distance of food with a waggle dance.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Smithsonian — Honeybee biology and behaviour",
+            "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+          }
+        },
+        {
+          "text": "Pollination can occur as pollen is transferred between visited flowers.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Smithsonian — Honeybee biology and behaviour",
+            "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "place",
+      "eyebrow": "Where it forages",
+      "title": "A world of flowers",
+      "claims": [
+        {
+          "text": "Honey bees gather nectar and pollen from flowers and are widely used as managed pollinators for crops.",
+          "state": "KNOWN",
+          "source": {
+            "label": "USDA ARS — The buzz about bees",
+            "url": "https://aglab.ars.usda.gov/fuel-your-curiosity/insects/buzz-about-bees"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "pressure",
+      "eyebrow": "Pressures",
+      "title": "Threats inside the hive",
+      "claims": [
+        {
+          "text": "USDA identifies pests, pathogens, pesticides and poor nutrition among important overlapping pressures on honey bee colonies.",
+          "state": "KNOWN",
+          "source": {
+            "label": "USDA ARS — The buzz about bees",
+            "url": "https://aglab.ars.usda.gov/fuel-your-curiosity/insects/buzz-about-bees"
+          }
+        },
+        {
+          "text": "The parasitic mite Varroa destructor is a particularly serious threat to managed Apis mellifera colonies.",
+          "state": "KNOWN",
+          "source": {
+            "label": "USDA ARS — Varroa overview",
+            "url": "https://www.ars.usda.gov/pacific-west-area/tucson-az/carl-hayden-bee-research-center/research/varroa/varroa-overview/"
+          }
+        }
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
+      "credit": "Ввласенко",
+      "licence": "CC BY-SA 3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
+      "alt": "Honey bee on a white quince blossom",
+      "focus": "52% 50%"
+    }
+  ],
+  "facts": {
+    "appearance": [
+      {
+        "label": "Flower visitor",
+        "text": "Hairy insect with translucent wings; worker bees carry pollen as they forage.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Smithsonian — Honeybee biology and behaviour",
+          "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+        }
+      }
+    ],
+    "ecology": [
+      {
+        "label": "Plant relationships",
+        "text": "Visits can carry pollen between flowers and support seed production.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Smithsonian — Honeybee biology and behaviour",
+          "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+        }
+      },
+      {
+        "label": "Cooperation",
+        "text": "Worker bees communicate foraging information with a waggle dance.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Smithsonian — Honeybee biology and behaviour",
+          "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+        }
+      }
+    ],
+    "conservation": [
+      {
+        "label": "Managed-colony stress",
+        "text": "Parasites, pathogens, pesticides and nutrition affect managed honey bees in different contexts.",
+        "state": "KNOWN",
+        "source": {
+          "label": "USDA ARS — The buzz about bees",
+          "url": "https://aglab.ars.usda.gov/fuel-your-curiosity/insects/buzz-about-bees"
+        },
+        "context": "Do not treat managed colony losses as wild pollinator population trends"
+      }
+    ]
+  },
+  "limits": [
+    "Western honey bees are one bee species; findings about managed colonies cannot stand in for all wild pollinators.",
+    "Varroa and other threats vary by geography and beekeeping conditions.",
+    "Photographs show individuals and cannot establish a global trend."
+  ],
+  "atlas": {
+    "layers": [
+      "bluemarble",
+      "biodiv"
+    ]
+  },
+  "provenance": {
+    "review": "DRAFT",
+    "writtenBy": "AXE source-grounded SPECIES proof series 02–05",
+    "checkedAt": "2026-10-10"
+  },
+  "names": {
+    "nb": {
+      "name": "Honningbie",
+      "source": {
+        "label": "Smithsonian — Honeybee biology and behaviour",
+        "url": "https://www.si.edu/object/10-incredible-facts-about-honeybees:yt_3cfNbbrXOAc"
+      }
+    }
+  }
+}
