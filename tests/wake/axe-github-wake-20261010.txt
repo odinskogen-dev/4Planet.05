@@ -1,0 +1,4 @@
+AXE GITHUB DIRECT WAKE TEST — 2026-10-10
+Test-only artifact; no production code, no publication, no external send.
+One isolated draft PR. Three event IDs (open, close, reopen).
+Success means an independent AXE execution trace associated with each event ID, with a real value-producing action. Slack receipt alone never counts.
