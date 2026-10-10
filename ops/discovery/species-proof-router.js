@@ -12,6 +12,50 @@ const PROOFS = {
 };
 const PREFIX = '/__species_proof/';
 
+// Keep the public, licensed source URL and author credit in the canonical JSON.
+// Deliver pixels through SPECIES-owned edge caching; prevent Wikimedia rate limits
+// from blanking the main image, especially between mobile and desktop visits.
+function pageMedia(page, slug) {
+  const items=[page.hero,...(page.gallery||[])].filter(i=>i && i.url);
+  const out={...page};
+  const publicUrl=(i)=>'https://4species.com'+PREFIX+slug+'/media/'+i;
+  out.hero={...page.hero,url:publicUrl(0)};
+  out.gallery=(page.gallery||[]).map((photo,index)=>({...photo,url:publicUrl(index+1)}));
+  return out;
+}
+async function mediaResponse(request,slug,resource) {
+  const page=PROOFS[slug];
+  const index=Number(resource.slice('media/'.length));
+  const images=[page.hero,...(page.gallery||[])].filter(i=>i && i.url);
+  if(!Number.isInteger(index)||index<0||index>=images.length)return new Response('Not found',{status:404});
+  const originalUrl=images[index].url;
+  const cache=caches.default;
+  const key=new Request(request.url,{method:'GET'});
+  const cacheHeaders={'cache-control':'public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800','x-content-type-options':'nosniff'};
+  try {
+    const hit=await cache.match(key);
+    if(hit)return new Response(request.method==='HEAD'?null:hit.body,{status:hit.status,headers:hit.headers});
+  } catch {}
+  for(let attempt=0;attempt<3;attempt++){
+    try {
+      const upstream=await fetch(originalUrl,{method:'GET',redirect:'follow',cf:{cacheEverything:true,cacheTtl:604800}});
+      const kind=upstream.headers.get('content-type')||'';
+      if(!upstream.ok||!kind.toLowerCase().startsWith('image/'))continue;
+      const headers=new Headers(cacheHeaders);
+      headers.set('content-type',kind);
+      headers.set('cross-origin-resource-policy','same-origin');
+      const response=new Response(upstream.body,{status:200,headers});
+      if(request.method==='GET') {
+        try {await cache.put(key,response.clone());}catch{}
+        return response;
+      }
+      return new Response(null,{status:200,headers});
+    } catch {}
+  }
+  return new Response('Image temporarily unavailable',{status:503,headers:{'cache-control':'no-store'}});
+}
+
+
 export function proofBootScript(slug, name) {
   const route = '#/labs/species/' + slug;
   const title = name + ' — SPECIES';
@@ -74,15 +118,18 @@ async function assetResponse(request,pathname,origin) {
   const slug=rest.slice(0,i),resource=rest.slice(i+1),page=PROOFS[slug];
   if(!page||resource.includes('..'))return new Response('Not found',{status:404});
   if(resource==='boot.js')return new Response(request.method==='HEAD'?null:proofBootScript(slug,page.identity.commonName),{headers:{'content-type':'application/javascript; charset=utf-8','cache-control':'no-store'}});
+  if(/^media\/[0-9]+$/.test(resource))return mediaResponse(request,slug,resource);
   if(!resource.startsWith('assets/'))return new Response('Not found',{status:404});
   const upstream=await fetch(new URL(resource,origin+'/'),{method:request.method,redirect:'follow'});
   const headers=new Headers(upstream.headers);headers.delete('set-cookie');headers.delete('content-security-policy');
   if(!upstream.ok||request.method==='HEAD'||!resource.endsWith('.js'))return new Response(request.method==='HEAD'?null:upstream.body,{status:upstream.status,headers});
   const photos=[page.hero,...(page.gallery||[])].filter(v=>v&&v.url);
   const a=photos[0], b=photos[1]||a;
+  const aUrl='https://4species.com'+PREFIX+slug+'/media/0';
+  const bUrl='https://4species.com'+PREFIX+slug+'/media/'+(photos.length>1?1:0);
   const replacements=[
-    ['https://upload.wikimedia.org/wikipedia/commons/1/17/Orcinus_orca_282690764.jpg',a.url],
-    ['https://upload.wikimedia.org/wikipedia/commons/3/37/Killerwhales_jumping.jpg',b.url],
+    ['https://upload.wikimedia.org/wikipedia/commons/1/17/Orcinus_orca_282690764.jpg',aUrl],
+    ['https://upload.wikimedia.org/wikipedia/commons/3/37/Killerwhales_jumping.jpg',bUrl],
     ['https://commons.wikimedia.org/wiki/File:Orcinus_orca_282690764.jpg',a.sourcePage],
     ['https://commons.wikimedia.org/wiki/File:Killerwhales_jumping.jpg',b.sourcePage],
     ['steve b',a.credit],['Robert Pittman / NOAA',b.credit],
@@ -108,7 +155,7 @@ export async function handleSpeciesProof(request, pathname, origin) {
   if(pathname.startsWith(PREFIX))return assetResponse(request,pathname,origin);
   if(pathname.startsWith('/species-data/v1/') && pathname.endsWith('.json')){
     const slug=pathname.slice('/species-data/v1/'.length,-5);
-    if(PROOFS[slug])return new Response(request.method==='HEAD'?null:JSON.stringify(PROOFS[slug]),{headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
+    if(PROOFS[slug])return new Response(request.method==='HEAD'?null:JSON.stringify(pageMedia(PROOFS[slug],slug)),{headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
   }
   if(pathname.startsWith('/species/')){
     const slug=pathname.slice('/species/'.length).replace(/\/$/,'');
