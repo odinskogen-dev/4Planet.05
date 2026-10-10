@@ -2008,7 +2008,94 @@ export async function onRequest(context) {
       const sameCountryHtml=sameCountry.length?`<h2>More places in ${escapeHtml(displayContext||place.context)}</h2><ul>${sameCountry.slice(0,8).map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)} map and geography</a> — ${escapeHtml(p.type)}</li>`).join("")}</ul>`:"";
       const nearbyHtml=nearby.length?`<h2>Nearby places to explore</h2><ul>${nearby.slice(0,6).map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">Explore ${escapeHtml(p.name)} in ATLAS</a> — about ${Math.round(p.distanceKm).toLocaleString("en-GB")} km from the reference point</li>`).join("")}</ul>`:"";
       const relatedHtml=related.length?`<h2>Connected places in the World Place Index</h2><ul>${related.map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> — ${escapeHtml(p.type)}, ${escapeHtml(p.context)}</li>`).join("")}</ul>`:"";
-      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(searchTitle)}</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><meta property="og:site_name" content="4PLANET ATLAS"><meta property="og:title" content="${escapeHtml(searchTitle)}"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${canonical}"><meta property="og:type" content="website"><meta property="og:image" content="${imageUrl}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${imageUrl}"><meta name="twitter:title" content="${escapeHtml(searchTitle)}"><meta name="twitter:description" content="${escapeHtml(description)}"><style>:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#000;color:#fff;font:16px/1.62 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:#fff}main{max-width:860px;margin:0 auto;padding:26px 20px 72px}nav{color:#92989f;font-size:14px}.eyebrow{margin-top:54px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#9fa6ad}h1{font-size:clamp(46px,8vw,84px);line-height:.98;letter-spacing:-.055em;margin:12px 0 12px}h2{margin-top:42px;font-size:26px}h3{margin-top:28px}.context{font-size:18px;color:#b7bdc3}.atlas-cta{display:inline-block;margin:14px 0 18px;padding:13px 19px;border-radius:999px;background:#fff;color:#000;text-decoration:none;font-weight:750}.place-image{display:block;width:100%;height:auto;margin:24px 0 8px;border:1px solid #222;border-radius:18px;background:#050505}.image-note{color:#8f969d;font-size:13px;margin:0 0 30px}.truth{padding:16px 18px;border:1px solid #282828;border-radius:14px;background:#080808;color:#c1c6cb}ul{padding-left:22px}li{margin:6px 0}</style><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body><main><nav aria-label="Breadcrumb"><a href="/atlas/">ATLAS</a> / <a href="/places">Places</a> / <span>${escapeHtml(place.name)}</span></nav><p class="eyebrow">4PLANET ATLAS / PLACE</p><h1>${escapeHtml(h1Title)}</h1><p class="context">${escapeHtml(place.type)} · ${escapeHtml(displayContext||place.context)}</p><p><a class="atlas-cta" href="${mapHref}">Explore ${escapeHtml(place.name)} in the interactive ATLAS</a></p><img class="place-image" src="${imageUrl}" width="1200" height="675" alt="Map reference location of ${escapeHtml(h1Title)} in 4PLANET ATLAS" loading="eager" decoding="async"><p class="image-note">Verified reference coordinate for navigation. This marker is not a boundary.</p><h2>About ${escapeHtml(place.name)}</h2><p>${escapeHtml(place.summary)} 4PLANET ATLAS represents ${escapeHtml(place.name)} as a stable geographic object at Natural Earth reference coordinate ${entityLat}, ${entityLon}. The coordinate is used to open the intended map context; it is not an administrative boundary, ecological boundary or claim about conditions across the whole place.</p>${parentHtml}<p><strong>Verified geographic hierarchy:</strong> ${entityContext.map(escapeHtml).join(" → ") || "Not fully resolved in the current source cohort"}.</p><p><strong>Source identity:</strong> Natural Earth NE_ID ${escapeHtml(place.neId||"unknown")}${place.iso2?` · ISO ${escapeHtml(place.iso2)}`:""}${place.wikidataId?` · Wikidata ${escapeHtml(place.wikidataId)}`:""}${place.geonamesId?` · GeoNames ${escapeHtml(place.geonamesId)}`:""}.</p><p><a href="${mapHref}">Open the live map for ${escapeHtml(place.name)}</a>. The handoff carries the same place slug and reference coordinate so the geographic entry point and interactive map resolve to the same object.</p><h2>Living Planet Intelligence</h2><p>Geographic identity is published independently from ecological interpretation. Living Systems, Species, Pressures, Missions, Evidence and Solutions are connected here only when the shared 4PLANET evidence model supports the relationship. Until then, those relationships remain unknown rather than being inferred from the place name.</p>${childHtml}${sameCountryHtml}${nearbyHtml}${relatedHtml}${evidenceHtml}<h2>Source and provenance</h2><p><strong>Geographic source:</strong> <a href="${escapeHtml(place.sourceUrl)}">${escapeHtml(place.sourceDataset)}</a>${place.sourceVersion?` v${escapeHtml(place.sourceVersion)}`:""}. Source feature ${escapeHtml(place.neId||"unknown")}${place.sourceFileSha?` · upstream file ${escapeHtml(place.sourceFileSha.slice(0,12))}`:""}. Natural Earth data is public domain; <a href="${escapeHtml(place.sourceRightsUrl)}">terms of use</a>. Source reference checked ${escapeHtml(place.sourceCheckedAt)}.</p><p><a href="/places">World Place Index</a> · <a href="/atlas/">ATLAS home</a> · <a href="https://4planet.org/living-systems">Living Systems</a> · <a href="https://4species.com/species/">Species</a></p><p class="truth"><strong>Truth boundary:</strong> this Place page verifies geographic identity and map context. It does not by itself establish species presence, ecosystem health, pressure, causality or ecological outcome.</p><p><a class="atlas-cta" href="${mapHref}">Continue exploring ${escapeHtml(place.name)} in ATLAS</a></p></main></body></html>`;
+      const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(searchTitle)}</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><meta property="og:site_name" content="4PLANET ATLAS"><meta property="og:title" content="${escapeHtml(searchTitle)}"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:url" content="${canonical}"><meta property="og:type" content="website"><meta property="og:image" content="${imageUrl}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${imageUrl}"><meta name="twitter:title" content="${escapeHtml(searchTitle)}"><meta name="twitter:description" content="${escapeHtml(description)}"><style>
+:root{color-scheme:dark;--ink:#f5f7f8;--dim:#a3abb3;--line:rgba(255,255,255,.16);--panel:#0a0d10;--accent:#e7ff00}
+*{box-sizing:border-box}html{background:#030405}body{margin:0;background:#030405;color:var(--ink);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit}
+.place-hero{min-height:100svh;display:grid;grid-template-rows:auto 1fr;position:relative;overflow:hidden;background:#020304}
+.place-nav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px clamp(20px,4vw,58px);font-size:11px;letter-spacing:.16em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.place-nav a{text-decoration:none}.place-nav__index{color:var(--dim)}
+.place-stage{position:relative;min-height:calc(100svh - 66px);display:grid;grid-template-columns:minmax(0,42%) minmax(0,58%)}
+.place-copy{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(34px,6vw,86px) clamp(24px,5vw,72px);background:linear-gradient(115deg,#030405 70%,rgba(3,4,5,.82) 100%)}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font-weight:520;margin:0;max-width:8ch;text-wrap:balance}
+.context{font-size:clamp(17px,2vw,25px);color:#d4d8dc;margin:24px 0 0;max-width:32ch}
+.place-promise{margin:18px 0 0;color:var(--dim);max-width:42ch;font-size:15px}
+.atlas-cta{display:inline-flex;align-items:center;justify-content:center;min-height:52px;margin:30px 0 0;padding:0 20px;background:var(--accent);color:#050607;text-decoration:none;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;width:max-content;max-width:100%}
+.map-entry{position:relative;display:block;min-height:58svh;overflow:hidden;background:#071019;text-decoration:none;border-left:1px solid var(--line)}
+.map-entry img{width:100%;height:100%;min-height:58svh;object-fit:cover;display:block;filter:saturate(.84) contrast(1.06)}
+.map-entry:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.02) 54%,rgba(0,0,0,.68) 100%);pointer-events:none}
+.map-entry__label{position:absolute;z-index:2;left:clamp(18px,3vw,38px);right:clamp(18px,3vw,38px);bottom:clamp(20px,4vw,48px);display:flex;align-items:flex-end;justify-content:space-between;gap:22px}
+.map-entry__kicker{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#fff;margin-bottom:6px}.map-entry__action{display:block;font-size:clamp(20px,2.5vw,34px);font-weight:650;letter-spacing:-.035em}.map-entry__arrow{font-size:34px;line-height:1}
+.place-content{max-width:1120px;margin:0 auto;padding:clamp(72px,9vw,132px) clamp(22px,5vw,72px)}
+.place-lead{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:clamp(34px,7vw,100px);align-items:start}
+.place-label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7f8890;position:sticky;top:24px}.place-content h2{font-size:clamp(38px,6vw,74px);line-height:.96;letter-spacing:-.055em;font-weight:520;margin:0 0 24px}.place-content h3{font-size:21px;margin:36px 0 12px}.place-content p{max-width:760px;font-size:18px;line-height:1.68;color:#d8dde1}.place-content strong{color:#fff}.place-content ul{padding-left:20px;max-width:780px}.place-content li{margin:9px 0;color:#d8dde1}
+.place-content a{ text-underline-offset:4px}.section-rule{border-top:1px solid var(--line);margin-top:clamp(62px,8vw,104px);padding-top:clamp(48px,7vw,82px)}
+.explore-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:26px}.explore-grid>a{display:block;background:#050709;padding:22px;text-decoration:none;min-height:112px}.explore-grid small{display:block;color:var(--dim);font-size:11px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:10px}.explore-grid strong{font-size:20px}
+.truth{margin-top:42px;padding:20px 0;border-top:1px solid var(--line);color:#aeb5bc;font-size:14px!important}.source-meta{font-size:14px!important;color:#99a1a8!important}
+.final-entry{margin-top:clamp(72px,10vw,140px);padding:clamp(42px,7vw,82px);border:1px solid var(--line);background:#080b0e}.final-entry h2{max-width:11ch}.final-entry .atlas-cta{margin-top:22px}
+@media(max-width:760px){.place-stage{grid-template-columns:1fr;grid-template-rows:auto auto}.place-copy{min-height:54svh;padding-top:54px}.map-entry{border-left:0;border-top:1px solid var(--line);min-height:46svh}.map-entry img{min-height:46svh}.place-lead{grid-template-columns:1fr}.place-label{position:static}.explore-grid{grid-template-columns:1fr}h1{font-size:clamp(58px,18vw,94px)}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body>
+<header class="place-hero">
+  <nav class="place-nav" aria-label="Place navigation"><a href="/atlas/"><strong>4PLANET ATLAS</strong></a><a class="place-nav__index" href="/places">WORLD PLACE INDEX</a></nav>
+  <div class="place-stage">
+    <section class="place-copy">
+      <p class="eyebrow">${escapeHtml(place.type)} · ${escapeHtml(displayContext||place.context)}</p>
+      <h1>${escapeHtml(place.name)}</h1>
+      <p class="context">Explore ${escapeHtml(place.name)} as a place in the living planet.</p>
+      <p class="place-promise">${evidenceRelation ? "Living systems, species and pressures are connected only where source-grounded evidence supports the relationship." : "Start with verified geography, then move into the living systems and evidence connected across 4PLANET as they become available."}</p>
+      <a class="atlas-cta" href="${mapHref}">EXPLORE ${escapeHtml(place.name)} IN ATLAS →</a>
+    </section>
+    <a class="map-entry" href="${mapHref}" aria-label="Open ${escapeHtml(place.name)} as the same place node in the interactive ATLAS">
+      <img src="${imageUrl}" width="1200" height="675" alt="Map reference location of ${escapeHtml(h1Title)} in 4PLANET ATLAS" loading="eager" decoding="async">
+      <span class="map-entry__label"><span><span class="map-entry__kicker">SAME PLACE · LIVE ATLAS</span><span class="map-entry__action">Open the map</span></span><span class="map-entry__arrow" aria-hidden="true">↗</span></span>
+    </a>
+  </div>
+</header>
+<main class="place-content">
+  <section class="place-lead">
+    <div class="place-label">PLACE INTELLIGENCE</div>
+    <div>
+      <h2>Start with the place. Follow what connects.</h2>
+      <p>${escapeHtml(place.summary)} 4PLANET ATLAS represents ${escapeHtml(place.name)} as a stable geographic object at Natural Earth reference coordinate ${entityLat}, ${entityLon}. The coordinate opens the intended map context; it is not an administrative or ecological boundary.</p>
+      ${parentHtml}
+      <p><strong>Verified geographic hierarchy:</strong> ${entityContext.map(escapeHtml).join(" → ") || "Not fully resolved in the current source cohort"}.</p>
+    </div>
+  </section>
+
+  <section class="section-rule place-lead">
+    <div class="place-label">LIVING PLANET</div>
+    <div>
+      <h2>What connects to ${escapeHtml(place.name)}?</h2>
+      <p>Geographic identity is the foundation. Living Systems, Species, Pressures, Missions, Evidence and Solutions appear here only when the shared 4PLANET evidence model supports the connection.</p>
+      ${evidenceHtml || "<p>No curated ecological relationship bundle is published for this place yet. The absence remains visible rather than being filled with generic environmental claims.</p>"}
+      ${childHtml}${sameCountryHtml}${nearbyHtml}${relatedHtml}
+    </div>
+  </section>
+
+  <section class="section-rule place-lead">
+    <div class="place-label">SOURCE + TRUTH</div>
+    <div>
+      <h2>Know where the place comes from.</h2>
+      <p class="source-meta"><strong>Geographic source:</strong> <a href="${escapeHtml(place.sourceUrl)}">${escapeHtml(place.sourceDataset)}</a>${place.sourceVersion?` v${escapeHtml(place.sourceVersion)}`:""}. Source feature ${escapeHtml(place.neId||"unknown")}${place.sourceFileSha?` · upstream file ${escapeHtml(place.sourceFileSha.slice(0,12))}`:""}. Natural Earth data is public domain; <a href="${escapeHtml(place.sourceRightsUrl)}">terms of use</a>. Source reference checked ${escapeHtml(place.sourceCheckedAt)}.</p>
+      <p class="source-meta"><strong>Source identity:</strong> Natural Earth NE_ID ${escapeHtml(place.neId||"unknown")}${place.iso2?` · ISO ${escapeHtml(place.iso2)}`:""}${place.wikidataId?` · Wikidata ${escapeHtml(place.wikidataId)}`:""}${place.geonamesId?` · GeoNames ${escapeHtml(place.geonamesId)}`:""}.</p>
+      <p class="truth"><strong>Truth boundary:</strong> this Place page verifies geographic identity and map context. It does not by itself establish species presence, ecosystem health, pressure, causality or ecological outcome.</p>
+      <div class="explore-grid">
+        <a href="/places"><small>KEEP EXPLORING</small><strong>World Place Index →</strong></a>
+        <a href="https://4species.com/species/"><small>LIFE</small><strong>Explore SPECIES →</strong></a>
+        <a href="https://4planet.org/livingsystems/"><small>SYSTEMS</small><strong>Explore Living Systems →</strong></a>
+        <a href="https://4planet.org/missions"><small>ACTION</small><strong>Explore Missions →</strong></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-entry">
+    <div class="place-label">CONTINUE IN ATLAS</div>
+    <h2>Move from this place into the living planet.</h2>
+    <p>The interactive view carries the same canonical place slug and verified reference coordinate into ATLAS.</p>
+    <a class="atlas-cta" href="${mapHref}">OPEN ${escapeHtml(place.name)} IN ATLAS →</a>
+  </section>
+</main></body></html>`;
       return new Response(body,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
     }
     return new Response("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>Place not found — 4PLANET ATLAS</title></head><body><main><h1>Place not found</h1><p>This URL is not a qualified canonical Place in the current ATLAS World Place Index.</p><p><a href=\"/places\">Explore the World Place Index</a></p></main></body></html>",{status:404,headers:{"content-type":"text/html; charset=utf-8","x-robots-tag":"noindex, nofollow","cache-control":"public, max-age=300"}});
