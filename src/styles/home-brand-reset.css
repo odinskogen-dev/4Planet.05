@@ -96,6 +96,25 @@
 .home-impact-card__eyebrow{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#FFFFFF}
 .home-impact-card h3{margin:10px 0 0;font-family:'Instrument Sans','DM Sans',sans-serif;font-weight:450;font-size:clamp(22px,2.2vw,30px);letter-spacing:-.025em;line-height:1;max-width:13ch}
 
+/* GUIDED ENTRY + DEEPER PATHS */
+.home-guided{background:#f5f5f2;padding:clamp(88px,10vw,148px) 0}
+.home-guided-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:clamp(38px,5vw,58px)}
+.home-guided-card{display:flex;flex-direction:column;min-height:330px;padding:clamp(22px,2.7vw,34px);border-radius:var(--home-soft-radius);background:#FFFFFF;color:#000000;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.045);transition:transform .2s ease,box-shadow .2s ease}
+.home-guided-card:hover,.home-guided-card:focus-visible{transform:translateY(-2px);box-shadow:0 16px 38px rgba(0,0,0,.075)}
+.home-guided-card__number{font-family:'Fragment Mono',ui-monospace,'SF Mono',monospace;font-size:10px}
+.home-guided-card__eyebrow{margin-top:34px;color:#2E2EFF;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500}
+.home-guided-card h3{margin:12px 0 0;font-family:'Instrument Sans','DM Sans',sans-serif;font-size:clamp(28px,3vw,40px);font-weight:450;letter-spacing:-.035em;line-height:1}
+.home-guided-card p{margin:18px 0 0;color:#000000;font-size:15px;line-height:1.58}
+.home-guided-card__action{margin-top:auto;padding-top:32px;font-size:14px;font-weight:500}
+.home-deeper{background:#101014;color:#FFFFFF;padding:clamp(88px,10vw,148px) 0}
+.home-deeper h2{margin:16px 0 0;max-width:15ch;font-family:'Instrument Sans','DM Sans',sans-serif;font-size:clamp(38px,4.8vw,62px);font-weight:450;letter-spacing:-.035em;line-height:.98}
+.home-deeper-grid{margin-top:clamp(42px,6vw,72px);border-top:1px solid rgba(255,255,255,.26)}
+.home-deeper-link{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:24px 0;border-bottom:1px solid rgba(255,255,255,.26);color:#FFFFFF;text-decoration:none}
+.home-deeper-link strong{display:block;font-family:'Instrument Sans','DM Sans',sans-serif;font-size:clamp(22px,2.3vw,30px);font-weight:450}
+.home-deeper-link small{display:block;margin-top:7px;max-width:680px;color:rgba(255,255,255,.76);font-size:14px;line-height:1.5}
+.home-deeper-link>span:last-child{font-size:24px;transition:transform .18s ease}
+.home-deeper-link:hover>span:last-child,.home-deeper-link:focus-visible>span:last-child{transform:translateX(4px)}
+
 /* BELIEF + HUMAN PRESENCE + JOIN */
 .home-belief-join{background:#FFFFFF!important;padding:clamp(88px,10vw,148px) 0}
 .home-belief-copy{max-width:800px}
@@ -112,6 +131,7 @@
   .home-section-intro,.home-premise__grid{grid-template-columns:1fr}
   .home-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .home-impact-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-guided-grid{grid-template-columns:1fr}
 }
 @media(max-width:680px){
   .planet-hero{min-height:680px}
@@ -133,6 +153,8 @@
   .home-impact-card__content{padding:15px}
   .home-impact-card__eyebrow{font-size:11px}
   .home-impact-card h3{font-size:clamp(18px,5.2vw,22px);margin-top:8px}
+  .home-guided-card{min-height:280px;border-radius:20px}
+  .home-deeper-link{align-items:flex-start;padding:22px 0}
   .home-belief-visual{aspect-ratio:4/5;border-radius:20px}
 }
 @media(max-width:430px){
@@ -140,7 +162,7 @@
 }
 @media(prefers-reduced-motion:reduce){
   .earth-breathe{animation:none!important}
-  .home-brand-button,.home-lens,.home-orca img,.home-world>img,.home-impact-card img{transition:none!important}
-  .home-brand-button:hover,.home-lens:hover{transform:none}
+  .home-brand-button,.home-lens,.home-orca img,.home-world>img,.home-impact-card img,.home-guided-card,.home-deeper-link>span:last-child{transition:none!important}
+  .home-brand-button:hover,.home-lens:hover,.home-guided-card:hover,.home-deeper-link:hover>span:last-child{transform:none}
   .home-orca:hover img,.home-world:hover>img,.home-impact-card:hover img{transform:none!important}
 }

@@ -173,6 +173,97 @@ function AtlasWindow() {
   );
 }
 
+const GUIDED_ENTRIES = [
+  {
+    eyebrow: "Species journey",
+    title: "Meet one life.",
+    line: "Start with the Orca, then follow its habitat, evidence and living-system connections.",
+    to: "/species/orca",
+    action: "Meet the Orca",
+  },
+  {
+    eyebrow: "Systems journey",
+    title: "See what connects.",
+    line: "Explore how living and human systems depend on one another, change and come under pressure.",
+    to: "/livingsystems/",
+    action: "Understand Living Systems",
+    reloadDocument: true,
+  },
+  {
+    eyebrow: "Action journey",
+    title: "Follow what happens.",
+    line: "See how action pathways move from intention to delivery, evidence, learning and defensible outcomes.",
+    to: "/impact",
+    action: "Explore Impact",
+  },
+] as const;
+
+const DEEPER_PATHS = [
+  ["Missions", "Explore sixteen focused foundations for action.", "/missions"],
+  ["News & stories", "Read reporting, field stories and ideas from 4Planet Magazine.", "/magazine"],
+  ["The founder", "Meet the person and history behind 4Planet.", "/about/founder"],
+  ["Partners", "See how organisations can contribute without weakening the truth boundary.", "/partners"],
+] as const;
+
+function GuidedEntries() {
+  return (
+    <section className="home-guided" aria-labelledby="home-guided-title">
+      <div className="home-shell">
+        <Reveal>
+          <div className="home-section-intro">
+            <div>
+              <div className="home-kicker home-kicker--blue">Choose a journey</div>
+              <h2 id="home-guided-title">Three ways into one living planet.</h2>
+            </div>
+            <p>
+              Begin with a species, a connected system or a pathway to action. Each journey leads to the same
+              evidence-based 4Planet universe.
+            </p>
+          </div>
+        </Reveal>
+        <div className="home-guided-grid">
+          {GUIDED_ENTRIES.map((entry, index) => (
+            <Link
+              key={entry.to}
+              to={entry.to}
+              reloadDocument={"reloadDocument" in entry && entry.reloadDocument}
+              className="home-guided-card"
+            >
+              <span className="home-guided-card__number">0{index + 1}</span>
+              <span className="home-guided-card__eyebrow">{entry.eyebrow}</span>
+              <h3>{entry.title}</h3>
+              <p>{entry.line}</p>
+              <span className="home-guided-card__action">{entry.action} →</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DeeperPaths() {
+  return (
+    <section className="home-deeper" aria-labelledby="home-deeper-title">
+      <div className="home-shell">
+        <div className="home-kicker home-kicker--inverse">Go deeper</div>
+        <h2 id="home-deeper-title">Explore the work, the stories and the people.</h2>
+        <div className="home-deeper-grid">
+          {DEEPER_PATHS.map(([title, line, to]) => (
+            <Link key={to} to={to} className="home-deeper-link">
+              <span>
+                <strong>{title}</strong>
+                <small>{line}</small>
+              </span>
+              <span aria-hidden>→</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function OrcaEncounter() {
   const media = img("orcaEncounter");
   return (
@@ -262,6 +353,10 @@ export default function Home() {
         </section>
 
         <ImpactPreview />
+
+        <GuidedEntries />
+
+        <DeeperPaths />
 
         <section className="home-belief-join">
           <div className="home-shell">

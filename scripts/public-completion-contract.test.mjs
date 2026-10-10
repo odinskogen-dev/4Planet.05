@@ -9,6 +9,7 @@ const shell = readFileSync(new URL("../src/components/layout/PublicShell.tsx", i
 const css = readFileSync(new URL("../src/styles/premium-completion.css", import.meta.url), "utf8");
 const about = readFileSync(new URL("../src/pages/v5/AboutPages.tsx", import.meta.url), "utf8");
 const join = readFileSync(new URL("../src/pages/v5/Join.tsx", import.meta.url), "utf8");
+const home = readFileSync(new URL("../src/pages/v5/Home.tsx", import.meta.url), "utf8");
 const orca = readFileSync(new URL("../public/journey/orca/index.html", import.meta.url), "utf8");
 
 test("participation routes and global menu expose all four ways to take part", () => {
@@ -59,4 +60,28 @@ test("Orca public chrome does not expose internal Gold naming", () => {
   const footer = orca.match(/<footer[\s\S]*?<\/footer>/)?.[0] ?? "";
   assert.ok(footer.length > 0);
   assert.doesNotMatch(footer, /\bGOLD\b/i);
+});
+
+test("homepage exposes the complete public universe and three guided entry journeys", () => {
+  for (const route of [
+    "/atlas",
+    "/species",
+    "/livingsystems/",
+    "/impact",
+    "/domains/",
+    "/missions",
+    "/magazine",
+    "/join",
+    "/about/founder",
+    "/partners",
+  ]) {
+    assert.match(home, new RegExp(route.replaceAll("/", "\\/")));
+  }
+  assert.match(home, /Three ways into one living planet\./);
+  assert.equal((home.match(/className="home-guided-card"/g) ?? []).length, 1);
+  assert.match(home, /GUIDED_ENTRIES\.map/);
+  assert.match(home, /Species journey/);
+  assert.match(home, /Systems journey/);
+  assert.match(home, /Action journey/);
+  assert.match(home, /These action pathways are in development\./);
 });
