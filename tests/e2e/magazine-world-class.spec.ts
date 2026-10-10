@@ -83,8 +83,8 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
     const secondary = page.locator(".mag-article-inline-visual img");
     await expect(secondary).toBeVisible();
 
-    const join = page.getByRole("link", { name: /Find your part/i });
-    await expect(join).toHaveAttribute("href", "https://4planet.org/join");
+    const next = page.getByRole("link", { name: /Explore one living planet/i });
+    await expect(next).toHaveAttribute("href", "/magazine/the-four-domains");
     await expect(page.getByText("HOW WE KNOW", { exact: true })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
