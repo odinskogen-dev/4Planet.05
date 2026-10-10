@@ -36,3 +36,12 @@ test("4NATION finder remains neutral and does not replace the curated case",asyn
  assert.match(page,/Proposal, not an adopted plan/);
  assert.match(page,/NOT A NATIONAL FEED/);
 });
+
+
+test("4NATION public worker canonicalises HTTP and www to one HTTPS origin before content",async()=>{
+ const worker=await readFile(new URL("../ops/nation/4nation-live-worker.js",import.meta.url),"utf8");
+ assert.match(worker,/incoming\.protocol !== "https:" \|\| incoming\.hostname === "www\.4nation\.org"/);
+ assert.match(worker,/incoming\.protocol = "https:"/);
+ assert.match(worker,/incoming\.hostname = "4nation\.org"/);
+ assert.match(worker,/Response\.redirect\(incoming\.toString\(\), 308\)/);
+});

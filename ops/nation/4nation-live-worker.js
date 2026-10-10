@@ -7,7 +7,8 @@ export default {
   async fetch(request) {
     const incoming = new URL(request.url);
     if (!ALLOWED.has(incoming.hostname)) return new Response("Not found", {status:404});
-    if (incoming.hostname === "www.4nation.org") {
+    if (incoming.protocol !== "https:" || incoming.hostname === "www.4nation.org") {
+      incoming.protocol = "https:";
       incoming.hostname = "4nation.org";
       return Response.redirect(incoming.toString(), 308);
     }
