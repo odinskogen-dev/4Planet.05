@@ -170,6 +170,11 @@ test("search foundation generates sitemap, News sitemap, RSS and static route me
   assert.match(prerender, /readFoundingEdition/);
   assert.match(prerender, /application\/ld\+json/);
   assert.match(prerender, /Article/);
+  assert.match(prerender, /story\.blocks/);
+  assert.match(prerender, /data-4planet-prerender-content="magazine-story"/);
+  assert.match(prerender, /data-4planet-prerender-content="magazine-index"/);
+  assert.match(prerender, /Continue exploring/);
+  assert.match(prerender, /<div id="root">/);
   assert.match(prerender, /canonical/);
   assert.match(prerender, /noindex,follow,noarchive,max-image-preview:large/);
   assert.match(prerender, /WebPage/);

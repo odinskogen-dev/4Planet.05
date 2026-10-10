@@ -1,3 +1,22 @@
+# MAGAZINE RAW-HTML READER VALUE — 10 OCT 2026
+
+**STATUS:** HEIR DISCOVERY IMPROVEMENT / SAME MAGAZINE CONTENT SOURCE / NO LIVE RELEASE.
+
+**USER PROBLEM:** Search Console already shows and indexes Magazine stories, but public raw-HTML audits expose only single-digit body word counts even though complete approved story blocks already exist in the canonical story source.
+
+**P1 DOMINANT:** the actual story, not metadata alone.
+**P2 ORIENTATION:** headline, dek, byline, lane and reading context.
+**P3 ACTION / NEXT:** one relevant 4PLANET pathway plus contextual related stories.
+**P4 DEPTH:** the existing full story blocks, with the React Magazine experience replacing the raw fallback when JavaScript starts.
+
+**REDUCE BEFORE GENERATE:** no duplicate editorial store, no SEO-only copy, no hidden keyword text, no fabricated dates or sources. The prerender reads the same `STORIES` objects the product reads.
+
+**SEARCH / AI CONTRACT:** raw route HTML must contain substantive visible story text and crawlable internal links before JavaScript execution. `createRoot` replaces the fallback for the interactive experience, so humans and crawlers receive one semantic content source rather than contradictory variants.
+
+**MEASUREMENT:** impressions → organic click → engaged read → relevant second object / share → return.
+**ROLLBACK:** 658c69936aa2e3ab2adb7ec932749da2c848289b.
+**MAKER ≠ JUDGE:** exact build and Magazine SEO contract must pass; LIVE remains Founder-gated.
+
 # ATLAS PLACE SEARCH ENTRY — EXECUTABLE CONTRACT — 10 OCT 2026
 
 **STATUS:** HEIR QA HARDENING / SAME PRODUCT CORRECTION / NO LIVE RELEASE.

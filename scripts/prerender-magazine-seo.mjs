@@ -64,9 +64,50 @@ function headMarkup(meta) {
   ].join("\n    ");
 }
 
+function blockMarkup(block) {
+  const text = escapeHtml(block?.t || "");
+  if (!text) return "";
+  if (block.k === "sub") return `<h2>${text}</h2>`;
+  if (block.k === "quote") return `<blockquote><p>${text}</p></blockquote>`;
+  if (block.k === "lead") return `<p class="mag-prerender-lead">${text}</p>`;
+  return `<p>${text}</p>`;
+}
+
+function relatedStoryLinks(story, limit = 3) {
+  return stories
+    .filter((candidate) => candidate.slug !== story.slug)
+    .map((candidate) => {
+      const sharedTags = (candidate.tags || []).filter((tag) => (story.tags || []).includes(tag)).length;
+      const score = sharedTags * 3 + (candidate.lane === story.lane ? 2 : 0) + (candidate.franchise === story.franchise ? 2 : 0);
+      return { candidate, score };
+    })
+    .sort((a, b) => b.score - a.score || a.candidate.title.localeCompare(b.candidate.title))
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
+function storyBodyMarkup(story) {
+  const related = relatedStoryLinks(story);
+  const pathway = story.pathway
+    ? `<p><a href="${escapeHtml(story.pathway.to)}">${escapeHtml(story.pathway.label)} →</a></p>`
+    : "";
+  const relatedMarkup = related.length
+    ? `<aside aria-label="Related stories"><h2>Continue exploring</h2><ul>${related.map((item) => `<li><a href="/magazine/${escapeHtml(item.slug)}">${escapeHtml(item.title)}</a></li>`).join("")}</ul></aside>`
+    : "";
+  return `<article data-4planet-prerender-content="magazine-story"><header><p>4PLANET MAGAZINE · ${escapeHtml(story.lane || story.category || "STORY")}</p><h1>${escapeHtml(story.title)}</h1><p>${escapeHtml(story.dek)}</p><p>By ${escapeHtml(story.byline || "4PLANET Editorial Desk")} · ${escapeHtml(story.readMins || "")} min read</p></header><section>${(story.blocks || []).map(blockMarkup).join("")}</section>${pathway}${relatedMarkup}<p><a href="/magazine/">Back to 4PLANET MAGAZINE</a></p></article>`;
+}
+
+function magazineIndexMarkup() {
+  return `<main data-4planet-prerender-content="magazine-index"><h1>4PLANET MAGAZINE</h1><p>Stories about the living planet — species, places, people, systems, solutions, innovation and culture.</p><nav aria-label="Magazine stories"><ul>${stories.map((story) => `<li><a href="/magazine/${escapeHtml(story.slug)}">${escapeHtml(story.title)}</a> — ${escapeHtml(story.dek)}</li>`).join("")}</ul></nav><p><a href="/magazine/about">About</a> · <a href="/magazine/sources">Sources &amp; Method</a> · <a href="/magazine/corrections">Corrections</a></p></main>`;
+}
+
 function writeRoute(route, meta) {
   const clean = stripManagedHead(baseHtml);
-  const html = clean.replace("</head>", `    ${headMarkup(meta)}\n  </head>`);
+  let html = clean.replace("</head>", `    ${headMarkup(meta)}\n  </head>`);
+  if (meta.bodyMarkup) {
+    if (!html.includes('<div id="root"></div>')) throw new Error("Magazine prerender cannot find #root shell");
+    html = html.replace('<div id="root"></div>', `<div id="root">${meta.bodyMarkup}</div>`);
+  }
   const target = route === "/" ? path.join(dist, "index.html") : path.join(dist, route.replace(/^\//, ""), "index.html");
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, html, "utf8");
@@ -83,6 +124,7 @@ writeRoute("/magazine", {
   image: absoluteMagazineImage,
   imageAlt: magazineAlt,
   type: "website",
+  bodyMarkup: magazineIndexMarkup(),
   jsonLd: {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -157,6 +199,7 @@ for (const story of stories) {
     image,
     imageAlt,
     type: "article",
+    bodyMarkup: storyBodyMarkup(story),
     section: story.lane || story.category,
     tags: Array.isArray(story.tags) ? story.tags : [],
     jsonLd,
