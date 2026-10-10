@@ -1,0 +1,68 @@
+name: SPECIES English Oak Browser Proof
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/species-english-oak-browser-proof.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oak-browser-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Inspect real oak and Orca browser journeys on desktop and mobile
+        shell: bash
+        run: |
+          mkdir -p /tmp/species-oak-evidence
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch({ headless: true });
+          for (const [name, viewport] of [['mobile', { width: 390, height: 844 }], ['desktop', { width: 1440, height: 900 }]]) {
+            const page = await browser.newPage({ viewport });
+            const faults = [];
+            page.on('pageerror', error => faults.push(String(error)));
+            await page.goto('https://4species.com/english-oak', { waitUntil: 'domcontentloaded', timeout: 45000 });
+            await page.getByRole('heading', { name: /English oak/i }).first().waitFor({ timeout: 30000 });
+            await page.waitForTimeout(2000);
+            const title = await page.title();
+            const body = await page.locator('body').innerText();
+            const html = await page.locator('body').innerHTML();
+            const imageElements = await page.locator('img').evaluateAll(images => images.map(img => ({ src: img.currentSrc || img.src, complete: img.complete, width: img.naturalWidth })));
+            assert.match(title, /English oak/i, 'Wrong title');
+            assert.match(body, /Quercus robur/, 'Scientific name missing');
+            assert.match(body, /Flowering/, 'Botanical facts missing');
+            assert.doesNotMatch(body, /Killer whale|Wild orca|Killerwhales jumping|Orcinus orca/, 'Orca content leaked onto plant');
+            assert.doesNotMatch(html, /Orcinus_orca_282690764|Killerwhales_jumping/, 'Orca image asset leaked onto plant');
+            assert.ok(imageElements.some(x => /Quercus_robur/.test(x.src)), 'Oak photos missing from browser DOM');
+            assert.equal(faults.length, 0, 'Browser runtime exception: '+faults.join(' | '));
+            await page.screenshot({ path: '/tmp/species-oak-evidence/oak-'+name+'.png', fullPage: true });
+            console.log(JSON.stringify({ view: name, title, url: page.url(), oakImages: imageElements.filter(x => /Quercus_robur/.test(x.src)).length, browserErrors: faults, status:'PASS' }));
+            await page.close();
+          }
+          const orca = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          await orca.goto('https://4species.com/orca', { waitUntil: 'domcontentloaded', timeout: 45000 });
+          await orca.getByRole('heading', { name: /Orca/i }).first().waitFor({ timeout: 30000 });
+          console.log('ORCA REGRESSION PASS');
+          await orca.close();
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-english-oak-live-browser-evidence
+          path: /tmp/species-oak-evidence
+          if-no-files-found: ignore
+          retention-days: 14
