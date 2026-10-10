@@ -1,0 +1,293 @@
+{
+  "schema": "4PLANET_SPECIES_PAGE_01",
+  "slug": "fly-agaric",
+  "domain": "E4RTH",
+  "identity": {
+    "commonName": "Fly agaric",
+    "scientificName": "Amanita muscaria",
+    "group": "Fungus · Gilled mushroom"
+  },
+  "hook": {
+    "text": "Its red, white-spotted mushroom is only the visible fruit of a partnership beneath the forest floor.",
+    "state": "KNOWN",
+    "source": {
+      "label": "Woodland Trust — Fly agaric",
+      "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+    }
+  },
+  "intro": [
+    {
+      "text": "Fly agaric is recognised by a scarlet to orange cap, often dotted with white veil remnants, and pale gills.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "text": "It lives with tree roots in mycorrhizal associations, often with birch and also with conifers, helping transport nutrients.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "text": "The conspicuous mushroom appears from late summer into early winter in British woodland and heathland. It is poisonous and should not be eaten.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "value": "20 cm",
+      "text": "Cap diameter can reach about this size.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "value": "Birch roots",
+      "text": "A frequent tree partner in mycorrhizal relationships.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "value": "Toxic",
+      "text": "Fly agaric is poisonous and is not suitable for eating.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    }
+  ],
+  "hero": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Fliegenpilz_fly_agaric_Amanita_muscaria.JPG",
+    "credit": "Holger Krisp",
+    "licence": "CC BY 3.0",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Fliegenpilz_fly_agaric_Amanita_muscaria.JPG",
+    "alt": "Three vivid red fly agaric fruiting bodies in an autumn woodland",
+    "focus": "50% 52%"
+  },
+  "glance": [
+    {
+      "label": "Size",
+      "value": "cap up to 20 cm",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "label": "Grows with",
+      "value": "birch, pine & spruce",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "label": "Habitat",
+      "value": "woodland & heathland",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    },
+    {
+      "label": "Season",
+      "value": "late summer–early winter (UK)",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      },
+      "limit": "Regional season, not a universal schedule"
+    }
+  ],
+  "story": [
+    {
+      "kind": "life",
+      "eyebrow": "The visible moment",
+      "title": "A mushroom above a hidden fungus",
+      "claims": [
+        {
+          "text": "A red-capped fruiting body appears during the fruiting season, while the fungus exists beyond the visible mushroom.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Fly agaric",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "need",
+      "eyebrow": "A living exchange",
+      "title": "Connected to tree roots",
+      "claims": [
+        {
+          "text": "Fly agaric forms mycorrhizal relationships with trees such as birch and pine; these associations exchange nutrients between fungus and plant.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Fly agaric",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "place",
+      "eyebrow": "Where it grows",
+      "title": "Forest and heath",
+      "claims": [
+        {
+          "text": "Woodland Trust reports fly agaric among birch, pine and spruce in woodland and heathland on light soils in Britain.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Fly agaric",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "pressure",
+      "eyebrow": "Pressures",
+      "title": "Respect a toxic species",
+      "claims": [
+        {
+          "text": "Fly agaric contains toxins and can cause serious reactions if consumed; its colourful appearance should never be interpreted as a sign that it is edible.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Fly agaric",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+          }
+        },
+        {
+          "text": "Woodland Trust describes woodland and heathland tree associations; this source does not establish a global population trend for the fungus.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Fly agaric",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+          }
+        }
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Amanita_muscaria%2C_Fly_Agaric.jpg",
+      "credit": "PatriciaVNes",
+      "licence": "CC BY-SA 4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Amanita_muscaria%2C_Fly_Agaric.jpg",
+      "alt": "Red fly agaric mushroom with white spots on forest floor",
+      "focus": "50% 48%"
+    }
+  ],
+  "facts": {
+    "appearance": [
+      {
+        "label": "Cap",
+        "text": "Scarlet or orange cap, often with white veil remnants; white gills.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Fly agaric",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+        }
+      },
+      {
+        "label": "Spot variation",
+        "text": "Rain can wash some white veil remnants away.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Fly agaric",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+        }
+      }
+    ],
+    "physical": [
+      {
+        "trait": "length",
+        "kind": "max_stated",
+        "text": "cap up to 20 cm across",
+        "unit": "cm",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Fly agaric",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+        },
+        "context": "Cap diameter, not total fungal body size"
+      }
+    ],
+    "ecology": [
+      {
+        "label": "Tree partners",
+        "text": "Forms mycorrhizal associations with birch and some other woodland trees.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Fly agaric",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+        }
+      },
+      {
+        "label": "Fruiting",
+        "text": "Visible mushrooms appear from late summer to early winter in the UK.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Fly agaric",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+        }
+      }
+    ],
+    "conservation": [
+      {
+        "label": "Status",
+        "text": "No species-wide population trend is inferred from these local nature accounts.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Fly agaric",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+        },
+        "context": "No specific assessment provided"
+      }
+    ]
+  },
+  "limits": [
+    "Poisonous: this is not a foraging or identification safety guide.",
+    "Cap dimensions describe the fruiting mushroom, not the extent of its underground mycelium.",
+    "UK fruiting dates cannot be treated as globally constant."
+  ],
+  "atlas": {
+    "layers": [
+      "bluemarble",
+      "biodiv"
+    ]
+  },
+  "provenance": {
+    "review": "DRAFT",
+    "writtenBy": "AXE source-grounded SPECIES proof series 02–05",
+    "checkedAt": "2026-10-10"
+  },
+  "names": {
+    "nb": {
+      "name": "Rød fluesopp",
+      "source": {
+        "label": "Woodland Trust — Fly agaric",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/fungi-and-lichens/fly-agaric/"
+      }
+    }
+  }
+}
