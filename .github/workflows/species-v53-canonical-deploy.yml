@@ -1,0 +1,104 @@
+name: SPECIES v53 Canonical Cloudflare Build
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/species-v53-canonical-deploy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: species-v53-canonical
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Restore Claude exact cumulative v53, fail closed on mismatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species/v53/patch/chunk-*.txt | base64 -d | gzip -d > /tmp/species-v53.patch
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/species-v53.patch' | sha256sum -c -
+          git worktree add --detach ../species-v53-build 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd ../species-v53-build
+          git apply --check /tmp/species-v53.patch
+          git apply /tmp/species-v53.patch
+          git add -A
+          test "$(git write-tree)" = 818b4ff766d4423cafc1709bda38d164da2b9731
+          echo CLAUDE_V53_EXACT_BASE_PASS
+      - name: Reconcile AXE proof species and founder-approved wording
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          for slug in english-oak western-honey-bee fly-agaric common-octopus; do
+            cp -v "$GITHUB_WORKSPACE/public/species-data/v1/$slug.json" "public/species-data/v1/$slug.json"
+          done
+          if [ -d "$GITHUB_WORKSPACE/public/species-media" ]; then
+            cp -a "$GITHUB_WORKSPACE/public/species-media" public/species-media
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/pages/integrated/SpeciesTemplate.tsx')
+          s=p.read_text()
+          s=s.replace('          {draft && <span className="spx-credit spx-draft" role="note">Draft — not yet reviewed by a person</span>}', '')
+          s=s.replace('{LEVEL_TEXT[level]}{draft ? " Draft — not yet reviewed by a person." : ""}', '{LEVEL_TEXT[level]}')
+          p.write_text(s)
+          p=Path('src/species/universe/links.ts')
+          s=p.read_text().replace('"www.4species.com"]', '"www.4species.com", "species-v53.4planet-05.pages.dev"]')
+          p.write_text(s)
+          PY
+          node scripts/species-page-validate.mjs --write-index
+          node scripts/species-page-validate.mjs
+          echo SPECIES_V53_RECONCILED
+      - name: Build full v53 site without search indexing
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          npm ci
+          npm run typecheck
+          npm run species:validate
+          SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          test -f dist/index.html
+          grep -Eiq 'species|Meet life' dist/index.html
+          test -f dist/quiz/index.html
+          test -f dist/explore/index.html
+          test -f dist/species-data/v1/english-oak.json
+          echo V53_BUILD_AND_STATIC_QA_PASS
+      - name: Deploy as isolated Cloudflare Pages preview, without touching current site
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          cd ../species-v53-build
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53 --commit-message '4PLANET SPECIES v53 Founder release candidate'
+          echo SPECIES_V53_PAGES_PUBLISHED
+      - name: Verify Pages origin before switching public domain
+        shell: bash
+        run: |
+          set -euo pipefail
+          ORIGIN=https://species-v53.4planet-05.pages.dev
+          for path in / /explore /quiz /about /orca /english-oak; do
+            code=$(curl --retry 4 --retry-delay 3 -sSL --max-time 30 -o /tmp/v53-check.html -w '%{http_code}' "$ORIGIN$path")
+            echo "$path: $code"
+            test "$code" = 200
+          done
+          curl -fsS "$ORIGIN/species-data/v1/english-oak.json" | jq -e '.slug=="english-oak" and .identity.scientificName=="Quercus robur"' >/dev/null
+          echo V53_PUBLIC_PAGES_PREVIEW_QA_PASS
