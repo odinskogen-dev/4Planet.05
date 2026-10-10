@@ -1,0 +1,157 @@
+name: SPECIES v53 Canonical Production Release
+on:
+  push:
+    branches: [work/species-v53-isolated-release-20261011]
+    paths:
+      - .github/workflows/species-v53-production-release.yml
+      - ops/species-v53-transfer/**
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Reconstitute exact founder-delivered v53 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species-v53-transfer/*.b64 | base64 -d | gzip -d > /tmp/species-v53.patch
+          echo "SHA256 $(sha256sum /tmp/species-v53.patch)"
+          echo "SIZE $(wc -c </tmp/species-v53.patch)"
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/species-v53.patch' | sha256sum -c -
+          git cat-file -t 5dc63fe8ddd1daea32d62d102066705d3c7efbfe | grep -qx commit
+          git worktree add --detach /tmp/species-v53 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd /tmp/species-v53
+          git apply --check /tmp/species-v53.patch
+          git apply --binary /tmp/species-v53.patch
+          echo 'V53_FOUNDER_PATCH_APPLIED'
+      - name: Reconcile existing verified six species into source of truth
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-v53/public/species-data/v1
+          for slug in english-oak atlantic-puffin western-honey-bee fly-agaric common-octopus; do
+            file="$GITHUB_WORKSPACE/public/species-data/v1/$slug.json"
+            if test -f "$file"; then cp "$file" /tmp/species-v53/public/species-data/v1/; fi
+          done
+          cd /tmp/species-v53
+          node scripts/species-page-validate.mjs --write-index
+          node scripts/species-page-validate.mjs
+          node -e 'const p=require("./public/species-data/v1/index.json");for(const s of ["orca","english-oak","atlantic-puffin","western-honey-bee","fly-agaric","common-octopus"]){if(!p.pages.some(x=>x.slug===s))throw Error("Missing "+s)} console.log("SIX_SPECIES_RECONCILED",p.pages.length)'
+      - name: Install, typecheck and build original v53 universe
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/species-v53
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          npm run species:validate
+          SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          test -s dist/index.html
+          test -s dist/quiz/index.html
+          test -s dist/explore/index.html
+          test -s dist/orca/index.html
+          test -s dist/english-oak/index.html
+          echo 'V53_UNIVERSE_DIST_VERIFIED'
+      - name: Preflight existing v53 origin before canonical cutover
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin=https://species-v53-origin.odin-skogen.workers.dev
+          for route in / /quiz /explore /about /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus; do
+            status=$(curl -sSL --max-time 25 -o /tmp/v53preflight -w '%{http_code}' "$origin$route")
+            test "$status" = 200 || { echo "BLOCKER $route HTTP $status"; exit 1; }
+          done
+          echo 'V53_ORIGIN_PREFLIGHT_PASS'
+      - name: Deploy canonical v53 on 4species-router with rollback source retained
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          rm -f /tmp/species-v53/dist/_redirects
+          npx --yes wrangler@4.128.0 deploy "$GITHUB_WORKSPACE/ops/species-v53-production-worker.js" \
+            --assets=/tmp/species-v53/dist \
+            --name=4species-router \
+            --compatibility-date=2026-10-05 \
+            --keep-vars
+          echo 'SPECIES_V53_CANONICAL_WORKER_DEPLOYED'
+      - name: Verify canonical short routes, home and product pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in / /explore /quiz /about /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus; do
+            success=false
+            for attempt in $(seq 1 8); do
+              status=$(curl -LsS --max-time 30 -o /tmp/species-live -w '%{http_code}' "https://4species.com$route" || true)
+              if [ "$status" = 200 ] && grep -iq species /tmp/species-live; then success=true; break; fi
+              sleep 3
+            done
+            test "$success" = true || { echo "CANONICAL_QA_FAIL $route $status"; exit 1; }
+            echo "CANONICAL_SPECIES_PASS $route"
+          done
+          redirect=$(curl -sSI --max-time 20 https://4species.com/species/orca | tr -d '\r')
+          echo "$redirect" | head -n 8
+          echo "$redirect" | grep -Eiq '^HTTP/[0-9.]+ 301'
+          echo "$redirect" | grep -Fqi 'location: https://4species.com/orca'
+          curl -sSI --max-time 20 https://4species.com/orca | grep -qi 'x-robots-tag: noindex'
+          echo 'CANONICAL_SHORT_URLS_VERIFIED'
+      - name: Verify actual iPhone Safari-like and desktop browser output
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/species-v53
+          npx playwright install --with-deps webkit
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {webkit,devices} from '@playwright/test';
+          const browser=await webkit.launch({headless:true});
+          const samples=[
+            ['/','Meet life'],
+            ['/explore','Explore'],
+            ['/quiz','quiz'],
+            ['/about','SPECIES'],
+            ['/orca','Orca'],
+            ['/english-oak','English oak'],
+            ['/atlantic-puffin','Atlantic puffin'],
+            ['/western-honey-bee','Western honey bee'],
+            ['/fly-agaric','Fly agaric'],
+            ['/common-octopus','Common octopus']
+          ];
+          for(const view of ['iPhone 13','desktop']){
+            const context=await browser.newContext(view==='desktop'?{viewport:{width:1440,height:900}}:{...devices['iPhone 13']});
+            for(const [path,needle] of samples){
+              const page=await context.newPage();
+              const resp=await page.goto('https://4species.com'+path,{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(resp.status(),200,'Status '+path);
+              await page.waitForTimeout(550);
+              const txt=(await page.locator('body').innerText()).toLowerCase();
+              assert.ok(txt.includes(needle.toLowerCase()),'Incorrect body for '+path+' on '+view+'; title='+await page.title());
+              assert.equal(new URL(page.url()).pathname,path,'Wrong Safari URL');
+              assert.ok(!page.url().includes('#/labs/species'),'Legacy hash routing on '+path);
+              console.log('WEBKIT_CANONICAL_PASS',view,path,await page.title());
+              await page.close();
+            }
+            await context.close();
+          }
+          await browser.close();
+          console.log('SPECIES_V53_WEBKIT_ALL_PAGES_PASS');
+          NODE
+      - name: Roll back canonical worker if any deployment or QA stage fails
+        if: failure()
+        shell: bash
+        run: |
+          echo 'SPECIES_V53_ROLLBACK_TRIGGERED'
+          npx --yes wrangler@4.128.0 deploy "$GITHUB_WORKSPACE/ops/discovery/4species-router.js" \
+            --name=4species-router --compatibility-date=2026-10-05 --keep-vars
