@@ -1,0 +1,99 @@
+name: SPECIES v53 Isolated Preview Build & Cloudflare
+on:
+  push:
+    branches: [work/species-v53-isolated-release-20261011]
+    paths:
+      - .github/workflows/species-v53-isolated-preview.yml
+      - ops/species-v53-transfer/**
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Reconstitute exact founder-delivered v53 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species-v53-transfer/*.b64 | base64 -d | gzip -d > /tmp/species-v53.patch
+          echo "SHA256 $(sha256sum /tmp/species-v53.patch)"
+          echo "SIZE $(wc -c </tmp/species-v53.patch)"
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/species-v53.patch' | sha256sum -c -
+          git cat-file -t 5dc63fe8ddd1daea32d62d102066705d3c7efbfe | grep -qx commit
+          git worktree add --detach /tmp/species-v53 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd /tmp/species-v53
+          git apply --check /tmp/species-v53.patch
+          git apply --binary /tmp/species-v53.patch
+          echo 'V53_FOUNDER_PATCH_APPLIED'
+      - name: Reconcile existing verified six species into source of truth
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-v53/public/species-data/v1
+          for slug in english-oak atlantic-puffin western-honey-bee fly-agaric common-octopus; do
+            file="$GITHUB_WORKSPACE/public/species-data/v1/$slug.json"
+            if test -f "$file"; then cp "$file" /tmp/species-v53/public/species-data/v1/; fi
+          done
+          cd /tmp/species-v53
+          node scripts/species-page-validate.mjs --write-index
+          node scripts/species-page-validate.mjs
+          node -e 'const p=require("./public/species-data/v1/index.json");for(const s of ["orca","english-oak","atlantic-puffin","western-honey-bee","fly-agaric","common-octopus"]){if(!p.pages.some(x=>x.slug===s))throw Error("Missing "+s)} console.log("SIX_SPECIES_RECONCILED",p.pages.length)'
+      - name: Install, typecheck and build original v53 universe
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/species-v53
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          npm run species:validate
+          SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          test -s dist/index.html
+          test -s dist/quiz/index.html
+          test -s dist/explore/index.html
+          test -s dist/orca/index.html
+          test -s dist/english-oak/index.html
+          echo 'V53_UNIVERSE_DIST_VERIFIED'
+      - name: Create isolated Cloudflare Pages project if needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          cd /tmp/species-v53
+          npx --yes wrangler@4.128.0 pages project create 4species-v53 --production-branch=main 2>&1 | tee /tmp/species-project-create.log || (
+            grep -Eiq 'already exists|already taken|name is already' /tmp/species-project-create.log
+          )
+      - name: Publish v53 to isolated Cloudflare Pages origin
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/species-v53
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4species-v53 --branch=main --commit-dirty=true
+          echo 'V53_ISOLATED_PAGES_DEPLOYED https://4species-v53.pages.dev'
+      - name: Verify live Pages origin without changing production
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in / /explore /quiz /about /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus; do
+            ready=false
+            for attempt in $(seq 1 8); do
+              status=$(curl -LsS -o /tmp/species-req -w '%{http_code}' --max-time 25 "https://4species-v53.pages.dev$route" || true)
+              if [ "$status" = 200 ] && grep -Eq 'SPECIES|species|Orca|English oak' /tmp/species-req; then ready=true; break; fi
+              sleep 3
+            done
+            test "$ready" = true || { echo "FAIL $route status=$status"; exit 1; }
+            echo "V53_ROUTE_PASS $route"
+          done
+          curl -fsSL https://4species-v53.pages.dev/ | grep -Eiq 'Meet life on Earth|species'
+          echo 'V53_ISOLATED_ORIGIN_QA_PASS'
