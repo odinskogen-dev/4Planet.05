@@ -31,7 +31,7 @@ async function mediaResponse(request,slug,resource) {
   const originalUrl=images[index].url;
   // Pinned, optimised, licensed production image derivative (manifest in GitHub).
   // Never depend on the Commons hotlink being accessible on every page view.
-  const staticUrl='https://raw.githubusercontent.com/odinskogen-dev/4Planet.05/1aacb7736430d8d465dba6401c37d8e0a14da12a/public/species-media/'+slug+'/'+index+'.jpg';
+  const staticUrl='https://raw.githubusercontent.com/odinskogen-dev/4Planet.05/3da3eacbe677667b9a20ef1b16604f8b748bb2fa/public/species-media/'+slug+'/'+index+'.jpg';
   const cache=caches.default;
   const key=new Request(request.url,{method:'GET'});
   const cacheHeaders={'cache-control':'public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800','x-content-type-options':'nosniff'};
