@@ -68,6 +68,27 @@ test.describe("4PLANET MAGAZINE — world-class reader surface", () => {
     await expect(page.getByRole("link", { name: /air filter that became/i }).first()).toBeVisible();
   });
 
+  test("For a Living Planet is a premium, truthful invitation into the mission", async ({ page }) => {
+    await page.goto("/magazine/why-4planet-exists");
+    await expect(page).toHaveTitle(/For a Living Planet \| 4PLANET MAGAZINE/i);
+    await expect(page.getByRole("heading", { level: 1, name: "For a Living Planet" })).toBeVisible();
+    await expect(page.getByText("4PLANET ORGANISATIONAL EXPLAINER", { exact: true })).toBeVisible();
+    await expect(page.getByText(/Holding the hand of someone we love/i)).toBeVisible();
+    await expect(page.getByText(/caring has never been connected to capability well enough/i)).toBeVisible();
+    await expect(page.getByText("Did it actually help?", { exact: true })).toBeVisible();
+    await expect(page.getByText(/There is a place for everyone who wants to help\. Including you\./i)).toBeVisible();
+
+    const hero = page.getByRole("img", { name: /Earthrise/i }).first();
+    await expect(hero).toBeVisible();
+    const secondary = page.locator(".mag-article-inline-visual img");
+    await expect(secondary).toBeVisible();
+
+    const join = page.getByRole("link", { name: /Find your part/i });
+    await expect(join).toHaveAttribute("href", "https://4planet.org/join");
+    await expect(page.getByText("HOW WE KNOW", { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
   test("four premium modes have distinct but coherent reader grammar", async ({ page }) => {
     const proofs = [
       ["/magazine/why-4planet-exists", "mag-experience--article"],
