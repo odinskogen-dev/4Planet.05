@@ -29,6 +29,9 @@ async function mediaResponse(request,slug,resource) {
   const images=[page.hero,...(page.gallery||[])].filter(i=>i && i.url);
   if(!Number.isInteger(index)||index<0||index>=images.length)return new Response('Not found',{status:404});
   const originalUrl=images[index].url;
+  // Pinned, optimised, licensed production image derivative (manifest in GitHub).
+  // Never depend on the Commons hotlink being accessible on every page view.
+  const staticUrl='https://raw.githubusercontent.com/odinskogen-dev/4Planet.05/1aacb7736430d8d465dba6401c37d8e0a14da12a/public/species-media/'+slug+'/'+index+'.jpg';
   const cache=caches.default;
   const key=new Request(request.url,{method:'GET'});
   const cacheHeaders={'cache-control':'public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800','x-content-type-options':'nosniff'};
@@ -38,7 +41,7 @@ async function mediaResponse(request,slug,resource) {
   } catch {}
   for(let attempt=0;attempt<3;attempt++){
     try {
-      const upstream=await fetch(originalUrl,{method:'GET',redirect:'follow',cf:{cacheEverything:true,cacheTtl:604800}});
+      const upstream=await fetch(attempt<2?staticUrl:originalUrl,{method:'GET',redirect:'follow',cf:{cacheEverything:true,cacheTtl:604800}});
       const kind=upstream.headers.get('content-type')||'';
       if(!upstream.ok||!kind.toLowerCase().startsWith('image/'))continue;
       const headers=new Headers(cacheHeaders);
