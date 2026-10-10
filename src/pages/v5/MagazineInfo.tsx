@@ -35,6 +35,13 @@ export function MagazineAbout() {
         <h1>Stories that earn the time.</h1>
         <p className="mag-info-lead">4PLANET Magazine is the editorial publication of 4PLANET: reporting and explanation about the living world, the people trying to understand it, and the ideas being built around it. We follow species, places, science, engineering, culture and attempted solutions — with sources, uncertainty and visual context kept close to the story.</p>
 
+        <section className="mag-info-dark">
+          <p className="mag-info-kicker">WHY 4PLANET EXISTS</p>
+          <h2>For a Living Planet.</h2>
+          <p>The Magazine is one way into a larger story: why 4PLANET exists, what kind of future it is trying to help build, and why everyone who wants to help should be able to find a meaningful part to play.</p>
+          <Link to="/magazine/why-4planet-exists">READ THE STORY →</Link>
+        </section>
+
         <section className="mag-info-section">
           <p className="mag-info-kicker">PUBLICATION STATE</p>
           <h2>Public founding edition.</h2>
