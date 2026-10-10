@@ -35,6 +35,27 @@ jobs:
                 await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});
                 await page.waitForTimeout(1300);
                 const heading=await page.locator('h1').first().innerText({timeout:17000});
+                // A Safari share/open handoff can restore a stale Orca hash on a non-Orca pathname.
+                if(slug!=='orca'){
+                  await page.evaluate(()=>{location.hash='#/labs/species/orca';});
+                  await page.waitForTimeout(450);
+                  const postHash=page.url(),postHeading=await page.locator('h1').first().innerText({timeout:10000});
+                  if(!postHash.includes('/'+slug+'#/labs/species/'+slug)||postHeading.toLowerCase().includes('orca')){
+                    failures++;console.error(JSON.stringify({case:'stale-hash-handoff',device,slug,postHash,postHeading}));
+                  }
+                  await page.goto(url+'#/labs/species/orca',{waitUntil:'domcontentloaded'});
+                  await page.waitForTimeout(500);
+                  const afterReload=page.url(),afterHeading=await page.locator('h1').first().innerText({timeout:10000});
+                  if(!afterReload.includes('/'+slug+'#/labs/species/'+slug)||afterHeading.toLowerCase().includes('orca')){
+                    failures++;console.error(JSON.stringify({case:'mixed-deeplink-in-safari',device,slug,afterReload,afterHeading}));
+                  }
+                  await page.reload({waitUntil:'domcontentloaded'});
+                  await page.waitForTimeout(600);
+                  const afterRefresh=page.url();
+                  if(!afterRefresh.includes('/'+slug+'#/labs/species/'+slug)){
+                    failures++;console.error(JSON.stringify({case:'refresh',device,slug,afterRefresh}));
+                  }
+                }
                 const state={device,slug,heading,finalUrl:page.url(),errors,events};
                 console.log(JSON.stringify(state));
                 if(!heading.toLowerCase().includes(name.toLowerCase())||heading.toLowerCase().includes('orca')&&slug!=='orca'){failures++;await page.screenshot({path:'/tmp/species-safari/'+slug+'-'+device.replace(/\s/g,'-')+'.png'});}
