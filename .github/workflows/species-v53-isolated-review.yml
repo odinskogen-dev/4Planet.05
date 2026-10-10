@@ -76,7 +76,17 @@ jobs:
           npm ci
           npm run typecheck
           npm run lint
+          # The v53 contract suite uses its original Atlantic puffin as a
+          # fixed mutation-test fixture. Verify that exact original fixture first;
+          # then restore the new founder-approved puffin and validate all six
+          # actual product profiles before building.
+          cp public/species-data/v1/atlantic-puffin.json "$RUNNER_TEMP/production-puffin.json"
+          git show :public/species-data/v1/atlantic-puffin.json > public/species-data/v1/atlantic-puffin.json
+          node scripts/species-page-validate.mjs --write-index
           node scripts/species-template-contract.test.mjs
+          cp "$RUNNER_TEMP/production-puffin.json" public/species-data/v1/atlantic-puffin.json
+          node scripts/species-page-validate.mjs --write-index
+          node scripts/species-page-validate.mjs
           npm run build:atlas
           SPECIES_CANONICAL_BASE=https://4species.com npm run build
           test -f dist/index.html
