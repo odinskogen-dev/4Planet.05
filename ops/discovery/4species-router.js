@@ -1,6 +1,31 @@
 import englishOakPage from "../../public/species-data/v1/english-oak.json" with { type: "json" };
 import { handleSpeciesProof, proofBootScript } from "./species-proof-router.js";
 const ORIGIN = "https://4planet-05.pages.dev";
+
+// SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
+// Versioned Cloudflare Pages preview was built from Claude's exact source and
+// verified before the founder-approved production cutover.
+const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";
+async function proxySpeciesV53(request) {
+  if (request.method !== "GET" && request.method !== "HEAD")
+    return new Response("Method not allowed", {status:405});
+  const incoming = new URL(request.url);
+  const target = new URL(incoming.pathname+incoming.search, SPECIES_V53_ORIGIN);
+  const headers = new Headers();
+  for(const name of ["accept","accept-language","user-agent"]) {
+    const value = request.headers.get(name); if(value) headers.set(name,value);
+  }
+  const upstream = await fetch(target.toString(), {method:request.method,headers,redirect:"follow"});
+  const out = new Headers(upstream.headers);
+  out.delete("set-cookie");
+  out.delete("content-length");
+  out.delete("content-encoding");
+  out.set("x-4species-release", "SPECIES-v53-canonical");
+  if((out.get("content-type")||"").includes("text/html"))
+    out.set("cache-control","public, max-age=30, must-revalidate");
+  return new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
+}
+
 const SPECIES_V51_PREVIEW_ORIGIN = 'https://species-v50-orca-preview-3blykp.v2.appdeploy.ai';
 const SPECIES_V51_ASSET_PREFIX = '/__species_v51/';
 
@@ -280,6 +305,30 @@ export default {
     const path = url.pathname || "/";
 
     if (host === "www.4species.com") return redirect(`https://4species.com${path}${url.search}`);
+
+    // Canonical clean public URLs: root homepage and /{species-slug}.
+    // Legacy /species/{slug} redirects to exactly one canonical URL.
+    if (path === "/species" || path === "/species/") return redirect("https://4species.com/explore" + url.search, 301);
+    if (/^\/species\/[^/]+\/?$/.test(path)) {
+      const slug = path.split("/").filter(Boolean)[1];
+      return redirect("https://4species.com/" + encodeURIComponent(slug) + url.search, 301);
+    }
+    if (path === "/labs/species" || path === "/labs/species/")
+      return redirect("https://4species.com/" + url.search, 301);
+    if (path.startsWith("/labs/species/")) {
+      const rest = path.slice("/labs/species/".length);
+      return redirect("https://4species.com/" + rest + url.search, 301);
+    }
+    if (path === "/atlas" || path.startsWith("/atlas/"))
+      return redirect("https://4planetatlas.com/" + url.search, 308);
+    if (path.startsWith("/api/") || path.startsWith("/.well-known/"))
+      return proxyRaw(request,path);
+    if (path === "/robots.txt")
+      return new Response("User-agent: *\nAllow: /\n", {headers:{"content-type":"text/plain; charset=utf-8"}});
+    if (path === "/sitemap.xml")
+      return new Response("Sitemap awaits content quality approval", {status:404,headers:{"content-type":"text/plain"}});
+    return proxySpeciesV53(request);
+
     if (path === "/" || path === "") return redirect(`https://4species.com/species/${url.search}`);
     if (path === "/species") return redirect(`https://4species.com/species/${url.search}`);
     if (path === "/atlas" || path.startsWith("/atlas/")) return redirect(`https://4planetatlas.com/${url.search}`.replace("/?", "?"));
