@@ -71,12 +71,12 @@
     }
   ],
   "hero": {
-    "url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Apis_mellifera_on_flowers_%282026%29.jpg",
-    "credit": "AmoebaWasTaken",
-    "licence": "CC BY-SA 4.0",
-    "sourcePage": "https://commons.wikimedia.org/wiki/File:Apis_mellifera_on_flowers_%282026%29.jpg",
-    "alt": "Western honey bee foraging among flowers",
-    "focus": "50% 48%"
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
+    "credit": "Ввласенко",
+    "licence": "CC BY-SA 3.0",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
+    "alt": "Western honey bee visiting the pale blossom of a quince tree",
+    "focus": "52% 50%"
   },
   "glance": [
     {
@@ -196,12 +196,12 @@
   ],
   "gallery": [
     {
-      "url": "https://upload.wikimedia.org/wikipedia/commons/3/34/Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
-      "credit": "Ввласенко",
-      "licence": "CC BY-SA 3.0",
-      "sourcePage": "https://commons.wikimedia.org/wiki/File:Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
-      "alt": "Honey bee on a white quince blossom",
-      "focus": "52% 50%"
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Apis_mellifera_on_a_flower.jpg",
+      "credit": "alexislours",
+      "licence": "CC BY 2.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Apis_mellifera_on_a_flower.jpg",
+      "alt": "Western honey bee visiting a flower",
+      "focus": "50% 48%"
     }
   ],
   "facts": {
