@@ -28,7 +28,7 @@ jobs:
             ['orca','Orca','Orcinus orca',null],
             ['english-oak','English oak','Quercus robur','Quercus'],
             ['atlantic-puffin','Atlantic puffin','Fratercula arctica','Puffin'],
-            ['western-honey-bee','Western honey bee','Apis mellifera','Apis_mellifera'],
+            ['western-honey-bee','Western honey bee','Apis mellifera','Honey_bee'],
             ['fly-agaric','Fly agaric','Amanita muscaria','Fliegenpilz'],
             ['common-octopus','Common octopus','Octopus vulgaris','Octopus_vulgaris']
           ];
