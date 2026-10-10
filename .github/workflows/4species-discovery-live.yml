@@ -38,7 +38,7 @@ jobs:
       - name: Verify live v53 homepage, quiz, explore and six species
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           ORIGIN=https://4species.com
           ready=false
           for attempt in $(seq 1 24); do
