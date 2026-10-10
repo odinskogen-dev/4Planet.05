@@ -59,14 +59,23 @@ async function mediaResponse(request,slug,resource) {
 }
 
 
+
 export function proofBootScript(slug, name) {
+  // Canonical public URLs carry the species slug in pathname. The temporary
+  // shared preview app expects a hash route, but must NEVER be permitted to
+  // fall back to Orca on Safari's app-to-browser handoff / BFCache restore.
   const route = '#/labs/species/' + slug;
   const title = name + ' — SPECIES';
   return '(function(){'
-    + 'const slug='+JSON.stringify(slug)+';'
-    + 'const correct='+JSON.stringify(route)+';'
+    + 'const canonicalSlug='+JSON.stringify(slug)+';'
+    + 'const canonicalHash='+JSON.stringify(route)+';'
     + 'const correctTitle='+JSON.stringify(title)+';'
-    + 'if(!location.hash.startsWith(correct))location.replace(location.pathname+location.search+correct);'
+    + 'function ownRoute(){'
+    + 'const realPath=location.pathname.split("/").filter(Boolean)[0];'
+    + 'if(realPath!==canonicalSlug)return;'
+    + 'if(location.hash!==canonicalHash){history.replaceState(history.state,"",location.pathname+location.search+canonicalHash);}'
+    + '}'
+    + 'ownRoute();'
     + 'function destination(h){if(h==="/labs/species")return "/species/";'
     + 'if(h.startsWith("/labs/species/"))return "/"+h.slice("/labs/species/".length).split("/")[0];'
     + 'return null;}'
@@ -74,12 +83,15 @@ export function proofBootScript(slug, name) {
     + 'const a=ev.target&&ev.target.closest&&ev.target.closest("a[href]");'
     + 'if(!a)return;const u=new URL(a.href,location.href);'
     + 'if(u.origin!==location.origin)return;'
-    + 'const d=destination(u.hash.replace(/^#/,""));if(!d)return;'
-    + 'ev.preventDefault();ev.stopImmediatePropagation();location.assign(d);'
+    + 'const target=destination(u.hash.replace(/^#/,""));'
+    + 'if(!target)return;'
+    + 'ev.preventDefault();ev.stopImmediatePropagation();'
+    + 'if(target!=="/"+canonicalSlug)location.assign(target);else ownRoute();'
     + '},true);'
-    + 'addEventListener("hashchange",function(){const h=location.hash.replace(/^#/,"");'
-    + 'if(h==="/labs/species"||(h.startsWith("/labs/species/")&&h!==correct.slice(1))){'
-    + 'const d=destination(h);if(d)location.assign(d);}});'
+    // Suppress stale SPA fallback and Safari session restoration. Navigate to
+    // related species only from an explicit tapped link, caught above.
+    + 'addEventListener("hashchange",ownRoute);'
+    + 'addEventListener("pageshow",ownRoute);'
     + 'const el=document.querySelector("title");if(el){'
     + 'function sync(){if(document.title!==correctTitle)document.title=correctTitle;}'
     + 'new MutationObserver(sync).observe(el,{childList:true,characterData:true,subtree:true});sync();}'
