@@ -33,7 +33,12 @@ const cleanScientificName = (value: string | null) => {
 
 const cleanIsoDate = (value: string | null) => {
   const v = value || "";
-  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return "";
+
+  const [year, month, day] = v.split("-").map(Number);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth[month - 1] ? v : "";
 };
 
 const boundedInt = (value: string | null, fallback: number, max: number) => {
@@ -72,8 +77,16 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
 
   const size = Math.max(1, boundedInt(incoming.searchParams.get("size"), 50, MAX_SIZE));
   const offset = boundedInt(incoming.searchParams.get("offset"), 0, MAX_OFFSET);
-  const startDate = cleanIsoDate(incoming.searchParams.get("startDate"));
-  const endDate = cleanIsoDate(incoming.searchParams.get("endDate"));
+  const rawStartDate = incoming.searchParams.get("startDate");
+  const rawEndDate = incoming.searchParams.get("endDate");
+  const startDate = cleanIsoDate(rawStartDate);
+  const endDate = cleanIsoDate(rawEndDate);
+  if ((rawStartDate !== null && !startDate) || (rawEndDate !== null && !endDate)) {
+    return json({ ok: false, error: "INVALID_DATE" }, 400, 60);
+  }
+  if (startDate && endDate && startDate > endDate) {
+    return json({ ok: false, error: "INVALID_DATE_RANGE" }, 400, 60);
+  }
 
   const qs = new URLSearchParams({
     scientificname: scientificName,

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const wms = read("functions/api/atlas-wms.ts");
@@ -10,6 +11,9 @@ const firms = read("functions/api/firms.ts");
 const obis = read("functions/api/obis.ts");
 const inat = read("functions/api/inaturalist.ts");
 const truth = read("src/data/truthSpine.ts");
+const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(obis, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText).toString("base64")}`);
 
 const requiredRasterProfiles = [
   "emodnet-bathymetry",
@@ -72,6 +76,80 @@ test("marine/citizen-science occurrence adapters retain provenance and rights bo
   }
   assert.match(inat, /obscured|private/i);
   assert.match(inat, /CC0|CC BY/i);
+});
+
+test("OBIS rejects malformed or impossible supplied dates without fetching upstream", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    throw new Error("invalid dates must fail before upstream fetch");
+  };
+
+  try {
+    for (const query of [
+      "startDate=2026-2-01",
+      "startDate=2026-02-31",
+      "startDate=2026-02-29",
+      "endDate=2026-13-01",
+      "startDate=",
+    ]) {
+      const response = await obisRuntime.onRequestGet({
+        request: new Request(`https://test.4planet.org/api/obis?scientificName=Orcinus+orca&${query}`),
+      });
+      assert.equal(response.status, 400, query);
+      assert.deepEqual(await response.json(), { ok: false, error: "INVALID_DATE" }, query);
+    }
+    assert.equal(fetchCalls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("OBIS rejects inverted date ranges without silently widening the query", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    throw new Error("inverted ranges must fail before upstream fetch");
+  };
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request("https://test.4planet.org/api/obis?scientificName=Orcinus+orca&startDate=2026-06-02&endDate=2026-06-01"),
+    });
+    assert.equal(response.status, 400);
+    assert.deepEqual(await response.json(), { ok: false, error: "INVALID_DATE_RANGE" });
+    assert.equal(fetchCalls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("OBIS accepts a real leap day and forwards both bounded dates", async () => {
+  const originalFetch = globalThis.fetch;
+  let requestedUrl = "";
+  globalThis.fetch = async (url) => {
+    requestedUrl = String(url);
+    return new Response(JSON.stringify({ results: [], total: 0 }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request("https://test.4planet.org/api/obis?scientificName=Orcinus+orca&startDate=2028-02-29&endDate=2028-03-01"),
+    });
+    assert.equal(response.status, 200);
+    assert.match(requestedUrl, /startdate=2028-02-29/);
+    assert.match(requestedUrl, /enddate=2028-03-01/);
+    const body = await response.json();
+    assert.equal(body.query.startDate, "2028-02-29");
+    assert.equal(body.query.endDate, "2028-03-01");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("Truth Spine can retain precision/generalisation/citation state from source adapters", () => {
