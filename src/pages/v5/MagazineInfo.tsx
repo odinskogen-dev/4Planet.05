@@ -32,6 +32,13 @@ export function MagazineAbout() {
         <h1 style={titleStyle}>A publication about what holds.</h1>
         <p style={bodyStyle}>4PLANET MAGAZINE reports on the living planet as a set of relationships: species, places, pressures, people, culture, science and attempted solutions. It is designed as an editorial system, not a disguised marketing surface.</p>
 
+        <section style={{ marginTop: "clamp(64px,9vw,110px)", background: "#090909", color: "#fff", padding: "clamp(30px,5vw,68px)" }}>
+          <p style={{ ...kickerStyle, opacity: .66 }}>WHY 4PLANET EXISTS</p>
+          <h2 style={{ fontSize: "clamp(34px,5.4vw,72px)", letterSpacing: "-.05em", lineHeight: .98, margin: "16px 0 24px", fontWeight: 500 }}>For a Living Planet.</h2>
+          <p style={{ ...bodyStyle, color: "rgba(255,255,255,.82)" }}>The Magazine is one way into a larger story: why 4PLANET exists, what kind of future it is trying to help build, and why everyone who wants to help should be able to find a meaningful part to play.</p>
+          <Link to="/magazine/why-4planet-exists" style={{ display: "inline-block", marginTop: 28, color: "#fff", fontWeight: 600 }}>READ THE STORY →</Link>
+        </section>
+
         <section style={{ marginTop: "clamp(64px,9vw,110px)" }}>
           <p style={kickerStyle}>FOUNDING EDITION</p>
           <h2 style={{ fontSize: "clamp(34px,5vw,68px)", letterSpacing: "-.045em", lineHeight: 1, margin: "14px 0 20px" }}>{FOUNDING_EDITION.workingTitle}</h2>
