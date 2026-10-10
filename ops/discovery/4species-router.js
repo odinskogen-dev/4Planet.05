@@ -1,4 +1,75 @@
 const ORIGIN = "https://4planet-05.pages.dev";
+const SPECIES_V51_PREVIEW_ORIGIN = 'https://species-v50-orca-preview-3blykp.v2.appdeploy.ai';
+const SPECIES_V51_ASSET_PREFIX = '/__species_v51/';
+
+// Founder-authorised, path-isolated Orca v51 LIVE preview.
+// The legacy /species catalog and other product routes remain unchanged.
+// No visitor cookies or Authorization are ever forwarded to the preview host.
+async function serveOrcaV51(request) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method not allowed', { status: 405 });
+  }
+  const upstream = await fetch(SPECIES_V51_PREVIEW_ORIGIN + '/', {
+    method: request.method,
+    headers: { Accept: 'text/html' },
+    redirect: 'follow',
+  });
+  if (!upstream.ok) {
+    return new Response('SPECIES Orca temporarily unavailable', {
+      status: 503,
+      headers: { 'cache-control': 'no-store' },
+    });
+  }
+  const headers = new Headers(upstream.headers);
+  for (const key of ['set-cookie', 'content-length', 'content-encoding', 'etag', 'content-security-policy']) {
+    headers.delete(key);
+  }
+  headers.set('cache-control', 'no-store');
+  headers.set('x-robots-tag', 'noindex, nofollow'); // v51 Orca facts are not yet human-reviewed.
+  headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  headers.set('content-security-policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data: blob:; connect-src 'self' https://api.gbif.org https://api.obis.org https://api.inaturalist.org https://ghvdzetmplqkdtfqiror.supabase.co; font-src 'self' https: data:; frame-src 'self' https://4planetatlas.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'");
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers });
+  const rewritePath = (element, attr) => {
+    const value = element.getAttribute(attr);
+    if (!value) return;
+    const resource = new URL(value, SPECIES_V51_PREVIEW_ORIGIN + '/');
+    if (resource.origin !== SPECIES_V51_PREVIEW_ORIGIN || !resource.pathname.startsWith('/assets/')) return;
+    element.setAttribute(attr, SPECIES_V51_ASSET_PREFIX + resource.pathname.slice(1));
+  };
+  return new HTMLRewriter()
+    .on('script[src]', { element(element) { rewritePath(element, 'src'); } })
+    .on('link[href]', { element(element) { rewritePath(element, 'href'); } })
+    .transform(new Response(upstream.body, { status: upstream.status, headers }));
+}
+
+async function serveOrcaV51Asset(request, targetPath) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
+  const suffix = targetPath.slice(SPECIES_V51_ASSET_PREFIX.length);
+  if (!suffix || suffix.includes('..') || !suffix.startsWith('assets/')) return new Response('Not found', { status: 404 });
+  const target = new URL(suffix, SPECIES_V51_PREVIEW_ORIGIN + '/');
+  const upstream = await fetch(target, { method: request.method, redirect: 'follow' });
+  const headers = new Headers(upstream.headers);
+  headers.delete('set-cookie');
+  headers.delete('content-security-policy');
+  return new Response(request.method === 'HEAD' ? null : upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers,
+  });
+}
+
+async function serveOrcaV51Data(request, path) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
+  if (path !== '/species-data/v1/orca.json' && path !== '/species-data/v1/index.json') return new Response('Not found', { status: 404 });
+  const upstream = await fetch(SPECIES_V51_PREVIEW_ORIGIN + path, { method: request.method, redirect: 'follow' });
+  const headers = new Headers(upstream.headers);
+  headers.delete('set-cookie');
+  headers.set('cache-control', 'no-store');
+  return new Response(request.method === 'HEAD' ? null : upstream.body, {
+    status: upstream.status,
+    headers,
+  });
+}
 const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
 
 const RESERVED = new Set([
@@ -142,6 +213,9 @@ export default {
       return new Response(sitemap(), { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=300" } });
     }
 
+    if (path === "/orca" || path === "/orca/") return serveOrcaV51(request);
+    if (path.startsWith(SPECIES_V51_ASSET_PREFIX)) return serveOrcaV51Asset(request, path);
+    if (path === "/species-data/v1/orca.json" || path === "/species-data/v1/index.json") return serveOrcaV51Data(request, path);
     if (isAsset(path)) return proxyRaw(request, path);
     if (path === "/species/" || path.startsWith("/species/")) return proxyPage(request, path, path);
     if (RESERVED.has(first(path))) return redirect(`https://4planet.org${path}${url.search}`);
