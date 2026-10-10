@@ -48,10 +48,10 @@ jobs:
           s=path.read_text()
           exact='export const SPECIES_HOSTS = ["4species.com", "www.4species.com"];'
           assert exact in s
-          s=s.replace(exact,'export const SPECIES_HOSTS = ["4species.com", "www.4species.com", "species-v53-isolated-preview-20261011.pages.dev"];')
+          s=s.replace(exact,'export const SPECIES_HOSTS = ["4species.com", "www.4species.com", "4planet-05.pages.dev"];')
           needle='  return SPECIES_HOSTS.includes(host);'
           assert needle in s
-          s=s.replace(needle,'  return SPECIES_HOSTS.includes(host) || host.endsWith(".species-v53-isolated-preview-20261011.pages.dev");')
+          s=s.replace(needle,'  return SPECIES_HOSTS.includes(host) || host.endsWith(".4planet-05.pages.dev");')
           path.write_text(s)
           PY
       - name: Install and validate SPECIES v53
@@ -72,6 +72,15 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
-          npx --yes wrangler@4.128.0 pages project create species-v53-isolated-preview-20261011 --production-branch work/species-v53-controlled-staging-20261011 || true
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name species-v53-isolated-preview-20261011 --branch work/species-v53-controlled-staging-20261011
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53-preview-20261011
           echo 'SPECIES_V53_ISOLATED_PREVIEW_DEPLOYED'
+      - name: Check isolated preview URLs and draft indexing gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=https://species-v53-preview-20261011.4planet-05.pages.dev
+          for path in / /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus /explore /quiz /about; do
+            curl -fsSL --retry 4 --retry-delay 3 --max-time 35 "${BASE}${path}" -o /tmp/species-v53-check.html
+            grep -qi noindex /tmp/species-v53-check.html
+            echo "STAGING_PASS: ${path}"
+          done
