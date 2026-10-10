@@ -1,0 +1,39 @@
+name: SPECIES Licensed Premium Photo Assets
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/species-curated-photo-assets.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: king/test, persist-credentials: true }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install pillow requests
+      - name: Download, validate and optimise licensed species photographs
+        run: python scripts/species-curated-photo-assets.py
+      - name: Commit approved photo derivatives to existing SPECIES assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.email "species-factory@4planet.org"
+          git config user.name "4PLANET SPECIES Media Factory"
+          git add public/species-media
+          if git diff --cached --quiet; then echo "Media already current"; exit 0; fi
+          git commit -m "assets(species): version eight quality-checked CC media derivatives and rights manifest"
+          for attempt in 1 2 3; do
+            git pull --rebase origin king/test
+            if git push origin HEAD:king/test; then
+              echo "PHOTOS_PUBLISHED_TO_CANONICAL_REPO"
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
