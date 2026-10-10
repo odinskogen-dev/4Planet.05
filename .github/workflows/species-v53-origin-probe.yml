@@ -1,0 +1,25 @@
+name: SPECIES v53 Origin Probe
+on:
+  push:
+    branches: [work/species-v53-isolated-release-20261011]
+    paths: [.github/workflows/species-v53-origin-probe.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Probe public v53 Worker and every canonical URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin=https://species-v53-origin.odin-skogen.workers.dev
+          for path in / /explore /quiz /about /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus; do
+            code=$(curl -sSL --max-time 30 -w '%{http_code}' -o /tmp/species-test.html "$origin$path" || true)
+            title=$(grep -o '<title>[^<]*</title>' /tmp/species-test.html | head -1 || true)
+            echo "V53_PROBE $path HTTP=$code TITLE=$title"
+            test "$code" = 200
+          done
+          curl -sSI --max-time 20 "$origin/species/orca" | head -n 18
+          echo V53_ORIGIN_READY
