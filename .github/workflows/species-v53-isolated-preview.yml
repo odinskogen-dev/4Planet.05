@@ -65,35 +65,35 @@ jobs:
           test -s dist/orca/index.html
           test -s dist/english-oak/index.html
           echo 'V53_UNIVERSE_DIST_VERIFIED'
-      - name: Create isolated Cloudflare Pages project if needed
+      - name: Publish v53 to isolated Cloudflare Worker static-assets origin
         shell: bash
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
-          cd /tmp/species-v53
-          npx --yes wrangler@4.128.0 pages project create 4species-v53 --production-branch=main 2>&1 | tee /tmp/species-project-create.log || (
-            grep -Eiq 'already exists|already taken|name is already' /tmp/species-project-create.log
-          )
-      - name: Publish v53 to isolated Cloudflare Pages origin
+          npx --yes wrangler@4.128.0 deploy "$GITHUB_WORKSPACE/ops/species-v53-origin-worker.js" \
+            --assets=/tmp/species-v53/dist \
+            --name=species-v53-origin \
+            --compatibility-date=2026-10-05 \
+            --keep-vars | tee /tmp/species-v53-worker-deploy.log
+          echo 'V53_WORKER_ORIGIN_DEPLOYED'
+      - name: Verify isolated origin and canonical species paths
         shell: bash
         run: |
           set -euo pipefail
-          cd /tmp/species-v53
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4species-v53 --branch=main --commit-dirty=true
-          echo 'V53_ISOLATED_PAGES_DEPLOYED https://4species-v53.pages.dev'
-      - name: Verify live Pages origin without changing production
-        shell: bash
-        run: |
-          set -euo pipefail
+          origin=$(grep -oE 'https://[^[:space:]]+\\.workers\\.dev' /tmp/species-v53-worker-deploy.log | head -n1 || true)
+          test -n "$origin" || { echo 'WORKERS_DEV_PREVIEW_NOT_VISIBLE'; exit 1; }
+          origin="${origin%/}"
+          echo "V53_PREVIEW_ORIGIN $origin"
           for route in / /explore /quiz /about /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus; do
-            ready=false
+            ok=false
             for attempt in $(seq 1 8); do
-              status=$(curl -LsS -o /tmp/species-req -w '%{http_code}' --max-time 25 "https://4species-v53.pages.dev$route" || true)
-              if [ "$status" = 200 ] && grep -Eq 'SPECIES|species|Orca|English oak' /tmp/species-req; then ready=true; break; fi
+              code=$(curl -L -sS -o /tmp/species-origin-page -w '%{http_code}' --max-time 25 "$origin$route" || true)
+              if [ "$code" = 200 ] && grep -Eqi 'SPECIES|species|Orca|English oak' /tmp/species-origin-page; then ok=true; break; fi
               sleep 3
             done
-            test "$ready" = true || { echo "FAIL $route status=$status"; exit 1; }
-            echo "V53_ROUTE_PASS $route"
+            test "$ok" = true || { echo "ROUTE_FAIL $route status=$code"; exit 1; }
+            echo "V53_ORIGIN_ROUTE_PASS $route"
           done
-          curl -fsSL https://4species-v53.pages.dev/ | grep -Eiq 'Meet life on Earth|species'
-          echo 'V53_ISOLATED_ORIGIN_QA_PASS'
+          curl -fsSI "$origin/species/orca" | grep -q '301'
+          curl -fsSI "$origin/" | grep -qi 'x-robots-tag: noindex'
+          echo 'V53_WORKER_ORIGIN_QA_PASS'
