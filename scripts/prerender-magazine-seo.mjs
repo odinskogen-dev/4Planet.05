@@ -10,6 +10,8 @@ if (!fs.existsSync(indexPath)) throw new Error("dist/index.html is missing; run 
 const baseHtml = fs.readFileSync(indexPath, "utf8");
 const publicOrigin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
 const magazineOrigin = (process.env.MAGAZINE_SITE_ORIGIN || process.env.VITE_MAGAZINE_SITE_ORIGIN || "https://4planetmagazine.com").replace(/\/$/, "");
+const canonicalMagazineRoute = (route) => route === "/" || route.endsWith("/") ? route : `${route}/`;
+const magazineUrl = (route) => absoluteUrl(magazineOrigin, canonicalMagazineRoute(route));
 const stories = readStories();
 const signals = readSignals();
 const images = readImages();
@@ -95,18 +97,18 @@ function headMarkup(meta) {
 
 function staticMarkupForRoute(route, meta) {
   if (route === "/films") {
-    const items = films.map((film) => `<li><a href="${escapeHtml(`/films/${film.slug}`)}">${escapeHtml(film.title)}</a> — ${film.year}, ${escapeHtml(film.runtime)}, directed by ${escapeHtml(film.director)}</li>`).join("");
+    const items = films.map((film) => `<li><a href="${escapeHtml(canonicalMagazineRoute(`/films/${film.slug}`))}">${escapeHtml(film.title)}</a> — ${film.year}, ${escapeHtml(film.runtime)}, directed by ${escapeHtml(film.director)}</li>`).join("");
     return `<main class="mag-static-prerender" data-4planet-static-prerender="films-index"><p>4PLANET FILMS</p><h1>Films worth your attention.</h1><p>${escapeHtml(meta.description)}</p><h2>Curated documentary selection</h2><ul>${items}</ul></main>`;
   }
   if (route.startsWith("/films/")) {
     const slug = route.split("/").filter(Boolean).pop();
     const film = films.find((candidate) => candidate.slug === slug);
     if (!film) return "";
-    return `<article class="mag-static-prerender" data-4planet-static-prerender="film-detail"><p>4PLANET FILMS / ${escapeHtml(film.focus)}</p><h1>${escapeHtml(film.title)}</h1><p>${escapeHtml(film.description)}</p><p><strong>${film.year}</strong> · ${escapeHtml(film.runtime)} · Directed by ${escapeHtml(film.director)}</p><p><a href="${escapeHtml(film.watchUrl)}">Watch ${escapeHtml(film.title)}</a></p><h2>Why 4PLANET selected it</h2><p>${escapeHtml(film.selectionNote || film.description)}</p><h2>Availability</h2><p>${escapeHtml(film.availabilityNote || "See the official source for current availability.")}</p><p><a href="${escapeHtml(film.sourceUrl)}">${escapeHtml(film.sourceLabel || "Official film source")}</a></p><nav><a href="/films">Explore all 4PLANET Films</a> · <a href="/magazine">Open 4PLANET Magazine</a> · <a href="/magazine/atlas">Open 4PLANET Atlas</a></nav></article>`;
+    return `<article class="mag-static-prerender" data-4planet-static-prerender="film-detail"><p>4PLANET FILMS / ${escapeHtml(film.focus)}</p><h1>${escapeHtml(film.title)}</h1><p>${escapeHtml(film.description)}</p><p><strong>${film.year}</strong> · ${escapeHtml(film.runtime)} · Directed by ${escapeHtml(film.director)}</p><p><a href="${escapeHtml(film.watchUrl)}">Watch ${escapeHtml(film.title)}</a></p><h2>Why 4PLANET selected it</h2><p>${escapeHtml(film.selectionNote || film.description)}</p><h2>Availability</h2><p>${escapeHtml(film.availabilityNote || "See the official source for current availability.")}</p><p><a href="${escapeHtml(film.sourceUrl)}">${escapeHtml(film.sourceLabel || "Official film source")}</a></p><nav><a href="/films/">Explore all 4PLANET Films</a> · <a href="/magazine/">Open 4PLANET Magazine</a> · <a href="/magazine/atlas/">Open 4PLANET Atlas</a></nav></article>`;
   }
   if (route === "/magazine") {
-    const items = stories.slice(0, 13).map((story) => `<li><a href="${escapeHtml(`/magazine/${story.slug}`)}">${escapeHtml(story.title)}</a> — ${escapeHtml(standfirsts[story.slug] || story.dek)}</li>`).join("");
-    return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-index"><p>4PLANET MAGAZINE</p><h1>Nature, people, engineering and what works.</h1><p>${escapeHtml(meta.description)}</p><p><a href="/films">Explore 4PLANET Films</a></p><ul>${items}</ul></main>`;
+    const items = stories.slice(0, 13).map((story) => `<li><a href="${escapeHtml(canonicalMagazineRoute(`/magazine/${story.slug}`))}">${escapeHtml(story.title)}</a> — ${escapeHtml(standfirsts[story.slug] || story.dek)}</li>`).join("");
+    return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-index"><p>4PLANET MAGAZINE</p><h1>Nature, people, engineering and what works.</h1><p>${escapeHtml(meta.description)}</p><p><a href="/films/">Explore 4PLANET Films</a></p><ul>${items}</ul></main>`;
   }
   if (route.startsWith("/magazine/") && !route.startsWith("/magazine/signals/") && !route.startsWith("/magazine/topics/") && !route.startsWith("/magazine/series/")) {
     const slug = route.split("/").filter(Boolean).pop();
@@ -131,7 +133,7 @@ function writeRoute(route, meta) {
   const withHead = clean.replace("</head>", `    ${headMarkup(meta)}
   </head>`);
   const staticMarkup = staticMarkupForRoute(route, meta);
-  const html = staticMarkup ? withHead.replace('<div id="root"></div>', `<div id="root"></div><noscript>${staticMarkup}</noscript>`) : withHead;
+  const html = staticMarkup ? withHead.replace('<div id="root"></div>', `<div id="root">${staticMarkup}</div>`) : withHead;
   const target = route === "/" ? path.join(dist, "index.html") : path.join(dist, route.replace(/^\//, ""), "index.html");
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, html, "utf8");
@@ -140,7 +142,7 @@ function writeRoute(route, meta) {
 const magazineImage = images.m4gazineHero?.src || "/og.png";
 const magazineAlt = images.m4gazineHero?.alt || "4PLANET MAGAZINE";
 const absoluteMagazineImage = absoluteUrl(magazineOrigin, magazineImage);
-const magazineCanonical = absoluteUrl(magazineOrigin, "/magazine");
+const magazineCanonical = magazineUrl("/magazine");
 writeRoute("/magazine", {
   title: "4PLANET MAGAZINE — Nature, people, engineering and what works",
   description: "Stories and signals about the living planet — species, places, people, science, engineering, solutions and culture.",
@@ -164,7 +166,7 @@ for (const page of informationPages) {
   writeRoute(page.route, { ...page, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, jsonLd: { "@context": "https://schema.org", "@type": page.route.endsWith("archive") ? "CollectionPage" : "WebPage", name: page.title, description: page.description, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
-const filmsCanonical = absoluteUrl(magazineOrigin, "/films");
+const filmsCanonical = magazineUrl("/films");
 const filmsImage = films[0].image;
 writeRoute("/films", {
   title: "4PLANET FILMS — Films worth your attention",
@@ -177,14 +179,14 @@ writeRoute("/films", {
     "@context": "https://schema.org",
     "@graph": [
       { "@type": "CollectionPage", "@id": `${filmsCanonical}#page`, name: "4PLANET FILMS", description: "Documentary films curated for a living planet.", url: filmsCanonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical }, mainEntity: { "@id": `${filmsCanonical}#list` } },
-      { "@type": "ItemList", "@id": `${filmsCanonical}#list`, name: "4PLANET FILMS curated documentary selection", numberOfItems: films.length, itemListElement: films.map((film, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Movie", name: film.title, url: absoluteUrl(magazineOrigin, `/films/${film.slug}`), image: film.image, dateCreated: String(film.year), director: { "@type": "Person", name: film.director } } })) }
+      { "@type": "ItemList", "@id": `${filmsCanonical}#list`, name: "4PLANET FILMS curated documentary selection", numberOfItems: films.length, itemListElement: films.map((film, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Movie", name: film.title, url: magazineUrl(`/films/${film.slug}`), image: film.image, dateCreated: String(film.year), director: { "@type": "Person", name: film.director } } })) }
     ]
   },
 });
 
 for (const film of films) {
   const route = `/films/${film.slug}`;
-  const canonical = absoluteUrl(magazineOrigin, route);
+  const canonical = magazineUrl(route);
   const minutes = Number.parseInt(film.runtime, 10);
   writeRoute(route, {
     title: `${film.title} — 4PLANET FILMS`,
@@ -213,7 +215,7 @@ for (const story of stories) {
   const imageKey = feature?.hero || story.image;
   const imageMeta = images[imageKey] || {};
   const description = standfirsts[story.slug] || story.dek;
-  const canonical = absoluteUrl(magazineOrigin, `/magazine/${story.slug}`);
+  const canonical = magazineUrl(`/magazine/${story.slug}`);
   const image = absoluteUrl(magazineOrigin, imageMeta.src || "/og.png");
   const imageAlt = imageMeta.alt || story.title;
   const type = story.mode === "FAST" && story.publishedAt ? "NewsArticle" : "Article";
@@ -233,7 +235,7 @@ for (const story of stories) {
 
 for (const signal of signals) {
   const route = `/magazine/signals/${signal.slug}`;
-  const canonical = absoluteUrl(magazineOrigin, route);
+  const canonical = magazineUrl(route);
   writeRoute(route, {
     title: `${signal.title} | PLANET SIGNAL — 4PLANET MAGAZINE`, description: signal.dek, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "article", section: "Planet Signal", tags: signal.topics || [],
     jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, datePublished: signal.publishedAt, dateModified: signal.asOf || signal.publishedAt, author: { "@type": "Organization", name: "4PLANET MAGAZINE" }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
@@ -242,20 +244,20 @@ for (const signal of signals) {
 
 for (const topic of topics) {
   const route = `/magazine/topics/${topic.id.toLowerCase()}`;
-  const canonical = absoluteUrl(magazineOrigin, route);
+  const canonical = magazineUrl(route);
   writeRoute(route, { title: `${topic.label} — 4PLANET MAGAZINE`, description: topic.promise, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${topic.label} — 4PLANET MAGAZINE`, description: topic.promise, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
 for (const template of templates) {
   const slug = template.id.toLowerCase().replaceAll("_", "-");
   const route = `/magazine/series/${slug}`;
-  const canonical = absoluteUrl(magazineOrigin, route);
+  const canonical = magazineUrl(route);
   writeRoute(route, { title: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "website", jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage", name: `${template.label} — 4PLANET MAGAZINE`, description: template.readerJob, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical } } });
 }
 
 for (const record of foundingEdition.items) {
   const route = `/magazine/stories/${record.id}`;
-  const canonical = absoluteUrl(magazineOrigin, route);
+  const canonical = magazineUrl(route);
   writeRoute(route, { title: `${record.title} — Working record | 4PLANET MAGAZINE`, description: record.summary, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, robots: "noindex,follow,noarchive,max-image-preview:large", type: "website", jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: record.title, description: record.summary, url: canonical, isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE — controlled working records", url: magazineCanonical }, additionalType: "https://schema.org/DigitalDocument" } });
 }
 

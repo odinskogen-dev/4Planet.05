@@ -150,6 +150,11 @@ test("analytics measures reading, second object, sharing and return without pre-
 test("search foundation keeps sitemap, RSS, static route metadata and canonical support", () => {
   assert.match(sitemap, /\/magazine\/about/);
   assert.match(sitemap, /news-sitemap\.xml/);
+  assert.match(sitemap, /canonicalMagazineRoute/);
+  assert.match(sitemap, /magazineRoutes\.map\(canonicalMagazineRoute\)/);
+  assert.match(sitemap, /newsStories\.length > 0/);
+  assert.match(sitemap, /fs\.unlinkSync\(newsSitemapPath\)/);
+  assert.match(sitemap, /magazineNewsSitemapDeclaration/);
   assert.match(sitemap, /rss\.xml/);
   assert.match(contentReader, /readFoundingEdition/);
   assert.match(prerender, /readStories/);
@@ -158,6 +163,11 @@ test("search foundation keeps sitemap, RSS, static route metadata and canonical 
   assert.match(prerender, /canonical/);
   assert.match(magazineSeo, /siteName="4PLANET MAGAZINE"/);
   assert.match(seo, /og:site_name/);
+  assert.match(seo, /function canonicalPath/);
+  assert.match(seo, /path\.endsWith\("\/"\)/);
+  assert.match(prerender, /canonicalMagazineRoute/);
+  assert.match(prerender, /<div id="root">\\${staticMarkup}<\\\/div>/);
+  assert.doesNotMatch(prerender, /<noscript>\\${staticMarkup}<\\\/noscript>/);
   assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every story route");
 });
 
