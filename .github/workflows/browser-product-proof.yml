@@ -108,6 +108,16 @@ jobs:
           --project=desktop-1440
           --project=mobile-390
 
+      - name: Run 4PLANET mission story bounded browser proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/magazine-gold.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+          --grep "For a Living Planet is a premium mission front door"
+
       - name: Run Oslofjord Planet Proof on Chromium desktop + mobile
         env:
           BASE_URL: http://127.0.0.1:4173
