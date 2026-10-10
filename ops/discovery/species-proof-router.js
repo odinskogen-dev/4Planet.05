@@ -120,7 +120,7 @@ async function pageResponse(request,slug,origin) {
     if(url.origin===origin && url.pathname.startsWith('/assets/'))element.setAttribute(attribute,prefix+url.pathname.slice(1));
   };
   return new HTMLRewriter()
-    .on('head',{element(element){element.append('<script src="'+prefix+'boot.js"></script>',{html:true});}})
+    .on('head',{element(element){element.prepend('<script src="'+prefix+'boot.js"></script>',{html:true});}})
     .on('title',{element(element){element.setInnerContent(page.identity.commonName+' — SPECIES');}})
     .on('script[src]',{element(element){rewrite(element,'src');}})
     .on('link[href]',{element(element){rewrite(element,'href');}})
