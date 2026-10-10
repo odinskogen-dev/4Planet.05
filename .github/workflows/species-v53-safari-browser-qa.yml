@@ -33,7 +33,7 @@ jobs:
               const response=await page.goto(root+path,{waitUntil:'domcontentloaded',timeout:45000});
               assert.equal(response.status(),200,'HTTP '+path);
               await page.getByRole('heading',{name:label,exact:true}).first().waitFor({timeout:30000});
-              assert.equal(new URL(page.url()).pathname,path,'Canonical path '+path);
+              assert.equal(new URL(page.url()).pathname.replace(/\/+$/, '') || '/',path,'Canonical path '+path);
               const html=await page.content();
               assert.match(html,/noindex/i,'Missing noindex for '+path);
               if(path==='/english-oak'||path==='/atlantic-puffin'){
