@@ -199,6 +199,19 @@ const LAYERS = [
           const dataset = o.datasetName || o.datasetId || "Dataset not supplied";
           const licence = o.licence || "Licence not supplied";
           const occurrenceId = o.occurrenceId ? String(o.occurrenceId) : "";
+          const datasetCitation = o.datasetCitation ? String(o.datasetCitation) : "";
+          const datasetDoi = o.datasetDoi ? String(o.datasetDoi).trim() : "";
+          const datasetUrl = o.datasetUrl ? String(o.datasetUrl).trim() : "";
+          const datasetHref = /^https:\/\/[^\s]+$/i.test(datasetUrl)
+            ? datasetUrl
+            : /^https:\/\/[^\s]+$/i.test(datasetDoi)
+              ? datasetDoi
+              : /^10\.\d{4,9}\/.+/.test(datasetDoi)
+                ? `https://doi.org/${datasetDoi}`
+                : "";
+          const datasetSource = datasetHref
+            ? `<a class="pl" href="${esc(datasetHref)}" target="_blank" rel="noopener">Original dataset ↗</a>`
+            : "";
           const worms = aphia
             ? `<a class="pl" href="https://www.marinespecies.org/aphia.php?p=taxdetails&id=${aphia}" target="_blank" rel="noopener">Taxon on WoRMS \u2197</a>`
             : "";
@@ -208,7 +221,8 @@ const LAYERS = [
             aphia,
             html: `<b class="nm">${esc(sci)}</b><br><span class="lat">${esc(sci)}</span>` +
               `<div class="when">Observed ${esc(eventDate)} · uncertainty ${esc(uncertainty)}</div>` +
-              `<div class="note">Dataset: ${esc(dataset)}<br>Licence: ${esc(licence)}${occurrenceId ? `<br>Record: ${esc(occurrenceId)}` : ""}</div>` +
+              `<div class="note">Dataset: ${esc(dataset)}<br>Licence: ${esc(licence)}${datasetCitation ? `<br>Citation: ${esc(datasetCitation)}` : ""}${datasetDoi ? `<br>DOI: ${esc(datasetDoi)}` : ""}${occurrenceId ? `<br>Record: ${esc(occurrenceId)}` : ""}</div>` +
+              datasetSource +
               worms +
               `<a class="pl" href="https://obis.org/" target="_blank" rel="noopener">Source: OBIS \u2197</a>`,
           };

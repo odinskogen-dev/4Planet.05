@@ -161,7 +161,7 @@ test("ATLAS WH4LES point detail consumes governed open-rights OBIS evidence", ()
   assert.match(atlas, /Number\.isFinite\(o\.longitude\)/);
   assert.match(atlas, /o\.licenceClass === "OPEN_CC0"/);
   assert.match(atlas, /o\.licenceClass === "OPEN_ATTRIBUTION"/);
-  for (const field of ["eventDate", "coordinateUncertaintyM", "datasetName", "datasetId", "licence", "occurrenceId"]) {
+  for (const field of ["eventDate", "coordinateUncertaintyM", "datasetName", "datasetId", "datasetCitation", "datasetDoi", "datasetUrl", "licence", "occurrenceId"]) {
     assert.ok(atlas.includes(`o.${field}`), `ATLAS WH4LES detail missing ${field}`);
   }
 });
@@ -190,6 +190,39 @@ test("OBIS missing or blank size keeps the default and null total stays unknown"
     }
     assert.equal(requestedUrls.length, 2);
     for (const requestedUrl of requestedUrls) assert.match(requestedUrl, /size=50/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+
+test("OBIS keeps accepted licences narrow and preserves original dataset evidence", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    results: [
+      { occurrenceID: "plain-by", license: "CC BY 4.0", bibliographicCitation: "Dataset Alpha. Original occurrence dataset.", datasetDOI: "10.1234/alpha", datasetURL: "https://obis.org/dataset/alpha" },
+      { occurrenceID: "share-alike", license: "CC BY-SA 4.0" },
+      { occurrenceID: "noncommercial-share-alike", license: "https://creativecommons.org/licenses/by-nc-sa/4.0/" },
+      { occurrenceID: "public-domain", license: "CC0 1.0" },
+    ],
+    total: 4,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request("https://test.4planet.org/api/obis?scientificName=Cetacea&size=4"),
+    });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    const byId = Object.fromEntries(body.records.map((record) => [record.occurrenceId, record]));
+    assert.equal(byId["plain-by"].licenceClass, "OPEN_ATTRIBUTION");
+    assert.equal(byId["share-alike"].licenceClass, "SHARE_ALIKE_REVIEW");
+    assert.notEqual(byId["share-alike"].licenceClass, "OPEN_ATTRIBUTION");
+    assert.equal(byId["noncommercial-share-alike"].licenceClass, "NONCOMMERCIAL");
+    assert.equal(byId["public-domain"].licenceClass, "OPEN_CC0");
+    assert.equal(byId["plain-by"].datasetCitation, "Dataset Alpha. Original occurrence dataset.");
+    assert.equal(byId["plain-by"].datasetDoi, "10.1234/alpha");
+    assert.equal(byId["plain-by"].datasetUrl, "https://obis.org/dataset/alpha");
   } finally {
     globalThis.fetch = originalFetch;
   }

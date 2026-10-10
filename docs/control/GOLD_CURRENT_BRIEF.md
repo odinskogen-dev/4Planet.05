@@ -1,3 +1,15 @@
+# ATLAS OBIS SHAREALIKE + DATASET CITATION CORRECTION — 10 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED / EXISTING HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens an OBIS-backed WH4LES point and needs lawful reuse status plus the original dataset citation, not only the aggregator name.
+**ONE THING TO UNDERSTAND:** CC BY-SA carries an additional ShareAlike obligation and must not collapse into the same public-display class as plain CC BY.
+**PRIMARY ACTION:** classify ShareAlike as review-required for this public surface, preserve supplied dataset citation/DOI/landing URL, and render that evidence on the point.
+**SECONDARY DEPTH:** keep CC0 and plain CC BY available; keep NC and ND blocked; keep record-level OBIS provenance and truth limits.
+**ACCEPTANCE:** executable fixtures cover CC0, CC BY, CC BY-SA and CC BY-NC-SA plus citation/DOI/URL preservation; ATLAS source contract consumes the added fields.
+**TRUTH BOUNDARY:** deterministic adapter/UI contracts do not prove every upstream dataset has complete metadata, independent Gold, deployment, LIVE state or observed user value.
+**BASE / ROLLBACK:** `king/test@b1c3ad65a116fa280e3c6a4fdb44397f4287f122`; revert the bounded correction commit if independent Gold rejects the contract.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No release or production mutation is authorised.
+
 # MAGAZINE RAW-HTML READER VALUE — 10 OCT 2026
 
 **STATUS:** HEIR DISCOVERY IMPROVEMENT / SAME MAGAZINE CONTENT SOURCE / NO LIVE RELEASE.

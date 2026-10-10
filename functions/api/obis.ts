@@ -58,11 +58,13 @@ function bboxToWkt(value: string | null) {
 }
 
 const licenceClass = (value: unknown) => {
-  const v = String(value || "").toUpperCase();
-  if (v.includes("CC0") || v.includes("CC-0")) return "OPEN_CC0";
-  if (v.includes("CC BY") || v.includes("CC-BY")) {
-    if (v.includes("NC")) return "NONCOMMERCIAL";
-    if (v.includes("ND")) return "NO_DERIVATIVES";
+  const v = String(value || "").trim().toUpperCase().replace(/[\s_]+/g, "-");
+  if (v.includes("CC0") || v.includes("CC-0") || v.includes("PUBLICDOMAIN/ZERO")) return "OPEN_CC0";
+  const ccBy = v.includes("CC-BY") || v.includes("/BY/") || v.includes("/BY-");
+  if (ccBy) {
+    if (v.includes("-NC") || v.includes("/BY-NC")) return "NONCOMMERCIAL";
+    if (v.includes("-ND") || v.includes("/BY-ND")) return "NO_DERIVATIVES";
+    if (v.includes("-SA") || v.includes("/BY-SA")) return "SHARE_ALIKE_REVIEW";
     return "OPEN_ATTRIBUTION";
   }
   return "REVIEW_REQUIRED";
@@ -143,6 +145,10 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
           depthMaxM: Number.isFinite(Number(row?.maximumDepthInMeters)) ? Number(row.maximumDepthInMeters) : null,
           datasetId: row?.dataset_id ?? row?.datasetID ?? row?.datasetKey ?? null,
           datasetName: row?.datasetName ?? row?.dataset_name ?? null,
+          datasetCitation: row?.bibliographicCitation ?? row?.datasetCitation ?? row?.citation ?? null,
+          datasetDoi: row?.datasetDOI ?? row?.datasetDoi ?? row?.doi ?? null,
+          datasetUrl: row?.datasetURL ?? row?.datasetUrl ?? null,
+          sourceRecordUrl: row?.references ?? null,
           institutionCode: row?.institutionCode ?? null,
           collectionCode: row?.collectionCode ?? null,
           recordedBy: row?.recordedBy ?? null,
