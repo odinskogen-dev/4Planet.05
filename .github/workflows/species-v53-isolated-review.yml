@@ -70,7 +70,7 @@ jobs:
           s=p.read_text()
           old='["4species.com", "www.4species.com"]'
           assert old in s
-          p.write_text(s.replace(old,'["4species.com", "www.4species.com", "4species-v53.pages.dev", "staging.4species-v53.pages.dev"]'))
+          p.write_text(s.replace(old,'["4species.com", "www.4species.com", "species-v53-preview.4planet-05.pages.dev", "4species-v53.pages.dev", "staging.4species-v53.pages.dev"]'))
           PY
       - name: Install exact dependency lock and quality checks
         shell: bash
@@ -99,18 +99,18 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
           cd "$RUNNER_TEMP/species-v53-site"
-          npx --yes wrangler@4.128.0 pages project create 4species-v53 --production-branch main || true
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4species-v53 --branch staging --commit-hash "$GITHUB_SHA"
-          echo "SPECIES_V53_STAGING=https://staging.4species-v53.pages.dev/"
+          # Existing Pages project, isolated PREVIEW branch only (production untouched).
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53-preview --commit-hash "$GITHUB_SHA"
+          echo "SPECIES_V53_STAGING=https://species-v53-preview.4planet-05.pages.dev/"
       - name: Confirm staging HTTP and routes
         shell: bash
         run: |
           set -euo pipefail
           for u in / /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus /explore /quiz /about; do
-            status=$(curl -sS -L --max-time 35 -o /tmp/species-v53-checked.html -w '%{http_code}' "https://staging.4species-v53.pages.dev$u")
+            status=$(curl -sS -L --max-time 35 -o /tmp/species-v53-checked.html -w '%{http_code}' "https://species-v53-preview.4planet-05.pages.dev$u")
             test "$status" = "200" || { echo "FAIL: $u HTTP $status"; exit 1; }
             echo "STAGING $u HTTP 200"
           done
-          curl -fsSL --max-time 40 https://staging.4species-v53.pages.dev/ -o /tmp/species-v53-home.html
+          curl -fsSL --max-time 40 https://species-v53-preview.4planet-05.pages.dev/ -o /tmp/species-v53-home.html
           grep -Eqi 'Meet life on Earth|SPECIES' /tmp/species-v53-home.html
           echo 'SPECIES V53 STAGING ROUTES VALIDATED'
