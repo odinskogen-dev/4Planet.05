@@ -1,3 +1,40 @@
+# ATLAS PLACE → LIVING PLANET ENTRY — SEARCH VALUE / EXPOSURE — 10 OCT 2026
+
+**STATUS:** FOUNDER-DIRECTED HEIR PRODUCT CORRECTION / MAKER IMPLEMENTATION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person searched for a real place and landed on 4PLANET from Google or another discovery surface.
+
+**ONE THING TO UNDERSTAND:** this place is not a text record or isolated map pin; it is an entry point into the living planet, and the same canonical place can be explored immediately in ATLAS.
+
+**PRIMARY ACTION:** open this exact place/node in the interactive ATLAS with the canonical place identity and reference map context preserved.
+
+**SECONDARY DEPTH:** understand source-grounded geography first, then explore only verified connections to nearby places, species, living systems, pressures, missions and evidence. Missing ecological relationships remain unknown.
+
+**P1 DOMINANT:** premium visual place identity + map/node orientation.
+**P2 ORIENTATION:** place type, geographic context and concise reason to explore.
+**P3 ACTION / NEXT:** one dominant “EXPLORE IN ATLAS” action carrying the same place slug and reference coordinate.
+**P4 DEPTH:** Living Planet Intelligence, related places, sources, provenance and truth boundaries.
+
+**WHAT CAN BE REMOVED:** text-first SEO landing hierarchy; technical identifiers above the fold; duplicate primary CTAs; generic environmental filler; engineering/status language; any visual treatment that makes a real search visitor feel they landed on an internal record.
+
+**WHAT MUST BE REUSED:** one existing ATLAS engine; current canonical Place objects; World Place Index; existing map-state handoff; existing source/provenance and truth model; existing related-place graph; existing static map/share-image primitive; current SPECIES life-first premium hierarchy as a quality benchmark, not as a copied layout.
+
+**SEARCH / AI DISCOVERY CONTRACT:** server-readable HTML, unique title/description, self-canonical, crawlable internal links, truthful schema and useful visible text remain first-class. The interactive map enhances the human experience; it does not replace crawlable content.
+
+**MOBILE-FIRST RISK:** the visual map entrance must remain legible and tappable on narrow screens without trapping scroll, obscuring the place name or requiring WebGL before first value. Static/crawlable fallback remains useful when interactive ATLAS is unavailable.
+
+**HUMAN SUCCESS:** within one screen a new visitor knows where they are, sees the place as a map node and can enter the same place in ATLAS with one action. If they stay, the page itself gives useful, source-grounded context and routes them deeper into 4PLANET.
+
+**MEASUREMENT:** organic landing → Place viewed → ATLAS continuation → meaningful use / second object → return. URL publication or sitemap submission alone is not success.
+
+**SCALE LAW:** hold the current 250 Place cohort while production runtime consistency and landing usefulness are proven. Do not use this work as authority for 250→500+.
+
+**TRUTH BOUNDARY:** a reference coordinate is navigation context, not an administrative/ecological boundary; geographic identity does not establish species presence, ecosystem condition, pressure, causality or ecological outcome.
+
+**BASE / ROLLBACK:** king/test@9f4dc1faed4efc1e6e615aeba4480fe28dff2281 before this bounded product correction.
+
+**MAKER ≠ JUDGE:** implementation and deterministic/browser proof may establish candidate quality; independent Gold judges exact SHA. LIVE remains Founder-gated.
+
 # NATUREBRAIN / ATLAS — OBIS DEFAULT-COUNT TRUTH — 10 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON HEIR / NO GOLD / NO DEPLOYMENT / NO LIVE RELEASE.
