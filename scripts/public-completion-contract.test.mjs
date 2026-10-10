@@ -82,10 +82,10 @@ test("homepage exposes the complete public universe and three guided entry journ
   assert.match(home, /GUIDED_ENTRIES\.map/);
   assert.match(home, /Species journey/);
   assert.match(home, /Systems journey/);
-  const systemsJourney = home.match(/eyebrow: "Systems journey"[\\s\\S]*?\\n  },/)?.[0] ?? "";
-  assert.match(systemsJourney, /to: "\\/living-systems\\/oslofjord"/);
+  const systemsJourney = home.match(/eyebrow: "Systems journey"[\s\S]*?\n  },/)?.[0] ?? "";
+  assert.match(systemsJourney, /to: "\/living-systems\/oslofjord"/);
   assert.doesNotMatch(systemsJourney, /livingsystems|reloadDocument/);
-  assert.match(router, /path="\\/living-systems\\/oslofjord" element={<PlanetProofPage slug="oslofjorden" \\/>}/);
+  assert.match(router, /path="\/living-systems\/oslofjord" element={<PlanetProofPage slug="oslofjorden" \/>}/);
   assert.match(home, /Action journey/);
   assert.match(home, /These action pathways are in development\./);
 });
