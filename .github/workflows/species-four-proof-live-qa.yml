@@ -15,6 +15,19 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Check real licensed photo delivery through SPECIES edge cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          for slug in atlantic-puffin western-honey-bee fly-agaric common-octopus; do
+            for index in 0 1; do
+              url="https://4species.com/__species_proof/$slug/media/$index"
+              curl -fLsS --retry 4 --retry-all-errors --retry-delay 2 --max-time 35 "$url" -o "/tmp/$slug-$index.img"
+              mime=$(file -b --mime-type "/tmp/$slug-$index.img")
+              test "${mime#image/}" != "$mime"
+              echo "$slug image $index valid: $mime"
+            done
+          done
       - name: Validate all six links, mobile hero imagery and navigational return
         shell: bash
         run: |
@@ -27,10 +40,10 @@ jobs:
           const examples = [
             ['orca','Orca','Orcinus orca',null],
             ['english-oak','English oak','Quercus robur','Quercus'],
-            ['atlantic-puffin','Atlantic puffin','Fratercula arctica','Puffin'],
-            ['western-honey-bee','Western honey bee','Apis mellifera','Honey_bee'],
-            ['fly-agaric','Fly agaric','Amanita muscaria','Fliegenpilz'],
-            ['common-octopus','Common octopus','Octopus vulgaris','Octopus_vulgaris']
+            ['atlantic-puffin','Atlantic puffin','Fratercula arctica','/__species_proof/atlantic-puffin/media/0'],
+            ['western-honey-bee','Western honey bee','Apis mellifera','/__species_proof/western-honey-bee/media/0'],
+            ['fly-agaric','Fly agaric','Amanita muscaria','/__species_proof/fly-agaric/media/0'],
+            ['common-octopus','Common octopus','Octopus vulgaris','/__species_proof/common-octopus/media/0']
           ];
           for (const [slug,name,scientific,imageMarker] of examples) {
             for (const [view,viewport] of [['mobile',{width:390,height:844}],['desktop',{width:1280,height:800}]]) {
