@@ -254,7 +254,7 @@ jobs:
 
           verify_live 'https://4planetmagazine.com/magazine/'
           verify_live 'https://4planetmagazine.com/magazine/why-4planet-exists/'
-          verify_live 'https://4planetmagazine.com/magazine/about'
+          verify_live 'https://4planetmagazine.com/magazine/about/'
           verify_live 'https://4planetmagazine.com/films/'
 
           story_html=$(curl -fsS 'https://4planetmagazine.com/magazine/why-4planet-exists/')
