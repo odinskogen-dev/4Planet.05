@@ -97,7 +97,7 @@ async function serveEnglishOak(request) {
     }
   };
   return new HTMLRewriter()
-    .on('head', { element(el) { el.append('<script src="/__species_oak/boot.js"></script>', { html: true }); } })
+    .on('head', { element(el) { el.prepend('<script src="/__species_oak/boot.js"></script>', { html: true }); } })
     .on('title', { element(el) { el.setInnerContent('English oak — SPECIES'); } })
     .on('script[src]', { element(el) { rewriteAsset(el, 'src'); } })
     .on('link[href]', { element(el) { rewriteAsset(el, 'href'); } })
