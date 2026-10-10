@@ -1,0 +1,292 @@
+{
+  "schema": "4PLANET_SPECIES_PAGE_01",
+  "slug": "common-octopus",
+  "domain": "OCE4N",
+  "identity": {
+    "commonName": "Common octopus",
+    "scientificName": "Octopus vulgaris",
+    "group": "Mollusc · Octopus",
+    "wormsAphiaId": 140605
+  },
+  "hook": {
+    "text": "A soft-bodied hunter that can reshape the colour and texture of its skin to disappear in plain sight.",
+    "state": "KNOWN",
+    "source": {
+      "label": "National Geographic — Common octopus",
+      "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+    }
+  },
+  "intro": [
+    {
+      "text": "The common octopus is a marine cephalopod with eight sucker-lined arms and a soft body that can enter narrow crevices.",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    },
+    {
+      "text": "It often shelters in a den and hunts other marine animals including crabs and molluscs.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Animal Diversity Web — Octopus vulgaris",
+        "url": "https://animaldiversity.org/accounts/Octopus_vulgaris/"
+      }
+    },
+    {
+      "text": "Rapid changes in colour and skin texture help it camouflage, while ink and quick jet-propelled movement can help in escape.",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "value": "Eight arms",
+      "text": "Flexible sucker-lined limbs for touch and manipulation.",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    },
+    {
+      "value": "Camouflage",
+      "text": "Skin can change colour, pattern and texture.",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    },
+    {
+      "value": "1–2 years",
+      "text": "Typical wild lifespan reported by National Geographic.",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    }
+  ],
+  "hero": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octopus_vulgaris_close_up.jpg",
+    "credit": "Victor Micallef",
+    "licence": "CC BY-SA 4.0",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Octopus_vulgaris_close_up.jpg",
+    "alt": "Common octopus looking towards camera from a Mediterranean reef",
+    "focus": "50% 50%"
+  },
+  "glance": [
+    {
+      "label": "Arms",
+      "value": "eight",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    },
+    {
+      "label": "Diet",
+      "value": "crabs & molluscs",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    },
+    {
+      "label": "Habitat",
+      "value": "coastal seabed",
+      "state": "KNOWN",
+      "source": {
+        "label": "WoRMS — Octopus vulgaris",
+        "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=140605"
+      }
+    },
+    {
+      "label": "Lifespan",
+      "value": "about 1–2 years",
+      "state": "KNOWN",
+      "source": {
+        "label": "National Geographic — Common octopus",
+        "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+      }
+    }
+  ],
+  "story": [
+    {
+      "kind": "life",
+      "eyebrow": "Life in hiding",
+      "title": "A changing face",
+      "claims": [
+        {
+          "text": "The common octopus uses skin pigments and muscular structures to change both the colour and apparent texture of its body.",
+          "state": "KNOWN",
+          "source": {
+            "label": "National Geographic — Common octopus",
+            "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "need",
+      "eyebrow": "A hunter of crevices",
+      "title": "Eight searching arms",
+      "claims": [
+        {
+          "text": "Sucker-lined arms can investigate crevices and manipulate prey, and the animal feeds on marine invertebrates including crabs and molluscs.",
+          "state": "KNOWN",
+          "source": {
+            "label": "National Geographic — Common octopus",
+            "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "place",
+      "eyebrow": "Where it lives",
+      "title": "Coastal waters",
+      "claims": [
+        {
+          "text": "WoRMS identifies Octopus vulgaris as an accepted marine species and records coastal-to-shelf habitats.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WoRMS — Octopus vulgaris",
+            "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=140605"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "pressure",
+      "eyebrow": "Pressures",
+      "title": "Human use of coastal seas",
+      "claims": [
+        {
+          "text": "The common octopus is harvested by fisheries in different regions; this page does not infer a global trend from historical local catch reports.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Octopus vulgaris",
+            "url": "https://animaldiversity.org/accounts/Octopus_vulgaris/"
+          }
+        },
+        {
+          "text": "The conservation situation must be interpreted from independently sourced assessments rather than from maps of observations.",
+          "state": "INTERPRETED",
+          "source": {
+            "label": "WoRMS — Octopus vulgaris",
+            "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=140605"
+          }
+        }
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/89/Common_octopus_%28Octopus_vulgaris%29%2C_Pedra_de_Deu%2C_Medes_Islands%2C_Spain.jpg",
+      "credit": "Jouni Kuisma / DiveCodex",
+      "licence": "CC BY-SA 4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Common_octopus_%28Octopus_vulgaris%29%2C_Pedra_de_Deu%2C_Medes_Islands%2C_Spain.jpg",
+      "alt": "Common octopus among rocks in the Mediterranean Sea",
+      "focus": "50% 55%"
+    }
+  ],
+  "facts": {
+    "appearance": [
+      {
+        "label": "Eight arms",
+        "text": "Eight sucker-lined arms and a soft body without an internal shell.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Animal Diversity Web — Octopus vulgaris",
+          "url": "https://animaldiversity.org/accounts/Octopus_vulgaris/"
+        }
+      },
+      {
+        "label": "Disguise",
+        "text": "Can alter skin colour and surface texture for camouflage.",
+        "state": "KNOWN",
+        "source": {
+          "label": "National Geographic — Common octopus",
+          "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+        }
+      }
+    ],
+    "physical": [
+      {
+        "trait": "length",
+        "kind": "range",
+        "text": "12–36 inches including arms",
+        "unit": "in",
+        "state": "KNOWN",
+        "source": {
+          "label": "National Geographic — Common octopus",
+          "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+        },
+        "context": "National Geographic general size range; individuals vary"
+      }
+    ],
+    "ecology": [
+      {
+        "label": "Prey",
+        "text": "Crabs, molluscs and other marine invertebrates.",
+        "state": "KNOWN",
+        "source": {
+          "label": "National Geographic — Common octopus",
+          "url": "https://www.nationalgeographic.com/animals/invertebrates/facts/common-octopus"
+        }
+      },
+      {
+        "label": "Den",
+        "text": "Often shelters in holes or crevices on the seabed.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Animal Diversity Web — Octopus vulgaris",
+          "url": "https://animaldiversity.org/accounts/Octopus_vulgaris/"
+        }
+      }
+    ],
+    "conservation": [
+      {
+        "label": "Knowledge boundary",
+        "text": "A species-wide trend is not determined from local fishing or sightings data.",
+        "state": "KNOWN",
+        "source": {
+          "label": "WoRMS — Octopus vulgaris",
+          "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=140605"
+        }
+      }
+    ]
+  },
+  "limits": [
+    "Some historical distributions assigned to Octopus vulgaris may involve species-complex taxonomy; check contemporary regional identifications.",
+    "Observation records are not a census of living animals or a complete range.",
+    "This page does not reproduce IUCN Red List text or claim a population assessment."
+  ],
+  "atlas": {
+    "layers": [
+      "bluemarble",
+      "biodiv"
+    ]
+  },
+  "provenance": {
+    "review": "DRAFT",
+    "writtenBy": "AXE source-grounded SPECIES proof series 02–05",
+    "checkedAt": "2026-10-10"
+  },
+  "names": {
+    "nb": {
+      "name": "Vanlig åttearmet blekksprut",
+      "source": {
+        "label": "WoRMS — Octopus vulgaris",
+        "url": "https://www.marinespecies.org/aphia.php?p=taxdetails&id=140605"
+      }
+    }
+  }
+}
