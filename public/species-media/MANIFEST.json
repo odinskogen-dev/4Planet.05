@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "atlantic-puffin",
+    "index": 0,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Puffin_%28Fratercula_arctica%29.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Puffin_%28Fratercula_arctica%29.jpg",
+    "credit": "Charles J. Sharp",
+    "licence": "CC BY-SA 4.0",
+    "derivative": "public/species-media/atlantic-puffin/0.jpg"
+  },
+  {
+    "slug": "atlantic-puffin",
+    "index": 1,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Atlantic_puffin_%28Fratercula_arctica%29.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Atlantic_puffin_%28Fratercula_arctica%29.jpg",
+    "credit": "BouketenCate",
+    "licence": "CC BY-SA 4.0",
+    "derivative": "public/species-media/atlantic-puffin/1.jpg"
+  },
+  {
+    "slug": "western-honey-bee",
+    "index": 0,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/3/34/Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
+    "credit": "\u0412\u0432\u043b\u0430\u0441\u0435\u043d\u043a\u043e",
+    "licence": "CC BY-SA 3.0",
+    "derivative": "public/species-media/western-honey-bee/0.jpg"
+  },
+  {
+    "slug": "western-honey-bee",
+    "index": 1,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Apis_mellifera_on_a_flower.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Apis_mellifera_on_a_flower.jpg",
+    "credit": "alexislours",
+    "licence": "CC BY 2.0",
+    "derivative": "public/species-media/western-honey-bee/1.jpg"
+  },
+  {
+    "slug": "fly-agaric",
+    "index": 0,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Fliegenpilz_fly_agaric_Amanita_muscaria.JPG",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Fliegenpilz_fly_agaric_Amanita_muscaria.JPG",
+    "credit": "Holger Krisp",
+    "licence": "CC BY 3.0",
+    "derivative": "public/species-media/fly-agaric/0.jpg"
+  },
+  {
+    "slug": "fly-agaric",
+    "index": 1,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Amanita_muscaria%2C_Fly_Agaric.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Amanita_muscaria%2C_Fly_Agaric.jpg",
+    "credit": "PatriciaVNes",
+    "licence": "CC BY-SA 4.0",
+    "derivative": "public/species-media/fly-agaric/1.jpg"
+  },
+  {
+    "slug": "common-octopus",
+    "index": 0,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Octopus_vulgaris_close_up.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octopus_vulgaris_close_up.jpg",
+    "credit": "Victor Micallef",
+    "licence": "CC BY-SA 4.0",
+    "derivative": "public/species-media/common-octopus/0.jpg"
+  },
+  {
+    "slug": "common-octopus",
+    "index": 1,
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Common_octopus_%28Octopus_vulgaris%29%2C_Pedra_de_Deu%2C_Medes_Islands%2C_Spain.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/8/89/Common_octopus_%28Octopus_vulgaris%29%2C_Pedra_de_Deu%2C_Medes_Islands%2C_Spain.jpg",
+    "credit": "Jouni Kuisma / DiveCodex",
+    "licence": "CC BY-SA 4.0",
+    "derivative": "public/species-media/common-octopus/1.jpg"
+  }
+]
