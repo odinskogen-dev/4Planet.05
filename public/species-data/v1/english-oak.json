@@ -1,0 +1,337 @@
+{
+  "schema": "4PLANET_SPECIES_PAGE_01",
+  "slug": "english-oak",
+  "domain": "E4RTH",
+  "identity": {
+    "commonName": "English oak",
+    "scientificName": "Quercus robur",
+    "authorship": "L.",
+    "group": "Plant · Deciduous oak"
+  },
+  "hook": {
+    "text": "An oak is more than a tree: its leaves, bark, branches and acorns help make a home for woodland life.",
+    "state": "KNOWN",
+    "source": {
+      "label": "Woodland Trust — English oak",
+      "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+    }
+  },
+  "intro": [
+    {
+      "text": "English oak, also called pedunculate oak, grows into a broad-crowned deciduous tree. Its rounded, lobed leaves sit on very short stalks, while the acorns hang on much longer ones.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — English oak",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+      }
+    },
+    {
+      "text": "Each spring, catkins release pollen. By autumn, green acorns have ripened brown and become food for jays, squirrels and other animals.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Oak trees and wildlife",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+      }
+    },
+    {
+      "text": "A mature oak offers far more than shade: insects use its leaves and bark, birds nest in its cavities, and fungi and invertebrates live among its fallen leaves.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — English oak",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "value": "40 m",
+      "text": "A height English oak can reach; this is an upper figure, not a typical height.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Royal Botanic Gardens, Kew — Oak tree",
+        "url": "https://www.kew.org/plants/oak-tree"
+      }
+    },
+    {
+      "value": "Acorns",
+      "text": "A food source for jays, squirrels and other woodland animals.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Oak trees and wildlife",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+      }
+    },
+    {
+      "value": "Long stalks",
+      "text": "The acorns have long stalks, unlike the almost stalkless leaves.",
+      "state": "KNOWN",
+      "source": {
+        "label": "Royal Botanic Gardens, Kew — Oak tree",
+        "url": "https://www.kew.org/plants/oak-tree"
+      }
+    }
+  ],
+  "hero": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/42/20140410Quercus_robur.jpg",
+    "credit": "AnRo0002",
+    "licence": "CC0 1.0",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:20140410Quercus_robur.jpg",
+    "alt": "Mature pedunculate oak photographed at Reilingen, Germany",
+    "focus": "50% 42%"
+  },
+  "glance": [
+    {
+      "label": "Height",
+      "value": "up to 40 m",
+      "state": "KNOWN",
+      "source": {
+        "label": "Royal Botanic Gardens, Kew — Oak tree",
+        "url": "https://www.kew.org/plants/oak-tree"
+      }
+    },
+    {
+      "label": "Flowering",
+      "value": "April–May (UK)",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Oak trees and wildlife",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+      },
+      "limit": "Typical period described for Britain, not a universal flowering schedule"
+    },
+    {
+      "label": "Habitat",
+      "value": "temperate woods",
+      "state": "KNOWN",
+      "source": {
+        "label": "Royal Botanic Gardens, Kew — Plants of the World Online",
+        "url": "https://powo.science.kew.org/taxon/304293-2"
+      }
+    },
+    {
+      "label": "Lifespan",
+      "value": "can exceed 1,000 years",
+      "state": "KNOWN",
+      "source": {
+        "label": "Woodland Trust — Oak trees and wildlife",
+        "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+      },
+      "limit": "Exceptional old oaks, not the typical lifespan of an individual tree"
+    }
+  ],
+  "story": [
+    {
+      "kind": "life",
+      "eyebrow": "A changing year",
+      "title": "From catkin to acorn",
+      "claims": [
+        {
+          "text": "Oak bears male and female flowers on the same tree. Male catkins appear in April to May in Britain and release pollen into the wind.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Oak trees and wildlife",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+          }
+        },
+        {
+          "text": "Following pollination, acorns form, turn from green to brown and fall in autumn.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — English oak",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "need",
+      "eyebrow": "A living habitat",
+      "title": "Life in every layer",
+      "claims": [
+        {
+          "text": "Caterpillars and other insects feed on oak leaves; birds and mammals eat its acorns. Mosses, lichens and fungi can occupy its bark, branches and the ground beneath.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — English oak",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+          }
+        },
+        {
+          "text": "When a jay buries acorns and leaves some behind, those seeds have a chance to grow into new trees.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — Oak trees and wildlife",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "place",
+      "eyebrow": "Where it grows",
+      "title": "A tree of temperate lands",
+      "claims": [
+        {
+          "text": "Kew records the native range of Quercus robur from Europe eastwards to Iran, including Norway and Great Britain.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Royal Botanic Gardens, Kew — Plants of the World Online",
+            "url": "https://powo.science.kew.org/taxon/304293-2"
+          }
+        },
+        {
+          "text": "This oak grows in deciduous woodland, and is especially familiar in woods, parks and hedgerows in Britain.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — English oak",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "pressure",
+      "eyebrow": "Pressures",
+      "title": "Old trees need protection",
+      "claims": [
+        {
+          "text": "Acute and chronic oak decline are serious problems affecting oaks in Britain. Local impacts must not be presented as a uniform global trend.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — English oak",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+          }
+        },
+        {
+          "text": "The oak processionary moth damages foliage in areas of England where it has established; this is a documented regional issue, not a global status statement.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Woodland Trust — English oak",
+            "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+          }
+        }
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/af/Quercus_robur.jpg",
+      "credit": "MPF",
+      "licence": "CC BY-SA 3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Quercus_robur.jpg",
+      "alt": "Pedunculate oak leaves and acorns showing their distinctive shape",
+      "focus": "50% 40%"
+    },
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Quercus_robur_-_leaves.jpg",
+      "credit": "4nuc",
+      "licence": "CC BY-SA 3.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Quercus_robur_-_leaves.jpg",
+      "alt": "Close view of the lobed leaves of Quercus robur",
+      "focus": "50% 50%"
+    }
+  ],
+  "facts": {
+    "appearance": [
+      {
+        "label": "Leaves",
+        "text": "Rounded lobes with short or almost absent leaf stalks.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — English oak",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+        }
+      },
+      {
+        "label": "Fruit",
+        "text": "Acorns grow on long stalks and turn brown as they ripen.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Royal Botanic Gardens, Kew — Oak tree",
+          "url": "https://www.kew.org/plants/oak-tree"
+        }
+      },
+      {
+        "label": "Flowers",
+        "text": "Male catkins hang from the tree; tiny female flowers become acorns.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Oak trees and wildlife",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+        }
+      }
+    ],
+    "physical": [
+      {
+        "trait": "height",
+        "kind": "max_stated",
+        "text": "up to 40 m",
+        "unit": "m",
+        "lifeStage": "adult",
+        "state": "KNOWN",
+        "source": {
+          "label": "Royal Botanic Gardens, Kew — Oak tree",
+          "url": "https://www.kew.org/plants/oak-tree"
+        }
+      }
+    ],
+    "ecology": [
+      {
+        "label": "Acorn eaters",
+        "text": "Jays, squirrels, deer and other mammals feed on oak acorns.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Oak trees and wildlife",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+        }
+      },
+      {
+        "label": "Woodland home",
+        "text": "Insects use leaves and bark; fungi and invertebrates live in leaf litter and decaying wood.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — English oak",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+        }
+      },
+      {
+        "label": "Regeneration",
+        "text": "Acorns cached by jays may germinate when left uneaten.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — Oak trees and wildlife",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/oak-tree-wildlife/"
+        }
+      }
+    ],
+    "conservation": [
+      {
+        "label": "British tree health",
+        "text": "Acute and chronic oak decline affect oaks in parts of Britain.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Woodland Trust — English oak",
+          "url": "https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/english-oak"
+        },
+        "context": "Regional pressures, not a species-wide global population trend"
+      }
+    ]
+  },
+  "limits": [
+    "GBIF records are observations and collections, not a complete native range, a live tree count or population trends.",
+    "The April–May flowering period is documented for Britain; timing changes across places and years.",
+    "UK oak-associated biodiversity figures can include more than one native oak species and are not counts of organisms on this individual tree.",
+    "This page does not reproduce or claim a current IUCN Red List assessment."
+  ],
+  "atlas": {
+    "layers": [
+      "bluemarble",
+      "biodiv"
+    ]
+  },
+  "provenance": {
+    "review": "DRAFT",
+    "writtenBy": "AXE / GPT source-grounded draft for 4PLANET",
+    "checkedAt": "2026-10-10"
+  }
+}
