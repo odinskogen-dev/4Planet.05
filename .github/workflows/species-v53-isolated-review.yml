@@ -1,0 +1,111 @@
+name: SPECIES v53 Isolated Review Build
+
+on:
+  push:
+    branches:
+      - work/species-v53-universe-staging-20261010
+    paths:
+      - .github/workflows/species-v53-isolated-review.yml
+      - ops/species/v53-patch/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout existing controlled programme without mutating it
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Restore EXACT Claude v53 patch and prove provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species/v53-patch/part-*.b64 | base64 --decode | gzip -dc > "$RUNNER_TEMP/species-v53-original.patch"
+          echo "2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  $RUNNER_TEMP/species-v53-original.patch" | sha256sum -c -
+          git worktree add --detach "$RUNNER_TEMP/species-v53-site" 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd "$RUNNER_TEMP/species-v53-site"
+          git apply --check "$RUNNER_TEMP/species-v53-original.patch"
+          git apply "$RUNNER_TEMP/species-v53-original.patch"
+          git add -A
+          EXPECTED=818b4ff766d4423cafc1709bda38d164da2b9731
+          ACTUAL=$(git write-tree)
+          echo "Claude v53 exact tree: $ACTUAL"
+          test "$ACTUAL" = "$EXPECTED"
+      - name: Reconcile the five separately published GOLD-proof profiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/species-v53-site"
+          for slug in english-oak atlantic-puffin western-honey-bee fly-agaric common-octopus; do
+            git --git-dir="$GITHUB_WORKSPACE/.git" show "HEAD:public/species-data/v1/$slug.json" > "public/species-data/v1/$slug.json"
+          done
+          # The production proof species keep their own source and identity; no Orca substitution.
+          python3 - <<'PY'
+          import json,pathlib
+          folder=pathlib.Path('public/species-data/v1')
+          for slug in ('english-oak','atlantic-puffin','western-honey-bee','fly-agaric','common-octopus'):
+            obj=json.loads((folder/(slug+'.json')).read_text())
+            assert obj['slug']==slug and obj['provenance']['review']=='DRAFT'
+          PY
+          node scripts/species-page-validate.mjs --write-index
+          node scripts/species-page-validate.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/species/universe/links.ts')
+          s=p.read_text()
+          old='["4species.com", "www.4species.com"]'
+          assert old in s
+          p.write_text(s.replace(old,'["4species.com", "www.4species.com", "4species-v53.pages.dev", "staging.4species-v53.pages.dev"]'))
+          PY
+      - name: Install exact dependency lock and quality checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/species-v53-site"
+          npm ci
+          npm run typecheck
+          npm run lint
+          node scripts/species-template-contract.test.mjs
+          npm run build:atlas
+          SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          test -f dist/index.html
+          test -f dist/orca/index.html
+          test -f dist/english-oak/index.html
+          test -f dist/quiz/index.html
+          test -f dist/explore/index.html
+          grep -iq 'Meet life on Earth' dist/index.html
+          test -f dist/species-data/v1/english-oak.json
+          test -f dist/species-data/v1/common-octopus.json
+          echo "SPECIES_V53_EXACT_BUILD_AND_6_SPECIES_PASSED"
+      - name: Publish isolated Cloudflare Pages staging (never overwrite 4planet-05)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          cd "$RUNNER_TEMP/species-v53-site"
+          npx --yes wrangler@4.128.0 pages project create 4species-v53 --production-branch main || true
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4species-v53 --branch staging --commit-hash "$GITHUB_SHA"
+          echo "SPECIES_V53_STAGING=https://staging.4species-v53.pages.dev/"
+      - name: Confirm staging HTTP and routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          for u in / /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus /explore /quiz /about; do
+            status=$(curl -sS -L --max-time 35 -o /tmp/species-v53-checked.html -w '%{http_code}' "https://staging.4species-v53.pages.dev$u")
+            test "$status" = "200" || { echo "FAIL: $u HTTP $status"; exit 1; }
+            echo "STAGING $u HTTP 200"
+          done
+          curl -fsSL --max-time 40 https://staging.4species-v53.pages.dev/ -o /tmp/species-v53-home.html
+          grep -Eqi 'Meet life on Earth|SPECIES' /tmp/species-v53-home.html
+          echo 'SPECIES V53 STAGING ROUTES VALIDATED'
