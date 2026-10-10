@@ -92,7 +92,67 @@ test("resource flow cannot open by changing only the provider; every pre-action 
   assert.equal(action.universalActionContractCanBeginResourceFlow(providerOnly), false);
 });
 
-test("resource flow opens only when provider, diligence, exact economics, release and blockers all close", () => {
+const plasticBankBinding = {
+  id: "provider-pattern:plastic-bank:fixed-contribution:v1",
+  unit: "provider-defined bottles / authenticated plastic credit",
+  unitMinimum: 5000,
+};
+
+test("resource flow rejects an unknown or mismatched provider binding", () => {
+  const contract = action.AC_SC01_0001;
+  const released = {
+    ...contract,
+    selectedProviderId: { state: "KNOWN", value: plasticBankBinding.id, sourceNote: "verified same-day" },
+    actorDiligenceState: "DILIGENCE_COMPLETE",
+    proposedResourceFlow: {
+      ...contract.proposedResourceFlow,
+      amount: { state: "KNOWN", value: 100, sourceNote: "same-day checkout fixture" },
+      quantity: { state: "KNOWN", value: 5000, sourceNote: "same-day checkout fixture" },
+    },
+    authorityState: "RELEASED",
+    blockers: [],
+  };
+  assert.equal(action.universalActionContractCanBeginResourceFlow(released), false);
+  assert.equal(action.universalActionContractCanBeginResourceFlow(released, { ...plasticBankBinding, id: "provider-pattern:not-selected" }), false);
+  assert.equal(action.universalActionContractCanBeginResourceFlow({
+    ...released,
+    selectedProviderId: { ...released.selectedProviderId, value: "provider-pattern:not-a-candidate" },
+  }, { ...plasticBankBinding, id: "provider-pattern:not-a-candidate" }), false);
+});
+
+test("resource flow rejects quantity below the selected provider minimum or in another unit", () => {
+  const contract = action.AC_SC01_0001;
+  const released = {
+    ...contract,
+    selectedProviderId: { state: "KNOWN", value: plasticBankBinding.id, sourceNote: "verified same-day" },
+    actorDiligenceState: "DILIGENCE_COMPLETE",
+    proposedResourceFlow: {
+      ...contract.proposedResourceFlow,
+      amount: { state: "KNOWN", value: 100, sourceNote: "same-day checkout fixture" },
+      quantity: { state: "KNOWN", value: 4999, sourceNote: "same-day checkout fixture" },
+    },
+    authorityState: "RELEASED",
+    blockers: [],
+  };
+  assert.equal(action.universalActionContractCanBeginResourceFlow(released, plasticBankBinding), false);
+  assert.equal(action.universalActionContractCanBeginResourceFlow({
+    ...released,
+    proposedResourceFlow: {
+      ...released.proposedResourceFlow,
+      quantity: { ...released.proposedResourceFlow.quantity, value: Number.NaN },
+    },
+  }, { ...plasticBankBinding, unitMinimum: Number.NaN }), false);
+  assert.equal(action.universalActionContractCanBeginResourceFlow({
+    ...released,
+    proposedResourceFlow: {
+      ...released.proposedResourceFlow,
+      quantity: { ...released.proposedResourceFlow.quantity, value: 5000 },
+      quantityLabel: "kg plastic recovery certificate",
+    },
+  }, plasticBankBinding), false);
+});
+
+test("resource flow opens only when provider-bound quantity, diligence, economics, release and blockers all close", () => {
   const contract = action.AC_SC01_0001;
   const released = {
     ...contract,
@@ -106,5 +166,5 @@ test("resource flow opens only when provider, diligence, exact economics, releas
     authorityState: "RELEASED",
     blockers: [],
   };
-  assert.equal(action.universalActionContractCanBeginResourceFlow(released), true);
+  assert.equal(action.universalActionContractCanBeginResourceFlow(released, plasticBankBinding), true);
 });

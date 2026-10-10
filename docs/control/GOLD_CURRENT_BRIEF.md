@@ -1,3 +1,33 @@
+# UNIVERSAL IMPACT — PROVIDER-BOUND ACTION QUANTITY — 10 OCT 2026
+
+**USER ARRIVES BECAUSE:** A person following a real IMPACT action needs the released provider, delivery unit and funded quantity to describe the same transaction.
+
+**ONE THING TO UNDERSTAND:** Positive amount and quantity fields are insufficient unless the selected provider is an admitted candidate and the quantity satisfies that provider's exact unit and minimum.
+
+**PRIMARY ACTION:** Keep resource flow closed until the caller supplies the selected provider's current diligence binding and it matches the Action Contract provider, quantity unit and minimum.
+
+**SECONDARY DEPTH:** Preserve diligence, Founder release, blocker, payment/delivery/evidence/outcome/impact and remedy boundaries.
+
+**P1 DOMINANT:** No provider binding, no resource flow.
+
+**P2 ORIENTATION:** The selected provider must be one of the contract's existing candidates.
+
+**P3 ACTION:** The known quantity must use that same provider's unit and meet its current minimum.
+
+**P4 DEPTH:** A passing deterministic gate does not prove checkout terms, payment, delivery, evidence, outcome, impact, partnership or LIVE runtime.
+
+**WHAT CAN BE REMOVED:** No new UI, provider store, payment path, database or public claim.
+
+**WHAT MUST BE REUSED:** Existing Universal Action Contract, existing provider diligence pattern, issue #320/#151 receiver, sole HEIR and IMPACT contract suite.
+
+**TRUTH BOUNDARY:** The caller must supply the current provider pattern; a provider ID or positive number alone cannot self-authorise resource flow. Exact checkout and Founder release remain external gates.
+
+**MOBILE-FIRST RISK:** None; deterministic contract correction only.
+
+**HUMAN SUCCESS:** A quantity for a different provider, unit or minimum cannot silently open a real IMPACT resource flow.
+
+**DONOR DECISION:** No donor; correct the existing HEIR primitive in place.
+
 # IMPACT — EVIDENCE TIMESTAMP INTEGRITY WITHOUT AGE POLICY — 09 OCT 2026
 
 **STATUS:** BOUNDED HEIR TRUTH-CORRECTION / NO GOLD / NO PROVIDER OR PAYMENT ACTION / NO LIVE RELEASE.

@@ -273,6 +273,12 @@ export interface UniversalActionContractInstance {
   blockers: string[];
 }
 
+export interface ResourceFlowProviderBinding {
+  id: string;
+  unit: string;
+  unitMinimum: number;
+}
+
 export const AC_SC01_0001: UniversalActionContractInstance = {
   id: "AC-SC01-0001",
   cellId: "CELL-SC01-VERIFIED-PLASTIC-RECOVERY",
@@ -303,7 +309,7 @@ export const AC_SC01_0001: UniversalActionContractInstance = {
       value: null,
       sourceNote: "Public pricing says Fixed Contribution starts at 5,000 bottles. Do not convert this into kg or treat it as the exact purchased quantity until checkout confirms the order terms.",
     },
-    quantityLabel: "provider-defined bottles / authenticated plastic recovery claim",
+    quantityLabel: "provider-defined bottles / authenticated plastic credit",
   },
   deliveryDefinition: "A provider-authenticated recovery/allocation record is returned for the exact funded quantity with inspectable unique claim/allocation identity and evidence sufficient to distinguish resource flow from delivery. Provider claim alone is not independent verification.",
   baseline: "No 4PLANET real provider transaction, delivery record or production Proof Passport exists for SUPER CELL 01 before this contract.",
@@ -364,17 +370,35 @@ export const AC_SC01_0001: UniversalActionContractInstance = {
   ],
 };
 
-export function universalActionContractCanBeginResourceFlow(contract: UniversalActionContractInstance): boolean {
-  return (
+export function universalActionContractCanBeginResourceFlow(
+  contract: UniversalActionContractInstance,
+  providerBinding?: ResourceFlowProviderBinding,
+): boolean {
+  const selectedProviderId = contract.selectedProviderId.value;
+  const quantity = contract.proposedResourceFlow.quantity.value;
+  const selectedProviderIsBound =
     contract.selectedProviderId.state === "KNOWN" &&
-    Boolean(contract.selectedProviderId.value) &&
+    typeof selectedProviderId === "string" &&
+    contract.providerCandidateIds.includes(selectedProviderId) &&
+    providerBinding?.id === selectedProviderId;
+  const quantityIsBound =
+    contract.proposedResourceFlow.quantity.state === "KNOWN" &&
+    typeof quantity === "number" &&
+    Number.isFinite(quantity) &&
+    quantity > 0 &&
+    typeof providerBinding?.unitMinimum === "number" &&
+    Number.isFinite(providerBinding.unitMinimum) &&
+    providerBinding.unitMinimum > 0 &&
+    quantity >= providerBinding.unitMinimum &&
+    contract.proposedResourceFlow.quantityLabel === providerBinding.unit;
+
+  return (
+    selectedProviderIsBound &&
     contract.actorDiligenceState === "DILIGENCE_COMPLETE" &&
     contract.proposedResourceFlow.amount.state === "KNOWN" &&
     typeof contract.proposedResourceFlow.amount.value === "number" &&
     contract.proposedResourceFlow.amount.value > 0 &&
-    contract.proposedResourceFlow.quantity.state === "KNOWN" &&
-    typeof contract.proposedResourceFlow.quantity.value === "number" &&
-    contract.proposedResourceFlow.quantity.value > 0 &&
+    quantityIsBound &&
     contract.authorityState === "RELEASED" &&
     Boolean(contract.successCriteriaLockedAt) &&
     contract.blockers.length === 0
