@@ -38,6 +38,20 @@ jobs:
           done
           node scripts/species-page-validate.mjs --write-index
           echo 'SPECIES_ALL_SIX_PAGES_PRESERVED'
+      - name: Preserve Founder decision: no awkward draft sentence in public UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('src/pages/integrated/SpeciesTemplate.tsx')
+          s=p.read_text()
+          s=s.replace('          {draft && <span className="spx-credit spx-draft" role="note">Draft — not yet reviewed by a person</span>}','')
+          s=s.replace('          <p className="spx-level">{LEVEL_TEXT[level]}{draft ? " Draft — not yet reviewed by a person." : ""}</p>','          <p className="spx-level">{LEVEL_TEXT[level]}</p>')
+          assert "not yet reviewed by a person" not in s
+          p.write_text(s)
+          PY
+          echo 'NO_PUBLIC_DRAFT_SENTENCE; UNDERLYING_REVIEW_STATUS_PRESERVED'
       - name: Enable canonical SPECIES routing on isolated Pages preview hostname
         shell: bash
         run: |
