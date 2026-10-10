@@ -166,8 +166,8 @@ test("search foundation keeps sitemap, RSS, static route metadata and canonical 
   assert.match(seo, /function canonicalPath/);
   assert.match(seo, /path\.endsWith\("\/"\)/);
   assert.match(prerender, /canonicalMagazineRoute/);
-  assert.match(prerender, /<div id="root">\\${staticMarkup}<\\\/div>/);
-  assert.doesNotMatch(prerender, /<noscript>\\${staticMarkup}<\\\/noscript>/);
+  assert.ok(prerender.includes('<div id="root">${staticMarkup}</div>'), "static Magazine markup must be present in the root HTML");
+  assert.ok(!prerender.includes('<noscript>${staticMarkup}</noscript>'), "static Magazine markup must not be trapped in noscript");
   assert.ok(prerender.includes('writeRoute(`/magazine/${story.slug}`'), "prerender must emit a static HTML document for every story route");
 });
 
