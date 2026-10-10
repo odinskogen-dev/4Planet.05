@@ -10,7 +10,7 @@ export type StoryImageRole = "DOCUMENTARY" | "CONTEXT" | "DATA";
 export interface StoryPathway {
   label: string;
   to: string;
-  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine" | "actor" | "participation";
+  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine" | "actor";
 }
 
 export interface StorySourceLink {
@@ -308,7 +308,7 @@ export const STORIES: Story[] = [
     topics: ["PEOPLE", "SOLUTIONS", "NATURE"],
     asOf: "2026-10-10",
     reportingNote: "This is an organisational story grounded in 4PLANET’s current locked purpose and values. It describes intent and operating principles, not proof that 4PLANET has already produced ecological outcomes.",
-    pathway: { label: "Find your part", to: "https://4planet.org/join", kind: "participation" },
+    pathway: { label: "Explore one living planet", to: "/magazine/the-four-domains", kind: "magazine" },
     blocks: [
       L("There is a moment many of us have felt. Standing beside an ocean. Walking through a forest. Watching an animal look back at us. Holding the hand of someone we love."),
       P("For a moment, the world does not feel like resources, markets, borders or data. It feels alive. And somehow, we know that we belong to it."),
