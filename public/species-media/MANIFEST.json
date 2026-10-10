@@ -20,9 +20,9 @@
   {
     "slug": "western-honey-bee",
     "index": 0,
-    "sourcePage": "https://commons.wikimedia.org/wiki/File:Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
-    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/3/34/Honey_bee_%28%C3%81pis_mellif%C3%A9ra%29_on_quince_%28Cyd%C5%8Dnia%29_flower.jpg",
-    "credit": "\u0412\u0432\u043b\u0430\u0441\u0435\u043d\u043a\u043e",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Apis_mellifera_on_Scabiosa.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Apis_mellifera_on_Scabiosa.jpg",
+    "credit": "Sputniktilt",
     "licence": "CC BY-SA 3.0",
     "derivative": "public/species-media/western-honey-bee/0.jpg"
   },
@@ -56,9 +56,9 @@
   {
     "slug": "common-octopus",
     "index": 0,
-    "sourcePage": "https://commons.wikimedia.org/wiki/File:Octopus_vulgaris_close_up.jpg",
-    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octopus_vulgaris_close_up.jpg",
-    "credit": "Victor Micallef",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Pulpo_com%C3%BAn_(Octopus_vulgaris),_Parque_natural_de_la_Arr%C3%A1bida,_Portugal,_2020-07-31,_DD_108.jpg",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Pulpo_com%C3%BAn_%28Octopus_vulgaris%29%2C_Parque_natural_de_la_Arr%C3%A1bida%2C_Portugal%2C_2020-07-31%2C_DD_108.jpg",
+    "credit": "Diego Delso, delso.photo",
     "licence": "CC BY-SA 4.0",
     "derivative": "public/species-media/common-octopus/0.jpg"
   },
