@@ -39,6 +39,12 @@ function publicOrigin(path: string): string {
   return origin.replace(/\/$/, "");
 }
 
+function canonicalPath(path: string): string {
+  const isMagazine = path === "/magazine" || path.startsWith("/magazine/") || path === "/films" || path.startsWith("/films/");
+  if (!isMagazine || path === "/" || path.endsWith("/")) return path;
+  return `${path}/`;
+}
+
 function upsertMeta(attribute: "name" | "property", key: string, content: string) {
   let node = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
   if (!node) {
@@ -114,7 +120,7 @@ export function Seo({
 }: SeoProps) {
   useEffect(() => {
     const origin = publicOrigin(path);
-    const canonicalUrl = new URL(path, `${origin}/`).toString();
+    const canonicalUrl = new URL(canonicalPath(path), `${origin}/`).toString();
     const imageUrl = new URL(image, `${origin}/`).toString();
 
     document.title = title;
