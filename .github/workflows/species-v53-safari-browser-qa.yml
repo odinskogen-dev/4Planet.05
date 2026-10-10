@@ -1,0 +1,62 @@
+name: SPECIES v53 Browser & Safari QA
+on:
+  push:
+    branches: [work/species-v53-controlled-staging-20261011]
+    paths: [.github/workflows/species-v53-safari-browser-qa.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Verify v53 root, six true species, quiz, navigation and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-v53-browser
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { chromium, webkit, devices } from '@playwright/test';
+          const root='https://species-v53-preview-20261011.4planet-05.pages.dev';
+          const pages=[['/','Meet life on Earth.'],['/explore','Every species.'],['/quiz','Seven questions. Today.'],['/about','Nature is the experience. Knowledge is the depth.'],['/orca','Orca'],['/english-oak','English oak'],['/atlantic-puffin','Atlantic puffin'],['/western-honey-bee','Western honey bee'],['/fly-agaric','Fly agaric'],['/common-octopus','Common octopus']];
+          for(const [browserLabel,browserType,config] of [['chromium',chromium,{viewport:{width:1440,height:900}}],['webkit-iphone',webkit,{...devices['iPhone 13']}]]){
+            const browser=await browserType.launch({headless:true});
+            for(const [path,label] of pages){
+              const ctx=await browser.newContext(config),page=await ctx.newPage();
+              const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+              const response=await page.goto(root+path,{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(response.status(),200,'HTTP '+path);
+              await page.getByRole('heading',{name:label,exact:true}).first().waitFor({timeout:30000});
+              assert.equal(new URL(page.url()).pathname,path,'Canonical path '+path);
+              const html=await page.content();
+              assert.match(html,/noindex/i,'Missing noindex for '+path);
+              if(path==='/english-oak'||path==='/atlantic-puffin'){
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.getByRole('heading',{name:label,exact:true}).first().waitFor({timeout:25000});
+                await page.goto(root+path+'#/labs/species/orca',{waitUntil:'domcontentloaded'});
+                await page.getByRole('heading',{name:label,exact:true}).first().waitFor({timeout:25000});
+              }
+              if(path==='/'){
+                await page.getByRole('link',{name:/SPECIES/i}).first().waitFor();
+              }
+              await page.screenshot({path:'/tmp/species-v53-browser/'+browserLabel+'-'+(path==='/'?'home':path.slice(1))+'.png',fullPage:false});
+              console.log(JSON.stringify({browser:browserLabel,path,title:await page.title(),status:'PASS',errors:errors.slice(0,3)}));
+              await ctx.close();
+            }
+            await browser.close();
+          }
+          console.log('SPECIES_V53_ALL_BROWSERS_PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-v53-browser-proof
+          path: /tmp/species-v53-browser
+          retention-days: 14
+          if-no-files-found: ignore
