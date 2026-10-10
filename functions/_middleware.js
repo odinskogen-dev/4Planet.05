@@ -2036,7 +2036,7 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
 @media(max-width:760px){.place-stage{grid-template-columns:1fr;grid-template-rows:auto auto}.place-copy{min-height:54svh;padding-top:54px}.map-entry{border-left:0;border-top:1px solid var(--line);min-height:46svh}.map-entry img{min-height:46svh}.place-lead{grid-template-columns:1fr}.place-label{position:static}.explore-grid{grid-template-columns:1fr}h1{font-size:clamp(58px,18vw,94px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body>
-<header class="place-hero">
+<header class="place-hero" data-acquisition-entry="organic-place">
   <nav class="place-nav" aria-label="Place navigation"><a href="/atlas/"><strong>4PLANET ATLAS</strong></a><a class="place-nav__index" href="/places">WORLD PLACE INDEX</a></nav>
   <div class="place-stage">
     <section class="place-copy">

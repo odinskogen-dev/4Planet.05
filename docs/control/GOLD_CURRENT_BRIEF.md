@@ -35,6 +35,8 @@
 
 **MAKER ≠ JUDGE:** implementation and deterministic/browser proof may establish candidate quality; independent Gold judges exact SHA. LIVE remains Founder-gated.
 
+**CANDIDATE DELTA:** the HEIR Place surface now exposes an explicit organic-acquisition entry marker alongside the map-first human hierarchy so the product byte and this brief are proven in one bounded commit.
+
 # NATUREBRAIN / ATLAS — OBIS DEFAULT-COUNT TRUTH — 10 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON HEIR / NO GOLD / NO DEPLOYMENT / NO LIVE RELEASE.
