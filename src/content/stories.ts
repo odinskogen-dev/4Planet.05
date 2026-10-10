@@ -9,7 +9,7 @@ export type StoryEditorialType = "ORGANISATIONAL_EXPLAINER" | "INDEPENDENT_EDITO
 export interface StoryPathway {
   label: string;
   to: string;
-  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine";
+  kind: "atlas" | "species" | "mission" | "living_systems" | "impact" | "domain" | "magazine" | "participation";
 }
 
 export interface Story {
@@ -27,6 +27,7 @@ export interface Story {
   tags: string[];
   pathway?: StoryPathway;
   blocks: Block[];
+  visuals?: ImageKey[];
 }
 
 const L = (t: string): Block => ({ k: "lead", t });
@@ -37,26 +38,48 @@ const S = (t: string): Block => ({ k: "sub", t });
 export const STORIES: Story[] = [
   {
     slug: "why-4planet-exists",
-    title: "Why 4Planet exists",
-    dek: "People care about the living world. What they rarely have is a clear, credible way to act.",
+    title: "For a Living Planet",
+    dek: "The story of why 4PLANET exists — and why there is a place for everyone who wants to help.",
     category: "Perspectives",
     lane: "HUMAN",
     mode: "EVERGREEN",
     franchise: "PLANET_EXPLAINED",
     editorialType: "ORGANISATIONAL_EXPLAINER",
     byline: "4PLANET Editorial Desk",
-    image: "footerPlanet",
+    image: "earthrise",
+    visuals: ["oce4nDomainHero", "whyImage", "participationField2"],
     readMins: 4,
-    tags: ["4planet", "participation", "trust", "living systems"],
-    pathway: { label: "Explore Living Systems", to: "/living-systems", kind: "living_systems" },
+    tags: ["4planet", "living planet", "participation", "truth", "purpose", "nature"],
+    pathway: { label: "Find your part", to: "/join", kind: "participation" },
     blocks: [
-      L("Everything we depend on is alive. Clean air, fresh water, food, stable weather and the materials we build with all rest on living systems — and those systems are under pressure."),
-      P("Most people already understand this. What they struggle to find is a way in: a route from concern to action that is specific, honest and easy to follow. Environmental information tends to arrive as either abstract crisis or vague reassurance, and neither turns into participation."),
-      S("The gap"),
-      P("Between the science and the public sits an intermediary problem. Credible work exists — in research, conservation and restoration — but it is hard to see, hard to trust from the outside, and hard to join without specialist knowledge. 4Planet is built to close that gap."),
-      Q("Make the living systems under pressure easier to understand, credible action easier to join, and real progress easier to follow."),
-      P("It does this by organising the living world into connected Domains, developing Missions around specific challenges inside them, and bringing together people, field organisations, scientists, brands and funders around that work."),
-      P("The discipline is truthfulness. Nothing is presented as delivered, verified or approved until it is. Where a pathway is still in development, the site says so. Trust is the product."),
+      L("There is a moment many of us have felt. Standing beside an ocean. Walking through a forest. Watching an animal look back at us. Holding the hand of someone we love."),
+      P("For a moment, the world does not feel like resources, markets, borders or data. It feels alive. And somehow, we know that we belong to it."),
+      P("We are one human species, sharing one living planet with countless other forms of life. We breathe the same atmosphere. We depend on water, soil, oceans and living systems beneath almost everything we have built."),
+      S("The strange thing about our moment"),
+      P("Humanity has extraordinary power. We can see Earth from space. Understand life at remarkable depth. Connect people across continents in seconds. Build technologies our ancestors could barely have imagined."),
+      P("And yet some of the most important problems on Earth remain painfully difficult to solve. Not because nobody cares."),
+      P("People care. Scientists care. Communities care. Builders, teachers, entrepreneurs, artists, organisations and ordinary people care. Knowledge exists. Solutions exist. Resources exist. People willing to help exist. But too often, they remain disconnected."),
+      P("Knowledge does not reach the decision. The right people never find each other. A solution cannot find support. Someone who wants to help does not know where to begin. An action happens, but nobody really knows what changed."),
+      Q("The problem is not that nobody cares. The problem is that caring has never been connected to capability well enough."),
+      S("Why 4PLANET exists"),
+      P("4PLANET exists to help close that gap. To connect what we know with what we can do."),
+      P("To understand the living planet more clearly. To help people make better decisions. To connect problems with solutions, people with people, and good intentions with useful action."),
+      Q("Did it actually help?"),
+      P("That is the question that keeps all of it honest. Caring without truth can become wishful thinking. Knowledge without action changes little. And power without responsibility can become part of the problem."),
+      P("We believe intelligence, technology, creativity, business and capital can become powerful forces for good when they are pointed in the right direction — and held accountable to reality."),
+      P("Our North Star is simple: help bring nature back into balance so people and the rest of nature can thrive together."),
+      P("That means building useful things. Making them real. Learning from what works. Letting that learning compound. Becoming more capable — and using that growing capability to help more."),
+      S("No one does this alone"),
+      P("4PLANET cannot fix the planet. No company can. No government, scientist, activist, community or technology can solve problems this big alone. Together, we can do far more."),
+      P("You do not need to be a scientist. You do not need to call yourself an activist. You do not need to know everything or dedicate your life to this work."),
+      P("Maybe you can build. Discover. Teach. Fund. Create. Connect. Protect. Or simply notice something the rest of us have missed."),
+      Q("There is a place for everyone who wants to help. Including you."),
+      S("The future is not finished"),
+      P("The problems are real. But the future is not finished. There are still forests to protect. Oceans to restore. Species to understand. Better technologies to invent. Better decisions to make. Better ways of living together to discover."),
+      P("We inherited something extraordinary. What happens next is not already written."),
+      P("So let us look closer. Stay curious. Love life. Tell the truth. Care deeply. Build useful things. Make them real. Use power for good. And leave this extraordinary place better than we found it."),
+      Q("The future can be better. But it will not build itself."),
+      P("4PLANET_ For a Living Planet."),
     ],
   },
   {
