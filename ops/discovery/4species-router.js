@@ -1,4 +1,5 @@
 import englishOakPage from "../../public/species-data/v1/english-oak.json" with { type: "json" };
+import { handleSpeciesProof, proofBootScript } from "./species-proof-router.js";
 const ORIGIN = "https://4planet-05.pages.dev";
 const SPECIES_V51_PREVIEW_ORIGIN = 'https://species-v50-orca-preview-3blykp.v2.appdeploy.ai';
 const SPECIES_V51_ASSET_PREFIX = '/__species_v51/';
@@ -107,7 +108,7 @@ async function serveEnglishOakAsset(request, pathname) {
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method not allowed', { status: 405 });
   const relative = pathname.slice(OAK_PREFIX.length);
   if (relative === 'boot.js') {
-    const script = "if (!location.hash.startsWith('#/labs/species/english-oak')) location.hash = '#/labs/species/english-oak';";
+    const script = proofBootScript('english-oak','English oak');
     return new Response(request.method === 'HEAD' ? null : script, { status: 200, headers: { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'no-store' } });
   }
   if (!relative.startsWith('assets/') || relative.includes('..')) return new Response('Not found', { status: 404 });
@@ -293,6 +294,9 @@ export default {
       return new Response(sitemap(), { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=300" } });
     }
 
+    const proofResult = await handleSpeciesProof(request,path,SPECIES_V51_PREVIEW_ORIGIN);
+    if (proofResult) return proofResult;
+    if (path === "/species/english-oak" || path === "/species/english-oak/") return redirect("https://4species.com/english-oak",302);
     if (path === "/orca" || path === "/orca/") return serveOrcaV51(request);
     if (path === "/english-oak" || path === "/english-oak/") return serveEnglishOak(request);
     if (path.startsWith(OAK_PREFIX)) return serveEnglishOakAsset(request, path);
