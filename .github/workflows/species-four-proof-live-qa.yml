@@ -1,0 +1,87 @@
+name: SPECIES Six-Species Live Browser QA
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-four-proof-live-qa.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  six-species-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Validate all six links, mobile hero imagery and navigational return
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-six-proof
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch({ headless:true });
+          const examples = [
+            ['orca','Orca','Orcinus orca',null],
+            ['english-oak','English oak','Quercus robur','Quercus'],
+            ['atlantic-puffin','Atlantic puffin','Fratercula arctica','Puffin'],
+            ['western-honey-bee','Western honey bee','Apis mellifera','Apis_mellifera'],
+            ['fly-agaric','Fly agaric','Amanita muscaria','Fliegenpilz'],
+            ['common-octopus','Common octopus','Octopus vulgaris','Octopus_vulgaris']
+          ];
+          for (const [slug,name,scientific,imageMarker] of examples) {
+            for (const [view,viewport] of [['mobile',{width:390,height:844}],['desktop',{width:1280,height:800}]]) {
+              const page = await browser.newPage({viewport});
+              const errors=[];page.on('pageerror',error=>errors.push(String(error)));
+              const url='https://4species.com/'+slug;
+              const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(response.status(),200,'HTTP status '+slug);
+              await page.getByRole('heading',{name:new RegExp('^'+name+'$','i')}).first().waitFor({timeout:30000});
+              await page.waitForTimeout(1200);
+              const body=await page.locator('body').innerText();
+              assert.ok(body.includes(scientific),'Wrong scientific identity: '+slug);
+              assert.ok(page.url().includes('/'+slug),'Wrong route '+slug+': '+page.url());
+              assert.equal(errors.length,0,'JS errors '+slug+': '+errors.join(';'));
+              const hero=page.locator('.spx-hero-reel img').first();
+              await hero.waitFor({timeout:15000});
+              const img=await hero.evaluate(async element=>{
+                try{await Promise.race([element.decode(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('decode timeout')),15000))]);}catch{}
+                const box=element.getBoundingClientRect();
+                return {src:element.currentSrc||element.src,width:element.naturalWidth,height:element.naturalHeight,
+                  visibleWidth:box.width,visibleHeight:box.height,fit:getComputedStyle(element).objectFit,
+                  position:getComputedStyle(element).objectPosition,alt:element.alt};
+              });
+              assert.ok(img.width>=640,'Main photo missing / too small: '+slug+' '+JSON.stringify(img));
+              assert.ok(img.visibleWidth>=200,'Hero photo not actually visible '+slug);
+              if(imageMarker) assert.ok(img.src.includes(imageMarker),'Wrong species hero '+slug+' '+img.src);
+              const dataResp=await page.request.get('https://4species.com/species-data/v1/'+slug+'.json');
+              assert.ok(dataResp.ok(),'Species JSON failed '+slug);
+              const doc=await dataResp.json();assert.equal(doc.slug,slug);
+              assert.equal(doc.provenance.review,'DRAFT');
+              await page.screenshot({path:'/tmp/species-six-proof/'+slug+'-'+view+'.png',fullPage:true});
+              console.log(JSON.stringify({slug,view,proof:'PASS',hero:img,actualUrl:page.url(),errors:[]}));
+              if(slug==='english-oak' && view==='mobile'){
+                await page.reload({waitUntil:'domcontentloaded'});
+                await page.getByRole('heading',{name:/^English oak$/i}).waitFor({timeout:25000});
+                assert.ok(page.url().includes('/english-oak'));
+                await page.locator('.spx-wordmark').first().click();
+                await page.waitForURL(/\/species\//,{timeout:25000});
+                assert.ok(!page.url().includes('/orca'),'Wordmark went to Orca instead of catalog');
+                console.log('OAK REFRESH + WORDMARK RETURN PASS: '+page.url());
+              }
+              await page.close();
+            }
+          }
+          await browser.close();
+          NODE
+      - name: Preserve screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: species-six-real-browser-screenshots
+          path: /tmp/species-six-proof
+          retention-days: 14
+          if-no-files-found: ignore
