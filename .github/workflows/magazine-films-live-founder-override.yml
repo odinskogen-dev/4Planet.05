@@ -347,7 +347,6 @@ jobs:
           grep -Fq 'READ THE STORY →' src/pages/v5/MagazineInfo.tsx
           grep -Fq 'FOUNDER RELEASE AUTHORISED' docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010.md
           echo "BOUNDED STORY RELEASE PASS — parent $PRIOR_LIVE_SHA"
-
       - name: Use Node 24
         uses: actions/setup-node@v4
         with:
