@@ -1,0 +1,55 @@
+name: SPECIES Safari Route Regression
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-safari-routing-repro.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - name: Safari-like cold/open-in-Safari navigation to all species
+        shell: bash
+        run: |
+          mkdir -p /tmp/species-safari
+          node --input-type=module <<'NODE'
+          import {webkit,devices} from '@playwright/test';
+          const browser=await webkit.launch({headless:true});
+          const items=[['orca','Orca'],['english-oak','English oak'],['atlantic-puffin','Atlantic puffin'],['western-honey-bee','Western honey bee'],['fly-agaric','Fly agaric'],['common-octopus','Common octopus']];
+          let failures=0;
+          for(const device of ['iPhone 13','desktop']){
+            for(const [slug,name] of items){
+              const context=await browser.newContext(device==='desktop'?{viewport:{width:1366,height:850}}:{...devices['iPhone 13']});
+              const page=await context.newPage();const errors=[]; const events=[];
+              page.on('pageerror',e=>errors.push(String(e)));
+              page.on('framenavigated',f=>{if(f===page.mainFrame())events.push(f.url());});
+              const url='https://4species.com/'+slug;
+              try{
+                await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});
+                await page.waitForTimeout(1300);
+                const heading=await page.locator('h1').first().innerText({timeout:17000});
+                const state={device,slug,heading,finalUrl:page.url(),errors,events};
+                console.log(JSON.stringify(state));
+                if(!heading.toLowerCase().includes(name.toLowerCase())||heading.toLowerCase().includes('orca')&&slug!=='orca'){failures++;await page.screenshot({path:'/tmp/species-safari/'+slug+'-'+device.replace(/\s/g,'-')+'.png'});}
+              }catch(e){failures++;console.log(JSON.stringify({device,slug,error:String(e),url:page.url(),events,errors}));}
+              await context.close();
+            }
+          }
+          await browser.close();
+          if(failures){console.error('SAFARI_ROUTING_FAILURES='+failures);process.exit(1);}
+          console.log('SAFARI_ALL_SPECIES_PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-safari-route-evidence
+          path: /tmp/species-safari
+          retention-days: 14
+          if-no-files-found: ignore
