@@ -1614,3 +1614,19 @@ Founder observed Google account selection returning to /login without authentica
 **BOUNDED CORRECTION:** keep ATLAS and Living Systems as separate canonical owners; permanently redirect both aliases to `https://4planet.org/livingsystems/`, preserving a normalised deep-path suffix and the original query string. No data, map, source, route ownership or Living Systems content is duplicated.
 
 **ACCEPTANCE:** the executable middleware contract must prove root aliases, `/species/orca`, `/ecosystems/EC_AMAZON_RAINFOREST`, query preservation and canonical trailing-slash collapse. Typecheck, production build, doctrine and Product Authority gates must pass on the exact candidate. Independent Gold must judge the immutable SHA; no LIVE promotion is authorised here.
+
+# SPECIES MEDIA RIGHTS — MOCKED GBIF REQUEST-PATH IMMUNITY — 10 OCT 2026
+
+**STATUS:** BOUNDED HEIR REGRESSION COMPLETION / NO PRODUCT BYTE / NO GOLD / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens a SPECIES profile and must never be shown an occurrence image whose reuse rights are only implied by the parent occurrence record.
+**ONE THING TO UNDERSTAND:** media rights belong to the exact media item; an occurrence-level licence cannot be inherited by an image.
+**PRIMARY ACTION:** exercise the public `fetchResolvedSpeciesImages` request path with mocked GBIF country-first and global-fallback responses.
+**SECONDARY DEPTH:** prove an unlicensed item stays withheld while a sibling item with its own displayable licence is returned with trimmed licence metadata.
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** lawful image plane / item provenance / fail closed / inspect source record and rights metadata.
+**WHAT CAN BE REMOVED:** source-text-only confidence as the sole regression proof for this rights boundary.
+**WHAT MUST BE REUSED:** existing SPECIES media resolver, GBIF query path, country-first fallback, rights classifier and `test:species-media-rights` gate.
+**TRUTH BOUNDARY:** mocked deterministic tests prove resolver behaviour only. They do not prove provider availability, current provider metadata, independent Gold, deployment, LIVE state or user value.
+**MOBILE-FIRST RISK:** none introduced; no rendered byte or interaction changes.
+**HUMAN SUCCESS:** missing item-level rights cannot leak an image through either the Norway request or the global fallback; a genuinely item-licensed image remains available.
+**BASE / ROLLBACK:** `king/test@7819e6410d397874832ff1166a3bdc7e02e75552`; revert this test/control-only commit if it creates an invalid resolver expectation.
+**MAKER ≠ JUDGE:** Factory completes the missing regression; independent Gold decides. No release or production mutation is authorised.

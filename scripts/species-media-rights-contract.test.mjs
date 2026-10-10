@@ -35,6 +35,39 @@ const sandbox = { exports: {} };
 vm.runInNewContext(transpiled, sandbox);
 const resolveSpeciesImageLicence = sandbox.__resolveSpeciesImageLicence;
 
+function loadSpeciesMediaModule(fetchImpl) {
+  const runtimeSource = source.replace(
+    /import \{ COL_XR_CHECKLIST_KEY \} from "@\/species\/engine";/,
+    'const COL_XR_CHECKLIST_KEY = "COL_XR";',
+  );
+  const runtime = ts.transpileModule(runtimeSource, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  const moduleSandbox = {
+    exports: {},
+    module: { exports: {} },
+    fetch: fetchImpl,
+    AbortController,
+    URLSearchParams,
+    setTimeout,
+    clearTimeout,
+  };
+  moduleSandbox.module.exports = moduleSandbox.exports;
+  vm.runInNewContext(runtime, moduleSandbox);
+  return moduleSandbox.module.exports;
+}
+
+function jsonResponse(body, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    async json() { return body; },
+  };
+}
+
 test("missing item-level licence fails closed even when an occurrence licence exists", () => {
   const occurrenceLicence = "https://creativecommons.org/licenses/by/4.0/";
   assert.equal(resolveSpeciesImageLicence(undefined), "");
@@ -54,4 +87,67 @@ test("GBIF image resolution cannot inherit occurrence-level licence", () => {
     source,
     /const license = resolveSpeciesImageLicence\(media\?\.license\);/,
   );
+});
+
+test("mocked GBIF request path withholds unlicensed media across country and global fallback", async () => {
+  const requests = [];
+  const fetchMock = async (url) => {
+    requests.push(String(url));
+    return jsonResponse({
+      results: [{
+        key: 123,
+        license: "https://creativecommons.org/licenses/by/4.0/",
+        media: [{
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier: "https://example.test/unlicensed.jpg",
+        }],
+      }],
+    });
+  };
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 2 });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.length, 0);
+  assert.equal(result.blockedCount, 2);
+  assert.equal(requests.length, 2);
+  assert.match(requests[0], /taxonKey=2440483/);
+  assert.match(requests[0], /country=NO/);
+  assert.doesNotMatch(requests[1], /country=/);
+});
+
+test("mocked GBIF request path returns only media with its own displayable licence", async () => {
+  const fetchMock = async () => jsonResponse({
+    results: [{
+      key: 456,
+      license: "https://creativecommons.org/licenses/by/4.0/",
+      scientificName: "Orcinus orca",
+      media: [
+        {
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier: "https://example.test/inherited-only.jpg",
+        },
+        {
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier: "https://example.test/item-licensed.jpg",
+          license: " https://creativecommons.org/licenses/by-sa/4.0/ ",
+          creator: "Example creator",
+        },
+      ],
+    }],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 2 });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.length, 1);
+  assert.equal(result.blockedCount, 1);
+  assert.equal(result.data[0].identifier, "https://example.test/item-licensed.jpg");
+  assert.equal(result.data[0].license, "https://creativecommons.org/licenses/by-sa/4.0/");
+  assert.equal(result.data[0].rightsState, "DISPLAYABLE");
 });
