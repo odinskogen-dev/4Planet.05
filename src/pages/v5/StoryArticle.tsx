@@ -159,6 +159,29 @@ export function StoryArticle() {
           </div>
         </Section>
 
+        {s.visuals?.length ? (
+          <section className="mag-story-visual-sequence" aria-labelledby="visual-sequence-title">
+            <div className="mag-visual-sequence-head">
+              <p className="mono">ONE LIVING PLANET</p>
+              <h2 id="visual-sequence-title">From awe to understanding. From understanding to action.</h2>
+            </div>
+            <div className="mag-visual-sequence-images">
+              {s.visuals.map((imageKey, index) => {
+                const visual = img(imageKey);
+                return (
+                  <div className="mag-visual-sequence-frame" key={imageKey}>
+                    <CinematicImage
+                      meta={visual}
+                      height={index === 1 ? "min(68vh, 780px)" : "min(78vh, 900px)"}
+                      credit={visual.credit}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
         <section className="mag-how-we-know" aria-labelledby="how-we-know-title">
           <div className="mag-how-we-know-inner">
             <div>
