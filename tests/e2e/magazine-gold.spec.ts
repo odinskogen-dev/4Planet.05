@@ -31,6 +31,34 @@ test.describe("4PLANET MAGAZINE Gold surface", () => {
     await expect(page.getByRole("heading", { level: 1, name: "4PLANET MAGAZINE" })).toBeVisible();
   });
 
+  test("For a Living Planet is a premium mission front door", async ({ page }, testInfo) => {
+    await page.goto("/magazine/why-4planet-exists", { waitUntil: "networkidle" });
+
+    await expect(page).toHaveTitle(/For a Living Planet \| 4PLANET MAGAZINE/i);
+    await expect(page.getByRole("heading", { level: 1, name: "For a Living Planet" })).toBeVisible();
+    await expect(page.getByText("ORGANISATIONAL CONTENT — NOT INDEPENDENT EDITORIAL")).toBeVisible();
+    await expect(page.getByText(/Holding the hand of someone we love/i)).toBeAttached();
+    await expect(page.getByText(/caring has never been connected to capability well enough/i)).toBeAttached();
+    await expect(page.getByRole("heading", { name: /From awe to understanding\. From understanding to action\./i })).toBeAttached();
+    await expect(page.getByText(/There is a place for everyone who wants to help\. Including you\./i)).toBeAttached();
+
+    const hero = page.getByRole("img", { name: /Earthrise/i }).first();
+    await expect(hero).toBeVisible();
+    const visualSequence = page.locator(".mag-story-visual-sequence");
+    await expect(visualSequence).toBeAttached();
+    await expect(visualSequence.locator("img")).toHaveCount(3);
+
+    const join = page.getByRole("link", { name: /Find your part/i });
+    await expect(join).toHaveAttribute("href", "/join");
+
+    await expectNoHorizontalOverflow(page);
+    await expectLoadedImages(page);
+    await page.screenshot({
+      path: `artifacts/product-proof/magazine-for-a-living-planet-${testInfo.project.name}.png`,
+      fullPage: true,
+    });
+  });
+
   test("article works as a complete first-touch side door", async ({ page }, testInfo) => {
     await page.goto("/magazine/wh4les-migratory-intelligence", { waitUntil: "networkidle" });
 
