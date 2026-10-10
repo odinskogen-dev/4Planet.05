@@ -162,6 +162,9 @@ test("analytics measures reading, relevant second object, share, partner attribu
 test("search foundation generates sitemap, News sitemap, RSS and static route metadata", () => {
   assert.match(sitemap, /\/magazine\/about/);
   assert.match(sitemap, /news-sitemap\.xml/);
+  assert.match(sitemap, /newsStories\.length > 0/);
+  assert.match(sitemap, /fs\.unlinkSync\(newsSitemapPath\)/);
+  assert.match(sitemap, /newsSitemapDeclaration/);
   assert.match(sitemap, /rss\.xml/);
   assert.match(sitemap, /robots\.txt/);
   assert.match(contentReader, /readFoundingEdition/);

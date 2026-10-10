@@ -1,3 +1,13 @@
+# SEARCH DISCOVERY — EMPTY NEWS SITEMAP FAIL-CLOSED — 10 OCT 2026
+
+**STATUS:** HEIR TECHNICAL DISCOVERY CORRECTION / NO LIVE RELEASE.
+**PROBLEM:** Search Console reports errors for submitted news sitemaps while the current canonical Magazine story source contains no genuinely published story inside the Google News 48-hour window. Emitting and advertising an empty News sitemap creates crawl debt without user value.
+**RULE:** a News sitemap exists and is advertised in robots.txt only when at least one real story has a valid publication timestamp inside the bounded news window. No invented publication dates.
+**ACCEPTANCE:** generator removes stale `news-sitemap.xml` when the eligible set is empty; robots omits the News sitemap declaration in that state; ordinary Magazine SEO contract locks the behaviour.
+**TRUTH BOUNDARY:** this does not remove or noindex evergreen Magazine stories; it only removes an empty Google News-specific discovery surface.
+**ROLLBACK:** parent `0cc2cf35a54472f200adf19c8988a83378f7a7da`.
+**MAKER ≠ JUDGE:** exact build/contracts required; LIVE remains Founder-gated.
+
 # 4PLANET STORY — FOR A LIVING PLANET — MAGAZINE GOLD 01 — 10 OCT 2026
 
 **STATUS:** FOUNDER_ACCEPTED PUBLIC MAGAZINE STORY / HEIR CANDIDATE / LIVE PUBLICATION REQUESTED / INDEPENDENT GOLD REQUIRED.
