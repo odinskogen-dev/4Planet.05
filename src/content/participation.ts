@@ -43,6 +43,8 @@ export interface ParticipationOpportunity {
   summary: string;
   ecologicalPurpose?: string;
   projectOrSite?: string;
+  problemKeys?: string[];
+  solutionSlugs?: string[];
   place: string;
   speciesOrEcosystems: string[];
   skills: string[];
@@ -59,7 +61,7 @@ export interface ParticipationOpportunity {
   external?: boolean;
 }
 
-const CHECKED_AT = "2026-08-26";
+const CHECKED_AT = "2026-10-06";
 
 export const PARTICIPATION_OPPORTUNITIES: ParticipationOpportunity[] = [
   {
@@ -152,6 +154,55 @@ export const PARTICIPATION_OPPORTUNITIES: ParticipationOpportunity[] = [
       id: "source:orca:marine-mammal-surveyor",
       label: "ORCA — Marine Mammal Surveyor",
       url: "https://orca.org.uk/training/marine-mammal-surveyor",
+      state: "SOURCE_BACKED",
+      checkedAt: CHECKED_AT,
+      assertion: "ACTOR_OFFICIAL",
+    },
+    confidence: "HIGH",
+  },
+  {
+    id: "participation:crf:spring-2027-internship",
+    actorId: "P17-A011",
+    actorName: "Coral Restoration Foundation",
+    title: "Spring 2027 Coral Conservation & Reef Restoration Internship",
+    types: ["INTERNSHIP", "VOLUNTEER", "FIELD"],
+    summary:
+      "A four-month, full-time volunteer internship in coral conservation and reef restoration, with land-only and combined water-land tracks and a small educational stipend.",
+    ecologicalPurpose:
+      "Supports hands-on reef-restoration operations, community engagement and fieldwork while developing practical marine-conservation skills.",
+    projectOrSite: "Coral Restoration Foundation internship programme",
+    problemKeys: ["coral-reef-degradation"],
+    solutionSlugs: ["coral-restoration"],
+    place: "Florida Keys, United States",
+    speciesOrEcosystems: ["Coral reefs", "Reef-building corals", "Florida Keys"],
+    skills: ["Marine conservation", "Restoration operations", "Community engagement", "Fieldwork"],
+    dates: "Applications open 21 September–30 October 2026; programme 4 January–2 May 2027",
+    duration: "Four months, full-time; typical work week is five days and can include weekends",
+    mode: "FIELD",
+    eligibility: [
+      "21 years or older",
+      "Currently eligible to work in the United States",
+      "CPR, First Aid and O2 Administrator certification required",
+      "College/graduate-study or recent-graduate requirement applies",
+      "Dive applicants have additional scuba certification, logged-dive, equipment and insurance requirements",
+    ],
+    training: [
+      "Intern mentoring and a personal intern project are part of the programme",
+      "Dive-track applicants need the stated scuba and safety credentials before participation",
+    ],
+    financials: {
+      paid: false,
+      travel: "Reliable personal transportation must be provided by the intern",
+      accommodation: "Housing must be provided by the intern; CRF states Florida Keys living costs can be about $800–$1,200 per month",
+      insurance: "Dive applicants must provide dive insurance",
+      note: "CRF describes this as a full-time volunteer internship and states that interns receive a small educational stipend; the stipend amount is not stated on the checked page.",
+    },
+    applicationUrl: "https://coralrestoration.org/internships/",
+    availability: "OPEN",
+    source: {
+      id: "source:crf:spring-2027-internship",
+      label: "Coral Restoration Foundation — Internships",
+      url: "https://coralrestoration.org/internships/",
       state: "SOURCE_BACKED",
       checkedAt: CHECKED_AT,
       assertion: "ACTOR_OFFICIAL",
@@ -350,6 +401,14 @@ export const ACTOR_TEMPLATE_TRANSFER_CASES = [
     source: "https://orca.org.uk/",
     getInvolvedState: "SOURCE_BACKED",
     note: "Two source-backed participation pathways prove the full Get Involved module without changing the shared Actor template.",
+  },
+  {
+    actorId: "P17-A011",
+    actorName: "Coral Restoration Foundation",
+    archetype: "RESTORATION / IMPLEMENTATION",
+    source: "https://coralrestoration.org/internships/",
+    getInvolvedState: "SOURCE_BACKED",
+    note: "A current official internship proves that restoration actors can expose real participation with dates, eligibility and participant-cost reality without implying a 4PLANET partnership.",
   },
   {
     actorId: "P17-A307",

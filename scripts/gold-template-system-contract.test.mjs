@@ -14,7 +14,7 @@ const css = read("src/styles/gold-template-system.css");
 
 const objectKinds = ["SPECIES", "PLACE", "LIVING_SYSTEM", "ACTOR", "SOLUTION", "SIGNAL", "PROOF"];
 const storyFormats = ["NEWS", "EXPLAINER", "FEATURE", "PROFILE", "VISUAL_STORY", "FIELD", "SOLUTIONS", "BIG_QUESTION", "GUIDE"];
-const baseObjects = ["blue-whale", "oslofjord", "eelgrass-restoration"];
+const baseObjects = ["blue-whale", "oslofjord", "eelgrass-restoration", "coral-restoration"];
 const completionObjects = ["oslofjord-living-system", "oslofjord-plan-2026", "eelgrass-proof-record"];
 const proofStories = ["news-august-2026", "explainer-1-5c", "feature-blue-whale", "visual-blue-whale"];
 
@@ -56,6 +56,24 @@ test("object proofs are source-bounded and outcome claims fail closed", () => {
   assert.match(combined, /UNKNOWN STAYS UNKNOWN|outcome deliberately left open|ECOLOGICAL OUTCOME/);
   assert.match(combined, /DECISION ≠ DELIVERY ≠ ECOLOGICAL OUTCOME/);
   assert.match(completion, /ACTIVITY IS NOT IMPACT/);
+});
+
+
+test("Solution Gold carries problem mechanism applicability economics actors capital and real actions", () => {
+  assert.match(data, /interface GoldSolutionIntelligence/);
+  assert.match(data, /solutionIntelligence:/);
+  assert.match(data, /slug: "coral-restoration"/);
+  assert.match(data, /P17-A011/);
+  assert.match(data, /Coral Restoration Foundation/);
+  assert.match(data, /METHOD DEMONSTRATED \/ OUTCOMES CONTEXT-SPECIFIC/);
+  assert.match(data, /STANDARD UNIT COST/);
+  assert.match(data, /Capital requirement|capital:/i);
+  assert.match(data, /Spring 2027 Coral Conservation & Reef Restoration Internship/);
+  assert.match(page, /SOLUTION INTELLIGENCE/);
+  assert.match(page, /IMPLEMENTATION REQUIREMENTS/);
+  assert.match(page, /OUTCOMES \/ ECONOMICS/);
+  assert.match(page, /ACTORS \/ CAPITAL/);
+  assert.match(page, /CURRENT ACTIONS/);
 });
 
 test("Magazine Story Gold contract contains nine distinct journalist jobs", () => {

@@ -32,6 +32,19 @@ test("ORCA Get Involved keeps real source, costs, requirements and canonical ide
   assert.match(model, /checkedAt: CHECKED_AT/);
 });
 
+
+test("Coral restoration participation is current, source-backed and cost-real", () => {
+  assert.match(model, /participation:crf:spring-2027-internship/);
+  assert.match(model, /P17-A011/);
+  assert.match(model, /Coral Restoration Foundation/);
+  assert.match(model, /21 September–30 October 2026/);
+  assert.match(model, /full-time volunteer internship/);
+  assert.match(model, /small educational stipend/);
+  assert.match(model, /\$800–\$1,200 per month/);
+  assert.match(model, /solutionSlugs: \["coral-restoration"\]/);
+  assert.match(page, /coral-restoration-foundation/);
+});
+
 test("Matching is explainable and unknown external terms cannot become a recommendation", () => {
   assert.match(model, /availability: "UNKNOWN"/);
   assert.match(model, /assertion: "EXTERNAL_LISTING"/);
