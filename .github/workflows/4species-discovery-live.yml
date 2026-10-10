@@ -1,0 +1,107 @@
+name: 4SPECIES Discoverability Live Release
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - ops/discovery/4species-router.js
+      - ops/discovery/species-proof-router.js
+      - public/species-data/v1/*.json
+      - .github/workflows/4species-discovery-live.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 4species-discovery-live
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: king/test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate exact source
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'https://4species.com/sitemap.xml' ops/discovery/4species-router.js
+          grep -Fq 'index,follow,max-image-preview:large' ops/discovery/4species-router.js
+      - name: Preflight SPECIES v51 origin before live worker update
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 30 https://species-v50-orca-preview-3blykp.v2.appdeploy.ai/ -o /tmp/species-v51-preview.html
+          grep -Fq 'id="root"' /tmp/species-v51-preview.html
+          grep -Fq 'assets/' /tmp/species-v51-preview.html
+      - name: Deploy existing 4species-router script only
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+      - name: Verify Orca v51 live route and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=false
+          for attempt in $(seq 1 24); do
+            code=$(curl -sS -L --max-time 25 -o /tmp/species-v51-live.html -w '%{http_code}' https://4species.com/orca || true)
+            if [ "$code" = "200" ] && grep -Fq '/__species_v51/assets/' /tmp/species-v51-live.html; then
+              ready=true
+              break
+            fi
+            sleep 4
+          done
+          test "$ready" = true
+          asset=$(grep -oE '/__species_v51/assets/[^"]+\.js' /tmp/species-v51-live.html | head -n 1)
+          test -n "$asset"
+          curl -fsSI --max-time 30 "https://4species.com$asset" >/dev/null
+          curl -fsS --max-time 25 https://4species.com/species-data/v1/orca.json | jq -e '.slug=="orca"' >/dev/null
+          test "$(curl -sS -L --max-time 20 -o /dev/null -w '%{http_code}' https://4species.com/species/orca)" = "200"
+          echo "SPECIES v51 Orca LIVE PROVEN"
+      - name: Verify English oak v52 live proof, plant media and noindex
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ready=false
+          for attempt in $(seq 1 24); do
+            status=$(curl -sS -L --max-time 25 -o /tmp/species-oak-live.html -w '%{http_code}' https://4species.com/english-oak || true)
+            if [ "$status" = "200" ] && grep -Fq '/__species_oak/assets/' /tmp/species-oak-live.html && grep -Fq '/__species_oak/boot.js' /tmp/species-oak-live.html; then
+              ready=true
+              break
+            fi
+            sleep 4
+          done
+          test "$ready" = true
+          curl -fsS --max-time 25 https://4species.com/species-data/v1/english-oak.json | jq -e '.slug=="english-oak" and .identity.scientificName=="Quercus robur" and .provenance.review=="DRAFT" and (.gallery | length)==2' >/dev/null
+          curl -fsSI --max-time 20 https://4species.com/english-oak | grep -qi 'x-robots-tag: noindex'
+          curl -fsS --max-time 20 https://4species.com/__species_oak/boot.js | grep -Fq '#/labs/species/english-oak'
+          asset=$(grep -oE '/__species_oak/assets/[^"]+\.js' /tmp/species-oak-live.html | head -n 1)
+          test -n "$asset"
+          curl -fsS --max-time 35 "https://4species.com$asset" -o /tmp/species-oak-bundle.js
+          grep -Fq '20140410Quercus_robur.jpg' /tmp/species-oak-bundle.js
+          ! grep -Fq 'Killerwhales_jumping.jpg' /tmp/species-oak-bundle.js
+          echo 'ENGLISH OAK LIVE PROOF: SPECIES v52 template, original botanical page, photos and sources, draft-safe/noindex. Orca unaffected.'
+      - name: Verify live indexability and product routes
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 20); do
+            h=$(curl -sSIL --max-time 15 https://4species.com/species/ | tr -d '\r')
+            if grep -q '200' <<<"$h" && ! grep -qi '^x-robots-tag:.*noindex' <<<"$h"; then break; fi
+            sleep 3
+          done
+          grep -q '200' <<<"$h"
+          ! grep -qi '^x-robots-tag:.*noindex' <<<"$h"
+          curl -fsS https://4species.com/robots.txt | grep -Fq 'Sitemap: https://4species.com/sitemap.xml'
+          curl -fsS https://4species.com/sitemap.xml | grep -Fq 'https://4species.com/species/orca'
+          html=$(curl -fsS https://4species.com/species/orca)
+          grep -Fq 'index,follow,max-image-preview:large' <<<"$html"
+          grep -Fq 'https://4species.com/species/orca' <<<"$html"
