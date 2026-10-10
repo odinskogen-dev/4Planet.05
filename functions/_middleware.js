@@ -1790,6 +1790,25 @@ export async function onRequest(context) {
   const rawHost = url.hostname.toLowerCase();
   const host = normaliseHost(rawHost);
 
+  const canonicalHttpsHosts = new Set([
+    "4planet.org",
+    "4planetatlas.com",
+    "4species.com",
+    "4sapien.com",
+    "s4piens.com",
+    "4brands.org",
+    "4nation.org",
+    "4planetmagazine.com",
+    "4planetmarket.com",
+    "4brain.app",
+    "cre4tors.com",
+  ]);
+  if (url.protocol === "http:" && canonicalHttpsHosts.has(host)) {
+    url.protocol = "https:";
+    url.hostname = host;
+    return Response.redirect(url.toString(), 308);
+  }
+
   if (rawHost.startsWith("www.") && PUBLIC_HOSTS[host]) {
     url.hostname = host;
     return Response.redirect(url.toString(), 308);

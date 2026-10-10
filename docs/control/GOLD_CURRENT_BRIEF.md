@@ -1,3 +1,21 @@
+# PUBLIC SEARCH CANONICAL TRANSPORT — 10 OCT 2026
+
+**STATUS:** BOUNDED TECHNICAL SEARCH CORRECTION / HEIR ONLY / LIVE RELEASE NOT IMPLIED.
+
+**USER PROBLEM:** Google already surfaced an HTTP 4NATION URL. Search authority must converge on one secure canonical protocol instead of allowing HTTP and HTTPS variants to compete.
+
+**P1 DOMINANT:** every active public 4PLANET hostname resolves HTTP requests permanently to the same HTTPS host/path/query.
+**P2 ORIENTATION:** preserve existing host canonicalisation and path ownership; do not redirect private/test hosts into public surfaces.
+**P3 ACTION / NEXT:** one 308 hop from HTTP to HTTPS.
+**P4 DEPTH:** Search Console should eventually stop accruing impressions to HTTP variants after recrawl.
+
+**WHAT CAN BE REMOVED:** duplicate protocol variants in the search graph.
+**WHAT MUST BE REUSED:** existing public host ownership, existing canonicals and Cloudflare middleware; no parallel redirect system.
+**MOBILE-FIRST RISK:** none beyond preserving path/query exactly.
+**HUMAN SUCCESS:** an HTTP link lands on the identical HTTPS resource without content loss or redirect chain.
+**ROLLBACK:** c226ee5f1511dc0bdcb994c2f8cde2aa23aa12e7.
+**MAKER ≠ JUDGE:** deterministic/browser proof required before any LIVE promotion.
+
 # ATLAS PLACE → LIVING PLANET ENTRY — SEARCH VALUE / EXPOSURE — 10 OCT 2026
 
 **STATUS:** FOUNDER-DIRECTED HEIR PRODUCT CORRECTION / MAKER IMPLEMENTATION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
