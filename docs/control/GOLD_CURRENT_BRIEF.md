@@ -1660,3 +1660,31 @@ Founder observed Google account selection returning to /login without authentica
 **HUMAN SUCCESS:** missing item-level rights cannot leak an image through either the Norway request or the global fallback; a genuinely item-licensed image remains available.
 **BASE / ROLLBACK:** `king/test@7819e6410d397874832ff1166a3bdc7e02e75552`; revert this test/control-only commit if it creates an invalid resolver expectation.
 **MAKER ≠ JUDGE:** Factory completes the missing regression; independent Gold decides. No release or production mutation is authorised.
+
+# 4SAPIEN LIFE-8 — LOCAL WEEK MEAL-PLAN IDENTITY — 10 OCT 2026
+
+**STATUS:** BOUNDED HEIR FUNCTIONAL CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a signed-in person opens Mat early on Monday and expects this week's saved dinners, not the prior UTC week's plan.
+
+**ONE THING TO UNDERSTAND:** weekly meal-plan identity follows the person's local calendar week. Oslo Monday begins at local midnight in both summer and winter time; UTC is only an explicit fail-closed fallback when no valid browser time zone exists.
+
+**PRIMARY ACTION:** load and save the authenticated user's meal plan under the correct local Monday `week_start` key.
+
+**SECONDARY DEPTH:** preserve owner-scoped Supabase rows, existing meal selection, handleliste generation, partial-sync truth and the current 4PLANET ID session. Rehydrate when the derived week key changes.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** this week's chosen dinners / Mat under the signed-in identity / choose dinners and create a handleliste / budget, ingredients and sync state.
+
+**WHAT CAN BE REMOVED:** UTC-derived week identity that can select the prior row during local Monday.
+
+**WHAT MUST BE REUSED:** existing `four_sapien_meal_plans` owner/RLS contract, `week_start` primary key, canonical materializer, LIFE-8/#317 receiver and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** deterministic Oslo summer/winter/Sunday tests and materialized read/write contracts prove calendar-key behaviour only. They do not prove a real authenticated return session, Supabase availability, independent Gold, deployment, LIVE state or observed user value.
+
+**MOBILE-FIRST RISK:** browser time-zone support can be absent or invalid; the helper must use deterministic UTC fallback without changing layout or touch behaviour.
+
+**HUMAN SUCCESS:** the same signed-in person who returns just after local Monday midnight reads and writes the new week's plan; Sunday 23:59 remains in the ending week.
+
+**BASE / ROLLBACK:** `king/test@7ba56706d3fd56383c63d380ab398d34534a95f3`; revert the bounded local-week correction if independent Gold finds a calendar or hydration regression.
+
+**MAKER ≠ JUDGE:** Factory implements and regression-tests the correction. Independent Gold must judge the exact immutable SHA before any promotion; Founder-controlled LIVE remains unchanged.

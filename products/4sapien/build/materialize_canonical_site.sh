@@ -23,6 +23,7 @@ python products/4sapien/build/apply_unified_design_guard.py "$SITE"
 
 cp products/4sapien/source/4sapien-live-hardening.css "$SITE/4sapien-live-hardening.css"
 cp products/4sapien/source/4sapien-live-hardening.js "$SITE/4sapien-live-hardening.js"
+cp products/4sapien/source/4sapien-local-week.js "$SITE/4sapien-local-week.js"
 python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
 python products/4sapien/build/apply_document_intake_guard.py "$SITE"
 

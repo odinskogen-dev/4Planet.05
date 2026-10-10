@@ -39,6 +39,10 @@ root.write_text(s)
 
 # FOOD — preserve broad discovery, fix dark mode, identity/home, desktop width, CTA layout.
 s=food.read_text()
+s=once(s,'function weekStartISO(){const d=new Date();const mondayOffset=(d.getDay()+6)%7;d.setHours(12,0,0,0);d.setDate(d.getDate()-mondayOffset);return d.toISOString().slice(0,10);}', 'function weekStartISO(){return window.FourSapienLocalWeek.startISO(new Date());}', 'Food local week key')
+if '/4sapien-local-week.js' not in s:
+    s=once(s,'</head>','<script src="/4sapien-local-week.js"></script>\n</head>','Food local week asset')
+s=once(s,'}finally{hydrating.current=false;setProfileReady(true);}})();return()=>{cancelled=true;};},[user?.id]);', '}finally{hydrating.current=false;setProfileReady(true);}})();return()=>{cancelled=true;};},[user?.id,currentWeek]);', 'Food local week hydration dependency')
 s=once(s,'dark:{paper:"#000000",ink:"var(--paper)",blue:"#7A7AFF",red:"#FF6A47",green:"#3AE86F",grey:"#6B6B6B",soft:"#C7C2BA",faint:"#8C877F",line:"rgba(255,255,255,0.13)",line2:"rgba(255,255,255,0.22)",blueWash:"rgba(122,122,255,0.12)",redWash:"rgba(255,106,71,0.12)",fill:"#0B0B0B"}', 'dark:{paper:"var(--paper)",ink:"var(--ink)",blue:"var(--wc)",red:"#FF6A47",green:"#3AE86F",grey:"#6B6B6B",soft:"var(--soft)",faint:"var(--faint)",line:"var(--line)",line2:"var(--line2)",blueWash:"rgba(58,232,111,0.10)",redWash:"rgba(255,106,71,0.12)",fill:"var(--fill)"}', 'Food dark theme')
 # A cancelled product request must never leave Food in permanent loading state.
 # Ignore superseded requests, but show explicit retry for the active timed-out search.
@@ -107,7 +111,7 @@ brain.write_text(s)
 
 for p, markers in {
  root:['4sapien-live-hardening.js','credit_balance_exhausted','AbortController','55000'],
- food:['fs-food-main','knownStores','preferredStore','fs-meal-cta','MAT · EMBLA','TIMEOUT'],
+ food:['fs-food-main','knownStores','preferredStore','fs-meal-cta','MAT · EMBLA','TIMEOUT','FourSapienLocalWeek','currentWeek'],
  money:['fs-money-main','PENGER · EMBLA','4sapien-live-hardening.js'],
  brain:['persistDirectContextFallback','MODEL_PENDING','brainIdentity','brainTheme','/4sapien-theme.js','w-embla','REQUEST_TIMEOUT','AbortController'],
 }.items():
