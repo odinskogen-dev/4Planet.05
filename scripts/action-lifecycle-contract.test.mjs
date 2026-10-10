@@ -119,6 +119,73 @@ test("missing evidence blocks delivered/verified states", () => {
   assert.ok(action.validateActionLifecycleRecord(record).includes("missing_delivery_or_outcome_evidence"));
 });
 
+test("PRODUCTION delivery requires provider identity, complete delivery, and bound evidence", () => {
+  const base = productionRecord({
+    state: "DELIVERED",
+    proofClaimDistance: "D2",
+    providerReference: "provider:delivery:abc-123",
+    evidenceRefs: [
+      action.deliveryEvidenceRef(
+        "action:production:plastic:1",
+        "provider:delivery:abc-123",
+      ),
+    ],
+    integrity: { deliveryState: "COMPLETE" },
+  });
+  assert.deepEqual(action.validateActionLifecycleRecord(base), []);
+
+  const missingProvider = { ...base, providerReference: null };
+  assert.ok(
+    action.validateActionLifecycleRecord(missingProvider).includes(
+      "missing_delivery_provider_reference",
+    ),
+  );
+
+  const missingIntegrity = { ...base, integrity: undefined };
+  assert.ok(
+    action.validateActionLifecycleRecord(missingIntegrity).includes(
+      "delivery_not_complete",
+    ),
+  );
+
+  const arbitraryEvidence = { ...base, evidenceRefs: ["evidence:looks-real"] };
+  assert.ok(
+    action.validateActionLifecycleRecord(arbitraryEvidence).includes(
+      "missing_bound_delivery_evidence",
+    ),
+  );
+
+  const wrongAction = {
+    ...base,
+    evidenceRefs: [
+      action.deliveryEvidenceRef(
+        "action:production:plastic:other",
+        "provider:delivery:abc-123",
+      ),
+    ],
+  };
+  assert.ok(
+    action.validateActionLifecycleRecord(wrongAction).includes(
+      "missing_bound_delivery_evidence",
+    ),
+  );
+
+  const wrongProvider = {
+    ...base,
+    evidenceRefs: [
+      action.deliveryEvidenceRef(
+        "action:production:plastic:1",
+        "provider:delivery:other",
+      ),
+    ],
+  };
+  assert.ok(
+    action.validateActionLifecycleRecord(wrongProvider).includes(
+      "missing_bound_delivery_evidence",
+    ),
+  );
+});
+
 test("VERIFIED requires an explicit independent verification reference", () => {
   const omitted = productionRecord({
     state: "VERIFIED",

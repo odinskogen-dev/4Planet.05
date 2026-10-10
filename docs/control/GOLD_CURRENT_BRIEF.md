@@ -1826,3 +1826,18 @@ Founder observed Google account selection returning to /login without authentica
 **ACCEPTANCE:** the executable request-path contract proves repeated identifier → one withheld item, different identifiers → two withheld items, and item-level displayable licensing remains required. Independent Gold must rejudge the exact SHA; no merge, deployment, production or LIVE promotion is authorised.
 **BASE / ROLLBACK:** `king/test@c1b66166bab940a66cfd4f0f2fb5856cab9eb2cb`; revert this correction commit if the distinct-count invariant is rejected.
 **MAKER ≠ JUDGE:** Factory corrects the existing HEIR only. Gold decides.
+
+# UNIVERSAL IMPACT — DELIVERY EVIDENCE IDENTITY BINDING — 10 OCT 2026
+
+**STATUS:** RETURNED SOURCE QA_CORRECT CONSUMED / MAKER CORRECTED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person following a production IMPACT action needs `DELIVERED` to mean that one identified provider completed this exact action, not merely that an arbitrary evidence string exists.
+**ONE THING TO UNDERSTAND:** delivery evidence is valid for promotion only when its canonical identity binds the action ID and provider reference, and the delivery-integrity state is `COMPLETE`.
+**PRIMARY ACTION:** make PRODUCTION `DELIVERED` and later forward states fail closed on missing provider identity, incomplete or absent delivery integrity, or evidence bound to another action/provider.
+**SECONDARY DEPTH:** preserve TEST boundaries, payment/delivery/outcome separation, partial/failure/remedy behaviour, timestamp checks, and the existing independent-verification gate.
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** exact action delivery / provider identity / inspect bound evidence / separate outcome and impact proof.
+**WHAT CAN BE REMOVED:** fail-open promotion based on a non-empty but unbound `evidenceRefs` list.
+**WHAT MUST BE REUSED:** existing `ActionLifecycleRecord`, provider reference, integrity state, issue #151, PR #131 and sole `king/test` HEIR.
+**ACCEPTANCE:** deterministic regressions reject null provider reference, missing delivery integrity, arbitrary evidence, wrong-action evidence and wrong-provider evidence; a correctly bound provider delivery passes. Independent Gold judges the exact immutable SHA.
+**TRUTH BOUNDARY:** canonical binding and tests do not certify a real provider, payment, physical delivery, ecological outcome, external verification, production runtime or user value.
+**BASE / ROLLBACK:** `king/test@b38a65fb5e6cc42c8a43e4e323e21a1b451f6015`; revert the bounded correction commit if independent Gold rejects the contract.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold decides. No merge, provider call, payment, deployment, production mutation or public impact claim is authorised.

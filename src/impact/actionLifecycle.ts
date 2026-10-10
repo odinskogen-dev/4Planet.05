@@ -211,6 +211,14 @@ export function maxClaimDistanceForActionState(state: ActionLifecycleState): Cla
 const stateAtLeast = (state: ActionLifecycleState, threshold: ActionLifecycleState) =>
   actionStateIndex(state) >= actionStateIndex(threshold);
 
+/**
+ * Canonical delivery evidence identity. The encoded action and provider identities
+ * prevent an arbitrary or cross-action evidence string from promoting delivery.
+ */
+export function deliveryEvidenceRef(actionId: string, providerReference: string): string {
+  return `delivery:${encodeURIComponent(actionId.trim())}:${encodeURIComponent(providerReference.trim())}`;
+}
+
 export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now = new Date()): string[] {
   const failures: string[] = [];
   if (!record.actionId || !record.providerPatternId || !record.idempotencyKey) failures.push("identity");
@@ -222,6 +230,23 @@ export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now
   if (["DELIVERED", "EVIDENCED", "VERIFIED", "OUTCOME_OBSERVED", "IMPACT_CLAIM_ELIGIBLE"].includes(record.state) && record.evidenceRefs.length === 0) failures.push("missing_delivery_or_outcome_evidence");
 
   const integrity = record.integrity;
+  const productionDeliveryClaim =
+    record.environment === "PRODUCTION" && stateAtLeast(record.state, "DELIVERED");
+  const providerReference = record.providerReference?.trim();
+  if (productionDeliveryClaim) {
+    if (!providerReference) {
+      failures.push("missing_delivery_provider_reference");
+    }
+    if (integrity?.deliveryState !== "COMPLETE") {
+      failures.push("delivery_not_complete");
+    }
+    if (
+      providerReference &&
+      !record.evidenceRefs.includes(deliveryEvidenceRef(record.actionId, providerReference))
+    ) {
+      failures.push("missing_bound_delivery_evidence");
+    }
+  }
   if (
     stateAtLeast(record.state, "VERIFIED") &&
     !integrity?.independentVerificationRef?.trim()
