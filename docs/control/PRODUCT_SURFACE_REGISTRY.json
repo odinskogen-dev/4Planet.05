@@ -71,17 +71,7 @@
         "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
       },
       "heir": {"review_path": "/atlas", "origin_path": "/atlas"},
-      "sandbox": {
-        "branch": "work/atlas-zero-loss-gold-convergence-01",
-        "sha_at_registration": "c961b77a7cf99e26e2d59a0ee692de1dc9cf1547",
-        "pr": 263,
-        "exact_preview_at_registration": "https://c6da6122.4planet-05.pages.dev/atlas",
-        "branch_preview": "https://work-atlas-zero-loss-gold-co.4planet-05.pages.dev/atlas",
-        "review_path": "/atlas/sandbox",
-        "origin_path": "/atlas",
-        "lineage_state": "CURRENT_HEIR_ANCESTOR_CONFIRMED_HUMAN_REVIEW_PENDING",
-        "live_authority": false
-      }
+      "sandbox": null
     },
     "SPECIES": {
       "live": {
