@@ -1,0 +1,94 @@
+name: SPECIES v53 Safari and Chrome Acceptance
+on:
+  push:
+    branches: [work/species-v53-universe-staging-20261010]
+    paths: [.github/workflows/species-v53-browser-acceptance.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: SPECIES v53 preview UX, SEO and deep-link proof in mobile Safari and Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-v53-acceptance
+          node --input-type=module <<'NODE'
+          import { chromium,webkit,devices } from '@playwright/test';
+          import assert from 'node:assert/strict';
+          const origin='https://species-v53-preview.4planet-05.pages.dev';
+          const species=[
+            ['orca','Orca','Orcinus orca'],
+            ['english-oak','English oak','Quercus robur'],
+            ['atlantic-puffin','Atlantic puffin','Fratercula arctica'],
+            ['western-honey-bee','Western honey bee','Apis mellifera'],
+            ['fly-agaric','Fly agaric','Amanita muscaria'],
+            ['common-octopus','Common octopus','Octopus vulgaris']
+          ];
+          for (const [engine,browserType,opts] of [
+            ['safari-iphone',webkit,{...devices['iPhone 13']}],
+            ['chrome-desktop',chromium,{viewport:{width:1440,height:900}}]
+          ]) {
+            const browser=await browserType.launch({headless:true});
+            const context=await browser.newContext(opts);
+            const page=await context.newPage();
+            const crashes=[];page.on('pageerror',e=>crashes.push(String(e)));
+            const open=async path=>{
+              const response=await page.goto(origin+path,{waitUntil:'domcontentloaded',timeout:55000});
+              assert.equal(response.status(),200,engine+' '+path+' response');
+              await page.waitForTimeout(800);
+              return await page.locator('body').innerText();
+            };
+            let body=await open('/');
+            assert.match(body,/Meet life on Earth/i,engine+' home hero');
+            assert.match(body,/SPECIES/i,engine+' navigation');
+            assert.match(body,/Quiz/i,engine+' home quiz');
+            await page.screenshot({path:'/tmp/species-v53-acceptance/'+engine+'-home.png',fullPage:true});
+            for (const [slug,name,sci] of species){
+              body=await open('/'+slug);
+              const heading=await page.locator('h1').first().innerText({timeout:25000});
+              assert.match(heading,new RegExp(name,'i'),engine+' wrong species '+slug+': '+heading);
+              assert.ok(body.includes(sci),engine+' missing science '+slug);
+              assert.equal(new URL(page.url()).pathname,'/'+slug);
+              assert.equal(new URL(page.url()).hash,'',engine+' hash leaked '+slug);
+              const canonical=await page.locator('link[rel=canonical]').first().getAttribute('href');
+              assert.equal(canonical,'https://4species.com/'+slug,'canonical '+slug);
+              await page.reload({waitUntil:'domcontentloaded'});
+              const after=await page.locator('h1').first().innerText({timeout:25000});
+              assert.match(after,new RegExp(name,'i'),engine+' reload incorrect '+slug);
+              await page.screenshot({path:'/tmp/species-v53-acceptance/'+engine+'-'+slug+'.png',fullPage:true});
+              console.log(JSON.stringify({engine,slug,name,canonical,route:page.url(),state:'PASS'}));
+            }
+            for (const [route,pattern] of [
+              ['/explore',/Explore|living world|species/i],
+              ['/group/whales',/Whales/i],
+              ['/group/fungi',/Fungi/i],
+              ['/quiz',/Quiz|questions/i],
+              ['/quiz?mode=night',/Quiz night|teams/i],
+              ['/about',/SPECIES/i]
+            ]){
+              body=await open(route);assert.match(body,pattern,engine+' '+route);
+              console.log(JSON.stringify({engine,route,state:'PASS'}));
+            }
+            await open('/');
+            assert.ok((await page.locator('a[href="https://4planet.org/"]').count())>0,engine+' 4PLANET wordmark link absent');
+            assert.equal(crashes.length,0,engine+' uncaught JavaScript error(s): '+crashes.join(' | '));
+            await browser.close();
+          }
+          console.log('SPECIES_V53_SAFARI_AND_CHROME_ACCEPTANCE_PASS');
+          NODE
+      - name: Preserve screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-v53-acceptance-screenshots
+          path: /tmp/species-v53-acceptance
+          retention-days: 21
+          if-no-files-found: ignore
