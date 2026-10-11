@@ -69,3 +69,14 @@ test("ATLAS taxon search deduplicates canonical identity, never scientific-name 
   assert.match(worldSource, /h\.kingdom \|\| "KINGDOM UNKNOWN"/);
 });
 
+test("ATLAS distinguishes verified empty life search from partial and total GBIF failure", () => {
+  assert.match(connectors, /const failed = responses\.filter/);
+  assert.match(connectors, /partial: true/);
+  assert.match(connectors, /if \(!result\.partial\) taxonSearchCache\.set/);
+  assert.match(connectors, /if \(!successful\.length\) return \{ ok: false, error: "GBIF unreachable" \}/);
+  assert.match(worldSource, /setTaxaSearchPartial\(r\.ok && Boolean\(r\.partial\)\)/);
+  assert.match(worldSource, /GBIF PARTIAL RESPONSE/);
+  assert.match(worldSource, /an empty life\s*list is not a verified empty result/);
+  assert.match(worldSource, /!taxaSearchFailed && !taxaSearchPartial/);
+  assert.match(worldSource, /if \(text\.length < 3\)[\s\S]*setTaxaSearchPartial\(false\)/);
+});
