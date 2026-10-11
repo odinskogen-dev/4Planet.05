@@ -15,6 +15,16 @@ jobs:
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npx playwright install --with-deps webkit
+      - name: Diagnose public ATLAS API responses
+        shell: bash
+        run: |
+          for host in 4species.com species-v53.4planet-05.pages.dev 4planet-05.pages.dev; do
+            echo "== https://$host/api/atlas-species?name=Orcinus%20orca =="
+            curl -sS -L -D "/tmp/atlas-$host.headers" -o "/tmp/atlas-$host.body" -w 'http=%{http_code} final=%{url_effective} type=%{content_type}\n' --max-time 18 "https://$host/api/atlas-species?name=Orcinus%20orca" || true
+            head -n 15 "/tmp/atlas-$host.headers" || true
+            head -c 180 "/tmp/atlas-$host.body" || true
+            echo
+          done
       - name: Prove public v53 homepage and six clean species URLs on iPhone Safari/WebKit
         shell: bash
         run: |
