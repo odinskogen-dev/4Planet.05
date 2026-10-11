@@ -1,0 +1,30 @@
+name: SPECIES EMERGENCY Live Diagnostics
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-emergency-live-diagnostics.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check Cloudflare DNS TLS HTTP origin response and species integrity
+        shell: bash
+        run: |
+          set +e
+          for host in 4species.com www.4species.com species-v53.4planet-05.pages.dev 4planet-05.pages.dev; do
+            echo "HOST=$host"
+            getent ahosts "$host" | head -n 2
+            echo "---"
+          done
+          for url in "https://4species.com/" "https://4species.com/orca" "https://4species.com/english-oak" "https://4species.com/atlantic-puffin" "https://species-v53.4planet-05.pages.dev/" "https://species-v53.4planet-05.pages.dev/orca" "https://4planet-05.pages.dev/species/orca"; do
+            echo "CHECK $url"
+            curl -sSL --connect-timeout 8 --max-time 18 -o /tmp/species-check-body -D /tmp/species-check-h -w 'HTTP=%{http_code} TLS=%{ssl_verify_result} IP=%{remote_ip} REDIRECTS=%{num_redirects} CONTENT_TYPE=%{content_type} LENGTH=%{size_download} FINAL=%{url_effective}\n' "$url"
+            echo "CURL_EXIT=$?"
+            grep -Ei '^(server|cf-ray|x-4species-release|content-type|location|x-robots-tag|cf-cache-status):' /tmp/species-check-h | head -n 10
+            grep -Eoi 'Meet life on Earth|<title>[^<]{1,130}|Orca|English oak|Cloudflare error|Error 52[0-9]|No species page|Something went wrong' /tmp/species-check-body | head -n 5
+            wc -c /tmp/species-check-body
+            echo "-----"
+          done
