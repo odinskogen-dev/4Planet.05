@@ -49,3 +49,68 @@ test('bounded ingest and lease gates remain fail-closed', () => {
   assert.match(migration, /t<>'2440483'/);
   assert.match(migration, /no abundance inference/);
 });
+
+const semanticProjection = ({ last_interpreted: _volatile, ...semantic }) => semantic;
+const semanticFingerprint = (value) => fingerprint(semanticProjection(value));
+
+const applyModelledRefresh = ({ current, incoming, revisions, reviewFlags = 0 }) => {
+  const nextFingerprint = semanticFingerprint(incoming);
+  const previousFingerprint = semanticFingerprint(current);
+  const nextRevisions = new Set(revisions);
+
+  if (nextFingerprint === previousFingerprint) {
+    nextRevisions.add(nextFingerprint);
+    return {
+      changed: 0,
+      duplicates: 1,
+      reviewFlags,
+      revisions: nextRevisions,
+    };
+  }
+
+  nextRevisions.add(nextFingerprint);
+  return {
+    changed: 1,
+    duplicates: 0,
+    reviewFlags: reviewFlags + 1,
+    revisions: nextRevisions,
+  };
+};
+
+test('metadata-only refresh creates zero revisions and review flags; substantive change creates one', () => {
+  const current = {
+    gbif_key: '1',
+    event_date: '2026-09-01',
+    country_code: 'NO',
+    last_interpreted: '2026-10-08T00:00:00Z',
+  };
+  const initialRevisions = new Set([semanticFingerprint(current)]);
+
+  const metadataOnly = applyModelledRefresh({
+    current,
+    incoming: { ...current, last_interpreted: '2026-10-09T00:00:00Z' },
+    revisions: initialRevisions,
+  });
+  assert.deepEqual(
+    {
+      changed: metadataOnly.changed,
+      reviewFlags: metadataOnly.reviewFlags,
+      revisionDelta: metadataOnly.revisions.size - initialRevisions.size,
+    },
+    { changed: 0, reviewFlags: 0, revisionDelta: 0 },
+  );
+
+  const substantive = applyModelledRefresh({
+    current,
+    incoming: { ...current, event_date: '2026-09-02', last_interpreted: '2026-10-09T00:00:00Z' },
+    revisions: initialRevisions,
+  });
+  assert.deepEqual(
+    {
+      changed: substantive.changed,
+      reviewFlags: substantive.reviewFlags,
+      revisionDelta: substantive.revisions.size - initialRevisions.size,
+    },
+    { changed: 1, reviewFlags: 1, revisionDelta: 1 },
+  );
+});
