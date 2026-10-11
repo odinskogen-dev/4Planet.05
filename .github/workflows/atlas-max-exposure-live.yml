@@ -117,30 +117,39 @@ jobs:
           done
           test "$root_code" = '200'
           grep -Fq "$EXPECTED_APP_JS" /tmp/root.html
-          atlas=$(curl -fsS "https://$ATLAS_DOMAIN/atlas")
+          atlas=$(curl -fsSL "https://$ATLAS_DOMAIN/atlas")
           grep -Fq "$EXPECTED_APP_JS" <<<"$atlas"
+          echo "ATLAS_LIVE_CHECKPOINT premium-root-and-atlas=PASS"
 
-          places=$(curl -fsS "https://$ATLAS_DOMAIN/places")
-          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = '250'
+          places=$(curl -fsSL "https://$ATLAS_DOMAIN/places")
+          place_count=$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')
+          test "$place_count" = '250'
+          echo "ATLAS_LIVE_CHECKPOINT place-index=$place_count"
 
           for slug in berlin oslo london tokyo nairobi kenya sao-tome; do
-            html=$(curl -fsS "https://$ATLAS_DOMAIN/place/$slug")
+            html=$(curl -fsSL "https://$ATLAS_DOMAIN/place/$slug")
             grep -Fq "rel=\"canonical\" href=\"https://$ATLAS_DOMAIN/place/$slug\"" <<<"$html"
             grep -Fq 'data-acquisition-entry="organic-place"' <<<"$html"
             grep -Fq "/atlas/?place=$slug" <<<"$html"
             grep -Fq 'BreadcrumbList' <<<"$html"
+            echo "ATLAS_LIVE_CHECKPOINT place-$slug=PASS"
           done
 
-          sm=$(curl -fsS "https://$ATLAS_DOMAIN/sitemap.xml")
-          test "$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')" = '250'
-          test "$(grep -o "<image:loc>https://$ATLAS_DOMAIN/place/[^<]*/map.svg</image:loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')" = '250'
+          sm=$(curl -fsSL "https://$ATLAS_DOMAIN/sitemap.xml")
+          sitemap_places=$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')
+          sitemap_images=$(grep -o "<image:loc>https://$ATLAS_DOMAIN/place/[^<]*/map.svg</image:loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')
+          test "$sitemap_places" = '250'
+          test "$sitemap_images" = '250'
+          echo "ATLAS_LIVE_CHECKPOINT sitemap-places=$sitemap_places images=$sitemap_images"
 
-          robots=$(curl -fsS "https://$ATLAS_DOMAIN/robots.txt")
+          robots=$(curl -fsSL "https://$ATLAS_DOMAIN/robots.txt")
           grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap.xml" <<<"$robots"
+          echo "ATLAS_LIVE_CHECKPOINT robots=PASS"
 
           status=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' "https://$ATLAS_DOMAIN/place/__max_exposure_unknown__")
           test "$status" = '404'
           grep -Fq 'noindex' /tmp/unknown.html
+          echo "ATLAS_LIVE_CHECKPOINT unknown-404=PASS"
 
           http_code=$(curl -sS -o /dev/null -w '%{http_code}' "http://$ATLAS_DOMAIN/place/berlin")
           case "$http_code" in 301|302|307|308) : ;; *) echo "HTTP canonical transport failed: $http_code"; exit 31 ;; esac
