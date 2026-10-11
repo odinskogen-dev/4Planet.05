@@ -128,6 +128,10 @@ jobs:
 
           for slug in berlin oslo london tokyo nairobi kenya sao-tome; do
             html=$(curl -fsSL "https://$ATLAS_DOMAIN/place/$slug")
+            echo "ATLAS_LIVE_DIAG place-$slug title=$(grep -o '<title>[^<]*</title>' <<<"$html" | head -1 || true)"
+            echo "ATLAS_LIVE_DIAG place-$slug canonical=$(grep -o 'rel=\"canonical\" href=\"[^\"]*\"' <<<"$html" | head -1 || true)"
+            echo "ATLAS_LIVE_DIAG place-$slug acquisition=$(grep -o 'data-acquisition-entry=\"[^\"]*\"' <<<"$html" | head -1 || true)"
+            echo "ATLAS_LIVE_DIAG place-$slug handoff=$(grep -o '/atlas/?place=[^\"]*' <<<"$html" | head -1 || true)"
             grep -Fq "rel=\"canonical\" href=\"https://$ATLAS_DOMAIN/place/$slug\"" <<<"$html"
             grep -Fq 'data-acquisition-entry="organic-place"' <<<"$html"
             grep -Fq "/atlas/?place=$slug" <<<"$html"
