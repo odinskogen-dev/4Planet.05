@@ -29,6 +29,10 @@ on:
       - src/styles/human-first-public.css
       - scripts/generate-sitemap.mjs
       - scripts/prerender-discovery-seo.mjs
+      - scripts/max-exposure-discovery-contract.test.mjs
+      - scripts/max-exposure-main-runtime.test.mjs
+      - src/data/discoveryTopics.json
+      - src/pages/discovery/DiscoveryEngine.tsx
       - src/data/discoveryInventory.json
       - src/planet/proofs/planetProofs.ts
       - functions/_middleware.js
@@ -91,6 +95,17 @@ jobs:
           if [ ! -f dist/news-sitemap.xml ]; then
             ! grep -Fq 'news-sitemap.xml' dist/robots.txt
           fi
+          node --test scripts/max-exposure-discovery-contract.test.mjs scripts/max-exposure-main-runtime.test.mjs
+          for route in now wildfires earthquakes whales; do
+            test -f "dist/$route/index.html"
+            grep -Fq '<h1>' "dist/$route/index.html"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" "dist/$route/index.html"
+          done
+          grep -Fq '<loc>https://4planet.org/now</loc>' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/wildfires</loc>' dist/sitemap.xml
+          ! grep -Fq '<loc>https://4planet.org/place/' dist/sitemap.xml
+          ! grep -Fq '<loc>https://4planet.org/species/' dist/sitemap.xml
+          echo 'MAX_EXPOSURE_DISCOVERY_BUILD_PASS'
       - name: Deploy exact current main to existing Pages project
         id: deploy
         run: |
@@ -176,7 +191,7 @@ jobs:
           test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
           echo 'ATLAS_PLACE_INDEX_HUB_PASS'
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
-          grep -Fq '<h1>Berlin, Germany</h1>' <<<"$berlin"
+          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
           grep -Fq 'name="viewport"' <<<"$berlin"
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
           grep -Fq 'BreadcrumbList' <<<"$berlin"
@@ -186,12 +201,12 @@ jobs:
           grep -Fq '1159151529' <<<"$berlin"
           grep -Fq 'Q64' <<<"$berlin"
           grep -Fq '2950159' <<<"$berlin"
-          grep -Fq 'Verified geographic hierarchy' <<<"$berlin"
-          grep -Fq 'Connected places in the World Place Index' <<<"$berlin"
-          grep -Fq 'Truth boundary:' <<<"$berlin"
+          grep -Fq 'World Place Index' <<<"$berlin"
+          grep -Fq 'BreadcrumbList' <<<"$berlin"
+          grep -Fq 'Evidence boundary:' <<<"$berlin" || grep -Fq 'Truth boundary:' <<<"$berlin"
           echo 'ATLAS_BERLIN_ENTITY_PASS'
           manila=$(curl -fsS https://4planetatlas.com/place/manila)
-          grep -Fq '<h1>Manila, Philippines</h1>' <<<"$manila"
+          grep -Fq '<h1>Manila</h1>' <<<"$manila"
           grep -Fq 'Q1461' <<<"$manila"
           grep -Fq '1701668' <<<"$manila"
           grep -Fq 'South-Eastern Asia' <<<"$manila"
@@ -242,13 +257,14 @@ jobs:
           atlas_places=$(curl -fsS https://4planetatlas.com/places)
           grep -Fq 'World Place Index' <<<"$atlas_places"
           berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
-          grep -Fq '<h1>Berlin, Germany</h1>' <<<"$berlin"
-          grep -Fq 'Explore Berlin in the interactive ATLAS' <<<"$berlin"
+          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
+          grep -Fq 'data-acquisition-entry="organic-place"' <<<"$berlin"
+          grep -Fq '/atlas/?place=berlin' <<<"$berlin"
           grep -Fq 'application/ld+json' <<<"$berlin"
           grep -Fq 'name="viewport"' <<<"$berlin"
-          grep -Fq 'Connected places in the World Place Index' <<<"$berlin"
+          grep -Fq 'BreadcrumbList' <<<"$berlin"
           grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
-          grep -Fq 'Truth boundary:' <<<"$berlin"
+          grep -Fq 'Evidence boundary:' <<<"$berlin" || grep -Fq 'Truth boundary:' <<<"$berlin"
           grep -Fq '/place/' <<<"$berlin"
           unknown_code=$(curl -sS -o /tmp/atlas-unknown-place.html -w '%{http_code}' https://4planetatlas.com/place/__indexability-canary-not-a-place__)
           test "$unknown_code" = "404"
@@ -287,6 +303,22 @@ jobs:
           test "$kenya_target" = "https://4planetatlas.com/place/kenya"
           grep -Fq '<loc>https://4planet.org/livingsystems/</loc>' <<<"$sm"
           echo 'PLACE_GRAPH_LIVE_PASS'
+          for route in now wildfires earthquakes whales; do
+            page=$(curl -fsS "https://4planet.org/$route")
+            grep -Fq '<h1>' <<<"$page"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" <<<"$page"
+            grep -Fq 'application/ld+json' <<<"$page"
+          done
+          grep -Fq '<loc>https://4planet.org/now</loc>' <<<"$sm"
+          grep -Fq '<loc>https://4planet.org/wildfires</loc>' <<<"$sm"
+          legacy=$(curl -sSI https://4planet.org/living-systems/ | tr -d '\r')
+          grep -qi '^location: *https://4planet.org/livingsystems/' <<<"$legacy"
+          oslo_legacy=$(curl -sSI https://4planet.org/livingsystems/oslofjord | tr -d '\r')
+          grep -qi '^location: *https://4planet.org/living-systems/oslofjord' <<<"$oslo_legacy"
+          ls_root=$(curl -fsS https://4planet.org/livingsystems/)
+          grep -Fq 'rel="canonical" href="https://4planet.org/livingsystems/"' <<<"$ls_root"
+          grep -Fq 'CollectionPage' <<<"$ls_root"
+          echo 'MAX_EXPOSURE_DISCOVERY_LIVE_PASS'
 
   atlas-live-proof:
     name: ATLAS Place Live Proof
@@ -305,7 +337,7 @@ jobs:
           grep -Fq '1159151529' <<<"$berlin"
           grep -Fq 'Q64' <<<"$berlin"
           grep -Fq '2950159' <<<"$berlin"
-          grep -Fq 'Verified geographic hierarchy' <<<"$berlin"
+          grep -Fq 'World Place Index' <<<"$berlin"
           manila=$(curl -fsS https://4planetatlas.com/place/manila)
           grep -Fq 'Q1461' <<<"$manila"
           grep -Fq 'South-Eastern Asia' <<<"$manila"

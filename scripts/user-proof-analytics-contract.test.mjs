@@ -122,7 +122,19 @@ test("product attribution covers person, company, commerce and creator surfaces"
 });
 
 test("canonical discovery routes remain generated and crawlable", () => {
-  for (const route of requiredRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
+  const fourPlanetOwnedRoutes = [
+    "/",
+    "/livingsystems/",
+    "/impact",
+    "/missions",
+    "/join",
+    "/now",
+  ];
+  for (const route of fourPlanetOwnedRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
+  for (const externallyOwnedRoute of ["/atlas", "/species", "/species/orca", "/magazine"]) {
+    assert.ok(!sitemap.includes(JSON.stringify(externallyOwnedRoute)), `4planet.org sitemap must not claim standalone canonical ${externallyOwnedRoute}`);
+  }
+  assert.match(sitemap, /discoveryTopics\.topics/);
   assert.match(robots, /User-agent:\s*\*/i);
   assert.match(robots, /Allow:\s*\//i);
   assert.match(robots, /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i);
