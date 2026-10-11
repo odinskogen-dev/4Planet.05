@@ -61,7 +61,7 @@ import { DEMO_WHALE_OBSERVATION, DEMO_WHALE_OCCURRENCE } from "@/data/demoWhaleO
 import { cinematicLanding, prefersReducedMotion, MOTION } from "@/earth/motion";
 import { authorityOf, placeId as mkPlaceId, sourceKeyOf, typeOf } from "@/planet/ids";
 import {
-  occurrencesInWkt, searchTaxa, taxonOccurrences, taxonPhoto, taxonVernacular,
+  deduplicateTaxonHitsByCanonicalId, occurrencesInWkt, searchTaxa, taxonOccurrences, taxonPhoto, taxonVernacular,
 } from "@/planet/connectors";
 import { PLACES, bboxWkt, distanceKm, placeById, placeRadiusKm, searchPlaces } from "@/planet/places";
 import {
@@ -818,19 +818,12 @@ function WorldInner() {
     const t = window.setTimeout(async () => {
       const r = await searchTaxa(text);
       if (requestId !== searchRequestSeq.current) return;
-      // P0: a GBIF failure is not "no life matched". Also collapse provider
-      // synonyms that resolve to the same scientific name so mobile search does
-      // not show three visually identical Orca rows.
+      // P0: a GBIF failure is not "no life matched". Collapse only duplicate
+      // canonical accepted GBIF identities. Scientific names are labels, not
+      // identity: legitimate homonyms must remain individually selectable.
       setTaxaSearchFailed(!r.ok);
       if (r.ok) {
-        const seen = new Set<string>();
-        const unique = r.data.filter((hit) => {
-          const key = String(hit.scientificName || hit.id).trim().toLowerCase();
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        setTaxaHits(unique);
+        setTaxaHits(deduplicateTaxonHitsByCanonicalId(r.data));
       } else {
         setTaxaHits([]);
       }
@@ -1340,7 +1333,9 @@ function WorldInner() {
                 <span className="rdot" style={{ background: TYPE_COLOR.TAXON }} />
                 <span className="rmain">
                   <span className="rname">{h.commonName || h.scientificName}</span>
-                  <div className="rsub">{h.scientificName}</div>
+                  <div className="rsub">
+                    {h.scientificName} · {(h.rank || "taxon").toUpperCase()} · {h.kingdom || "KINGDOM UNKNOWN"} · GBIF {h.gbifKey}
+                  </div>
                 </span>
               </div>
             ))}
