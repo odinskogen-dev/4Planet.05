@@ -28,8 +28,8 @@ async function proxySpeciesV53(request) {
     out.set("cache-control", "no-store, max-age=0, must-revalidate");
     for (const name of ["etag", "last-modified", "expires"]) out.delete(name);
     const csp = out.get("content-security-policy");
-    if (csp && !/(?:^|;)\\s*frame-src\\b/i.test(csp)) {
-      out.set("content-security-policy", csp.replace(/;?\\s*$/, "") +
+    if (csp && !/(?:^|;)\s*frame-src\b/i.test(csp)) {
+      out.set("content-security-policy", csp.replace(/;?\s*$/, "") +
         "; frame-src 'self' https://4planetatlas.com https://www.4planetatlas.com");
     }
     out.set("x-4species-html-cache", "no-store-v53-hotfix");
