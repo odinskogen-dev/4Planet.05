@@ -1,4 +1,5 @@
 name: SPECIES v53 Canonical Cloudflare Build
+# Founder release: build isolated before switching any live 4species routes.
 
 on:
   push:
