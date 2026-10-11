@@ -221,8 +221,8 @@ export function deliveryEvidenceRef(actionId: string, providerReference: string)
 
 export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now = new Date()): string[] {
   const failures: string[] = [];
-  if (!record.actionId || !record.providerPatternId || !record.idempotencyKey) failures.push("identity");
-  if (!(record.quantity > 0) || !record.unit) failures.push("unit");
+  if (!record.actionId.trim() || !record.providerPatternId.trim() || !record.idempotencyKey.trim()) failures.push("identity");
+  if (!Number.isFinite(record.quantity) || record.quantity <= 0 || !record.unit.trim()) failures.push("unit");
   if (record.environment === "TEST" && actionStateIndex(record.state) > actionStateIndex("SELECTED")) failures.push("test_state_boundary");
   if (record.environment === "TEST" && record.proofClaimDistance !== "D0") failures.push("test_claim_boundary");
   const permitted = maxClaimDistanceForActionState(record.state);

@@ -202,8 +202,8 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
     "No external funder commitment exists in this contract.",
   ],
   evidenceLinks: [
-    { label: "Bay of Biscay ecosystem proof", href: "/ecosystem/bay-of-biscay/" },
-    { label: "ORCA journey", href: "/journey/orca/" },
+    { label: "Bay of Biscay action proof", href: "/impact/actions/bay-of-biscay-survey" },
+    { label: "ORCA actor profile", href: "/actors/orca" },
     { label: "IMPACT proof-state lab", href: "/impact/lab" },
     { label: "Actor graph", href: "/actors" },
   ],

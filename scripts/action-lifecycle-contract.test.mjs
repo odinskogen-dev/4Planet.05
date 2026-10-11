@@ -4,6 +4,8 @@ import test from "node:test";
 import ts from "typescript";
 
 const source = await readFile(new URL("../src/impact/actionLifecycle.ts", import.meta.url), "utf8");
+const actionContractSource = await readFile(new URL("../src/impact/actionContract.ts", import.meta.url), "utf8");
+const routerSource = await readFile(new URL("../src/routes/router.tsx", import.meta.url), "utf8");
 const withoutTypeImport = source.replace(/import type[^;]+;\n/, "");
 const transpiled = ts.transpileModule(withoutTypeImport, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
@@ -27,6 +29,31 @@ function productionRecord(overrides = {}) {
     ...overrides,
   };
 }
+
+test("Bay action evidence links resolve through registered routes", () => {
+  assert.match(actionContractSource, /href: "\/impact\/actions\/bay-of-biscay-survey"/);
+  assert.match(actionContractSource, /href: "\/actors\/orca"/);
+  assert.doesNotMatch(actionContractSource, /href: "\/ecosystem\/bay-of-biscay\//);
+  assert.doesNotMatch(actionContractSource, /href: "\/journey\/orca\//);
+  assert.match(routerSource, /<Route path="\/impact\/actions\/bay-of-biscay-survey"/);
+  assert.match(routerSource, /<Route path="\/actors\/:slug"/);
+});
+
+test("identity fields reject whitespace and quantity must be finite positive", () => {
+  for (const field of ["actionId", "providerPatternId", "idempotencyKey"]) {
+    const failures = action.validateActionLifecycleRecord(productionRecord({ [field]: "   " }));
+    assert.ok(failures.includes("identity"), `${field} should reject whitespace`);
+  }
+
+  for (const quantity of [0, -1, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NaN]) {
+    const failures = action.validateActionLifecycleRecord(productionRecord({ quantity }));
+    assert.ok(failures.includes("unit"), `quantity ${String(quantity)} should be rejected`);
+  }
+
+  assert.ok(
+    action.validateActionLifecycleRecord(productionRecord({ unit: "   " })).includes("unit"),
+  );
+});
 
 test("canonical action lifecycle preserves payment/delivery/outcome/impact separation", () => {
   assert.deepEqual(action.ACTION_LIFECYCLE, [
