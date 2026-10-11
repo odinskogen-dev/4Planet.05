@@ -321,8 +321,13 @@ export default {
     }
     if (path === "/atlas" || path.startsWith("/atlas/"))
       return redirect("https://4planetatlas.com/" + url.search, 308);
-    if (path.startsWith("/api/") || path.startsWith("/.well-known/"))
-      return proxyRaw(request,path);
+    if (path.startsWith("/.well-known/")) return proxyRaw(request,path);
+    if (path.startsWith("/api/")) {
+      // v53 Pages carries the matching public Species/ATLAS API. The legacy
+      // 4PLANET Pages origin returns HTML and breaks Safari JSON fetching.
+      return request.method === "GET" || request.method === "HEAD"
+        ? proxySpeciesV53(request) : proxyRaw(request,path);
+    }
     if (path === "/robots.txt")
       return new Response("User-agent: *\nAllow: /\n", {headers:{"content-type":"text/plain; charset=utf-8"}});
     if (path === "/sitemap.xml")
