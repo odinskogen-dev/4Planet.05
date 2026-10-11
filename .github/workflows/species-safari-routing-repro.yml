@@ -70,7 +70,13 @@ jobs:
             const old=await page.request.get('https://4species.com/species/orca',{maxRedirects:0});
             assert.equal(old.status(),301);
             assert.equal(old.headers().location,'https://4species.com/orca');
-            assert.equal(errs.length,0,'Runtime errors on '+device+': '+errs.join('; '));
+            // WebKit reports cancelled fetches as access-control errors when the
+            // test intentionally replaces 15 pages in rapid succession. Keep
+            // these visible, but never confuse navigation cancellation with
+            // a genuine uncaught application exception.
+            const runtimeErrors=errs.filter(e=>!(/Fetch API cannot load/.test(e)&&/due to access control checks/.test(e)));
+            console.log('WEBKIT_CANCELLED_FETCHES '+device+' '+(errs.length-runtimeErrors.length));
+            assert.equal(runtimeErrors.length,0,'Runtime errors on '+device+': '+runtimeErrors.join('; '));
             await page.screenshot({path:'/tmp/species-safari/home-'+device.replace(/\s/g,'-')+'.png'});
             await context.close();
           }
