@@ -9,6 +9,13 @@ import "@/styles/human-first-public.css";
 
 type DiscoveryTopic = (typeof discovery.topics)[number];
 
+const DISCOVERY_LOGO = "https://4planet.org/favicon.svg";
+const DISCOVERY_CANONICAL_PATHS = new Set(["/now", ...discovery.topics.map((topic) => `/${topic.slug}`)]);
+const canonicalDiscoveryHref = (href: string) => {
+  const clean = href === "/" ? href : href.replace(/\/$/, "");
+  return DISCOVERY_CANONICAL_PATHS.has(clean) ? `${clean}/` : href;
+};
+
 const ACCENT: Record<string, string> = {
   PLANET: "#2E2EFF",
   OCE4N: "#2E2EFF",
@@ -107,7 +114,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
   const topic = topicBySlug(slug);
   if (!topic) return <NotFound />;
 
-  const path = `/${topic.slug}`;
+  const path = `/${topic.slug}/`;
   const accent = ACCENT[topic.domain] ?? "#2E2EFF";
   const style = { "--discovery-accent": accent } as CSSProperties;
 
@@ -129,7 +136,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
               url: canonicalUrl,
               dateModified: discovery.updatedAt,
               inLanguage: "en-GB",
-              publisher: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/" },
+              publisher: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/", logo: DISCOVERY_LOGO },
               about: { "@type": "Thing", name: topic.name },
               citation: topic.sources.map((source) => source.url),
               isPartOf: { "@type": "WebSite", name: "4PLANET", url: "https://4planet.org/" },
@@ -164,7 +171,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
               >
                 EXPLORE IN ATLAS →
               </a>
-              <Link to="/now" className="editorial-secondary">EARTH NOW</Link>
+              <Link to="/now/" className="editorial-secondary">EARTH NOW</Link>
             </div>
           </header>
 
@@ -221,7 +228,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
               {topic.related.map((item) => (
                 <Link
                   key={item.href}
-                  to={item.href}
+                  to={canonicalDiscoveryHref(item.href)}
                   className="editorial-row discovery-related"
                   onClick={() =>
                     trackEvent("discovery_object_next", {
@@ -252,7 +259,7 @@ export function EarthNowPage() {
       <Seo
         title={now.title}
         description={now.description}
-        path="/now"
+        path="/now/"
         imageAlt="Earth Now — 4PLANET"
         jsonLd={({ canonicalUrl }) => ({
           "@context": "https://schema.org",
@@ -264,11 +271,11 @@ export function EarthNowPage() {
               url: canonicalUrl,
               dateModified: discovery.updatedAt,
               inLanguage: "en-GB",
-              publisher: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/" },
+              publisher: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/", logo: DISCOVERY_LOGO },
               hasPart: now.signals.map((signal) => ({
                 "@type": "WebPage",
                 name: signal.label,
-                url: new URL(signal.href, canonicalUrl).toString(),
+                url: new URL(canonicalDiscoveryHref(signal.href), canonicalUrl).toString(),
               })),
             },
             {
@@ -278,7 +285,7 @@ export function EarthNowPage() {
                 "@type": "ListItem",
                 position: index + 1,
                 name: signal.label,
-                url: new URL(signal.href, canonicalUrl).toString(),
+                url: new URL(canonicalDiscoveryHref(signal.href), canonicalUrl).toString(),
               })),
             },
           ],
@@ -312,7 +319,7 @@ export function EarthNowPage() {
               {now.signals.map((signal, index) => (
                 <Link
                   key={`${signal.label}-${index}`}
-                  to={signal.href}
+                  to={canonicalDiscoveryHref(signal.href)}
                   className="discovery-signal-row"
                   onClick={() => trackEvent("earth_now_signal_open", { product_area: "discovery", signal: signal.label })}
                 >
@@ -338,7 +345,7 @@ export function EarthNowPage() {
             <div className="editorial-kicker">Explore permanent 4PLANET guides</div>
             <div className="discovery-topic-index">
               {indexableTopics.map((topic) => (
-                <Link key={topic.slug} to={`/${topic.slug}`} className="discovery-topic-index__row">
+                <Link key={topic.slug} to={`/${topic.slug}/`} className="discovery-topic-index__row">
                   <span>{topic.name}</span>
                   <small>{topic.domain}</small>
                   <b aria-hidden>→</b>
