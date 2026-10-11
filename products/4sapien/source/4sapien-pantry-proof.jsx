@@ -77,7 +77,7 @@ function FoodPantryProof({user,avoid}) {
   emitFoodEvent("food_activation",{stage}).catch(()=>{});
  };
  const chooseOption=async(option)=>{
-  if(!userId||busy)return;
+  if(!userId||busy||option.status==="CONSTRAINT_CONFLICT"||option.status==="UNKNOWN")return;
   setDecisionState("SAVING");setDecisionMessage("");
   try{
    const row={user_id:userId,world:"food",title:"FOOD meal choice",question:"What can I make with what I have?",
@@ -163,13 +163,18 @@ function FoodPantryProof({user,avoid}) {
      <label>Valgfritt ekstra innkjøpsbudsjett (NOK) <input aria-label="Ekstra matbudsjett" type="number" min="0" step="any" value={budget} onChange={e=>{setBudget(e.target.value);setSave("UNSAVED");}} placeholder="UKJENT" style={{...field,width:110}}/></label>
     </div>
     <div aria-live="polite" style={{display:"grid",gap:10,margin:"20px 0"}}>
-     {items.length?options.map(o=><article key={o.id} style={{padding:12,border:"1px solid var(--line2)",borderRadius:10}}>
+     {items.length?options.map(o=>{
+      const choiceBlocked=o.status==="CONSTRAINT_CONFLICT"||o.status==="UNKNOWN";
+      return <article key={o.id} style={{padding:12,border:"1px solid var(--line2)",borderRadius:10}}>
        <strong>{o.name}</strong><p>{o.missing.length?"Mangler: "+o.missing.map(i=>i.name+" "+i.amount+" "+i.unit).join(", "):"Ingen ytterligere ingredienser ut fra oppgitte mengder."}</p>
-       {o.unknown.length>0&&<p>UKJENT: {o.unknown.map(i=>i.name).join(", ")}</p>}
+       {o.status==="CONSTRAINT_CONFLICT"&&<p role="alert">Konflikt med noe du har oppgitt at du vil unngå. Alternativet kan ikke velges.</p>}
+       {o.status==="UNKNOWN"&&<p role="status">UKJENT: Opplysningene er ikke tilstrekkelige til å vurdere alternativet. Det kan ikke velges.</p>}
+       {o.unknown.length>0&&<p>UKJENT GRUNNLAG: {o.unknown.map(i=>i.name).join(", ")}</p>}
        <p>Ekstra innkjøp: {o.additionalPurchase.nok===null?"UKJENT":o.additionalPurchase.nok+" NOK"} · {o.budget.state.replaceAll("_"," ")}</p>
        <small>Eksempeldata, ikke verifisert oppskrift eller helse-/allergi-/miljøvurdering.</small>
-       <div style={{marginTop:10}}><button type="button" disabled={busy||decisionState==="SAVING"} onClick={()=>chooseOption(o)} style={field}>Bruk dette alternativet</button></div>
-      </article>):<p>Legg inn ingredienser for å se hva som kan matches.</p>}
+       <div style={{marginTop:10}}><button type="button" disabled={busy||decisionState==="SAVING"||choiceBlocked} aria-disabled={choiceBlocked} onClick={()=>chooseOption(o)} style={field}>Bruk dette alternativet</button></div>
+      </article>;
+     }):<p>Legg inn ingredienser for å se hva som kan matches.</p>}
     </div>
     <button type="button" disabled={busy||load==="READ_FAILED"} onClick={persist} style={{...field,cursor:"pointer"}}>Bekreft og lagre i min private 4SAPIEN</button>
     {record&&<button type="button" disabled={busy} onClick={removeSaved} style={{...field,marginLeft:7}}>Fjern min lagrede beholdning</button>}
