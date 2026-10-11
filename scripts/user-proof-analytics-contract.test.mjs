@@ -128,7 +128,7 @@ test("canonical discovery routes remain generated and crawlable", () => {
     "/impact",
     "/missions",
     "/join",
-    "/now",
+    "/now/",
   ];
   for (const route of fourPlanetOwnedRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
   for (const externallyOwnedRoute of ["/atlas", "/species", "/species/orca", "/magazine"]) {
