@@ -60,44 +60,14 @@ jobs:
           ! grep -Fq '<loc>https://4planet.org/species/' <<< "$sm"
           echo FOURPLANET_DISCOVERY_STATIC_PASS
 
-      - name: Start Pages runtime
+      - name: Exact-host main runtime proof
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.128.0 pages dev dist --ip 127.0.0.1 --port 8789 --local-protocol=https > /tmp/pages.log 2>&1 &
-          echo $! >/tmp/pages.pid
-          for i in $(seq 1 40); do
-            code=$(curl -sS -k --resolve '4planet.org:8789:127.0.0.1' -o /tmp/root.html -w '%{http_code}' https://4planet.org:8789/ || true)
-            [ "$code" = '200' ] && exit 0
-            sleep 1
-          done
-          cat /tmp/pages.log
-          exit 1
-
-      - name: Runtime crawler proof
-        shell: bash
-        run: |
-          set -euo pipefail
-          for route in now wildfires earthquakes whales; do
-            html=$(curl -fsS -k --resolve '4planet.org:8789:127.0.0.1' "https://4planet.org:8789/$route")
-            grep -Fq '<h1>' <<< "$html"
-            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" <<< "$html"
-            grep -Fq 'application/ld+json' <<< "$html"
-          done
-          sm=$(curl -fsS -k --resolve '4planet.org:8789:127.0.0.1' https://4planet.org:8789/sitemap.xml)
-          grep -Fq '<loc>https://4planet.org/now</loc>' <<< "$sm"
-          grep -Fq '<loc>https://4planet.org/wildfires</loc>' <<< "$sm"
-          ! grep -Fq '<loc>https://4planet.org/place/' <<< "$sm"
-          ! grep -Fq '<loc>https://4planet.org/species/' <<< "$sm"
-          home=$(curl -fsS -k --resolve '4planet.org:8789:127.0.0.1' https://4planet.org:8789/)
-          grep -Fq 'id="root"' <<< "$home"
+          node --test scripts/max-exposure-main-runtime.test.mjs
           echo FOURPLANET_DISCOVERY_RUNTIME_PASS
 
       - name: Existing smoke suite
         shell: bash
         run: npm run test:smoke
 
-      - name: Stop runtime
-        if: always()
-        shell: bash
-        run: kill "$(cat /tmp/pages.pid 2>/dev/null)" 2>/dev/null || true
