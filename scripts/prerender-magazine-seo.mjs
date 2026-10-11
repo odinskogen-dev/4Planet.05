@@ -121,7 +121,23 @@ function staticMarkupForRoute(route, meta) {
       for (const source of story.sourceLinks ?? []) sourceMap.set(source.url, source);
       for (const source of feature?.addedSources ?? []) sourceMap.set(source.url, source);
       const sourceLinks = [...sourceMap.values()].map((source) => `<li><a href="${escapeHtml(source.url)}">${escapeHtml(source.label || source.publisher || source.url)}</a></li>`).join("");
-      return `<article class="mag-static-prerender" data-4planet-static-prerender="magazine-story"><p>4PLANET MAGAZINE</p><h1>${escapeHtml(story.title)}</h1><p>${escapeHtml(standfirsts[story.slug] || story.dek)}</p>${body}${sourceLinks ? `<h2>Sources</h2><ul>${sourceLinks}</ul>` : ""}</article>`;
+      const related = stories
+        .filter((candidate) => candidate.slug !== story.slug)
+        .map((candidate) => ({
+          candidate,
+          score:
+            (candidate.lane && candidate.lane === story.lane ? 3 : 0) +
+            (candidate.category && candidate.category === story.category ? 2 : 0) +
+            (Array.isArray(candidate.tags) && Array.isArray(story.tags)
+              ? candidate.tags.filter((tag) => story.tags.includes(tag)).length
+              : 0),
+        }))
+        .sort((a, b) => b.score - a.score || a.candidate.title.localeCompare(b.candidate.title))
+        .slice(0, 3)
+        .map(({ candidate }) => `<li><a href="${escapeHtml(canonicalMagazineRoute(`/magazine/${candidate.slug}`))}">${escapeHtml(candidate.title)}</a></li>`)
+        .join("");
+      const relatedLinks = related ? `<h2>Continue exploring</h2><ul>${related}</ul><p><a href="/magazine/">All Magazine stories</a> · <a href="/films/">4PLANET Films</a></p>` : "";
+      return `<article class="mag-static-prerender" data-4planet-static-prerender="magazine-story"><p>4PLANET MAGAZINE</p><h1>${escapeHtml(story.title)}</h1><p>${escapeHtml(standfirsts[story.slug] || story.dek)}</p>${body}${sourceLinks ? `<h2>Sources</h2><ul>${sourceLinks}</ul>` : ""}${relatedLinks}</article>`;
     }
   }
   if (route.startsWith("/magazine/")) return `<main class="mag-static-prerender" data-4planet-static-prerender="magazine-page"><h1>${escapeHtml(meta.title)}</h1><p>${escapeHtml(meta.description)}</p></main>`;
@@ -222,8 +238,8 @@ for (const story of stories) {
   const citations = [...(story.sourceLinks ?? []), ...(feature?.addedSources ?? [])].map((source) => source.url);
   const jsonLd = {
     "@context": "https://schema.org", "@type": type, headline: story.title, description, image: [image], mainEntityOfPage: canonical,
-    author: { "@type": "Organization", name: story.byline || "4PLANET MAGAZINE" },
-    publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical },
+    author: { "@type": "Organization", name: story.byline || "4PLANET MAGAZINE", logo: { "@type": "ImageObject", url: absoluteUrl(magazineOrigin, "/og.png") } },
+    publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical, logo: { "@type": "ImageObject", url: absoluteUrl(magazineOrigin, "/og.png") } },
     isPartOf: { "@type": "CreativeWorkSeries", name: "4PLANET MAGAZINE", url: magazineCanonical },
     articleSection: story.lane || story.category, keywords: Array.isArray(story.tags) ? story.tags.join(", ") : undefined,
     datePublished: story.publishedAt || story.asOf || PUBLIC_LAUNCH_DATE,
@@ -238,7 +254,7 @@ for (const signal of signals) {
   const canonical = magazineUrl(route);
   writeRoute(route, {
     title: `${signal.title} | PLANET SIGNAL — 4PLANET MAGAZINE`, description: signal.dek, canonical, image: absoluteMagazineImage, imageAlt: magazineAlt, type: "article", section: "Planet Signal", tags: signal.topics || [],
-    jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, datePublished: signal.publishedAt, dateModified: signal.asOf || signal.publishedAt, author: { "@type": "Organization", name: "4PLANET MAGAZINE" }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
+    jsonLd: { "@context": "https://schema.org", "@type": "Article", headline: signal.title, description: signal.dek, mainEntityOfPage: canonical, datePublished: signal.publishedAt, dateModified: signal.asOf || signal.publishedAt, author: { "@type": "Organization", name: "4PLANET MAGAZINE", logo: { "@type": "ImageObject", url: absoluteUrl(magazineOrigin, "/og.png") } }, publisher: { "@type": "Organization", name: "4PLANET MAGAZINE", url: magazineCanonical, logo: { "@type": "ImageObject", url: absoluteUrl(magazineOrigin, "/og.png") } }, isPartOf: { "@type": "CreativeWorkSeries", name: "PLANET SIGNAL", url: magazineCanonical }, citation: signal.sourceUrl, articleSection: "Planet Signal", keywords: Array.isArray(signal.topics) ? signal.topics.join(", ") : undefined },
   });
 }
 
