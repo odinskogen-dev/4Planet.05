@@ -307,3 +307,81 @@ test("routed ATLAS GBIF loader fails closed and exposes point evidence", () => {
     "Original dataset",
   ]) assert.ok(earthLayers.includes(needle), `ATLAS GBIF detail missing ${needle}`);
 });
+
+test("OBIS preserves composite rights, provider and sensitive-location flags", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    results: [
+      { occurrenceID: "cc0", license: "CC0 1.0", institutionCode: "OBIS-SEAMAP" },
+      { occurrenceID: "by", license: "CC BY 4.0", provider: "Provider A" },
+      { occurrenceID: "by-nc", license: "CC BY-NC 4.0" },
+      { occurrenceID: "by-nc-nd", license: "https://creativecommons.org/licenses/by-nc-nd/4.0/" },
+      { occurrenceID: "by-sa", license: "CC BY-SA 4.0" },
+      { occurrenceID: "missing" },
+      { occurrenceID: "withheld", license: "CC BY 4.0", informationWithheld: "coordinates withheld" },
+      { occurrenceID: "generalised", license: "CC0 1.0", dataGeneralizations: "coordinates generalised" },
+    ],
+    total: 8,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request("https://test.4planet.org/api/obis?scientificName=Cetacea&size=8"),
+    });
+    const body = await response.json();
+    const byId = Object.fromEntries(body.records.map((record) => [record.occurrenceId, record]));
+    assert.deepEqual(byId.cc0.licenceRestrictions, []);
+    assert.deepEqual(byId.by.licenceRestrictions, []);
+    assert.deepEqual(byId["by-nc"].licenceRestrictions, ["NONCOMMERCIAL"]);
+    assert.deepEqual(byId["by-nc-nd"].licenceRestrictions, ["NONCOMMERCIAL", "NO_DERIVATIVES"]);
+    assert.deepEqual(byId["by-sa"].licenceRestrictions, ["SHARE_ALIKE"]);
+    assert.deepEqual(byId.missing.licenceRestrictions, ["UNKNOWN_OR_MISSING"]);
+    assert.equal(byId.cc0.provider, "OBIS-SEAMAP");
+    assert.equal(byId.by.provider, "Provider A");
+    assert.equal(byId.withheld.locationSensitive, true);
+    assert.equal(byId.generalised.locationSensitive, true);
+    assert.match(body.semantics.rightsBoundary, /original occurrence dataset licences still apply/i);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("routed ATLAS WH4LES fails closed on rights and sensitive locations", () => {
+  const retrievedAt = "2026-10-11T12:19:20.000Z";
+  const baseRecord = {
+    latitude: 0,
+    longitude: 20,
+    scientificName: "Orcinus orca",
+    licence: "CC BY 4.0",
+    licenceClass: "OPEN_ATTRIBUTION",
+    licenceRestrictions: [],
+    locationSensitive: false,
+    datasetName: "Cetacean sightings",
+    datasetCitation: "Provider. Cetacean sightings.",
+    datasetDoi: "10.1234/cetacea",
+    datasetUrl: "https://obis.org/dataset/1",
+    provider: "OBIS-SEAMAP",
+  };
+  const accepted = earthLayersRuntime.obisOccurrencePoint(baseRecord, retrievedAt);
+  assert.equal(accepted.lat, 0);
+  assert.equal(accepted.lon, 20);
+  assert.equal(accepted.provider, "OBIS-SEAMAP");
+  assert.equal(accepted.datasetCitation, "Provider. Cetacean sightings.");
+
+  for (const rejected of [
+    { ...baseRecord, licenceClass: "NONCOMMERCIAL", licenceRestrictions: ["NONCOMMERCIAL"] },
+    { ...baseRecord, licenceClass: "OPEN_ATTRIBUTION", licenceRestrictions: ["NO_DERIVATIVES"] },
+    { ...baseRecord, licenceClass: "REVIEW_REQUIRED", licenceRestrictions: ["UNKNOWN_OR_MISSING"] },
+    { ...baseRecord, locationSensitive: true },
+    { ...baseRecord, informationWithheld: "coordinates withheld" },
+    { ...baseRecord, dataGeneralizations: "coordinates generalised" },
+    { ...baseRecord, latitude: null },
+  ]) assert.equal(earthLayersRuntime.obisOccurrencePoint(rejected, retrievedAt), null);
+
+  assert.match(earthLayers, /fetch\("\/api\/obis\?scientificName=Cetacea&size=200"\)/);
+  assert.doesNotMatch(earthLayers, /api\.obis\.org\/v3\/occurrence\?scientificname=Cetacea/);
+  for (const marker of ["datasetCitation", "provider", "datasetDoi", "datasetUrl", "licenceRestrictions", "locationSensitive", "OBIS DERIVED PRODUCTS MAY BE CC0"]) {
+    assert.ok(earthLayers.includes(marker), `routed WH4LES missing ${marker}`);
+  }
+});
+
