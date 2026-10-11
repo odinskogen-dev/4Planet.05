@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:company-brain": "node --test scripts/company-brain-boundary-contract.test.mjs",
+    "test:nation-oslofjord-source": "node --test scripts/nation-oslofjord-source-contract.test.mjs",
     "test:seo-jsonld": "node --test scripts/seo-jsonld-ownership-contract.test.mjs",
     "assets:verify": "node scripts/verify-assets.mjs",
     "lint": "eslint src",

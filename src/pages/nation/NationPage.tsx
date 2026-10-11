@@ -197,7 +197,7 @@ export default function NationPage() {
         <div className='nt-feature-facts' aria-label='The case at a glance'>
           <div><span>THE ISSUE</span><strong>A fjord under pressure</strong></div>
           <div><span>THE DECISION</span><strong>A proposed new plan</strong></div>
-          <div><span>WHAT IS NEXT</span><strong>15 October · local and regional deadline</strong></div>
+          <div><span>WHAT IS NEXT</span><strong>15 October · restricted extension only</strong></div>
         </div>
         <div className='nt-feature-source'>Official record · checked {nationCaseAsOf} · <Source id='KLD-2026-HEARING' label='VIEW SOURCE ↗'/></div>
       </article>
