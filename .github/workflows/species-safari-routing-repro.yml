@@ -42,6 +42,9 @@ jobs:
             await page.goto('https://4species.com/',{waitUntil:'domcontentloaded',timeout:45000});
             await page.getByRole('heading',{name:/Meet life on Earth/i}).first().waitFor({timeout:25000});
             await page.getByRole('combobox',{name:'Search species'}).fill('orca');
+            // Wait for the data-backed suggestion; pressing Enter before the
+            // catalogue finishes loading correctly goes to Explore search.
+            await page.locator('[role="option"][data-hit="page"]').filter({hasText:/Orca/i}).first().waitFor({timeout:20000});
             await page.getByRole('combobox',{name:'Search species'}).press('Enter');
             await page.waitForURL(/\/orca(?:\?|#|$)/,{timeout:20000});
             await page.getByRole('heading',{name:/^Orca$/i}).first().waitFor({timeout:20000});
