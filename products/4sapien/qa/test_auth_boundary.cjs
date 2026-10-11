@@ -16,4 +16,9 @@ assert.match(source, /onAuthStateChange\(\(_event,session\)=>\{handleAuthChange\
 assert.match(source, /if\(nextId===authUserId\)return;/, "duplicate same-user auth events must not rehydrate");
 assert.match(source, /if\(nextId\)\{const epoch=authEpoch;await identity\(epoch\);if\(authCurrent\(epoch\)\)await hydrateRoot\(epoch\);\}/, "only the new authenticated identity may rehydrate");
 
+
+assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const c=cardByKey\('Penger'\)/, "stale Finance rejection must not paint error state");
+assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const c=cardByKey\('Mat'\)/, "stale Food rejection must not paint error state");
+assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return false;state\.textContent='Notater kunne ikke lastes akkurat nå\.'/ , "stale Notes rejection must not paint error state");
+
 console.log("PASS 4SAPIEN root auth boundary: cache + private DOM reset and stale-response guards");
