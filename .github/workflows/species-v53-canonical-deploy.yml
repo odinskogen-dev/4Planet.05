@@ -2,10 +2,6 @@ name: SPECIES v53 Canonical Cloudflare Build
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
-  push:
-    branches: [king/test]
-    paths:
-      - .github/workflows/species-v53-canonical-deploy.yml
   workflow_dispatch:
 
 permissions:
@@ -24,8 +20,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: king/test
           fetch-depth: 0
+      - name: Bind checkout to immutable trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          workflow_blob=$(git rev-parse "$GITHUB_SHA:.github/workflows/species-v53-canonical-deploy.yml")
+          echo "PREVIEW_WORKFLOW_BLOB=$workflow_blob" >> "$GITHUB_ENV"
+          {
+            echo "### Immutable SPECIES v53 preview carrier"
+            echo "- trigger_sha: \`$GITHUB_SHA\`"
+            echo "- workflow_blob: \`$workflow_blob\`"
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -61,9 +68,6 @@ jobs:
           s=s.replace('          {draft && <span className="spx-credit spx-draft" role="note">Draft — not yet reviewed by a person</span>}', '')
           s=s.replace('{LEVEL_TEXT[level]}{draft ? " Draft — not yet reviewed by a person." : ""}', '{LEVEL_TEXT[level]}')
           p.write_text(s)
-          # Founder-approved homepage hero: restore the exact existing Orca-overhead
-          # file (not a replacement / fabricated licence). Keep the daily species
-          # slot independently rotating below the fixed homepage hero.
           p=Path('src/pages/integrated/SpeciesHome.tsx')
           home=p.read_text()
           before='  const photo = today?.photo;'
@@ -82,7 +86,7 @@ jobs:
           node scripts/species-page-validate.mjs --write-index
           node scripts/species-page-validate.mjs
           echo SPECIES_V53_RECONCILED
-      - name: Build full v53 site without search indexing
+      - name: Build full v53 site and emit immutable identity
         shell: bash
         run: |
           set -euo pipefail
@@ -96,24 +100,49 @@ jobs:
           test -f dist/quiz/index.html
           test -f dist/explore/index.html
           test -f dist/species-data/v1/english-oak.json
+          git add -A
+          built_tree=$(git write-tree)
+          payload_digest=$(find dist -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+          jq -n \
+            --arg triggerSha "$GITHUB_SHA" \
+            --arg workflowBlob "$PREVIEW_WORKFLOW_BLOB" \
+            --arg reconstructedPatchSha256 "2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0" \
+            --arg expectedBaseTree "818b4ff766d4423cafc1709bda38d164da2b9731" \
+            --arg builtTree "$built_tree" \
+            --arg payloadDigest "$payload_digest" \
+            '{triggerSha:$triggerSha,workflowBlob:$workflowBlob,reconstructedPatchSha256:$reconstructedPatchSha256,expectedBaseTree:$expectedBaseTree,builtTree:$builtTree,payloadDigest:$payloadDigest}' \
+            > dist/release-identity.json
+          echo "V53_BUILT_TREE=$built_tree" >> "$GITHUB_ENV"
+          echo "V53_PAYLOAD_DIGEST=$payload_digest" >> "$GITHUB_ENV"
           echo V53_BUILD_AND_STATIC_QA_PASS
-      - name: Deploy as isolated Cloudflare Pages preview, without touching current site
+      - name: Deploy isolated immutable Cloudflare Pages preview
         shell: bash
         run: |
           set -euo pipefail
           test -n "${CLOUDFLARE_API_TOKEN:-}"
           cd ../species-v53-build
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53 --commit-message '4PLANET SPECIES v53 Founder release candidate'
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53 --commit-hash "$GITHUB_SHA" --commit-message "4PLANET SPECIES v53 $GITHUB_SHA" 2>&1 | tee /tmp/species-v53-deploy.log
+          deployment_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species-v53-deploy.log | tail -n 1)
+          test -n "$deployment_url"
+          echo "V53_DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
           echo SPECIES_V53_PAGES_PUBLISHED
-      - name: Verify Pages origin before switching public domain
+      - name: Verify immutable Pages deployment identity
         shell: bash
         run: |
           set -euo pipefail
-          ORIGIN=https://species-v53.4planet-05.pages.dev
+          ORIGIN="$V53_DEPLOYMENT_URL"
           for path in / /explore /quiz /about /orca /english-oak; do
             code=$(curl --retry 4 --retry-delay 3 -sSL --max-time 30 -o /tmp/v53-check.html -w '%{http_code}' "$ORIGIN$path")
             echo "$path: $code"
             test "$code" = 200
           done
           curl -fsS "$ORIGIN/species-data/v1/english-oak.json" | jq -e '.slug=="english-oak" and .identity.scientificName=="Quercus robur"' >/dev/null
+          curl -fsS "$ORIGIN/release-identity.json" | jq -e \
+            --arg sha "$GITHUB_SHA" --arg tree "$V53_BUILT_TREE" --arg digest "$V53_PAYLOAD_DIGEST" \
+            '.triggerSha==$sha and .builtTree==$tree and .payloadDigest==$digest' >/dev/null
+          {
+            echo "- built_tree: \`$V53_BUILT_TREE\`"
+            echo "- payload_digest: \`$V53_PAYLOAD_DIGEST\`"
+            echo "- deployment_url: $V53_DEPLOYMENT_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
           echo V53_PUBLIC_PAGES_PREVIEW_QA_PASS
