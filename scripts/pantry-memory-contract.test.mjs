@@ -91,3 +91,18 @@ test("actual 4SAPIEN Food source closes the bounded measurement and decision sea
   assert.doesNotMatch(liveFoodPantry, /payload:\s*\{[^}]*pantry/s);
   assert.doesNotMatch(liveFoodPantry, /payload:\s*\{[^}]*entry/s);
 });
+
+
+test("FOOD choice surface exposes and blocks constraint-conflict and unknown options", () => {
+  assert.match(liveFoodPantry, /const choiceBlocked=o\.status==="CONSTRAINT_CONFLICT"\|\|o\.status==="UNKNOWN"/);
+  assert.match(liveFoodPantry, /option\.status==="CONSTRAINT_CONFLICT"\|\|option\.status==="UNKNOWN"/);
+  assert.match(liveFoodPantry, /o\.status==="CONSTRAINT_CONFLICT"&&<p role="alert">/);
+  assert.match(liveFoodPantry, /o\.status==="UNKNOWN"&&<p role="status">UKJENT:/);
+  assert.match(liveFoodPantry, /disabled=\{busy\|\|decisionState==="SAVING"\|\|choiceBlocked\}/);
+  assert.match(liveFoodPantry, /aria-disabled=\{choiceBlocked\}/);
+  const blocked = status => status === "CONSTRAINT_CONFLICT" || status === "UNKNOWN";
+  assert.equal(blocked("CONSTRAINT_CONFLICT"), true);
+  assert.equal(blocked("UNKNOWN"), true);
+  assert.equal(blocked("CAN_MAKE_WITH_REPORTED_STOCK"), false);
+  assert.equal(blocked("NEEDS_ITEMS"), false);
+});
