@@ -1,0 +1,57 @@
+name: SPECIES EMERGENCY iPhone WebKit QA
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-emergency-iphone-webkit.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - name: Validate fresh and returning iPhone visitor rendering, navigation and viewport
+        shell: bash
+        run: |
+          mkdir -p /tmp/species-iphone-proof
+          node --input-type=module <<'NODE'
+          import {webkit,devices} from '@playwright/test';
+          const browser=await webkit.launch({headless:true});
+          const context=await browser.newContext({...devices['iPhone 13'],locale:'en-GB'});
+          const page=await context.newPage();
+          const errors=[],network=[];
+          page.on('pageerror',x=>errors.push(String(x)));
+          page.on('console',x=>{if(x.type()==='error')network.push(x.text())});
+          page.on('requestfailed',r=>network.push('FAILED '+r.failure()?.errorText+' '+r.url()));
+          for(const path of ['/','/orca','/english-oak','/atlantic-puffin','/western-honey-bee','/fly-agaric','/common-octopus','/']){
+            try {
+              await page.goto('https://4species.com'+path,{waitUntil:'domcontentloaded',timeout:40000});
+              await page.waitForTimeout(2200);
+              const state=await page.evaluate(()=>{
+                const h=document.querySelector('h1'),root=document.querySelector('#root');
+                return {url:location.href,title:document.title,secure:isSecureContext,
+                  heading:h?.textContent?.trim()?.slice(0,150),
+                  rootLen:root?.innerHTML?.length,
+                  docWidth:document.documentElement.scrollWidth,
+                  screenWidth:innerWidth,
+                  hero:[...document.images].slice(0,5).map(x=>({src:x.currentSrc||x.src,naturalWidth:x.naturalWidth,complete:x.complete})),
+                  serviceWorkers:'serviceWorker' in navigator};
+              });
+              await page.screenshot({path:'/tmp/species-iphone-proof/'+(path==='/'?'home'+Math.random().toString().slice(2,4):path.slice(1))+'.png'}).catch(()=>{});
+              console.log('WEBKIT_DIAG '+JSON.stringify({path,...state,errors:errors.slice(-5),network:network.slice(-5)}));
+            } catch (e) {console.log('WEBKIT_ERROR '+path+' '+String(e));}
+          }
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-emergency-iphone-screenshots
+          path: /tmp/species-iphone-proof
+          if-no-files-found: ignore
+          retention-days: 4
