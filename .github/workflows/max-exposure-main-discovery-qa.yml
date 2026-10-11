@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - work/main-max-exposure-discovery-20261011
+      - work/main-max-exposure-discovery-polish-20261011
 
 permissions:
   contents: read
@@ -47,15 +48,16 @@ jobs:
             file="dist/$route/index.html"
             test -f "$file"
             grep -Fq '<h1>' "$file"
-            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" "$file"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route/\"" "$file"
             grep -Fq 'application/ld+json' "$file"
+            grep -Fq '"logo":"https://4planet.org/favicon.svg"' "$file"
             grep -Fq '<h2>Sources</h2>' "$file" || [ "$route" = "now" ]
           done
           sm=$(cat dist/sitemap.xml)
-          grep -Fq '<loc>https://4planet.org/now</loc>' <<< "$sm"
-          grep -Fq '<loc>https://4planet.org/wildfires</loc>' <<< "$sm"
-          grep -Fq '<loc>https://4planet.org/earthquakes</loc>' <<< "$sm"
-          grep -Fq '<loc>https://4planet.org/whales</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/now/</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/wildfires/</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/earthquakes/</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/whales/</loc>' <<< "$sm"
           ! grep -Fq '<loc>https://4planet.org/place/' <<< "$sm"
           ! grep -Fq '<loc>https://4planet.org/species/' <<< "$sm"
           echo FOURPLANET_DISCOVERY_STATIC_PASS
