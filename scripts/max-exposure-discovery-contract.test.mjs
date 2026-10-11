@@ -46,7 +46,9 @@ test("Discovery Guides have human routes and server-readable prerender",()=>{
   assert.match(prerender,/What the sources establish/);
   assert.match(prerender,/What they do not establish/);
   assert.match(prerender,/application\/ld\+json/);
-  assert.match(prerender,/canonical/);\n  assert.match(prerender,/guideHref/);\n  assert.match(prerender,/origin\+\"\\/og\\.png\"/);
+  assert.match(prerender,/canonical/);
+  assert.match(prerender,/guideHref/);
+  assert.match(prerender,/origin\+"\/og\.png"/);
   assert.match(prerender,/Explore in 4PLANET ATLAS/);
 });
 
