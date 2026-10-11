@@ -99,10 +99,10 @@ jobs:
           for route in now wildfires earthquakes whales; do
             test -f "dist/$route/index.html"
             grep -Fq '<h1>' "dist/$route/index.html"
-            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" "dist/$route/index.html"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route/\"" "dist/$route/index.html"
           done
-          grep -Fq '<loc>https://4planet.org/now</loc>' dist/sitemap.xml
-          grep -Fq '<loc>https://4planet.org/wildfires</loc>' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/now/</loc>' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/wildfires/</loc>' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/place/' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/species/' dist/sitemap.xml
           echo 'MAX_EXPOSURE_DISCOVERY_BUILD_PASS'
@@ -304,13 +304,13 @@ jobs:
           grep -Fq '<loc>https://4planet.org/livingsystems/</loc>' <<<"$sm"
           echo 'PLACE_GRAPH_LIVE_PASS'
           for route in now wildfires earthquakes whales; do
-            page=$(curl -fsS "https://4planet.org/$route")
+            page=$(curl -fsS "https://4planet.org/$route/")
             grep -Fq '<h1>' <<<"$page"
-            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" <<<"$page"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route/\"" <<<"$page"\n            grep -Fq '"logo":"https://4planet.org/favicon.svg"' <<<"$page"
             grep -Fq 'application/ld+json' <<<"$page"
           done
-          grep -Fq '<loc>https://4planet.org/now</loc>' <<<"$sm"
-          grep -Fq '<loc>https://4planet.org/wildfires</loc>' <<<"$sm"
+          grep -Fq '<loc>https://4planet.org/now/</loc>' <<<"$sm"
+          grep -Fq '<loc>https://4planet.org/wildfires/</loc>' <<<"$sm"
           legacy=$(curl -sSI https://4planet.org/living-systems/ | tr -d '\r')
           grep -qi '^location: *https://4planet.org/livingsystems/' <<<"$legacy"
           oslo_legacy=$(curl -sSI https://4planet.org/livingsystems/oslofjord | tr -d '\r')
