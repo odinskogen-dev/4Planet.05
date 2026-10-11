@@ -41,8 +41,8 @@ const staticRoutes = [
 // redirect to those product domains, so they are excluded from this sitemap.
 // Canonical PLACE ownership lives on 4planetatlas.com. /places and /place/* redirect there and are excluded from this sitemap.
 const discoveryRoutes = [
-  "/now",
-  ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),
+  "/now/",
+  ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}/`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 
