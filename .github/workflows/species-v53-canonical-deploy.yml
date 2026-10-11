@@ -61,6 +61,20 @@ jobs:
           s=s.replace('          {draft && <span className="spx-credit spx-draft" role="note">Draft — not yet reviewed by a person</span>}', '')
           s=s.replace('{LEVEL_TEXT[level]}{draft ? " Draft — not yet reviewed by a person." : ""}', '{LEVEL_TEXT[level]}')
           p.write_text(s)
+          # Founder-approved homepage hero: restore the exact existing Orca-overhead
+          # file (not a replacement / fabricated licence). Keep the daily species
+          # slot independently rotating below the fixed homepage hero.
+          p=Path('src/pages/integrated/SpeciesHome.tsx')
+          home=p.read_text()
+          before='  const photo = today?.photo;'
+          after='  const photo = { url: "/assets/species/orca/hero.jpg", alt: "An orca seen from directly above in deep dark-blue ocean", credit: "Founder-supplied to 4PLANET", licence: "Rights record pending independent verification", sourcePage: "" };'
+          assert before in home, 'v53 homepage hero anchor changed'
+          home=home.replace(before,after,1)
+          credit='{photo && <a className="spx-credit spx-u-credit" href={photo.sourcePage} target="_blank" rel="noopener noreferrer">Photo {photo.credit} · {photo.licence}</a>}'
+          assert credit in home, 'v53 photo credit anchor changed'
+          home=home.replace(credit,'{photo && <span className="spx-credit spx-u-credit" role="note">Photo {photo.credit}</span>}',1)
+          p.write_text(home)
+          assert Path('public/assets/species/orca/hero.jpg').is_file(), 'Founder photo missing'
           p=Path('src/species/universe/links.ts')
           s=p.read_text().replace('"www.4species.com"]', '"www.4species.com", "species-v53.4planet-05.pages.dev"]')
           p.write_text(s)
