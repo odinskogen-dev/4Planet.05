@@ -70,6 +70,16 @@ const licenceClass = (value: unknown) => {
   return "REVIEW_REQUIRED";
 };
 
+const licenceRestrictions = (value: unknown) => {
+  const v = String(value || "").trim().toUpperCase().replace(/[\s_]+/g, "-");
+  const restrictions: string[] = [];
+  if (v.includes("-NC") || v.includes("/BY-NC")) restrictions.push("NONCOMMERCIAL");
+  if (v.includes("-ND") || v.includes("/BY-ND")) restrictions.push("NO_DERIVATIVES");
+  if (v.includes("-SA") || v.includes("/BY-SA")) restrictions.push("SHARE_ALIKE");
+  if (licenceClass(value) === "REVIEW_REQUIRED") restrictions.push("UNKNOWN_OR_MISSING");
+  return restrictions;
+};
+
 export const onRequestGet = async ({ request }: { request: Request }) => {
   const incoming = new URL(request.url);
   const scientificName = cleanScientificName(incoming.searchParams.get("scientificName"));
@@ -149,13 +159,19 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
           datasetDoi: row?.datasetDOI ?? row?.datasetDoi ?? row?.doi ?? null,
           datasetUrl: row?.datasetURL ?? row?.datasetUrl ?? null,
           sourceRecordUrl: row?.references ?? null,
+          provider: row?.datasetProvider ?? row?.provider ?? row?.institution ?? row?.institutionCode ?? row?.collectionCode ?? null,
           institutionCode: row?.institutionCode ?? null,
           collectionCode: row?.collectionCode ?? null,
           recordedBy: row?.recordedBy ?? null,
           licence: row?.license ?? row?.licence ?? null,
           licenceClass: licenceClass(row?.license ?? row?.licence),
+          licenceRestrictions: licenceRestrictions(row?.license ?? row?.licence),
           informationWithheld: row?.informationWithheld ?? null,
           dataGeneralizations: row?.dataGeneralizations ?? null,
+          locationSensitive: Boolean(
+            String(row?.informationWithheld ?? "").trim() ||
+            String(row?.dataGeneralizations ?? "").trim()
+          ),
         };
       });
 
@@ -169,7 +185,8 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
         recordType: "OCCURRENCE",
         notEvidenceOf: ["abundance", "range", "population_trend", "live_position"],
         absenceRecords: "excluded",
-        licencePolicy: "evaluate_per_record_or_dataset_before_reuse",
+        licencePolicy: "evaluate_original_occurrence_rights_per_record_or_dataset_before_reuse",
+        rightsBoundary: "OBIS-derived products may be CC0; original occurrence dataset licences still apply",
       },
       count: records.length,
       total: payload?.total !== null && payload?.total !== undefined && Number.isFinite(Number(payload.total))
