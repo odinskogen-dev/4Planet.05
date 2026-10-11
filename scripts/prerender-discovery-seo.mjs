@@ -17,7 +17,7 @@ for(const o of ao){const q=`/atlas/${o.slug}`;write(q,page({pathName:q,title:o.t
 
 const earthNow=discovery.earthNow;
 write("/now",page({
-  pathName:"/now",
+  pathName:"/now/",
   title:earthNow.title,
   description:earthNow.description,
   body:`<main><p>4PLANET / EARTH NOW</p><h1>What is happening on Earth right now?</h1><p>${esc(earthNow.answer)}</p><p><strong>LATEST AVAILABLE — NOT ONE LIVE CLOCK.</strong> ${esc(earthNow.truthBoundary)}</p><h2>Signals</h2><ul>${earthNow.signals.map(s=>`<li><a href="${esc(s.href)}">${esc(s.label)}</a> — ${esc(s.detail)}</li>`).join("")}</ul><h2>Permanent guides</h2><ul>${dt.map(t=>`<li><a href="/${esc(t.slug)}">${esc(t.name)}</a></li>`).join("")}</ul><p><a href="${esc(earthNow.atlasHref)}">Open Earth in 4PLANET ATLAS</a></p></main>`,
