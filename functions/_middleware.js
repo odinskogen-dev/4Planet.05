@@ -2097,10 +2097,6 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
     return new Response("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>Place not found — 4PLANET ATLAS</title></head><body><main><h1>Place not found</h1><p>This URL is not a qualified canonical Place in the current ATLAS World Place Index.</p><p><a href=\"/places\">Explore the World Place Index</a></p></main></body></html>",{status:404,headers:{"content-type":"text/html; charset=utf-8","x-robots-tag":"noindex, nofollow","cache-control":"public, max-age=300"}});
   }
 
-  // MAX EXPOSURE ZERO-LOSS: dedicated ATLAS middleware owns discovery routes only.
-  // Premium ATLAS application routes are passed through unchanged.
-  if (host === "4planetatlas.com") return context.next();
-
   const baseConfig = PUBLIC_HOSTS[host];
   const normalisedPath = url.pathname.replace(/\/$/, "") || "/";
   let routeConfig = host === "4planet.org" ? FOURPLANET_ROUTES[normalisedPath] : null;
@@ -2195,6 +2191,10 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
       },
     });
   }
+
+  // MAX EXPOSURE ZERO-LOSS: after bounded Place/robots/sitemap handlers,
+  // every remaining ATLAS application route passes through unchanged.
+  if (host === "4planetatlas.com") return context.next();
 
   const response = await context.next();
 
