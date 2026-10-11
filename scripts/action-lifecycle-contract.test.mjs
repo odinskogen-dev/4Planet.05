@@ -234,6 +234,76 @@ test("VERIFIED requires an explicit independent verification reference", () => {
   assert.ok(!action.validateActionLifecycleRecord(independentlyVerified).includes("missing_independent_verification_reference"));
 });
 
+test("D4 impact claims require reviewed outcome evidence bound to the action and verifier", () => {
+  const actionId = "action:production:plastic:1";
+  const providerReference = "provider:delivery:abc-123";
+  const independentVerificationRef = "verification:third-party:plastic:1";
+  const deliveryRef = action.deliveryEvidenceRef(actionId, providerReference);
+  const outcomeRef = action.outcomeEvidenceRef(actionId, independentVerificationRef);
+  const eligible = productionRecord({
+    actionId,
+    state: "IMPACT_CLAIM_ELIGIBLE",
+    proofClaimDistance: "D4",
+    providerReference,
+    evidenceRefs: [deliveryRef, outcomeRef],
+    integrity: {
+      deliveryState: "COMPLETE",
+      independentVerificationRef,
+      outcomeEvidenceReviewed: true,
+    },
+  });
+  assert.deepEqual(action.validateActionLifecycleRecord(eligible), []);
+
+  const outcomeFree = {
+    ...eligible,
+    evidenceRefs: [deliveryRef],
+  };
+  assert.ok(
+    action.validateActionLifecycleRecord(outcomeFree).includes(
+      "missing_reviewed_outcome_evidence",
+    ),
+  );
+
+  const unreviewed = {
+    ...eligible,
+    integrity: { ...eligible.integrity, outcomeEvidenceReviewed: false },
+  };
+  assert.ok(
+    action.validateActionLifecycleRecord(unreviewed).includes(
+      "missing_reviewed_outcome_evidence",
+    ),
+  );
+
+  const wrongAction = {
+    ...eligible,
+    evidenceRefs: [
+      deliveryRef,
+      action.outcomeEvidenceRef(
+        "action:production:plastic:other",
+        independentVerificationRef,
+      ),
+    ],
+  };
+  assert.ok(
+    action.validateActionLifecycleRecord(wrongAction).includes(
+      "missing_reviewed_outcome_evidence",
+    ),
+  );
+
+  const wrongVerifier = {
+    ...eligible,
+    evidenceRefs: [
+      deliveryRef,
+      action.outcomeEvidenceRef(actionId, "verification:third-party:other"),
+    ],
+  };
+  assert.ok(
+    action.validateActionLifecycleRecord(wrongVerifier).includes(
+      "missing_reviewed_outcome_evidence",
+    ),
+  );
+});
+
 test("contradictory or provider-only evidence cannot be called VERIFIED", () => {
   const contradictory = productionRecord({
     state: "VERIFIED",
