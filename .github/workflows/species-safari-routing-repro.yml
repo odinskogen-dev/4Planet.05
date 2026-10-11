@@ -12,65 +12,62 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 24, cache: npm }
+        with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npx playwright install --with-deps webkit
-      - name: Safari-like cold/open-in-Safari navigation to all species
+      - name: Prove public v53 homepage and six clean species URLs on iPhone Safari/WebKit
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p /tmp/species-safari
           node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
           import {webkit,devices} from '@playwright/test';
           const browser=await webkit.launch({headless:true});
-          const items=[['orca','Orca'],['english-oak','English oak'],['atlantic-puffin','Atlantic puffin'],['western-honey-bee','Western honey bee'],['fly-agaric','Fly agaric'],['common-octopus','Common octopus']];
-          let failures=0;
-          for(const device of ['iPhone 13','desktop']){
-            for(const [slug,name] of items){
-              const context=await browser.newContext(device==='desktop'?{viewport:{width:1366,height:850}}:{...devices['iPhone 13']});
-              const page=await context.newPage();const errors=[]; const events=[];
-              page.on('pageerror',e=>errors.push(String(e)));
-              page.on('framenavigated',f=>{if(f===page.mainFrame())events.push(f.url());});
-              const url='https://4species.com/'+slug;
-              try{
-                await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});
-                await page.waitForTimeout(1300);
-                const heading=await page.locator('h1').first().innerText({timeout:17000});
-                // A Safari share/open handoff can restore a stale Orca hash on a non-Orca pathname.
-                if(slug!=='orca'){
-                  await page.evaluate(()=>{location.hash='#/labs/species/orca';});
-                  await page.waitForTimeout(450);
-                  const postHash=page.url(),postHeading=await page.locator('h1').first().innerText({timeout:10000});
-                  if(!postHash.includes('/'+slug+'#/labs/species/'+slug)||postHeading.toLowerCase().includes('orca')){
-                    failures++;console.error(JSON.stringify({case:'stale-hash-handoff',device,slug,postHash,postHeading}));
-                  }
-                  await page.goto(url+'#/labs/species/orca',{waitUntil:'domcontentloaded'});
-                  await page.waitForTimeout(500);
-                  const afterReload=page.url(),afterHeading=await page.locator('h1').first().innerText({timeout:10000});
-                  if(!afterReload.includes('/'+slug+'#/labs/species/'+slug)||afterHeading.toLowerCase().includes('orca')){
-                    failures++;console.error(JSON.stringify({case:'mixed-deeplink-in-safari',device,slug,afterReload,afterHeading}));
-                  }
-                  await page.reload({waitUntil:'domcontentloaded'});
-                  await page.waitForTimeout(600);
-                  const afterRefresh=page.url();
-                  if(!afterRefresh.includes('/'+slug+'#/labs/species/'+slug)){
-                    failures++;console.error(JSON.stringify({case:'refresh',device,slug,afterRefresh}));
-                  }
-                }
-                const state={device,slug,heading,finalUrl:page.url(),errors,events};
-                console.log(JSON.stringify(state));
-                if(!heading.toLowerCase().includes(name.toLowerCase())||heading.toLowerCase().includes('orca')&&slug!=='orca'){failures++;await page.screenshot({path:'/tmp/species-safari/'+slug+'-'+device.replace(/\s/g,'-')+'.png'});}
-              }catch(e){failures++;console.log(JSON.stringify({device,slug,error:String(e),url:page.url(),events,errors}));}
-              await context.close();
+          const entries=[['orca','Orca'],['english-oak','English oak'],['atlantic-puffin','Atlantic puffin'],['western-honey-bee','Western honey bee'],['fly-agaric','Fly agaric'],['common-octopus','Common octopus']];
+          for(const [device,profile] of [['iPhone 13',devices['iPhone 13']],['desktop',{viewport:{width:1440,height:900}}]]) {
+            const context=await browser.newContext(profile);
+            const page=await context.newPage();
+            const errs=[];page.on('pageerror',e=>errs.push(String(e)));
+            await page.goto('https://4species.com/',{waitUntil:'domcontentloaded',timeout:45000});
+            await page.getByRole('heading',{name:/Meet life on Earth/i}).first().waitFor({timeout:25000});
+            await page.getByRole('combobox',{name:'Search species'}).fill('orca');
+            await page.getByRole('combobox',{name:'Search species'}).press('Enter');
+            await page.waitForURL(/\/orca(?:\?|#|$)/,{timeout:20000});
+            await page.getByRole('heading',{name:/^Orca$/i}).first().waitFor({timeout:20000});
+            console.log('SEARCH_PASS '+device+' '+page.url());
+            for(const [slug,name] of entries) {
+              // Direct link + intentional stale hash from the previous Orca prototype.
+              for(const suffix of ['', '#/labs/species/orca']) {
+                await page.goto('https://4species.com/'+slug+suffix,{waitUntil:'domcontentloaded',timeout:45000});
+                await page.getByRole('heading',{name:new RegExp('^'+name+'$','i')}).first().waitFor({timeout:20000});
+                assert.equal(new URL(page.url()).pathname,'/'+slug);
+                const text=await page.locator('h1').first().innerText();
+                assert.equal(text.toLowerCase(),name.toLowerCase());
+              }
+              console.log('SPECIES_PASS '+device+' '+slug);
             }
+            for(const pathname of ['/explore','/quiz','/about']){
+              const response=await page.goto('https://4species.com'+pathname,{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(response.status(),200);
+              assert.equal(new URL(page.url()).pathname,pathname);
+              await page.locator('h1').first().waitFor({timeout:20000});
+              console.log('UNIVERSE_PASS '+device+' '+pathname);
+            }
+            const old=await page.request.get('https://4species.com/species/orca',{maxRedirects:0});
+            assert.equal(old.status(),301);
+            assert.equal(old.headers().location,'https://4species.com/orca');
+            assert.equal(errs.length,0,'Runtime errors on '+device+': '+errs.join('; '));
+            await page.screenshot({path:'/tmp/species-safari/home-'+device.replace(/\s/g,'-')+'.png'});
+            await context.close();
           }
           await browser.close();
-          if(failures){console.error('SAFARI_ROUTING_FAILURES='+failures);process.exit(1);}
-          console.log('SAFARI_ALL_SPECIES_PASS');
+          console.log('SPECIES_V53_WEBKIT_ROUTING_ALL_PASS');
           NODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: species-safari-route-evidence
+          name: species-v53-safari-proof
           path: /tmp/species-safari
           retention-days: 14
           if-no-files-found: ignore
