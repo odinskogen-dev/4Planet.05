@@ -67,8 +67,9 @@ jobs:
           npm ci
           node scripts/build-atlas-places.mjs
           npm run typecheck
-          node --test scripts/atlas-v43-contract.test.mjs scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs scripts/atlas-max-exposure-middleware-runtime.test.mjs
+          node --test scripts/atlas-v43-contract.test.mjs scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs
           npm run build:atlas
+          node --test scripts/atlas-max-exposure-middleware-runtime.test.mjs
           test -f dist/index.html
           js=$(grep -oE 'src="/assets/[^"]+\.js"' dist/index.html | head -1 | cut -d'"' -f2)
           [ -n "$js" ]
