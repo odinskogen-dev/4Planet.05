@@ -2,9 +2,7 @@ name: SPECIES v53 — Orca + 20 distinct species canonical live release
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
-  push:
-    branches:
-      - release/species-v53-21-20261012
+  workflow_dispatch:
 
 permissions:
   contents: read
