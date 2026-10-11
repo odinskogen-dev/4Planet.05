@@ -28,7 +28,7 @@ test("MAX EXPOSURE discovery topics are source-grounded and indexable only with 
 
 test("4planet.org sitemap owns Discovery Guides but not standalone ATLAS Place or SPECIES canonicals",()=>{
   assert.match(sitemap,/discoveryTopics/);
-  assert.match(sitemap,/"\/now"/);
+  assert.match(sitemap,/"\/now\/"/);
   assert.match(sitemap,/discoveryTopics\.topics/);
   assert.doesNotMatch(sitemap,/discoveryInventory\.places/);
   assert.doesNotMatch(sitemap,/discoveryInventory\.species/);
@@ -47,7 +47,7 @@ test("Discovery Guides have human routes and server-readable prerender",()=>{
   assert.match(prerender,/What they do not establish/);
   assert.match(prerender,/application\/ld\+json/);
   assert.match(prerender,/canonical/);
-  assert.match(prerender,/favicon\\.svg/);
+  assert.match(prerender,/favicon\.svg/);
   assert.match(prerender,/canonicalDiscoveryHref/);
   assert.match(prerender,/Explore in 4PLANET ATLAS/);
 });
