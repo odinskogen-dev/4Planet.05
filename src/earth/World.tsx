@@ -206,6 +206,7 @@ function WorldInner() {
   const [q, setQ] = useState("");
   const [taxaHits, setTaxaHits] = useState([]);
   const [taxaSearchFailed, setTaxaSearchFailed] = useState(false);
+  const [taxaSearchPartial, setTaxaSearchPartial] = useState(false);
   const [searching, setSearching] = useState(false);
   const [open, setOpen] = useState(false);
   const [watchTaxaMatches, setWatchTaxaMatches] = useState([]);
@@ -813,7 +814,13 @@ function WorldInner() {
   useEffect(() => {
     const text = q.trim();
     const requestId = ++searchRequestSeq.current;
-    if (text.length < 3) { setTaxaHits([]); setSearching(false); setTaxaSearchFailed(false); return; }
+    if (text.length < 3) {
+      setTaxaHits([]);
+      setSearching(false);
+      setTaxaSearchFailed(false);
+      setTaxaSearchPartial(false);
+      return;
+    }
     setSearching(true);
     const t = window.setTimeout(async () => {
       const r = await searchTaxa(text);
@@ -822,6 +829,7 @@ function WorldInner() {
       // canonical accepted GBIF identities. Scientific names are labels, not
       // identity: legitimate homonyms must remain individually selectable.
       setTaxaSearchFailed(!r.ok);
+      setTaxaSearchPartial(r.ok && Boolean(r.partial));
       if (r.ok) {
         setTaxaHits(deduplicateTaxonHitsByCanonicalId(r.data));
       } else {
@@ -1229,6 +1237,8 @@ function WorldInner() {
               onClick={() => {
                 setQ("");
                 setTaxaHits([]);
+                setTaxaSearchFailed(false);
+                setTaxaSearchPartial(false);
                 setOpen(false);
                 clearFocus("focus");
                 if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
@@ -1340,6 +1350,16 @@ function WorldInner() {
               </div>
             ))}
 
+            {taxaSearchPartial && !searching && (
+              <div className="rgrp" style={{ padding: "10px 12px", lineHeight: 1.7, color: C.amber }}>
+                GBIF PARTIAL RESPONSE
+                <div style={{ opacity: 0.75, marginTop: 5, textTransform: "none", letterSpacing: 0, fontSize: 10 }}>
+                  Some GBIF queries did not answer. Results shown may be incomplete; an empty life
+                  list is not a verified empty result. 4PLANET will retry rather than cache it.
+                </div>
+              </div>
+            )}
+
             {/* P0 (V38R): source failure is not the same as no match. Say so. */}
             {taxaSearchFailed && !searching && (
               <div className="rgrp" style={{ padding: "10px 12px", lineHeight: 1.7, color: C.red }}>
@@ -1351,7 +1371,7 @@ function WorldInner() {
               </div>
             )}
 
-            {!hasResults && !searching && !taxaSearchFailed && (
+            {!hasResults && !searching && !taxaSearchFailed && !taxaSearchPartial && (
               <div className="rgrp" style={{ padding: "14px 12px", lineHeight: 1.7 }}>
                 NOTHING MATCHED.
                 <div style={{ opacity: 0.6, marginTop: 6, textTransform: "none", letterSpacing: 0, fontSize: 10 }}>
