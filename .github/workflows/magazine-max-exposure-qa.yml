@@ -75,5 +75,22 @@ jobs:
             [ "$code" = '200' ] && break
             sleep 1
           done
-          npx playwright test tests/e2e/magazine-world-class.spec.ts --config playwright.magazine.config.ts --project=mag-desktop-1440 --project=mag-mobile-390 --project=mag-webkit-390
-          npx playwright test tests/e2e/magazine-films-gold.spec.ts --config playwright.magazine.config.ts --project=mag-desktop-1440 --project=mag-mobile-390 --project=mag-webkit-390
+          npx playwright test tests/e2e/magazine-world-class.spec.ts \
+            --config playwright.magazine.config.ts \
+            --project=mag-desktop-1440 \
+            --project=mag-mobile-390 \
+            --project=mag-webkit-390 \
+            --grep "For a Living Planet is a premium, truthful invitation into the mission"
+          npx playwright test tests/e2e/magazine-films-gold.spec.ts \
+            --config playwright.magazine.config.ts \
+            --project=mag-desktop-1440 \
+            --project=mag-desktop-1920 \
+            --project=mag-tablet-1024 \
+            --project=mag-tablet-768 \
+            --project=mag-android-412 \
+            --project=mag-mobile-430 \
+            --project=mag-mobile-390 \
+            --project=mag-mobile-375 \
+            --project=mag-mobile-320 \
+            --project=mag-webkit-430 \
+            --project=mag-webkit-390
