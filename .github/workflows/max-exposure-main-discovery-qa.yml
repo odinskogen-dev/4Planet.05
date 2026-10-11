@@ -55,8 +55,8 @@ jobs:
           sm=$(cat dist/sitemap.xml)
           grep -Fq '<loc>https://4planet.org/now/</loc>' <<< "$sm"
           grep -Fq '<loc>https://4planet.org/wildfires/</loc>' <<< "$sm"
-          grep -Fq '<loc>https://4planet.org/earthquakes</loc>' <<< "$sm"
-          grep -Fq '<loc>https://4planet.org/whales</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/earthquakes/</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/whales/</loc>' <<< "$sm"
           ! grep -Fq '<loc>https://4planet.org/place/' <<< "$sm"
           ! grep -Fq '<loc>https://4planet.org/species/' <<< "$sm"
           echo FOURPLANET_DISCOVERY_STATIC_PASS
