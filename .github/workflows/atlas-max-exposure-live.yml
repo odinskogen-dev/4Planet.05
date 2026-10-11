@@ -1,0 +1,169 @@
+name: MAX EXPOSURE — ATLAS LIVE 250 Places
+
+on:
+  push:
+    branches:
+      - release/atlas-max-exposure-20261011
+    paths:
+      - 'functions/**'
+      - 'scripts/atlas-max-exposure-middleware-runtime.test.mjs'
+      - 'docs/control/ATLAS_MAX_EXPOSURE_ZERO_LOSS_RELEASE_20261011.md'
+      - '.github/workflows/atlas-max-exposure-qa.yml'
+      - '.github/workflows/atlas-max-exposure-live.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atlas-max-exposure-live-20261011
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      ATLAS_PROJECT: 4planet-atlas
+      ATLAS_DOMAIN: 4planetatlas.com
+      BASELINE_SHA: 6c01c2029810f18838243c839d1f55477792ea3a
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Zero-loss diff gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor "$BASELINE_SHA" HEAD
+          mapfile -t changed < <(git diff --name-only "$BASELINE_SHA"...HEAD)
+          allowed='^(functions/_middleware\.js|functions/atlas-promoted-places\.generated\.js|scripts/atlas-max-exposure-middleware-runtime\.test\.mjs|docs/control/ATLAS_MAX_EXPOSURE_ZERO_LOSS_RELEASE_20261011\.md|\.github/workflows/atlas-max-exposure-qa\.yml|\.github/workflows/atlas-max-exposure-live\.yml)$'
+          for file in "${changed[@]}"; do
+            grep -Eq "$allowed" <<<"$file" || { echo "UNEXPECTED PRODUCT FILE: $file"; exit 21; }
+          done
+          echo "ATLAS_ZERO_LOSS_DIFF_PASS"
+
+      - name: Apply exact protected v43 product overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --check ops/atlas/r1-human-awe.patch
+          git apply ops/atlas/r1-human-awe.patch
+          echo 'ebdbd4dc533531fa3733993ada7e13bd3adeb2d4f605d72fa7482e1d7ddf7fe8  ops/atlas/v43-code-only.zip' | sha256sum -c -
+          unzip -q ops/atlas/v43-code-only.zip -d /tmp/v43
+          cp -a /tmp/v43/files/. ./
+          while IFS= read -r file; do [ -z "$file" ] || rm -f "$file"; done < /tmp/v43/patch/DELETED_FILES.txt
+          rm -f public-atlas-data-places-v1-manifest.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Build + protected product QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/build-atlas-places.mjs
+          npm run typecheck
+          node --test scripts/atlas-v43-contract.test.mjs scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs scripts/atlas-max-exposure-middleware-runtime.test.mjs
+          npm run build:atlas
+          test -f dist/index.html
+          js=$(grep -oE 'src="/assets/[^"]+\.js"' dist/index.html | head -1 | cut -d'"' -f2)
+          [ -n "$js" ]
+          echo "EXPECTED_APP_JS=$js" >> "$GITHUB_ENV"
+          echo "ATLAS_BUILD_QA_PASS"
+
+      - name: Resolve Cloudflare authority
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          token=''
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -z "$candidate" ] || { token="$candidate"; break; }
+          done
+          [ -n "$token" ]
+          token=$(printf '%s' "$token" | tr -d '\r\n'); token="${token#Bearer }"; token="${token#bearer }"
+          echo "::add-mask::$token"
+          zone=$(curl -fsS 'https://api.cloudflare.com/client/v4/zones?name=4planetatlas.com&status=active' -H "Authorization: Bearer $token")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account" ]
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+
+      - name: Deploy exact candidate to dedicated ATLAS production
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist             --project-name "$ATLAS_PROJECT"             --branch main             --commit-hash "$GITHUB_SHA"             --commit-message "MAX EXPOSURE ATLAS 250 Places $GITHUB_SHA"
+
+      - name: Verify custom-domain LIVE
+        id: live
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 40); do
+            root_code=$(curl -sS -o /tmp/root.html -w '%{http_code}' --max-time 25 "https://$ATLAS_DOMAIN/" || true)
+            if [ "$root_code" = '200' ] && grep -Fq "$EXPECTED_APP_JS" /tmp/root.html; then break; fi
+            sleep 3
+          done
+          test "$root_code" = '200'
+          grep -Fq "$EXPECTED_APP_JS" /tmp/root.html
+          atlas=$(curl -fsS "https://$ATLAS_DOMAIN/atlas")
+          grep -Fq "$EXPECTED_APP_JS" <<<"$atlas"
+
+          places=$(curl -fsS "https://$ATLAS_DOMAIN/places")
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = '250'
+
+          for slug in berlin oslo london tokyo nairobi kenya sao-tome; do
+            html=$(curl -fsS "https://$ATLAS_DOMAIN/place/$slug")
+            grep -Fq "rel=\"canonical\" href=\"https://$ATLAS_DOMAIN/place/$slug\"" <<<"$html"
+            grep -Fq 'data-acquisition-entry="organic-place"' <<<"$html"
+            grep -Fq "/atlas/?place=$slug" <<<"$html"
+            grep -Fq 'BreadcrumbList' <<<"$html"
+          done
+
+          sm=$(curl -fsS "https://$ATLAS_DOMAIN/sitemap.xml")
+          test "$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')" = '250'
+          test "$(grep -o "<image:loc>https://$ATLAS_DOMAIN/place/[^<]*/map.svg</image:loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')" = '250'
+
+          robots=$(curl -fsS "https://$ATLAS_DOMAIN/robots.txt")
+          grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap.xml" <<<"$robots"
+
+          status=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' "https://$ATLAS_DOMAIN/place/__max_exposure_unknown__")
+          test "$status" = '404'
+          grep -Fq 'noindex' /tmp/unknown.html
+
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' "http://$ATLAS_DOMAIN/place/berlin")
+          case "$http_code" in 301|302|307|308) : ;; *) echo "HTTP canonical transport failed: $http_code"; exit 31 ;; esac
+
+          echo "ATLAS_250_LIVE_PASS source=$GITHUB_SHA"
+
+      - name: Roll back exact prior v43 production on release failure
+        if: failure() && steps.deploy.outcome == 'success' && steps.live.outcome != 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git reset --hard
+          git clean -fd
+          git checkout "$BASELINE_SHA"
+          git apply --check ops/atlas/r1-human-awe.patch
+          git apply ops/atlas/r1-human-awe.patch
+          echo 'ebdbd4dc533531fa3733993ada7e13bd3adeb2d4f605d72fa7482e1d7ddf7fe8  ops/atlas/v43-code-only.zip' | sha256sum -c -
+          rm -rf /tmp/v43
+          unzip -q ops/atlas/v43-code-only.zip -d /tmp/v43
+          cp -a /tmp/v43/files/. ./
+          while IFS= read -r file; do [ -z "$file" ] || rm -f "$file"; done < /tmp/v43/patch/DELETED_FILES.txt
+          rm -f public-atlas-data-places-v1-manifest.json
+          npm ci
+          node scripts/build-atlas-places.mjs
+          npm run build:atlas
+          npx --yes wrangler@4.128.0 pages deploy dist             --project-name "$ATLAS_PROJECT"             --branch main             --commit-hash "$BASELINE_SHA"             --commit-message "ROLLBACK ATLAS v43 $BASELINE_SHA"
+          echo "ATLAS_ROLLBACK_DEPLOYED $BASELINE_SHA"
