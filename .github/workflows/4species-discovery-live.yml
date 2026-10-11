@@ -67,6 +67,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Pin production to the exact accepted immutable Pages preview, never a mutable branch alias.
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const file = 'ops/discovery/4species-router.js';
+          const url = process.env.ACCEPTED_PREVIEW_URL || '';
+          if (!/^https:\/\/[a-z0-9-]+\.4planet-05\.pages\.dev$/.test(url)) {
+            throw new Error('Expected an immutable 4planet-05 Pages preview hostname');
+          }
+          const oldOrigin = 'const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";';
+          let source = readFileSync(file, 'utf8');
+          if (source.split(oldOrigin).length !== 2) throw new Error('v53 Worker upstream anchor changed');
+          source = source.replace(oldOrigin, 'const SPECIES_V53_ORIGIN = ' + JSON.stringify(url) + ';');
+          writeFileSync(file, source);
+          NODE
+          node --check ops/discovery/4species-router.js
+          echo "deployed_router_sha256=$(sha256sum ops/discovery/4species-router.js | cut -d ' ' -f 1)" >> "$GITHUB_ENV"
           npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/worker-deploy.log
           worker_version=$(grep -Eo 'Current Version ID: [0-9a-f-]+' /tmp/worker-deploy.log | awk '{print $4}' | tail -n 1)
           test -n "$worker_version"
