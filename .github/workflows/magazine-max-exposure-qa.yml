@@ -1,4 +1,5 @@
 name: MAX EXPOSURE — Magazine zero-loss QA
+# Final artifact trigger includes the bounded live-release workflow.
 
 on:
   push:
