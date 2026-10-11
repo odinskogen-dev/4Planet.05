@@ -160,7 +160,7 @@ test("analytics measures reading, relevant second object, share, partner attribu
 });
 
 test("search foundation generates sitemap, News sitemap, RSS and static route metadata", () => {
-  assert.match(sitemap, /\/magazine\/about/);
+  assert.doesNotMatch(sitemap, /\/magazine\/about/, "4planet.org sitemap must not duplicate the standalone 4planetmagazine.com canonical publication");
   assert.match(sitemap, /news-sitemap\.xml/);
   assert.match(sitemap, /rss\.xml/);
   assert.match(sitemap, /robots\.txt/);
