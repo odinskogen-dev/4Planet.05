@@ -21,11 +21,11 @@ async function call(url){
 
 test("Discovery Guides pass through as substantive prerendered HTML",async()=>{
   for(const route of ["now","wildfires","earthquakes","whales"]){
-    const r=await call(`https://4planet.org/${route}`);
+    const r=await call(`https://4planet.org/${route}/`);
     assert.equal(r.status,200,route);
     const html=await r.text();
     assert.match(html,/<h1>/,route);
-    assert.match(html,new RegExp(`rel="canonical" href="https://4planet\\.org/${route}"`),route);
+    assert.match(html,new RegExp(`rel="canonical" href="https://4planet\\.org/${route}/"`),route);
     assert.match(html,/application\/ld\+json/,route);
   }
 });
@@ -34,7 +34,7 @@ test("4PLANET sitemap exposes guides but not canonical Place or Species duplicat
   const r=await call("https://4planet.org/sitemap.xml");
   assert.equal(r.status,200);
   const xml=await r.text();
-  for(const route of ["now","wildfires","earthquakes","whales"]) assert.match(xml,new RegExp(`<loc>https://4planet\\.org/${route}</loc>`));
+  for(const route of ["now","wildfires","earthquakes","whales"]) assert.match(xml,new RegExp(`<loc>https://4planet\\.org/${route}/</loc>`));
   assert.doesNotMatch(xml,/<loc>https:\/\/4planet\.org\/place\//);
   assert.doesNotMatch(xml,/<loc>https:\/\/4planet\.org\/species\//);
 });
