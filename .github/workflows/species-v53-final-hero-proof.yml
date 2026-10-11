@@ -1,0 +1,42 @@
+name: SPECIES v53 Founder Hero Final Proof
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-v53-final-hero-proof.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  hero-and-routes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: king/test }
+      - name: Confirm exact old founder-supplied Orca image is LIVE
+        shell: bash
+        run: |
+          set -euo pipefail
+          for retry in $(seq 1 18); do
+            curl -fsSL --max-time 25 https://4species.com/ -o /tmp/4species-home.html || true
+            if grep -Fq '/assets/species/orca/hero.jpg' /tmp/4species-home.html; then break; fi
+            sleep 5
+          done
+          grep -Fq 'Meet life on Earth' /tmp/4species-home.html
+          grep -Fq '/assets/species/orca/hero.jpg' /tmp/4species-home.html
+          curl -fsSL --max-time 40 https://4species.com/assets/species/orca/hero.jpg -o /tmp/4species-orca-hero.jpg
+          test "$(wc -c < /tmp/4species-orca-hero.jpg)" -gt 200000
+          cmp public/assets/species/orca/hero.jpg /tmp/4species-orca-hero.jpg
+          echo FOUNDER_ORIGINAL_AERIAL_ORCA_EXACT_BYTES_LIVE_PASS
+      - name: Confirm all clean routes and permanent canonical redirect
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in / /explore /quiz /about /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus; do
+            curl -fsSL --max-time 30 "https://4species.com$route" -o /tmp/species-route.html
+            grep -Eiq 'species|Meet life on Earth' /tmp/species-route.html
+            echo "LIVE_OK $route"
+          done
+          status=$(curl -sSI https://4species.com/species/orca | head -n 1)
+          echo "$status" | grep -q '301'
+          curl -sSI https://4species.com/species/orca | grep -qi '^location: https://4species.com/orca'
+          echo SPECIES_V53_ROUTES_CLEAN_VERIFIED
