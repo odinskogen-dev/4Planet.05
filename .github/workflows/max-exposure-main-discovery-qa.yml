@@ -47,11 +47,13 @@ jobs:
           for route in now wildfires earthquakes whales; do
             file="dist/$route/index.html"
             test -f "$file"
-            grep -Fq '<h1>' "$file"
-            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route/\"" "$file"
-            grep -Fq 'application/ld+json' "$file"
-            grep -Fq '"logo":"https://4planet.org/favicon.svg"' "$file"
-            grep -Fq '<h2>Sources</h2>' "$file" || [ "$route" = "now" ]
+            grep -Fq '<h1>' "$file" || { echo "H1_FAIL $route"; exit 31; }
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route/\"" "$file" || { echo "CANONICAL_FAIL $route"; grep -o 'rel="canonical"[^>]*' "$file" || true; exit 32; }
+            grep -Fq 'application/ld+json' "$file" || { echo "SCHEMA_FAIL $route"; exit 33; }
+            grep -Fq 'https://4planet.org/favicon.svg' "$file" || { echo "LOGO_FAIL $route"; exit 34; }
+            if [ "$route" != "now" ]; then
+              grep -Fq '<h2>Sources</h2>' "$file" || { echo "SOURCES_FAIL $route"; exit 35; }
+            fi
           done
           sm=$(cat dist/sitemap.xml)
           grep -Fq '<loc>https://4planet.org/now/</loc>' <<< "$sm"
