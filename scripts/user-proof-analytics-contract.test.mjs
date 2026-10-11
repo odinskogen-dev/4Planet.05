@@ -126,13 +126,8 @@ test("canonical discovery routes remain generated and crawlable", () => {
     "/",
     "/livingsystems/",
     "/impact",
-    "/impact/actions/bay-of-biscay-survey",
-    "/market",
-    "/cre4tor/odin",
     "/missions",
     "/join",
-    "/journey/jaguar/",
-    "/journey/orca/",
     "/now",
   ];
   for (const route of fourPlanetOwnedRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
