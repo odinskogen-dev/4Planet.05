@@ -24,7 +24,9 @@ const titleCase = (s: string) =>
   String(s ?? "").replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
 
 /** Every network call goes through here, so failure is uniform and honest. */
-export type Result<T> =\n  | { ok: true; data: T; partial?: boolean; warning?: string }\n  | { ok: false; error: string };
+export type Result<T> =
+  | { ok: true; data: T; partial?: boolean; warning?: string }
+  | { ok: false; error: string };
 
 const getJson = async (url: string, ms = 12000): Promise<Result<any>> => {
   const ctl = new AbortController();
