@@ -58,7 +58,7 @@ try{
   await page.getByRole("region",{name:/Selected funding node details/i}).waitFor();
   await page.screenshot({path:"artifacts/finance-shell/"+label+"-graph.png"});
   await page.goto(host+"/finance/my",{waitUntil:"domcontentloaded"});
-  await page.getByRole("heading",{name:/Pipeline analysis/i}).waitFor();
+  await page.getByRole("heading",{name:/Finance at a glance/i}).waitFor();
   await page.screenshot({path:"artifacts/finance-shell/"+label+"-dashboard.png"});
   if(label==="mobile"){
    const nav=page.getByRole("navigation",{name:"Primary mobile navigation"});
