@@ -77,7 +77,16 @@ jobs:
             if grep -Eqi '^x-robots-tag:[[:space:]]*noindex' /tmp/live-header.txt; then
               echo "PUBLIC NOINDEX persists for $slug"; exit 1
             fi
-            scientific=$(curl -fsS --max-time 25 "https://4species.com/species-data/v1/$slug.json" | jq -r '.identity.scientificName')
+            data_code=$(curl -sSL --max-time 25 -D /tmp/live-json-headers.txt -o /tmp/live-species-data.json -w '%{http_code}' "https://4species.com/species-data/v1/$slug.json")
+            echo "DATA $slug HTTP $data_code ($(wc -c </tmp/live-species-data.json) bytes)"
+            if [ "$data_code" != "200" ] || ! jq -e --arg slug "$slug" '.slug==$slug and .identity.scientificName!=""' /tmp/live-species-data.json >/dev/null 2>&1; then
+              echo "BAD JSON $slug: response headers:"
+              grep -Ei '^HTTP/|^content-type:|^location:|^cf-ray:|^server:' /tmp/live-json-headers.txt || true
+              echo "BAD JSON $slug: first 550 response bytes:"
+              head -c 550 /tmp/live-species-data.json || true
+              exit 1
+            fi
+            scientific=$(jq -r '.identity.scientificName' /tmp/live-species-data.json)
             grep -Fq "$scientific" /tmp/live-species.html
             echo "LIVE OK $slug -> $scientific"
           done
