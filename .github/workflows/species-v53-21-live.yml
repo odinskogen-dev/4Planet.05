@@ -54,7 +54,7 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
           npx --yes wrangler@4.128.0 deployments list --name 4species-router 2>&1 | tee /tmp/species-prior-deployments.log
-          old=$(grep -Ei 'Version ID:' /tmp/species-prior-deployments.log | head -n 1 | grep -Eo '[0-9a-f]{8}-[0-9a-f-]{27,}' | head -n 1 || true)
+          old=$(grep -E 'Version\(s\):[[:space:]]+\(100%\)' /tmp/species-prior-deployments.log | tail -n 1 | grep -Eo '[0-9a-f]{8}-[0-9a-f-]{27,}' | head -n 1 || true)
           if [ -z "$old" ]; then
             echo "No verifiable rollback version; refusing live promotion"
             exit 1
