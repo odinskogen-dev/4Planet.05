@@ -1,0 +1,103 @@
+name: MAX EXPOSURE — 4PLANET Discovery zero-loss QA
+
+on:
+  push:
+    branches:
+      - work/main-max-exposure-discovery-20261011
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install and source contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          node --test scripts/max-exposure-discovery-contract.test.mjs
+
+      - name: Production build
+        env:
+          PUBLIC_SITE_ORIGIN: https://4planet.org
+          VITE_PUBLIC_SITE_ORIGIN: https://4planet.org
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build
+
+      - name: Static discovery proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in now wildfires earthquakes whales; do
+            file="dist/$route/index.html"
+            test -f "$file"
+            grep -Fq '<h1>' "$file"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" "$file"
+            grep -Fq 'application/ld+json' "$file"
+            grep -Fq '<h2>Sources</h2>' "$file" || [ "$route" = "now" ]
+          done
+          sm=$(cat dist/sitemap.xml)
+          grep -Fq '<loc>https://4planet.org/now</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/wildfires</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/earthquakes</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/whales</loc>' <<< "$sm"
+          ! grep -Fq '<loc>https://4planet.org/place/' <<< "$sm"
+          ! grep -Fq '<loc>https://4planet.org/species/' <<< "$sm"
+          echo FOURPLANET_DISCOVERY_STATIC_PASS
+
+      - name: Start Pages runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages dev dist --ip 127.0.0.1 --port 8789 > /tmp/pages.log 2>&1 &
+          echo $! >/tmp/pages.pid
+          for i in $(seq 1 40); do
+            code=$(curl -sS -H 'Host: 4planet.org' -o /tmp/root.html -w '%{http_code}' http://127.0.0.1:8789/ || true)
+            [ "$code" = '200' ] && exit 0
+            sleep 1
+          done
+          cat /tmp/pages.log
+          exit 1
+
+      - name: Runtime crawler proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          for route in now wildfires earthquakes whales; do
+            html=$(curl -fsS -H 'Host: 4planet.org' "http://127.0.0.1:8789/$route")
+            grep -Fq '<h1>' <<< "$html"
+            grep -Fq "rel=\"canonical\" href=\"https://4planet.org/$route\"" <<< "$html"
+            grep -Fq 'application/ld+json' <<< "$html"
+          done
+          sm=$(curl -fsS -H 'Host: 4planet.org' http://127.0.0.1:8789/sitemap.xml)
+          grep -Fq '<loc>https://4planet.org/now</loc>' <<< "$sm"
+          grep -Fq '<loc>https://4planet.org/wildfires</loc>' <<< "$sm"
+          ! grep -Fq '<loc>https://4planet.org/place/' <<< "$sm"
+          ! grep -Fq '<loc>https://4planet.org/species/' <<< "$sm"
+          home=$(curl -fsS -H 'Host: 4planet.org' http://127.0.0.1:8789/)
+          grep -Fq 'id="root"' <<< "$home"
+          echo FOURPLANET_DISCOVERY_RUNTIME_PASS
+
+      - name: Existing smoke suite
+        shell: bash
+        run: npm run test:smoke
+
+      - name: Stop runtime
+        if: always()
+        shell: bash
+        run: kill "$(cat /tmp/pages.pid 2>/dev/null)" 2>/dev/null || true
