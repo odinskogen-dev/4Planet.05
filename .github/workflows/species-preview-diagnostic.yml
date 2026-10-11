@@ -1,0 +1,24 @@
+name: Diagnose isolated 4SPECIES v53 Pages payload
+on:
+  push:
+    branches: [diagnose/species-v53-pages-20261012]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect immutable Pages HTML and headers (GET read only)
+        shell: bash
+        run: |
+          set -eu
+          ORIGIN=https://fc5d5ccd.4planet-05.pages.dev
+          for path in / /lion /lion/ /lion/index.html /tiger /orca /species-data/v1/lion.json /release-identity.json /assets/species/orca/hero.jpg; do
+            echo "====== $path ======"
+            curl -sSL --max-time 20 -D /tmp/headers -o /tmp/body "$ORIGIN$path"
+            grep -Ei '^HTTP/|^content-type:|^content-length:|^location:|^x-robots-tag:|^content-encoding:' /tmp/headers || true
+            wc -c /tmp/body
+            head -c 300 /tmp/body | strings | head -c 350 || true
+            echo
+            grep -oE '<title>[^<]*</title>|<link rel="canonical"[^>]*>' /tmp/body | head -n 2 || true
+          done
