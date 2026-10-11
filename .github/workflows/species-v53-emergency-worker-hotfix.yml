@@ -1,0 +1,58 @@
+name: SPECIES v53 Emergency Stability Hotfix
+# One-time emergency recovery route; regular founder-accepted promotion remains manual.
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-v53-emergency-worker-hotfix.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: 4species-discovery-live, cancel-in-progress: false}
+jobs:
+  safe-hotfix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: king/test }
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Validate limited patch and immutable pre-hotfix rollback candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'no-store-v53-hotfix' ops/discovery/4species-router.js
+          grep -Fq 'SPECIES-v53-canonical' ops/discovery/4species-router.js
+          git show 4231e2866602bf3ca03ca5be36f57e30f2b2c43c^:ops/discovery/4species-router.js > /tmp/species-prior.js
+          node --check /tmp/species-prior.js
+      - name: Deploy narrow cache/CSP repair to existing Cloudflare Worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+      - name: Verify live v53 home, Orca, six routes, cache and SSL
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo 'LIVE_VERIFY_FAILED: restore previous SPECIES v53 Worker source'
+            git show 4231e2866602bf3ca03ca5be36f57e30f2b2c43c^:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+            npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars || true
+          }
+          trap rollback ERR
+          for p in / /orca /english-oak /atlantic-puffin /western-honey-bee /fly-agaric /common-octopus /explore /quiz; do
+            ready=0
+            for attempt in $(seq 1 6); do
+              code=$(curl -fsSL --connect-timeout 8 --max-time 20 -D /tmp/spechdr -o /tmp/specbody -w '%{http_code}' "https://4species.com$p" || true)
+              if [ "$code" = 200 ] && grep -Fiq 'x-4species-html-cache: no-store-v53-hotfix' /tmp/spechdr; then ready=1; break; fi
+              sleep 3
+            done
+            test "$ready" = 1
+            if [ "$p" = "/" ]; then grep -Fiq 'Meet life on Earth' /tmp/specbody; fi
+            if [ "$p" = "/orca" ]; then grep -Fiq 'Orcinus orca' /tmp/specbody; fi
+            echo "PASS $p cache=no-store"
+          done
+          echo 'SPECIES_EMERGENCY_LIVE_HOTFIX_PASS'
