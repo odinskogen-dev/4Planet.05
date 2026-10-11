@@ -1,0 +1,80 @@
+name: SPECIES v53 Live Safari Chrome Routing QA
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-v53-live-browser-qa.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  live-browser-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit chromium
+      - name: Check v53 home, quiz, Explore, About, all six canonical species and redirects
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-v53-qa
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { chromium, webkit, devices } from '@playwright/test';
+          const paths=[
+            ['/',/Meet life on Earth/i],
+            ['/explore',/Every species/i],
+            ['/quiz',/Seven questions|Quiz night/i],
+            ['/about',/Nature is the experience/i],
+            ['/orca',/^Orca$/i],
+            ['/english-oak',/^English oak$/i],
+            ['/atlantic-puffin',/^Atlantic puffin$/i],
+            ['/western-honey-bee',/^Western honey bee$/i],
+            ['/fly-agaric',/^Fly agaric$/i],
+            ['/common-octopus',/^Common octopus$/i]
+          ];
+          for(const [engineName,engine] of [['Safari-WebKit',webkit],['Chrome-Chromium',chromium]]){
+            const browser=await engine.launch({headless:true});
+            for(const [p,headingRe] of paths){
+              const context=await browser.newContext({...devices['iPhone 13'],locale:'en-GB'});
+              const page=await context.newPage();
+              const errorList=[];page.on('pageerror',e=>errorList.push(String(e)));
+              const response=await page.goto('https://4species.com'+p,{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(response.status(),200,engineName+' HTTP fail '+p);
+              await page.locator('h1').first().waitFor({timeout:30000});
+              const heading=await page.locator('h1').first().innerText();
+              assert.match(heading,headingRe,engineName+' WRONG PAGE '+p+': '+heading);
+              assert.equal(new URL(page.url()).pathname,p,engineName+' slug drift '+p);
+              assert.equal(new URL(page.url()).hash,'',engineName+' hash route exposed '+p);
+              if(p.startsWith('/english-oak') || p==='/atlantic-puffin'){
+                await page.reload({waitUntil:'domcontentloaded',timeout:30000});
+                await page.locator('h1').first().waitFor();
+                assert.match(await page.locator('h1').first().innerText(),headingRe,'reload wrong species '+p);
+                const url=page.url();
+                await page.goBack({waitUntil:'domcontentloaded',timeout:30000}).catch(()=>null);
+                await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+                assert.match(await page.locator('h1').first().innerText(),headingRe,'return wrong species '+p);
+              }
+              await page.screenshot({path:'/tmp/species-v53-qa/'+engineName+'-'+(p==='/'?'home':p.slice(1))+'.png',fullPage:false});
+              console.log(JSON.stringify({engine:engineName,path:p,heading,errors:errorList,pass:true}));
+              await context.close();
+            }
+            const context=await browser.newContext({...devices['iPhone 13']});
+            const page=await context.newPage();
+            const resp=await page.goto('https://4species.com/species/orca',{waitUntil:'domcontentloaded',timeout:30000});
+            assert.equal(resp.status(),200);
+            assert.equal(new URL(page.url()).pathname,'/orca');
+            console.log(engineName+' legacy /species/orca 301 -> /orca PASS');
+            await context.close();await browser.close();
+          }
+          NODE
+      - name: Save browser proof screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: species-v53-real-browser-qa
+          path: /tmp/species-v53-qa
+          retention-days: 14
+          if-no-files-found: ignore
