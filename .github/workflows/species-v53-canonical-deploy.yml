@@ -176,7 +176,7 @@ jobs:
           test -n "${CLOUDFLARE_API_TOKEN:-}"
           cd ../species-v53-build
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53-21 --commit-hash "$GITHUB_SHA" --commit-message "4PLANET SPECIES v53 $GITHUB_SHA" 2>&1 | tee /tmp/species-v53-deploy.log
-          deployment_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species-v53-deploy.log | tail -n 1)
+          deployment_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species-v53-deploy.log | head -n 1)
           test -n "$deployment_url"
           echo "V53_DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
           echo SPECIES_V53_PAGES_PUBLISHED
@@ -201,8 +201,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo V53_PUBLIC_PAGES_PREVIEW_QA_PASS
           # Assert that real species pages are distinct, crawlable and served by the exact preview.
-          curl -fsS "$ORIGIN/lion" | grep -Fq 'Panthera leo'
-          curl -fsS "$ORIGIN/tiger" | grep -Fq 'Panthera tigris'
+          curl -fsS "$ORIGIN/lion" -o /tmp/lion-qa.html
+          curl -fsS "$ORIGIN/tiger" -o /tmp/tiger-qa.html
+          echo "LION_HTTP_META:"; grep -oE '<title>[^<]*</title>|<link rel="canonical"[^>]*>' /tmp/lion-qa.html | head -n 5 || true
+          echo "TIGER_HTTP_META:"; grep -oE '<title>[^<]*</title>|<link rel="canonical"[^>]*>' /tmp/tiger-qa.html | head -n 5 || true
+          if ! grep -Fq 'Panthera leo' /tmp/lion-qa.html; then echo "FAIL lion is generic; HTML HEAD:"; head -c 700 /tmp/lion-qa.html; exit 1; fi
+          if ! grep -Fq 'Panthera tigris' /tmp/tiger-qa.html; then echo "FAIL tiger is generic; HTML HEAD:"; head -c 700 /tmp/tiger-qa.html; exit 1; fi
           for slug in lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear; do
             curl -fsS --max-time 25 "$ORIGIN/species-data/v1/$slug.json" | jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01"' >/dev/null
             curl -fsS --max-time 25 "$ORIGIN/$slug" -o /tmp/species-$slug.html
