@@ -45,6 +45,10 @@ test("return destinations require an exact HTTPS origin", () => {
   try {
     assert.equal(identityClient.safeReturnTo("/account"), "https://id.4planet.org/account");
     assert.equal(identityClient.safeReturnTo("https://4sapien.com/food"), "https://4sapien.com/food");
+    assert.equal(
+      identityClient.safeReturnTo("https://4sapien.com/food#access_token=secret&refresh_token=secret"),
+      "https://4sapien.com/food"
+    );
     for (const unsafe of [
       "http://4sapien.com/food",
       "https://4sapien.com:8443/food",
@@ -54,6 +58,69 @@ test("return destinations require an exact HTTPS origin", () => {
     ]) {
       assert.equal(identityClient.safeReturnTo(unsafe), "https://4planet.org/", unsafe);
     }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+
+test("identity entry URLs never copy fragments into return_to", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = {
+    location: {
+      origin: "https://id.4planet.org",
+      href: "https://id.4planet.org/login#access_token=secret&refresh_token=secret",
+    },
+  };
+  try {
+    for (const destination of [
+      identityClient.identityLoginUrl(),
+      identityClient.identityAccountUrl("https://4sapien.com/food#private-state"),
+    ]) {
+      const url = new URL(destination);
+      const returnTo = url.searchParams.get("return_to");
+      assert.ok(returnTo);
+      assert.equal(new URL(returnTo).hash, "");
+      assert.doesNotMatch(destination, /access_token|refresh_token|private-state/);
+    }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+test("failed OAuth recovery scrubs credential fragments before SDK work", async () => {
+  const previousWindow = globalThis.window;
+  const replacements = [];
+  globalThis.window = {
+    location: {
+      origin: "https://id.4planet.org",
+      hash: "#access_token=secret-access&refresh_token=secret-refresh",
+      pathname: "/auth/callback",
+      search: "?source=google",
+    },
+    history: {
+      replaceState(_state, _title, value) {
+        replacements.push(value);
+      },
+    },
+    supabase: {
+      createClient() {
+        return {
+          auth: {
+            async setSession() {
+              assert.deepEqual(replacements, ["/auth/callback?source=google"]);
+              return { data: { session: null }, error: { message: "expired" } };
+            },
+          },
+        };
+      },
+    },
+  };
+  try {
+    await assert.rejects(identityClient.recoverOAuthSessionFromLocation(), /expired/);
+    assert.deepEqual(replacements, ["/auth/callback?source=google"]);
   } finally {
     if (previousWindow === undefined) delete globalThis.window;
     else globalThis.window = previousWindow;

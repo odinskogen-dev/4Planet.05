@@ -166,7 +166,12 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
     const url = new URL(value, window.location.origin);
     if (url.hostname === "oddekalv.org" || url.hostname.endsWith(".oddekalv.org")) return fallback;
     if (url.username || url.password) return fallback;
-    if (url.origin === window.location.origin || TRUSTED_RETURN_ORIGINS.has(url.origin)) return url.href;
+    if (url.origin === window.location.origin || TRUSTED_RETURN_ORIGINS.has(url.origin)) {
+      // Fragments are normally client-only. Embedding one inside return_to would
+      // copy OAuth credentials or other private state into a server-visible query.
+      url.hash = "";
+      return url.href;
+    }
   } catch {
     return fallback;
   }
@@ -192,6 +197,9 @@ export async function recoverOAuthSessionFromLocation(): Promise<FourPlanetSessi
   const accessToken = hash.get("access_token");
   const refreshToken = hash.get("refresh_token");
   if (!accessToken || !refreshToken) return null;
+  // Capture the credentials in memory, then remove them before loading the SDK
+  // or making any request. Failure paths must not leave tokens in browser history.
+  window.history.replaceState({}, "", window.location.pathname + window.location.search);
   const client = await getIdentityClient();
   const result = await client.auth.setSession({
     access_token: accessToken,
@@ -200,7 +208,6 @@ export async function recoverOAuthSessionFromLocation(): Promise<FourPlanetSessi
   if (result.error || !result.data.session) {
     throw new Error(result.error?.message || "Google callback session invalid");
   }
-  window.history.replaceState({}, "", window.location.pathname + window.location.search);
   return result.data.session;
 }
 
