@@ -1,0 +1,60 @@
+name: SPECIES EMERGENCY Browser Runtime QA
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/species-emergency-browser-runtime.yml]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-save --no-package-lock playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Inspect real rendered DOM, CSS, JS and failed requests
+        shell: bash
+        run: |
+          mkdir -p /tmp/species-emergency
+          node --input-type=module <<'NODE'
+          import {chromium} from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const routes=['/','/orca','/english-oak','/atlantic-puffin','/western-honey-bee','/fly-agaric','/common-octopus','/quiz','/explore'];
+          for(const path of routes){
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            const faults=[],bad=[],failures=[];
+            page.on('pageerror',x=>faults.push(String(x)));
+            page.on('console',x=>{if(x.type()==='error')bad.push(x.text())});
+            page.on('requestfailed',r=>failures.push({url:r.url(),failure:r.failure()}));
+            page.on('response',r=>{if(r.status()>=400)bad.push('HTTP '+r.status()+' '+r.url())});
+            let http=null,error=null;
+            try{
+              const response=await page.goto('https://4species.com'+path,{waitUntil:'domcontentloaded',timeout:30000});
+              http=response?.status();
+              await page.waitForTimeout(2500);
+            }catch(e){error=String(e)}
+            const state=await page.evaluate(()=>{
+              const b=document.body;const root=document.querySelector('#root');
+              return {title:document.title,bodyText:b?.innerText?.slice(0,180),bodyHTMLLength:b?.innerHTML?.length,
+                rootHTMLLength:root?.innerHTML?.length,heading:document.querySelector('h1')?.textContent?.slice(0,110),
+                bodyDisplay:b?getComputedStyle(b).display:null,
+                textColor:b?getComputedStyle(b).color:null,background:b?getComputedStyle(b).backgroundColor:null,
+                links:[...document.querySelectorAll('script[src],link[rel="stylesheet"]')].map(x=>({src:x.src||x.href})).slice(0,14)};
+            }).catch(e=>({evaluateError:String(e)}));
+            const slug=path==='/'?'home':path.slice(1);
+            await page.screenshot({path:'/tmp/species-emergency/'+slug+'.png',fullPage:false}).catch(()=>{});
+            console.log('BROWSER_DIAG '+JSON.stringify({path,http,error,...state,faults:faults.slice(0,8),bad:bad.slice(0,8),failures:failures.slice(0,6)}));
+            await page.close();
+          }
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-emergency-actual-browser-screenshots
+          path: /tmp/species-emergency/
+          retention-days: 4
+          if-no-files-found: ignore
