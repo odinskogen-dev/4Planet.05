@@ -349,15 +349,15 @@ export default {
       } });
     if (path === "/robots.txt")
       return new Response(
-        "User-agent: *\\nAllow: /\\nDisallow: /api/\\nSitemap: https://4species.com/sitemap.xml\\n",
+        "User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://4species.com/sitemap.xml\n",
         { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=300" } },
       );
     if (path === "/sitemap.xml") {
       const approved = ["/", "/explore", "/quiz", "/about"];
-      const body = '<?xml version="1.0" encoding="UTF-8"?>\\n'
-        + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\\n'
-        + approved.map((p) => `<url><loc>https://4species.com${p}</loc></url>`).join("\\n")
-        + '\\n</urlset>\\n';
+      const body = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + approved.map((p) => `<url><loc>https://4species.com${p}</loc></url>`).join("\n")
+        + '\n</urlset>\n';
       return new Response(body, { headers: {
         "content-type": "application/xml; charset=utf-8",
         "cache-control": "public, max-age=300",
