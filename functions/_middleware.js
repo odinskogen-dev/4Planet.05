@@ -1771,9 +1771,43 @@ export async function onRequest(context) {
   const rawHost = url.hostname.toLowerCase();
   const host = normaliseHost(rawHost);
 
-  if (rawHost.startsWith("www.") && PUBLIC_HOSTS[host]) {
-    url.hostname = host;
-    return Response.redirect(url.toString(), 308);
+  const canonicalHttpsHosts = new Set([
+    "4planet.org",
+    "4planetatlas.com",
+    "4species.com",
+    "4sapien.com",
+    "s4piens.com",
+    "4brands.org",
+    "4nation.org",
+    "4planetmagazine.com",
+    "4planetmarket.com",
+    "4brain.app",
+    "cre4tors.com",
+  ]);
+
+  const fourPlanetAliases = host === "4planet.org" ? new Map([
+    ["/living-systems", "/livingsystems/"],
+    ["/living-systems/", "/livingsystems/"],
+    ["/living-systems/oslofjorden", "/living-systems/oslofjord"],
+    ["/living-systems/oslofjorden/", "/living-systems/oslofjord"],
+    ["/living-systems/oslofjord/", "/living-systems/oslofjord"],
+    ["/living-systems/great-barrier-reef/", "/living-systems/great-barrier-reef"],
+    ["/livingsystems/oslofjord", "/living-systems/oslofjord"],
+    ["/livingsystems/oslofjord/", "/living-systems/oslofjord"],
+    ["/livingsystems/great-barrier-reef", "/living-systems/great-barrier-reef"],
+    ["/livingsystems/great-barrier-reef/", "/living-systems/great-barrier-reef"],
+  ]) : null;
+
+  const canonicalPath = fourPlanetAliases?.get(url.pathname) || url.pathname;
+  if (
+    canonicalHttpsHosts.has(host) &&
+    (url.protocol !== "https:" || rawHost.startsWith("www.") || canonicalPath !== url.pathname)
+  ) {
+    const target = new URL(url.toString());
+    target.protocol = "https:";
+    target.hostname = host;
+    target.pathname = canonicalPath;
+    return Response.redirect(target.toString(), 308);
   }
 
   const privatePathPrefixes = [
@@ -1800,6 +1834,45 @@ export async function onRequest(context) {
         "x-robots-tag": "noindex, nofollow, noarchive",
       },
     });
+  }
+
+  if (host === "4planet.org" && url.pathname === "/livingsystems/") {
+    const response = await context.next();
+    if (privateSurface) return withSecurityHeaders(response, true);
+    const headers = new Headers(response.headers);
+    const contentType = headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("text/html")) {
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    }
+    const canonical = "https://4planet.org/livingsystems/";
+    const title = "Living Systems Intelligence | 4PLANET";
+    const description = "Explore how species, ecosystems, ecological functions, threats, solutions and human dependencies connect across living systems.";
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: title,
+      description,
+      url: canonical,
+      isPartOf: { "@type": "WebSite", name: "4PLANET", url: "https://4planet.org/" },
+    };
+    return new HTMLRewriter()
+      .on("title", { element(element) { element.setInnerContent(title); } })
+      .on('meta[name="description"]', { element(element) { element.setAttribute("content", description); } })
+      .on('link[rel="canonical"]', { element(element) { element.remove(); } })
+      .on("head", {
+        element(element) {
+          element.append(`<meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${canonical}"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="${canonical}"><script type="application/ld+json">${JSON.stringify(schema).replaceAll("<","\\u003c")}</script>`, { html: true });
+        },
+      })
+      .transform(new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      }));
   }
 
   if (host === "4planet.org") {
