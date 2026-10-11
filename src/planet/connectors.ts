@@ -51,6 +51,17 @@ export interface TaxonHit {
   kingdom?: string;
 }
 
+export const deduplicateTaxonHitsByCanonicalId = (hits: TaxonHit[]): TaxonHit[] => {
+  const seen = new Set<string>();
+  return hits.filter((hit) => {
+    const canonicalId = String(hit?.id ?? "").trim();
+    if (!/^taxon:gbif:\d+$/.test(canonicalId)) return false;
+    if (seen.has(canonicalId)) return false;
+    seen.add(canonicalId);
+    return true;
+  });
+};
+
 type TaxonQueryAlias = { scientificName: string; commonName: string };
 
 /*
