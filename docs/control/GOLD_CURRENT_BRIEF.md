@@ -1,3 +1,13 @@
+# ATLAS ROUTED OBIS COMPOSITE RIGHTS + PROVENANCE — 11 OCT 2026
+
+**STATUS:** CURRENT NATUREBRAIN RIGHTS HANDOFF CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens the routed ATLAS WH4LES layer and needs to know whose occurrence record this is, what original rights apply and whether the plotted location is safe to expose.
+**ONE THING TO UNDERSTAND:** OBIS indexes original occurrence datasets; OBIS-derived products may be CC0, but that does not replace original dataset licences.
+**PRIMARY ACTION:** route WH4LES through the governed bridge, preserve every composite NC/ND/SA restriction, fail closed on missing rights or withheld/generalised locations, and expose provider/citation/DOI/URL/raw licence/retrieval evidence.
+**ACCEPTANCE:** executable fixtures cover CC0, BY, BY-NC, BY-NC-ND, BY-SA, missing rights and sensitive/generalised locations; the routed `src/earth/layers.ts` loader admits only clean CC0/plain-BY records and never calls OBIS directly.
+**NON-GOALS:** no protected camera/search/NOW/WATCH/mobile redesign, no ingest, deployment, release or self-Gold.
+**ROLLBACK:** revert the exact candidate commit returned for this bounded correction.
+
 # ATLAS ROUTED GBIF POINT TRUTH — 11 OCT 2026
 
 **STATUS:** RETURNED SOURCE QA_CONTRACT CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
