@@ -21,8 +21,19 @@ async function proxySpeciesV53(request) {
   out.delete("content-length");
   out.delete("content-encoding");
   out.set("x-4species-release", "SPECIES-v53-canonical");
-  if((out.get("content-type")||"").includes("text/html"))
-    out.set("cache-control","public, max-age=30, must-revalidate");
+  if((out.get("content-type")||"").includes("text/html")) {
+    // v53 is a versioned SPA: a stale HTML shell can reference JS hashes
+    // removed by the next Pages deploy and leave iOS browsers on a blank page.
+    // Do not cache HTML; bundled assets remain versioned and cacheable.
+    out.set("cache-control", "no-store, max-age=0, must-revalidate");
+    for (const name of ["etag", "last-modified", "expires"]) out.delete(name);
+    const csp = out.get("content-security-policy");
+    if (csp && !/(?:^|;)\\s*frame-src\\b/i.test(csp)) {
+      out.set("content-security-policy", csp.replace(/;?\\s*$/, "") +
+        "; frame-src 'self' https://4planetatlas.com https://www.4planetatlas.com");
+    }
+    out.set("x-4species-html-cache", "no-store-v53-hotfix");
+  }
   return new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
 }
 
