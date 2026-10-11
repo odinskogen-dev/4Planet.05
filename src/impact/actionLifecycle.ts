@@ -168,6 +168,7 @@ export interface ActionEvidenceIntegrity {
   providerClaimOnly?: boolean;
   contradictoryEvidence?: boolean;
   independentVerificationRef?: string | null;
+  outcomeEvidenceReviewed?: boolean;
   refundState?: "NONE" | "REQUESTED" | "CONFIRMED";
 }
 
@@ -219,6 +220,15 @@ export function deliveryEvidenceRef(actionId: string, providerReference: string)
   return `delivery:${encodeURIComponent(actionId.trim())}:${encodeURIComponent(providerReference.trim())}`;
 }
 
+/**
+ * Canonical reviewed outcome identity. Binding the action and independent
+ * verification reference prevents delivery evidence or another action's
+ * outcome from promoting an impact claim.
+ */
+export function outcomeEvidenceRef(actionId: string, independentVerificationRef: string): string {
+  return `outcome:${encodeURIComponent(actionId.trim())}:${encodeURIComponent(independentVerificationRef.trim())}`;
+}
+
 export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now = new Date()): string[] {
   const failures: string[] = [];
   if (!record.actionId.trim() || !record.providerPatternId.trim() || !record.idempotencyKey.trim()) failures.push("identity");
@@ -247,10 +257,22 @@ export function validateActionLifecycleRecord(record: ActionLifecycleRecord, now
       failures.push("missing_bound_delivery_evidence");
     }
   }
+  const independentVerificationRef = integrity?.independentVerificationRef?.trim();
   if (
     stateAtLeast(record.state, "VERIFIED") &&
-    !integrity?.independentVerificationRef?.trim()
+    !independentVerificationRef
   ) failures.push("missing_independent_verification_reference");
+  if (record.state === "IMPACT_CLAIM_ELIGIBLE") {
+    const hasBoundReviewedOutcome =
+      integrity?.outcomeEvidenceReviewed === true &&
+      Boolean(
+        independentVerificationRef &&
+        record.evidenceRefs.includes(
+          outcomeEvidenceRef(record.actionId, independentVerificationRef),
+        ),
+      );
+    if (!hasBoundReviewedOutcome) failures.push("missing_reviewed_outcome_evidence");
+  }
   if (!integrity) return failures;
 
   if (typeof integrity.expectedQuantity === "number" && typeof integrity.reportedQuantity === "number") {
