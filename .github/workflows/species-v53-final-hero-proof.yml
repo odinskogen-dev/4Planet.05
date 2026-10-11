@@ -18,11 +18,12 @@ jobs:
           set -euo pipefail
           for retry in $(seq 1 18); do
             curl -fsSL --max-time 25 https://4species.com/ -o /tmp/4species-home.html || true
-            if grep -Fq '/assets/species/orca/hero.jpg' /tmp/4species-home.html; then break; fi
+            if grep -Fq 'Meet life on Earth' /tmp/4species-home.html; then break; fi
             sleep 5
           done
           grep -Fq 'Meet life on Earth' /tmp/4species-home.html
-          grep -Fq '/assets/species/orca/hero.jpg' /tmp/4species-home.html
+          # The homepage HTML is crawler prerendered; the actual hero img is mounted by React.
+          # Compare the exact approved image bytes at its public asset route instead.
           curl -fsSL --max-time 40 https://4species.com/assets/species/orca/hero.jpg -o /tmp/4species-orca-hero.jpg
           test "$(wc -c < /tmp/4species-orca-hero.jpg)" -gt 200000
           cmp public/assets/species/orca/hero.jpg /tmp/4species-orca-hero.jpg
