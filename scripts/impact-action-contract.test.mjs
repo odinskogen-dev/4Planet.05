@@ -31,6 +31,45 @@ test("Bay survey action still fails closed while bounded quantity and current GB
   assert.equal(action.actionContractCanMatchFunding(contract), false);
 });
 
+test("funding match requires finite positive amount and quantity", () => {
+  const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
+  const ready = {
+    ...contract,
+    readiness: "READY_FOR_FUNDER_MATCH",
+    fundingNeed: {
+      ...contract.fundingNeed,
+      amount: { state: "KNOWN", value: 100, sourceNote: "test fixture" },
+      quantity: { state: "KNOWN", value: 1, sourceNote: "test fixture" },
+    },
+    blockers: [],
+  };
+
+  assert.equal(action.actionContractCanMatchFunding(ready), true);
+
+  for (const invalid of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, -1]) {
+    assert.equal(
+      action.actionContractCanMatchFunding({
+        ...ready,
+        fundingNeed: {
+          ...ready.fundingNeed,
+          amount: { ...ready.fundingNeed.amount, value: invalid },
+        },
+      }),
+      false,
+    );
+    assert.equal(
+      action.actionContractCanMatchFunding({
+        ...ready,
+        fundingNeed: {
+          ...ready.fundingNeed,
+          quantity: { ...ready.fundingNeed.quantity, value: invalid },
+        },
+      }),
+      false,
+    );
+  }
+});
+
 test("placeholder sponsorship prices can never be promoted into a fundable amount", () => {
   const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
   assert.match(contract.fundingNeed.amount.sourceNote, /placeholders/i);
@@ -50,8 +89,8 @@ test("delivery proof is bounded to measured survey work and never promoted to ec
 
 test("action contract reuses existing Planet, Impact and Actor proof surfaces", () => {
   const hrefs = action.BAY_OF_BISCAY_SURVEY_ACTION.evidenceLinks.map((item) => item.href);
-  assert.ok(hrefs.includes("/ecosystem/bay-of-biscay/"));
-  assert.ok(hrefs.includes("/journey/orca/"));
+  assert.ok(hrefs.includes("/impact/actions/bay-of-biscay-survey"));
+  assert.ok(hrefs.includes("/actors/orca"));
   assert.ok(hrefs.includes("/impact/lab"));
   assert.ok(hrefs.includes("/actors"));
 });
