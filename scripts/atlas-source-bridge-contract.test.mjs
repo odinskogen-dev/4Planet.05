@@ -12,6 +12,10 @@ const obis = read("functions/api/obis.ts");
 const atlas = read("src/pages/v5/Atlas.tsx");
 const inat = read("functions/api/inaturalist.ts");
 const truth = read("src/data/truthSpine.ts");
+const earthLayers = read("src/earth/layers.ts");
+const earthLayersRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(earthLayers, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText).toString("base64")}`);
 const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(obis, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`);
@@ -232,4 +236,74 @@ test("Truth Spine can retain precision/generalisation/citation state from source
   for (const needle of ["sourceAuthority", "datasetName", "citationIdentifier", "coordinateUncertaintyM", "locationGeneralised", "generalisationNote", "occurrenceStatus"]) {
     assert.ok(truth.includes(needle), `Truth Spine missing ${needle}`);
   }
+});
+
+
+test("routed ATLAS GBIF points preserve presence, zero coordinates and evidence boundaries", () => {
+  const retrievedAt = "2026-10-11T07:27:41.000Z";
+  const baseRecord = {
+    decimalLatitude: 0,
+    decimalLongitude: 20,
+    occurrenceStatus: "PRESENT",
+    hasGeospatialIssues: false,
+    issues: [],
+    license: "CC BY 4.0",
+    eventDate: "2026-09-30",
+    coordinateUncertaintyInMeters: 125,
+    datasetTitle: "Verified chordate observations",
+    datasetKey: "dataset-1",
+    datasetID: "10.1234/gbif.dataset",
+    occurrenceID: "occurrence-1",
+    key: 101,
+    speciesKey: 44,
+    scientificName: "Chordata",
+  };
+  const point = earthLayersRuntime.gbifOccurrencePoint(baseRecord, retrievedAt);
+  assert.equal(point.lat, 0);
+  assert.equal(point.lon, 20);
+  assert.equal(point.occurrenceStatus, "PRESENT");
+  assert.equal(point.coordinateUncertaintyM, 125);
+  assert.equal(point.datasetDoi, "10.1234/gbif.dataset");
+  assert.equal(point.retrievedAt, retrievedAt);
+
+  assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, decimalLatitude: 10, decimalLongitude: 0 }, retrievedAt));
+  for (const rejected of [
+    { ...baseRecord, occurrenceStatus: "ABSENT" },
+    { ...baseRecord, occurrenceStatus: undefined },
+    { ...baseRecord, decimalLatitude: null },
+    { ...baseRecord, decimalLongitude: "" },
+    { ...baseRecord, decimalLatitude: 91 },
+    { ...baseRecord, decimalLongitude: 181 },
+    { ...baseRecord, hasGeospatialIssues: true },
+    { ...baseRecord, issues: ["ZERO_COORDINATE"] },
+    { ...baseRecord, license: "CC BY-NC 4.0" },
+    { ...baseRecord, license: "CC BY-SA 4.0" },
+    { ...baseRecord, license: undefined },
+  ]) {
+    assert.equal(earthLayersRuntime.gbifOccurrencePoint(rejected, retrievedAt), null);
+  }
+  assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, license: "CC0 1.0" }, retrievedAt));
+  assert.equal(earthLayersRuntime.gbifLicenceClass("CC BY 4.0"), "OPEN_ATTRIBUTION");
+  assert.equal(earthLayersRuntime.gbifLicenceClass("https://creativecommons.org/licenses/by/4.0/legalcode"), "OPEN_ATTRIBUTION");
+  assert.equal(earthLayersRuntime.gbifLicenceClass("https://creativecommons.org/publicdomain/zero/1.0/legalcode"), "OPEN_CC0");
+  assert.equal(earthLayersRuntime.gbifLicenceClass("CC BY-NC-SA 4.0"), "REVIEW_REQUIRED");
+});
+
+test("routed ATLAS GBIF loader fails closed and exposes point evidence", () => {
+  assert.match(earthLayers, /occurrenceStatus=PRESENT/);
+  assert.match(earthLayers, /hasGeospatialIssue=false/);
+  assert.match(earthLayers, /GBIF_UPSTREAM_\$\{response\.status\}/);
+  assert.match(earthLayers, /GBIF_CONTRACT_MISMATCH/);
+  assert.doesNotMatch(earthLayers, /\.then\(\(r\) => r\.json\(\)\)\.catch\(\(\) => \(\{ results: \[\] \}\)\)/);
+  for (const needle of [
+    "REPORTED PRESENT · CHORDATA",
+    "COORDINATE UNCERTAINTY",
+    "GEOSPATIAL QUALITY UNKNOWN",
+    "DATASET ·",
+    "DOI ·",
+    "LICENCE ·",
+    "RETRIEVED ·",
+    "Open GBIF record",
+    "Original dataset",
+  ]) assert.ok(earthLayers.includes(needle), `ATLAS GBIF detail missing ${needle}`);
 });

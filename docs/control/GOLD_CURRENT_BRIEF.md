@@ -1,3 +1,14 @@
+# ATLAS ROUTED GBIF POINT TRUTH — 11 OCT 2026
+
+**STATUS:** RETURNED SOURCE QA_CONTRACT CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens the routed ATLAS SPECIES layer and needs an honest occurrence record, not an invented current position, an incorrect vertebrate label or a silent source failure.
+**ONE THING TO UNDERSTAND:** this layer is a bounded Chordata occurrence view. Only records explicitly reported PRESENT with finite in-range coordinates and accepted display rights become points.
+**PRIMARY ACTION:** preserve zero coordinates, reject ABSENT/UNKNOWN presence and geospatially invalid records, expose event date/coordinate uncertainty/dataset/DOI/licence/retrieval evidence, and keep upstream/contract errors OFFLINE rather than zero.
+**ACCEPTANCE:** executable positive/negative fixtures cover presence, zero/null/out-of-range coordinates, geospatial issues, CC0/CC BY versus review-required rights, and evidence fields; the routed `src/earth/layers.ts` loader uses the guarded path.
+**NON-GOALS:** no protected ATLAS camera/search/layer/NOW/WATCH/mobile mutation; no data ingest, deployment, LIVE claim or release.
+**BASE / ROLLBACK:** `king/test@fa25d73b7e0587e84f9b069e8bf235a40caccee1`; revert only this bounded commit if independent Gold rejects it.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold runs exact-head contract/browser proof against the protected LIVE baseline. Founder release remains required.
+
 # SEARCH DISCOVERY — EMPTY NEWS SITEMAP FAIL-CLOSED — 10 OCT 2026
 
 **STATUS:** HEIR TECHNICAL DISCOVERY CORRECTION / NO LIVE RELEASE.

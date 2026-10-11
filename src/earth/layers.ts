@@ -28,6 +28,60 @@ export const ARROW = "\u2192";
 export const titleCase = (s) => String(s ?? "").replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const stamp = () => new Date().toISOString().slice(11, 16) + "Z";
+
+export const gbifLicenceClass = (value) => {
+  const licence = String(value ?? "").trim();
+  const lower = licence.toLowerCase();
+  const creativeCommonsPath = lower.match(/creativecommons\.org\/(?:licenses|publicdomain)\/([^/]+)/)?.[1] || "";
+  const normalised = licence.toUpperCase().replace(/[_/]+/g, " ").replace(/\s+/g, " ");
+  if (creativeCommonsPath === "zero" || /\bCC0\b|PUBLIC DOMAIN/.test(normalised)) return "OPEN_CC0";
+  if (creativeCommonsPath === "by") return "OPEN_ATTRIBUTION";
+  if (/\bCC BY\b/.test(normalised) && !/\b(NC|ND|SA)\b/.test(normalised)) return "OPEN_ATTRIBUTION";
+  return "REVIEW_REQUIRED";
+};
+
+export const gbifOccurrencePoint = (record, retrievedAt = new Date().toISOString()) => {
+  const rawLat = record?.decimalLatitude;
+  const rawLon = record?.decimalLongitude;
+  if (rawLat === null || rawLat === undefined || rawLat === "" || rawLon === null || rawLon === undefined || rawLon === "") return null;
+  const lat = Number(rawLat);
+  const lon = Number(rawLon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+
+  const occurrenceStatus = String(record?.occurrenceStatus ?? "").trim().toUpperCase();
+  if (occurrenceStatus !== "PRESENT") return null;
+
+  const issues = Array.isArray(record?.issues) ? record.issues.map((issue) => String(issue)) : [];
+  const hasCoordinateIssue = record?.hasGeospatialIssues === true || issues.some((issue) => /COORDINATE|GEOSPATIAL|COUNTRY_COORDINATE/.test(issue));
+  if (hasCoordinateIssue) return null;
+
+  const licenceClass = gbifLicenceClass(record?.license ?? record?.licence);
+  if (!["OPEN_CC0", "OPEN_ATTRIBUTION"].includes(licenceClass)) return null;
+
+  const rawUncertainty = record?.coordinateUncertaintyInMeters;
+  const parsedUncertainty = rawUncertainty === null || rawUncertainty === undefined || rawUncertainty === ""
+    ? null : Number(rawUncertainty);
+  const coordinateUncertaintyM = Number.isFinite(parsedUncertainty) && parsedUncertainty >= 0 ? parsedUncertainty : null;
+  const datasetIdentifier = String(record?.datasetKey ?? record?.datasetID ?? "").trim();
+  const candidateDoi = String(record?.datasetID ?? "").trim();
+  const datasetDoi = /^10\.\d{4,9}\//i.test(candidateDoi) ? candidateDoi : "";
+
+  return {
+    lon, lat, occurrenceStatus, coordinateUncertaintyM,
+    geospatialState: record?.hasGeospatialIssues === false ? "NO KNOWN GEOSPATIAL ISSUE" : "GEOSPATIAL QUALITY UNKNOWN",
+    eventDate: String(record?.eventDate ?? "").trim(),
+    retrievedAt,
+    licence: String(record?.license ?? record?.licence ?? "").trim(),
+    licenceClass,
+    datasetTitle: String(record?.datasetTitle ?? record?.datasetName ?? "").trim(),
+    datasetIdentifier,
+    datasetDoi,
+    occurrenceId: String(record?.occurrenceID ?? record?.key ?? "").trim(),
+    gbifKey: String(record?.key ?? "").trim(),
+    speciesKey: String(record?.speciesKey ?? "").trim(),
+    scientificName: String(record?.scientificName ?? record?.species ?? "Unidentified").trim(),
+  };
+};
 export const daysAgo = (n) => { const d = new Date(); d.setUTCDate(d.getUTCDate() - n); return d.toISOString().split("T")[0]; };
 export const wms = (layer, time) =>
   "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?service=WMS&request=GetMap&version=1.1.1" +
@@ -194,17 +248,34 @@ export const LAYERS = [
     } },
   { id: "species", dom: "E4RTH", group: "LIFE", kind: "point", domain: ["PLANET", "E4RTH"],
     label: "SPECIES", color: C.green, src: "GBIF", r: 3,
-    note: "Vertebrate occurrence records, sampled across continents. A record means someone observed it there — absence of dots is not absence of life.",
+    note: "Chordate occurrence records reported as PRESENT, sampled across continents. A point is a source record — not a live position, abundance estimate or species range. Absence of dots is not absence of life.",
     load: async () => {
       const conts = ["EUROPE", "NORTH_AMERICA", "SOUTH_AMERICA", "AFRICA", "ASIA", "OCEANIA"];
-      const parts = await Promise.all(conts.map((c) =>
-        fetch(`https://api.gbif.org/v1/occurrence/search?hasCoordinate=true&taxonKey=44&continent=${c}&limit=150`)
-          .then((r) => r.json()).catch(() => ({ results: [] }))));
-      return parts.flatMap((p) => p.results || []).filter((o) => o.decimalLatitude && o.decimalLongitude).map((o) => {
-        const sci = o.scientificName || o.species || "Unidentified";
-        const link = o.speciesKey ? `<a class="pl" href="https://www.gbif.org/species/${o.speciesKey}" target="_blank" rel="noopener">Read on GBIF \u2197</a>` : "";
-        return { lon: o.decimalLongitude, lat: o.decimalLatitude, sppKey: o.speciesKey || "",
-          html: `<b class="nm">${esc(sci)}</b><br><span class="lat">${esc(sci)}</span>${link}` };
+      const retrievedAt = new Date().toISOString();
+      const parts = await Promise.all(conts.map(async (continent) => {
+        const response = await fetch(
+          `https://api.gbif.org/v1/occurrence/search?hasCoordinate=true&hasGeospatialIssue=false&occurrenceStatus=PRESENT&taxonKey=44&continent=${continent}&limit=150`
+        );
+        if (!response.ok) throw new Error(`GBIF_UPSTREAM_${response.status}`);
+        const payload = await response.json();
+        if (!payload || !Array.isArray(payload.results)) throw new Error("GBIF_CONTRACT_MISMATCH");
+        return payload.results;
+      }));
+      return parts.flat().map((record) => gbifOccurrencePoint(record, retrievedAt)).filter(Boolean).map((point) => {
+        const occurrenceLink = point.gbifKey
+          ? `<a class="pl" href="https://www.gbif.org/occurrence/${encodeURIComponent(point.gbifKey)}" target="_blank" rel="noopener">Open GBIF record \u2197</a>`
+          : "";
+        const datasetLink = point.datasetIdentifier
+          ? `<a class="pl" href="https://www.gbif.org/dataset/${encodeURIComponent(point.datasetIdentifier)}" target="_blank" rel="noopener">Original dataset \u2197</a>`
+          : "";
+        const uncertainty = point.coordinateUncertaintyM === null ? "UNKNOWN" : `${Math.round(point.coordinateUncertaintyM)} m`;
+        const eventDate = point.eventDate || "UNKNOWN";
+        const dataset = point.datasetTitle || point.datasetIdentifier || "UNKNOWN";
+        const doi = point.datasetDoi || "UNKNOWN";
+        return {
+          lon: point.lon, lat: point.lat, sppKey: point.speciesKey,
+          html: `<b class="nm">${esc(point.scientificName)}</b><br><span class="lat">REPORTED PRESENT · CHORDATA</span><div class="when">EVENT · ${esc(eventDate)}</div><br><span class="lat">COORDINATE UNCERTAINTY · ${esc(uncertainty)} · ${esc(point.geospatialState)}</span><br><span class="lat">DATASET · ${esc(dataset)}</span><br><span class="lat">DOI · ${esc(doi)}</span><br><span class="lat">LICENCE · ${esc(point.licence || "UNKNOWN")} · ${esc(point.licenceClass)}</span><br><span class="lat">RETRIEVED · ${esc(point.retrievedAt)}</span>${occurrenceLink}${datasetLink}`
+        };
       });
     } },
 
