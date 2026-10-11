@@ -56,3 +56,14 @@
 .fc-root .fc-login-footnote a{color:var(--fc-blue)}
 .fc-root .fc-oauth-error{padding:10px 12px;font-size:12px;background:var(--fc-pill);color:var(--fc-ink);border-radius:10px}
 @media(max-width:760px){.fc-decision-grid{grid-template-columns:1fr;gap:8px}.fc-decision-panel{padding:14px;border-radius:16px}.fc-runway-bars{height:108px}.fc-root .fc-funder-row{min-height:50px!important}.fc-root .fc-funder-directory .fc-funder-row{grid-template-columns:30px minmax(0,1fr) 28px 12px;gap:8px}.fc-root .fc-funder-directory .fc-funder-row .fc-initial{width:30px;height:30px;min-width:30px}.fc-root .fc-funder-row h3{font-size:11.5px}.fc-root .fc-funder-row p{font-size:9px}.fc-root .fc-funder-row .fc-funder-row-aside small{display:none}.fc-root .fc-signin{margin:8px auto 106px}.fc-root .fc-signin .fc-form-panel{padding:18px!important}}
+
+/* Colored discovery cards: thematic meaning without making accent a second brand. */
+.fc-root .fc-category-grid .fc-category{--theme-color:var(--fc-aqua);background:color-mix(in srgb,var(--theme-color) 13%,var(--fc-card));border:1px solid color-mix(in srgb,var(--theme-color) 32%,var(--fc-border));border-radius:18px;transition:background .15s,transform .15s}
+.fc-root .fc-category-grid .fc-category strong{color:var(--fc-ink)}
+.fc-root .fc-category-grid .fc-category>span,.fc-root .fc-category-grid .fc-category .fc-icon{color:var(--theme-color)}
+.fc-root .fc-category-grid .fc-category:hover{background:color-mix(in srgb,var(--theme-color) 22%,var(--fc-card));transform:translateY(-1px)}
+.fc-root .fc-funder-row .fc-funder-themes{display:inline-flex;gap:4px;vertical-align:middle;margin-left:5px}
+.fc-root .fc-funder-row .fc-funder-themes .fc-topic-swatch{width:7px;height:7px}
+.fc-root .fc-filters .fc-filter-toggle{display:inline-flex;align-items:center;gap:7px;min-height:35px;padding:0 9px;color:var(--fc-ink);font-size:11px;white-space:nowrap}
+.fc-root .fc-filters .fc-filter-toggle input{accent-color:var(--fc-aqua);height:15px;width:15px;margin:0}
+@media(max-width:760px){.fc-root .fc-category-grid .fc-category{border-radius:16px;padding:15px 14px;min-height:92px}.fc-root .fc-filters .fc-filter-toggle{min-height:36px}}
