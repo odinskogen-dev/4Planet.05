@@ -1,12 +1,21 @@
 name: 4SPECIES Discoverability Live Release
-# Founder-approved SPECIES v53 canonical site promotion (Oct 2026).
+# Founder-approved SPECIES v53 promotion. Manual-only: never deploy LIVE from a workflow-file push.
 
 on:
-  push:
-    branches: [king/test]
-    paths:
-      - ops/discovery/4species-router.js
-      - .github/workflows/4species-discovery-live.yml
+  workflow_dispatch:
+    inputs:
+      accepted_preview_sha:
+        description: Exact independently accepted preview commit SHA
+        required: true
+        type: string
+      accepted_preview_url:
+        description: Immutable Cloudflare Pages deployment URL from the accepted preview
+        required: true
+        type: string
+      rollback_worker_version:
+        description: Exact pre-change 4species-router Worker version ID
+        required: true
+        type: string
 
 permissions: { contents: read }
 concurrency: { group: 4species-discovery-live, cancel-in-progress: false }
@@ -17,25 +26,51 @@ jobs:
     timeout-minutes: 12
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ACCEPTED_PREVIEW_SHA: ${{ inputs.accepted_preview_sha }}
+      ACCEPTED_PREVIEW_URL: ${{ inputs.accepted_preview_url }}
+      ROLLBACK_WORKER_VERSION: ${{ inputs.rollback_worker_version }}
     steps:
       - uses: actions/checkout@v4
-        with: { ref: king/test }
+      - name: Bind LIVE carrier to accepted immutable preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$ACCEPTED_PREVIEW_SHA" = "$GITHUB_SHA"
+          case "$ACCEPTED_PREVIEW_URL" in
+            https://*.4planet-05.pages.dev) ;;
+            *) echo "Preview URL is not an immutable 4planet-05 Pages deployment" >&2; exit 1 ;;
+          esac
+          test -n "$ROLLBACK_WORKER_VERSION"
+          router_blob=$(git rev-parse "$GITHUB_SHA:ops/discovery/4species-router.js")
+          live_workflow_blob=$(git rev-parse "$GITHUB_SHA:.github/workflows/4species-discovery-live.yml")
+          preview_workflow_blob=$(git rev-parse "$GITHUB_SHA:.github/workflows/species-v53-canonical-deploy.yml")
+          echo "ROUTER_BLOB=$router_blob" >> "$GITHUB_ENV"
+          echo "LIVE_WORKFLOW_BLOB=$live_workflow_blob" >> "$GITHUB_ENV"
+          echo "PREVIEW_WORKFLOW_BLOB=$preview_workflow_blob" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - name: Verify isolated v53 origin before promoting
+      - name: Verify accepted immutable v53 origin before promoting
         shell: bash
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
           node --check ops/discovery/4species-router.js
-          curl -fsS --max-time 25 https://species-v53.4planet-05.pages.dev/ | grep -Fq 'Meet life on Earth'
-          curl -fsS --max-time 25 https://species-v53.4planet-05.pages.dev/species-data/v1/english-oak.json | jq -e '.slug=="english-oak"' >/dev/null
+          curl -fsS --max-time 25 "$ACCEPTED_PREVIEW_URL/" | grep -Fq 'Meet life on Earth'
+          curl -fsS --max-time 25 "$ACCEPTED_PREVIEW_URL/species-data/v1/english-oak.json" | jq -e '.slug=="english-oak"' >/dev/null
+          curl -fsS --max-time 25 "$ACCEPTED_PREVIEW_URL/release-identity.json" -o /tmp/release-identity.json
+          jq -e --arg sha "$GITHUB_SHA" --arg workflow "$PREVIEW_WORKFLOW_BLOB" \
+            '.triggerSha==$sha and .workflowBlob==$workflow and (.builtTree|length)==40 and (.payloadDigest|length)==64' \
+            /tmp/release-identity.json >/dev/null
           echo ISOLATED_V53_ORIGIN_VERIFIED
-      - name: Promote founder-approved v53 to existing 4species.com Cloudflare Worker
+      - name: Promote accepted v53 to existing 4species.com Cloudflare Worker
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/worker-deploy.log
+          worker_version=$(grep -Eo 'Current Version ID: [0-9a-f-]+' /tmp/worker-deploy.log | awk '{print $4}' | tail -n 1)
+          test -n "$worker_version"
+          echo "WORKER_VERSION=$worker_version" >> "$GITHUB_ENV"
       - name: Verify live v53 homepage, quiz, explore and six species
         shell: bash
         run: |
@@ -61,4 +96,14 @@ jobs:
           test -n "$script"
           curl -fsS --max-time 35 "$ORIGIN$script" -o /tmp/species-v53-main.js
           test "$(wc -c </tmp/species-v53-main.js)" -gt 1000
+          {
+            echo "### 4SPECIES immutable LIVE release receipt"
+            echo "- trigger_sha: \`$GITHUB_SHA\`"
+            echo "- accepted_preview_url: $ACCEPTED_PREVIEW_URL"
+            echo "- preview_workflow_blob: \`$PREVIEW_WORKFLOW_BLOB\`"
+            echo "- live_workflow_blob: \`$LIVE_WORKFLOW_BLOB\`"
+            echo "- router_blob: \`$ROUTER_BLOB\`"
+            echo "- worker_version: \`$WORKER_VERSION\`"
+            echo "- rollback_worker_version: \`$ROLLBACK_WORKER_VERSION\`"
+          } >> "$GITHUB_STEP_SUMMARY"
           echo SPECIES_V53_CANONICAL_DOMAIN_PUBLISH_AND_ROUTES_PASS
