@@ -1,8 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const connectors = read("src/planet/connectors.ts");
+const worldSource = read("src/earth/World.tsx");
+const dedupeSource = connectors.match(/export const deduplicateTaxonHitsByCanonicalId[\s\S]*?\n};/)?.[0];
+assert.ok(dedupeSource, "canonical taxon dedupe helper must exist");
+const dedupeRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(dedupeSource, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText).toString("base64")}`);
 
 test("ATLAS carries explicit search metadata in the actual public route", () => {
   const world = read("src/earth/PublicWorld.tsx");
@@ -34,3 +42,30 @@ test("build, sitemap and crawler policy make ATLAS discoverable", () => {
   assert.match(robots, /User-agent: Googlebot\nAllow: \//);
   assert.match(robots, /Sitemap: https:\/\/4planet\.org\/sitemap\.xml/);
 });
+
+test("ATLAS taxon search deduplicates canonical identity, never scientific-name homonyms", () => {
+  const base = {
+    scientificName: "Aus bus",
+    rank: "SPECIES",
+    kingdom: "Animalia",
+  };
+  const sameCanonical = [
+    { ...base, id: "taxon:gbif:100", gbifKey: 100, commonName: "Example one" },
+    { ...base, id: "taxon:gbif:100", gbifKey: 100, commonName: "Provider synonym" },
+  ];
+  const homonyms = [
+    { ...base, id: "taxon:gbif:100", gbifKey: 100 },
+    { ...base, id: "taxon:gbif:200", gbifKey: 200, kingdom: "Plantae" },
+  ];
+  const invalidIdentity = [{ ...base, id: "", gbifKey: 300 }];
+
+  assert.equal(dedupeRuntime.deduplicateTaxonHitsByCanonicalId(sameCanonical).length, 1);
+  assert.equal(dedupeRuntime.deduplicateTaxonHitsByCanonicalId(homonyms).length, 2);
+  assert.equal(dedupeRuntime.deduplicateTaxonHitsByCanonicalId(invalidIdentity).length, 0);
+  assert.match(worldSource, /setTaxaHits\(deduplicateTaxonHitsByCanonicalId\(r\.data\)\)/);
+  assert.doesNotMatch(worldSource, /String\(hit\.scientificName \|\| hit\.id\)/);
+  assert.match(worldSource, /GBIF \{h\.gbifKey\}/);
+  assert.match(worldSource, /h\.rank \|\| "taxon"/);
+  assert.match(worldSource, /h\.kingdom \|\| "KINGDOM UNKNOWN"/);
+});
+
