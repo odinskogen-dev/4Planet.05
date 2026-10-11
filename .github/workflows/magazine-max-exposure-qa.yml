@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - work/magazine-max-exposure-zero-loss-20261010
+      - work/magazine-exposure-followup-20261011
     paths:
       - 'scripts/**'
       - 'src/**'
@@ -50,6 +51,9 @@ jobs:
           grep -Fq 'data-4planet-static-prerender="magazine-story"' "$story"
           grep -Fq 'The Amazon is more than a forest' "$story"
           grep -Fq '<link rel="canonical" href="https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/">' "$story"
+          grep -Fq 'Continue exploring' "$story"
+          grep -Fq 'href="/magazine/' "$story"
+          grep -Fq '"logo":{"@type":"ImageObject","url":"https://4planetmagazine.com/og.png"}' "$story"
           grep -Fq 'data-4planet-static-prerender="film-detail"' "$film"
           grep -Fq '<link rel="canonical" href="https://4planetmagazine.com/films/we-the-power/">' "$film"
           if grep -Fq '<noscript><article class="mag-static-prerender"' "$story"; then
