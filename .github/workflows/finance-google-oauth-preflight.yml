@@ -1,0 +1,45 @@
+name: 4Finance Google OAuth Provider Preflight
+on:
+  push:
+    branches: [work/finance-insights-oauth-premium-20261011]
+    paths:
+      - '.github/workflows/finance-google-oauth-preflight.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check canonical 4PLANET ID provider without test login
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=$(sed -n 's/^const SUPABASE_URL = "\([^"]*\)";/\1/p' src/identity/identityClient.ts)
+          key=$(sed -n 's/^const SUPABASE_KEY = "\([^"]*\)";/\1/p' src/identity/identityClient.ts)
+          [ -n "$url" ] && [ -n "$key" ]
+          status=$(curl -sS -D /tmp/provider-headers -o /tmp/provider-settings -w '%{http_code}' --max-time 15 -H "apikey: $key" "$url/auth/v1/settings")
+          echo "PROVIDER_SETTINGS_HTTP=$status"
+          if [ "$status" != 200 ]; then echo "GOOGLE_PROVIDER_STATUS=UNVERIFIED";exit 20;fi
+          if jq -e '(.external.google // .external_google // false)==true' /tmp/provider-settings >/dev/null;then
+            echo "GOOGLE_PROVIDER_ENABLED=YES"
+          else
+            echo "GOOGLE_PROVIDER_ENABLED=NO"
+            exit 21
+          fi
+      - name: Probe Finance-origin Google OAuth flow without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=$(sed -n 's/^const SUPABASE_URL = "\([^"]*\)";/\1/p' src/identity/identityClient.ts)
+          key=$(sed -n 's/^const SUPABASE_KEY = "\([^"]*\)";/\1/p' src/identity/identityClient.ts)
+          code=$(curl -sS -D /tmp/oauth-headers -o /tmp/oauth-body -w '%{http_code}' --max-time 15 -H "apikey: $key" "$url/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Ffinance.4planet.org%2Fmy")
+          echo "GOOGLE_AUTH_AUTHORIZE_HTTP=$code"
+          if [[ "$code" =~ ^30[12378]$ ]] && grep -Eiq '^location: https://accounts.google.com/' /tmp/oauth-headers;then
+            echo "GOOGLE_PROVIDER_AUTHORIZE=READY"
+          else
+            echo "GOOGLE_PROVIDER_AUTHORIZE=UNVERIFIED"
+            exit 22
+          fi
+          echo "NOTE: Human sign-in and Finance redirect/cookie session not tested by anonymous preflight."
