@@ -1,0 +1,120 @@
+name: MAX EXPOSURE — ATLAS zero-loss QA
+
+on:
+  push:
+    branches:
+      - work/atlas-max-exposure-zero-loss-20261011
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply exact v43 product overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --check ops/atlas/r1-human-awe.patch
+          git apply ops/atlas/r1-human-awe.patch
+          echo 'ebdbd4dc533531fa3733993ada7e13bd3adeb2d4f605d72fa7482e1d7ddf7fe8  ops/atlas/v43-code-only.zip' | sha256sum -c -
+          unzip -q ops/atlas/v43-code-only.zip -d /tmp/v43
+          cp -a /tmp/v43/files/. ./
+          while IFS= read -r file; do [ -z "$file" ] || rm -f "$file"; done < /tmp/v43/patch/DELETED_FILES.txt
+          rm -f public-atlas-data-places-v1-manifest.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Build exact protected ATLAS product
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/build-atlas-places.mjs
+          npm run typecheck
+          node --test scripts/atlas-v43-contract.test.mjs scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs
+          npm run build:atlas
+          test -f dist/index.html
+          cp dist/index.html /tmp/v43-dist-index.html
+
+      - name: Source-level discovery guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'MAX EXPOSURE ZERO-LOSS' functions/_middleware.js
+          grep -Fq 'ATLAS_WORLD_PLACE_INDEX' functions/_middleware.js
+          grep -Fq 'World Place Index — 250 maps & places' functions/_middleware.js
+          grep -Fq 'data-acquisition-entry="organic-place"' functions/_middleware.js
+          grep -Fq '/atlas/?place=' functions/_middleware.js
+          grep -Fq 'Place not found' functions/_middleware.js
+          grep -Fq 'if (host === "4planetatlas.com") return context.next();' functions/_middleware.js
+          echo ATLAS_DISCOVERY_SOURCE_GUARD_PASS
+
+      - name: Start local Cloudflare Pages runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages dev dist --ip 127.0.0.1 --port 8788 > /tmp/wrangler-pages.log 2>&1 &
+          echo $! > /tmp/wrangler.pid
+          for i in $(seq 1 40); do
+            code=$(curl -sS -o /tmp/root.html -w '%{http_code}' http://127.0.0.1:8788/ || true)
+            [ "$code" = '200' ] && exit 0
+            sleep 1
+          done
+          cat /tmp/wrangler-pages.log
+          exit 1
+
+      - name: Protected product passthrough proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS http://127.0.0.1:8788/ -o /tmp/runtime-root.html
+          cmp -s /tmp/v43-dist-index.html /tmp/runtime-root.html || {
+            echo 'ATLAS root body changed by discovery middleware'
+            diff -u /tmp/v43-dist-index.html /tmp/runtime-root.html | head -120 || true
+            exit 21
+          }
+          curl -fsS http://127.0.0.1:8788/atlas -o /tmp/runtime-atlas.html
+          grep -Fq 'id="root"' /tmp/runtime-atlas.html
+          js=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/v43-dist-index.html | head -1 | cut -d'"' -f2)
+          [ -n "$js" ]
+          grep -Fq "$js" /tmp/runtime-root.html
+          grep -Fq "$js" /tmp/runtime-atlas.html
+          echo ATLAS_PREMIUM_PRODUCT_PASSTHROUGH_PASS
+
+      - name: 250 Place runtime proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          places=$(curl -fsS http://127.0.0.1:8788/places)
+          count=$(grep -o 'href="/place/[^"]*"' <<< "$places" | sort -u | wc -l | tr -d ' ')
+          test "$count" = '250'
+          berlin=$(curl -fsS http://127.0.0.1:8788/place/berlin)
+          grep -Fq '<h1>Berlin</h1>' <<< "$berlin"
+          grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<< "$berlin"
+          grep -Fq 'data-acquisition-entry="organic-place"' <<< "$berlin"
+          grep -Fq '/atlas/?place=berlin' <<< "$berlin"
+          grep -Fq 'BreadcrumbList' <<< "$berlin"
+          sm=$(curl -fsS http://127.0.0.1:8788/sitemap.xml)
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<< "$sm" | sort -u | wc -l | tr -d ' ')" = '250'
+          test "$(grep -o '<image:loc>https://4planetatlas.com/place/[^<]*/map.svg</image:loc>' <<< "$sm" | sort -u | wc -l | tr -d ' ')" = '250'
+          status=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' http://127.0.0.1:8788/place/__max_exposure_unknown__)
+          test "$status" = '404'
+          grep -Fq 'noindex' /tmp/unknown.html
+          curl -fsS http://127.0.0.1:8788/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
+          echo ATLAS_250_PLACE_RUNTIME_PASS
+
+      - name: Stop local runtime
+        if: always()
+        shell: bash
+        run: |
+          kill "$(cat /tmp/wrangler.pid 2>/dev/null)" 2>/dev/null || true
