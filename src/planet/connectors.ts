@@ -24,7 +24,7 @@ const titleCase = (s: string) =>
   String(s ?? "").replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
 
 /** Every network call goes through here, so failure is uniform and honest. */
-export type Result<T> = { ok: true; data: T } | { ok: false; error: string };
+export type Result<T> =\n  | { ok: true; data: T; partial?: boolean; warning?: string }\n  | { ok: false; error: string };
 
 const getJson = async (url: string, ms = 12000): Promise<Result<any>> => {
   const ctl = new AbortController();
@@ -130,6 +130,7 @@ export const searchTaxa = async (q: string): Promise<Result<TaxonHit[]>> => {
 
   const responses = await Promise.all(requests);
   const successful = responses.filter((result): result is { ok: true; data: any } => result.ok);
+  const failed = responses.filter((result): result is { ok: false; error: string } => !result.ok);
   if (!successful.length) return { ok: false, error: "GBIF unreachable" };
 
   const rows: any[] = [];
@@ -187,8 +188,17 @@ export const searchTaxa = async (q: string): Promise<Result<TaxonHit[]>> => {
     .slice(0, 7)
     .map((x) => x.hit);
 
-  const result: Result<TaxonHit[]> = { ok: true, data: hits };
-  taxonSearchCache.set(cacheKey, { at: Date.now(), result });
+  const result: Result<TaxonHit[]> = failed.length
+    ? {
+        ok: true,
+        data: hits,
+        partial: true,
+        warning: `${failed.length} of ${responses.length} GBIF search requests failed`,
+      }
+    : { ok: true, data: hits };
+  // A partial answer must never become a five-minute "verified empty" cache entry.
+  // Retry it on the next request so temporary provider failures remain recoverable.
+  if (!result.partial) taxonSearchCache.set(cacheKey, { at: Date.now(), result });
   return result;
 };
 
