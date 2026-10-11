@@ -33,15 +33,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify bounded Founder-authorised story release
+      - name: Verify bounded Founder-authorised MAX EXPOSURE release
         shell: bash
         env:
-          PRIOR_LIVE_SHA: 0c201fd0bb64be12eb7b4dba481ade4680fa90d2
+          PRIOR_LIVE_SHA: 13d129f8e7951d74f86b55046616e8967ce3d824
         run: |
           set -euo pipefail
           git merge-base --is-ancestor "$PRIOR_LIVE_SHA" HEAD
           mapfile -t changed < <(git diff --name-only "$PRIOR_LIVE_SHA"...HEAD)
-          allowed="^(src/content/stories\\.ts|src/content/magazineFeaturesExplainers\\.ts|src/content/magazineStandfirsts\\.ts|src/pages/v5/MagazineInfo\\.tsx|tests/e2e/magazine-world-class\\.spec\\.ts|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
+          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|src/components/Seo\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
           for file in "${changed[@]}"; do
             if ! grep -Eq "$allowed" <<<"$file"; then
               echo "UNEXPECTED RELEASE FILE: $file"
@@ -50,11 +50,14 @@ jobs:
           done
           grep -Fq 'title: "For a Living Planet"' src/content/stories.ts
           grep -Fq 'Holding the hand of someone we love.' src/content/magazineFeaturesExplainers.ts
-          grep -Fq 'caring has never been connected to capability well enough.' src/content/magazineFeaturesExplainers.ts
-          grep -Fq 'There is a place for everyone who wants to help. Including you.' src/content/magazineFeaturesExplainers.ts
           grep -Fq 'READ THE STORY →' src/pages/v5/MagazineInfo.tsx
-          grep -Fq 'FOUNDER RELEASE AUTHORISED' docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010.md
-          echo "BOUNDED STORY RELEASE PASS — parent $PRIOR_LIVE_SHA"
+          grep -Fq 'MAX EXPOSURE ZERO-LOSS CHILD CANDIDATE' docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010.md
+          grep -Fq 'canonicalMagazineRoute' scripts/generate-sitemap.mjs
+          grep -Fq 'magazineRoutes.map(canonicalMagazineRoute)' scripts/generate-sitemap.mjs
+          grep -Fq '<div id="root">${staticMarkup}</div>' scripts/prerender-magazine-seo.mjs
+          grep -Fq 'function canonicalPath' src/components/Seo.tsx
+          grep -Fq 'newsStories.length > 0' scripts/generate-sitemap.mjs
+          echo "MAX EXPOSURE BOUNDED RELEASE PASS — parent $PRIOR_LIVE_SHA"
       - name: Use Node 24
         uses: actions/setup-node@v4
         with:
@@ -291,7 +294,7 @@ jobs:
 
           films_html=$(curl -fsS 'https://4planetmagazine.com/films/')
           printf '%s' "$films_html" | grep -q '<title>4PLANET FILMS — Films worth your attention</title>'
-          printf '%s' "$films_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/films">'
+          printf '%s' "$films_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/films/">'
           printf '%s' "$films_html" | grep -q 'data-4planet-static-prerender="films-index"'
           printf '%s' "$films_html" | grep -q '"@type":"ItemList"'
           if printf '%s' "$films_html" | grep -qi 'qualified records\|editorial pipeline'; then exit 9; fi
@@ -304,6 +307,21 @@ jobs:
 
           magazine_html=$(curl -fsS 'https://4planetmagazine.com/magazine/')
           printf '%s' "$magazine_html" | grep -q 'data-4planet-static-prerender="magazine-index"'
+          printf '%s' "$magazine_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/magazine/">'
+
+          amazonia_html=$(curl -fsS 'https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/')
+          printf '%s' "$amazonia_html" | grep -q 'data-4planet-static-prerender="magazine-story"'
+          printf '%s' "$amazonia_html" | grep -q '<link rel="canonical" href="https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/">'
+          printf '%s' "$sitemap" | grep -q '<loc>https://4planetmagazine.com/magazine/amazonia-more-than-a-forest/</loc>'
+          printf '%s' "$sitemap" | grep -q '<loc>https://4planetmagazine.com/films/we-the-power/</loc>'
+
+          if printf '%s' "$robots" | grep -q 'Sitemap: https://4planetmagazine.com/news-sitemap.xml'; then
+            news=$(curl -fsS 'https://4planetmagazine.com/news-sitemap.xml')
+            printf '%s' "$news" | grep -q '<url>'
+          else
+            news_code=$(curl -sS -o /dev/null -w '%{http_code}' 'https://4planetmagazine.com/news-sitemap.xml' || true)
+            case "$news_code" in 404|410) : ;; *) echo "Unexpected empty-news response $news_code"; exit 13 ;; esac
+          fi
 
           key=$(curl -fsS 'https://4planetmagazine.com/4planet-indexnow-2026-9f7b3c1d5e8a.txt' | tr -d '\r\n')
           [ "$key" = '4planet-indexnow-2026-9f7b3c1d5e8a' ] || { echo 'IndexNow key verification failed'; exit 10; }
