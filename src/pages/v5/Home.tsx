@@ -225,7 +225,6 @@ function GuidedEntries() {
             <Link
               key={entry.to}
               to={entry.to}
-              reloadDocument={"reloadDocument" in entry && entry.reloadDocument}
               className="home-guided-card"
             >
               <span className="home-guided-card__number">0{index + 1}</span>
