@@ -13,14 +13,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: npm install --no-save --no-package-lock playwright@1.56.1
+      - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Inspect real rendered DOM, CSS, JS and failed requests
         shell: bash
         run: |
           mkdir -p /tmp/species-emergency
           node --input-type=module <<'NODE'
-          import {chromium} from 'playwright';
+          import {chromium} from '@playwright/test';
           const browser=await chromium.launch({headless:true});
           const routes=['/','/orca','/english-oak','/atlantic-puffin','/western-honey-bee','/fly-agaric','/common-octopus','/quiz','/explore'];
           for(const path of routes){
