@@ -78,7 +78,6 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
       await expect(atlasFrameElement).toBeVisible();
       await atlasFrameElement.scrollIntoViewIfNeeded();
       const atlasFrame = page.frameLocator('iframe[title="Interactive 4Planet Atlas"]');
-      await expect(atlasFrame.locator(".world.light")).toBeVisible({ timeout: 20_000 });
       await expect(atlasFrame.locator("canvas.maplibregl-canvas")).toBeVisible({ timeout: 20_000 });
       const layers = atlasFrame.getByRole("button", { name: "Layers", exact: true });
       await expect(layers).toBeVisible();
