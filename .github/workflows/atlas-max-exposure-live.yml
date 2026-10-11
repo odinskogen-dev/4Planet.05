@@ -42,7 +42,6 @@ jobs:
           done
           grep -Fq 'MAX EXPOSURE ZERO-LOSS' functions/_middleware.js
           grep -Fq 'if (host === "4planetatlas.com") return context.next();' functions/_middleware.js
-          node --test scripts/atlas-max-exposure-middleware-runtime.test.mjs
           echo ATLAS_BOUNDED_RELEASE_PASS
 
       - name: Apply exact v43 protected product overlay
@@ -72,6 +71,7 @@ jobs:
           node --test             scripts/atlas-v43-contract.test.mjs             scripts/atlas-human-awe-contract.test.mjs             scripts/seo-ownership-contract.test.mjs             scripts/atlas-mobile-context-control-contract.test.mjs             scripts/atlas-recovery-contract.test.mjs
           npm run build:atlas
           test -f dist/index.html
+          node --test scripts/atlas-max-exposure-middleware-runtime.test.mjs
           PRODUCT_JS=$(grep -oE 'src="/assets/[^"]+\.js"' dist/index.html | head -1 | cut -d'"' -f2)
           test -n "$PRODUCT_JS"
           echo "PRODUCT_JS=$PRODUCT_JS" >> "$GITHUB_ENV"
