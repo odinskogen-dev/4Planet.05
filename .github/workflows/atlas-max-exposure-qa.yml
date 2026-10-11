@@ -63,10 +63,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.128.0 pages dev dist --ip 127.0.0.1 --port 8788 > /tmp/wrangler-pages.log 2>&1 &
+          npx --yes wrangler@4.128.0 pages dev dist --ip 127.0.0.1 --port 8788 --local-protocol=https > /tmp/wrangler-pages.log 2>&1 &
           echo $! > /tmp/wrangler.pid
           for i in $(seq 1 40); do
-            code=$(curl -sS -o /tmp/root.html -w '%{http_code}' -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/ || true)
+            code=$(curl -sS -o /tmp/root.html -w '%{http_code}' -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/ || true)
             [ "$code" = '200' ] && exit 0
             sleep 1
           done
@@ -77,14 +77,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/ -o /tmp/runtime-root.html
+          curl -fsS -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/ -o /tmp/runtime-root.html
           js=$(grep -oE 'src="/assets/[^"]+\.js"' /tmp/v43-dist-index.html | head -1 | cut -d'"' -f2)
           css=$(grep -oE 'href="/assets/[^"]+\.css"' /tmp/v43-dist-index.html | head -1 | cut -d'"' -f2)
           [ -n "$js" ]
           grep -Fq "$js" /tmp/runtime-root.html
           [ -z "$css" ] || grep -Fq "$css" /tmp/runtime-root.html
           grep -Fq 'id="root"' /tmp/runtime-root.html
-          curl -fsS -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/atlas -o /tmp/runtime-atlas.html
+          curl -fsS -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/atlas -o /tmp/runtime-atlas.html
           grep -Fq 'id="root"' /tmp/runtime-atlas.html
           grep -Fq "$js" /tmp/runtime-atlas.html
           echo ATLAS_PREMIUM_PRODUCT_PASSTHROUGH_PASS
@@ -93,22 +93,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          places=$(curl -fsS -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/places)
+          places=$(curl -fsS -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/places)
           count=$(grep -o 'href="/place/[^"]*"' <<< "$places" | sort -u | wc -l | tr -d ' ')
           test "$count" = '250'
-          berlin=$(curl -fsS -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/place/berlin)
+          berlin=$(curl -fsS -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/place/berlin)
           grep -Fq '<h1>Berlin</h1>' <<< "$berlin"
           grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<< "$berlin"
           grep -Fq 'data-acquisition-entry="organic-place"' <<< "$berlin"
           grep -Fq '/atlas/?place=berlin' <<< "$berlin"
           grep -Fq 'BreadcrumbList' <<< "$berlin"
-          sm=$(curl -fsS -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/sitemap.xml)
+          sm=$(curl -fsS -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/sitemap.xml)
           test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<< "$sm" | sort -u | wc -l | tr -d ' ')" = '250'
           test "$(grep -o '<image:loc>https://4planetatlas.com/place/[^<]*/map.svg</image:loc>' <<< "$sm" | sort -u | wc -l | tr -d ' ')" = '250'
-          status=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/place/__max_exposure_unknown__)
+          status=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/place/__max_exposure_unknown__)
           test "$status" = '404'
           grep -Fq 'noindex' /tmp/unknown.html
-          curl -fsS -H 'Host: 4planetatlas.com' http://127.0.0.1:8788/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
+          curl -fsS -k --resolve '4planetatlas.com:8788:127.0.0.1' https://4planetatlas.com:8788/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
           echo ATLAS_250_PLACE_RUNTIME_PASS
 
       - name: Stop local runtime
