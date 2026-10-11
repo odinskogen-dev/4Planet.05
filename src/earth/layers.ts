@@ -40,6 +40,47 @@ export const gbifLicenceClass = (value) => {
   return "REVIEW_REQUIRED";
 };
 
+export const safeHttpHref = (value) => {
+  try {
+    const url = new URL(String(value ?? "").trim());
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+  } catch {
+    return "";
+  }
+};
+
+export const obisOccurrencePoint = (record, retrievedAt = "") => {
+  const rawLat = record?.latitude;
+  const rawLon = record?.longitude;
+  if (rawLat === null || rawLat === undefined || rawLat === "" || rawLon === null || rawLon === undefined || rawLon === "") return null;
+  const lat = Number(rawLat);
+  const lon = Number(rawLon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  if (!["OPEN_CC0", "OPEN_ATTRIBUTION"].includes(String(record?.licenceClass ?? ""))) return null;
+  if (Array.isArray(record?.licenceRestrictions) && record.licenceRestrictions.length > 0) return null;
+  if (record?.locationSensitive === true || String(record?.informationWithheld ?? "").trim() || String(record?.dataGeneralizations ?? "").trim()) return null;
+
+  const rawUncertainty = record?.coordinateUncertaintyM;
+  const parsedUncertainty = rawUncertainty === null || rawUncertainty === undefined || rawUncertainty === "" ? null : Number(rawUncertainty);
+  return {
+    lon,
+    lat,
+    scientificName: String(record?.scientificName ?? "Cetacea").trim() || "Cetacea",
+    eventDate: String(record?.eventDate ?? "").trim(),
+    coordinateUncertaintyM: Number.isFinite(parsedUncertainty) && parsedUncertainty >= 0 ? parsedUncertainty : null,
+    datasetName: String(record?.datasetName ?? record?.datasetId ?? "").trim(),
+    datasetCitation: String(record?.datasetCitation ?? "").trim(),
+    datasetDoi: String(record?.datasetDoi ?? "").trim(),
+    datasetUrl: safeHttpHref(record?.datasetUrl),
+    sourceRecordUrl: safeHttpHref(record?.sourceRecordUrl),
+    provider: String(record?.provider ?? record?.institutionCode ?? record?.collectionCode ?? "").trim(),
+    licence: String(record?.licence ?? "").trim(),
+    licenceClass: String(record?.licenceClass ?? "").trim(),
+    occurrenceId: String(record?.occurrenceId ?? "").trim(),
+    retrievedAt: String(retrievedAt ?? "").trim(),
+  };
+};
+
 export const gbifOccurrencePoint = (record, retrievedAt = new Date().toISOString()) => {
   const rawLat = record?.decimalLatitude;
   const rawLon = record?.decimalLongitude;
@@ -235,15 +276,28 @@ export const LAYERS = [
     attr: "GBIF occurrence density" },
   { id: "whales", dom: "OCE4N", group: "LIFE", kind: "point", domain: ["PLANET", "OCE4N"],
     label: "WH4LES", color: C.blue, src: "OBIS", r: 4,
-    note: "Recorded sightings and samples of cetaceans. These are occurrence records — not live positions or migration routes.",
+    note: "Recorded cetacean occurrences from original datasets indexed by OBIS. These are not live positions, migration routes, abundance or range; original dataset rights still apply.",
     load: async () => {
-      const d = await (await fetch("https://api.obis.org/v3/occurrence?scientificname=Cetacea&hascoordinate=true&size=800")).json();
-      return (d.results || []).filter((o) => o.decimalLatitude && o.decimalLongitude).map((o) => {
-        const sci = o.scientificName || "Cetacea";
-        const common = o.vernacularName ? titleCase(o.vernacularName) : "";
-        const link = o.aphiaID ? `<a class="pl" href="https://www.marinespecies.org/aphia.php?p=taxdetails&id=${o.aphiaID}" target="_blank" rel="noopener">Read on WoRMS \u2197</a>` : "";
-        return { lon: o.decimalLongitude, lat: o.decimalLatitude, aphia: o.aphiaID || "",
-          html: `<b class="nm">${esc(common || sci)}</b><br><span class="lat">${esc(sci)}</span>${link}` };
+      const response = await fetch("/api/obis?scientificName=Cetacea&size=200");
+      if (!response.ok) throw new Error(`OBIS_BRIDGE_${response.status}`);
+      const payload = await response.json();
+      if (!payload?.ok || !Array.isArray(payload.records) || !payload.retrievedAt) throw new Error("OBIS_CONTRACT_MISMATCH");
+      return payload.records.map((record) => obisOccurrencePoint(record, payload.retrievedAt)).filter(Boolean).map((point) => {
+        const eventDate = point.eventDate || "UNKNOWN";
+        const uncertainty = point.coordinateUncertaintyM === null ? "UNKNOWN" : `${Math.round(point.coordinateUncertaintyM)} m`;
+        const dataset = point.datasetName || "UNKNOWN";
+        const citation = point.datasetCitation || "UNKNOWN";
+        const provider = point.provider || "UNKNOWN";
+        const doiHref = /^10\.\d{4,9}\//i.test(point.datasetDoi)
+          ? `https://doi.org/${encodeURIComponent(point.datasetDoi)}`
+          : "";
+        const doiLink = doiHref ? `<a class="pl" href="${doiHref}" target="_blank" rel="noopener">Dataset DOI ↗</a>` : "";
+        const datasetLink = point.datasetUrl ? `<a class="pl" href="${esc(point.datasetUrl)}" target="_blank" rel="noopener">Original dataset ↗</a>` : "";
+        const occurrenceLink = point.sourceRecordUrl ? `<a class="pl" href="${esc(point.sourceRecordUrl)}" target="_blank" rel="noopener">Original occurrence ↗</a>` : "";
+        return {
+          lon: point.lon, lat: point.lat, occurrenceId: point.occurrenceId,
+          html: `<b class="nm">${esc(point.scientificName)}</b><br><span class="lat">OBIS-INDEXED OCCURRENCE · NOT A LIVE POSITION</span><div class="when">EVENT · ${esc(eventDate)}</div><br><span class="lat">COORDINATE UNCERTAINTY · ${esc(uncertainty)}</span><br><span class="lat">DATASET · ${esc(dataset)}</span><br><span class="lat">PROVIDER · ${esc(provider)}</span><br><span class="lat">CITATION · ${esc(citation)}</span><br><span class="lat">ORIGINAL RIGHTS · ${esc(point.licence || "UNKNOWN")} · ${esc(point.licenceClass)}</span><br><span class="lat">RETRIEVED · ${esc(point.retrievedAt)}</span><br><span class="lat">RIGHTS BOUNDARY · OBIS DERIVED PRODUCTS MAY BE CC0; ORIGINAL DATASET RIGHTS STILL APPLY</span><a class="pl" href="https://obis.org" target="_blank" rel="noopener">OBIS source ↗</a>${doiLink}${datasetLink}${occurrenceLink}`
+        };
       });
     } },
   { id: "species", dom: "E4RTH", group: "LIFE", kind: "point", domain: ["PLANET", "E4RTH"],
