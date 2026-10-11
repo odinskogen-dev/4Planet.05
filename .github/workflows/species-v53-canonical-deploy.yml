@@ -1,8 +1,10 @@
-name: SPECIES v53 Canonical Cloudflare Build
+name: SPECIES v53 — Orca + 20 distinct species canonical live release
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - release/species-v53-21-20261012
 
 permissions:
   contents: read
@@ -14,7 +16,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
@@ -62,11 +64,28 @@ jobs:
             cp -a "$GITHUB_WORKSPACE/public/species-media" public/species-media
           fi
           python3 - <<'PY'
+          import base64, gzip, json, os
+          from pathlib import Path
+          original = Path(os.environ["GITHUB_WORKSPACE"]) / "ops/species/v53/batch-20-original-json.gz.b64"
+          pages = json.loads(gzip.decompress(base64.b64decode(original.read_text().strip(), validate=True)))
+          assert len(pages) == 20, "exactly twenty distinct original species"
+          assert len({page["slug"] for page in pages.values()}) == 20
+          dest = Path("public/species-data/v1")
+          dest.mkdir(parents=True, exist_ok=True)
+          for filename, page in sorted(pages.items()):
+              assert filename == page["slug"] + ".json", filename
+              assert page["schema"] == "4PLANET_SPECIES_PAGE_01", filename
+              assert page["slug"] != "orca", "never overwrite original Orca"
+              assert page["identity"]["scientificName"] and page["identity"]["commonName"], filename
+              assert page["provenance"]["review"] == "DRAFT", filename
+              assert not (dest / filename).exists(), "candidate collision: " + filename
+              (dest / filename).write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n")
+          print("SPECIES_20_EXACT_INDIVIDUAL_PROFILES_STAGED", len(pages))
+          PY
+          python3 - <<'PY'
           from pathlib import Path
           p=Path('src/pages/integrated/SpeciesTemplate.tsx')
           s=p.read_text()
-          s=s.replace('          {draft && <span className="spx-credit spx-draft" role="note">Draft — not yet reviewed by a person</span>}', '')
-          s=s.replace('{LEVEL_TEXT[level]}{draft ? " Draft — not yet reviewed by a person." : ""}', '{LEVEL_TEXT[level]}')
           p.write_text(s)
           p=Path('src/pages/integrated/SpeciesHome.tsx')
           home=p.read_text()
@@ -94,12 +113,46 @@ jobs:
           npm ci
           npm run typecheck
           npm run species:validate
-          SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          SPECIES_INDEX=1 SPECIES_CANONICAL_BASE=https://4species.com npm run build
           test -f dist/index.html
           grep -Eiq 'species|Meet life' dist/index.html
           test -f dist/quiz/index.html
           test -f dist/explore/index.html
           test -f dist/species-data/v1/english-oak.json
+          # The Claude v52 renderer writes /labs/species/{slug}; the standalone
+          # public host MUST serve species-specific static HTML at /{slug}.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, shutil, re
+          dist = Path("dist")
+          pages = json.loads(Path("public/species-data/v1/index.json").read_text())["pages"]
+          slugs = {p["slug"] for p in pages}
+          expected = {
+            "orca","lion","tiger","african-savanna-elephant","asian-elephant",
+            "bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan",
+            "cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe",
+            "gray-wolf","great-white-shark","green-sea-turtle","hippopotamus",
+            "jaguar","monarch-butterfly","polar-bear",
+          }
+          assert expected <= slugs, "missing Orca or one of the twenty new species"
+          for slug in sorted(slugs):
+              src = dist / "labs/species" / slug / "index.html"
+              dst = dist / slug / "index.html"
+              assert src.is_file(), "missing prerender source for " + slug
+              html = src.read_text()
+              assert "https://4species.com/" + slug in html, "wrong canonical: " + slug
+              assert 'noindex' not in html.lower(), "unindexable page: " + slug
+              dst.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copyfile(src, dst)
+          for slug in ["", "explore", "quiz", "about"]:
+              path = dist / slug / "index.html" if slug else dist / "index.html"
+              if not path.is_file(): continue
+              html = path.read_text()
+              html = re.sub(r'<meta\s+name=["\']robots["\'][^>]*>', '<meta name="robots" content="index,follow,max-image-preview:large" />', html, flags=re.I)
+              path.write_text(html)
+          assert (dist/"species-sitemap.xml").is_file()
+          print("SPECIES_CANONICAL_HTML_READY", len(slugs))
+          PY
           git add -A
           built_tree=$(git write-tree)
           payload_digest=$(find dist -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
@@ -121,7 +174,7 @@ jobs:
           set -euo pipefail
           test -n "${CLOUDFLARE_API_TOKEN:-}"
           cd ../species-v53-build
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53 --commit-hash "$GITHUB_SHA" --commit-message "4PLANET SPECIES v53 $GITHUB_SHA" 2>&1 | tee /tmp/species-v53-deploy.log
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53-21 --commit-hash "$GITHUB_SHA" --commit-message "4PLANET SPECIES v53 $GITHUB_SHA" 2>&1 | tee /tmp/species-v53-deploy.log
           deployment_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species-v53-deploy.log | tail -n 1)
           test -n "$deployment_url"
           echo "V53_DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
@@ -131,7 +184,7 @@ jobs:
         run: |
           set -euo pipefail
           ORIGIN="$V53_DEPLOYMENT_URL"
-          for path in / /explore /quiz /about /orca /english-oak; do
+          for path in / /explore /quiz /about /orca /english-oak /lion /tiger /african-savanna-elephant /giant-panda /blue-whale; do
             code=$(curl --retry 4 --retry-delay 3 -sSL --max-time 30 -o /tmp/v53-check.html -w '%{http_code}' "$ORIGIN$path")
             echo "$path: $code"
             test "$code" = 200
@@ -146,3 +199,14 @@ jobs:
             echo "- deployment_url: $V53_DEPLOYMENT_URL"
           } >> "$GITHUB_STEP_SUMMARY"
           echo V53_PUBLIC_PAGES_PREVIEW_QA_PASS
+          # Assert that real species pages are distinct, crawlable and served by the exact preview.
+          curl -fsS "$ORIGIN/lion" | grep -Fq 'Panthera leo'
+          curl -fsS "$ORIGIN/tiger" | grep -Fq 'Panthera tigris'
+          for slug in lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear; do
+            curl -fsS --max-time 25 "$ORIGIN/species-data/v1/$slug.json" | jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01"' >/dev/null
+            curl -fsS --max-time 25 "$ORIGIN/$slug" -o /tmp/species-$slug.html
+            grep -Fq "https://4species.com/$slug" /tmp/species-$slug.html
+            if grep -qi 'content="noindex' /tmp/species-$slug.html; then echo "NOINDEX $slug"; exit 1; fi
+          done
+          curl -fsS "$ORIGIN/species-sitemap.xml" | grep -Fq 'https://4species.com/tiger'
+          echo SPECIES_20_UNIQUE_ROUTES_AND_INDEXABLE_HTML_PASS
