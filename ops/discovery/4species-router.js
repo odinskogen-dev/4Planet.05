@@ -5,7 +5,7 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
-const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";
+const SPECIES_V53_ORIGIN = "https://fc5d5ccd.4planet-05.pages.dev";
 async function proxySpeciesV53(request) {
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", {status:405});
@@ -22,6 +22,10 @@ async function proxySpeciesV53(request) {
   out.delete("content-encoding");
   out.set("x-4species-release", "SPECIES-v53-canonical");
   if((out.get("content-type")||"").includes("text/html")) {
+    // Cloudflare Pages preview applies a noindex HEADER to all *.pages.dev.
+    // This public, pre-rendered release carries exact self-canonicals and
+    // index,follow metadata, so strip preview-only header on public HTML.
+    if (!incoming.pathname.startsWith("/api/")) out.delete("x-robots-tag");
     // v53 is a versioned SPA: a stale HTML shell can reference JS hashes
     // removed by the next Pages deploy and leave iOS browsers on a blank page.
     // Do not cache HTML; bundled assets remain versioned and cacheable.
