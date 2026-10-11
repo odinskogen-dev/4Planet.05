@@ -1,9 +1,6 @@
 name: 4SPECIES Public Cutover — Orca and 20 Species
 on:
-  push:
-    branches: [release/species-v53-21-20261012]
-    paths:
-      - .github/workflows/species-v53-21-live.yml
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency:
   group: species-v53-canonical-live
