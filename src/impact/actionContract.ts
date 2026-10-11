@@ -214,9 +214,11 @@ export function actionContractCanMatchFunding(contract: ActionContract): boolean
     contract.readiness === "READY_FOR_FUNDER_MATCH" &&
     contract.fundingNeed.amount.state === "KNOWN" &&
     typeof contract.fundingNeed.amount.value === "number" &&
+    Number.isFinite(contract.fundingNeed.amount.value) &&
     contract.fundingNeed.amount.value > 0 &&
     contract.fundingNeed.quantity.state === "KNOWN" &&
     typeof contract.fundingNeed.quantity.value === "number" &&
+    Number.isFinite(contract.fundingNeed.quantity.value) &&
     contract.fundingNeed.quantity.value > 0 &&
     contract.blockers.length === 0
   );
