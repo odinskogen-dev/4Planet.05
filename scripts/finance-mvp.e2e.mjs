@@ -14,7 +14,7 @@ try{
   await page.goto(base+'/finance',{waitUntil:'domcontentloaded'});
   await page.getByRole('heading',{name:/Find the funding/i}).waitFor();
   await page.goto(base+'/finance/sign-in',{waitUntil:'domcontentloaded'});
-  await page.getByRole('heading',{name:/Sign in to Finance/i}).waitFor();
+  await page.getByRole('heading',{name:/Sign in to 4Finance/i}).waitFor();
   await page.getByRole('textbox',{name:'Email address'}).waitFor();
   await page.goto(base+'/finance',{waitUntil:'domcontentloaded'});
   await page.getByRole('link',{name:/Explore opportunities/i}).click();
