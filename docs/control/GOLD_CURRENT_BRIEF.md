@@ -1,3 +1,13 @@
+# ATLAS CANONICAL TAXON SEARCH IDENTITY — 11 OCT 2026
+
+**STATUS:** RETURNED ATLAS-04 QA_CONTRACT CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person searching the living planet must not lose a legitimate taxon merely because another accepted GBIF taxon shares the same scientific-name label.
+**ONE THING TO UNDERSTAND:** scientific names are display labels; accepted GBIF identity is canonical `taxon:gbif:<key>`.
+**PRIMARY ACTION:** deduplicate repeated provider rows only when their canonical accepted GBIF ID matches; retain distinct IDs with identical names and show rank, kingdom and GBIF key for honest disambiguation.
+**ACCEPTANCE:** executable fixtures prove same ID 2→1, different IDs/same name 2→2 and missing canonical identity fail-closed; the actual routed World search uses the shared canonical helper.
+**NON-GOALS:** no camera, layers, NOW/WATCH, ingest, deployment, LIVE, release or self-Gold.
+**ROLLBACK:** revert the exact candidate commit returned for this bounded correction.
+
 # ATLAS ROUTED OBIS COMPOSITE RIGHTS + PROVENANCE — 11 OCT 2026
 
 **STATUS:** CURRENT NATUREBRAIN RIGHTS HANDOFF CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
