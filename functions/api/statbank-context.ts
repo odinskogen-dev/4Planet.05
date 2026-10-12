@@ -51,22 +51,28 @@ function categoryCodes(category:any,size:number){
   }
   return Array.from({length:size},(_,i)=>String(i));
 }
-function flattenJsonStat(dataset:any,limit=24){
+function notes(value:any){
+  const values=Array.isArray(value)?value:[value];
+  return values.map((item:unknown)=>clean(item,700)).filter(Boolean);
+}
+export function normalizeSsbDataset(dataset:any,limit=24){
   const ids=Array.isArray(dataset?.id)?dataset.id.map(String):[];
   const sizes=Array.isArray(dataset?.size)?dataset.size.map((x:any)=>Number(x)): [];
-  if(!ids.length||ids.length!==sizes.length||sizes.some((x:number)=>!Number.isFinite(x)||x<1))return [];
-  const total=Math.min(sizes.reduce((a:number,b:number)=>a*b,1),limit);
+  if(!ids.length||ids.length!==sizes.length||sizes.some((x:number)=>!Number.isFinite(x)||x<1))return {cells:[],footnotes:notes(dataset?.note),totalCellCount:0,returnedCellCount:0,truncated:false};
+  const totalCellCount=sizes.reduce((a:number,b:number)=>a*b,1);
+  const returnedCellCount=Math.min(totalCellCount,limit);
   const values=dataset?.value;
   const statuses=dataset?.status;
+  const metricIds=Array.isArray(dataset?.role?.metric)?dataset.role.metric.map(String):[];
   const dimensions=ids.map((id:string,i:number)=>{
     const dim=dataset?.dimension?.[id]||{};
     const codes=categoryCodes(dim?.category,sizes[i]);
     const labels=dim?.category?.label||{};
-    return {id,label:clean(dim?.label,160)||id,codes,labels};
+    return {id,label:clean(dim?.label,160)||id,codes,labels,category:dim?.category||{},extension:dim?.extension||{},note:dim?.note};
   });
   const get=(container:any,index:number)=>Array.isArray(container)?container[index]:container&&typeof container==="object"?container[index]??container[String(index)]:undefined;
   const rows=[];
-  for(let flat=0;flat<total;flat++){
+  for(let flat=0;flat<returnedCellCount;flat++){
     const coordinates:Record<string,{code:string;label:string}>={};
     for(let i=0;i<ids.length;i++){
       const stride=sizes.slice(i+1).reduce((a:number,b:number)=>a*b,1);
@@ -77,9 +83,20 @@ function flattenJsonStat(dataset:any,limit=24){
     const raw=get(values,flat);
     const value=typeof raw==="number"&&Number.isFinite(raw)?raw:raw===null?null:typeof raw==="string"?clean(raw,80):null;
     const status=get(statuses,flat);
-    rows.push({index:flat,value,status:status==null?null:clean(String(status),30),coordinates});
+    const metric=dimensions.find(d=>metricIds.includes(d.id));
+    const metricCode=metric?coordinates[metric.id]?.code:null;
+    const unitRow=metricCode?metric?.category?.unit?.[metricCode]:null;
+    const decimals=Number(unitRow?.decimals);
+    const metricNotes=metricCode?metric?.category?.note?.[metricCode]:null;
+    rows.push({
+      index:flat,value,status:status==null?null:clean(String(status),30),coordinates,
+      unit:clean(unitRow?.base,80)||null,
+      decimals:Number.isInteger(decimals)&&decimals>=0&&decimals<=20?decimals:null,
+      referencePeriod:metricCode?clean(metric?.extension?.refperiod?.[metricCode],160)||null:null,
+      footnotes:[...notes(metric?.note),...notes(metricNotes)],
+    });
   }
-  return rows;
+  return {cells:rows,footnotes:notes(dataset?.note),totalCellCount,returnedCellCount,truncated:returnedCellCount<totalCellCount};
 }
 
 export const onRequestGet=async(ctx:PagesContext):Promise<Response>=>{
@@ -97,12 +114,13 @@ export const onRequestGet=async(ctx:PagesContext):Promise<Response>=>{
       const data=await dataRes.response.json() as any;
       const normalized=normalizeSsbTable(info);
       if(!normalized)return json({ok:false,error:"TABLE_METADATA_INVALID"},502);
+      const normalizedDataset=normalizeSsbDataset(data,24);
       return json({
         ok:true,state:"DEFAULT_EXTRACT",table:normalized,dataset:{
           label:clean(data?.label,500)||normalized.label,
           updated:clean(data?.updated,80)||normalized.updated,
           dimensions:Array.isArray(data?.id)?data.id:[],
-          cells:flattenJsonStat(data,24),
+          ...normalizedDataset,
         },
         source:{
           publisher:"Statistisk sentralbyrå (SSB)",

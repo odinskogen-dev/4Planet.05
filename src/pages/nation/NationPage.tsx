@@ -17,8 +17,17 @@ type SsbTable = {
   id:string; tableId:string; label:string; description:string|null; updated:string|null; firstPeriod:string|null; lastPeriod:string|null;
   variableNames:string[]; source:string; sourceUrl:string;
 };
-type SsbCell = { index:number; value:number|string|null; status:string|null; coordinates:Record<string,{code:string;label:string}> };
-type SsbDataset = { label:string; updated:string|null; dimensions:string[]; cells:SsbCell[] };
+type SsbCell = { index:number; value:number|string|null; status:string|null; coordinates:Record<string,{code:string;label:string}>; unit:string|null; decimals:number|null; referencePeriod:string|null; footnotes:string[] };
+type SsbDataset = { label:string; updated:string|null; dimensions:string[]; cells:SsbCell[]; footnotes:string[]; totalCellCount:number; returnedCellCount:number; truncated:boolean };
+
+const ssbStatusLabel=(status:string|null)=>status==='.'?'CATEGORY NOT APPLICABLE':status==='..'?'DATA NOT AVAILABLE':status===':'?'CONFIDENTIAL':status?status:'PUBLISHED VALUE';
+const formatSsbValue=(cell:SsbCell)=>{
+  if(cell.value===null)return 'NOT PUBLISHED';
+  const value=typeof cell.value==='number'
+    ? cell.value.toLocaleString('nb-NO',cell.decimals===null?undefined:{minimumFractionDigits:cell.decimals,maximumFractionDigits:cell.decimals})
+    : cell.value;
+  return `${value} ${cell.unit||'UNKNOWN UNIT'}`;
+};
 
 const lenses: { key: Lens; label: string; description: string }[] = [
   { key: 'decisions', label: 'Decisions', description: 'What is being considered?' },
@@ -63,8 +72,8 @@ function StatbankContextFinder() {
     {state==='ERROR'&&<p className='nt-statbank-state' role='status'>SSB is unavailable for this lookup. Existing decision evidence is unchanged.</p>}
     {state==='CANDIDATES'&&<div className='nt-statbank-tables'>{tables.map(table=><button type='button' key={table.id} onClick={()=>void openTable(table)}><span><strong>{table.tableId}</strong><b>{table.label}</b><small>{table.lastPeriod?'latest period '+table.lastPeriod:'latest period not reported'} · {table.variableNames.slice(0,4).join(' · ')}</small></span><em>OPEN DEFAULT EXTRACT</em></button>)}</div>}
     {state==='LOADING'&&<p className='nt-statbank-state' role='status'>Loading SSB's default latest extract…</p>}
-    {selected&&dataset&&state==='READY'&&<div className='nt-statbank-data'><div className='nt-statbank-tabletitle'><span>statistical-table:ssb:{selected.tableId}</span><h4>{dataset.label||selected.label}</h4><p>{dataset.updated?'Source updated '+new Date(dataset.updated).toLocaleDateString('nb-NO'):'Source update time unavailable'}</p><a href={selected.sourceUrl} target='_blank' rel='noopener noreferrer'>OPEN SSB TABLE METADATA ↗</a></div><div className='nt-statbank-cells'>{dataset.cells.map(cell=><article key={cell.index}><div>{Object.values(cell.coordinates).map(c=>c.label).join(' / ')}</div><strong>{cell.value===null?'NOT PUBLISHED / SEE STATUS':String(cell.value)}</strong>{cell.status&&<small>SSB STATUS {cell.status}</small>}</article>)}</div></div>}
-    <p className='nt-statbank-limit'>This is the source's default extract, not a 4NATION-selected causal model. Units, dimensions, footnotes and confidentiality/status markers remain part of the interpretation boundary.</p>
+    {selected&&dataset&&state==='READY'&&<div className='nt-statbank-data'><div className='nt-statbank-tabletitle'><span>statistical-table:ssb:{selected.tableId}</span><h4>{dataset.label||selected.label}</h4><p>{dataset.updated?'Source updated '+new Date(dataset.updated).toLocaleDateString('nb-NO'):'Source update time unavailable'}</p><p>{dataset.truncated?`24-cell preview shown (${dataset.returnedCellCount} of ${dataset.totalCellCount} source cells). Open SSB for the complete extract.`:`Complete default extract shown (${dataset.returnedCellCount} source cells).`}</p><a href={selected.sourceUrl} target='_blank' rel='noopener noreferrer'>OPEN SSB TABLE METADATA ↗</a></div><div className='nt-statbank-cells'>{dataset.cells.map(cell=>{const unit=cell.unit||'UNKNOWN UNIT';const referencePeriod=cell.referencePeriod||'UNKNOWN REFERENCE PERIOD';const status=ssbStatusLabel(cell.status);return <article key={cell.index} aria-label={`${Object.values(cell.coordinates).map(c=>c.label).join(' / ')}: ${formatSsbValue(cell)}; SSB status ${status}; reference period ${referencePeriod}`}><div>{Object.values(cell.coordinates).map(c=>c.label).join(' / ')}</div><strong>{formatSsbValue(cell)}</strong><small>UNIT {unit} · SSB STATUS {status}</small><small>REFERENCE PERIOD {referencePeriod}</small>{cell.footnotes.map((note,index)=><small key={index}>SSB NOTE {note}</small>)}</article>;})}</div>{dataset.footnotes.length>0&&<div className='nt-statbank-footnotes'><strong>SSB TABLE NOTES</strong>{dataset.footnotes.map((note,index)=><p key={index}>{note}</p>)}</div>}</div>}
+    <p className='nt-statbank-limit'>This is a maximum 24-cell preview of the source's default extract, not a 4NATION-selected causal model. Units, dimensions, footnotes and confidentiality/status markers remain part of the interpretation boundary.</p>
   </section>;
 }
 

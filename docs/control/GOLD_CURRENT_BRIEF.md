@@ -1,3 +1,16 @@
+# NAT-PROT-01 — SSB UNIT + STATUS SOURCE TRUTH — 12 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens an official SSB extract to understand a public decision and must know what each number measures.
+**ONE THING TO UNDERSTAND:** an SSB value is not decision-grade without its per-ContentsCode unit, precision, reference period and missing/confidential status.
+**PRIMARY ACTION:** preserve source metadata through the adapter and display each cell as value plus unit, status and reference period; use explicit UNKNOWN when SSB supplies no unit or reference period.
+**ACCEPTANCE:** deterministic mixed-unit fixtures cover decimals, reference periods, dataset and metric footnotes, null/suppressed status, and the bounded 24-cell preview disclosure; the surface never renders a bare value.
+**TRUTH BOUNDARY:** this remains SSB's default extract and a maximum 24-cell preview, not a complete table, selected causal model or policy recommendation.
+**MOBILE-FIRST RISK:** longer unit, status and reference-period labels must remain readable and announced at 390/430px; rendered browser proof remains an independent Gold gate.
+**WHAT MUST BE REUSED:** existing `/api/statbank-context`, `StatbankContextFinder`, PR #131, NAT-PROT-01 and sole `king/test` HEIR.
+**BASE / ROLLBACK:** `king/test@8642134e1e4f875fc022cc0782ef3e190bcfea29`; revert this bounded correction if independent Gold rejects it.
+**MAKER != JUDGE:** Factory implements and returns an exact SHA; independent Gold judges it. No deployment or LIVE claim is authorised.
+
 # IMPACT — UNAPPOINTED FIELD-PARTNER TRUTH — 12 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON THE SOLE HEIR / INDEPENDENT GOLD OPEN / NO DEPLOYMENT / NO LIVE RELEASE.

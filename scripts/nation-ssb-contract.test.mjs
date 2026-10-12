@@ -35,3 +35,38 @@ test("4NATION SSB surface requires explicit table selection and does not auto-bi
  assert.match(page,/does not pick the statistic for you or treat correlation as policy causation/);
  assert.doesNotMatch(page,/autoSelectSsb|autoBindStatisticToDecision/);
 });
+
+test("SSB cells retain per-ContentsCode units, precision, reference period and missing-value status",async()=>{
+ const m=await loadApi();
+ const dataset={role:{time:["Tid"],metric:["ContentsCode"]},id:["Region","ContentsCode","Tid"],size:[1,2,2],dimension:{
+  Region:{label:"region",category:{index:{"0301":0},label:{"0301":"Oslo"}}},
+  ContentsCode:{label:"contents",category:{index:{Persons:0,Share:1},label:{Persons:"Persons",Share:"Share"},unit:{Persons:{base:"number",decimals:0},Share:{base:"percent",decimals:1}},note:{Share:["Rounded to one decimal place."]}},extension:{refperiod:{Persons:"1 January",Share:"calendar year"}}},
+  Tid:{label:"year",category:{index:{"2025":0,"2026":1},label:{"2025":"2025","2026":"2026"}}},
+ },note:["Dataset-level footnote."],value:[720000,725000,42.1,null],status:{3:".."}};
+ const normalized=m.normalizeSsbDataset(dataset,24);
+ assert.equal(normalized.totalCellCount,4);
+ assert.equal(normalized.returnedCellCount,4);
+ assert.equal(normalized.truncated,false);
+ assert.deepEqual(normalized.footnotes,["Dataset-level footnote."]);
+ assert.deepEqual(normalized.cells.map(cell=>[cell.value,cell.unit,cell.decimals,cell.referencePeriod,cell.status]),[
+  [720000,"number",0,"1 January",null],[725000,"number",0,"1 January",null],[42.1,"percent",1,"calendar year",null],[null,"percent",1,"calendar year",".."],
+ ]);
+ assert.deepEqual(normalized.cells[2].footnotes,["Rounded to one decimal place."]);
+});
+
+test("SSB adapter discloses the bounded 24-cell preview and UI never renders a bare value",async()=>{
+ const m=await loadApi();
+ const dataset={role:{metric:["ContentsCode"]},id:["ContentsCode","Tid"],size:[1,25],dimension:{
+  ContentsCode:{category:{index:{Persons:0},label:{Persons:"Persons"},unit:{Persons:{base:"people",decimals:0}}},extension:{refperiod:{Persons:"year end"}}},
+  Tid:{category:{index:Object.fromEntries(Array.from({length:25},(_,i)=>[String(2000+i),i]))}},
+ },value:Array.from({length:25},(_,i)=>i)};
+ const normalized=m.normalizeSsbDataset(dataset,24);
+ assert.equal(normalized.totalCellCount,25);
+ assert.equal(normalized.returnedCellCount,24);
+ assert.equal(normalized.truncated,true);
+ const page=await readFile(new URL("../src/pages/nation/NationPage.tsx",import.meta.url),"utf8");
+ assert.match(page,/24-cell preview/);
+ assert.match(page,/formatSsbValue/);
+ assert.match(page,/UNKNOWN UNIT/);
+ assert.match(page,/aria-label=.*reference period/i);
+});
