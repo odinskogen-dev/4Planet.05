@@ -28,6 +28,15 @@ jobs:
           for i,line in enumerate(lines):
               if ('<img' in line or 'related' in line.lower() or 'photoAt(' in line or 'src={s.url}' in line) and i>310:
                   print('PHOTO_CONTEXT',i+1, '\\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-3),min(len(lines),i+4))))
+          for extra in ['src/pages/integrated/SpeciesExplore.tsx','src/species/pageModel.ts','src/pages/integrated/SpeciesHome.tsx']:
+              p=Path(extra)
+              if not p.exists():continue
+              lines=p.read_text().splitlines()
+              print('CARDS_SOURCE_AUDIT',extra,len(lines))
+              for i,line in enumerate(lines):
+                  if any(k in line.lower() for k in ['spx-card','species-card','spx-tile','sourcepage','sourceurl','sourceref','sourcelist','attribution','<img','source','pagefrom','photo']):
+                      if i>270:break
+                      print(str(i+1)+': '+line[:300])
           for extra, start, stop in [('src/routes/router.tsx',72,118),('src/App.tsx',99,152),('src/pages/integrated/SpeciesHome.tsx',132,183)]:
               p=Path(extra);lines=p.read_text().splitlines()
               print('PRECISE',extra,':',start,'-',stop)
