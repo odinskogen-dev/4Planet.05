@@ -29,7 +29,7 @@ jobs:
           for(const slug of ["",...species]) {
             const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
             await context.route('https://4species.com/**',async route=>{
-              const u=new URL(route.request().url);
+              const u=new URL(route.request().url());
               const target=immutable+u.pathname+u.search;
               try{
                 const resp=await route.fetch({url:target,maxRedirects:8,timeout:25000});
