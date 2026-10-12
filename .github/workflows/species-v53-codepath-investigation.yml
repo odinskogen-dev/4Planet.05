@@ -1,0 +1,41 @@
+name: SPECIES v53 Codepath Investigation
+on:
+  push:
+    branches: [fix/species-claude-premium-photo-qa-20261012]
+    paths: [.github/workflows/species-v53-codepath-investigation.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Restore exact Claude v53 and report Orca routing, homepage hero, source media gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species/v53/patch/chunk-*.txt | base64 -d | gzip -d >/tmp/v53.patch
+          git worktree add --detach ../species-v53-read 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd ../species-v53-read
+          git apply /tmp/v53.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          targets=['src/routes/router.tsx','src/routes/deferredRoutes.tsx','src/pages/integrated/SpeciesHome.tsx','src/pages/integrated/SpeciesTemplate.tsx','src/styles/species-template.css','src/species/universe/links.ts']
+          needles={'src/routes/router.tsx':['orca','SpeciesTemplate','SpeciesHome','/labs/species'],'src/routes/deferredRoutes.tsx':['SpeciesTemplate','SpeciesHome','orca'],'src/pages/integrated/SpeciesHome.tsx':['hero','spx-hero','spx-u','photo','source','credit','card'],'src/pages/integrated/SpeciesTemplate.tsx':['const slides','const hero =','source','src={s.url}','spx-hero-img'],'src/styles/species-template.css':['spx-hero {','spx-hero-img','spx-u-hero','spx-u'],'src/species/universe/links.ts':['orca','species','pathname']}
+          for file in targets:
+              p=Path(file)
+              if not p.exists():print('NOT_FOUND',file);continue
+              lines=p.read_text().splitlines()
+              print('START_FILE',file,len(lines))
+              found=set()
+              for i,line in enumerate(lines):
+                  if any(t in line for t in needles[file]):
+                      if 'src/pages/integrated/SpeciesHome.tsx' in file and i>200:continue
+                      if len(found)>38:break
+                      for j in range(max(0,i-1),min(len(lines),i+3)):
+                          if j not in found:
+                              print(f'{j+1}: {lines[j][:280]}')
+                              found.add(j)
+              print('END_FILE',file)
+          PY
