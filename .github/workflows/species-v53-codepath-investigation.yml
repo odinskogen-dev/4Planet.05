@@ -28,6 +28,14 @@ jobs:
           for i,line in enumerate(lines):
               if ('<img' in line or 'related' in line.lower() or 'photoAt(' in line or 'src={s.url}' in line) and i>310:
                   print('PHOTO_CONTEXT',i+1, '\\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-3),min(len(lines),i+4))))
+          for p in Path('src').rglob('*.tsx'):
+              t=p.read_text(errors='replace')
+              if ('function SpeciesCard(' in t or 'const SpeciesCard =' in t or 'export function SpeciesCard(' in t):
+                  print('SPECIES_CARD_COMPONENT',p)
+                  for i,line in enumerate(t.splitlines()):
+                      if any(k in line for k in ['SpeciesCard','source','photo','img','href','SLink','credit','licence','origin','label']):
+                          if i>260:break
+                          print(str(i+1)+': '+line[:330])
           for extra in ['src/pages/integrated/SpeciesExplore.tsx','src/species/pageModel.ts','src/pages/integrated/SpeciesHome.tsx']:
               p=Path(extra)
               if not p.exists():continue
