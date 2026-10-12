@@ -191,10 +191,10 @@ jobs:
             echo "$path: $code"
             test "$code" = 200
           done
-          curl -fsS "$ORIGIN/species-data/v1/english-oak.json" | jq -e '.slug=="english-oak" and .identity.scientificName=="Quercus robur"' >/dev/null
-          curl -fsS "$ORIGIN/release-identity.json" | jq -e \
-            --arg sha "$GITHUB_SHA" --arg tree "$V53_BUILT_TREE" --arg digest "$V53_PAYLOAD_DIGEST" \
-            '.triggerSha==$sha and .builtTree==$tree and .payloadDigest==$digest' >/dev/null
+          curl -fsSL "$ORIGIN/species-data/v1/english-oak.json" -o /tmp/oak-preview.json
+          jq -e '.slug=="english-oak" and .identity.scientificName=="Quercus robur"' /tmp/oak-preview.json >/dev/null
+          curl -fsSL "$ORIGIN/release-identity.json" -o /tmp/preview-release-identity.json
+          jq -e --arg sha "$GITHUB_SHA" --arg tree "$V53_BUILT_TREE" --arg digest "$V53_PAYLOAD_DIGEST" '.triggerSha==$sha and .builtTree==$tree and .payloadDigest==$digest' /tmp/preview-release-identity.json >/dev/null
           {
             echo "- built_tree: \`$V53_BUILT_TREE\`"
             echo "- payload_digest: \`$V53_PAYLOAD_DIGEST\`"
@@ -209,10 +209,12 @@ jobs:
 
 
           for slug in lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear; do
-            curl -fsS --max-time 25 "$ORIGIN/species-data/v1/$slug.json" | jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01"' >/dev/null
-            curl -fsS --max-time 25 "$ORIGIN/$slug" -o /tmp/species-$slug.html
+            curl -fsSL --max-time 25 "$ORIGIN/species-data/v1/$slug.json" -o /tmp/species-$slug.json
+            jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01"' /tmp/species-$slug.json >/dev/null
+            curl -fsSL --max-time 25 "$ORIGIN/$slug" -o /tmp/species-$slug.html
             grep -Fq "https://4species.com/$slug" /tmp/species-$slug.html
             if grep -qi 'content="noindex' /tmp/species-$slug.html; then echo "NOINDEX $slug"; exit 1; fi
           done
-          curl -fsS "$ORIGIN/species-sitemap.xml" | grep -Fq 'https://4species.com/tiger'
+          curl -fsSL "$ORIGIN/species-sitemap.xml" -o /tmp/preview-species-sitemap.xml
+          grep -Fq 'https://4species.com/tiger' /tmp/preview-species-sitemap.xml
           echo SPECIES_20_UNIQUE_ROUTES_AND_INDEXABLE_HTML_PASS
