@@ -108,13 +108,13 @@ replace_once(template,
 # reel selects the next valid image; no new image service or media component.
 replace_once(template,
     '  const [heroReady, setHeroReady] = useState(false);',
-    '  const [heroReady, setHeroReady] = useState(false);\\n  const [failedUrls, setFailedUrls] = useState<string[]>([]);')
+    '  const [heroReady, setHeroReady] = useState(false);\n  const [failedUrls, setFailedUrls] = useState<string[]>([]);')
 replace_once(template,
-    '  const hero = slides[0];\\n  const photoAt = (i: number) => (slides.length > 1 ? slides[1 + ((i - 1) % (slides.length - 1))] : undefined);\\n  const reel = slides.slice(0, 5);',
-    '  const usableSlides = slides.filter((s) => !failedUrls.includes(s.url));\\n  const hero = usableSlides[0];\\n  const photoAt = (i: number) => (usableSlides.length > 1 ? usableSlides[1 + ((i - 1) % (usableSlides.length - 1))] : undefined);\\n  const reel = usableSlides.slice(0, 5);')
+    '  const hero = slides[0];\n  const photoAt = (i: number) => (slides.length > 1 ? slides[1 + ((i - 1) % (slides.length - 1))] : undefined);\n  const reel = slides.slice(0, 5);',
+    '  const usableSlides = slides.filter((s) => !failedUrls.includes(s.url));\n  const hero = usableSlides[0];\n  const photoAt = (i: number) => (usableSlides.length > 1 ? usableSlides[1 + ((i - 1) % (usableSlides.length - 1))] : undefined);\n  const reel = usableSlides.slice(0, 5);')
 replace_once(template,
     'onLoad={() => (i === 0 ? setHeroReady(true) : setLoaded((l) => ({ ...l, [s.url]: true })))} />',
-    'onError={() => { setHeroReady(false); setFailedUrls((bad) => bad.includes(s.url) ? bad : [...bad, s.url]); }}\\n                      onLoad={() => (i === 0 ? setHeroReady(true) : setLoaded((l) => ({ ...l, [s.url]: true })))} />')
+    'onError={() => { setHeroReady(false); setFailedUrls((bad) => bad.includes(s.url) ? bad : [...bad, s.url]); }}\n                      onLoad={() => (i === 0 ? setHeroReady(true) : setLoaded((l) => ({ ...l, [s.url]: true })))} />')
 # The regular story figure also uses the same skip list if a Wikimedia
 # URL breaks, preserving the original caption and source attribution.
 replace_once(template,
