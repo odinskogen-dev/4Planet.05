@@ -1,4 +1,4 @@
-name: SPECIES Claude scale QA mobile sources and image fallback preview
+name: SPECIES Claude scale QA all source-linked cards final preview
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
