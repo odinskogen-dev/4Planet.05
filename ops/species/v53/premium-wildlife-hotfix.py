@@ -104,6 +104,14 @@ styling='''
 /* Respect editorial focal points; keep images from being reduced to closeups. */
 .spx-story .spx-figure img { object-position: center 36%; }
 '''
+# Browser QA identified unreviewed related-species card thumbnails of
+# completely different animals (iguana on wolf, wolf on sea turtle), including
+# broken image requests. Preserve Claude's relational cards and link text but
+# suppress those images until wild-only proof and correct rights are recorded.
+styling += """
+.spx .spx-partners img { display: none !important; }
+"""
+
 css.write_text(css.read_text().rstrip()+"\n"+styling)
 
 # SOURCE INTEGRITY: no replacement source engine. Assert Claude references,
