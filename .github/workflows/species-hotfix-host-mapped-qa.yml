@@ -1,4 +1,4 @@
-name: SPECIES Claude Premium Host-Mapped Browser QA
+name: SPECIES Claude Mobile Fold + Twenty Source Preview QA
 on:
   push:
     branches: [fix/species-claude-premium-photo-qa-20261012]
@@ -23,8 +23,8 @@ jobs:
           import { chromium } from '/tmp/sqa/node_modules/playwright/index.mjs';
           import fs from 'node:fs';
           const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-          const immutable="https://c1926bb6.4planet-05.pages.dev";
-          const species=["orca","gray-wolf","polar-bear","green-sea-turtle","tiger","lion","bornean-orangutan","monarch-butterfly"];
+          const immutable="https://f59291ca.4planet-05.pages.dev";
+          const species=["orca","gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale","tiger","lion","bornean-orangutan","monarch-butterfly"];
           let problems=[];
           for(const slug of ["",...species]) {
             const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
@@ -47,7 +47,7 @@ jobs:
               });
               console.log('HOST_MAPPED_SPECIES_QA '+JSON.stringify({slug:slug||"home",...d,errors:err}));
               if (slug==="orca" && !(d.spx && d.sourceRefs)) problems.push("Orca premium source-bearing template missing");
-              if (["gray-wolf","polar-bear","green-sea-turtle"].includes(slug)) {
+              if (["gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale"].includes(slug)) {
                 if (d.imgs.some(im=>/Eurasian_wolf_2|paris|jardin.des.plantes|cage|zoo|nome.alaska/i.test(im.src+" "+im.alt)))problems.push("Unsafe image for "+slug);
                 if (d.imgs.length===0)problems.push("No wild photo for "+slug);
                 if(d.imgs.some(im=>!im.naturalWidth))problems.push("Broken selected photo for "+slug);
@@ -57,6 +57,35 @@ jobs:
                 await page.screenshot({path:"/tmp/"+(slug||"home")+"-premium.png",animations:'disabled'});
               }
             }catch(e){problems.push(slug+" "+String(e).slice(0,300))}
+            await context.close();
+          }
+          // Device fold assertion: search input must be visibly anchored to
+          // the lower screen edge; a taller photograph alone is insufficient.
+          for(const [w,h] of [[390,844],[375,667],[430,932]]) {
+            const context=await browser.newContext({viewport:{width:w,height:h},deviceScaleFactor:1});
+            await context.route('https://4species.com/**',async route=>{
+              const u=new URL(route.request().url());
+              try{
+                const resp=await route.fetch({url:immutable+u.pathname+u.search,maxRedirects:8,timeout:25000});
+                await route.fulfill({response:resp,headers:{...resp.headers(),"access-control-allow-origin":"*"}});
+              }catch(e){await route.abort();}
+            });
+            const page=await context.newPage();
+            try{
+              await page.goto('https://4species.com/',{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(1700);
+              const d=await page.evaluate(()=>{
+                const search=document.querySelector('.spx-u-hero [role=search]');
+                const hero=document.querySelector('.spx-u-hero');
+                const body=document.querySelector('.spx-u-hero-body');
+                const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height}};
+                return {screen:innerHeight,search:search?rect(search):null,hero:hero?rect(hero):null,body:body?rect(body):null};
+              });
+              console.log('MOBILE_BOTTOM_HERO_QA '+JSON.stringify({w,h,...d}));
+              if(!d.search||d.search.bottom<h-52||d.search.bottom>h-8)problems.push('Mobile search not at bottom: '+w+'x'+h);
+              if(!d.hero||Math.abs(d.hero.height-h)>8)problems.push('Mobile hero not viewport length: '+w+'x'+h);
+              await page.screenshot({path:'/tmp/mobile-'+w+'x'+h+'-premium.png',animations:'disabled'});
+            }catch(e){problems.push('Mobile render '+w+'x'+h+': '+String(e).slice(0,250));}
             await context.close();
           }
           await browser.close();
