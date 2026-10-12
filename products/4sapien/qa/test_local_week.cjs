@@ -4,6 +4,8 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const sourcePath = path.join(__dirname, "..", "source", "4sapien-local-week.js");
+const hardeningPath = path.join(__dirname, "..", "source", "4sapien-live-hardening.js");
+const guardPath = path.join(__dirname, "..", "build", "apply_live_hardening_guard.py");
 const context = { module: { exports: {} }, Intl, Date };
 context.globalThis = context;
 vm.runInNewContext(fs.readFileSync(sourcePath, "utf8"), context, { filename: sourcePath });
@@ -19,10 +21,22 @@ assert.equal(resolvedTimeZone("Not/A_TimeZone"), "UTC", "invalid time zones must
 assert.equal(startISO("2026-10-11T22:30:00.000Z", "Not/A_TimeZone"), "2026-10-05", "UTC fallback must be deterministic");
 assert.throws(() => startISO("not-a-date", oslo), /INVALID_WEEK_INSTANT/);
 
+const hardening = fs.readFileSync(hardeningPath, "utf8");
+const guard = fs.readFileSync(guardPath, "utf8");
+assert.match(hardening, /function currentWeekStartISO\(now=new Date\(\)\)/);
+assert.match(hardening, /FourSapienLocalWeek\?\.startISO/);
+assert.match(hardening, /const wk=currentWeekStartISO\(\)/);
+assert.doesNotMatch(hardening, /getUTCFullYear\(\).*getUTCMonth\(\).*getUTCDate\(\)/);
+assert.match(guard, /if '\/4sapien-local-week\.js' not in s:/);
+assert.match(guard, /label\+' local week asset'/);
+
 const site = process.argv[2];
 if (site) {
+  const root = fs.readFileSync(path.join(site, "index.html"), "utf8");
   const food = fs.readFileSync(path.join(site, "app", "food", "index.html"), "utf8");
   const asset = fs.readFileSync(path.join(site, "4sapien-local-week.js"), "utf8");
+  assert.match(root, /<script src="\/4sapien-local-week\.js"><\/script>/);
+  assert.ok(root.indexOf('/4sapien-local-week.js') < root.indexOf('/4sapien-live-hardening.js'));
   assert.match(food, /<script src="\/4sapien-local-week\.js"><\/script>/);
   assert.match(food, /function weekStartISO\(\)\{return window\.FourSapienLocalWeek\.startISO\(new Date\(\)\);\}/);
   assert.match(food, /\.eq\("week_start",currentWeek\)/);

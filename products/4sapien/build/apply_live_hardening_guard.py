@@ -14,6 +14,8 @@ def once(s, old, new, label):
     return s.replace(old,new,1)
 
 def assets(s,label):
+    if '/4sapien-local-week.js' not in s:
+        s=once(s,'</head>','<script src="/4sapien-local-week.js"></script>\n</head>',label+' local week asset')
     if '/4sapien-live-hardening.css' not in s:
         s=once(s,'</head>','<link rel="stylesheet" href="/4sapien-live-hardening.css">\n</head>',label+' head')
     if '/4sapien-live-hardening.js' not in s:
