@@ -5,7 +5,7 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
-const SPECIES_V53_ORIGIN = "https://fc5d5ccd.4planet-05.pages.dev";
+const SPECIES_V53_ORIGIN = "https://c1926bb6.4planet-05.pages.dev";
 async function proxySpeciesV53(request) {
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", {status:405});
