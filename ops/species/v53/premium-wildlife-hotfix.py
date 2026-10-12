@@ -50,7 +50,7 @@ winners={
     "focus":"51% 47%"
   },
   "blue-whale":{
-    "url":"https://upload.wikimedia.org/wikipedia/commons/e/e5/Anim1754_-_Flickr_-_NOAA_Photo_Library_%281%29.jpg",
+    "url":"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Anim1754_-_Flickr_-_NOAA_Photo_Library_%281%29.jpg/1920px-Anim1754_-_Flickr_-_NOAA_Photo_Library_%281%29.jpg",
     "sourcePage":"https://commons.wikimedia.org/wiki/File:Anim1754_-_Flickr_-_NOAA_Photo_Library_(1).jpg",
     "credit":"NOAA Photo Library",
     "licence":"Public domain (U.S. Government/NOAA)",
@@ -84,7 +84,7 @@ before='    const add = (s: Slide | null) => { if (s && !out.some((o) => o.url =
 after='''    const add = (s: Slide | null) => {
       if (!s || out.some((o) => o.url === s.url)) return;
       const description = [s.alt,s.url,s.sourcePage,s.credit].join(" ").toLowerCase();
-      if (/zoo|captiv|enclos|aquarium|cage|jardin.des.plantes|dinosaur|acclimation.pen|working.with.wildlife/.test(description)) return;
+      if (/zoo|captiv|enclos|aquarium|cage|jardin.des.plantes|dinosaur|acclimation.pen|working.with.wildlife|aufzucht|orphanage|orphaned|rehabilitation|wildlife.sanctuary|panda.base/.test(description)) return;
       if (page.slug === "green-sea-turtle" && /wolf|canis.lupus|wolves/.test(description)) return;
       if (page.slug === "tiger" && /dinosaurs|hohhot/.test(description)) return;
       if (page.slug === "polar-bear" && /paris|jardin.des.plantes|nome.alaska/.test(description)) return;
@@ -181,6 +181,46 @@ styling += """
 """
 
 css.write_text(css.read_text().rstrip()+"\n"+styling)
+
+# Evidence correction from the linked primary sources, using CLAUDE's existing
+# {state, source: {label,url}} references, not a second citation system.
+# Cheetah's widely repeated 60-70 mph figure was NOT established by the WWF
+# species page. Observations from wild GPS-collared individuals give 93 km/h.
+p=Path("public/species-data/v1/cheetah.json")
+cheetah=json.loads(p.read_text())
+assert cheetah["provenance"]["review"]=="DRAFT"
+speed=[x for x in cheetah["glance"] if x["label"].lower()=="speed"]
+assert len(speed)==1 and speed[0]["value"]=="up to 60–70 mph"
+speed[0]["value"]="93 km/h (58 mph), observed in a field study"
+speed[0]["source"]={
+    "label":"Wilson et al. (2013), Nature — observed wild hunting speeds",
+    "url":"https://pubmed.ncbi.nlm.nih.gov/23765495/"
+}
+p.write_text(json.dumps(cheetah,ensure_ascii=False,indent=2)+"\n")
+print("SOURCE_CLAIM_CORRECTED cheetah: unsupported speed replaced by wild GPS observation")
+
+# The linked WWF Chimpanzee profile does not establish the old ">50 years"
+# lifespan statement. Remove the factual assertion until a specific wild
+# longevity study is linked, without inventing a new source.
+p=Path("public/species-data/v1/chimpanzee.json")
+chimp=json.loads(p.read_text())
+assert chimp["provenance"]["review"]=="DRAFT"
+old_count=len(chimp["glance"])
+chimp["glance"]=[g for g in chimp["glance"] if not ("lifespan" in g["label"].lower() and "50" in g["value"])]
+assert len(chimp["glance"])==old_count-1
+p.write_text(json.dumps(chimp,ensure_ascii=False,indent=2)+"\n")
+print("SOURCE_CLAIM_WITHHELD chimpanzee: 50+ year lifespan unsupported by cited WWF page")
+
+# ADW's giraffe account dates from 2006 and predates disputed giraffe species
+# splits. Explicitly disclose the taxonomic limit rather than silently updating
+# taxonomy, creating a competing authority or pretending a fresh review.
+p=Path("public/species-data/v1/giraffe.json")
+gir=json.loads(p.read_text())
+assert gir["provenance"]["review"]=="DRAFT"
+gir["limits"].append("The cited Animal Diversity Web Giraffa camelopardalis account is dated 2006. Giraffe taxonomy and species boundaries have been revised and remain authority-dependent; this page must not imply that an older broad species concept describes every currently recognised giraffe species.")
+p.write_text(json.dumps(gir,ensure_ascii=False,indent=2)+"\n")
+print("SOURCE_LIMIT_ADDED giraffe: historical taxonomy now explicit")
+
 
 # SOURCE INTEGRITY: no replacement source engine. Assert Claude references,
 # Glance source superscripts, and Sources-and-limits list remain present.
