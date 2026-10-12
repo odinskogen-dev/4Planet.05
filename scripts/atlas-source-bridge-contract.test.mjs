@@ -13,6 +13,7 @@ const atlas = read("src/pages/v5/Atlas.tsx");
 const inat = read("functions/api/inaturalist.ts");
 const truth = read("src/data/truthSpine.ts");
 const earthLayers = read("src/earth/layers.ts");
+const sourceControl = read("src/earth/atlasSourceControl.ts");
 const earthLayersRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(earthLayers, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`);
@@ -68,6 +69,15 @@ test("FIRMS remains credentialed, bounded and semantically fail-closed", () => {
   assert.match(firms, /NO_DETECTIONS_RETURNED_FOR_QUERY/);
   assert.match(firms, /Satellite fire\/thermal-anomaly detections are not automatically wildfires/);
   assert.match(firms, /sourceAuthority: "NASA Earthdata \/ LANCE FIRMS"/);
+});
+
+test("FIRMS source control reflects adapter truth without claiming deployed map Gold", () => {
+  const firmsControl = sourceControl.match(/"nasa-firms": \{[\s\S]*?\n  \},\n  "global-fishing-watch"/u)?.[0] || "";
+  assert.match(firmsControl, /stage: "ADAPTER_GREEN"/);
+  assert.match(firmsControl, /layerContract: "PASS"/);
+  assert.match(firmsControl, /map: "PENDING"/);
+  assert.match(firmsControl, /auth: "FREE_KEY_SERVER_SIDE"/);
+  assert.doesNotMatch(firmsControl, /map: "PASS"/);
 });
 
 test("marine/citizen-science occurrence adapters retain provenance and rights boundaries", () => {
