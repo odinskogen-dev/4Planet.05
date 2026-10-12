@@ -324,12 +324,20 @@ test("DATA VALUE / 4NATION: user can inspect neutral Stortinget case state and s
               index: 0,
               value: 724000,
               status: null,
+              unit: "people",
+              decimals: 0,
+              referencePeriod: "2026",
+              footnotes: [],
               coordinates: {
                 region: { code: "03", label: "Oslo" },
                 contents: { code: "Persons", label: "Persons" },
                 time: { code: "2026", label: "2026" },
               },
             }],
+            footnotes: [],
+            totalCellCount: 1,
+            returnedCellCount: 1,
+            truncated: false,
           },
         }),
       });
@@ -373,7 +381,9 @@ test("DATA VALUE / 4NATION: user can inspect neutral Stortinget case state and s
   await expect(page.getByText("05810", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /OPEN DEFAULT EXTRACT/ }).click();
   await expect(page.getByText("statistical-table:ssb:05810")).toBeVisible();
-  await expect(page.getByText("724000")).toBeVisible();
+  await expect(page.getByText(/724[\s\u00a0]?000 people/i)).toBeVisible();
+  await expect(page.getByText("UNIT people · SSB STATUS PUBLISHED VALUE", { exact: true })).toBeVisible();
+  await expect(page.getByText("REFERENCE PERIOD 2026", { exact: true })).toBeVisible();
   await expect(page.getByText(/does not pick the statistic for you or treat correlation as policy causation/i)).toBeVisible();
 });
 

@@ -20,6 +20,26 @@ type SsbTable = {
 type SsbCell = { index:number; value:number|string|null; status:string|null; coordinates:Record<string,{code:string;label:string}>; unit:string|null; decimals:number|null; referencePeriod:string|null; footnotes:string[] };
 type SsbDataset = { label:string; updated:string|null; dimensions:string[]; cells:SsbCell[]; footnotes:string[]; totalCellCount:number; returnedCellCount:number; truncated:boolean };
 
+const normalizeSsbDataset=(dataset:SsbDataset):SsbDataset=>{
+  const cells=Array.isArray(dataset.cells)?dataset.cells.map(cell=>({
+    ...cell,
+    unit:typeof cell.unit==='string'&&cell.unit.trim()?cell.unit:null,
+    decimals:Number.isInteger(cell.decimals)&&Number(cell.decimals)>=0?Number(cell.decimals):null,
+    referencePeriod:typeof cell.referencePeriod==='string'&&cell.referencePeriod.trim()?cell.referencePeriod:null,
+    footnotes:Array.isArray(cell.footnotes)?cell.footnotes:[],
+  })):[];
+  const totalCellCount=Number.isFinite(dataset.totalCellCount)&&dataset.totalCellCount>=cells.length?dataset.totalCellCount:cells.length;
+  const returnedCellCount=Number.isFinite(dataset.returnedCellCount)&&dataset.returnedCellCount>=0?Math.min(dataset.returnedCellCount,cells.length):cells.length;
+  return {
+    ...dataset,
+    cells,
+    footnotes:Array.isArray(dataset.footnotes)?dataset.footnotes:[],
+    totalCellCount,
+    returnedCellCount,
+    truncated:typeof dataset.truncated==='boolean'?dataset.truncated:returnedCellCount<totalCellCount,
+  };
+};
+
 const ssbStatusLabel=(status:string|null)=>status==='.'?'CATEGORY NOT APPLICABLE':status==='..'?'DATA NOT AVAILABLE':status===':'?'CONFIDENTIAL':status?status:'PUBLISHED VALUE';
 const formatSsbValue=(cell:SsbCell)=>{
   if(cell.value===null)return 'NOT PUBLISHED';
@@ -62,7 +82,7 @@ function StatbankContextFinder() {
       const response=await fetch('/api/statbank-context?table='+encodeURIComponent(table.tableId));
       const payload=await response.json() as {ok?:boolean;dataset?:SsbDataset};
       if(!response.ok||!payload.ok||!payload.dataset)throw new Error('SSB_TABLE_FAILED');
-      setDataset(payload.dataset);setState('READY');
+      setDataset(normalizeSsbDataset(payload.dataset));setState('READY');
     }catch{setState('ERROR');}
   };
   return <section className='nt-statbank' aria-labelledby='nt-statbank-title'>
