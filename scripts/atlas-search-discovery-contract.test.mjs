@@ -6,6 +6,11 @@ import ts from "typescript";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const connectors = read("src/planet/connectors.ts");
 const worldSource = read("src/earth/World.tsx");
+const focusOwnerSource = worldSource.match(/export function createFocusRequestOwner\(\)[\s\S]*?\n}/)?.[0];
+assert.ok(focusOwnerSource, "focus request owner helper must exist");
+const focusOwnerRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(focusOwnerSource, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText).toString("base64")}`);
 const dedupeSource = connectors.match(/export const deduplicateTaxonHitsByCanonicalId[\s\S]*?\n};/)?.[0];
 assert.ok(dedupeSource, "canonical taxon dedupe helper must exist");
 const dedupeRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(dedupeSource, {
@@ -79,4 +84,41 @@ test("ATLAS distinguishes verified empty life search from partial and total GBIF
   assert.match(worldSource, /an empty life\s*list is not a verified empty result/);
   assert.match(worldSource, /!taxaSearchFailed && !taxaSearchPartial/);
   assert.match(worldSource, /if \(text\.length < 3\)[\s\S]*setTaxaSearchPartial\(false\)/);
+});
+
+test("ATLAS asynchronous TAXON and PLACE focus work is selection-owned", async () => {
+  const deferred = () => {
+    let resolve;
+    const promise = new Promise((done) => { resolve = done; });
+    return { promise, resolve };
+  };
+  const runOrder = async (resolveOlderFirst) => {
+    const owner = focusOwnerRuntime.createFocusRequestOwner();
+    const paints = [];
+    const older = deferred();
+    const newer = deferred();
+    const run = async (label, pending) => {
+      const requestId = owner.begin();
+      await pending.promise;
+      if (owner.isCurrent(requestId)) paints.push(label);
+    };
+    const olderRun = run("older", older);
+    const newerRun = run("newer", newer);
+    if (resolveOlderFirst) {
+      older.resolve();
+      await olderRun;
+      newer.resolve();
+    } else {
+      newer.resolve();
+      await newerRun;
+      older.resolve();
+    }
+    await Promise.all([olderRun, newerRun]);
+    return paints;
+  };
+
+  assert.deepEqual(await runOrder(true), ["newer"]);
+  assert.deepEqual(await runOrder(false), ["newer"]);
+  assert.match(worldSource, /const openTaxon[\s\S]*focusRequestOwner\.begin\(\)[\s\S]*clearFocus\("focus"\)[\s\S]*if \(!focusRequestOwner\.isCurrent\(requestId\)\) return;[\s\S]*paintFocus\("focus"/);
+  assert.match(worldSource, /const openPlace[\s\S]*focusRequestOwner\.begin\(\)[\s\S]*clearFocus\("focus"\)[\s\S]*if \(!focusRequestOwner\.isCurrent\(requestId\)\) return;[\s\S]*paintFocus\("focus"/);
 });

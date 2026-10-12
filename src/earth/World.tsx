@@ -107,6 +107,15 @@ const onKeyActivate = (fn) => (e) => {
   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); }
 };
 
+/** Owns asynchronous focus work so an older selection can never repaint a newer one. */
+export function createFocusRequestOwner() {
+  let current = 0;
+  return {
+    begin: () => ++current,
+    isCurrent: (requestId) => requestId === current,
+  };
+}
+
 /* V40 P0: street-level vector basemap prototype. OpenFreeMap ships a fully
    MapLibre-compatible, no-cost vector style (OSM-derived, self-hostable) giving
    sharp roads / streets / place names / buildings / parks / water from planetary
@@ -540,6 +549,8 @@ function WorldInner() {
     if (m.getSource(id)) m.removeSource(id);
   };
 
+  const focusRequestOwner = useRef(createFocusRequestOwner()).current;
+
   const fitRows = (rows) => {
     const m = map.current; if (!m || !rows.length) return;
     const b = new maplibregl.LngLatBounds();
@@ -550,6 +561,7 @@ function WorldInner() {
   /* ── OPEN: the one function every lens routes through ──────────────────── */
 
   const openTaxon = useCallback(async (hit) => {
+    const requestId = focusRequestOwner.begin();
     const ref = {
       id: hit.id, type: "TAXON",
       label: hit.commonName || hit.scientificName,
@@ -558,11 +570,14 @@ function WorldInner() {
     setCtx({ kind: "TAXON", ref, photo: null, occ: field("LOADING") });
     setOpen(false);
     setQ("");
+    clearFocus("focus");
 
     const [occ, photo] = await Promise.all([
       taxonOccurrences(hit.gbifKey, 400),
       taxonPhoto(hit.scientificName),
     ]);
+
+    if (!focusRequestOwner.isCurrent(requestId)) return;
 
     if (!occ.ok) {
       setCtx((c) => (c && c.kind === "TAXON" && c.ref.id === ref.id
@@ -586,10 +601,12 @@ function WorldInner() {
   }, []);
 
   const openPlace = useCallback(async (place) => {
+    const requestId = focusRequestOwner.begin();
     const m = map.current;
     setOpen(false);
     setQ("");
     setCtx({ kind: "PLACE", place, life: field("LOADING"), signals: field("LOADING") });
+    clearFocus("focus");
 
     if (m) {
       // V40 P0: this is the ONE intentional focus for this place. Record it for
@@ -607,6 +624,7 @@ function WorldInner() {
       occurrencesInWkt(bboxWkt(place), { limit: 300 }),
       ensureSignalPool(),
     ]);
+    if (!focusRequestOwner.isCurrent(requestId)) return;
     const near = signalsNear(activePool, place, placeRadiusKm(place));
     const signalSourcesUnavailable = ["eonet", "usgs"].some((id) => activePool.status[id] === "SOURCE_UNAVAILABLE");
     const sigField = near.length
