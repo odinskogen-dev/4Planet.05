@@ -1,0 +1,87 @@
+name: SPECIES v53 Codepath Investigation
+on:
+  push:
+    branches: [fix/species-claude-premium-photo-qa-20261012]
+    paths: [.github/workflows/species-v53-codepath-investigation.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Restore exact Claude v53 and report Orca routing, homepage hero, source media gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species/v53/patch/chunk-*.txt | base64 -d | gzip -d >/tmp/v53.patch
+          git worktree add --detach ../species-v53-read 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd ../species-v53-read
+          git apply /tmp/v53.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          targets=['src/routes/router.tsx','src/routes/deferredRoutes.tsx','src/pages/integrated/SpeciesHome.tsx','src/pages/integrated/SpeciesTemplate.tsx','src/styles/species-template.css','src/species/universe/links.ts']
+          needles={'src/routes/router.tsx':['orca','SpeciesTemplate','SpeciesHome','/labs/species'],'src/routes/deferredRoutes.tsx':['SpeciesTemplate','SpeciesHome','orca'],'src/pages/integrated/SpeciesHome.tsx':['hero','spx-hero','spx-u','photo','source','credit','card'],'src/pages/integrated/SpeciesTemplate.tsx':['const slides','const hero =','source','src={s.url}','spx-hero-img'],'src/styles/species-template.css':['spx-hero {','spx-hero-img','spx-u-hero','spx-u'],'src/species/universe/links.ts':['orca','species','pathname']}
+          p=Path('src/pages/integrated/SpeciesTemplate.tsx')
+          lines=p.read_text().splitlines()
+          for i,line in enumerate(lines):
+              if ('<img' in line or 'related' in line.lower() or 'photoAt(' in line or 'src={s.url}' in line) and i>310:
+                  print('PHOTO_CONTEXT',i+1, '\\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-3),min(len(lines),i+4))))
+          for file in ['src/pages/integrated/SpeciesHome.tsx','src/pages/integrated/SpeciesExplore.tsx','src/pages/integrated/SpeciesTemplate.tsx']:
+              p=Path(file);lines=p.read_text().splitlines()
+              print('SEO_HYDRATION_SOURCE',file)
+              for i,line in enumerate(lines):
+                  if '<Seo' in line or 'robots=' in line or 'const robots' in line:
+                      print(str(i+1)+': '+line[:950])
+          for p in ['src/species/universe/SpeciesCard.tsx','src/species/universe/catalogue.ts','src/species/universe/useCatalogue.ts']:
+              q=Path(p)
+              if not q.exists():continue
+              print('FULL_CARD_SOURCE',p)
+              for i,line in enumerate(q.read_text().splitlines()[:165]):print(str(i+1)+': '+line[:340])
+          explore=Path('src/pages/integrated/SpeciesExplore.tsx')
+          print('EXPLORE_IMPORTS_FULL')
+          for i,line in enumerate(explore.read_text().splitlines()[:74]):print(str(i+1)+': '+line[:350])
+          print('CARD_HITS')
+          for p in Path('src').rglob('*.*'):
+              if p.suffix not in ('.ts','.tsx'):continue
+              t=p.read_text(errors='replace')
+              if 'SpeciesCard' in t:
+                  print('HIT',p,[(i+1,line[:180]) for i,line in enumerate(t.splitlines()) if 'SpeciesCard' in line][:5])
+          for p in Path('src').rglob('*.tsx'):
+              t=p.read_text(errors='replace')
+              if ('function SpeciesCard(' in t or 'const SpeciesCard =' in t or 'export function SpeciesCard(' in t):
+                  print('SPECIES_CARD_COMPONENT',p)
+                  for i,line in enumerate(t.splitlines()):
+                      if any(k in line for k in ['SpeciesCard','source','photo','img','href','SLink','credit','licence','origin','label']):
+                          if i>260:break
+                          print(str(i+1)+': '+line[:330])
+          for extra in ['src/pages/integrated/SpeciesExplore.tsx','src/species/pageModel.ts','src/pages/integrated/SpeciesHome.tsx']:
+              p=Path(extra)
+              if not p.exists():continue
+              lines=p.read_text().splitlines()
+              print('CARDS_SOURCE_AUDIT',extra,len(lines))
+              for i,line in enumerate(lines):
+                  if any(k in line.lower() for k in ['spx-card','species-card','spx-tile','sourcepage','sourceurl','sourceref','sourcelist','attribution','<img','source','pagefrom','photo']):
+                      if i>270:break
+                      print(str(i+1)+': '+line[:300])
+          for extra, start, stop in [('src/routes/router.tsx',72,118),('src/App.tsx',99,152),('src/pages/integrated/SpeciesHome.tsx',132,183)]:
+              p=Path(extra);lines=p.read_text().splitlines()
+              print('PRECISE',extra,':',start,'-',stop)
+              for i in range(start-1,min(len(lines),stop)):print(str(i+1)+': '+lines[i][:360])
+          for file in targets:
+              p=Path(file)
+              if not p.exists():print('NOT_FOUND',file);continue
+              lines=p.read_text().splitlines()
+              print('START_FILE',file,len(lines))
+              found=set()
+              for i,line in enumerate(lines):
+                  if any(t in line for t in needles[file]):
+                      if 'src/pages/integrated/SpeciesHome.tsx' in file and i>200:continue
+                      if len(found)>38:break
+                      for j in range(max(0,i-1),min(len(lines),i+3)):
+                          if j not in found:
+                              print(f'{j+1}: {lines[j][:280]}')
+                              found.add(j)
+              print('END_FILE',file)
+          PY

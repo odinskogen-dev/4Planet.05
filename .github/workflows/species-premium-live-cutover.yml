@@ -1,0 +1,112 @@
+name: 4SPECIES Premium Source-Cards Mobile Hero Live Cutover
+on:
+  push:
+    branches: [fix/species-claude-premium-photo-qa-20261012]
+    paths: [.github/workflows/species-premium-live-cutover.yml]
+permissions: {contents: read}
+concurrency:
+  group: species-premium-orca-wildlife-hotfix-20261012
+  cancel-in-progress: false
+jobs:
+  verify-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      IMMUTABLE_PREVIEW: https://f84eedf2.4planet-05.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify immutable Claude v53 and twenty species pages before touching live
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 20 "$IMMUTABLE_PREVIEW/release-identity.json" -o /tmp/species-identity.json
+          jq -e '.triggerSha=="78973861893e767cc50a5fe19fdffcd2494dae2b" and .builtTree=="4691f7bd508aa4632aa276e93a97660791b527a5" and .payloadDigest=="484ac7b5ec48a6a1674f04c2e5825a35630e35379769f378557904b19891d879"' /tmp/species-identity.json >/dev/null
+          for pair in 'orca|Orcinus orca' 'lion|Panthera leo' 'tiger|Panthera tigris'; do
+            slug=$(printf '%s' "$pair" | cut -d'|' -f1)
+            scientific=$(printf '%s' "$pair" | cut -d'|' -f2)
+            curl -fsSL --max-time 25 "$IMMUTABLE_PREVIEW/$slug" -o /tmp/verified-species.html
+            grep -Fq "$scientific" /tmp/verified-species.html
+            grep -Fq "https://4species.com/$slug" /tmp/verified-species.html
+            grep -Fq 'content="index,follow,max-image-preview:large"' /tmp/verified-species.html
+          done
+          for slug in african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear lion tiger; do
+            curl -fsS --max-time 25 "$IMMUTABLE_PREVIEW/species-data/v1/$slug.json" -o /tmp/species-$slug.json
+            jq -e --arg slug "$slug" '.schema=="4PLANET_SPECIES_PAGE_01" and .slug==$slug and .identity.scientificName!=""' /tmp/species-$slug.json >/dev/null
+            scientific=$(jq -r '.identity.scientificName' /tmp/species-$slug.json)
+            curl -fsSL --max-time 25 "$IMMUTABLE_PREVIEW/$slug" -o /tmp/species-$slug.html
+            grep -Fq "$scientific" /tmp/species-$slug.html
+            grep -Fq "https://4species.com/$slug" /tmp/species-$slug.html
+          done
+          curl -fsS "$IMMUTABLE_PREVIEW/species-sitemap.xml" -o /tmp/species-sitemap.xml
+          grep -Fq 'https://4species.com/orca' /tmp/species-sitemap.xml
+          grep -Fq 'https://4species.com/tiger' /tmp/species-sitemap.xml
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'https://f84eedf2.4planet-05.pages.dev' ops/discovery/4species-router.js
+          echo EXACT_SPECIES_V53_ORCA_AND_20_SOURCE_PREVIEW_VERIFIED
+      - name: Capture pre-change Cloudflare Worker version for rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.128.0 deployments list --name 4species-router 2>&1 | tee /tmp/species-prior-deployments.log
+          old=$(grep -E 'Version\(s\):[[:space:]]+\(100%\)' /tmp/species-prior-deployments.log | tail -n 1 | grep -Eo '[0-9a-f]{8}-[0-9a-f-]{27,}' | head -n 1 || true)
+          if [ -z "$old" ]; then
+            echo "No verifiable rollback version; refusing live promotion"
+            exit 1
+          fi
+          echo "ROLLBACK_WORKER_VERSION=$old" >> "$GITHUB_ENV"
+          echo "Rollback version: $old"
+      - name: Promote verified 21 species profiles to production and prove routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "Public verification failed. Attempting rollback to $ROLLBACK_WORKER_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_WORKER_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-live-deploy.log
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear; do
+            curl -fsSL --retry 3 --retry-all-errors --retry-delay 2 --max-time 30 -D /tmp/live-header.txt "https://4species.com/$slug" -o /tmp/live-species.html
+            grep -Fq "https://4species.com/$slug" /tmp/live-species.html
+            # Intermediate *.pages.dev redirect headers may contain preview-only
+            # noindex even though the final public response is indexable.
+            awk '/^HTTP\// { final="" } { final=final $0 "\\n" } END { printf "%s", final }' /tmp/live-header.txt >/tmp/final-public-headers.txt
+            if grep -Eqi '^x-robots-tag:[[:space:]]*noindex' /tmp/final-public-headers.txt; then
+              echo "PUBLIC NOINDEX persists for $slug"; cat /tmp/final-public-headers.txt; exit 1
+            fi
+            data_code=$(curl -sSL --retry 3 --retry-all-errors --retry-delay 2 --max-time 30 -D /tmp/live-json-headers.txt -o /tmp/live-species-data.json -w '%{http_code}' "https://4species.com/species-data/v1/$slug.json")
+            echo "DATA $slug HTTP $data_code ($(wc -c </tmp/live-species-data.json) bytes)"
+            if [ "$data_code" != "200" ] || ! jq -e --arg slug "$slug" '.slug==$slug and .identity.scientificName!=""' /tmp/live-species-data.json >/dev/null 2>&1; then
+              echo "BAD JSON $slug: response headers:"
+              grep -Ei '^HTTP/|^content-type:|^location:|^cf-ray:|^server:' /tmp/live-json-headers.txt || true
+              echo "BAD JSON $slug: first 550 response bytes:"
+              head -c 550 /tmp/live-species-data.json || true
+              exit 1
+            fi
+            scientific=$(jq -r '.identity.scientificName' /tmp/live-species-data.json)
+            grep -Fq "$scientific" /tmp/live-species.html
+            echo "LIVE OK $slug -> $scientific"
+          done
+          curl -fsS https://4species.com/sitemap.xml -o /tmp/live-sitemap.xml
+          grep -Fq 'https://4species.com/tiger' /tmp/live-sitemap.xml
+          curl -fsS https://4species.com/robots.txt -o /tmp/live-robots.txt
+          grep -Fq 'Sitemap: https://4species.com/sitemap.xml' /tmp/live-robots.txt
+          curl -fsS https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt -o /tmp/live-indexnow-key.txt
+          grep -Fxq '8f4c2d91a7b64e3fa1c9d0b6e5274a83' /tmp/live-indexnow-key.txt
+          trap - ERR
+          echo CLAUDE_PREMIUM_ORCA_WILDLIFE_FIXED_PUBLIC_RELEASE_PASS
+          {
+            echo "### SPECIES public release"
+            echo "- Live: https://4species.com/"
+            echo "- Orca: https://4species.com/orca"
+            echo "- Lion: https://4species.com/lion"
+            echo "- Tiger: https://4species.com/tiger"
+            echo "- Immutable verified Pages: $IMMUTABLE_PREVIEW"
+            echo "- Rollback Worker version: $ROLLBACK_WORKER_VERSION"
+            echo "- 20 new pages retain DRAFT provenance pending factual/photo review"
+          } >> "$GITHUB_STEP_SUMMARY"
