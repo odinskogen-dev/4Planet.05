@@ -1,0 +1,64 @@
+name: SPECIES Claude Premium Production Visual QA
+on:
+  push:
+    branches: [fix/species-claude-premium-photo-qa-20261012]
+    paths: [.github/workflows/species-premium-live-browser-readback.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -e
+          npm install --prefix /tmp/sqa playwright@1.56.0
+          /tmp/sqa/node_modules/.bin/playwright install --with-deps chromium
+      - name: Inspect real live premium Orca and wildlife media after production
+        shell: bash
+        run: |
+          set -eu
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/sqa/node_modules/playwright/index.mjs';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          // Verify the actual public 4species.com host, not a preview.
+          const species=["orca","gray-wolf","polar-bear","green-sea-turtle","tiger","lion"];
+          let problems=[];
+          for(const slug of ["",...species]) {
+            const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            const page=await context.newPage();
+            const err=[];page.on('pageerror',e=>err.push(e.message));
+            try{
+              await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(3700);
+              const d=await page.evaluate(()=>{
+                let imgs=[...document.querySelectorAll("img")].filter(el=>el.getClientRects().length>0 && getComputedStyle(el).display!=="none").map(el=>({alt:el.alt,src:(el.currentSrc||el.src).split("?")[0],naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight,position:getComputedStyle(el).objectPosition})).slice(0,12);
+                return {url:location.href, h1:document.querySelector('h1')?.innerText||'',spx:document.querySelectorAll('.spx').length,sourceRefs:document.querySelectorAll('.spx-ref').length,sourceSection:document.querySelectorAll('.spx-source-list').length,hero:document.querySelector('.spx-hero')?.getBoundingClientRect().height,imgs,text:document.body.innerText.slice(0,230)};
+              });
+              console.log('HOST_MAPPED_SPECIES_QA '+JSON.stringify({slug:slug||"home",...d,errors:err}));
+              if (slug==="orca" && !(d.spx && d.sourceRefs)) problems.push("Orca premium source-bearing template missing");
+              if (["gray-wolf","polar-bear","green-sea-turtle"].includes(slug)) {
+                if (d.imgs.some(im=>/Eurasian_wolf_2|paris|jardin.des.plantes|cage|zoo|nome.alaska/i.test(im.src+" "+im.alt)))problems.push("Unsafe image for "+slug);
+                if (d.imgs.length===0)problems.push("No wild photo for "+slug);
+                if(d.imgs.some(im=>!im.naturalWidth))problems.push("Broken selected photo for "+slug);
+              }
+              if (!slug && !(d.hero>950)) problems.push("Home cinema hero too short "+d.hero);
+              if (["","orca","gray-wolf","polar-bear","green-sea-turtle"].includes(slug)){
+                await page.screenshot({path:"/tmp/"+(slug||"home")+"-premium.png",animations:'disabled'});
+              }
+            }catch(e){problems.push(slug+" "+String(e).slice(0,300))}
+            await context.close();
+          }
+          await browser.close();
+          console.log("ISSUES "+JSON.stringify(problems));
+          if(problems.length) process.exit(1);
+          console.log("CLAUDE_PREMIUM_AND_WILD_IMAGES_BROWSER_QA_PASS");
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-claude-premium-hotfix-qa
+          path: /tmp/*-premium.png
+          retention-days: 5
