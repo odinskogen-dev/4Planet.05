@@ -1,0 +1,63 @@
+name: SPECIES Premium Live Browser + Photo QA
+on:
+  push:
+    branches: [release/species-v53-21-20261012]
+    paths: [.github/workflows/species-browser-media-qa.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Install Chromium for real rendered user experience
+        shell: bash
+        run: |
+          set -eu
+          npm install --prefix /tmp/species-browser-qa playwright@1.56.0
+          /tmp/species-browser-qa/node_modules/.bin/playwright install --with-deps chromium
+      - name: Audit real premium Orca template, source citations, image crops and hero
+        shell: bash
+        run: |
+          set -eu
+          mkdir -p /tmp/species-browser-screens
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/species-browser-qa/node_modules/playwright/index.mjs';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const slugs=['orca','gray-wolf','lion','tiger','african-savanna-elephant','giant-panda','polar-bear','giraffe','cheetah','blue-whale','jaguar','chimpanzee','bornean-orangutan','green-sea-turtle','black-rhinoceros','monarch-butterfly','emperor-penguin','great-white-shark','bald-eagle','asian-elephant','hippopotamus'];
+          for(const slug of ['home',...slugs]){
+            const page=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            const errors=[];page.on('pageerror',e=>errors.push(String(e.message).slice(0,230)));
+            const url=slug==='home'?'https://4species.com/':'https://4species.com/'+slug;
+            try{
+              await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(3200);
+              const state=await page.evaluate(()=>{
+                const body=document.body;
+                const kinds=['.spx','.spx-hero','.spx-hero-reel','.spx-glance','.spx-source-list','.spx-ref','.sp-hero','.spx-chapter-zone','.spx-hero-img','.spx-figure','.spx-cover'];
+                const cls=Object.fromEntries(kinds.map(k=>[k,document.querySelectorAll(k).length]));
+                const rectOf=el=>{const r=el.getBoundingClientRect();return [Math.round(r.width),Math.round(r.height)]};
+                const el=[...document.querySelectorAll('img')].slice(0,9);
+                const imgs=el.map((x)=>({src:x.currentSrc||x.src,alt:x.alt,natural:[x.naturalWidth,x.naturalHeight],box:rectOf(x),fit:getComputedStyle(x).objectFit,position:getComputedStyle(x).objectPosition,section:x.closest('header,figure,.spx-hero,.spx-story')?.className||''}));
+                const hero=document.querySelector('.spx-hero, .sp-hero, .species-hero, header');
+                const facts=[...document.querySelectorAll('.spx-glance > div')].map(x=>({text:x.innerText.trim().slice(0,100),ref:x.querySelectorAll('.spx-ref').length}));
+                return {url:location.href,title:document.title,classes:cls,heroSize:hero?rectOf(hero):null,bodyText:body.innerText.slice(0,420),imgs,facts,sourceCount:document.querySelectorAll('.spx-source-list li').length,version:document.querySelector('meta[name="generator"]')?.content||''};
+              });
+              console.log('SPECIES_BROWSER_QA '+JSON.stringify({slug,...state,errors}));
+              if(['home','orca','gray-wolf','lion','tiger'].includes(slug)){
+                await page.screenshot({path:'/tmp/species-browser-screens/'+slug+'-desktop.png',fullPage:false,animations:'disabled'});
+                await page.setViewportSize({width:390,height:844});
+                await page.waitForTimeout(500);
+                await page.screenshot({path:'/tmp/species-browser-screens/'+slug+'-mobile.png',fullPage:false,animations:'disabled'});
+              }
+            }catch(e){console.log('SPECIES_BROWSER_ERROR '+JSON.stringify({slug,error:String(e),errors}));}
+            await page.close();
+          }
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-premium-browser-photos
+          path: /tmp/species-browser-screens/
+          retention-days: 3
