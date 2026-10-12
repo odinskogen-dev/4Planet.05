@@ -141,10 +141,11 @@ function DesktopPanel({ panel, onClose }: { panel: PanelKey; onClose: () => void
   );
 }
 
-function MobileMenu({ onClose }: { onClose: () => void }) {
+function MobileMenu({ dialogRef, onClose }: { dialogRef: React.RefObject<HTMLDivElement>; onClose: () => void }) {
   return (
-    <div className="mobile-nav" role="dialog" aria-modal="true" aria-label="4PLANET navigation">
+    <div ref={dialogRef} id="public-mobile-navigation" className="mobile-nav" role="dialog" aria-modal="true" aria-label="4PLANET navigation">
       <div className="mobile-nav__inner">
+        <button type="button" className="mobile-nav__close" aria-label="Close navigation" onClick={onClose}>CLOSE</button>
         <div style={{ ...mono, color: T.blue }}>EXPLORE_</div>
         <div className="mobile-nav__lenses">
           {LENSES.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
@@ -153,6 +154,11 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
         <div style={{ ...mono, color: T.blue, marginTop: 44 }}>DOMAINS + MISSIONS_</div>
         <div style={{ display: "grid", gap: 34, marginTop: 22 }}>
           {ORDER.map((dk) => <DomainColumn key={dk} dk={dk} onSelect={onClose} />)}
+        </div>
+
+        <div style={{ ...mono, color: T.blue, marginTop: 44 }}>CULTURE_</div>
+        <div className="mobile-nav__lenses">
+          {CULTURE.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} accent={DOMAIN_ACCENT["4CULTURE_"]} onSelect={onClose} />)}
         </div>
 
         <div style={{ ...mono, color: T.blue, marginTop: 44 }}>ABOUT_</div>
@@ -201,6 +207,7 @@ function Header() {
   const [hidden, setHidden] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const mobileDialog = useRef<HTMLDivElement>(null);
   const explicitlyOpenedPanel = useRef<PanelKey | null>(null);
   const openTimer = useRef<number | null>(null);
   const closeTimer = useRef<number | null>(null);
@@ -275,19 +282,46 @@ function Header() {
   }, [panel]);
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => {
+      mobileDialog.current?.querySelector<HTMLElement>(".mobile-nav__close")?.focus();
+    });
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         explicitlyOpenedPanel.current = null;
         setPanel(null);
         setMobileOpen(false);
-        menuButton.current?.focus();
+        window.requestAnimationFrame(() => menuButton.current?.focus());
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        mobileDialog.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((element) => !element.hasAttribute("hidden"));
+      if (!focusable.length) {
+        event.preventDefault();
+        mobileDialog.current?.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
-    window.addEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", onKey);
+      window.cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
     };
   }, [mobileOpen]);
 
@@ -361,14 +395,17 @@ function Header() {
           <div className="public-header__actions">
             <IdentityHeaderAction color={fg} />
             <Link to="/join" className="public-header__join" style={{ color: fg }}>JOIN 4PLANET</Link>
-            <button ref={menuButton} type="button" className="public-header__menu" aria-expanded={mobileOpen} aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((v) => !v)} style={{ color: fg }}>
+            <button ref={menuButton} type="button" className="public-header__menu" aria-expanded={mobileOpen} aria-controls="public-mobile-navigation" aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((v) => !v)} style={{ color: fg }}>
               {mobileOpen ? "CLOSE" : "MENU"}
             </button>
           </div>
         </div>
         {panel && <DesktopPanel panel={panel} onClose={closeDesktopPanel} />}
       </header>
-      {mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}
+      {mobileOpen && <MobileMenu dialogRef={mobileDialog} onClose={() => {
+        setMobileOpen(false);
+        window.requestAnimationFrame(() => menuButton.current?.focus());
+      }} />}
     </>
   );
 }
@@ -503,6 +540,8 @@ export function PublicShell({ children }: { children: ReactNode }) {
         .nav-mission-link:hover{text-decoration:underline;text-underline-offset:3px}
         .mobile-nav{display:none;position:fixed;z-index:80;inset:0;background:#FFFFFF;color:${T.ink};overflow:auto;padding-top:calc(64px + env(safe-area-inset-top,0px))}
         .mobile-nav__inner{padding:36px 20px 80px}
+        .mobile-nav__close{display:block;margin:0 0 28px auto;appearance:none;border:1px solid ${T.lineStrong};background:#FFFFFF;color:${T.ink};font-family:${T.mono};font-size:10.5px;letter-spacing:.12em;padding:12px 14px;cursor:pointer}
+        .mobile-nav__close:focus-visible{outline:3px solid ${T.blue};outline-offset:4px}
         .mobile-nav__lenses{display:grid;gap:1px;background:${T.line};border:1px solid ${T.line};margin-top:18px}
         .mobile-nav__about{display:grid;margin-top:14px;border-top:1px solid ${T.line}}
         .mobile-nav__about a{padding:14px 0;border-bottom:1px solid ${T.line};font-family:${T.display};font-size:22px;color:${T.ink};text-decoration:none}

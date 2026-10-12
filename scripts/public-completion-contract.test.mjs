@@ -41,6 +41,18 @@ test("Magazine and Film are external public projects reached through controlled 
   assert.match(router, /ExternalRedirect to="https:\/\/4planetmagazine\.com\/films"/);
 });
 
+test("mobile navigation exposes Culture and contains keyboard focus", () => {
+  assert.match(shell, />CULTURE_<\/div>/);
+  assert.match(shell, /CULTURE\.map/);
+  assert.match(shell, /id="public-mobile-navigation"/);
+  assert.match(shell, /aria-controls="public-mobile-navigation"/);
+  assert.match(shell, /className="mobile-nav__close"/);
+  assert.match(shell, /event\.key !== "Tab"/);
+  assert.match(shell, /document\.activeElement === first/);
+  assert.match(shell, /document\.activeElement === last/);
+  assert.match(shell, /previousOverflow/);
+});
+
 test("public missions expose truthful deeper product handoffs", () => {
   assert.match(bridge, /https:\/\/s4piens\.com/);
   assert.match(bridge, /https:\/\/s4piens\.com\/food/);

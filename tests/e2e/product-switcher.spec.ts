@@ -25,7 +25,10 @@ async function openProductNavigation(page: Page) {
 
     const dialog = page.getByRole("dialog", { name: "4PLANET navigation" });
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Close navigation" })).toBeFocused();
     await expect(dialog.getByText("EXPLORE_", { exact: true })).toBeVisible();
+    await expect(dialog.getByText("CULTURE_", { exact: true })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: /^4PLANET MAGAZINE/ })).toBeVisible();
     for (const name of ["ATLAS", "SPECIES", "LIVING SYSTEMS", "IMPACT"]) {
       await expect(dialog.getByRole("link", { name: new RegExp(`^${name}`) }).first()).toBeVisible();
     }
@@ -52,7 +55,15 @@ test("Product family navigation — current GOLD default closed and open", async
   await expect(page.getByRole("heading", { level: 1, name: /MEET LIFE ON EARTH/i })).toBeVisible();
   await page.screenshot({ path: `${OUT}/${tag}-closed.png`, fullPage: true });
 
-  await openProductNavigation(page);
+  const navigation = await openProductNavigation(page);
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${OUT}/${tag}-open.png`, fullPage: true });
+
+  if ((page.viewportSize()?.width ?? 1440) <= 920) {
+    await page.keyboard.press("Shift+Tab");
+    await expect.poll(() => navigation.evaluate((node) => node.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(navigation).toBeHidden();
+    await expect(page.getByRole("button", { name: "Open menu" })).toBeFocused();
+  }
 });
