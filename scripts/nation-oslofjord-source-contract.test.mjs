@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const decisionCase = readFileSync(new URL('../src/planet/nationDecisionCase.ts', import.meta.url), 'utf8');
 const publicDecisions = readFileSync(new URL('../src/planet/nationPublicDecisions.ts', import.meta.url), 'utf8');
 const nationPage = readFileSync(new URL('../src/pages/nation/NationPage.tsx', import.meta.url), 'utf8');
+const placeExplorer = readFileSync(new URL('../src/pages/nation/NationPlaceExplorer.tsx', import.meta.url), 'utf8');
 
 test('Oslofjord consultation copy keeps ordinary and restricted deadlines distinct', () => {
   for (const source of [decisionCase, publicDecisions]) {
@@ -16,9 +17,13 @@ test('Oslofjord consultation copy keeps ordinary and restricted deadlines distin
   assert.doesNotMatch(nationPage, /15 October · local and regional deadline/);
 });
 
-test('the related 2021 plan is not a decided stage in the 2026 case journey', () => {
-  assert.match(publicDecisions, /Related 2021 Oslofjord action plan published \(separate policy record\)/);
-  assert.doesNotMatch(publicDecisions, /date: '30 Mar 2021', stage: 'DECIDED'/);
+test('the related 2021 plan is a separate source-bound policy, not part of the 2026 case journey', () => {
+  assert.match(publicDecisions, /relatedPolicies\?: RelatedPublicPolicy\[\]/);
+  assert.match(publicDecisions, /id: 'GOV-NOR-OSLOFJORD-ACTION-PLAN-2021'/);
+  assert.match(publicDecisions, /relationship: 'Historical policy context; not a stage in the 2026 case'/);
+  assert.doesNotMatch(publicDecisions, /journey: \[\s*\{ date: '30 Mar 2021'/);
+  assert.match(placeExplorer, /selected\.relatedPolicies/);
+  assert.match(placeExplorer, /Separate historical context/);
 });
 
 test('the dated snapshot and official sources remain explicit', () => {

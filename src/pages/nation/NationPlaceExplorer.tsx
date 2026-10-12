@@ -101,6 +101,12 @@ export default function NationPlaceExplorer(){
         <ol className='nt-public-thread'>
           {selected.journey.map(event=><li key={event.date+event.label}><time>{event.date}</time><div><small>{event.stage}</small><p>{event.label}</p><a href={event.sourceUrl} target='_blank' rel='noopener noreferrer'>VERIFY ORIGINAL ↗</a></div></li>)}
         </ol>
+        {selected.relatedPolicies?.length ? <aside className='nt-related-policies' aria-labelledby='nt-related-policies-title'>
+          <div><small>RELATED POLICY</small><strong id='nt-related-policies-title'>Separate historical context</strong></div>
+          {selected.relatedPolicies.map(policy=><article key={policy.id}>
+            <span>{policy.statusLabel}</span><h4>{policy.title}</h4><p>{policy.relationship}</p><small>{policy.published} · {policy.id}</small><a href={policy.sourceUrl} target='_blank' rel='noopener noreferrer'>VERIFY RELATED POLICY ↗</a>
+          </article>)}
+        </aside> : null}
         <p className='nt-geo-boundary'>{selected.geographyNote}</p>
         <a className='nt-official-case' href={selected.sourceUrl} target='_blank' rel='noopener noreferrer'>OPEN OFFICIAL CASE / SOURCE ↗</a>
       </article>

@@ -9,6 +9,15 @@ export type PublicDecisionEvent = {
   sourceUrl: string;
 };
 
+export type RelatedPublicPolicy = {
+  id: string;
+  title: string;
+  published: string;
+  statusLabel: string;
+  relationship: string;
+  sourceUrl: string;
+};
+
 export type PublicDecision = {
   id: string;
   title: string;
@@ -28,6 +37,7 @@ export type PublicDecision = {
   placeId: string;
   geographyNote: string;
   journey: PublicDecisionEvent[];
+  relatedPolicies?: RelatedPublicPolicy[];
 };
 
 export type NationPlaceModel = {
@@ -85,8 +95,17 @@ export const publicDecisions: PublicDecision[] = [
     sourceIssuer: 'Norwegian Ministry of Climate and Environment',
     placeId: placeId('oslofjord'),
     geographyNote: 'ATLAS shows navigational context. It does not claim an official catchment or implementation boundary.',
+    relatedPolicies: [
+      {
+        id: 'GOV-NOR-OSLOFJORD-ACTION-PLAN-2021',
+        title: 'Comprehensive action plan for a clean and rich Oslofjord with active outdoor recreation',
+        published: '30 March 2021',
+        statusLabel: 'RELATED POLICY · PUBLISHED 2021',
+        relationship: 'Historical policy context; not a stage in the 2026 case',
+        sourceUrl: 'https://www.regjeringen.no/no/dokumenter/helhetlig-tiltaksplan-for-en-ren-og-rik-oslofjord-med-et-aktivt-friluftsliv/id2842258/',
+      },
+    ],
     journey: [
-      { date: '30 Mar 2021', stage: 'PROCESS', label: 'Related 2021 Oslofjord action plan published (separate policy record)', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/helhetlig-tiltaksplan-for-en-ren-og-rik-oslofjord-med-et-aktivt-friluftsliv/id2842258/' },
       { date: '19 Jun 2026', stage: 'PROPOSAL', label: 'Proposed 2026–2030 plan published for consultation', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
       { date: '15 Sep 2026', stage: 'CONSULTATION', label: 'Ordinary consultation deadline passed', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
       { date: '15 Oct 2026', stage: 'PROCESS', label: 'Restricted deadline for political-processing municipalities/counties and recipients explicitly granted an extension', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
