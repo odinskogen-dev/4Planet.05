@@ -23,6 +23,10 @@ jobs:
           from pathlib import Path
           targets=['src/routes/router.tsx','src/routes/deferredRoutes.tsx','src/pages/integrated/SpeciesHome.tsx','src/pages/integrated/SpeciesTemplate.tsx','src/styles/species-template.css','src/species/universe/links.ts']
           needles={'src/routes/router.tsx':['orca','SpeciesTemplate','SpeciesHome','/labs/species'],'src/routes/deferredRoutes.tsx':['SpeciesTemplate','SpeciesHome','orca'],'src/pages/integrated/SpeciesHome.tsx':['hero','spx-hero','spx-u','photo','source','credit','card'],'src/pages/integrated/SpeciesTemplate.tsx':['const slides','const hero =','source','src={s.url}','spx-hero-img'],'src/styles/species-template.css':['spx-hero {','spx-hero-img','spx-u-hero','spx-u'],'src/species/universe/links.ts':['orca','species','pathname']}
+          for extra, start, stop in [('src/routes/router.tsx',72,118),('src/App.tsx',99,152),('src/pages/integrated/SpeciesHome.tsx',132,183)]:
+              p=Path(extra);lines=p.read_text().splitlines()
+              print('PRECISE',extra,':',start,'-',stop)
+              for i in range(start-1,min(len(lines),stop)):print(str(i+1)+': '+lines[i][:360])
           for file in targets:
               p=Path(file)
               if not p.exists():print('NOT_FOUND',file);continue
