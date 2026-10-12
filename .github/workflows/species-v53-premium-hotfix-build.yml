@@ -1,4 +1,4 @@
-name: SPECIES Claude premium mobile and source hardening preview
+name: SPECIES Claude scale QA mobile sources and image fallback preview
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
