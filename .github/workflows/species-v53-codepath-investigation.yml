@@ -28,6 +28,11 @@ jobs:
           for i,line in enumerate(lines):
               if ('<img' in line or 'related' in line.lower() or 'photoAt(' in line or 'src={s.url}' in line) and i>310:
                   print('PHOTO_CONTEXT',i+1, '\\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-3),min(len(lines),i+4))))
+          for p in ['src/species/universe/SpeciesCard.tsx','src/species/universe/catalogue.ts','src/species/universe/useCatalogue.ts']:
+              q=Path(p)
+              if not q.exists():continue
+              print('FULL_CARD_SOURCE',p)
+              for i,line in enumerate(q.read_text().splitlines()[:165]):print(str(i+1)+': '+line[:340])
           explore=Path('src/pages/integrated/SpeciesExplore.tsx')
           print('EXPLORE_IMPORTS_FULL')
           for i,line in enumerate(explore.read_text().splitlines()[:74]):print(str(i+1)+': '+line[:350])
