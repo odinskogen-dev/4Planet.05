@@ -28,6 +28,15 @@ jobs:
           for i,line in enumerate(lines):
               if ('<img' in line or 'related' in line.lower() or 'photoAt(' in line or 'src={s.url}' in line) and i>310:
                   print('PHOTO_CONTEXT',i+1, '\\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-3),min(len(lines),i+4))))
+          explore=Path('src/pages/integrated/SpeciesExplore.tsx')
+          print('EXPLORE_IMPORTS_FULL')
+          for i,line in enumerate(explore.read_text().splitlines()[:74]):print(str(i+1)+': '+line[:350])
+          print('CARD_HITS')
+          for p in Path('src').rglob('*.*'):
+              if p.suffix not in ('.ts','.tsx'):continue
+              t=p.read_text(errors='replace')
+              if 'SpeciesCard' in t:
+                  print('HIT',p,[(i+1,line[:180]) for i,line in enumerate(t.splitlines()) if 'SpeciesCard' in line][:5])
           for p in Path('src').rglob('*.tsx'):
               t=p.read_text(errors='replace')
               if ('function SpeciesCard(' in t or 'const SpeciesCard =' in t or 'export function SpeciesCard(' in t):
