@@ -41,6 +41,22 @@ winners={
     "alt":"Wild polar bear near Churchill, Manitoba, standing on a snowy shoreline",
     "focus":"49% 46%"
   },
+  "black-rhinoceros":{
+    "url":"https://upload.wikimedia.org/wikipedia/commons/e/e7/181_Black_rhinoceros_in_Etosha_National_Park_Photo_by_Giles_Laurent.jpg",
+    "sourcePage":"https://commons.wikimedia.org/wiki/File:181_Black_rhinoceros_in_Etosha_National_Park_Photo_by_Giles_Laurent.jpg",
+    "credit":"Giles Laurent",
+    "licence":"CC BY-SA 4.0",
+    "alt":"Wild black rhinoceros walking in Etosha National Park, Namibia",
+    "focus":"51% 47%"
+  },
+  "blue-whale":{
+    "url":"https://upload.wikimedia.org/wikipedia/commons/e/e5/Anim1754_-_Flickr_-_NOAA_Photo_Library_%281%29.jpg",
+    "sourcePage":"https://commons.wikimedia.org/wiki/File:Anim1754_-_Flickr_-_NOAA_Photo_Library_(1).jpg",
+    "credit":"NOAA Photo Library",
+    "licence":"Public domain (U.S. Government/NOAA)",
+    "alt":"Wild blue whale from above, swimming through deep open ocean",
+    "focus":"50% 54%"
+  },
   "green-sea-turtle":{
     "url":"https://upload.wikimedia.org/wikipedia/commons/a/a3/Green_sea_turtle_%28Chelonia_mydas%29_Moorea.jpg",
     "sourcePage":"https://commons.wikimedia.org/wiki/File:Green_sea_turtle_(Chelonia_mydas)_Moorea.jpg",
@@ -79,7 +95,7 @@ before='    if (page.hero !== "auto") add({ ...page.hero, source: "4PLANET" });\
 after='''    if (page.hero !== "auto") add({ ...page.hero, source: "4PLANET" });
     // Wildlife-only editorial exceptions: never append an unverified captive
     // photograph or an unrelated Wikimedia image to the chosen wild hero.
-    if (["gray-wolf","polar-bear","green-sea-turtle"].includes(page.slug)) return out.slice(0,10);
+    if (["gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale"].includes(page.slug)) return out.slice(0,10);
     if (leadImage)'''
 replace_once(template,before,after)
 # Editorial focus applies to every gallery image, not just the first hero.
@@ -112,6 +128,40 @@ styling += """
 .spx .spx-partners img { display: none !important; }
 """
 
+styling += """
+/* Mobile: the hero is ONE real visible screen.  The search belongs at its
+   lower safe-area edge, not at a percentage of an oversized image. */
+@media (max-width: 767px) {
+  .spx-u .spx-u-hero {
+    --hero-h: 100svh !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
+    position: relative;
+    overflow: hidden;
+  }
+  .spx-u .spx-u-hero .spx-hero-media {
+    height: 100svh !important;
+    inset: 0 0 auto !important;
+  }
+  .spx-u .spx-u-hero .spx-u-hero-body {
+    position: absolute !important;
+    inset: auto 0 max(16px, env(safe-area-inset-bottom, 0px)) 0 !important;
+    margin: 0 !important;
+    padding: 0 20px !important;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    z-index: 3;
+  }
+  /* Same Today link already appears immediately below the hero as its own
+     tile. Avoid leaving empty space underneath the one primary search. */
+  .spx-u .spx-u-hero .spx-u-today { display: none; }
+  .spx-u .spx-u-hero .spx-hero-img { object-position: 50% 24% !important; }
+}
+/* Group related cards keep Claude taxonomy/source text while image review
+   remains separate from evidence review. */
+"""
+
 css.write_text(css.read_text().rstrip()+"\n"+styling)
 
 # SOURCE INTEGRITY: no replacement source engine. Assert Claude references,
@@ -121,4 +171,25 @@ for token in ['const sources = useMemo(() => pageSources(page), [page]);',
               '<Ref n={g.ref.n} state={g.ref.state} onOpen={openSource} />',
               'className="spx-source-list"']:
     assert token in source, 'Claude provenance component unexpectedly changed: '+token
+# Correct source URLs to verified canonical pages in existing Claude citations.
+# These are editorial redirect fixes, not new reference entities or sources.
+redirects={
+  "https://www.worldwildlife.org/species/asian-elephant":
+    "https://www.worldwildlife.org/species/elephant/asian-elephant/",
+  "https://www.worldwildlife.org/species/bornean-orangutan":
+    "https://www.worldwildlife.org/species/orangutan/bornean-orangutan/",
+}
+for slug in ["asian-elephant","bornean-orangutan"]:
+    p=Path("public/species-data/v1")/(slug+".json")
+    before=p.read_text()
+    d=json.loads(before)
+    assert d["provenance"]["review"] == "DRAFT"
+    for old_url,new_url in redirects.items():
+        if old_url in before:
+            before=before.replace(old_url,new_url)
+    d=json.loads(before)
+    assert d["slug"]==slug
+    p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\\n")
+    print("CLAUDE_EXISTING_CITATION_URL_CANONICAL",slug)
+
 print("CLAUDE_SOURCES_EXISTING_COMPONENTS_PRESERVED")
