@@ -23,6 +23,11 @@ jobs:
           from pathlib import Path
           targets=['src/routes/router.tsx','src/routes/deferredRoutes.tsx','src/pages/integrated/SpeciesHome.tsx','src/pages/integrated/SpeciesTemplate.tsx','src/styles/species-template.css','src/species/universe/links.ts']
           needles={'src/routes/router.tsx':['orca','SpeciesTemplate','SpeciesHome','/labs/species'],'src/routes/deferredRoutes.tsx':['SpeciesTemplate','SpeciesHome','orca'],'src/pages/integrated/SpeciesHome.tsx':['hero','spx-hero','spx-u','photo','source','credit','card'],'src/pages/integrated/SpeciesTemplate.tsx':['const slides','const hero =','source','src={s.url}','spx-hero-img'],'src/styles/species-template.css':['spx-hero {','spx-hero-img','spx-u-hero','spx-u'],'src/species/universe/links.ts':['orca','species','pathname']}
+          p=Path('src/pages/integrated/SpeciesTemplate.tsx')
+          lines=p.read_text().splitlines()
+          for i,line in enumerate(lines):
+              if ('<img' in line or 'related' in line.lower() or 'photoAt(' in line or 'src={s.url}' in line) and i>310:
+                  print('PHOTO_CONTEXT',i+1, '\\n'.join(f'{j+1}: {lines[j]}' for j in range(max(0,i-3),min(len(lines),i+4))))
           for extra, start, stop in [('src/routes/router.tsx',72,118),('src/App.tsx',99,152),('src/pages/integrated/SpeciesHome.tsx',132,183)]:
               p=Path(extra);lines=p.read_text().splitlines()
               print('PRECISE',extra,':',start,'-',stop)
