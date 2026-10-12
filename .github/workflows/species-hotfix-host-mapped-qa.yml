@@ -1,4 +1,4 @@
-name: SPECIES Claude Mobile Fold + Twenty Source Preview QA
+name: SPECIES Claude Scaling Mobile & Source Final Candidate QA
 on:
   push:
     branches: [fix/species-claude-premium-photo-qa-20261012]
@@ -23,7 +23,7 @@ jobs:
           import { chromium } from '/tmp/sqa/node_modules/playwright/index.mjs';
           import fs from 'node:fs';
           const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-          const immutable="https://f59291ca.4planet-05.pages.dev";
+          const immutable="https://ecd1a1c7.4planet-05.pages.dev";
           const species=["orca","gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale","tiger","lion","bornean-orangutan","monarch-butterfly"];
           let problems=[];
           for(const slug of ["",...species]) {
