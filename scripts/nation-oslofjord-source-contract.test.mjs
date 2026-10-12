@@ -32,3 +32,25 @@ test('the dated snapshot and official sources remain explicit', () => {
   assert.match(decisionCase, /id3166019/);
   assert.match(decisionCase, /id3167967/);
 });
+
+test('place and case selection is validated, shareable and restored by browser navigation', () => {
+  assert.match(placeExplorer, /new URLSearchParams\(search\)/);
+  assert.match(placeExplorer, /params\.get\('place'\)/);
+  assert.match(placeExplorer, /params\.get\('decision'\)/);
+  assert.match(placeExplorer, /requestedDecision\.placeSlug === requestedPlace\.slug/);
+  assert.match(placeExplorer, /window\.history\.pushState/);
+  assert.match(placeExplorer, /window\.history\.replaceState/);
+  assert.match(placeExplorer, /addEventListener\('popstate'/);
+  assert.match(placeExplorer, /params\.set\('place', nextPlaceSlug\)/);
+  assert.match(placeExplorer, /params\.set\('decision', nextDecisionId\)/);
+});
+
+test('blank municipality lookup is rejected instead of selecting Bergen', () => {
+  assert.match(placeExplorer, /if\(!q\)\{setLookupState\('empty'\);return;\}/);
+  assert.match(placeExplorer, /lookupState==='empty'/);
+});
+
+test('downstream lenses state their fixed Oslofjord scope', () => {
+  assert.match(nationPage, /OSLOFJORD ONLY \/ FEATURED CASE/);
+  assert.match(nationPage, /Place and case selection above does not change these lenses yet/);
+});

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AtlasEmbed } from '@/earth/AtlasEmbed';
 import { nationPlaceModels, nationSourceFederation, publicDecisions, type NationPlaceModel, type PublicDecision } from '@/planet/nationPublicDecisions';
 
@@ -8,29 +8,73 @@ function norm(value:string){
   return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
 }
 
+function resolveSelection(search:string){
+  const params=new URLSearchParams(search);
+  const requestedPlace=nationPlaceModels.find(item=>item.slug===params.get('place'));
+  const requestedDecision=publicDecisions.find(item=>item.id===params.get('decision'));
+  if(requestedPlace&&requestedDecision&&requestedDecision.placeSlug === requestedPlace.slug){
+    return {placeSlug:requestedPlace.slug,decisionId:requestedDecision.id};
+  }
+  if(requestedDecision){
+    return {placeSlug:requestedDecision.placeSlug,decisionId:requestedDecision.id};
+  }
+  if(requestedPlace){
+    const first=publicDecisions.find(item=>item.placeSlug===requestedPlace.slug);
+    if(first)return {placeSlug:requestedPlace.slug,decisionId:first.id};
+  }
+  return {placeSlug:publicDecisions[0].placeSlug,decisionId:publicDecisions[0].id};
+}
+
 function DecisionStatus({decision}:{decision:PublicDecision}){
   return <span className='nt-public-status' data-stage={decision.stage}>{decision.statusLabel}</span>;
 }
 
 export default function NationPlaceExplorer(){
-  const [placeSlug,setPlaceSlug]=useState<NationPlaceModel['slug']>('norway');
-  const [decisionId,setDecisionId]=useState(publicDecisions[0].id);
+  const initialSelection=useMemo(()=>resolveSelection(typeof window==='undefined'?'':window.location.search),[]);
+  const [placeSlug,setPlaceSlug]=useState<NationPlaceModel['slug']>(initialSelection.placeSlug);
+  const [decisionId,setDecisionId]=useState(initialSelection.decisionId);
   const [municipalityQuery,setMunicipalityQuery]=useState('');
-  const [lookupState,setLookupState]=useState<'idle'|'ready'|'unsupported'>('idle');
+  const [lookupState,setLookupState]=useState<'idle'|'ready'|'empty'|'unsupported'>('idle');
 
   const place=nationPlaceModels.find(item=>item.slug===placeSlug) || nationPlaceModels[0];
   const decisions=useMemo(()=>publicDecisions.filter(item=>item.placeSlug===place.slug),[place.slug]);
   const selected=decisions.find(item=>item.id===decisionId) || decisions[0];
 
+  const setUrlSelection=(nextPlaceSlug:NationPlaceModel['slug'],nextDecisionId:string,mode:'push'|'replace'='push')=>{
+    const params=new URLSearchParams(window.location.search);
+    params.set('place', nextPlaceSlug);
+    params.set('decision', nextDecisionId);
+    const nextUrl=window.location.pathname+'?'+params.toString()+window.location.hash;
+    if(mode==='push')window.history.pushState(window.history.state,'',nextUrl);
+    else window.history.replaceState(window.history.state,'',nextUrl);
+  };
+
+  useEffect(()=>{
+    setUrlSelection(placeSlug,decisionId,'replace');
+    const restoreSelection=()=>{
+      const restored=resolveSelection(window.location.search);
+      setPlaceSlug(restored.placeSlug);
+      setDecisionId(restored.decisionId);
+    };
+    window.addEventListener('popstate',restoreSelection);
+    return ()=>window.removeEventListener('popstate',restoreSelection);
+  },[]);
+
+  const chooseDecision=(next:PublicDecision)=>{
+    setPlaceSlug(next.placeSlug);
+    setDecisionId(next.id);
+    setUrlSelection(next.placeSlug,next.id);
+  };
+
   const choosePlace=(next:NationPlaceModel)=>{
-    setPlaceSlug(next.slug);
     const first=publicDecisions.find(item=>item.placeSlug===next.slug);
-    if(first)setDecisionId(first.id);
+    if(first)chooseDecision(first);
     setLookupState('idle');
   };
 
   const findMunicipality=()=>{
     const q=norm(municipalityQuery);
+    if(!q){setLookupState('empty');return;}
     const next=nationPlaceModels.find(item=>item.kind==='MUNICIPALITY'&&(norm(item.name)===q||norm(item.name).includes(q)));
     if(next){choosePlace(next);setLookupState('ready');}
     else setLookupState('unsupported');
@@ -53,6 +97,7 @@ export default function NationPlaceExplorer(){
           <datalist id='nt-municipality-list'><option value='Bergen'/><option value='Oslo'/></datalist>
           <button type='button' onClick={findMunicipality}>Open place</button>
         </div>
+        {lookupState==='empty'&&<small role='status'>Enter Bergen or Oslo before opening a place.</small>}
         {lookupState==='unsupported'&&<small role='status'>Bergen and Oslo are the connected municipal models in this build. Other municipalities are not presented as connected yet.</small>}
         {lookupState==='ready'&&<small role='status'>{place.name} opened with its source-bound decision model.</small>}
       </div>
@@ -67,7 +112,7 @@ export default function NationPlaceExplorer(){
     <div className='nt-place-summary'>
       <div><span className='nt-label'>{place.kind} / {place.label}</span><h3>{place.name}</h3><p>{place.intro}</p></div>
       <div className='nt-place-case-list' aria-label={place.name+' public decisions'}>
-        {decisions.map(decision=><button type='button' key={decision.id} aria-pressed={decision.id===selected.id} onClick={()=>setDecisionId(decision.id)}>
+        {decisions.map(decision=><button type='button' key={decision.id} aria-pressed={decision.id===selected.id} onClick={()=>chooseDecision(decision)}>
           <DecisionStatus decision={decision}/><strong>{decision.shortTitle}</strong><span>{decision.authority}</span>
         </button>)}
       </div>

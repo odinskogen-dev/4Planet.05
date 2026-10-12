@@ -227,7 +227,8 @@ export default function NationPage() {
       <div className='nt-decision-layout' id='nt-decision-layers'>
         <nav className='nt-lenses' aria-label='Explore decision layers'><div className='nt-lens-overline'>EXPLORE MORE</div>{lenses.map((item,i)=><button type='button' key={item.key} className={[lens===item.key?'is-current':'',i===0?'nt-lens-primary':''].join(' ')} aria-current={lens===item.key?'true':undefined} onClick={()=>showLens(item.key)}><span>{String(i+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.description}</small></button>)}</nav>
         <div className='nt-lens-panel' role='region' aria-live='polite' aria-label={activeLens.label}>
-          <div className='nt-lens-head'><SmallLabel>{audience==='people'?'FOR PEOPLE':'FOR INSTITUTIONS'} / {activeLens.label.toUpperCase()}</SmallLabel><span>OFFICIAL SOURCE SNAPSHOT</span></div>
+          <div className='nt-lens-head'><SmallLabel>{audience==='people'?'FOR PEOPLE':'FOR INSTITUTIONS'} / {activeLens.label.toUpperCase()}</SmallLabel><span>OSLOFJORD ONLY / FEATURED CASE</span></div>
+          <p className='nt-live-limit'>Place and case selection above does not change these lenses yet. They remain scoped to the sourced Oslofjord case.</p>
           {lens==='decisions' && <section className='nt-panel-body'>
             <h3>{audience==='people'?'Follow the decision.':'Examine the decision context.'}</h3>
             <p>{audience==='people'?'See what has happened, what remains open and where to verify it. No recommendations about what you should support.':'Review the objective, authority, existing plan and documented scientific scenarios. The institution, not this prototype, determines the policy.'}</p>
