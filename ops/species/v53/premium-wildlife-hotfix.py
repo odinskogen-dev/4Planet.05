@@ -121,6 +121,30 @@ replace_once(template,
     '<img src={s.url} alt={s.alt} loading="lazy" draggable={false} style={{ objectPosition: s.focus || "50% 36%" }} />',
     '<img src={s.url} alt={s.alt} loading="lazy" draggable={false} style={{ objectPosition: s.focus || "50% 36%" }} onError={() => setFailedUrls((bad) => bad.includes(s.url) ? bad : [...bad, s.url])} />')
 
+# Card words and photo licence use TWO distinct existing Claude authorities.
+# The catalogue already provides lineSource, but SpeciesCard showed photo
+# credit only. Surface both; hide any descriptive copy without a fact source.
+card_path="src/species/universe/SpeciesCard.tsx"
+replace_once(card_path,
+    '  const photo = useCardPhoto(item);',
+    '  const photo = useCardPhoto(item);\n  const [failedSrc, setFailedSrc] = useState("");\n  const visiblePhoto = photo && photo.url !== failedSrc ? photo : undefined;')
+replace_once(card_path,
+    'spx-card-media${photo ? " has-photo" : ""}',
+    'spx-card-media${visiblePhoto ? " has-photo" : ""}')
+replace_once(card_path,
+    '{photo ? <img src={photo.url} alt={photo.alt} loading="lazy" draggable={false} /> : door ? <DoorGlyph plan={door.plan} /> : null}',
+    '{visiblePhoto ? <img src={visiblePhoto.url} alt={visiblePhoto.alt} loading="lazy" draggable={false} onError={() => setFailedSrc(visiblePhoto.url)} /> : door ? <DoorGlyph plan={door.plan} /> : null}')
+replace_once(card_path,
+    '{showLine && item.line && <span className="spx-card-line">{item.line}</span>}',
+    '{showLine && item.line && item.lineSource?.url && <span className="spx-card-line">{item.line}</span>}')
+replace_once(card_path,
+    '{photo && <a className="spx-card-credit" href={photo.sourcePage} target="_blank" rel="noopener noreferrer">{photo.credit} · {photo.licence}</a>}',
+    '''{visiblePhoto && <a className="spx-card-credit" href={visiblePhoto.sourcePage} target="_blank" rel="noopener noreferrer">{visiblePhoto.credit} · {visiblePhoto.licence}</a>}
+      {item.lineSource?.url
+        ? <a className="spx-card-source" href={item.lineSource.url} target="_blank" rel="noopener noreferrer">Source · {item.lineSource.label} ↗</a>
+        : <SLink className="spx-card-source" to={speciesPath("/" + item.slug)}>Open sources & limits →</SLink>}''')
+print("CLAUDE_SPECIES_CARD_FACT_SOURCE_AND_MEDIA_RIGHTS_DISTINCT_PASS")
+
 # 4. Keep Claude's design system. Add a little cinema on the SPECIES HOME hero,
 # with greater photo height, correct responsive focus, and controlled crops.
 css=Path("src/styles/species-template.css")
@@ -178,6 +202,16 @@ styling += """
 }
 /* Group related cards keep Claude taxonomy/source text while image review
    remains separate from evidence review. */
+"""
+
+styling += """
+.spx .spx-card-source {
+  display:block; margin-top:7px; padding:0 2px 2px;
+  font-size:10px; line-height:1.5; letter-spacing:.025em;
+  color:inherit; opacity:.72; overflow-wrap:anywhere;
+  text-decoration:underline; text-underline-offset:2px;
+}
+.spx .spx-card-source:hover { opacity:1; }
 """
 
 css.write_text(css.read_text().rstrip()+"\n"+styling)
