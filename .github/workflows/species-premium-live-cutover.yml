@@ -1,4 +1,4 @@
-name: 4SPECIES Premium Orca Wild-Media Live Cutover
+name: 4SPECIES Premium Source-Cards Mobile Hero Live Cutover
 on:
   push:
     branches: [fix/species-claude-premium-photo-qa-20261012]
@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 20
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      IMMUTABLE_PREVIEW: https://c1926bb6.4planet-05.pages.dev
+      IMMUTABLE_PREVIEW: https://f84eedf2.4planet-05.pages.dev
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsS --max-time 20 "$IMMUTABLE_PREVIEW/release-identity.json" -o /tmp/species-identity.json
-          jq -e '.triggerSha=="00b937dfe45a960ad7ae12b8537d5b8a4b76e2fa" and .builtTree=="fb770599a2f508b4992bd8797d81c87db047bb42" and .payloadDigest=="0a317fbf8465cacfc945858a65f84ee04aaa45ffd4cbaf7743662120e76ef20c"' /tmp/species-identity.json >/dev/null
+          jq -e '.triggerSha=="78973861893e767cc50a5fe19fdffcd2494dae2b" and .builtTree=="4691f7bd508aa4632aa276e93a97660791b527a5" and .payloadDigest=="484ac7b5ec48a6a1674f04c2e5825a35630e35379769f378557904b19891d879"' /tmp/species-identity.json >/dev/null
           for pair in 'orca|Orcinus orca' 'lion|Panthera leo' 'tiger|Panthera tigris'; do
             slug=$(printf '%s' "$pair" | cut -d'|' -f1)
             scientific=$(printf '%s' "$pair" | cut -d'|' -f2)
@@ -45,7 +45,7 @@ jobs:
           grep -Fq 'https://4species.com/orca' /tmp/species-sitemap.xml
           grep -Fq 'https://4species.com/tiger' /tmp/species-sitemap.xml
           node --check ops/discovery/4species-router.js
-          grep -Fq 'https://c1926bb6.4planet-05.pages.dev' ops/discovery/4species-router.js
+          grep -Fq 'https://f84eedf2.4planet-05.pages.dev' ops/discovery/4species-router.js
           echo EXACT_SPECIES_V53_ORCA_AND_20_SOURCE_PREVIEW_VERIFIED
       - name: Capture pre-change Cloudflare Worker version for rollback
         shell: bash
