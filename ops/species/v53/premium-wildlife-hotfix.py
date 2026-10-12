@@ -256,6 +256,26 @@ p.write_text(json.dumps(gir,ensure_ascii=False,indent=2)+"\n")
 print("SOURCE_LIMIT_ADDED giraffe: historical taxonomy now explicit")
 
 
+# Critical indexability split: the prerendered static HTML is indexable, but
+# Claude's runtime <Seo robots="noindex,nofollow"> was overriding it after
+# hydration, making Google render a noindex page. Keep labs and preview hosts
+# noindex; ONLY the public canonical host should be indexable at runtime.
+# No new SEO component: use exactly the existing <Seo> in Claude's template.
+public_robots='''robots={typeof window !== "undefined" && ["4species.com","www.4species.com"].includes(window.location.hostname.toLowerCase()) ? "index,follow,max-image-preview:large" : "noindex,nofollow"}'''
+for source_file in ["src/pages/integrated/SpeciesHome.tsx","src/pages/integrated/SpeciesExplore.tsx"]:
+    replace_once(source_file, 'robots="noindex,nofollow"', public_robots)
+
+p=Path("src/pages/integrated/SpeciesTemplate.tsx")
+template_source=p.read_text()
+original_robots='robots="noindex,nofollow"'
+assert template_source.count(original_robots)==2, "two known original Claude template metadata branches required"
+# The detailed, source-grounded PAGE_FILE or CURATED profile is indexable.
+# A LIVE_ONLY/unreviewed arbitrary lookup remains noindex on every host.
+public_profile_robots='''robots={typeof window !== "undefined" && ["4species.com","www.4species.com"].includes(window.location.hostname.toLowerCase()) && origin !== "LIVE_ONLY" ? "index,follow,max-image-preview:large" : "noindex,nofollow"}'''
+template_source=template_source.replace(original_robots,public_profile_robots,1)
+p.write_text(template_source)
+print("CLAUDE_SEO_PUBLIC_HOST_HYDRATION_INDEX_LABS_NOINDEX_PASS")
+
 # SOURCE INTEGRITY: no replacement source engine. Assert Claude references,
 # Glance source superscripts, and Sources-and-limits list remain present.
 source=Path(template).read_text()
