@@ -1,4 +1,4 @@
-name: SPECIES Claude premium Orca image fix preview
+name: SPECIES Claude premium mobile and source hardening preview
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
@@ -103,6 +103,38 @@ jobs:
           p.write_text(s)
           PY
           python3 "$GITHUB_WORKSPACE/ops/species/v53/premium-wildlife-hotfix.py"
+          # Audit Claude's EXISTING per-claim citation records; do not create a source system.
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          files=[p for p in Path('public/species-data/v1').glob('*.json') if p.stem not in ('index','orca','english-oak','western-honey-bee','fly-agaric','common-octopus','sei-whale','atlantic-puffin','eurasian-lynx')]
+          checked=set()
+          for f in files:
+              d=json.loads(f.read_text())
+              if d.get('provenance',{}).get('writtenBy','').startswith('GPT draft'):
+                  checked.add(d['slug'])
+                  assert d['provenance']['review']=='DRAFT',f
+                  sources=[]
+                  def walk(node):
+                      if isinstance(node,dict):
+                          if 'source' in node and isinstance(node['source'],dict):
+                              sources.append(node['source'])
+                          for v in node.values():walk(v)
+                      elif isinstance(node,list):
+                          for v in node:walk(v)
+                  walk(d)
+                  assert len(sources)>=8, (f,len(sources))
+                  for source in sources:
+                      assert source.get('url','').startswith('https://'),(f,source)
+                      assert source.get('label',''),(f,source)
+                  hero=d.get('hero')
+                  if isinstance(hero,dict):
+                      for key in ('url','sourcePage','credit','licence','focus','alt'):
+                          assert hero.get(key),(f,key)
+                  print('SOURCE_CLAUDE_REFERENCE_INTEGRITY', d['slug'],len(sources),'references;',len(set(s['url'] for s in sources)),'distinct document(s)')
+          assert len(checked)==20,('missing individual species or wrong branch',len(checked))
+          print('CLAUDE_20_SOURCE_LINK_STRUCTURE_AND_DRAFT_PROVENANCE_PASS')
+          PY
           node scripts/species-page-validate.mjs --write-index
           node scripts/species-page-validate.mjs
           echo SPECIES_V53_RECONCILED
