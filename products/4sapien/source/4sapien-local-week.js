@@ -51,5 +51,37 @@
     return localDate.toISOString().slice(0, 10);
   }
 
-  return { resolvedTimeZone, startISO };
+  function watch(onChange, options) {
+    if (typeof onChange !== "function") throw new TypeError("WEEK_WATCH_CALLBACK_REQUIRED");
+    const config = options || {};
+    const now = typeof config.now === "function" ? config.now : function () { return new Date(); };
+    const schedule = config.setIntervalFn || (typeof setInterval === "function" ? setInterval : null);
+    const cancel = config.clearIntervalFn || (typeof clearInterval === "function" ? clearInterval : null);
+    if (!schedule || !cancel) throw new Error("WEEK_WATCH_TIMER_UNAVAILABLE");
+    const intervalMs = Number.isFinite(config.intervalMs) && config.intervalMs > 0 ? config.intervalMs : 30000;
+    let current = startISO(now(), config.timeZone);
+    let stopped = false;
+    function check() {
+      if (stopped) return current;
+      const next = startISO(now(), config.timeZone);
+      if (next !== current) {
+        const previous = current;
+        current = next;
+        onChange(next, previous);
+      }
+      return current;
+    }
+    const timer = schedule(check, intervalMs);
+    return Object.freeze({
+      check,
+      current: function () { return current; },
+      stop: function () {
+        if (stopped) return;
+        stopped = true;
+        cancel(timer);
+      },
+    });
+  }
+
+  return { resolvedTimeZone, startISO, watch };
 });
