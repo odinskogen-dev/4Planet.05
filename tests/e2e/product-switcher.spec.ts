@@ -67,3 +67,15 @@ test("Product family navigation — current GOLD default closed and open", async
     await expect(page.getByRole("button", { name: "Open menu" })).toBeFocused();
   }
 });
+
+test("Explore lenses retain supported context and 4RT resolves to the art mission", async ({ page }) => {
+  await page.goto("/species?entity=taxon%3Aorca&journey=orca&record=proof-1", { waitUntil: "load" });
+  const navigation = await openProductNavigation(page);
+
+  await navigation.getByRole("link", { name: /^ATLAS/ }).first().click();
+  await expect(page).toHaveURL(/\/atlas\?entity=taxon%3Aorca&journey=orca&record=proof-1$/);
+
+  await page.goto("/missions/4rt", { waitUntil: "load" });
+  await expect(page).toHaveURL(/\/missions\/4rt$/);
+  await expect(page.getByText("4RT_ · WORKING PROTOTYPES", { exact: true })).toBeVisible();
+});

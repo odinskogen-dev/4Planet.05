@@ -41,6 +41,14 @@ test("Magazine and Film are external public projects reached through controlled 
   assert.match(router, /ExternalRedirect to="https:\/\/4planetmagazine\.com\/films"/);
 });
 
+test("4RT reaches its mission surface and product lenses preserve supported context", () => {
+  assert.match(router, /path="\/missions\/4rt" element={<MissionDetail \/>}/);
+  assert.doesNotMatch(router, /path="\/missions\/4rt" element={toMarket}/);
+  assert.match(shell, /import \{ contextHref \} from "@\/product\/ProductNav"/);
+  assert.match(shell, /to={contextHref\(to, search\)}/);
+  assert.match(shell, /LENSES\.map\(\(\[title, line, to\]\) => <LensLink/);
+});
+
 test("mobile navigation exposes Culture and contains keyboard focus", () => {
   assert.match(shell, />CULTURE_<\/div>/);
   assert.match(shell, /CULTURE\.map/);

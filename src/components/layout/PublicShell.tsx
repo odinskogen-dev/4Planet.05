@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT } from "@/styles/tokens";
 import { Mark } from "@/components/ui";
+import { contextHref } from "@/product/ProductNav";
 import { content } from "@/content/contentRepository";
 import { img } from "@/content/imageRegistry";
 import type { DomainKey } from "@/types/content";
@@ -67,6 +68,11 @@ function PanelLink({ title, line, to, accent = T.blue, onSelect }: { title: stri
   );
 }
 
+function LensLink({ title, line, to, onSelect }: { title: string; line: string; to: string; onSelect: () => void }) {
+  const { search } = useLocation();
+  return <PanelLink title={title} line={line} to={contextHref(to, search)} onSelect={onSelect} />;
+}
+
 function DomainColumn({ dk, onSelect, showMissions = true }: { dk: DomainKey; onSelect: () => void; showMissions?: boolean }) {
   const accent = DOMAIN_ACCENT[dk];
   const missions = content.getMissionsByDomain(dk);
@@ -108,7 +114,7 @@ function DesktopPanel({ panel, onClose }: { panel: PanelKey; onClose: () => void
 
         {panel === "EXPLORE" && (
           <div className="nav-panel-grid nav-panel-grid--2">
-            {LENSES.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
+            {LENSES.map(([title, line, to]) => <LensLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
           </div>
         )}
         {panel === "DOMAINS" && (
@@ -148,7 +154,7 @@ function MobileMenu({ dialogRef, onClose }: { dialogRef: React.RefObject<HTMLDiv
         <button type="button" className="mobile-nav__close" aria-label="Close navigation" onClick={onClose}>CLOSE</button>
         <div style={{ ...mono, color: T.blue }}>EXPLORE_</div>
         <div className="mobile-nav__lenses">
-          {LENSES.map(([title, line, to]) => <PanelLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
+          {LENSES.map(([title, line, to]) => <LensLink key={title} title={title} line={line} to={to} onSelect={onClose} />)}
         </div>
 
         <div style={{ ...mono, color: T.blue, marginTop: 44 }}>DOMAINS + MISSIONS_</div>
