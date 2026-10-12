@@ -189,7 +189,7 @@ for slug in ["asian-elephant","bornean-orangutan"]:
             before=before.replace(old_url,new_url)
     d=json.loads(before)
     assert d["slug"]==slug
-    p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\\n")
+    p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+"\n")
     print("CLAUDE_EXISTING_CITATION_URL_CANONICAL",slug)
 
 print("CLAUDE_SOURCES_EXISTING_COMPONENTS_PRESERVED")
