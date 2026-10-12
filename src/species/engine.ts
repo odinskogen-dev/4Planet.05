@@ -8,6 +8,11 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { registerOrResolveTaxon, type TaxonRegistryPersistenceScope } from "./registry";
+import {
+  COL_XR_SOURCE_AUTHORITY,
+  reviewTaxonomyMatch,
+  type TaxonomyMatchReview,
+} from "./matchGate";
 
 export const COL_XR_CHECKLIST_KEY = "7ddf754f-d193-4cc9-b351-99906754a03b";
 
@@ -71,6 +76,7 @@ export interface UniversalTaxonProfile {
   };
   externalIds: ExternalTaxonIds;
   classification: TaxonomyNode[];
+  taxonomyMatch: TaxonomyMatchReview;
   occurrences?: UniversalOccurrenceSummary;
   sources: SourceStamp[];
   limitations: string[];
@@ -120,7 +126,31 @@ export interface ColResolution {
   status?: string;
   kingdom?: string;
   classification: TaxonomyNode[];
+  taxonomyMatch: TaxonomyMatchReview;
   source: SourceStamp;
+}
+
+function resolveMatchReview(
+  payload: any,
+  request: { name: string; rank?: string; identifierBased?: boolean },
+): TaxonomyMatchReview {
+  const matchedUsage = payload?.usage;
+  const acceptedUsage = payload?.acceptedUsage ?? matchedUsage;
+  return reviewTaxonomyMatch({
+    sourceAuthority: COL_XR_SOURCE_AUTHORITY,
+    checklistKey: COL_XR_CHECKLIST_KEY,
+    requestedName: request.name,
+    requestedRank: request.rank,
+    matchedName: matchedUsage?.name ? String(matchedUsage.name) : undefined,
+    acceptedName: acceptedUsage?.name ? String(acceptedUsage.name) : undefined,
+    returnedRank: acceptedUsage?.rank ? String(acceptedUsage.rank) : undefined,
+    matchType: payload?.diagnostics?.matchType,
+    confidence: payload?.diagnostics?.confidence,
+    alternatives: payload?.alternatives,
+    issues: payload?.issues,
+    identifierBased: request.identifierBased,
+    synonym: payload?.synonym,
+  });
 }
 
 /** Resolve a scientific name against Catalogue of Life XR through GBIF v2. */
@@ -147,6 +177,7 @@ export async function resolveColXr(scientificName: string, rank?: string): Promi
   }
 
   const classification = normalizeClassification(result.data?.classification);
+  const taxonomyMatch = resolveMatchReview(result.data, { name: scientificName.trim(), rank });
   return {
     ok: true,
     data: {
@@ -158,13 +189,17 @@ export async function resolveColXr(scientificName: string, rank?: string): Promi
       status: usage.status ? String(usage.status).toUpperCase() : undefined,
       kingdom: classification.find((n) => n.rank === "KINGDOM")?.name,
       classification,
+      taxonomyMatch,
       source,
     },
   };
 }
 
 /** Crosswalk an old numeric GBIF Backbone key into the current COL XR identity. */
-export async function legacyGbifToColXr(gbifKey: number): Promise<EngineResult<ColResolution>> {
+export async function legacyGbifToColXr(
+  gbifKey: number,
+  expected: { scientificName?: string; rank?: string } = {},
+): Promise<EngineResult<ColResolution>> {
   const q = new URLSearchParams({ scientificNameID: `gbif:${gbifKey}`, checklistKey: COL_XR_CHECKLIST_KEY });
   const sourceUrl = `https://api.gbif.org/v2/species/match?${q.toString()}`;
   const checkedAt = now();
@@ -183,6 +218,11 @@ export async function legacyGbifToColXr(gbifKey: number): Promise<EngineResult<C
     return { ok: false, error: "COL_XR_NO_MATCH", sources: [source] };
   }
   const classification = normalizeClassification(result.data?.classification);
+  const taxonomyMatch = resolveMatchReview(result.data, {
+    name: expected.scientificName ?? `gbif:${gbifKey}`,
+    rank: expected.rank,
+    identifierBased: true,
+  });
   return {
     ok: true,
     data: {
@@ -194,6 +234,7 @@ export async function legacyGbifToColXr(gbifKey: number): Promise<EngineResult<C
       status: usage.status ? String(usage.status).toUpperCase() : undefined,
       kingdom: classification.find((n) => n.rank === "KINGDOM")?.name,
       classification,
+      taxonomyMatch,
       source,
     },
   };
@@ -334,13 +375,15 @@ export async function materializeUniversalTaxonProfile(
     artsdatabankenScientificNameId: norwayData?.scientificNameId,
   };
 
-  const registry = registerOrResolveTaxon({
-    canonicalName: col.data.canonicalName,
-    scientificName: col.data.scientificName,
-    rank: col.data.rank,
-    status: col.data.status,
-    externalIds,
-  });
+  const registry = col.data.taxonomyMatch.state === "ELIGIBLE_FOR_TEST_REGISTRY"
+    ? registerOrResolveTaxon({
+        canonicalName: col.data.canonicalName,
+        scientificName: col.data.scientificName,
+        rank: col.data.rank,
+        status: col.data.status,
+        externalIds,
+      })
+    : null;
 
   const limitations = [
     "This is a source-materialised Universal Profile, not a curated 4PLANET Gold Profile.",
@@ -349,6 +392,11 @@ export async function materializeUniversalTaxonProfile(
       ? "4PLANET identity is persisted in the TEST browser registry only; it is not yet shared BRAIN infrastructure."
       : "No persisted TEST registry was available, so identity remains externally anchored for this materialisation.",
   ];
+  if (col.data.taxonomyMatch.state === "REVIEW_REQUIRED") {
+    limitations.push(
+      `Taxonomic identity requires review before TEST registry persistence: ${col.data.taxonomyMatch.reasons.join(", ")}.`,
+    );
+  }
   if (!norwayData) limitations.push("No Norway-specific Artsdatabanken enrichment was resolved for this materialisation.");
 
   return {
@@ -372,6 +420,7 @@ export async function materializeUniversalTaxonProfile(
         : undefined,
       externalIds,
       classification: col.data.classification,
+      taxonomyMatch: col.data.taxonomyMatch,
       occurrences: occurrences.ok ? occurrences.data : undefined,
       sources,
       limitations,

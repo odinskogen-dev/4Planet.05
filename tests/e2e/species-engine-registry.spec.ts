@@ -18,6 +18,7 @@ test("universal profile reuses the same TEST registry id", async ({ page }) => {
           { key: "PINACEAE", name: "Pinaceae", rank: "FAMILY" },
           { key: "PICEA", name: "Picea", rank: "GENUS" },
         ],
+        diagnostics: { matchType: "EXACT", confidence: 99 },
       }),
     });
   });
