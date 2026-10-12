@@ -4,6 +4,7 @@ import test from "node:test";
 import ts from "typescript";
 
 const source = await readFile(new URL("../src/impact/actionContract.ts", import.meta.url), "utf8");
+const impactHomeSource = await readFile(new URL("../src/pages/integrated/ImpactPremium.tsx", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -11,6 +12,13 @@ const transpiled = ts.transpileModule(source, {
   },
 }).outputText;
 const action = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
+
+test("IMPACT home exposes the existing Bay proof without implying that funding is open", () => {
+  assert.match(impactHomeSource, /contextHref\("\/impact\/actions\/bay-of-biscay-survey", location\.search\)/);
+  assert.match(impactHomeSource, /Explore a documented action — not open for funding/);
+  assert.doesNotMatch(impactHomeSource, />\s*(Fund|Donate|Sponsor|Pay now)\b/i);
+  assert.equal((impactHomeSource.match(/IMPACT_UNITS\.map/g) ?? []).length, 2);
+});
 
 test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
   const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;

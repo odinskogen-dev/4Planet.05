@@ -60,6 +60,12 @@ export function ImpactPublicHome() {
             will say so, with sources. 4PLANET is the mission owner and initiator; a field partner is who we choose to
             carry the work out.
           </p>
+          <Link
+            to={contextHref("/impact/actions/bay-of-biscay-survey", location.search)}
+            style={{ ...mono, display: "inline-block", marginTop: 24, color: T.acid, fontSize: 11, letterSpacing: ".1em" }}
+          >
+            Explore a documented action — not open for funding →
+          </Link>
         </section>
       </div>
     </PublicShell>
@@ -212,7 +218,3 @@ export function ImpactStory() {
             <Link to={backHref} style={{ ...mono, fontSize: 12, letterSpacing: ".1em", color: "#000", background: u.accent, padding: "13px 20px", textDecoration: "none" }}>← ALL FOUR ACTIONS</Link>
           </div>
         </div>
-      </article>
-    </PublicShell>
-  );
-}
