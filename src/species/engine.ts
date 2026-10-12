@@ -185,7 +185,10 @@ export async function resolveColXr(scientificName: string, rank?: string): Promi
       scientificName: String(usage.name),
       canonicalName: String(usage.canonicalName ?? usage.name),
       authorship: usage.authorship ? String(usage.authorship) : undefined,
-      rank: String(usage.rank ?? rank ?? "UNRANKED").toUpperCase(),
+      // The requested rank is matching context, not source evidence. If COL XR
+      // omits the returned rank, keep the materialised rank explicitly unknown
+      // and let taxonomyMatch retain the separately requested rank for review.
+      rank: String(usage.rank ?? "UNRANKED").toUpperCase(),
       status: usage.status ? String(usage.status).toUpperCase() : undefined,
       kingdom: classification.find((n) => n.rank === "KINGDOM")?.name,
       classification,
