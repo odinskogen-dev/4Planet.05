@@ -22,9 +22,9 @@ export function ImpactPublicHome() {
             <div className="impact-eyebrow">4PLANET IMPACT_ · FOR A LIVING PLANET</div>
             <h1 className="impact-hero__title">Action for the planet, made credible.</h1>
             <p className="impact-hero__lede">
-              Four ways to act for living systems — each one grounded in real ecology and delivered by a chosen field
-              partner. We are the mission owner and initiator; the science is sourced, and nothing is counted as done
-              until the evidence supports it.
+              Four ways to act for living systems — each one grounded in real ecology and designed for delivery by field
+              partners once selected and verified. We are the mission owner and initiator; the science is sourced, and
+              nothing is counted as done until the evidence supports it.
             </p>
           </div>
           <div className="impact-scroll-cue">SCROLL ↓</div>

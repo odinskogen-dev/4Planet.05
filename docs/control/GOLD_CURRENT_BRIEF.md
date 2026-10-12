@@ -1,3 +1,50 @@
+# IMPACT — UNAPPOINTED FIELD-PARTNER TRUTH — 12 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON THE SOLE HEIR / INDEPENDENT GOLD OPEN / NO DEPLOYMENT / NO LIVE RELEASE.
+
+## USER ARRIVES BECAUSE
+A person wants to understand how the four IMPACT pathways could become real without being misled about present delivery capacity.
+
+## ONE THING TO UNDERSTAND
+The pathways are designed for field-partner delivery, but no field partner has yet been selected and verified for any of the four units.
+
+## PRIMARY ACTION
+Explore the four existing pathways and the separately documented Bay action while the funding and partner gates remain visibly closed.
+
+## SECONDARY DEPTH
+Each unit retains its explicit partner status, planned proof model, source-backed ecology and honest `TO BE SELECTED` field.
+
+## P1 DOMINANT
+IMPACT is a credible action design, not a claim of completed field delivery.
+
+## P2 ORIENTATION
+Partner selection and verification are required before delivery language can become present-tense.
+
+## P3 ACTION / NEXT
+The existing Bay proof link remains available and explicitly not open for funding.
+
+## P4 DEPTH
+Unit pages continue to expose source, partner, place and proof boundaries without inventing provider, payment, delivery, outcome or impact.
+
+## WHAT CAN BE REMOVED
+The unsupported hero phrase `delivered by a chosen field partner`.
+
+## WHAT MUST BE REUSED
+Existing four-unit structure, `impactUnits.ts` operational states, Bay action link, context retention, IMP-06/#151 receiver and sole `king/test` HEIR.
+
+## TRUTH BOUNDARY
+Designed for delivery is not selected, contracted, funded, delivered, evidenced, an outcome or verified impact.
+
+## MOBILE-FIRST RISK
+The replacement sentence must retain the existing hero hierarchy and wrapping at 390/430 widths; browser rendering remains an independent Gold gate.
+
+## HUMAN SUCCESS
+A first-time visitor cannot reasonably infer that 4PLANET has already appointed partners or completed field delivery.
+
+**BASE / ROLLBACK:** `king/test@1b4a4737fb2e3edac4bfc857ea9bf8433a63ff09`; revert this bounded correction if independent Gold finds a valid truth or product regression.
+
+**MAKER ≠ JUDGE:** Factory corrects the claim on the existing receiver; independent Gold judges the exact returned SHA. No release or production authority is created.
+
 # SPEC-GS-11 — GBIF OCCURRENCE TRUTH + RIGHTS BOUNDARY — 12 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.

@@ -5,6 +5,7 @@ import ts from "typescript";
 
 const source = await readFile(new URL("../src/impact/actionContract.ts", import.meta.url), "utf8");
 const impactHomeSource = await readFile(new URL("../src/pages/integrated/ImpactPremium.tsx", import.meta.url), "utf8");
+const impactUnitsSource = await readFile(new URL("../src/data/impactUnits.ts", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -12,12 +13,29 @@ const transpiled = ts.transpileModule(source, {
   },
 }).outputText;
 const action = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
+const impactUnitsTranspiled = ts.transpileModule(impactUnitsSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText;
+const impactUnits = await import(`data:text/javascript;base64,${Buffer.from(impactUnitsTranspiled).toString("base64")}`);
 
 test("IMPACT home exposes the existing Bay proof without implying that funding is open", () => {
   assert.match(impactHomeSource, /contextHref\("\/impact\/actions\/bay-of-biscay-survey", location\.search\)/);
   assert.match(impactHomeSource, /Explore a documented action — not open for funding/);
   assert.doesNotMatch(impactHomeSource, />\s*(Fund|Donate|Sponsor|Pay now)\b/i);
   assert.equal((impactHomeSource.match(/IMPACT_UNITS\.map/g) ?? []).length, 2);
+});
+
+test("IMPACT home never implies that an unappointed field partner has delivered work", () => {
+  assert.equal(impactUnits.IMPACT_UNITS.length, 4);
+  for (const unit of impactUnits.IMPACT_UNITS) {
+    assert.match(unit.delivery.fieldPartner, /^TO BE SELECTED\b/);
+    assert.ok(["PARTNER_VALIDATION_PENDING", "PARTNER_PATHWAY_IN_DEVELOPMENT"].includes(unit.delivery.status));
+  }
+  assert.match(impactHomeSource, /designed for delivery by field\s+partners once selected and verified/i);
+  assert.doesNotMatch(impactHomeSource, /delivered by a chosen field\s+partner/i);
 });
 
 test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
