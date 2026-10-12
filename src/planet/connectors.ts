@@ -18,6 +18,11 @@
 
 import type { Occurrence, Signal } from "./types";
 import { signalId, taxonId } from "./ids";
+import {
+  GBIF_FILTERED_TOTAL_SEMANTICS,
+  gbifOccurrenceProvenance,
+  isSemanticallyAdmissibleGbifOccurrence,
+} from "../data/gbifOccurrenceTruth";
 
 const now = () => new Date().toISOString();
 const titleCase = (s: string) =>
@@ -211,8 +216,10 @@ export const taxonVernacular = async (gbifKey: number | string): Promise<string 
   return en ? titleCase(en.vernacularName) : undefined;
 };
 
-const toOccurrence = (o: any): Occurrence | null => {
-  if (typeof o.decimalLatitude !== "number" || typeof o.decimalLongitude !== "number") return null;
+const toOccurrence = (o: any, retrievedAt: string): Occurrence | null => {
+  if (!isSemanticallyAdmissibleGbifOccurrence(o)) return null;
+  const provenance = gbifOccurrenceProvenance(o, retrievedAt);
+  if (provenance.rightsReviewState !== "PUBLIC_USE_READY") return null;
   // Only accept a media image when the record also carries a licence, so the
   // observation panel never shows an image without rights (ORCA-05, §13E).
   const media = Array.isArray(o.media)
@@ -223,7 +230,6 @@ const toOccurrence = (o: any): Occurrence | null => {
     lng: o.decimalLongitude,
     scientificName: o.scientificName ?? o.species ?? "Unidentified",
     commonName: o.vernacularName || undefined,
-    eventDate: o.eventDate ? String(o.eventDate).slice(0, 10) : undefined,
     sourceRecordId: o.key ? String(o.key) : undefined,
     sourceUrl: o.key ? `https://www.gbif.org/occurrence/${o.key}` : undefined,
     taxonKey: typeof o.taxonKey === "number" ? o.taxonKey : undefined,
@@ -232,6 +238,30 @@ const toOccurrence = (o: any): Occurrence | null => {
     mediaUrl: media?.identifier,
     mediaLicence: media?.license || media?.rights,
     mediaAttribution: media?.rightsHolder || media?.creator || "GBIF contributor",
+    ...provenance,
+  };
+};
+
+type GbifOccurrenceResult = {
+  rows: Occurrence[];
+  total: number;
+  totalSemantics: typeof GBIF_FILTERED_TOTAL_SEMANTICS;
+  returnedPageCount: number;
+  publicUseSampleCount: number;
+  rightsReviewRequiredCount: number;
+};
+
+const mapGbifOccurrenceResult = (payload: any, retrievedAt: string): GbifOccurrenceResult => {
+  const returned = Array.isArray(payload?.results) ? payload.results : [];
+  const admissible = returned.filter(isSemanticallyAdmissibleGbifOccurrence);
+  const rows = admissible.map((row: any) => toOccurrence(row, retrievedAt)).filter(Boolean) as Occurrence[];
+  return {
+    rows,
+    total: Number(payload?.count ?? admissible.length),
+    totalSemantics: GBIF_FILTERED_TOTAL_SEMANTICS,
+    returnedPageCount: returned.length,
+    publicUseSampleCount: rows.length,
+    rightsReviewRequiredCount: admissible.length - rows.length,
   };
 };
 
@@ -239,13 +269,16 @@ const toOccurrence = (o: any): Occurrence | null => {
 export const taxonOccurrences = async (
   gbifKey: number | string,
   limit = 300,
-): Promise<Result<{ rows: Occurrence[]; total: number }>> => {
+): Promise<Result<GbifOccurrenceResult>> => {
+  const retrievedAt = now();
   const r = await getJson(
-    `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&limit=${limit}`,
+    `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&occurrenceStatus=PRESENT&hasGeospatialIssue=false&limit=${limit}`,
   );
   if (!r.ok) return { ok: false, error: r.error };
-  const rows = (r.data.results ?? []).map(toOccurrence).filter(Boolean) as Occurrence[];
-  return { ok: true, data: { rows, total: r.data.count ?? rows.length } };
+  const data = mapGbifOccurrenceResult(r.data, retrievedAt);
+  return data.rightsReviewRequiredCount
+    ? { ok: true, data, partial: true, warning: `${data.rightsReviewRequiredCount} occurrence records require rights review` }
+    : { ok: true, data };
 };
 
 /** Recent records of a taxon, anywhere. Used by WATCH — see watch.ts for the caveat. */
@@ -253,24 +286,29 @@ export const taxonOccurrencesSince = async (
   gbifKey: number | string,
   sinceIso: string,
   limit = 60,
-): Promise<Result<{ rows: Occurrence[]; total: number }>> => {
+): Promise<Result<GbifOccurrenceResult>> => {
   const today = new Date().toISOString().slice(0, 10);
+  const retrievedAt = now();
   const r = await getJson(
-    `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true` +
+    `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&occurrenceStatus=PRESENT&hasGeospatialIssue=false` +
       `&eventDate=${sinceIso},${today}&limit=${limit}`,
   );
   if (!r.ok) return { ok: false, error: r.error };
-  const rows = (r.data.results ?? []).map(toOccurrence).filter(Boolean) as Occurrence[];
-  return { ok: true, data: { rows, total: r.data.count ?? rows.length } };
+  const data = mapGbifOccurrenceResult(r.data, retrievedAt);
+  return data.rightsReviewRequiredCount
+    ? { ok: true, data, partial: true, warning: `${data.rightsReviewRequiredCount} occurrence records require rights review` }
+    : { ok: true, data };
 };
 
 /** What life has been recorded inside this polygon? Powers PLACE. */
 export const occurrencesInWkt = async (
   wkt: string,
   opts: { taxonKey?: number | string; limit?: number; sinceIso?: string } = {},
-): Promise<Result<{ rows: Occurrence[]; total: number; names: string[] }>> => {
+): Promise<Result<GbifOccurrenceResult & { names: string[] }>> => {
   const q = new URLSearchParams();
   q.set("hasCoordinate", "true");
+  q.set("occurrenceStatus", "PRESENT");
+  q.set("hasGeospatialIssue", "false");
   q.set("geometry", wkt);
   q.set("limit", String(opts.limit ?? 300));
   if (opts.taxonKey) q.set("taxonKey", String(opts.taxonKey));
@@ -278,9 +316,12 @@ export const occurrencesInWkt = async (
 
   const r = await getJson(`https://api.gbif.org/v1/occurrence/search?${q.toString()}`);
   if (!r.ok) return { ok: false, error: r.error };
-  const rows = (r.data.results ?? []).map(toOccurrence).filter(Boolean) as Occurrence[];
-  const names = [...new Set(rows.map((o) => o.scientificName))].filter(Boolean);
-  return { ok: true, data: { rows, total: r.data.count ?? rows.length, names } };
+  const data = mapGbifOccurrenceResult(r.data, now());
+  const names = [...new Set(data.rows.map((o) => o.scientificName))].filter(Boolean);
+  const withNames = { ...data, names };
+  return data.rightsReviewRequiredCount
+    ? { ok: true, data: withNames, partial: true, warning: `${data.rightsReviewRequiredCount} occurrence records require rights review` }
+    : { ok: true, data: withNames };
 };
 
 /* ── OBIS ────────────────────────────────────────────────────────────────── */

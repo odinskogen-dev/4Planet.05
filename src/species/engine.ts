@@ -13,6 +13,12 @@ import {
   reviewTaxonomyMatch,
   type TaxonomyMatchReview,
 } from "./matchGate";
+import {
+  GBIF_FILTERED_TOTAL_SEMANTICS,
+  gbifOccurrenceProvenance,
+  isSemanticallyAdmissibleGbifOccurrence,
+  type GbifOccurrenceRightsReviewState,
+} from "../data/gbifOccurrenceTruth";
 
 export const COL_XR_CHECKLIST_KEY = "7ddf754f-d193-4cc9-b351-99906754a03b";
 
@@ -43,6 +49,10 @@ export interface TaxonomyNode {
 
 export interface UniversalOccurrenceSummary {
   total: number;
+  totalSemantics: typeof GBIF_FILTERED_TOTAL_SEMANTICS;
+  returnedPageCount: number;
+  publicUseSampleCount: number;
+  rightsReviewRequiredCount: number;
   country?: string;
   sample: Array<{
     key: string;
@@ -51,6 +61,17 @@ export interface UniversalOccurrenceSummary {
     lng: number;
     coordinateUncertaintyM?: number;
     sourceUrl: string;
+    licence?: string;
+    datasetKey?: string;
+    datasetTitle?: string;
+    publisher?: string;
+    publishingOrgKey?: string;
+    datasetCitation?: string;
+    datasetDoi?: string;
+    retrievedAt: string;
+    occurrenceStatus?: string;
+    hasGeospatialIssue: boolean;
+    rightsReviewState: GbifOccurrenceRightsReviewState;
   }>;
 }
 
@@ -310,6 +331,8 @@ export async function fetchGbifOccurrencesColXr(
     taxonKey: colKey,
     checklistKey: COL_XR_CHECKLIST_KEY,
     hasCoordinate: "true",
+    occurrenceStatus: "PRESENT",
+    hasGeospatialIssue: "false",
     limit: String(options.limit ?? 12),
   });
   if (options.country) q.set("country", options.country);
@@ -326,18 +349,30 @@ export async function fetchGbifOccurrencesColXr(
   };
   if (!result.ok) return { ok: false, error: `GBIF_${result.error}`, sources: [source] };
 
-  const sample = (result.data?.results ?? [])
-    .filter((row: any) => typeof row?.decimalLatitude === "number" && typeof row?.decimalLongitude === "number")
+  const returned = Array.isArray(result.data?.results) ? result.data.results : [];
+  const sample = returned
+    .filter(isSemanticallyAdmissibleGbifOccurrence)
     .map((row: any) => ({
       key: String(row.key),
-      eventDate: row.eventDate ? String(row.eventDate).slice(0, 10) : undefined,
       lat: row.decimalLatitude,
       lng: row.decimalLongitude,
       coordinateUncertaintyM: typeof row.coordinateUncertaintyInMeters === "number" ? row.coordinateUncertaintyInMeters : undefined,
       sourceUrl: `https://www.gbif.org/occurrence/${row.key}`,
+      ...gbifOccurrenceProvenance(row, checkedAt),
     }));
 
-  return { ok: true, data: { total: Number(result.data?.count ?? sample.length), country: options.country, sample } };
+  return {
+    ok: true,
+    data: {
+      total: Number(result.data?.count ?? sample.length),
+      totalSemantics: GBIF_FILTERED_TOTAL_SEMANTICS,
+      returnedPageCount: returned.length,
+      publicUseSampleCount: sample.filter((row: any) => row.rightsReviewState === "PUBLIC_USE_READY").length,
+      rightsReviewRequiredCount: sample.filter((row: any) => row.rightsReviewState === "REVIEW_REQUIRED").length,
+      country: options.country,
+      sample,
+    },
+  };
 }
 
 /** Materialise one universal source-aware profile on demand. */

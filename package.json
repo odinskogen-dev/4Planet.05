@@ -38,6 +38,7 @@
     "test:living-systems-evidence-map": "node --test scripts/living-systems-evidence-map-contract.test.mjs",
     "test:living-systems-mobile-nav": "node --test scripts/living-systems-mobile-nav-contract.test.mjs",
     "test:species-media-rights": "node --test scripts/species-media-rights-contract.test.mjs",
+    "test:species-occurrence-truth": "node --test scripts/species-occurrence-truth-contract.test.mjs",
     "test:atlas-place-runtime": "node --test scripts/atlas-place-runtime-contract.test.mjs",
     "test:4sapien-auth-boundary": "node products/4sapien/qa/test_auth_boundary.cjs"
   },

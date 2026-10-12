@@ -169,6 +169,17 @@ export interface Occurrence {
   taxonKey?: number;
   /** Coordinate uncertainty in metres when the source supplies it. */
   coordinateUncertaintyM?: number;
+  licence?: string;
+  datasetKey?: string;
+  datasetTitle?: string;
+  publisher?: string;
+  publishingOrgKey?: string;
+  datasetCitation?: string;
+  datasetDoi?: string;
+  retrievedAt?: string;
+  occurrenceStatus?: string;
+  hasGeospatialIssue?: boolean;
+  rightsReviewState?: "PUBLIC_USE_READY" | "REVIEW_REQUIRED";
 }
 
 /* ── PLACE ───────────────────────────────────────────────────────────────── */

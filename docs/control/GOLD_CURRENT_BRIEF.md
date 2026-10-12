@@ -1,3 +1,15 @@
+# SPEC-GS-11 — GBIF OCCURRENCE TRUTH + RIGHTS BOUNDARY — 12 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens a SPECIES occurrence view and expects every coordinate to be an explicit source-reported presence with visible provenance and lawful reuse state.
+**ONE THING TO UNDERSTAND:** GBIF occurrence totals are filtered source-record counts—not range, abundance, trend or live position—and a record licence never transfers to independent media.
+**PRIMARY ACTION:** require explicit PRESENT status, no geospatial issue and two finite in-range coordinates; preserve genuine zero coordinates, full event time, retrieval time, dataset/publisher/citation/DOI and raw record licence.
+**RIGHTS BOUNDARY:** CC0/public domain and plain CC BY are public-use-ready. Missing, NC, ND and SA terms remain review-required. Universal profiles preserve review-required records for downstream enforcement; public curated rows fail closed and withhold them.
+**COUNT SEMANTICS:** `total` is the GBIF server count for the explicit PRESENT/no-geospatial-issue query; returned-page, public-use and rights-review counts are separate.
+**ACCEPTANCE:** fixtures cover CC0, plain BY, BY-NC, BY-SA, missing licence, absent/unknown status, geospatial issue, null/out-of-range coordinates, genuine zeros and independent media rights on both GBIF read paths.
+**BASE / ROLLBACK:** `king/test@303d7c1dde2e264b43b7e2fe220a3014483950ce`; revert the bounded correction commit if independent Gold rejects it.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold judges the exact SHA. No deploy, Gold or LIVE claim is authorised.
+
 # ATLAS-08 — OBIS PRESENCE + COORDINATE TRUTH CORRECTION — 12 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.

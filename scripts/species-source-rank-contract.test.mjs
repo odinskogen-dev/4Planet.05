@@ -20,11 +20,13 @@ async function compile(sourcePath, outputName, replacements = []) {
 
 test.before(async () => {
   scratch = await mkdtemp(join(tmpdir(), "species-source-rank-"));
+  await compile("src/data/gbifOccurrenceTruth.ts", "gbifOccurrenceTruth.mjs");
   await compile("src/species/registry.ts", "registry.mjs");
   await compile("src/species/matchGate.ts", "matchGate.mjs");
   await compile("src/species/engine.ts", "engine.mjs", [
     ['from "./registry"', 'from "./registry.mjs"'],
     ['from "./matchGate"', 'from "./matchGate.mjs"'],
+    ['from "../data/gbifOccurrenceTruth"', 'from "./gbifOccurrenceTruth.mjs"'],
   ]);
   engine = await import(`${pathToFileURL(join(scratch, "engine.mjs")).href}?v=${Date.now()}`);
 });
