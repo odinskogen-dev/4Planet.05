@@ -218,3 +218,7 @@ export function ImpactStory() {
             <Link to={backHref} style={{ ...mono, fontSize: 12, letterSpacing: ".1em", color: "#000", background: u.accent, padding: "13px 20px", textDecoration: "none" }}>← ALL FOUR ACTIONS</Link>
           </div>
         </div>
+      </article>
+    </PublicShell>
+  );
+}
