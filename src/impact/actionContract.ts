@@ -281,6 +281,38 @@ export interface ResourceFlowProviderBinding {
   unitMinimum: number;
 }
 
+const IMMUTABLE_TIMESTAMP_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(?:Z|[+-](\d{2}):(\d{2}))$/;
+
+function isValidImmutableTimestamp(value: string): boolean {
+  const match = IMMUTABLE_TIMESTAMP_PATTERN.exec(value);
+  if (!match) return false;
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, offsetHourText, offsetMinuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const offsetHour = offsetHourText === undefined ? 0 : Number(offsetHourText);
+  const offsetMinute = offsetMinuteText === undefined ? 0 : Number(offsetMinuteText);
+  const daysInMonth = month >= 1 && month <= 12
+    ? new Date(Date.UTC(year, month, 0)).getUTCDate()
+    : 0;
+
+  return (
+    day >= 1 &&
+    day <= daysInMonth &&
+    hour <= 23 &&
+    minute <= 59 &&
+    second <= 59 &&
+    offsetHour <= 23 &&
+    offsetMinute <= 59 &&
+    Number.isFinite(Date.parse(value))
+  );
+}
+
 export const AC_SC01_0001: UniversalActionContractInstance = {
   id: "AC-SC01-0001",
   cellId: "CELL-SC01-VERIFIED-PLASTIC-RECOVERY",
@@ -377,6 +409,7 @@ export function universalActionContractCanBeginResourceFlow(
   providerBinding?: ResourceFlowProviderBinding,
 ): boolean {
   const selectedProviderId = contract.selectedProviderId.value;
+  const amount = contract.proposedResourceFlow.amount.value;
   const quantity = contract.proposedResourceFlow.quantity.value;
   const selectedProviderIsBound =
     contract.selectedProviderId.state === "KNOWN" &&
@@ -398,11 +431,12 @@ export function universalActionContractCanBeginResourceFlow(
     selectedProviderIsBound &&
     contract.actorDiligenceState === "DILIGENCE_COMPLETE" &&
     contract.proposedResourceFlow.amount.state === "KNOWN" &&
-    typeof contract.proposedResourceFlow.amount.value === "number" &&
-    contract.proposedResourceFlow.amount.value > 0 &&
+    typeof amount === "number" &&
+    Number.isFinite(amount) &&
+    amount > 0 &&
     quantityIsBound &&
     contract.authorityState === "RELEASED" &&
-    Boolean(contract.successCriteriaLockedAt) &&
+    isValidImmutableTimestamp(contract.successCriteriaLockedAt) &&
     contract.blockers.length === 0
   );
 }

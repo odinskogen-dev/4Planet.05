@@ -206,4 +206,21 @@ test("resource flow opens only when provider-bound quantity, diligence, economic
     blockers: [],
   };
   assert.equal(action.universalActionContractCanBeginResourceFlow(released, plasticBankBinding), true);
+
+  for (const invalidAmount of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, -1]) {
+    assert.equal(action.universalActionContractCanBeginResourceFlow({
+      ...released,
+      proposedResourceFlow: {
+        ...released.proposedResourceFlow,
+        amount: { ...released.proposedResourceFlow.amount, value: invalidAmount },
+      },
+    }, plasticBankBinding), false);
+  }
+
+  for (const invalidLock of ["", "   ", "not-a-date", "2026-09-07", "2026-02-30T00:00:00Z"]) {
+    assert.equal(action.universalActionContractCanBeginResourceFlow({
+      ...released,
+      successCriteriaLockedAt: invalidLock,
+    }, plasticBankBinding), false);
+  }
 });
