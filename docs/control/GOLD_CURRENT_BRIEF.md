@@ -1,3 +1,23 @@
+# ATLAS-08 — OBIS PRESENCE + COORDINATE TRUTH CORRECTION — 12 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens the WH4LES layer and expects every plotted point to be an explicit source-reported presence at a real supplied coordinate.
+**ONE THING TO UNDERSTAND:** missing coordinates are unknown, not (0,0), and missing/unknown occurrence status is not evidence of presence.
+**PRIMARY ACTION:** admit only explicit PRESENT records through the OBIS bridge and route only those records with two supplied finite in-range coordinates to the map.
+**SECONDARY DEPTH:** retain genuine equator and prime-meridian coordinates, raw presence status, rights, provenance, uncertainty and sensitive-location gates.
+**P1 DOMINANT:** null, undefined and blank coordinates remain null and never plot.
+**P2 ORIENTATION:** genuine numeric latitude or longitude zero remains valid.
+**P3 ACTION:** ABSENT, UNKNOWN and missing status cannot become visible presence points.
+**P4 DEPTH:** deterministic bridge-to-routed-WH4LES fixtures do not prove upstream completeness, browser presentation, independent Gold, deployment or LIVE behaviour.
+**WHAT CAN BE REMOVED:** fail-open status defaults and JavaScript numeric coercion of missing coordinates.
+**WHAT MUST BE REUSED:** the existing /api/obis bridge, routed WH4LES layer, rights/provenance envelope, source-bridge contract, issue #244 and sole king/test HEIR.
+**TRUTH BOUNDARY:** admitted points remain occurrence evidence only—not abundance, range, trend, causality or live position.
+**MOBILE-FIRST RISK:** no layout change; rendered desktop/mobile/WebKit acceptance remains an independent Gold gate.
+**HUMAN SUCCESS:** no unknown-status or false null-coordinate point can appear, while legitimate zero-coordinate evidence remains available.
+**DONOR DECISION:** no donor; correct the existing HEIR path in place.
+**BASE / ROLLBACK:** king/test@f70fa2ec24453003947017bdbeec54d408a9bbb7; revert the bounded correction commit if independent Gold finds a valid occurrence regression.
+**MAKER ≠ JUDGE:** Factory implements; independent Gold judges exact SHA. No deployment or production release is authorised.
+
 # NAT-PROT-01 — 4NATION PLACE/CASE CONTINUITY CORRECTION — 12 OCT 2026
 
 **STATUS:** HEIR INTEGRATE/CORRECT / RETURNED SOURCE QA / NO GOLD OR LIVE RELEASE.

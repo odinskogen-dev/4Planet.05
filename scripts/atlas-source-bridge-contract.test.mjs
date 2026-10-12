@@ -204,10 +204,10 @@ test("OBIS keeps accepted licences narrow and preserves original dataset evidenc
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response(JSON.stringify({
     results: [
-      { occurrenceID: "plain-by", license: "CC BY 4.0", bibliographicCitation: "Dataset Alpha. Original occurrence dataset.", datasetDOI: "10.1234/alpha", datasetURL: "https://obis.org/dataset/alpha" },
-      { occurrenceID: "share-alike", license: "CC BY-SA 4.0" },
-      { occurrenceID: "noncommercial-share-alike", license: "https://creativecommons.org/licenses/by-nc-sa/4.0/" },
-      { occurrenceID: "public-domain", license: "CC0 1.0" },
+      { occurrenceID: "plain-by", occurrenceStatus: "PRESENT", license: "CC BY 4.0", bibliographicCitation: "Dataset Alpha. Original occurrence dataset.", datasetDOI: "10.1234/alpha", datasetURL: "https://obis.org/dataset/alpha" },
+      { occurrenceID: "share-alike", occurrenceStatus: "PRESENT", license: "CC BY-SA 4.0" },
+      { occurrenceID: "noncommercial-share-alike", occurrenceStatus: "PRESENT", license: "https://creativecommons.org/licenses/by-nc-sa/4.0/" },
+      { occurrenceID: "public-domain", occurrenceStatus: "PRESENT", license: "CC0 1.0" },
     ],
     total: 4,
   }), { status: 200, headers: { "content-type": "application/json" } });
@@ -312,14 +312,14 @@ test("OBIS preserves composite rights, provider and sensitive-location flags", a
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response(JSON.stringify({
     results: [
-      { occurrenceID: "cc0", license: "CC0 1.0", institutionCode: "OBIS-SEAMAP" },
-      { occurrenceID: "by", license: "CC BY 4.0", provider: "Provider A" },
-      { occurrenceID: "by-nc", license: "CC BY-NC 4.0" },
-      { occurrenceID: "by-nc-nd", license: "https://creativecommons.org/licenses/by-nc-nd/4.0/" },
-      { occurrenceID: "by-sa", license: "CC BY-SA 4.0" },
-      { occurrenceID: "missing" },
-      { occurrenceID: "withheld", license: "CC BY 4.0", informationWithheld: "coordinates withheld" },
-      { occurrenceID: "generalised", license: "CC0 1.0", dataGeneralizations: "coordinates generalised" },
+      { occurrenceID: "cc0", occurrenceStatus: "PRESENT", license: "CC0 1.0", institutionCode: "OBIS-SEAMAP" },
+      { occurrenceID: "by", occurrenceStatus: "PRESENT", license: "CC BY 4.0", provider: "Provider A" },
+      { occurrenceID: "by-nc", occurrenceStatus: "PRESENT", license: "CC BY-NC 4.0" },
+      { occurrenceID: "by-nc-nd", occurrenceStatus: "PRESENT", license: "https://creativecommons.org/licenses/by-nc-nd/4.0/" },
+      { occurrenceID: "by-sa", occurrenceStatus: "PRESENT", license: "CC BY-SA 4.0" },
+      { occurrenceID: "missing", occurrenceStatus: "PRESENT" },
+      { occurrenceID: "withheld", occurrenceStatus: "PRESENT", license: "CC BY 4.0", informationWithheld: "coordinates withheld" },
+      { occurrenceID: "generalised", occurrenceStatus: "PRESENT", license: "CC0 1.0", dataGeneralizations: "coordinates generalised" },
     ],
     total: 8,
   }), { status: 200, headers: { "content-type": "application/json" } });
@@ -351,6 +351,7 @@ test("routed ATLAS WH4LES fails closed on rights and sensitive locations", () =>
   const baseRecord = {
     latitude: 0,
     longitude: 20,
+    occurrenceStatus: "PRESENT",
     scientificName: "Orcinus orca",
     licence: "CC BY 4.0",
     licenceClass: "OPEN_ATTRIBUTION",
@@ -376,12 +377,53 @@ test("routed ATLAS WH4LES fails closed on rights and sensitive locations", () =>
     { ...baseRecord, informationWithheld: "coordinates withheld" },
     { ...baseRecord, dataGeneralizations: "coordinates generalised" },
     { ...baseRecord, latitude: null },
+    { ...baseRecord, occurrenceStatus: "ABSENT" },
+    { ...baseRecord, occurrenceStatus: "UNKNOWN" },
+    { ...baseRecord, occurrenceStatus: undefined },
   ]) assert.equal(earthLayersRuntime.obisOccurrencePoint(rejected, retrievedAt), null);
 
   assert.match(earthLayers, /fetch\("\/api\/obis\?scientificName=Cetacea&size=200"\)/);
   assert.doesNotMatch(earthLayers, /api\.obis\.org\/v3\/occurrence\?scientificname=Cetacea/);
   for (const marker of ["datasetCitation", "provider", "datasetDoi", "datasetUrl", "licenceRestrictions", "locationSensitive", "OBIS DERIVED PRODUCTS MAY BE CC0"]) {
     assert.ok(earthLayers.includes(marker), `routed WH4LES missing ${marker}`);
+  }
+});
+
+test("OBIS bridge and routed WH4LES preserve explicit presence and missing-coordinate truth", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    results: [
+      { occurrenceID: "null-coordinates", occurrenceStatus: "PRESENT", decimalLatitude: null, decimalLongitude: null, license: "CC0 1.0" },
+      { occurrenceID: "blank-coordinates", occurrenceStatus: "PRESENT", decimalLatitude: " ", decimalLongitude: "", license: "CC BY 4.0" },
+      { occurrenceID: "zero-latitude", occurrenceStatus: "PRESENT", decimalLatitude: 0, decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "zero-longitude", occurrenceStatus: "PRESENT", decimalLatitude: 10, decimalLongitude: 0, license: "CC BY 4.0" },
+      { occurrenceID: "absent", occurrenceStatus: "ABSENT", decimalLatitude: 1, decimalLongitude: 2, license: "CC0 1.0" },
+      { occurrenceID: "unknown", occurrenceStatus: "UNKNOWN", decimalLatitude: 1, decimalLongitude: 2, license: "CC0 1.0" },
+      { occurrenceID: "missing-status", decimalLatitude: 1, decimalLongitude: 2, license: "CC0 1.0" },
+    ],
+    total: 7,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request("https://test.4planet.org/api/obis?scientificName=Cetacea&size=7"),
+    });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    const byId = Object.fromEntries(body.records.map((record) => [record.occurrenceId, record]));
+    assert.deepEqual(Object.keys(byId).sort(), ["blank-coordinates", "null-coordinates", "zero-latitude", "zero-longitude"]);
+    assert.equal(byId["null-coordinates"].latitude, null);
+    assert.equal(byId["null-coordinates"].longitude, null);
+    assert.equal(byId["blank-coordinates"].latitude, null);
+    assert.equal(byId["blank-coordinates"].longitude, null);
+    assert.equal(byId["zero-latitude"].latitude, 0);
+    assert.equal(byId["zero-longitude"].longitude, 0);
+    assert.equal(earthLayersRuntime.obisOccurrencePoint(byId["null-coordinates"], body.retrievedAt), null);
+    assert.equal(earthLayersRuntime.obisOccurrencePoint(byId["blank-coordinates"], body.retrievedAt), null);
+    assert.ok(earthLayersRuntime.obisOccurrencePoint(byId["zero-latitude"], body.retrievedAt));
+    assert.ok(earthLayersRuntime.obisOccurrencePoint(byId["zero-longitude"], body.retrievedAt));
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });
 

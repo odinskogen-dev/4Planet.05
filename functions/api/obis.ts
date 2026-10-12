@@ -80,6 +80,12 @@ const licenceRestrictions = (value: unknown) => {
   return restrictions;
 };
 
+const finiteCoordinate = (value: unknown, min: number, max: number) => {
+  if (value === null || value === undefined || (typeof value === "string" && !value.trim())) return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= min && number <= max ? number : null;
+};
+
 export const onRequestGet = async ({ request }: { request: Request }) => {
   const incoming = new URL(request.url);
   const scientificName = cleanScientificName(incoming.searchParams.get("scientificName"));
@@ -134,10 +140,10 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
     if (!rows) return json({ ok: false, source: "obis", error: "CONTRACT_MISMATCH" }, 502, 60);
 
     const records = rows
-      .filter((row: any) => String(row?.occurrenceStatus || "present").toLowerCase() !== "absent")
+      .filter((row: any) => String(row?.occurrenceStatus ?? "").trim().toUpperCase() === "PRESENT")
       .map((row: any) => {
-        const lat = Number(row?.decimalLatitude);
-        const lon = Number(row?.decimalLongitude);
+        const lat = finiteCoordinate(row?.decimalLatitude, -90, 90);
+        const lon = finiteCoordinate(row?.decimalLongitude, -180, 180);
         return {
           occurrenceId: row?.occurrenceID ?? row?.id ?? null,
           eventId: row?.eventID ?? null,
@@ -145,9 +151,9 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
           scientificNameId: row?.scientificNameID ?? row?.aphiaID ?? null,
           eventDate: row?.eventDate ?? null,
           basisOfRecord: row?.basisOfRecord ?? null,
-          occurrenceStatus: row?.occurrenceStatus ?? "present",
-          latitude: Number.isFinite(lat) ? lat : null,
-          longitude: Number.isFinite(lon) ? lon : null,
+          occurrenceStatus: row.occurrenceStatus,
+          latitude: lat,
+          longitude: lon,
           coordinateUncertaintyM: Number.isFinite(Number(row?.coordinateUncertaintyInMeters))
             ? Number(row.coordinateUncertaintyInMeters)
             : null,

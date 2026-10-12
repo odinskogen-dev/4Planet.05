@@ -50,6 +50,8 @@ export const safeHttpHref = (value) => {
 };
 
 export const obisOccurrencePoint = (record, retrievedAt = "") => {
+  const occurrenceStatus = String(record?.occurrenceStatus ?? "").trim().toUpperCase();
+  if (occurrenceStatus !== "PRESENT") return null;
   const rawLat = record?.latitude;
   const rawLon = record?.longitude;
   if (rawLat === null || rawLat === undefined || rawLat === "" || rawLon === null || rawLon === undefined || rawLon === "") return null;
@@ -65,6 +67,7 @@ export const obisOccurrencePoint = (record, retrievedAt = "") => {
   return {
     lon,
     lat,
+    occurrenceStatus,
     scientificName: String(record?.scientificName ?? "Cetacea").trim() || "Cetacea",
     eventDate: String(record?.eventDate ?? "").trim(),
     coordinateUncertaintyM: Number.isFinite(parsedUncertainty) && parsedUncertainty >= 0 ? parsedUncertainty : null,
