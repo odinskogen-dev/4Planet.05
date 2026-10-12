@@ -23,7 +23,7 @@ jobs:
           import { chromium } from '/tmp/sqa/node_modules/playwright/index.mjs';
           import fs from 'node:fs';
           const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-          const immutable="https://71a646c7.4planet-05.pages.dev";
+          const immutable="https://c1926bb6.4planet-05.pages.dev";
           const species=["orca","gray-wolf","polar-bear","green-sea-turtle","tiger","lion","bornean-orangutan","monarch-butterfly"];
           let problems=[];
           for(const slug of ["",...species]) {
@@ -42,7 +42,7 @@ jobs:
               await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:30000});
               await page.waitForTimeout(2800);
               const d=await page.evaluate(()=>{
-                let imgs=[...document.querySelectorAll("img")].map(el=>({alt:el.alt,src:(el.currentSrc||el.src).split("?")[0],naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight,position:getComputedStyle(el).objectPosition})).slice(0,12);
+                let imgs=[...document.querySelectorAll("img")].filter(el=>el.getClientRects().length>0 && getComputedStyle(el).display!=="none").map(el=>({alt:el.alt,src:(el.currentSrc||el.src).split("?")[0],naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight,position:getComputedStyle(el).objectPosition})).slice(0,12);
                 return {url:location.href, h1:document.querySelector('h1')?.innerText||'',spx:document.querySelectorAll('.spx').length,sourceRefs:document.querySelectorAll('.spx-ref').length,sourceSection:document.querySelectorAll('.spx-source-list').length,hero:document.querySelector('.spx-hero')?.getBoundingClientRect().height,imgs,text:document.body.innerText.slice(0,230)};
               });
               console.log('HOST_MAPPED_SPECIES_QA '+JSON.stringify({slug:slug||"home",...d,errors:err}));
