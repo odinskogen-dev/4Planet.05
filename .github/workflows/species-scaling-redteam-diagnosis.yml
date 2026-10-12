@@ -1,0 +1,60 @@
+name: SPECIES Scaling Red-Team Diagnosis
+on:
+  push:
+    branches: [fix/species-claude-premium-photo-qa-20261012]
+    paths: [.github/workflows/species-scaling-redteam-diagnosis.yml]
+permissions: {contents: read}
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/s-rt playwright@1.56.0
+          /tmp/s-rt/node_modules/.bin/playwright install --with-deps chromium
+      - name: Measure iPhone fold, 21 species template, source badges, photographs
+        shell: bash
+        run: |
+          set -eu
+          mkdir -p /tmp/species-rt
+          node --input-type=module <<'NODE'
+          import {chromium} from '/tmp/s-rt/node_modules/playwright/index.mjs';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const dims=[[390,844],[375,667],[430,932],[1440,900]];
+          for(const [width,height] of dims){
+            const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
+            await page.goto('https://4species.com/',{waitUntil:'domcontentloaded',timeout:25000});
+            await page.waitForTimeout(1650);
+            const m=await page.evaluate(()=>{
+              const by=s=>document.querySelector(s), r=el=>{if(!el)return null;const d=el.getBoundingClientRect();return {top:Math.round(d.top),bottom:Math.round(d.bottom),height:Math.round(d.height),left:Math.round(d.left),width:Math.round(d.width)}};
+              const hero=by('.spx-u-hero'),body=by('.spx-u-hero-body'),form=by('.spx-u-hero input, .spx-u-hero [role=search]'), img=by('.spx-u-hero .spx-hero-img');
+              return {viewport:innerHeight,hero:r(hero),body:r(body),input:r(form),h1:r(by('.spx-u-h1')),image:r(img),photoNatural:[img?.naturalWidth,img?.naturalHeight],heroCSS:{display:getComputedStyle(hero).display,justify:getComputedStyle(hero).justifyContent,minHeight:getComputedStyle(hero).minHeight},bodyCSS:{display:getComputedStyle(body).display,position:getComputedStyle(body).position,padding:getComputedStyle(body).padding,margin:getComputedStyle(body).margin,transform:getComputedStyle(body).transform},searchNode:form?.outerHTML.slice(0,320),navbar:r(by('.spx-u-hero .spx-bar, .spx-u-hero nav'))};
+            });
+            console.log('FOLD_MEASURE '+JSON.stringify({width,height,...m}));
+            await page.screenshot({path:'/tmp/species-rt/home-'+width+'x'+height+'.png',animations:'disabled'});
+            await page.close();
+          }
+          const slugs=['orca','african-savanna-elephant','asian-elephant','bald-eagle','black-rhinoceros','blue-whale','bornean-orangutan','cheetah','chimpanzee','emperor-penguin','giant-panda','giraffe','gray-wolf','great-white-shark','green-sea-turtle','hippopotamus','jaguar','lion','monarch-butterfly','polar-bear','tiger'];
+          for(const slug of slugs){
+            const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            const errors=[];page.on('pageerror',e=>errors.push(e.message.slice(0,150)));
+            try{
+              await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(650);
+              const d=await page.evaluate(()=>{
+                const images=[...document.querySelectorAll('img')].filter(x=>x.getClientRects().length>0&&getComputedStyle(x).display!=='none').slice(0,6);
+                return {h1:document.querySelector('h1')?.textContent||'',template:document.querySelector('.spx')?.getAttribute('data-page')||null,spx:document.querySelectorAll('.spx').length,refs:document.querySelectorAll('.spx-ref').length,sources:document.querySelectorAll('.spx-source-list').length,heroImages:document.querySelectorAll('.spx-hero-slide img').length,images:images.map(x=>({url:(x.currentSrc||x.src).split('?')[0],alt:x.alt.slice(0,90),natural:[x.naturalWidth,x.naturalHeight],box:[Math.round(x.getBoundingClientRect().width),Math.round(x.getBoundingClientRect().height)],focus:getComputedStyle(x).objectPosition}))};
+              });
+              console.log('SPECIES_MOBILE_AUDIT '+JSON.stringify({slug,...d,errors}));
+            }catch(e){console.log('SPECIES_MOBILE_FAIL '+slug+' '+e);}
+            await page.close();
+          }
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-mobile-fold-20261012
+          path: /tmp/species-rt/
+          retention-days: 3
