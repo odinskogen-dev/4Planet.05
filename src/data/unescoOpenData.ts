@@ -41,6 +41,17 @@ export interface DatasetMetadata {
   geographicSemantics: string;
   limitation: string;
   productRoles: readonly string[];
+  edition?: {
+    datasetDescriptionAsOf: string;
+    datasetProcessedAt: string;
+    recordsetVersion: "RETRIEVED_AT_REQUEST_TIME";
+    referenceLabel: string;
+    referenceUrl: string;
+    referenceUpdatedAt: string;
+    referenceCountSummary: string;
+    status: "MIXED_EDITION";
+    limitation: string;
+  };
 }
 
 const UNESCO_RIGHTS = (attribution: string): DataRightsEnvelope => ({
@@ -96,10 +107,21 @@ export const UNESCO_DATASETS: Record<UnescoDatasetId, DatasetMetadata> = {
     apiPath: "/api/unesco-data?dataset=eg0001",
     maxRecords: 300,
     rights: UNESCO_RIGHTS("UNESCO"),
-    temporalSemantics: "DESIGNATION / SOURCE-RECORD DATES; NOT LIVE CONDITION",
+    temporalSemantics: "DESIGNATION / SOURCE-RECORD DATES; FOUR-YEAR REVALIDATION; NOT LIVE OR CURRENT-STATUS PROOF",
     geographicSemantics: "SOURCE-PROVIDED REPRESENTATIVE COORDINATE FOR A GEOPARK",
-    limitation: "The point is not the geopark boundary and designation does not establish present environmental condition.",
+    limitation: "The point is not the geopark boundary. Designation does not establish current legal protection, current revalidation status or ecological outcome.",
     productRoles: ["ATLAS", "4NATION", "NATUREBRAIN"],
+    edition: {
+      datasetDescriptionAsOf: "2025-01-15",
+      datasetProcessedAt: "2026-05-28",
+      recordsetVersion: "RETRIEVED_AT_REQUEST_TIME",
+      referenceLabel: "UNESCO official Global Geoparks list",
+      referenceUrl: "https://www.unesco.org/en/iggp/geoparks",
+      referenceUpdatedAt: "2026-07-24",
+      referenceCountSummary: "241 geoparks / 51 countries",
+      status: "MIXED_EDITION",
+      limitation: "The older DataHub description is stale reference text. Processing time does not establish semantic currency; the returned recordset and current UNESCO list must not be presented as the same edition.",
+    },
   },
   ioc001: {
     id: "ioc001",
@@ -231,6 +253,10 @@ export interface UnescoAtlasRecord {
   iso2?: string;
   date?: string;
   category?: string;
+  designationType?: "UNESCO_GLOBAL_GEOPARK";
+  legalProtection?: "UNKNOWN";
+  ecologicalOutcome?: "UNKNOWN";
+  revalidationStatus?: "UNKNOWN";
   sourceUrl: string;
   summary?: string;
   metrics?: {
@@ -366,6 +392,10 @@ export const normaliseUnescoAtlasRecord = (
       datasetId,
       title,
       kind: "GLOBAL_GEOPARK",
+      designationType: "UNESCO_GLOBAL_GEOPARK",
+      legalProtection: "UNKNOWN",
+      ecologicalOutcome: "UNKNOWN",
+      revalidationStatus: "UNKNOWN",
       ...point,
       iso2: String(f.countries ?? "").trim().toUpperCase() || undefined,
       date: String(f.date ?? "").trim() || undefined,
