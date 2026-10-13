@@ -27,6 +27,7 @@ interface SeoProps {
   section?: string;
   tags?: string[];
   jsonLd?: JsonLd | ((context: JsonLdContext) => JsonLd);
+  canonical?: boolean;
 }
 
 function publicOrigin(): string {
@@ -110,6 +111,7 @@ export function Seo({
   section,
   tags = [],
   jsonLd,
+  canonical = true,
 }: SeoProps) {
   useEffect(() => {
     const origin = publicOrigin();
@@ -132,7 +134,8 @@ export function Seo({
     upsertMeta("name", "twitter:description", description);
     upsertMeta("name", "twitter:image", imageUrl);
     upsertMeta("name", "twitter:image:alt", imageAlt);
-    upsertCanonical(canonicalUrl);
+    if (canonical) upsertCanonical(canonicalUrl);
+    else document.head.querySelector('link[rel="canonical"]')?.remove();
 
     clearArticleMetadata();
     if (type === "article") {
@@ -155,7 +158,7 @@ export function Seo({
     }
 
     return resetDefaultMetadata;
-  }, [author, description, image, imageAlt, jsonLd, locale, modifiedTime, path, publishedTime, robots, section, siteName, tags, title, type]);
+  }, [author, canonical, description, image, imageAlt, jsonLd, locale, modifiedTime, path, publishedTime, robots, section, siteName, tags, title, type]);
 
   return null;
 }
