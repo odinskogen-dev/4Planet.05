@@ -109,7 +109,11 @@ test("GREEN DATA — four curated UNESCO layers render through the existing ATLA
 
   await page.waitForFunction((layerIds) => {
     const map = (window as any).__4planet_map;
-    return layerIds.every((id: string) => Boolean(map?.getLayer?.(id)) && Boolean(map?.getSource?.(id)));
+    return layerIds.every((id: string) =>
+      Boolean(map?.getLayer?.(id)) &&
+      Boolean(map?.getSource?.(id)) &&
+      map.querySourceFeatures(id).length > 0
+    );
   }, ids, { timeout: 25_000 });
 
   const counts = await page.evaluate((layerIds) => {
