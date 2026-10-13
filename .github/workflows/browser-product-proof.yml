@@ -74,12 +74,14 @@ jobs:
       - name: Run structured-data runtime ownership proof
         env:
           BASE_URL: http://127.0.0.1:4173
-        run: >-
-          npm run test:e2e --
-          tests/e2e/seo-jsonld-runtime.spec.ts
-          --project=desktop-1440
-          --project=mobile-390
-          --project=webkit-390
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:e2e -- tests/e2e/seo-jsonld-runtime.spec.ts \
+            --project=desktop-1440 \
+            --project=mobile-390 \
+            --project=webkit-390 \
+            --reporter=line 2>&1 | tee structured-data-runtime-proof.log
       - name: Run Discovery Engine 01 browser proof
         env:
           BASE_URL: http://127.0.0.1:4173
@@ -217,5 +219,6 @@ jobs:
             test-results
             runtime-url.txt
             runtime-sha.txt
+            structured-data-runtime-proof.log
           if-no-files-found: warn
           retention-days: 14
