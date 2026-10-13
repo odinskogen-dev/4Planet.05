@@ -56,6 +56,8 @@ jobs:
               if (!(field in record)) throw new Error(`${id}: missing field ${field}`);
             }
             console.log(`${id}: endpoint/schema PASS; total=${body.total_count ?? "unknown"}`);
+          }
+
           const wdiUrl = 'https://data.unesco.org/api/explore/v2.1/catalog/datasets/wdi001/records?limit=3&select=year,country,country_title_en,population_total,gdp_total,gdp_per_capita,life_expectancy&where=' + encodeURIComponent('country="NO"') + '&order_by=' + encodeURIComponent('year desc');
           const wdiResponse = await fetch(wdiUrl, { headers: { accept: "application/json", "user-agent": "4PLANET-GREEN-DATA-QA/1.0" } });
           if (!wdiResponse.ok) throw new Error(`wdi001: HTTP ${wdiResponse.status}`);
@@ -63,7 +65,6 @@ jobs:
           if (!Array.isArray(wdi.results) || wdi.results.length < 1) throw new Error("wdi001: no Norway rows");
           if (wdi.results.some((row) => String((row.fields ?? row).country || "").toUpperCase() !== "NO")) throw new Error("wdi001: country filter escaped boundary");
           console.log(`wdi001: country filter/schema PASS; Norway rows=${wdi.total_count ?? "unknown"}`);
-          }
           NODE
 
       - name: Shared-data and Atlas contract
