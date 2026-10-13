@@ -12,6 +12,8 @@ on:
       - "src/earth/atlasSourceControl.ts"
       - "src/pages/v5/Atlas.tsx"
       - "scripts/unesco-green-data-contract.test.mjs"
+      - "tests/e2e/atlas-green-data.spec.ts"
+      - "supabase/migrations/20261013120500_naturebrain_unesco_source_family_v01.sql"
       - ".github/workflows/green-data-atlas-candidate.yml"
   workflow_dispatch:
 
@@ -75,3 +77,24 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > green-data-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/atlas > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat green-data-preview.log
+          exit 1
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Browser proof — curated Atlas layers
+        env:
+          BASE_URL: http://127.0.0.1:4173
+          ATLAS_LOCAL_PRECHECK: "1"
+        run: |
+          npx playwright test tests/e2e/atlas-green-data.spec.ts             --project=desktop-1440             --project=mobile-390             --project=webkit-desktop             --project=webkit-390
