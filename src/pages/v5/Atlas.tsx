@@ -697,9 +697,10 @@ function AtlasMap() {
   const applyIsolate = (v) => {
     setIsolate(v);
     const m = map.current;
-    ["whales", "species", "events", "quakes", "iss", "nearme"].forEach((id) => {
-      if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", v ? "none" : "visible");
+    LAYERS.filter((l) => l.kind === "point" || l.kind === "live").forEach((l) => {
+      if (m.getLayer(l.id)) m.setLayoutProperty(l.id, "visibility", v ? "none" : "visible");
     });
+    if (m.getLayer("nearme")) m.setLayoutProperty("nearme", "visibility", v ? "none" : "visible");
   };
 
   const clearSearch = () => {
@@ -711,8 +712,10 @@ function AtlasMap() {
   };
 
   const visible = LAYERS.filter((l) => l.domain.includes(mode));
-  const activeLayers = RASTER_ORDER.concat(["shade", "whales", "species", "events", "quakes", "iss"])
-    .map((id) => visible.find((l) => l.id === id)).filter((l) => l && on[l.id]);
+  const activeLayers = RASTER_ORDER.concat(
+    ["shade"],
+    LAYERS.filter((l) => l.kind === "point" || l.kind === "live").map((l) => l.id),
+  ).map((id) => visible.find((l) => l.id === id)).filter((l) => l && on[l.id]);
 
   const row = (l) => (
     <React.Fragment key={l.id}>
@@ -731,6 +734,8 @@ function AtlasMap() {
         <div className="drawer">
           <div className="foot">{l.note}</div>
           <div className="foot" style={{ marginTop: 5, opacity: .75 }}>SOURCE {DOT} {l.src}</div>
+          {l.period && <div className="foot" style={{ marginTop: 3, opacity: .65 }}>TIME {DOT} {l.period}</div>}
+          {l.rights && <div className="foot" style={{ marginTop: 3, opacity: .65 }}>RIGHTS {DOT} {l.rights}</div>}
         </div>
       )}
       {on[l.id] && l.legend && status[l.id] !== "UNAVAILABLE" && (
