@@ -31,12 +31,24 @@ export const stamp = () => new Date().toISOString().slice(11, 16) + "Z";
 
 export const gbifLicenceClass = (value) => {
   const licence = String(value ?? "").trim();
-  const lower = licence.toLowerCase();
-  const creativeCommonsPath = lower.match(/creativecommons\.org\/(?:licenses|publicdomain)\/([^/]+)/)?.[1] || "";
-  const normalised = licence.toUpperCase().replace(/[_/]+/g, " ").replace(/\s+/g, " ");
-  if (creativeCommonsPath === "zero" || /\bCC0\b|PUBLIC DOMAIN/.test(normalised)) return "OPEN_CC0";
-  if (creativeCommonsPath === "by") return "OPEN_ATTRIBUTION";
-  if (/\bCC BY\b/.test(normalised) && !/\b(NC|ND|SA)\b/.test(normalised)) return "OPEN_ATTRIBUTION";
+  if (!licence) return "REVIEW_REQUIRED";
+
+  try {
+    const url = new URL(licence);
+    const officialHost = url.hostname === "creativecommons.org" || url.hostname === "www.creativecommons.org";
+    const path = url.pathname.toLowerCase().replace(/\/+$/, "");
+    if (!officialHost || !["https:", "http:"].includes(url.protocol)) return "REVIEW_REQUIRED";
+    if (/^\/publicdomain\/zero\/\d+(?:\.\d+)?(?:\/legalcode)?$/.test(path)) return "OPEN_CC0";
+    if (/^\/licenses\/by\/\d+(?:\.\d+)?(?:\/legalcode)?$/.test(path)) return "OPEN_ATTRIBUTION";
+    return "REVIEW_REQUIRED";
+  } catch {
+    // Non-URL values must match a small explicit token allow-list below.
+  }
+
+  const normalised = licence.toUpperCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  if (/\b(?:NOT|NO|NON)\b/.test(normalised)) return "REVIEW_REQUIRED";
+  if (/^(?:CC0|CC ZERO)(?: \d+(?:\.\d+)?)?$/.test(normalised) || normalised === "PUBLIC DOMAIN") return "OPEN_CC0";
+  if (/^CC BY(?: \d+(?:\.\d+)?)?$/.test(normalised)) return "OPEN_ATTRIBUTION";
   return "REVIEW_REQUIRED";
 };
 
