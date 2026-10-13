@@ -69,6 +69,15 @@ jobs:
           cat /tmp/4planet-preview.log || true
           exit 1
 
+      - name: Run IMPACT Living Action Network Gold proof
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/impact-lan-gold.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+
       # Exact-head release verification debt for issue #132. This executes before
       # unrelated product suites so later failures cannot suppress the receipt.
       - name: Run structured-data runtime ownership proof
