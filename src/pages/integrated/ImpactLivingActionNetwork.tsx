@@ -280,24 +280,28 @@ function ProjectPageBody({ project, payload }: { project: ImpactLanProject; payl
 export function ImpactProjectProfilePage() {
   const { slug = "" } = useParams();
   const { payload, state } = useImpactLan();
+  const project = payload?.projects.find((item) => impactProjectSlug(item.id) === slug) ?? null;
+  useEffect(() => {
+    if (project) trackEvent("impact_project_view", { project_id: project.id });
+  }, [project]);
   if (state === "LOADING") return <PublicShell><LoadingState /></PublicShell>;
   if (state === "ERROR" || !payload) return <PublicShell><ErrorState /></PublicShell>;
-  const project = payload.projects.find((item) => impactProjectSlug(item.id) === slug);
   if (!project) return <Navigate to="/impact" replace />;
-  useEffect(() => { trackEvent("impact_project_view", { project_id: project.id }); }, [project.id]);
   return <ProjectPageBody project={project} payload={payload} />;
 }
 
 export function ImpactActorProfilePage() {
   const { slug = "" } = useParams();
   const { payload, state } = useImpactLan();
+  const related = payload?.projects.filter((project) => project.actor && impactActorSlug(project.actor.id) === slug) ?? [];
+  const actor = related[0]?.actor ?? null;
+  const citations = Array.from(new Set(related.flatMap((project) => project.evidence.map((item) => item.source_url).filter((url): url is string => Boolean(url)))));
+  useEffect(() => {
+    if (actor) trackEvent("impact_actor_view", { actor_id: actor.id });
+  }, [actor]);
   if (state === "LOADING") return <PublicShell><LoadingState /></PublicShell>;
   if (state === "ERROR" || !payload) return <PublicShell><ErrorState /></PublicShell>;
-  const related = payload.projects.filter((project) => project.actor && impactActorSlug(project.actor.id) === slug);
-  const actor = related[0]?.actor;
   if (!actor) return <Navigate to="/impact" replace />;
-  const citations = Array.from(new Set(related.flatMap((project) => project.evidence.map((item) => item.source_url).filter((url): url is string => Boolean(url)))));
-  useEffect(() => { trackEvent("impact_actor_view", { actor_id: actor.id }); }, [actor.id]);
 
   return (
     <PublicShell>
