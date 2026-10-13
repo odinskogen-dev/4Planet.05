@@ -57,26 +57,30 @@ export function resolveSpeciesImageLicence(mediaLicense?: string): string {
 export function classifySpeciesMediaRights(license?: string): SpeciesMediaRightsState {
   const raw = normaliseLicence(license);
   if (!raw) return "BLOCKED";
-  const value = raw.toLowerCase().replace(/_/g, "-");
+  const value = raw.toLowerCase().replace(/_/g, "-").trim();
+
+  // A negative or restricted token must win before any positive substring.
+  // This prevents phrases such as "Not public domain" and whitespace-form
+  // CC BY NC/ND labels from being treated as reusable media licences.
+  if (/\b(?:not|no|non)[-\s]+public[-\s]+domain\b/.test(value)) return "REVIEW_REQUIRED";
+
+  const isCreativeCommons = value.includes("creativecommons.org/licenses/") || /^cc[-\s]+by\b/.test(value);
+  if (isCreativeCommons && /(?:^|[-\s/])(?:nc|nd)(?:[-\s/.]|$)/.test(value)) {
+    return "REVIEW_REQUIRED";
+  }
 
   if (
     value.includes("creativecommons.org/publicdomain/zero") ||
     value.includes("creativecommons.org/publicdomain/mark") ||
     /\bcc0\b/.test(value) ||
-    value.includes("public domain")
+    /^(?:the\s+)?public[-\s]+domain(?:[-\s]+mark(?:[-\s]+\d(?:\.\d)?)?)?$/.test(value)
   ) return "DISPLAYABLE";
 
-  const isCreativeCommons = value.includes("creativecommons.org/licenses/") || /\bcc[- ]?by\b/.test(value);
   if (!isCreativeCommons) return "REVIEW_REQUIRED";
 
-  // Keep non-commercial and no-derivatives media out of a reusable/cropped public product
-  // until the exact intended use has been reviewed.
-  if (value.includes("by-nc") || value.includes("by-nd") || value.includes("-nc-") || value.includes("-nd-")) {
-    return "REVIEW_REQUIRED";
-  }
-
-  if (value.includes("by-sa") || value.includes("cc by-sa") || value.includes("/by-sa/")) return "DISPLAYABLE";
-  if (value.includes("/by/") || /\bcc[- ]?by(?:\s|$|\d)/.test(value)) return "DISPLAYABLE";
+  if (/creativecommons\.org\/licenses\/by-sa\/\d(?:\.\d)?(?:\/|$)/.test(value)) return "DISPLAYABLE";
+  if (/creativecommons\.org\/licenses\/by\/\d(?:\.\d)?(?:\/|$)/.test(value)) return "DISPLAYABLE";
+  if (/^cc[-\s]+by(?:[-\s]+sa)?(?:[-\s]+\d(?:\.\d)?)?$/.test(value)) return "DISPLAYABLE";
 
   return "REVIEW_REQUIRED";
 }
