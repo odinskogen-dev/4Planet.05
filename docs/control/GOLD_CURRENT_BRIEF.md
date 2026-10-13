@@ -1,3 +1,14 @@
+# ATLAS — GBIF LICENCE FAIL-CLOSED CORRECTION — 13 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opens a GBIF occurrence and needs rights metadata to govern reuse truthfully.
+**ONE THING TO UNDERSTAND:** a string that merely contains open-licence words or a Creative Commons-looking path is not proof of an open licence.
+**PRIMARY ACTION:** classify only explicit vetted CC0/Public Domain/CC BY tokens or anchored official Creative Commons URLs as open.
+**ACCEPTANCE:** negated, ambiguous, spoofed-host, restricted and unknown strings remain `REVIEW_REQUIRED`; point admission rejects them; positive CC0 and CC BY controls remain admitted.
+**TRUTH BOUNDARY:** deterministic source contracts do not prove upstream metadata completeness, independent Gold, deployment or LIVE behaviour.
+**BASE / ROLLBACK:** `king/test@9cac62ba447bcc567317416594809901a4c4463d`; revert the bounded correction commits if independent Gold finds a valid licence regression.
+**MAKER ≠ JUDGE:** Factory implements F42–F44; independent Gold judges exact SHA. No release or production mutation is authorised.
+
 # NAT-PROT-01 — SSB UNIT + STATUS SOURCE TRUTH — 12 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
