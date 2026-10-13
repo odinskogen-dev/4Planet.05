@@ -22,6 +22,7 @@ import "@/styles/premium-completion.css";
 // Standalone product hosts do not belong in the ATLAS/4PLANET entry bundle.
 const PartnersHub = lazy(() => import("@/pages/partners/PartnersHub"));
 const NationApp = lazy(() => import("@/nation/NationApp"));
+const S4App = lazy(() => import("@/s4piens/S4App"));
 const FourBrand = lazy(() => import("@/pages/partners/FourBrand"));
 
 function isPartnersHost() {
@@ -34,6 +35,12 @@ function isNationHost() {
   if (typeof window === "undefined") return false;
   const host = window.location.hostname.toLowerCase();
   return host === "4nation.org" || host === "www.4nation.org" || host === "4planet-nation.pages.dev" || host.endsWith(".4planet-nation.pages.dev");
+}
+
+function isS4piensHost() {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname.toLowerCase();
+  return host === "s4piens.com" || host === "www.s4piens.com" || host === "4planet-s4piens.pages.dev" || host.endsWith(".4planet-s4piens.pages.dev");
 }
 
 function isFourBrandsHost() {
@@ -119,8 +126,9 @@ export default function App() {
   if (isIdentitySurface()) return <IdentityApp />;
 
   // Standalone hosts must not recursively render their homepage inside /atlas iframes.
-  if (isFirstPartyAtlasEmbedRoute() || (isNationHost() && window.location.pathname === "/atlas")) return <BrowserRouter><StandardApp /></BrowserRouter>;
+  if (isFirstPartyAtlasEmbedRoute() || ((isNationHost() || isS4piensHost()) && window.location.pathname === "/atlas")) return <BrowserRouter><StandardApp /></BrowserRouter>;
   if (isNationHost()) return <MeasuredStandalone><NationApp /></MeasuredStandalone>;
+  if (isS4piensHost()) return <MeasuredStandalone><S4App /></MeasuredStandalone>;
   if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
   if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;
   if (isCreatorHost()) return <MeasuredStandalone><OdinCreatorPage /></MeasuredStandalone>;

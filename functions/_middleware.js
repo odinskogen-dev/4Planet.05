@@ -80,8 +80,8 @@ const PUBLIC_HOSTS = {
     sitemap: ["/"],
   },
   "s4piens.com": {
-    title: "S4PIENS — Human Systems Intelligence",
-    description: "S4PIENS explores the human systems, value chains, incentives and infrastructure that shape people and the living planet.",
+    title: "S4PIENS — How human systems work",
+    description: "Start with a human need and follow the real systems behind it — food, energy and industry — to the places, living systems, problems and solutions they connect to. From 4PLANET.",
     canonical: "https://s4piens.com/",
     fallbackTitle: "S4PIENS — Human Systems Intelligence",
     fallbackParagraphs: [
@@ -95,7 +95,7 @@ const PUBLIC_HOSTS = {
       ["ATLAS", "https://4planetatlas.com/atlas/"],
     ],
     schemaType: "WebApplication",
-    sitemap: ["/"],
+    sitemap: ["/", "/system/food", "/system/energy-and-industry"],
   },
 };
 
@@ -2187,7 +2187,7 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
     }
   }
 
-  const config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${normalisedPath}` } : baseConfig;
+  let config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${normalisedPath}` } : baseConfig;
 
   if (config && url.pathname === "/robots.txt" && host !== "4planet.org") {
     return new Response(robotsText(host), {
@@ -2241,6 +2241,16 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
       statusText: response.statusText,
       headers,
     });
+  }
+
+  // S4PIENS system pages: per-path title, description and canonical (reviewed set only).
+  const S4_SYSTEMS = {
+    "/system/food": ["Food — how the system works · S4PIENS", "Follow food from human need to end of life — inputs, production, processing, trade, eating and waste — and the places, living systems, problems and solutions it connects to."],
+    "/system/energy-and-industry": ["Energy & Industry — how the system works · S4PIENS", "Follow energy and heavy industry from extraction to end of life, with the largest emitting sources by country from Climate TRACE, and the solutions being built."],
+  };
+  if (host === "s4piens.com" && S4_SYSTEMS[url.pathname.replace(/\/+$/, "")]) {
+    const [t, d] = S4_SYSTEMS[url.pathname.replace(/\/+$/, "")];
+    config = { ...config, title: t, description: d, fallbackTitle: t, fallbackParagraphs: [d], canonical: `https://s4piens.com${url.pathname.replace(/\/+$/, "")}` };
   }
 
   const canonical = config.canonical || (host === "4planet.org"

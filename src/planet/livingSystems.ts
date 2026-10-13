@@ -477,6 +477,21 @@ export const PRESSURES: Pressure[] = [
     affects: [systemId("tropical-forest")],
     solutionIds: [],
   },
+  // ── S4PIENS human-system pressures (shared registry; added 2026-10-13) ──
+  {
+    id: pressureId("ghg-emissions"),
+    name: "Greenhouse-Gas Emissions",
+    body: "Gases released by burning fuels, making materials, farming and land clearing that trap heat in the atmosphere. The pressure is global; the sources are specific places and processes.",
+    affects: [systemId("coral-reef"), systemId("coastal-sea"), systemId("tropical-forest")],
+    solutionIds: [solutionId("renewable-electricity"), solutionId("long-duration-storage"), solutionId("low-carbon-steel")],
+  },
+  {
+    id: pressureId("nutrient-pollution"),
+    name: "Nutrient Pollution",
+    body: "Nitrogen and phosphorus from fertiliser, manure and wastewater that leave fields and cities and enter rivers and coastal seas, where they can drive algal blooms and low-oxygen water.",
+    affects: [systemId("coastal-sea")],
+    solutionIds: [solutionId("nutrient-management")],
+  },
 ];
 
 export const pressureById = (id: string) => PRESSURES.find((p) => p.id === id);
@@ -522,6 +537,64 @@ export const SOLUTIONS: Solution[] = [
       "Designation is not protection. A large share of the world's protected areas are weakly enforced, and marine protection in particular is frequently 'paper park'. Restoration outcomes vary by an order of magnitude between projects.",
     actors: ["National authorities", "IUCN", "Community-managed conservation"],
     missionIds: [missionId("rewild-land"), missionId("wh4les")],
+  },
+  // ── S4PIENS human-system solution families (shared registry; added 2026-10-13) ──
+  {
+    id: solutionId("renewable-electricity"),
+    name: "Renewable Electricity",
+    body: "Generating electricity from wind, sunlight and water instead of burning fossil fuels.",
+    maturity: "SCALED",
+    evidenceStrength: "STRONG",
+    applicability: "CONTEXT_DEPENDENT",
+    addresses: [pressureId("ghg-emissions")],
+    limitations:
+      "Lower operating emissions are well established; system-level effects depend on grids, storage, land and materials. New generation only cuts emissions where it displaces fossil generation.",
+  },
+  {
+    id: solutionId("long-duration-storage"),
+    name: "Long-Duration Energy Storage",
+    body: "Storing electricity for many hours or days so that variable wind and solar can cover more of demand.",
+    maturity: "PILOT",
+    evidenceStrength: "EMERGING",
+    applicability: "CONTEXT_DEPENDENT",
+    addresses: [pressureId("ghg-emissions")],
+    limitations:
+      "Several technologies compete and most long-duration options are at pilot or early deployment scale. Cost and lifetime at scale are not yet demonstrated.",
+  },
+  {
+    id: solutionId("low-carbon-steel"),
+    name: "Low-Carbon Steelmaking",
+    body: "Making steel with hydrogen, electricity or captured carbon instead of coal-based blast furnaces.",
+    maturity: "PILOT",
+    evidenceStrength: "EMERGING",
+    applicability: "CONTEXT_DEPENDENT",
+    addresses: [pressureId("ghg-emissions")],
+    limitations:
+      "Emission cuts depend on the source of the hydrogen and electricity. Commercial-scale plants are being built; measured lifetime results are not yet available.",
+  },
+  {
+    id: solutionId("nutrient-management"),
+    name: "Precise Nutrient Management",
+    body: "Applying fertiliser and manure at the right rate, time and place, and keeping soil covered, so less nitrogen and phosphorus leaves the field.",
+    maturity: "SCALED",
+    evidenceStrength: "MODERATE",
+    applicability: "CONTEXT_DEPENDENT",
+    addresses: [pressureId("nutrient-pollution")],
+    limitations:
+      "Field-level losses usually fall; effects on a river or fjord can take years to appear and depend on every other source in the catchment.",
+    missionIds: [missionId("food")],
+  },
+  {
+    id: solutionId("food-loss-reduction"),
+    name: "Food Loss and Waste Reduction",
+    body: "Cutting the share of food that is lost after harvest or thrown away in shops and homes — through storage, logistics, date labelling, redistribution and planning.",
+    maturity: "DEPLOYED",
+    evidenceStrength: "MODERATE",
+    applicability: "GENERAL",
+    addresses: [pressureId("habitat-loss"), pressureId("ghg-emissions")],
+    limitations:
+      "Measured reductions are common in individual programmes; how much land and emissions they save depends on what the avoided food would have required.",
+    missionIds: [missionId("food")],
   },
 ];
 

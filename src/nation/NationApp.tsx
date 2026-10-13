@@ -48,7 +48,7 @@ export function useMyCountry() {
   return [iso ? countryByIso(iso) ?? null : null, set] as const;
 }
 
-function useSignedIn() {
+export function useSignedIn() {
   const [signedIn, set] = useState(false);
   useEffect(() => {
     let alive = true, unsub = () => {};
