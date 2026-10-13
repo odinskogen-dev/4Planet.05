@@ -18,13 +18,17 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useState } from "react";
+import { accountStorageKey } from "./accountStorageScope";
 import type { EntityRef, Follow } from "./types";
 
 const KEY = "4planet.follows.v1";
+let activeAccountId: string | null = null;
+
+const storageKey = () => accountStorageKey(KEY, activeAccountId);
 
 const read = (): Follow[] => {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter((f) => f && f.id && f.type) : [];
@@ -35,7 +39,7 @@ const read = (): Follow[] => {
 
 const write = (rows: Follow[]) => {
   try {
-    localStorage.setItem(KEY, JSON.stringify(rows));
+    localStorage.setItem(storageKey(), JSON.stringify(rows));
   } catch {
     /* private mode / quota. Follow degrades to session-only. Nothing breaks. */
   }
@@ -43,6 +47,11 @@ const write = (rows: Follow[]) => {
 };
 
 export const getFollows = read;
+
+export const setFollowStorageAccount = (accountId: string | null) => {
+  activeAccountId = accountId?.trim() || null;
+  window.dispatchEvent(new CustomEvent("4p:follows"));
+};
 
 export const isFollowing = (id: string) => read().some((f) => f.id === id);
 
