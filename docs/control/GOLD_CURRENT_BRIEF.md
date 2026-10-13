@@ -15,7 +15,7 @@ Browse a dense, image-led issue/project collection, open one project or actor pr
 Project profiles expose actor, place, solution, source-backed claims, limitations, rights posture and ATLAS context. Actor profiles expose known projects and a public-record trust boundary. NATUREBRAIN remains the truth source; the static discovery manifest is SEO/prerender projection only.
 
 ## P1 DOMINANT
-Human-first visual discovery using 4PLANET’s canonical premium language: strong living-world imagery, white/black/BRANDBLÅ system, Instrument Sans display, DM Sans reading/UI and Fragment Mono evidence/meta; high information density without generic SaaS cards, dashboards or oversized one-project-per-screen layouts.
+Human-first visual discovery using 4PLANET’s canonical premium language: strong living-world imagery, white/black/BRANDBLÅ system, Instrument Sans display, DM Sans reading/UI and Fragment Mono evidence/meta; these type roles are wired explicitly in the IMPACT stylesheet rather than relying on undefined local variables; high information density without generic SaaS cards, dashboards or oversized one-project-per-screen layouts.
 
 ## P2 ORIENTATION
 Issue families and project metadata provide fast orientation. Mobile keeps a two-column browse grid where possible, following the Founder’s preferred compact visual family pattern while remaining part of 4planet.org rather than a separate brand.
