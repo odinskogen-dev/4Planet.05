@@ -87,9 +87,62 @@ export function normaliseCurrency(value: string): string {
 
 export function parseDecimal(value: string | number | null | undefined): number | null {
   if (value === null || value === undefined) return null;
-  const normalised = String(value).trim().replace(/\s/g, "").replace(",", ".");
-  if (normalised === "") return null;
-  const parsed = Number(normalised);
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+
+  const input = value.trim();
+  if (input === "") return null;
+
+  const sign = input[0] === "-" || input[0] === "+" ? input[0] : "";
+  const unsigned = sign ? input.slice(1) : input;
+  if (unsigned === "" || !/^[\d\s.,]+$/.test(unsigned)) return null;
+
+  const spacedGroups = unsigned.split(/\s+/);
+  if (spacedGroups.length > 1 && (
+    !/^\d{1,3}$/.test(spacedGroups[0])
+    || spacedGroups.slice(1, -1).some((group) => !/^\d{3}$/.test(group))
+    || !/^\d{3}(?:[.,]\d+)?$/.test(spacedGroups[spacedGroups.length - 1] ?? "")
+  )) return null;
+
+  const compact = unsigned.replace(/\s/g, "");
+  const commaCount = (compact.match(/,/g) ?? []).length;
+  const dotCount = (compact.match(/\./g) ?? []).length;
+  let normalised: string;
+
+  if (commaCount > 0 && dotCount > 0) {
+    const decimalSeparator = compact.lastIndexOf(",") > compact.lastIndexOf(".") ? "," : ".";
+    const groupingSeparator = decimalSeparator === "," ? "." : ",";
+    const [integerPart, decimalPart, ...extraParts] = compact.split(decimalSeparator);
+    const groups = integerPart.split(groupingSeparator);
+    if (
+      extraParts.length > 0
+      || !/^\d+$/.test(decimalPart)
+      || !/^\d{1,3}$/.test(groups[0])
+      || groups.slice(1).some((group) => !/^\d{3}$/.test(group))
+    ) return null;
+    normalised = `${groups.join("")}.${decimalPart}`;
+  } else if (commaCount > 0) {
+    if (commaCount !== 1) return null;
+    const [integerPart, decimalPart] = compact.split(",");
+    if (!/^\d+$/.test(integerPart) || !/^\d+$/.test(decimalPart)) return null;
+    normalised = `${integerPart}.${decimalPart}`;
+  } else if (dotCount > 0) {
+    const groups = compact.split(".");
+    const isNorwegianGrouping = /^\d{1,3}$/.test(groups[0])
+      && groups.length > 1
+      && groups.slice(1).every((group) => /^\d{3}$/.test(group));
+    if (isNorwegianGrouping) {
+      normalised = groups.join("");
+    } else if (dotCount === 1 && groups.every((group) => /^\d+$/.test(group))) {
+      normalised = compact;
+    } else {
+      return null;
+    }
+  } else {
+    if (!/^\d+$/.test(compact)) return null;
+    normalised = compact;
+  }
+
+  const parsed = Number(`${sign}${normalised}`);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
