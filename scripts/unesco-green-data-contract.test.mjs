@@ -63,3 +63,18 @@ test("ATLAS source control keeps endpoint and map evidence separate from rights"
   assert.match(control, /map: "PENDING"/);
   assert.match(control, /rights: "PASS"/);
 });
+
+
+test("WDI country context is country-bounded and preserves mixed vintages", () => {
+  const api = read("functions/api/unesco-country.ts");
+  const contract = read("src/data/unescoCountryContext.ts");
+  assert.match(api, /dataset=wdi001|wdi001/);
+  assert.match(api, /INVALID_COUNTRY_ISO2/);
+  assert.match(api, /limit: "100"/);
+  assert.match(api, /where:/);
+  assert.match(contract, /CC BY-SA 4\.0/);
+  assert.match(contract, /MIXED_VINTAGE/);
+  assert.match(contract, /MISSING_NOT_ZERO/);
+  assert.match(contract, /fetchCountryDevelopmentContext/);
+  assert.match(contract, /latestCountryMetrics/);
+});
