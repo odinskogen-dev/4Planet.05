@@ -192,3 +192,28 @@ test("LABS canonical host stays isolated and Atlas occurrence popup uses safe DO
   assert.ok(species.includes('recordUrl.hostname === "www.gbif.org"'));
   assert.ok(!species.includes('.setHTML('), "untrusted GBIF content must not become HTML");
 });
+
+
+test("OS scheduled Drive synchronisation traverses only explicitly approved organisational folders and cannot publish stale/unsafe partial data",()=>{
+  const sync=fs.readFileSync("scripts/os-brain-sync.mjs","utf8");
+  const scheduler=fs.readFileSync(".github/workflows/os-brain-scheduled.yml","utf8");
+  assert.match(scheduler,/ref: labs\/overview-v1/);
+  assert.match(sync,/const SAFE_ROOTS=Object\.freeze\(\[/);
+  assert.match(sync,/id:"1r9nIk160uQDMyaHza9pOvlDWM09ZXoCx"/);
+  assert.match(sync,/id:"1MekjkaBi2bW45iSvu1yj8h_3icpc98s1"/);
+  assert.doesNotMatch(sync,/"https:\/\/www\.googleapis\.com\/drive\/v3\/files\/"\+ROOT/);
+  assert.match(sync,/const queue=SAFE_ROOTS\.map/);
+  assert.match(sync,/const PRIVATE=\/[^\n]*vault/i);
+  assert.match(sync,/const PRIVATE=\/[^\n]*archive/i);
+  assert.match(sync,/const PRIVATE=\/[^\n]*odin brain/i);
+  assert.match(sync,/const MUST_READ=Object\.freeze/);
+  assert.match(sync,/14XladRgIy9vCGMCWvuPw37MnCGsa0iJcafyTd2tYKww/);
+  assert.match(sync,/1dqh16Im3owXVLfT2rUyCFPWal86DEGxlvyeYvh3OvQs/);
+  assert.ok(sync.indexOf("MANDATORY_CANONICAL_SOURCE_UNREADABLE")<sync.indexOf('await ingest("start"'),
+    "incomplete sources must fail before BRAIN write is attempted");
+  assert.ok(sync.indexOf("PRIVATE_OR_ARCHIVED_SOURCE_IN_PROJECTION")<sync.indexOf('await ingest("start"'),
+    "private source guard must fail before BRAIN write is attempted");
+  assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
+  assert.match(sync,/rev-parse","HEAD"/);
+  assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V1"/);
+});
