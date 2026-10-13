@@ -238,6 +238,23 @@ function textHaystack(opportunity: ParticipationOpportunity) {
   ].filter(Boolean).join(" ").toLowerCase();
 }
 
+type CoreCostCoverageState = "COVERED" | "UNKNOWN" | "PARTICIPANT_COST";
+
+function coreCostCoverageState(value: string | undefined): CoreCostCoverageState {
+  const text = value?.trim().toLowerCase() ?? "";
+  if (!text) return "UNKNOWN";
+
+  const notRequired = /\b(?:not|no)\b.{0,32}\b(?:required|needed)\b|\bwithout (?:the )?need for\b/.test(text);
+  if (notRequired) return "COVERED";
+
+  const participantPays = /\b(?:volunteers?|participants?|applicants?|you)\b.{0,40}\b(?:pays?|covers?|funds?|responsible for)\b|\bself[- ]funded\b|\bat (?:your|the participant(?:'s)?) own (?:cost|expense)\b/.test(text);
+  const notProvided = /\bnot provided\b/.test(text);
+  if (participantPays || notProvided) return "PARTICIPANT_COST";
+
+  const covered = /\b(?:covered|provided|included|funded)\b|\b(?:organiser|organization|organisation|programme|program|host)\b.{0,24}\b(?:pays?|covers?|provides?|funds?)\b/.test(text);
+  return covered ? "COVERED" : "UNKNOWN";
+}
+
 export function explainParticipationMatch(
   opportunity: ParticipationOpportunity,
   preference: ParticipationPreference,
@@ -269,16 +286,20 @@ export function explainParticipationMatch(
       payReason = hasMaterialFee ? "Known training, membership or programme costs make this fail the strict low-cost filter." : "No material participation fee is stated in the checked source.";
     }
   } else if (preference.cost === "COSTS_COVERED") {
-    const travel = opportunity.financials.travel?.toLowerCase() ?? "";
-    const food = opportunity.financials.food?.toLowerCase() ?? "";
-    const accommodation = opportunity.financials.accommodation?.toLowerCase() ?? "";
-    if (!travel && !food && !accommodation) {
-      payState = "UNKNOWN";
-      payReason = "The source does not state enough cost coverage to confirm this constraint.";
+    const coreCostStates = [
+      coreCostCoverageState(opportunity.financials.travel),
+      coreCostCoverageState(opportunity.financials.accommodation),
+      coreCostCoverageState(opportunity.financials.food),
+    ];
+    if (coreCostStates.includes("PARTICIPANT_COST")) {
+      payState = "FAIL";
+      payReason = "At least one core travel, accommodation or food cost remains with the participant.";
+    } else if (coreCostStates.every((state) => state === "COVERED")) {
+      payState = "PASS";
+      payReason = "Checked terms explicitly cover, provide or do not require every core travel, accommodation and food cost.";
     } else {
-      const volunteerPaysCoreCost = /pay|not provided/.test(`${travel} ${food} ${accommodation}`);
-      payState = volunteerPaysCoreCost ? "FAIL" : "PASS";
-      payReason = volunteerPaysCoreCost ? "At least one core travel, food or accommodation cost remains with the participant." : "Checked terms indicate core travel/accommodation costs are covered.";
+      payState = "UNKNOWN";
+      payReason = "The source does not explicitly resolve travel, accommodation and food coverage for this constraint.";
     }
   }
 
@@ -300,10 +321,10 @@ export function explainParticipationMatch(
   if (preference.time !== "ANY") {
     const duration = opportunity.duration.toLowerCase();
     const signals: Record<Exclude<ParticipationPreference["time"], "ANY">, RegExp> = {
-      HOURS: /hour|flexible|self-led|any time/,
-      DAYS: /day|weekend|one-day|1 day|2 day|3 day|4 day|5 day|6 day/,
-      WEEKS: /week|fortnight/,
-      MONTHS: /month|long-term|ongoing/,
+      HOURS: /\bhours?\b|\bflexible\b|\bself-led\b|\bany time\b/,
+      DAYS: /\bdays?\b|\bweekends?\b|\bone-day\b/,
+      WEEKS: /\bweeks?\b|\bfortnights?\b/,
+      MONTHS: /\bmonths?\b|\blong-term\b|\bongoing\b/,
     };
     if (/see source|unknown|varies/.test(duration)) {
       timeState = "UNKNOWN";
