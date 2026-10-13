@@ -35,8 +35,31 @@ const holding = (overrides = {}) => ({
 
 test("parses Norwegian decimal input without inventing missing values", () => {
   assert.equal(parseDecimal(" 12,50 "), 12.5);
+  assert.equal(parseDecimal("1.234"), 1234);
+  assert.equal(parseDecimal("1.234,56"), 1234.56);
+  assert.equal(parseDecimal("1 234,56"), 1234.56);
+  assert.equal(parseDecimal("1\u00a0234,56"), 1234.56);
+  assert.equal(parseDecimal("12.50"), 12.5);
+  assert.equal(parseDecimal("1,234.56"), 1234.56);
   assert.equal(parseDecimal(""), null);
   assert.equal(parseDecimal("ikke et tall"), null);
+  assert.equal(parseDecimal("12.34.56"), null);
+  assert.equal(parseDecimal("1 23,45"), null);
+});
+
+test("uses grouped Norwegian values in liquidity and recorded net worth", () => {
+  const summary = summariseCurrency(
+    [
+      account({ balance: "1.234,56" }),
+      account({ id: "cash-1", kind: "cash", balance: "2 000,44" }),
+      account({ id: "debt-1", kind: "debt", balance: "1.000" }),
+    ],
+    [],
+    "NOK",
+  );
+  assert.equal(summary.liquidity, 3235);
+  assert.equal(summary.debt, 1000);
+  assert.equal(summary.recordedNetWorth, 2235);
 });
 
 test("calculates holding value and unrealised change from explicit inputs", () => {
