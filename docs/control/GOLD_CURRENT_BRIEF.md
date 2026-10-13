@@ -42,7 +42,7 @@ The two-column mobile browse must remain legible at 390/430px: project names, ac
 A first-time visitor can see several meaningful options immediately, understand what each project is and who is doing it, distinguish source-checking from partnership/outcome verification, reach original evidence in one profile, and feel that IMPACT belongs to the same high-end 4PLANET brand as the main public world.
 
 **BASE / ROLLBACK:** Gold candidate introduced at TEST KING abe4c2f5390d9bb5aae818250473d8b453a6cbd4; revert that bounded integration and this brief if independent Gold finds a valid regression.
-**MAKER ≠ JUDGE:** AXE built the candidate. Independent Gold and TEST-domain browser evidence judge it. The applied NATUREBRAIN migration is persisted under supabase/migrations, and a dedicated desktop-1440/mobile-390 IMPACT browser proof runs before unrelated shared product suites so its evidence cannot be suppressed by legacy failures. No production promotion is authorised without the existing Founder release gate.
+**MAKER ≠ JUDGE:** AXE built the candidate. Independent Gold and TEST-domain browser evidence judge it. The applied NATUREBRAIN migration is persisted under supabase/migrations, a dedicated desktop-1440/mobile-390 IMPACT browser proof runs before unrelated shared product suites so its evidence cannot be suppressed by legacy failures, and an IMPACT-only exact-SHA workflow separately proves https://test.4planet.org/impact before any production authority is considered. No production promotion is authorised without the existing Founder release gate.
 
 ---
 
