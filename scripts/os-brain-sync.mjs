@@ -6,13 +6,28 @@ import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
-const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG";
+const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG"; // Canonical parent ID for traceability ONLY; NEVER enumerate/share root.
+// Reviewed, scoped organisational entrypoints. Share access to ONLY these exact folders,
+// never the Knowledge OS parent and never personal / VAULT / archived subtrees.
+const SAFE_ROOTS=Object.freeze([
+ {id:"1r9nIk160uQDMyaHza9pOvlDWM09ZXoCx",name:"00_ PROJECT LEAD + LLM ENTRY"},
+ {id:"1MekjkaBi2bW45iSvu1yj8h_3icpc98s1",name:"02_ BRAIN SYSTEM"}
+]);
+const MUST_READ=Object.freeze([
+ "14XladRgIy9vCGMCWvuPw37MnCGsa0iJcafyTd2tYKww", // Current Project Lead
+ "1dqh16Im3owXVLfT2rUyCFPWal86DEGxlvyeYvh3OvQs" // Active Tasks
+]);
+const SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V1";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
 const AUDIENCE="4planet-os-brain-ingest";
 const runKey=`${process.env.GITHUB_RUN_ID||"0"}-${process.env.GITHUB_RUN_ATTEMPT||"1"}`;
-const sourceRevision=process.env.OS_SOURCE_SHA||process.env.GITHUB_SHA||"unknown";
-const PRIVATE=/odin brain|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials/i;
+// The scheduled job checks out labs/overview-v1, while GITHUB_SHA may identify
+// its main-branch schedule trigger. Attest the checked-out source, not the trigger.
+const sourceRevision=process.env.OS_SOURCE_SHA||
+ execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
+// Enforce explicit subtree exclusions even INSIDE approved organisation folders.
+const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|api.?key|password/i;
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
 function safeError(e){return e instanceof Error?e.message.replace(/Bearer\s+[^\s]+/g,"[REDACTED]").slice(0,180):"UNKNOWN";}
@@ -85,9 +100,19 @@ async function main(){
  if(account.type!=="service_account"||account.client_email!==EXPECTED_EMAIL||!account.private_key)throw Error("GOOGLE_SERVICE_ACCOUNT_IDENTITY_INVALID");
  const google=await googleToken(account);
  const driveHeaders={Authorization:"Bearer "+google};
- const rootMeta=await (await get("https://www.googleapis.com/drive/v3/files/"+ROOT+"?fields=id,name,mimeType",driveHeaders)).json();
- if(rootMeta.id!==ROOT||rootMeta.mimeType!=="application/vnd.google-apps.folder")throw Error("ORGANIZATIONAL_FOLDER_NOT_VERIFIED");
- const queue=[{id:ROOT,path:"01_ 4PLANET KNOWLEDGE OS"}],seen=new Set([ROOT]),files=[];
+ // Each safe root is verified independently. The private Knowledge OS PARENT
+ // is never fetched, listed, or added to the service account's read scope.
+ for(const root of SAFE_ROOTS){
+  const m=await(await get(
+   "https://www.googleapis.com/drive/v3/files/"+root.id+"?fields=id,name,mimeType",
+   driveHeaders)).json();
+  if(m.id!==root.id||m.name!==root.name||
+     m.mimeType!=="application/vnd.google-apps.folder")
+   throw Error("SAFE_ORGANIZATIONAL_FOLDER_NOT_VERIFIED");
+ }
+ const queue=SAFE_ROOTS.map(x=>({id:x.id,
+  path:"01_ 4PLANET KNOWLEDGE OS/"+x.name,scopeRootId:x.id}));
+ const seen=new Set(SAFE_ROOTS.map(x=>x.id)),files=[];
  for(let i=0;i<queue.length;i++){
   const folder=queue[i];let next="";
   do{
@@ -100,8 +125,10 @@ async function main(){
     if(seen.has(f.id))continue;seen.add(f.id);
     const path=folder.path+"/"+f.name;
     if(PRIVATE.test(path))continue;
-    if(f.mimeType==="application/vnd.google-apps.folder")queue.push({id:f.id,path});
-    else files.push({...f,path});
+    if(f.mimeType==="application/vnd.google-apps.folder")queue.push({
+     id:f.id,path,scopeRootId:folder.scopeRootId
+    });
+    else files.push({...f,path,scopeRootId:folder.scopeRootId});
     if(seen.size>opts.maxItems)throw Error("INVENTORY_LIMIT_REACHED_FAIL_CLOSED");
    }
    next=data.nextPageToken||"";
@@ -114,7 +141,8 @@ async function main(){
   parent_path:f.path.slice(0,2990),source_modified_at:f.modifiedTime||null,
   source_hash:sha(f.id+"|"+f.modifiedTime+"|"+f.name),
   object_type:"source_inventory",content:null,
-  metadata:{rootId:ROOT,domain:"4planet",tenant:null,readDepth:"INVENTORY_ONLY",sourceFileId:f.id}
+  metadata:{rootId:ROOT,scopeRootId:f.scopeRootId,scopeVersion:SCOPE_VERSION,
+   domain:"4planet",tenant:null,readDepth:"INVENTORY_ONLY",sourceFileId:f.id}
  }));
  const sorted=[...files].filter(f=>rank(f)<9).sort((a,b)=>rank(a)-rank(b)||String(b.modifiedTime).localeCompare(String(a.modifiedTime)));
  let readCount=0,denied=0,sheetTabs=0;
@@ -160,7 +188,8 @@ async function main(){
        mime_type:f.mimeType,source_url:uri(f),parent_path:f.path.slice(0,2990),
        source_modified_at:f.modifiedTime||null,source_hash:sha(valueText),object_type:classification(f),
        content:valueText.slice(0,80000),
-       metadata:{rootId:ROOT,domain:"4planet",tenant:null,sourceFileId:f.id,sheetId:s.sheetId,
+       metadata:{rootId:ROOT,scopeRootId:f.scopeRootId,scopeVersion:SCOPE_VERSION,
+        domain:"4planet",tenant:null,sourceFileId:f.id,sheetId:s.sheetId,
         tab:s.name,readDepth:"SHEET_ROWS",rowsRead:values.length,truncated:valueText.length>80000}
       });sheetTabs++;readCount++;
     }
@@ -173,7 +202,17 @@ async function main(){
  console.log("Read-only Drive extraction completed; authoritative-content="+readCount+
   " structuredTabs="+sheetTabs+" unreadable="+denied+" inventoryEntries="+files.length+
   " projectionRecords="+ordered.length+" ; unhydrated=UNKNOWN.");
+ // Safety and completeness: failure cannot replace the last good projection.
  if(readCount<2)throw Error("CANONICAL_SOURCE_READ_TOO_SPARSE");
+ for(const id of MUST_READ){
+  const doc=records.find(x=>x.source_id===id);
+  if(!doc || !doc.content || doc.metadata?.readDepth!=="CONTENT")
+   throw Error("MANDATORY_CANONICAL_SOURCE_UNREADABLE");
+ }
+ if(ordered.some(x=>PRIVATE.test(x.parent_path||"") || PRIVATE.test(x.title||"")))
+  throw Error("PRIVATE_OR_ARCHIVED_SOURCE_IN_PROJECTION");
+ console.log("Safe organisational source scope verified; scope="+SCOPE_VERSION+
+  " approvedRoots="+SAFE_ROOTS.length+" mandatoryDocs="+MUST_READ.length);
  await ingest("start",{revision:sourceRevision});
  try{
   for(let i=0;i<ordered.length;i+=50){
