@@ -8,6 +8,8 @@ const source = await readFile(new URL("../src/choice/embla.ts", import.meta.url)
 const foodUiSource = await readFile(new URL("../src/food/FoodIntelligence.tsx", import.meta.url), "utf8");
 const choiceUiSource = await readFile(new URL("../src/pages/sapien/EmblaFoodChoice.tsx", import.meta.url), "utf8");
 const humanProofSource = await readFile(new URL("../src/food/FoodUserTest.tsx", import.meta.url), "utf8");
+const fourSapienSource = await readFile(new URL("../src/pages/sapien/FourSapien.tsx", import.meta.url), "utf8");
+const storageSource = await readFile(new URL("../src/choice/emblaStorage.ts", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -15,6 +17,13 @@ const transpiled = ts.transpileModule(source, {
   },
 }).outputText;
 const embla = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
+const storageTranspiled = ts.transpileModule(storageSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText;
+const storage = await import(`data:text/javascript;base64,${Buffer.from(storageTranspiled).toString("base64")}`);
 
 test("FOOD routes into the decision-first evidence proof without claiming a universal answer", () => {
   const result = embla.resolveEmblaIntake("Which of these groceries is the better choice for me?");
@@ -128,4 +137,44 @@ test("Human Proof records decision effect and UNKNOWN-refusal comprehension with
   assert.match(humanProofSource, /Fixture or synthetic sessions are technical evidence only/i);
   assert.match(humanProofSource, /Local-only test record/);
   assert.doesNotMatch(humanProofSource, /\bfetch\s*\(/, "Human Proof recorder must remain local-only until a separately authorised storage design exists");
+});
+
+
+test("Embla shopping-list storage succeeds without changing the receipt", () => {
+  const values = new Map();
+  const browserStorage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+  const receipt = { shoppingList: "Kaffe\\nMelk", store: "KIWI", budget: "150", savedAt: "2026-10-13T13:30:00.000Z" };
+
+  assert.equal(storage.saveEmblaShoppingList(browserStorage, receipt), true);
+  assert.deepEqual(storage.restoreEmblaShoppingList(browserStorage), { value: receipt, unavailable: false });
+});
+
+test("Embla keeps the in-memory path usable when browser storage is denied", () => {
+  const deniedStorage = {
+    getItem: () => { throw new Error("denied"); },
+    setItem: () => { throw new Error("denied"); },
+    removeItem: () => { throw new Error("denied"); },
+  };
+
+  assert.deepEqual(storage.restoreEmblaShoppingList(deniedStorage), { value: null, unavailable: true });
+  assert.equal(storage.saveEmblaShoppingList(deniedStorage, { shoppingList: "Kaffe", store: "KIWI", budget: "100" }), false);
+  assert.match(fourSapienSource, /still works in this session/i);
+  assert.match(fourSapienSource, /role="status"/);
+  assert.match(fourSapienSource, /aria-live="polite"/);
+});
+
+test("Embla removes a malformed receipt without breaking the session", () => {
+  let removed = false;
+  const malformedStorage = {
+    getItem: () => "{not-json",
+    setItem: () => undefined,
+    removeItem: () => { removed = true; },
+  };
+
+  assert.deepEqual(storage.restoreEmblaShoppingList(malformedStorage), { value: null, unavailable: false });
+  assert.equal(removed, true);
 });
