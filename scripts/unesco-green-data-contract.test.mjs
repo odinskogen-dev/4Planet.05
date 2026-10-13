@@ -78,3 +78,18 @@ test("WDI country context is country-bounded and preserves mixed vintages", () =
   assert.match(contract, /fetchCountryDevelopmentContext/);
   assert.match(contract, /latestCountryMetrics/);
 });
+
+
+test("NATUREBRAIN source-family migration registers metadata but keeps ingestion disabled", () => {
+  const migration = read("supabase/migrations/20261013120500_naturebrain_unesco_source_family_v01.sql");
+  assert.match(migration, /source:unesco-datahub/);
+  for (const id of ["mab001", "whc001", "eg0001", "ioc001", "cou001", "wdi001"]) {
+    assert.match(migration, new RegExp(`dataset:unesco:${id}`));
+  }
+  assert.match(migration, /REGISTERED_DISABLED/);
+  assert.match(migration, /enabled,false/);
+  assert.match(migration, /no_wholesale_ingest/);
+  assert.doesNotMatch(migration, /insert into planetbrain\.source_records/i);
+  assert.doesNotMatch(migration, /insert into planetbrain\.claims/i);
+  assert.doesNotMatch(migration, /insert into planetbrain\.relationships/i);
+});
