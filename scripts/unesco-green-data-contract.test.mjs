@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import ts from "typescript";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 
@@ -13,6 +14,52 @@ test("UNESCO shared contract is dataset-scoped and ShareAlike-aware", () => {
   assert.match(data, /YES_WITH_ATTRIBUTION_AND_SHAREALIKE/);
   assert.match(data, /shareAlike:\s*true/);
   assert.match(data, /missing|sovereignty|abundance|boundary/i);
+});
+
+
+test("UNESCO ocean metrics preserve missing values while retaining genuine zero", async () => {
+  const source = read("src/data/unescoOpenData.ts");
+  const javascript = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2022,
+    },
+  }).outputText;
+  const moduleUrl = `data:text/javascript;base64,${Buffer.from(javascript).toString("base64")}`;
+  const { normaliseUnescoAtlasRecord } = await import(moduleUrl);
+
+  const base = {
+    area_id: "EEZ:QA",
+    area_name: "QA Ocean Area",
+    coordinates: { lat: 0, lon: 20 },
+  };
+  const missing = normaliseUnescoAtlasRecord("ioc001", {
+    ...base,
+    n_observations: null,
+    n_species: "",
+    n_taxa: "   ",
+    n_datasets: undefined,
+    n_threatened_species: null,
+    pct_threatened: "",
+  });
+  assert.ok(missing);
+  for (const key of ["observations", "species", "taxa", "datasets", "threatenedSpecies", "threatenedShare"]) {
+    assert.equal(missing.metrics[key], undefined, `${key} must remain UNKNOWN`);
+  }
+
+  const zero = normaliseUnescoAtlasRecord("ioc001", {
+    ...base,
+    n_observations: 0,
+    n_species: "0",
+    n_taxa: 0,
+    n_datasets: "0",
+    n_threatened_species: 0,
+    pct_threatened: "0",
+  });
+  assert.ok(zero);
+  for (const key of ["observations", "species", "taxa", "datasets", "threatenedSpecies", "threatenedShare"]) {
+    assert.equal(zero.metrics[key], 0, `${key} must preserve genuine zero`);
+  }
 });
 
 test("UNESCO API adapter is bounded and allowlisted", () => {
