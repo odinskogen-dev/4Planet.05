@@ -10,14 +10,18 @@ const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG"; // Canonical parent ID for trace
 // Reviewed, scoped organisational entrypoints. Share access to ONLY these exact folders,
 // never the Knowledge OS parent and never personal / VAULT / archived subtrees.
 const SAFE_ROOTS=Object.freeze([
- {id:"1r9nIk160uQDMyaHza9pOvlDWM09ZXoCx",name:"00_ PROJECT LEAD + LLM ENTRY"},
- {id:"1MekjkaBi2bW45iSvu1yj8h_3icpc98s1",name:"02_ BRAIN SYSTEM"}
+ {id:"1r9nIk160uQDMyaHza9pOvlDWM09ZXoCx",name:"00_ PROJECT LEAD + LLM ENTRY",
+  path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY"},
+ {id:"1kmdjueCJhVFxJS_qgrV1zFRQ_AZ8A3td",name:"00_ CONSTITUTION & CANON",
+  path:"01_ 4PLANET KNOWLEDGE OS/02_ BRAIN SYSTEM/00_ CONSTITUTION & CANON"},
+ {id:"1Ko8WAzrc9uo4uhBIoqb8zu_EjX6Ghr9o",name:"01_ SHARED KNOWLEDGE KERNEL",
+  path:"01_ 4PLANET KNOWLEDGE OS/02_ BRAIN SYSTEM/01_ SHARED KNOWLEDGE KERNEL"}
 ]);
 const MUST_READ=Object.freeze([
  "14XladRgIy9vCGMCWvuPw37MnCGsa0iJcafyTd2tYKww", // Current Project Lead
  "1dqh16Im3owXVLfT2rUyCFPWal86DEGxlvyeYvh3OvQs" // Active Tasks
 ]);
-const SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V1";
+const SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
 const API="https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest";
 const AUDIENCE="4planet-os-brain-ingest";
@@ -27,7 +31,7 @@ const runKey=`${process.env.GITHUB_RUN_ID||"0"}-${process.env.GITHUB_RUN_ATTEMPT
 const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
-const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|api.?key|password/i;
+const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
 function safeError(e){return e instanceof Error?e.message.replace(/Bearer\s+[^\s]+/g,"[REDACTED]").slice(0,180):"UNKNOWN";}
@@ -111,7 +115,7 @@ async function main(){
    throw Error("SAFE_ORGANIZATIONAL_FOLDER_NOT_VERIFIED");
  }
  const queue=SAFE_ROOTS.map(x=>({id:x.id,
-  path:"01_ 4PLANET KNOWLEDGE OS/"+x.name,scopeRootId:x.id}));
+  path:x.path,scopeRootId:x.id}));
  const seen=new Set(SAFE_ROOTS.map(x=>x.id)),files=[];
  for(let i=0;i<queue.length;i++){
   const folder=queue[i];let next="";
