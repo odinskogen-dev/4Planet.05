@@ -59,32 +59,35 @@ export function classifySpeciesMediaRights(license?: string): SpeciesMediaRights
   if (!raw) return "BLOCKED";
   const value = raw.toLowerCase().replace(/_/g, "-").trim();
 
-  // A negative or restricted token must win before any positive substring.
-  // This prevents phrases such as "Not public domain" and whitespace-form
-  // CC BY NC/ND labels from being treated as reusable media licences.
-  if (/\b(?:not|no|non)[-\s]+public[-\s]+domain\b/.test(value)) return "REVIEW_REQUIRED";
+  // Negative, restricted, or contradictory text wins before every positive.
+  const hasRestrictedOrContradictoryText =
+    /\b(?:not|no|non)[-\s]+public[-\s]+domain\b/.test(value) ||
+    /(?:^|[^a-z0-9])(?:nc|nd)(?:[^a-z0-9]|$)/.test(value) ||
+    /\bnon[-\s]?commercial\b/.test(value) ||
+    /\bno[-\s]+derivatives?\b/.test(value) ||
+    /\ball[-\s]+rights[-\s]+reserved\b/.test(value) ||
+    /\bpermission[-\s]+required\b/.test(value) ||
+    /\bcopyright(?:ed)?\b/.test(value);
+  if (hasRestrictedOrContradictoryText) return "REVIEW_REQUIRED";
 
-  const isCreativeCommons = value.includes("creativecommons.org/licenses/") || /^cc[-\s]+by\b/.test(value);
-  if (isCreativeCommons && /(?:^|[-\s/])(?:nc|nd)(?:[-\s/.]|$)/.test(value)) {
-    return "REVIEW_REQUIRED";
-  }
+  // URL licences are authority-bearing inputs: accept only the canonical
+  // Creative Commons host and an exact supported path, with no query/fragment.
+  const ccLicenseUrl =
+    /^https?:\/\/(?:www\.)?creativecommons\.org\/licenses\/(?:by|by-sa)\/\d(?:\.\d)?\/?$/;
+  const ccPublicDomainUrl =
+    /^https?:\/\/(?:www\.)?creativecommons\.org\/publicdomain\/(?:zero|mark)\/\d(?:\.\d)?\/?$/;
 
+  if (ccPublicDomainUrl.test(value)) return "DISPLAYABLE";
   if (
-    value.includes("creativecommons.org/publicdomain/zero") ||
-    value.includes("creativecommons.org/publicdomain/mark") ||
-    /\bcc0\b/.test(value) ||
+    /^cc0(?:[-\s]+\d(?:\.\d)?)?$/.test(value) ||
     /^(?:the\s+)?public[-\s]+domain(?:[-\s]+mark(?:[-\s]+\d(?:\.\d)?)?)?$/.test(value)
   ) return "DISPLAYABLE";
 
-  if (!isCreativeCommons) return "REVIEW_REQUIRED";
-
-  if (/creativecommons\.org\/licenses\/by-sa\/\d(?:\.\d)?(?:\/|$)/.test(value)) return "DISPLAYABLE";
-  if (/creativecommons\.org\/licenses\/by\/\d(?:\.\d)?(?:\/|$)/.test(value)) return "DISPLAYABLE";
+  if (ccLicenseUrl.test(value)) return "DISPLAYABLE";
   if (/^cc[-\s]+by(?:[-\s]+sa)?(?:[-\s]+\d(?:\.\d)?)?$/.test(value)) return "DISPLAYABLE";
 
   return "REVIEW_REQUIRED";
 }
-
 function rightsNote(base: string, blockedCount: number): string {
   if (!blockedCount) return `${base} Only media with an explicit displayable public-use licence are shown.`;
   return `${base} ${blockedCount} media item${blockedCount === 1 ? " was" : "s were"} withheld because the licence was missing or requires review.`;

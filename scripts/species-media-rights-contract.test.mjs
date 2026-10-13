@@ -91,6 +91,12 @@ test("media licence classifier fails closed on restrictions and negated public-d
   assert.equal(classifySpeciesMediaRights("https://creativecommons.org/licenses/by/4.0/"), "DISPLAYABLE");
   assert.equal(classifySpeciesMediaRights("CC BY-SA 4.0"), "DISPLAYABLE");
   assert.equal(classifySpeciesMediaRights("https://creativecommons.org/publicdomain/zero/1.0/"), "DISPLAYABLE");
+  assert.equal(classifySpeciesMediaRights("https://evil.example/creativecommons.org/licenses/by/4.0/"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("https://creativecommons.org.evil.example/licenses/by/4.0/"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("https://creativecommons.org/licenses/by/4.0/?via=forged"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC BY 4.0; All rights reserved"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC0 1.0 / permission required"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("https://creativecommons.org/publicdomain/mark/1.0/"), "DISPLAYABLE");
 });
 
 test("GBIF image resolution cannot inherit occurrence-level licence", () => {
@@ -204,6 +210,11 @@ test("mocked GBIF request path withholds ambiguous licence labels before positiv
     ["cc-by-nd.jpg", "CC BY ND 4.0"],
     ["not-public-domain.jpg", "Not public domain"],
     ["canonical-by.jpg", "https://creativecommons.org/licenses/by/4.0/"],
+    ["forged-path.jpg", "https://evil.example/creativecommons.org/licenses/by/4.0/"],
+    ["forged-host.jpg", "https://creativecommons.org.evil.example/licenses/by/4.0/"],
+    ["canonical-query.jpg", "https://creativecommons.org/licenses/by/4.0/?via=forged"],
+    ["contradictory-by.jpg", "CC BY 4.0; All rights reserved"],
+    ["contradictory-cc0.jpg", "CC0 1.0 / permission required"],
     ["canonical-cc0.jpg", "https://creativecommons.org/publicdomain/zero/1.0/"],
   ];
   const fetchMock = async () => jsonResponse({
@@ -226,6 +237,6 @@ test("mocked GBIF request path withholds ambiguous licence labels before positiv
     [...result.data].map((image) => image.identifier),
     ["https://example.test/canonical-by.jpg", "https://example.test/canonical-cc0.jpg"],
   );
-  assert.equal(result.blockedCount, 3);
-  assert.match(result.note, /3 media items were withheld/);
+  assert.equal(result.blockedCount, 8);
+  assert.match(result.note, /8 media items were withheld/);
 });
