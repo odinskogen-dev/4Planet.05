@@ -12,7 +12,9 @@ export const MissionsIndex = lazy(() => import("@/pages/v5/AllMissions").then((m
 export const ImpactLabIndex = lazy(() => import("@/pages/integrated/ImpactPrototype").then((m) => ({ default: m.ImpactLabIndex })));
 export const ImpactTestJourney = lazy(() => import("@/pages/integrated/ImpactPrototype").then((m) => ({ default: m.ImpactTestJourney })));
 export const PersonalImpactRecordPage = lazy(() => import("@/pages/integrated/ImpactPrototype").then((m) => ({ default: m.PersonalImpactRecordPage })));
-export const ImpactPublicHome = lazy(() => import("@/pages/integrated/ImpactPremium").then((m) => ({ default: m.ImpactPublicHome })));
+export const ImpactPublicHome = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactLivingActionNetwork })));
+export const ImpactProjectProfilePage = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactProjectProfilePage })));
+export const ImpactActorProfilePage = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactActorProfilePage })));
 export const ImpactStory = lazy(() => import("@/pages/integrated/ImpactPremium").then((m) => ({ default: m.ImpactStory })));
 export const BayActionProof = lazy(() => import("@/pages/integrated/ImpactActionProof").then((m) => ({ default: m.BayActionProof })));
 
