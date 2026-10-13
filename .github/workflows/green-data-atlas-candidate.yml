@@ -1,6 +1,20 @@
 name: Green Data Atlas Candidate
 
 on:
+  push:
+    branches: [king/test]
+    paths:
+      - "src/data/unescoOpenData.ts"
+      - "src/data/unescoCountryContext.ts"
+      - "functions/api/unesco-data.ts"
+      - "functions/api/unesco-country.ts"
+      - "src/earth/layers.ts"
+      - "src/earth/atlasSourceControl.ts"
+      - "src/pages/v5/Atlas.tsx"
+      - "scripts/unesco-green-data-contract.test.mjs"
+      - "tests/e2e/atlas-green-data.spec.ts"
+      - "supabase/migrations/20261013120500_naturebrain_unesco_source_family_v01.sql"
+      - ".github/workflows/green-data-atlas-candidate.yml"
   pull_request:
     branches: [king/test]
     paths:
