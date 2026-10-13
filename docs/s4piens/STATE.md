@@ -19,7 +19,7 @@ S4PIENS = Human Systems / value chains (NOT 4SAPIEN, no personal footprint, no g
 - [x] App `src/s4piens/{S4App,S4Home,SystemPage}.tsx` + `s4piens.css`
 - [x] Routing (App.tsx host, router `/human-systems/*`), middleware per-path SEO + sitemap
 - [x] QA Chromium 1440/834/430/390 × light/dark/paper (fixture): 0 overflow, 0 errors
-- [x] Docs + ZIP + PR
+- [x] Docs + ZIP + PR #447 (stacked on #444)
 
 ## Held / next
 - Trade flows (UN Comtrade), material flows (UNEP IRP), FAOSTAT, AQUASTAT: HELD — source gate not run, sandbox egress blocked.
