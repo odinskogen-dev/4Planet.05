@@ -2,6 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
+import {
+  PARTICIPATION_OPPORTUNITIES,
+  explainParticipationMatch,
+} from "../src/content/participation.ts";
+
 const read = (path) => fs.readFileSync(path, "utf8");
 const model = read("src/content/participation.ts");
 const page = read("src/pages/v5/Participation.tsx");
@@ -9,6 +14,23 @@ const actorPage = read("src/pages/v5/ActorGold.tsx");
 const router = read("src/routes/router.tsx");
 const adapter = read("functions/api/volunteer-opportunities.ts");
 const css = read("src/styles/actor-participation.css");
+
+const preference = (overrides = {}) => ({
+  care: "",
+  skill: "",
+  time: "ANY",
+  place: "ANY",
+  cost: "ANY",
+  ...overrides,
+});
+
+const opportunity = (overrides = {}) => ({
+  ...PARTICIPATION_OPPORTUNITIES[0],
+  availability: "OPEN",
+  ...overrides,
+});
+
+const gateState = (result, label) => result.hardGates.find((gate) => gate.label === label)?.state;
 
 test("Participation Opportunity is a first-class source-aware object, not another Actor store", () => {
   assert.match(model, /interface ParticipationOpportunity/);
@@ -40,6 +62,25 @@ test("Matching is explainable and unknown external terms cannot become a recomme
   assert.doesNotMatch(model, /confidenceScore\s*:/);
   assert.doesNotMatch(model, /score\s*:/);
   assert.match(model, /local match requires the user's location/i);
+});
+
+test("week duration matching does not promote weekend text", () => {
+  assert.equal(gateState(explainParticipationMatch(opportunity({ duration: "one weekend" }), preference({ time: "WEEKS" })), "TIME"), "FAIL");
+  assert.equal(gateState(explainParticipationMatch(opportunity({ duration: "two weeks" }), preference({ time: "WEEKS" })), "TIME"), "PASS");
+  assert.equal(gateState(explainParticipationMatch(opportunity({ duration: "a fortnight" }), preference({ time: "WEEKS" })), "TIME"), "PASS");
+  assert.equal(gateState(explainParticipationMatch(opportunity({ duration: "varies by placement" }), preference({ time: "WEEKS" })), "TIME"), "UNKNOWN");
+});
+
+test("covered-cost gate requires explicit evidence for every core category", () => {
+  const matchCost = (financials) => gateState(explainParticipationMatch(
+    opportunity({ financials: { ...PARTICIPATION_OPPORTUNITIES[0].financials, ...financials } }),
+    preference({ cost: "COSTS_COVERED" }),
+  ), "COST");
+
+  assert.equal(matchCost({ travel: "Travel covered by organiser", accommodation: "Accommodation provided", food: "Meals included" }), "PASS");
+  assert.equal(matchCost({ travel: "Travel covered by organiser", accommodation: "", food: "" }), "UNKNOWN");
+  assert.equal(matchCost({ travel: "Travel covered by organiser", accommodation: "Participant pays accommodation", food: "Meals included" }), "FAIL");
+  assert.equal(matchCost({ travel: "No travel is required", accommodation: "Not provided or required", food: "Not needed" }), "PASS");
 });
 
 test("VolunteerConnector adapter is live-source only and fails closed", () => {
