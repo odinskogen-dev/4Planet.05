@@ -12,6 +12,11 @@ test.describe("IMPACT Living Action Network Gold", () => {
     await expect(page.getByRole("link", { name: "Florida Keys Coral Restoration", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "African Farmers Transforming Food Systems", exact: true })).toBeVisible();
 
+    await page.getByRole("button", { name: /CORAL_/ }).first().click();
+    await expect(page).toHaveURL(/issue=coral/);
+    await expect(page.locator(".ilan-project")).toHaveCount(2);
+    await expect(page.getByRole("link", { name: "Florida Keys Coral Restoration", exact: true })).toBeVisible();
+
     await page.getByRole("link", { name: "Florida Keys Coral Restoration", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Florida Keys Coral Restoration", exact: true })).toBeVisible();
     await expect(page.getByText("WHAT THE SOURCES ESTABLISH_", { exact: true })).toBeVisible();
