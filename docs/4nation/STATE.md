@@ -33,7 +33,7 @@ Any agent resuming this work reads THIS file first. Updated after each step.
 - [x] NationApp (`src/nation/*`): home globe, Country Object (Profile/Atlas), 3 themes, ID sign-in, My Country (device), share
 - [x] Worker (`ops/nation/4nation-live-worker.js`): per-path title/description/canonical/robots/OG, sitemap with launch countries, removed floating ID button (header owns sign-in)
 - [x] QA Chromium 1440/834/430/390 × light/dark/paper with LAYOUT FIXTURE: 0 overflow, 0 page errors. WebKit NOT run (no WebKit in sandbox) → AXE must run `--browser=webkit`.
-- [ ] ZIP + GPT handoff
+- [x] ZIP + GPT handoff (docs/4nation/DEPLOY_CLOUDFLARE.md, GPT_PROJECT_LEAD_HANDOFF.md); branch pushed, PR → king/test
 - [ ] Then S4PIENS (s4piens.com) — separate STATE in docs/s4piens/
 
 ## Open / held
