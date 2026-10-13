@@ -3,6 +3,33 @@ const IMMUTABLE_ORIGIN = "https://9c7fe142.4planet-05.pages.dev";
 const SOURCE_SHA = "ba354a82b443f9e0cd2124af6ead75a995ed0e8c";
 const INDEXNOW_KEY = "8f4c2d91a7b64e3fa1c9d0b6e5274a83";
 const ALLOWED = new Set(["4nation.org", "www.4nation.org"]);
+
+// Indexable Country Objects (reviewed launch set). Other countries render but stay noindex.
+const FEATURED = { norway: "Norway", brazil: "Brazil", japan: "Japan", kenya: "Kenya" };
+function pageMeta(pathname) {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const url = "https://4nation.org" + (path === "/" ? "/" : path);
+  const site = { "@type": "WebSite", name: "4PLANET", url: "https://4planet.org/" };
+  const m = path.match(/^\/country\/([a-z0-9-]+)$/);
+  if (m) {
+    const name = FEATURED[m[1]] || m[1].replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    return { url, index: Boolean(FEATURED[m[1]]), h1: name + " — country profile",
+      title: name + " — country profile · 4NATION",
+      description: "Understand " + name + ": people, land, economy, learning, nature and heritage. Every figure dated and linked to its source — World Bank via UNESCO, UNESCO, Natural Earth.",
+      ld: { "@context": "https://schema.org", "@type": "WebPage", name: name + " — country profile", url, isPartOf: site, about: { "@type": "Country", name } } };
+  }
+  if (path === "/decisions" || path.startsWith("/decisions/")) {
+    return { url: "https://4nation.org/decisions", index: true, h1: "Public decisions — 4NATION",
+      title: "Public decisions · 4NATION",
+      description: "Important public choices read from the original documents: what is proposed, decided and implemented, by whom, and what has changed.",
+      ld: { "@context": "https://schema.org", "@type": "WebPage", name: "Public decisions", url: "https://4nation.org/decisions", isPartOf: site } };
+  }
+  return { url: "https://4nation.org/", index: path === "/", h1: "4NATION — Understand any country",
+    title: "4NATION — Understand any country",
+    description: "Source-backed country profiles: people, land, economy, nature and heritage, with every number dated and sourced. Nonpartisan. From 4PLANET.",
+    ld: { "@context": "https://schema.org", "@type": "WebApplication", name: "4NATION", url: "https://4nation.org/", isPartOf: site,
+      description: "Nonpartisan, source-grounded country intelligence and public decision context." } };
+}
 export default {
   async fetch(request) {
     const incoming = new URL(request.url);
@@ -25,7 +52,7 @@ export default {
     }
     if (incoming.pathname === `/${INDEXNOW_KEY}.txt`) return new Response(INDEXNOW_KEY,{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=86400","x-4nation-sha":SOURCE_SHA}});
     if (incoming.pathname === "/robots.txt") return new Response("User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /auth/\n\nSitemap: https://4nation.org/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=300","x-4nation-sha":SOURCE_SHA}});
-    if (incoming.pathname === "/sitemap.xml") return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://4nation.org/</loc></url>\n</urlset>\n',{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public, max-age=300","x-4nation-sha":SOURCE_SHA}});
+    if (incoming.pathname === "/sitemap.xml") return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+["/","/decisions",...Object.keys(FEATURED).map((k)=>"/country/"+k)].map((p)=>"  <url><loc>https://4nation.org"+p+"</loc></url>").join("\n")+"\n</urlset>\n",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public, max-age=300","x-4nation-sha":SOURCE_SHA}});
     const upstreamUrl = new URL(IMMUTABLE_ORIGIN);
     upstreamUrl.pathname = incoming.pathname === "/" ? "/4nation" : incoming.pathname;
     upstreamUrl.search = incoming.search;
@@ -44,15 +71,16 @@ export default {
     if((headers.get("content-type")||"").includes("text/html")&&request.method==="GET"){
       let body=await upstream.text();
       body=body.replace(/<meta\s+name=["']robots["'][^>]*>/gi,"");
-      body=body.replace(/<title>[^<]*<\/title>/i,"<title>4NATION — Better Nation | Public Decision Intelligence</title>");
-      body=body.replace(/<meta\s+name=["']description["'][^>]*>/i,'<meta name="description" content="4NATION is 4PLANET’s nonpartisan public decision intelligence product for understanding choices, sources, trade-offs and public value." />');
+      const page=pageMeta(incoming.pathname);
+      const esc=(v)=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+      body=body.replace(/<title>[^<]*<\/title>/i,"<title>"+esc(page.title)+"</title>");
+      body=body.replace(/<meta\s+name=["']description["'][^>]*>/i,"");
       body=body.replace(/<link\s+rel=["']canonical["'][^>]*>/gi,"");
-      body=body.replace("</head>",'<meta name="robots" content="index,follow,max-image-preview:large" /><link rel="canonical" href="https://4nation.org/" /><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"4NATION","url":"https://4nation.org/","description":"Nonpartisan public decision intelligence for understanding choices, sources, trade-offs and public value.","isPartOf":{"@type":"WebSite","name":"4PLANET","url":"https://4planet.org/"}}</script></head>');
-      const discoveryFallback='<main data-public-discovery-fallback="1"><h1>4NATION — Better Nation</h1><p>4NATION is an early public decision-intelligence product from 4PLANET. It is being built to help people understand important public choices through original sources, dates, jurisdiction, alternatives, constraints, trade-offs and implementation context.</p><p>The product is nonpartisan. Its purpose is not to tell citizens or officials what political position to hold. It aims to make decisions easier to inspect, compare and understand, while keeping facts, analysis and uncertainty distinguishable from advocacy.</p><p>For public officials, the direction is source-grounded decision support around public value, resources, welfare, nature and implementation. For citizens, the direction is transparent visibility into choices being proposed, considered, decided and implemented.</p><nav aria-label="Related public products"><a href="https://4planet.org/">4PLANET</a> · <a href="https://4planetatlas.com/">ATLAS</a> · <a href="https://4planet.org/impact">Impact</a></nav></main>';
+      body=body.replace(/<meta\s+property=["']og:(title|description|url)["'][^>]*>/gi,"");
+      const ld=JSON.stringify(page.ld).replace(/</g,"\\u003c");
+      body=body.replace("</head>",'<meta name="description" content="'+esc(page.description)+'" /><meta name="robots" content="'+(page.index?"index,follow,max-image-preview:large":"noindex,follow")+'" /><link rel="canonical" href="'+page.url+'" /><meta property="og:title" content="'+esc(page.title)+'" /><meta property="og:description" content="'+esc(page.description)+'" /><meta property="og:url" content="'+page.url+'" /><script type="application/ld+json">'+ld+'</script></head>');
+      const discoveryFallback='<main data-public-discovery-fallback="1"><h1>'+esc(page.h1)+'</h1><p>'+esc(page.description)+'</p><nav aria-label="Related public products"><a href="https://4planet.org/">4PLANET</a> · <a href="https://4planetatlas.com/">ATLAS</a> · <a href="https://4nation.org/">4NATION</a></nav></main>';
       body=body.replace('<div id="root"></div>','<div id="root">'+discoveryFallback+'</div>');
-      const idHref="https://id.4planet.org/login?return_to="+encodeURIComponent(incoming.toString());
-      const idEntry='<a data-fourplanet-id-entry="1" href="'+idHref+'" aria-label="Log in with 4PLANET ID" style="position:fixed;top:14px;right:16px;z-index:2147483000;padding:9px 12px;border:1px solid rgba(8,8,8,.18);border-radius:999px;background:rgba(255,255,255,.94);color:#080808;text-decoration:none;font:650 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;box-shadow:0 4px 18px rgba(0,0,0,.08)">LOG IN · 4PLANET ID</a>';
-      body=body.replace(/<body([^>]*)>/i,'<body$1>'+idEntry);
       headers.set("cache-control","public, max-age=90, must-revalidate");
       return new Response(body,{status:upstream.status,headers});
     }

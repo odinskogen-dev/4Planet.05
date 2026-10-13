@@ -21,7 +21,7 @@ import "@/styles/premium-completion.css";
 
 // Standalone product hosts do not belong in the ATLAS/4PLANET entry bundle.
 const PartnersHub = lazy(() => import("@/pages/partners/PartnersHub"));
-const NationPage = lazy(() => import("@/pages/nation/NationPage"));
+const NationApp = lazy(() => import("@/nation/NationApp"));
 const FourBrand = lazy(() => import("@/pages/partners/FourBrand"));
 
 function isPartnersHost() {
@@ -120,7 +120,7 @@ export default function App() {
 
   // Standalone hosts must not recursively render their homepage inside /atlas iframes.
   if (isFirstPartyAtlasEmbedRoute() || (isNationHost() && window.location.pathname === "/atlas")) return <BrowserRouter><StandardApp /></BrowserRouter>;
-  if (isNationHost()) return <MeasuredStandalone><NationPage /></MeasuredStandalone>;
+  if (isNationHost()) return <MeasuredStandalone><NationApp /></MeasuredStandalone>;
   if (isFourBrandsHost() || isFourBrandPath()) return <MeasuredStandalone><FourBrand /></MeasuredStandalone>;
   if (isPartnersHost()) return <MeasuredStandalone><PartnersHub /></MeasuredStandalone>;
   if (isCreatorHost()) return <MeasuredStandalone><OdinCreatorPage /></MeasuredStandalone>;

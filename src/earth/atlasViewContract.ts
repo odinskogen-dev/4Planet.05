@@ -16,6 +16,9 @@ export interface AtlasView {
   /** Existing canonical Taxon/Actor/Source entity id. */
   entityId?: string;
   recordId?: string;
+  /** Optional navigation camera for country-scale product lenses (4NATION / S4PIENS).
+   * Navigation only: never an official boundary, jurisdiction or ecological extent. */
+  camera?: { lng: number; lat: number; zoom: number };
   /** Existing ATLAS layer keys. */
   layers?: readonly string[];
   /** Required source/geometry limitation, visible alongside the map. */
@@ -32,12 +35,18 @@ export function atlasHrefForView(view: AtlasView): string | null {
   if (view.access === "PRIVATE") return null;
   const place = view.placeId ? placeById(view.placeId) : undefined;
   if (view.placeId && !place) return null;
-  if (!place && !view.entityId && !view.recordId) return null;
+  const camera = view.camera && Number.isFinite(view.camera.lng) && Number.isFinite(view.camera.lat) && Number.isFinite(view.camera.zoom)
+    ? view.camera : undefined;
+  if (!place && !camera && !view.entityId && !view.recordId) return null;
   const state: AtlasState = {};
   const layers = (view.layers ?? ["bluemarble"])
     .filter((layer) => /^[a-z0-9-]+$/.test(layer))
     .slice(0, 8);
   state.l = layers.length ? layers.join(",") : "bluemarble";
+  if (camera && !place) {
+    state.c = camera.lng.toFixed(3) + "," + camera.lat.toFixed(3);
+    state.z = String(Math.round(camera.zoom * 10) / 10);
+  }
   if (place) {
     // Navigation extent is not an official ecological, drainage or decision boundary.
     state.c = String(place.lng) + "," + String(place.lat);

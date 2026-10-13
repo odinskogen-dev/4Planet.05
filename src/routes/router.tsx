@@ -53,7 +53,7 @@ import {
 import { NotFound } from "@/pages/system";
 
 const PublicWorld = lazy(() => import("@/earth/PublicWorld"));
-const NationPage = lazy(() => import("@/pages/nation/NationPage"));
+const NationApp = lazy(() => import("@/nation/NationApp"));
 const LumeRoom = lazy(() => import("@/pages/v5/LumeRoom"));
 const FoodUserTest = lazy(() => import("../food/FoodUserTest"));
 const Magazine = lazy(() => import("@/pages/v5/Magazine"));
@@ -96,7 +96,7 @@ export function AppRoutes() {
     <Suspense fallback={MagazineFallback}>
       <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/4nation/*" element={<Suspense fallback={LabFallback}><NationPage /></Suspense>} />
+      <Route path="/4nation/*" element={<Suspense fallback={LabFallback}><NationApp /></Suspense>} />
       <Route path="/labs" element={<LabsOverview />} />
       <Route path="/labs/gold" element={<Suspense fallback={LabFallback}><GoldTemplateSystemIndex /></Suspense>} />
       <Route path="/labs/gold/object/:slug" element={<Suspense fallback={LabFallback}><GoldObjectProofPage /></Suspense>} />
