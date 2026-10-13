@@ -87,7 +87,7 @@ test("NATUREBRAIN source-family migration registers metadata but keeps ingestion
     assert.match(migration, new RegExp(`dataset:unesco:${id}`));
   }
   assert.match(migration, /REGISTERED_DISABLED/);
-  assert.match(migration, /enabled,false/);
+  assert.match(migration, /enabled=false/);
   assert.match(migration, /no_wholesale_ingest/);
   assert.doesNotMatch(migration, /insert into planetbrain\.source_records/i);
   assert.doesNotMatch(migration, /insert into planetbrain\.claims/i);
