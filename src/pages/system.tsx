@@ -1,10 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { Seo } from "@/components/Seo";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 
 export function NotFound() {
+  const { pathname } = useLocation();
   return (
     <PublicShell>
+      <Seo
+        title="Page not found — 4PLANET"
+        description="This route does not exist in the 4PLANET public system."
+        path={pathname}
+        robots="noindex,follow"
+        canonical={false}
+      />
       <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", textAlign: "center", padding: 40 }}>
         <div>
           <div className="mono" style={{ color: T.blue, fontSize: 13 }}>404</div>
