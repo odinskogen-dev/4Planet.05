@@ -1,7 +1,8 @@
-import { FormEvent, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { T } from "@/styles/tokens";
+import { isFoodSpeciesHandoffRequest, parseFoodSpeciesHandoff } from "@/pages/sapiens/foodSpeciesHandoff";
 import {
   materializeUniversalTaxonProfile,
   NORWAY_FIELD_PROOF_TAXA,
@@ -174,15 +175,19 @@ function UniversalProfileView({ profile }: { profile: UniversalTaxonProfile }) {
 }
 
 export function SpeciesEngineLab() {
-  const [query, setQuery] = useState("Picea abies");
-  const [rank, setRank] = useState("species");
+  const location = useLocation();
+  const handoff = useMemo(() => parseFoodSpeciesHandoff(location.search), [location.search]);
+  const handoffRequested = useMemo(() => isFoodSpeciesHandoffRequest(location.search), [location.search]);
+  const handledHandoff = useRef<string | null>(null);
+  const [query, setQuery] = useState(handoff?.scientificName ?? "Picea abies");
+  const [rank, setRank] = useState<"species" | "genus">(handoff?.rank ?? "species");
   const [profile, setProfile] = useState<UniversalTaxonProfile | null>(null);
   const [status, setStatus] = useState<"IDLE" | "LOADING" | "ERROR" | "READY">("IDLE");
   const [error, setError] = useState<string | null>(null);
 
   const quickTaxa = useMemo(() => NORWAY_FIELD_PROOF_TAXA, []);
 
-  async function run(name = query, nextRank = rank) {
+  async function run(name = query, nextRank: "species" | "genus" = rank) {
     const scientificName = name.trim();
     if (!scientificName) return;
     setStatus("LOADING");
@@ -200,6 +205,14 @@ export function SpeciesEngineLab() {
     setProfile(result.data);
     setStatus("READY");
   }
+
+  useEffect(() => {
+    if (!handoff || handledHandoff.current === location.search) return;
+    handledHandoff.current = location.search;
+    setQuery(handoff.scientificName);
+    setRank(handoff.rank);
+    void run(handoff.scientificName, handoff.rank);
+  }, [handoff, location.search]);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -239,7 +252,7 @@ export function SpeciesEngineLab() {
               <select
                 aria-label="Taxon rank"
                 value={rank}
-                onChange={(event) => setRank(event.target.value)}
+                onChange={(event) => setRank(event.target.value as "species" | "genus")}
                 style={{ display: "block", width: "100%", border: 0, outline: 0, marginTop: 7, fontSize: 16, background: "transparent" }}
               >
                 <option value="species">Species</option>
@@ -273,7 +286,8 @@ export function SpeciesEngineLab() {
           </div>
 
           <div style={{ marginTop: 20, ...mono, color: status === "ERROR" ? "#9f2a1d" : T.dim }} role="status">
-            {status === "IDLE" && "READY · NO PROFILE MATERIALISED YET"}
+            {handoffRequested && !handoff && "HANDOFF UNKNOWN · CHOOSE OR ENTER A VALID TAXON"}
+            {status === "IDLE" && !handoffRequested && "READY · NO PROFILE MATERIALISED YET"}
             {status === "LOADING" && "QUERYING LIVE SOURCES…"}
             {status === "ERROR" && `SOURCE RESOLUTION FAILED · ${error}`}
             {status === "READY" && "LIVE SOURCES RESOLVED · UNIVERSAL PROFILE MATERIALISED"}
