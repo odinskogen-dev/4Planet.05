@@ -175,9 +175,12 @@ async function claimRuntimeFailures(source) {
     { id: "source:independent:1", authority: "INDEPENDENT", reviewedAt: "2026-10-13T00:00:00Z" },
     { id: "provider:delivery:1", authority: "FIRST_PARTY", reviewedAt: "2026-10-13T00:00:00Z" },
     { id: "provider:self-claim", authority: "SELF_ATTESTED", reviewedAt: null },
+    { id: "provider:self-reviewed", authority: "SELF_ATTESTED", reviewedAt: "2026-10-13T00:00:00Z" },
   ];
   const evidenceRecords = [
     { id: "evidence:impact:1", sourceRef: "source:independent:1", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "evidence:delivery:1", sourceRef: "provider:delivery:1", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "evidence:self-reviewed", sourceRef: "provider:self-reviewed", reviewedAt: "2026-10-13T00:00:00Z" },
     { id: "provider:self-evidence", sourceRef: "provider:self-claim", reviewedAt: null },
   ];
   const baseImpact = {
@@ -196,6 +199,28 @@ async function claimRuntimeFailures(source) {
     ["blank-source impact claim passed", { ...baseImpact, sourceRefs: ["   "] }, false],
     ["unreviewed impact claim passed", { ...baseImpact, reviewState: "UNREVIEWED" }, false],
     ["impact claim without evidence passed", { ...baseImpact, evidenceRefs: [] }, false],
+    [
+      "delivery claim without evidence passed",
+      {
+        ...baseImpact,
+        claim: "Bounded work delivered",
+        distance: "DELIVERY",
+        sourceRefs: ["provider:delivery:1"],
+        evidenceRefs: [],
+        sourceAuthority: "FIRST_PARTY",
+      },
+      false,
+    ],
+    [
+      "mixed self-attested and independent impact claim passed",
+      {
+        ...baseImpact,
+        sourceRefs: ["source:independent:1", "provider:self-reviewed"],
+        evidenceRefs: ["evidence:impact:1", "evidence:self-reviewed"],
+      },
+      false,
+    ],
+    ["invalid claim distance passed", { ...baseImpact, distance: "ACTIVITY" }, false],
     [
       "forged independent/reviewed tuple passed without authoritative records",
       {
@@ -222,7 +247,7 @@ async function claimRuntimeFailures(source) {
         claim: "Bounded work delivered",
         distance: "DELIVERY",
         sourceRefs: ["provider:delivery:1"],
-        evidenceRefs: [],
+        evidenceRefs: ["evidence:delivery:1"],
         sourceAuthority: "FIRST_PARTY",
       },
       true,
@@ -278,19 +303,16 @@ export function actorClaimCanPublish(
   const nonBlank = (values: string[]) =>
     Array.isArray(values) && values.length > 0 && values.every((value) => value.trim().length > 0);
   if (claim.state !== "SUPPORTED" || claim.reviewState !== "REVIEWED") return false;
-  if (!claim.claim.trim() || !nonBlank(claim.sourceRefs)) return false;
+  if (!claim.claim.trim() || !nonBlank(claim.sourceRefs) || !nonBlank(claim.evidenceRefs)) return false;
+  if (!["DELIVERY", "OUTCOME", "IMPACT"].includes(claim.distance)) return false;
   const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
   if (sources.some((record) => !record || !record.reviewedAt)) return false;
-  if (claim.distance === "DELIVERY") {
-    return sources.every((record) => record?.authority !== "SELF_ATTESTED");
-  }
-  if (!nonBlank(claim.evidenceRefs)) return false;
   const evidence = claim.evidenceRefs.map((id) => evidenceRecords.find((record) => record.id === id));
   if (evidence.some((record) =>
     !record || !record.reviewedAt || !claim.sourceRefs.includes(record.sourceRef)
   )) return false;
   if (claim.distance === "IMPACT") {
-    return sources.some((record) => record?.authority === "INDEPENDENT");
+    return sources.every((record) => record?.authority === "INDEPENDENT");
   }
   return sources.every((record) => record?.authority !== "SELF_ATTESTED");
 }
