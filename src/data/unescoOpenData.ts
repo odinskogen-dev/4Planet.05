@@ -144,6 +144,67 @@ export interface UnescoDatasetResponse {
   error?: string;
 }
 
+export interface DataVintage {
+  period?: string;
+  sourcePublishedAt?: string;
+  retrievedAt: string;
+}
+
+export interface Attribution {
+  provider: string;
+  text: string;
+  licence: string;
+  licenceUrl: string;
+  sourceUrl: string;
+}
+
+export interface Limitation {
+  code: string;
+  text: string;
+}
+
+export interface CountryMetric {
+  countryId: string;
+  metricId: string;
+  label: string;
+  value: number | string | null;
+  unit?: string;
+  period?: string;
+  sourceDataset: string;
+  sourceRecordId?: string;
+  sourceUrl: string;
+  vintage: DataVintage;
+  attribution: Attribution;
+  limitations: Limitation[];
+}
+
+export interface CountrySeries {
+  countryId: string;
+  metricId: string;
+  label: string;
+  unit?: string;
+  observations: CountryMetric[];
+}
+
+export interface PlaceEntity {
+  id: string;
+  name: string;
+  kind: string;
+  countryIso2?: string;
+  lat: number;
+  lon: number;
+  sourceDataset: string;
+  sourceUrl: string;
+  attribution: Attribution;
+  limitations: Limitation[];
+}
+
+export interface SpatialFeature<TProperties extends Record<string, unknown> = Record<string, unknown>> {
+  type: "Feature";
+  geometry: unknown;
+  properties: TProperties;
+}
+
 export interface CountryIdentity {
   id: string;
   iso2: string;
@@ -331,6 +392,18 @@ export const normaliseUnescoAtlasRecord = (
     },
   };
 };
+
+export async function fetchCountryIdentities(): Promise<CountryIdentity[]> {
+  const response = await fetchUnescoDataset("cou001");
+  return response.records.map(normaliseCountryIdentity).filter((country): country is CountryIdentity => Boolean(country));
+}
+
+export async function findCountryIdentity(iso2OrIso3: string): Promise<CountryIdentity | null> {
+  const code = String(iso2OrIso3 ?? "").trim().toUpperCase();
+  if (!code) return null;
+  const countries = await fetchCountryIdentities();
+  return countries.find((country) => country.iso2 === code || country.iso3 === code) ?? null;
+}
 
 export async function fetchUnescoDataset(dataset: UnescoDatasetId): Promise<UnescoDatasetResponse> {
   const meta = UNESCO_DATASETS[dataset];
