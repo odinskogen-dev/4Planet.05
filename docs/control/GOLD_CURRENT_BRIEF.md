@@ -1,3 +1,51 @@
+# IMPACT-LAN-GOLD-01 / GOLD-TEMPLATE-REFINEMENT-02 — 4PLANET IMPACT LIVING ACTION NETWORK — 13 OCT 2026
+
+**STATUS:** TEST KING GOLD CANDIDATE / NO PRODUCTION LIVE RELEASE / FOUNDER RELEASE STILL REQUIRED / ENIG LIVE NOT GIVEN FOR PRODUCTION.
+
+## USER ARRIVES BECAUSE
+A person wants to quickly discover credible ecological action by problem, place, actor and solution, see enough options on one screen to compare and explore, then open evidence and a real action route without being misled about partnership or outcomes.
+
+## ONE THING TO UNDERSTAND
+4PLANET IMPACT is a living action network, not a catalogue of green badges: ISSUE → PLACE → ACTOR → PROJECT → SOLUTION → EVIDENCE → ACTION are connected objects in the existing NATUREBRAIN.
+
+## PRIMARY ACTION
+Browse a dense, image-led issue/project collection, open one project or actor profile, inspect original evidence and continue to the external action route or the existing first-party ATLAS.
+
+## SECONDARY DEPTH
+Project profiles expose actor, place, solution, source-backed claims, limitations, rights posture and ATLAS context. Actor profiles expose known projects and a public-record trust boundary. NATUREBRAIN remains the truth source; the static discovery manifest is SEO/prerender projection only.
+
+## P1 DOMINANT
+Human-first visual discovery using 4PLANET’s canonical premium language: strong living-world imagery, white/black/BRANDBLÅ system, Instrument Sans display, DM Sans reading/UI and Fragment Mono evidence/meta; high information density without generic SaaS cards, dashboards or oversized one-project-per-screen layouts.
+
+## P2 ORIENTATION
+Issue families and project metadata provide fast orientation. Mobile keeps a two-column browse grid where possible, following the Founder’s preferred compact visual family pattern while remaining part of 4planet.org rather than a separate brand.
+
+## P3 ACTION / NEXT
+Open Project Profile → Actor Profile / ATLAS / original source / external support route. External support remains on the third party’s own site and does not create a 4PLANET contribution or delivery record.
+
+## P4 DEPTH
+Evidence rows preserve source-reported versus externally reviewed status, interpretation state, original source, rights posture and limitations. Graph relationships provide reusable context for later SOLUTIONS, CAPITAL, Magazine and other lenses without duplicating truth.
+
+## WHAT CAN BE REMOVED
+The prior generic-SaaS prototype grammar: giant dark dashboard hero, oversized project panels, decorative status-card chrome, graph-as-front-door and low-density single-object browsing. Legacy four-unit IMPACT remains only where required for compatibility; it is not the new discovery front door.
+
+## WHAT MUST BE REUSED
+Existing NATUREBRAIN planetbrain entity/relationship/claim/evidence/source model; public.impact_lan_gold_v01() controlled projection; existing 4PLANET ID / PublicShell; existing first-party ATLAS and AtlasEmbed; canonical 4PLANET analytics/SEO infrastructure; current rights-cleared 4PLANET media. No new Brain, database, map engine or parallel truth store.
+
+## TRUTH BOUNDARY
+Listing ≠ partnership or endorsement. External action ≠ 4PLANET contribution. Contribution ≠ delivery. Delivery ≠ ecological outcome. Outcome ≠ independent verification. External recognition is named as external recognition. Source-reported metrics remain source-reported. Issue-family imagery is not project evidence. Place boxes are navigation context, not automatically project, legal or ecological boundaries.
+
+## MOBILE-FIRST RISK
+The two-column mobile browse must remain legible at 390/430px: project names, actor names and review state cannot collapse into unreadable metadata; profile evidence and ATLAS must move to progressive depth rather than forcing horizontal dashboard layouts.
+
+## HUMAN SUCCESS
+A first-time visitor can see several meaningful options immediately, understand what each project is and who is doing it, distinguish source-checking from partnership/outcome verification, reach original evidence in one profile, and feel that IMPACT belongs to the same high-end 4PLANET brand as the main public world.
+
+**BASE / ROLLBACK:** Gold candidate introduced at TEST KING abe4c2f5390d9bb5aae818250473d8b453a6cbd4; revert that bounded integration and this brief if independent Gold finds a valid regression.
+**MAKER ≠ JUDGE:** AXE built the candidate. Independent Gold and TEST-domain browser evidence judge it. No production promotion is authorised without the existing Founder release gate.
+
+---
+
 # GREEN DATA → COMPOUNDING PRODUCT VALUE 02 — SHARED DATA + NATUREBRAIN + ATLAS — 13 OCT 2026
 
 **STATUS:** FOUNDER-DIRECTED MAKER CANDIDATE ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT / NO LIVE RELEASE.
