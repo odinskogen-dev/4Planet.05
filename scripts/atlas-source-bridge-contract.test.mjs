@@ -294,9 +294,29 @@ test("routed ATLAS GBIF points preserve presence, zero coordinates and evidence 
   }
   assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, license: "CC0 1.0" }, retrievedAt));
   assert.equal(earthLayersRuntime.gbifLicenceClass("CC BY 4.0"), "OPEN_ATTRIBUTION");
+  assert.equal(earthLayersRuntime.gbifLicenceClass("CC0 1.0"), "OPEN_CC0");
+  assert.equal(earthLayersRuntime.gbifLicenceClass("PUBLIC DOMAIN"), "OPEN_CC0");
   assert.equal(earthLayersRuntime.gbifLicenceClass("https://creativecommons.org/licenses/by/4.0/legalcode"), "OPEN_ATTRIBUTION");
-  assert.equal(earthLayersRuntime.gbifLicenceClass("https://creativecommons.org/publicdomain/zero/1.0/legalcode"), "OPEN_CC0");
-  assert.equal(earthLayersRuntime.gbifLicenceClass("CC BY-NC-SA 4.0"), "REVIEW_REQUIRED");
+  assert.equal(earthLayersRuntime.gbifLicenceClass("https://www.creativecommons.org/publicdomain/zero/1.0/legalcode"), "OPEN_CC0");
+  for (const rejectedLicence of [
+    "Not public domain",
+    "NOT CC0",
+    "CC BY-NC-SA 4.0",
+    "CC BY with attribution",
+    "https://creative-commons.org/licenses/by/4.0/legalcode",
+    "https://creativecommons.org.evil.example/licenses/by/4.0/legalcode",
+    "https://evil.example/?licence=https://creativecommons.org/licenses/by/4.0/legalcode",
+    "https://creativecommons.org/licenses/by-nc/4.0/legalcode",
+    "unknown",
+  ]) assert.equal(earthLayersRuntime.gbifLicenceClass(rejectedLicence), "REVIEW_REQUIRED");
+
+  for (const rejectedLicence of [
+    "Not public domain",
+    "NOT CC0",
+    "https://creativecommons.org.evil.example/licenses/by/4.0/legalcode",
+  ]) {
+    assert.equal(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, license: rejectedLicence }, retrievedAt), null);
+  }
 });
 
 test("routed ATLAS GBIF loader fails closed and exposes point evidence", () => {
