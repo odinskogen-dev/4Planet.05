@@ -100,7 +100,7 @@ const readUrl = () => {
 const SIGNAL_COLOR = { FIRE_ACTIVITY: C.red, NATURAL_EVENT: C.amber, SEISMIC: C.white, SPECIES_OBSERVATION: C.green };
 
 /* V36's three panel groups, in display order. Layers self-declare their group. */
-const LAYER_GROUPS = ["EARTH", "LIFE", "SIGNALS"];
+const LAYER_GROUPS = ["EARTH", "PLACES", "LIFE", "SIGNALS"];
 
 /* Keyboard activation for div-based interactive rows (Enter / Space). */
 const onKeyActivate = (fn) => (e) => {
