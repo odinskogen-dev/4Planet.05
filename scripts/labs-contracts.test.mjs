@@ -199,7 +199,12 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   // The scheduled workflow lives on the MAIN trigger branch, not this checked-out Labs source branch.
   assert.match(sync,/const SAFE_ROOTS=Object\.freeze\(\[/);
   assert.match(sync,/id:"1r9nIk160uQDMyaHza9pOvlDWM09ZXoCx"/);
-  assert.match(sync,/id:"1MekjkaBi2bW45iSvu1yj8h_3icpc98s1"/);
+  assert.match(sync,/id:"1kmdjueCJhVFxJS_qgrV1zFRQ_AZ8A3td"/);
+  assert.match(sync,/id:"1Ko8WAzrc9uo4uhBIoqb8zu_EjX6Ghr9o"/);
+  assert.doesNotMatch(sync,/id:"1MekjkaBi2bW45iSvu1yj8h_3icpc98s1"/,
+    "private-pointer parent 02 BRAIN SYSTEM must never be an approved shared root");
+  assert.match(sync,/const queue=SAFE_ROOTS\.map\(x=>\(\{id:x\.id,/);
+  assert.match(sync,/path:x\.path,scopeRootId:x\.id/);
   assert.doesNotMatch(sync,/"https:\/\/www\.googleapis\.com\/drive\/v3\/files\/"\+ROOT/);
   assert.match(sync,/const queue=SAFE_ROOTS\.map/);
   assert.match(sync,/const PRIVATE=\/[^\n]*vault/i);
@@ -214,5 +219,5 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
     "private source guard must fail before BRAIN write is attempted");
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
-  assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V1"/);
+  assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
 });
