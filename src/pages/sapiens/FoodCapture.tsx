@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CaptureExperience } from "@/capture/CaptureExperience";
+import { buildFoodSpeciesHandoffHref } from "./foodSpeciesHandoff";
 
 const FOOD_TESTS = [
   { label: "APPLE", scientificName: "Malus domestica" },
@@ -27,7 +28,7 @@ export function FoodCapture() {
           <p style={{ marginTop: 12, maxWidth: 720, color: "rgba(255,255,255,.62)", lineHeight: 1.55 }}>For this proof, choose a candidate manually. We do not pretend the camera recognised it. The next recognition pass will replace this manual step.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 1, marginTop: 24, background: "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.16)" }}>
             {FOOD_TESTS.map((item) => (
-              <Link key={item.scientificName} to="/species/lab" style={{ padding: 20, background: "#080808", textDecoration: "none" }}>
+              <Link key={item.scientificName} to={buildFoodSpeciesHandoffHref(item.scientificName)} style={{ padding: 20, background: "#080808", textDecoration: "none" }}>
                 <div className="mono" style={{ fontSize: 9, letterSpacing: ".14em", color: "#ff8b73" }}>{item.label}</div>
                 <div style={{ marginTop: 8, fontSize: 16, fontStyle: "italic" }}>{item.scientificName}</div>
                 <div className="mono" style={{ marginTop: 18, fontSize: 9, color: "rgba(255,255,255,.45)" }}>OPEN SPECIES ENGINE →</div>
