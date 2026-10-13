@@ -18,7 +18,7 @@ Project profiles expose actor, place, solution, source-backed claims, limitation
 Human-first visual discovery using 4PLANET’s canonical premium language: strong living-world imagery, white/black/BRANDBLÅ system, Instrument Sans display, DM Sans reading/UI and Fragment Mono evidence/meta; these type roles are wired explicitly in the IMPACT stylesheet rather than relying on undefined local variables; high information density without generic SaaS cards, dashboards or oversized one-project-per-screen layouts.
 
 ## P2 ORIENTATION
-Issue families and project metadata provide fast orientation. Mobile keeps a two-column browse grid where possible, following the Founder’s preferred compact visual family pattern while remaining part of 4planet.org rather than a separate brand.
+Issue families and project metadata provide fast orientation. URL filters normalise to the canonical underscore IDs (for example ?issue=coral → CORAL_) and are exercised in the dedicated browser proof. Mobile keeps a two-column browse grid where possible, following the Founder’s preferred compact visual family pattern while remaining part of 4planet.org rather than a separate brand.
 
 ## P3 ACTION / NEXT
 Open Project Profile → Actor Profile / ATLAS / original source / external support route. External support remains on the third party’s own site and does not create a 4PLANET contribution or delivery record.
