@@ -1,0 +1,67 @@
+name: Green Data Atlas Candidate
+
+on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - "src/data/unescoOpenData.ts"
+      - "functions/api/unesco-data.ts"
+      - "src/earth/layers.ts"
+      - "src/earth/atlasSourceControl.ts"
+      - "src/pages/v5/Atlas.tsx"
+      - "scripts/unesco-green-data-contract.test.mjs"
+      - ".github/workflows/green-data-atlas-candidate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify current UNESCO DataHub endpoints and minimum schema
+        run: |
+          node <<'NODE'
+          const datasets = {
+            mab001: ["mab_id", "title_en", "coordinates"],
+            whc001: ["id_no", "name_en", "coordinates"],
+            eg0001: ["ugg_id", "title_en", "coordinates"],
+            ioc001: ["area_id", "area_name", "coordinates", "n_species"],
+            cou001: ["iso2", "iso3", "country_title_en", "coordinates"],
+          };
+          for (const [id, required] of Object.entries(datasets)) {
+            const select = required.join(",");
+            const url = `https://data.unesco.org/api/explore/v2.1/catalog/datasets/${id}/records?limit=1&select=${encodeURIComponent(select)}`;
+            const response = await fetch(url, {
+              headers: { accept: "application/json", "user-agent": "4PLANET-GREEN-DATA-QA/1.0" },
+            });
+            if (!response.ok) throw new Error(`${id}: HTTP ${response.status}`);
+            const body = await response.json();
+            if (!Array.isArray(body.results) || body.results.length < 1) throw new Error(`${id}: no records`);
+            const record = body.results[0]?.fields ?? body.results[0];
+            for (const field of required) {
+              if (!(field in record)) throw new Error(`${id}: missing field ${field}`);
+            }
+            console.log(`${id}: endpoint/schema PASS; total=${body.total_count ?? "unknown"}`);
+          }
+          NODE
+
+      - name: Shared-data and Atlas contract
+        run: node --test scripts/unesco-green-data-contract.test.mjs
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
