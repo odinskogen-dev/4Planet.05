@@ -85,6 +85,9 @@ const independentVerification = {
   kind: "VERIFICATION",
   sourceRef: "source:independent:1",
   capturedAt: "2026-09-08T00:00:00Z",
+  actionId: "action:test:plastic:1",
+  providerId: "provider:test",
+  impactId: "impact:test:1",
   verifierClass: "THIRD_PARTY",
   relationship: "IMPACT_LINKED",
   rights: "INTERNAL_TEST",
@@ -220,8 +223,38 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
   assert.equal(passport.claimDistance, "D4");
   assert.equal(passport.depth, "VERIFIED");
   assert.match(passport.impactClaim, /verified bounded impact/i);
-  assert.equal(proof.proofPassportCanClaimImpact(passport), true);
+  assert.equal(proof.proofPassportCanClaimImpact(passport, base), true);
   assert.deepEqual(proof.validateProofPassport(passport), []);
+
+  const unsafeVariants = [
+    ["missing verification timestamp", { evidenceItems: [{ ...independentVerification, capturedAt: null }] }],
+    ["invalid verification timestamp", { evidenceItems: [{ ...independentVerification, capturedAt: "not-a-date" }] }],
+    ["future verification timestamp", { evidenceItems: [{ ...independentVerification, capturedAt: "2099-01-01T00:00:00Z" }] }],
+    ["missing review timestamp", { lastVerifiedAt: null }],
+    ["invalid review timestamp", { lastVerifiedAt: "2026-02-30T00:00:00Z" }],
+    ["future review timestamp", { lastVerifiedAt: "2099-01-01T00:00:00Z" }],
+    ["review predates evidence", { lastVerifiedAt: "2026-09-07T23:59:59Z" }],
+    ["foreign action evidence", { evidenceItems: [{ ...independentVerification, actionId: "action:other" }] }],
+    ["foreign provider evidence", { evidenceItems: [{ ...independentVerification, providerId: "provider:other" }] }],
+    ["foreign impact evidence", { evidenceItems: [{ ...independentVerification, impactId: "impact:other" }] }],
+  ];
+
+  for (const [label, changes] of unsafeVariants) {
+    const unsafe = { ...passport, ...changes };
+    assert.equal(proof.proofPassportCanClaimImpact(unsafe, base), false, label);
+    assert.ok(proof.validateProofPassport(unsafe).length > 0, label);
+  }
+
+  const callerForged = {
+    ...passport,
+    doubleCountState: "UNIQUE_CLAIM_ID",
+  };
+  assert.equal(proof.proofPassportCanClaimImpact(callerForged, base), false, "caller flags cannot bypass independent double-count control");
+  assert.equal(proof.proofPassportCanClaimImpact(passport), false, "caller flags without canonical source records cannot claim impact");
+  assert.equal(proof.proofPassportCanClaimImpact(passport, {
+    ...base,
+    delivery: { ...base.delivery, providerId: "provider:other" },
+  }), false, "foreign delivery provider cannot claim impact");
 });
 
 test("VVL maturity is sequential and cannot skip missing earlier value gates", () => {

@@ -12,6 +12,10 @@ export interface ProofEvidenceItem {
   kind: "TRANSACTION" | "ALLOCATION" | "DELIVERY" | "VERIFICATION" | "OUTCOME" | "IMPACT" | "OTHER";
   sourceRef: string;
   capturedAt: string | null;
+  /** Canonical claim identity. Required for evidence that can advance an impact claim. */
+  actionId?: string;
+  providerId?: string;
+  impactId?: string;
   verifierClass: "PROVIDER" | "THIRD_PARTY" | "4PLANET" | "UNKNOWN";
   /** Relationship to this action/passport; CONTEXT_ONLY can never advance proof depth. */
   relationship?: ProofEvidenceRelationship;
@@ -170,7 +174,66 @@ export interface ProofPassportInput {
   lastVerifiedAt?: string | null;
 }
 
+export type ProofChainRecords = Pick<ProofPassportInput, "contribution" | "delivery" | "outcome" | "impact">;
+
 const claimDistanceNumber = (distance: ClaimDistance) => Number(distance.slice(1));
+
+const PROOF_TIMESTAMP_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(?:Z|[+-](\d{2}):(\d{2}))$/;
+
+function validProofTimestamp(value: string | null, now = Date.now()): number | null {
+  if (!value) return null;
+  const match = PROOF_TIMESTAMP_PATTERN.exec(value);
+  if (!match) return null;
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, offsetHourText, offsetMinuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const offsetHour = offsetHourText === undefined ? 0 : Number(offsetHourText);
+  const offsetMinute = offsetMinuteText === undefined ? 0 : Number(offsetMinuteText);
+  const daysInMonth = month >= 1 && month <= 12
+    ? new Date(Date.UTC(year, month, 0)).getUTCDate()
+    : 0;
+  const parsed = Date.parse(value);
+
+  if (
+    day < 1 ||
+    day > daysInMonth ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59 ||
+    offsetHour > 23 ||
+    offsetMinute > 59 ||
+    !Number.isFinite(parsed) ||
+    parsed > now
+  ) return null;
+
+  return parsed;
+}
+
+function isBoundIndependentVerification(
+  item: ProofEvidenceItem,
+  identity: Pick<ProofPassportInput, "actionId" | "providerId" | "impact">,
+  lastVerifiedAt: string | null | undefined,
+): boolean {
+  const capturedAt = validProofTimestamp(item.capturedAt);
+  const verifiedAt = validProofTimestamp(lastVerifiedAt ?? null);
+  return (
+    item.kind === "VERIFICATION" &&
+    item.verifierClass === "THIRD_PARTY" &&
+    item.relationship === "IMPACT_LINKED" &&
+    item.actionId === identity.actionId &&
+    item.providerId === identity.providerId &&
+    item.impactId === identity.impact.id &&
+    capturedAt !== null &&
+    verifiedAt !== null &&
+    capturedAt <= verifiedAt
+  );
+}
 
 /**
  * Claim distance is deliberately conservative.
@@ -215,8 +278,8 @@ export function deriveProofPassportDepth(input: ProofPassportInput): ProofPasspo
   const uniqueClaimOrAllocationId = input.uniqueClaimOrAllocationId ?? null;
   const production = input.contribution.environment === "PRODUCTION" && input.delivery.environment === "PRODUCTION";
   const hasAllocationIdentity = Boolean(uniqueClaimOrAllocationId) || doubleCountState === "UNIQUE_CLAIM_ID" || doubleCountState === "INDEPENDENTLY_CHECKED";
-  const hasIndependentVerification = evidenceItems.some(
-    (item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY" && item.relationship === "IMPACT_LINKED",
+  const hasIndependentVerification = evidenceItems.some((item) =>
+    isBoundIndependentVerification(item, input, input.lastVerifiedAt),
   );
 
   if (
@@ -277,22 +340,47 @@ export function createProofPassport(input: ProofPassportInput): ProofPassport {
 export function validateProofPassport(passport: ProofPassport): string[] {
   const failures: string[] = [];
   if (!passport.id || !passport.actionId || !passport.providerId) failures.push("identity");
-  if (!(passport.quantity > 0) || !passport.unitDefinition) failures.push("unit");
+  if (!Number.isFinite(passport.quantity) || !(passport.quantity > 0) || !passport.unitDefinition) failures.push("unit");
   if (passport.environment !== "PRODUCTION" && passport.claimDistance !== "D0") failures.push("nonproduction_claim_distance");
   if (passport.depth === "VERIFIED" && passport.doubleCountState !== "INDEPENDENTLY_CHECKED") failures.push("verified_without_independent_double_count_check");
-  if (passport.depth === "VERIFIED" && !passport.evidenceItems.some((item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY" && item.relationship === "IMPACT_LINKED")) failures.push("verified_without_impact_linked_third_party_verification");
+  if (
+    passport.depth === "VERIFIED" &&
+    !passport.evidenceItems.some((item) => isBoundIndependentVerification(
+      item,
+      { actionId: passport.actionId, providerId: passport.providerId, impact: { id: passport.impactId } as ImpactRecord },
+      passport.lastVerifiedAt,
+    ))
+  ) failures.push("verified_without_impact_linked_third_party_verification");
   if (passport.depth !== "LITE" && !passport.uniqueClaimOrAllocationId && passport.doubleCountState === "UNKNOWN") failures.push("standard_without_allocation_identity");
   return failures;
 }
 
-export function proofPassportCanClaimImpact(passport: ProofPassport): boolean {
-  const independentVerification = passport.evidenceItems.some(
-    (item) => item.kind === "VERIFICATION" && item.verifierClass === "THIRD_PARTY" && item.relationship === "IMPACT_LINKED",
-  );
+export function proofPassportCanClaimImpact(passport: ProofPassport, records?: ProofChainRecords): boolean {
+  if (!records) return false;
+
+  const derivedClaimDistance = deriveClaimDistance(records);
+  const derivedDepth = deriveProofPassportDepth({ ...passport, ...records });
+  const proofChainMatchesPassport =
+    records.contribution.id === passport.contributionId &&
+    records.delivery.id === passport.deliveryId &&
+    records.delivery.providerId === passport.providerId &&
+    records.outcome.id === passport.outcomeId &&
+    records.impact.id === passport.impactId &&
+    records.contribution.environment === passport.environment &&
+    derivedClaimDistance === passport.claimDistance &&
+    derivedDepth === passport.depth;
+  const independentVerification = passport.evidenceItems.some((item) => isBoundIndependentVerification(
+    item,
+    { actionId: passport.actionId, providerId: passport.providerId, impact: { id: passport.impactId } as ImpactRecord },
+    passport.lastVerifiedAt,
+  ));
   return (
+    validateProofPassport(passport).length === 0 &&
+    proofChainMatchesPassport &&
     passport.environment === "PRODUCTION" &&
     passport.claimDistance === "D4" &&
     passport.depth === "VERIFIED" &&
+    passport.doubleCountState === "INDEPENDENTLY_CHECKED" &&
     independentVerification &&
     Boolean(passport.impactClaim?.trim())
   );
