@@ -171,6 +171,15 @@ async function claimRuntimeFailures(source) {
   const module = await loadFixture(source);
   const gate = module.actorClaimCanPublish;
   if (typeof gate !== "function") return ["actorClaimCanPublish is not executable"];
+  const sourceRecords = [
+    { id: "source:independent:1", authority: "INDEPENDENT", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "provider:delivery:1", authority: "FIRST_PARTY", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "provider:self-claim", authority: "SELF_ATTESTED", reviewedAt: null },
+  ];
+  const evidenceRecords = [
+    { id: "evidence:impact:1", sourceRef: "source:independent:1", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "provider:self-evidence", sourceRef: "provider:self-claim", reviewedAt: null },
+  ];
   const baseImpact = {
     claim: "Verified impact",
     distance: "IMPACT",
@@ -187,6 +196,24 @@ async function claimRuntimeFailures(source) {
     ["blank-source impact claim passed", { ...baseImpact, sourceRefs: ["   "] }, false],
     ["unreviewed impact claim passed", { ...baseImpact, reviewState: "UNREVIEWED" }, false],
     ["impact claim without evidence passed", { ...baseImpact, evidenceRefs: [] }, false],
+    [
+      "forged independent/reviewed tuple passed without authoritative records",
+      {
+        ...baseImpact,
+        sourceRefs: ["provider:self-claim"],
+        evidenceRefs: ["provider:self-evidence"],
+      },
+      false,
+    ],
+    [
+      "unknown source and evidence records passed",
+      {
+        ...baseImpact,
+        sourceRefs: ["source:missing"],
+        evidenceRefs: ["evidence:missing"],
+      },
+      false,
+    ],
     ["reviewed independent impact claim did not pass", baseImpact, true],
     [
       "supported sourced delivery claim did not pass",
@@ -201,7 +228,9 @@ async function claimRuntimeFailures(source) {
       true,
     ],
   ];
-  return cases.flatMap(([message, claim, expected]) => gate(claim) === expected ? [] : [message]);
+  return cases.flatMap(([message, claim, expected]) =>
+    gate(claim, sourceRecords, evidenceRecords) === expected ? [] : [message],
+  );
 }
 
 const conformingFixture = `
@@ -211,6 +240,16 @@ interface ActorCapability { id: string }
 interface ActorRequirement { id: string }
 interface ActorDeliveryEvidence { sourceRef: string }
 interface ActorOutcomeEvidence { sourceRef: string }
+interface ActorSourceRecord {
+  id: string;
+  authority: "FIRST_PARTY" | "INDEPENDENT" | "SELF_ATTESTED";
+  reviewedAt: string | null;
+}
+interface ActorEvidenceRecord {
+  id: string;
+  sourceRef: string;
+  reviewedAt: string | null;
+}
 interface ActorClaimBoundary {
   claim: string;
   distance: "DELIVERY" | "OUTCOME" | "IMPACT";
@@ -231,15 +270,29 @@ export interface ActorGoldProfile {
   claimsAllowed: ActorClaimBoundary[];
   claimsProhibited: ActorClaimBoundary[];
 }
-export function actorClaimCanPublish(claim: ActorClaimBoundary) {
+export function actorClaimCanPublish(
+  claim: ActorClaimBoundary,
+  sourceRecords: ActorSourceRecord[],
+  evidenceRecords: ActorEvidenceRecord[],
+) {
   const nonBlank = (values: string[]) =>
     Array.isArray(values) && values.length > 0 && values.every((value) => value.trim().length > 0);
   if (claim.state !== "SUPPORTED" || claim.reviewState !== "REVIEWED") return false;
   if (!claim.claim.trim() || !nonBlank(claim.sourceRefs)) return false;
-  if (claim.distance === "DELIVERY") return claim.sourceAuthority !== "SELF_ATTESTED";
+  const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
+  if (sources.some((record) => !record || !record.reviewedAt)) return false;
+  if (claim.distance === "DELIVERY") {
+    return sources.every((record) => record?.authority !== "SELF_ATTESTED");
+  }
   if (!nonBlank(claim.evidenceRefs)) return false;
-  if (claim.distance === "IMPACT") return claim.sourceAuthority === "INDEPENDENT";
-  return claim.sourceAuthority !== "SELF_ATTESTED";
+  const evidence = claim.evidenceRefs.map((id) => evidenceRecords.find((record) => record.id === id));
+  if (evidence.some((record) =>
+    !record || !record.reviewedAt || !claim.sourceRefs.includes(record.sourceRef)
+  )) return false;
+  if (claim.distance === "IMPACT") {
+    return sources.some((record) => record?.authority === "INDEPENDENT");
+  }
+  return sources.every((record) => record?.authority !== "SELF_ATTESTED");
 }
 `;
 
@@ -299,4 +352,39 @@ test("self-attested, blank-source, unreviewed and evidence-free impact claims fa
   assert.ok(failures.includes("blank-source impact claim passed"));
   assert.ok(failures.includes("unreviewed impact claim passed"));
   assert.ok(failures.includes("impact claim without evidence passed"));
+});
+
+test("asserted independent review cannot replace authoritative source and evidence records", async () => {
+  assert.deepEqual(claimStructureFailures(conformingFixture), []);
+  const { actorClaimCanPublish } = await loadFixture(conformingFixture);
+  const sources = [
+    { id: "source:independent:1", authority: "INDEPENDENT", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "provider:self-claim", authority: "SELF_ATTESTED", reviewedAt: null },
+  ];
+  const evidence = [
+    { id: "evidence:impact:1", sourceRef: "source:independent:1", reviewedAt: "2026-10-13T00:00:00Z" },
+    { id: "provider:self-evidence", sourceRef: "provider:self-claim", reviewedAt: null },
+  ];
+  const reviewedImpact = {
+    claim: "Verified impact",
+    distance: "IMPACT",
+    state: "SUPPORTED",
+    sourceRefs: ["source:independent:1"],
+    evidenceRefs: ["evidence:impact:1"],
+    sourceAuthority: "INDEPENDENT",
+    reviewState: "REVIEWED",
+  };
+  const forgedImpact = {
+    ...reviewedImpact,
+    sourceRefs: ["provider:self-claim"],
+    evidenceRefs: ["provider:self-evidence"],
+  };
+
+  assert.equal(actorClaimCanPublish(reviewedImpact, sources, evidence), true);
+  assert.equal(actorClaimCanPublish(forgedImpact, sources, evidence), false);
+  assert.equal(actorClaimCanPublish(
+    { ...reviewedImpact, sourceRefs: ["source:missing"], evidenceRefs: ["evidence:missing"] },
+    sources,
+    evidence,
+  ), false);
 });
