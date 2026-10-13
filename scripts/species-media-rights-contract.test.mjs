@@ -81,6 +81,18 @@ test("explicit item-level licence is preserved and trimmed", () => {
   );
 });
 
+test("media licence classifier fails closed on restrictions and negated public-domain text", () => {
+  const { classifySpeciesMediaRights } = loadSpeciesMediaModule(async () => jsonResponse({ results: [] }));
+
+  assert.equal(classifySpeciesMediaRights("CC BY NC 4.0"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC BY ND 4.0"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("Not public domain"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("https://creativecommons.org/licenses/by-nc/4.0/"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("https://creativecommons.org/licenses/by/4.0/"), "DISPLAYABLE");
+  assert.equal(classifySpeciesMediaRights("CC BY-SA 4.0"), "DISPLAYABLE");
+  assert.equal(classifySpeciesMediaRights("https://creativecommons.org/publicdomain/zero/1.0/"), "DISPLAYABLE");
+});
+
 test("GBIF image resolution cannot inherit occurrence-level licence", () => {
   assert.doesNotMatch(source, /media\?\.license\s*\?\?\s*row\?\.license/);
   assert.match(
@@ -184,4 +196,36 @@ test("mocked GBIF request path returns only media with its own displayable licen
   assert.equal(result.data[0].identifier, "https://example.test/item-licensed.jpg");
   assert.equal(result.data[0].license, "https://creativecommons.org/licenses/by-sa/4.0/");
   assert.equal(result.data[0].rightsState, "DISPLAYABLE");
+});
+
+test("mocked GBIF request path withholds ambiguous licence labels before positive substrings", async () => {
+  const licences = [
+    ["cc-by-nc.jpg", "CC BY NC 4.0"],
+    ["cc-by-nd.jpg", "CC BY ND 4.0"],
+    ["not-public-domain.jpg", "Not public domain"],
+    ["canonical-by.jpg", "https://creativecommons.org/licenses/by/4.0/"],
+    ["canonical-cc0.jpg", "https://creativecommons.org/publicdomain/zero/1.0/"],
+  ];
+  const fetchMock = async () => jsonResponse({
+    results: [{
+      key: 789,
+      media: licences.map(([name, license]) => ({
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier: `https://example.test/${name}`,
+        license,
+      })),
+    }],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 8 });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    [...result.data].map((image) => image.identifier),
+    ["https://example.test/canonical-by.jpg", "https://example.test/canonical-cc0.jpg"],
+  );
+  assert.equal(result.blockedCount, 3);
+  assert.match(result.note, /3 media items were withheld/);
 });
