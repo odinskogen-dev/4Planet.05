@@ -100,6 +100,8 @@ test("Curated GBIF paths fail closed on occurrence rights while preserving zeros
   assert.equal(result.data.total, 23);
   assert.equal(result.data.rows.length, 2);
   assert.equal(result.data.rightsReviewRequiredCount, 3);
+  assert.equal(result.data.semanticFilterRejectedCount, 5);
+  assert.equal(result.data.sourceUrl, requested[0]);
   assert.equal(result.data.rows[0].lat, 0);
   assert.equal(result.data.rows[1].lng, 0);
   assert.equal(result.data.rows[0].eventDate, "2026-10-12T01:02:03Z");
@@ -117,4 +119,49 @@ test("WKT path carries the same explicit presence, geospatial and rights boundar
   assert.match(requested[0], /hasGeospatialIssue=false/);
   assert.equal(result.data.rows.length, 2);
   assert.deepEqual(result.data.names, ["Unidentified"]);
+  assert.equal(result.data.sourceUrl, requested[0]);
+});
+
+test("Curated profile cannot imply public observations from an upstream total alone", async () => {
+  requested = [];
+  globalThis.fetch = async (url) => {
+    requested.push(String(url));
+    return new Response(JSON.stringify({
+      count: 91,
+      results: [{
+        key: 44,
+        occurrenceStatus: "PRESENT",
+        hasGeospatialIssue: false,
+        decimalLatitude: 10,
+        decimalLongitude: 11,
+        license: "CC BY-NC 4.0",
+      }],
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  const result = await connectors.taxonOccurrences(2440728, 24);
+  assert.equal(result.ok, true);
+  assert.equal(result.data.total, 91);
+  assert.equal(result.data.rows.length, 0);
+  assert.equal(result.data.publicUseSampleCount, 0);
+  assert.equal(result.data.rightsReviewRequiredCount, 1);
+  assert.equal(result.data.semanticFilterRejectedCount, 0);
+  assert.equal(result.data.sourceUrl, requested[0]);
+
+  const profileSource = await readFile("src/pages/integrated/Species.tsx", "utf8");
+  assert.match(profileSource, /result\.data\.rows\.length > 0 \? "PUBLIC_RECORDS" : "NO_PUBLIC_RECORDS"/);
+  assert.match(profileSource, /Nothing from this response is plotted/);
+  assert.match(profileSource, /EXACT GBIF QUERY/);
+  assert.doesNotMatch(profileSource, /result\.data\.total > 0 \? "LIVE"/);
+});
+
+test("Curated occurrence source failure remains unavailable rather than zero or live", async () => {
+  globalThis.fetch = async () => new Response("unavailable", { status: 503 });
+  const result = await connectors.taxonOccurrences(2440728, 24);
+  assert.equal(result.ok, false);
+
+  const profileSource = await readFile("src/pages/integrated/Species.tsx", "utf8");
+  assert.match(profileSource, /status: "SOURCE_UNAVAILABLE"/);
+  assert.match(profileSource, /source is currently unavailable/);
+  assert.match(profileSource, /No public observation is implied or plotted/);
 });

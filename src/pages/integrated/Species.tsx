@@ -256,8 +256,8 @@ export function SpeciesIndex() {
 
 type ObservationState =
   | { status: "LOADING"; rows: Occurrence[]; total: number }
-  | { status: "LIVE"; rows: Occurrence[]; total: number }
-  | { status: "NO_RECORDS"; rows: Occurrence[]; total: number }
+  | { status: "PUBLIC_RECORDS"; rows: Occurrence[]; total: number; returnedPageCount: number; rightsReviewRequiredCount: number; semanticFilterRejectedCount: number; sourceUrl: string; partial: boolean }
+  | { status: "NO_PUBLIC_RECORDS"; rows: Occurrence[]; total: number; returnedPageCount: number; rightsReviewRequiredCount: number; semanticFilterRejectedCount: number; sourceUrl: string; partial: boolean }
   | { status: "SOURCE_UNAVAILABLE"; rows: Occurrence[]; total: number };
 
 function SpeciesEditorialProfile({
@@ -424,12 +424,23 @@ function SpeciesEditorialProfile({
         <section data-species-section="atlas" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(58px,8vw,100px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
           <div style={{ ...mono, color: T.blue }}>WHERE RECORDED</div>
           <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(38px,6vw,72px)", lineHeight: .98, letterSpacing: "-.045em", fontWeight: 520 }}>Explore reported observations.</h2>
-          {occurrences.status === "LIVE" ? (
-            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>
-              GBIF currently reports {occurrences.total.toLocaleString()} occurrence records for {profile.commonName}. They show where observations have been reported — not where the species is right now, its abundance or its complete range.
-            </p>
+          {occurrences.status === "PUBLIC_RECORDS" ? (
+            <div style={{ marginTop: 22, maxWidth: 760 }}>
+              <p style={{ margin: 0, fontSize: "clamp(18px,2.2vw,24px)", lineHeight: 1.52 }}>
+                GBIF reports {occurrences.total.toLocaleString()} records matching the server-side presence and coordinate filters. The returned page contains {occurrences.returnedPageCount.toLocaleString()} records: {occurrences.rows.length.toLocaleString()} rights-cleared observation{occurrences.rows.length === 1 ? "" : "s"} for public display{occurrences.rightsReviewRequiredCount ? `; ${occurrences.rightsReviewRequiredCount.toLocaleString()} require rights review` : ""}{occurrences.semanticFilterRejectedCount ? `; ${occurrences.semanticFilterRejectedCount.toLocaleString()} fail record-level presence or coordinate checks` : ""}.
+              </p>
+              <p style={{ margin: "12px 0 0", color: T.dim, fontSize: 13.5, lineHeight: 1.55 }}>Reported observations are not current position, abundance or complete range. {occurrences.partial ? "This is a partial public-use view." : ""}</p>
+              <a href={occurrences.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 12, color: T.blue }}>EXACT GBIF QUERY ↗</a>
+            </div>
+          ) : occurrences.status === "NO_PUBLIC_RECORDS" ? (
+            <div style={{ marginTop: 22, maxWidth: 760 }}>
+              <p style={{ margin: 0, fontSize: 18, lineHeight: 1.55 }}>
+                GBIF reports {occurrences.total.toLocaleString()} records matching the server-side presence and coordinate filters, but the returned page's {occurrences.returnedPageCount.toLocaleString()} records contain no rights-cleared observations for public display. Nothing from this response is plotted; {occurrences.rightsReviewRequiredCount.toLocaleString()} record{occurrences.rightsReviewRequiredCount === 1 ? " requires" : "s require"} rights review{occurrences.semanticFilterRejectedCount ? ` and ${occurrences.semanticFilterRejectedCount.toLocaleString()} fail record-level presence or coordinate checks` : ""}.
+              </p>
+              <a href={occurrences.sourceUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 12, color: T.blue }}>EXACT GBIF QUERY ↗</a>
+            </div>
           ) : (
-            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>Reported observation data is currently unavailable or returned no records. The species story and sources remain available.</p>
+            <p style={{ margin: "22px 0 0", maxWidth: 760, fontSize: 18, lineHeight: 1.55 }}>The GBIF observation source is currently unavailable or returned no matching records. No public observation is implied or plotted. The species story and reviewed sources remain available.</p>
           )}
           <Link to={atlasHref} style={{ ...mono, display: "inline-block", marginTop: 24, color: T.blue, borderBottom: `1px solid ${T.blue}`, paddingBottom: 3 }}>OPEN OBSERVATIONS IN ATLAS →</Link>
           <div style={{ marginTop: 34 }}>
@@ -486,7 +497,16 @@ export function SpeciesProfilePage() {
     taxonOccurrences(profile.gbifKey, 24).then((result) => {
       if (!alive) return;
       if (!result.ok) setOccurrences({ status: "SOURCE_UNAVAILABLE", rows: [], total: 0 });
-      else setOccurrences({ status: result.data.total > 0 ? "LIVE" : "NO_RECORDS", rows: result.data.rows, total: result.data.total });
+      else setOccurrences({
+        status: result.data.rows.length > 0 ? "PUBLIC_RECORDS" : "NO_PUBLIC_RECORDS",
+        rows: result.data.rows,
+        total: result.data.total,
+        returnedPageCount: result.data.returnedPageCount,
+        rightsReviewRequiredCount: result.data.rightsReviewRequiredCount,
+        semanticFilterRejectedCount: result.data.semanticFilterRejectedCount,
+        sourceUrl: result.data.sourceUrl,
+        partial: Boolean(result.partial),
+      });
     });
     return () => { alive = false; };
   }, [profile]);

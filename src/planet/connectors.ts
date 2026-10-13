@@ -249,9 +249,11 @@ type GbifOccurrenceResult = {
   returnedPageCount: number;
   publicUseSampleCount: number;
   rightsReviewRequiredCount: number;
+  semanticFilterRejectedCount: number;
+  sourceUrl: string;
 };
 
-const mapGbifOccurrenceResult = (payload: any, retrievedAt: string): GbifOccurrenceResult => {
+const mapGbifOccurrenceResult = (payload: any, retrievedAt: string, sourceUrl: string): GbifOccurrenceResult => {
   const returned = Array.isArray(payload?.results) ? payload.results : [];
   const admissible = returned.filter(isSemanticallyAdmissibleGbifOccurrence);
   const rows = admissible.map((row: any) => toOccurrence(row, retrievedAt)).filter(Boolean) as Occurrence[];
@@ -262,6 +264,8 @@ const mapGbifOccurrenceResult = (payload: any, retrievedAt: string): GbifOccurre
     returnedPageCount: returned.length,
     publicUseSampleCount: rows.length,
     rightsReviewRequiredCount: admissible.length - rows.length,
+    semanticFilterRejectedCount: returned.length - admissible.length,
+    sourceUrl,
   };
 };
 
@@ -271,11 +275,10 @@ export const taxonOccurrences = async (
   limit = 300,
 ): Promise<Result<GbifOccurrenceResult>> => {
   const retrievedAt = now();
-  const r = await getJson(
-    `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&occurrenceStatus=PRESENT&hasGeospatialIssue=false&limit=${limit}`,
-  );
+  const sourceUrl = `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&occurrenceStatus=PRESENT&hasGeospatialIssue=false&limit=${limit}`;
+  const r = await getJson(sourceUrl);
   if (!r.ok) return { ok: false, error: r.error };
-  const data = mapGbifOccurrenceResult(r.data, retrievedAt);
+  const data = mapGbifOccurrenceResult(r.data, retrievedAt, sourceUrl);
   return data.rightsReviewRequiredCount
     ? { ok: true, data, partial: true, warning: `${data.rightsReviewRequiredCount} occurrence records require rights review` }
     : { ok: true, data };
@@ -289,12 +292,11 @@ export const taxonOccurrencesSince = async (
 ): Promise<Result<GbifOccurrenceResult>> => {
   const today = new Date().toISOString().slice(0, 10);
   const retrievedAt = now();
-  const r = await getJson(
-    `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&occurrenceStatus=PRESENT&hasGeospatialIssue=false` +
-      `&eventDate=${sinceIso},${today}&limit=${limit}`,
-  );
+  const sourceUrl = `https://api.gbif.org/v1/occurrence/search?taxonKey=${gbifKey}&hasCoordinate=true&occurrenceStatus=PRESENT&hasGeospatialIssue=false` +
+    `&eventDate=${sinceIso},${today}&limit=${limit}`;
+  const r = await getJson(sourceUrl);
   if (!r.ok) return { ok: false, error: r.error };
-  const data = mapGbifOccurrenceResult(r.data, retrievedAt);
+  const data = mapGbifOccurrenceResult(r.data, retrievedAt, sourceUrl);
   return data.rightsReviewRequiredCount
     ? { ok: true, data, partial: true, warning: `${data.rightsReviewRequiredCount} occurrence records require rights review` }
     : { ok: true, data };
@@ -314,9 +316,10 @@ export const occurrencesInWkt = async (
   if (opts.taxonKey) q.set("taxonKey", String(opts.taxonKey));
   if (opts.sinceIso) q.set("eventDate", `${opts.sinceIso},${new Date().toISOString().slice(0, 10)}`);
 
-  const r = await getJson(`https://api.gbif.org/v1/occurrence/search?${q.toString()}`);
+  const sourceUrl = `https://api.gbif.org/v1/occurrence/search?${q.toString()}`;
+  const r = await getJson(sourceUrl);
   if (!r.ok) return { ok: false, error: r.error };
-  const data = mapGbifOccurrenceResult(r.data, now());
+  const data = mapGbifOccurrenceResult(r.data, now(), sourceUrl);
   const names = [...new Set(data.rows.map((o) => o.scientificName))].filter(Boolean);
   const withNames = { ...data, names };
   return data.rightsReviewRequiredCount
