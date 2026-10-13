@@ -209,17 +209,23 @@ const formatPct = (value) => Number.isFinite(Number(value)) ? `${(Number(value) 
 
 const unescoAtlasRows = async (datasetId) => {
   const response = await fetchUnescoDataset(datasetId);
+  const metadata = UNESCO_DATASETS[datasetId];
   return response.records
     .map((record) => normaliseUnescoAtlasRecord(datasetId, record))
     .filter(Boolean)
     .map((record) => {
       const sourceHref = safeHttpHref(record.sourceUrl);
       const sourceLink = sourceHref ? `<a class="pl" href="${esc(sourceHref)}" target="_blank" rel="noopener">Open source ↗</a>` : "";
-      const licenceLink = `<a class="pl" href="${UNESCO_DATASETS[datasetId].rights.licenceUrl}" target="_blank" rel="noopener">CC BY-SA 4.0 ↗</a>`;
+      const licenceLink = `<a class="pl" href="${metadata.rights.licenceUrl}" target="_blank" rel="noopener">CC BY-SA 4.0 ↗</a>`;
+      const referenceHref = safeHttpHref(metadata.edition?.referenceUrl);
+      const referenceLink = referenceHref ? `<a class="pl" href="${esc(referenceHref)}" target="_blank" rel="noopener">Current UNESCO list ↗</a>` : "";
       let detail = "";
       if (record.kind === "OCEAN_BIODIVERSITY_AREA") {
         const m = record.metrics || {};
         detail = `<span class="lat">${esc(record.category || "OCEAN AREA")}</span><br><span class="lat">${formatCount(m.species)} recorded species · ${formatCount(m.observations)} occurrence records</span><br><span class="lat">${formatCount(m.datasets)} contributing datasets · threatened share ${formatPct(m.threatenedShare)}</span><br><span class="lat">record span ${esc(m.firstYear || "UNKNOWN")}–${esc(m.lastYear || "UNKNOWN")}</span>`;
+      } else if (record.kind === "GLOBAL_GEOPARK" && metadata.edition) {
+        const retrievedDate = String(response.retrievedAt || "").slice(0, 10) || "UNKNOWN";
+        detail = `<span class="lat">UNESCO GLOBAL GEOPARK · designation record ${esc(record.date || "UNKNOWN")}</span><br><span class="lat">legal protection UNKNOWN · revalidation status UNKNOWN · ecological outcome UNKNOWN</span><br><span class="lat">DataHub eg0001 records retrieved ${esc(retrievedDate)} · description ${esc(metadata.edition.datasetDescriptionAsOf)} (stale)</span><br><span class="lat">${esc(metadata.edition.referenceCountSummary)} · official list updated ${esc(metadata.edition.referenceUpdatedAt)} · mixed edition</span><br>`;
       } else {
         const context = [record.country || record.iso2 || "", record.category || "", record.date || ""].filter(Boolean).join(" · ");
         detail = context ? `<span class="lat">${esc(context)}</span>` : "";
@@ -227,7 +233,7 @@ const unescoAtlasRows = async (datasetId) => {
       return {
         lon: record.lon,
         lat: record.lat,
-        html: `<b>${esc(record.title)}</b><br>${detail}${sourceLink}${licenceLink}`,
+        html: `<b>${esc(record.title)}</b><br>${detail}${sourceLink}${referenceLink}${licenceLink}`,
       };
     });
 };
@@ -324,8 +330,8 @@ export const LAYERS = [
     load: async () => unescoAtlasRows("whc001") },
   { id: "unesco-geoparks", dom: "E4RTH", group: "PLACES", kind: "point", domain: ["PLANET", "E4RTH", "S4PIENS"],
     label: "GLOBAL GEOPARKS", color: C.pink, src: "UNESCO Global Geoparks", r: 4,
-    note: "UNESCO Global Geoparks. Points are source-provided representative coordinates, not geopark boundaries or live environmental-condition measurements.",
-    rights: "CC BY-SA 4.0 · attribution + ShareAlike", period: "Designation / source-record dates",
+    note: "UNESCO Global Geopark designation records. Points are representative coordinates, not boundaries. Legal protection, current revalidation status and ecological outcome remain UNKNOWN unless separately sourced; mixed source editions are shown in each record.",
+    rights: "CC BY-SA 4.0 · attribution + ShareAlike", period: "Designation records · mixed edition visible",
     load: async () => unescoAtlasRows("eg0001") },
   { id: "unesco-ocean-biodiversity", dom: "OCE4N", group: "LIFE", kind: "point", domain: ["PLANET", "OCE4N", "S4PIENS"],
     label: "OCEAN BIODIVERSITY AREAS", color: C.blue, src: "IOC-UNESCO / OBIS", r: 5,
