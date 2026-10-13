@@ -1,3 +1,4 @@
+// GREEN DATA GOLD r4 — final exact-current-HEIR QA trigger.
 import { test, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
