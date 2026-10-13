@@ -196,8 +196,7 @@ test("LABS canonical host stays isolated and Atlas occurrence popup uses safe DO
 
 test("OS scheduled Drive synchronisation traverses only explicitly approved organisational folders and cannot publish stale/unsafe partial data",()=>{
   const sync=fs.readFileSync("scripts/os-brain-sync.mjs","utf8");
-  const scheduler=fs.readFileSync(".github/workflows/os-brain-scheduled.yml","utf8");
-  assert.match(scheduler,/ref: labs\/overview-v1/);
+  // The scheduled workflow lives on the MAIN trigger branch, not this checked-out Labs source branch.
   assert.match(sync,/const SAFE_ROOTS=Object\.freeze\(\[/);
   assert.match(sync,/id:"1r9nIk160uQDMyaHza9pOvlDWM09ZXoCx"/);
   assert.match(sync,/id:"1MekjkaBi2bW45iSvu1yj8h_3icpc98s1"/);
