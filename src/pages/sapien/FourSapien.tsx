@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { parseEmblaShoppingList, resolveEmblaIntake, summariseEmblaShoppingList } from "../../choice/embla";
+import { restoreEmblaShoppingList, saveEmblaShoppingList } from "../../choice/emblaStorage";
 import { trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse } from "@/analytics/ProductAnalytics";
 import { FinanceWorkspace } from "../../finance/FinanceWorkspace";
@@ -18,6 +19,7 @@ export function FourSapienHome() {
   const [analysed, setAnalysed] = useState(false);
   const [saved, setSaved] = useState(false);
   const [restored, setRestored] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
   const [submittedPrompt, setSubmittedPrompt] = useState<string | null>(null);
 
@@ -27,19 +29,17 @@ export function FourSapienHome() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const key = "4planet.embla.shopping-list.v1";
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return;
-    try {
-      const value = JSON.parse(raw) as { shoppingList?: unknown; store?: unknown; budget?: unknown };
-      if (typeof value.shoppingList !== "string" || !value.shoppingList.trim()) return;
-      setShoppingList(value.shoppingList);
-      if (typeof value.store === "string" && value.store.trim()) setStore(value.store);
-      if (typeof value.budget === "string") setBudget(value.budget);
-      setRestored(true);
-    } catch {
-      window.localStorage.removeItem(key);
+    const restoredList = restoreEmblaShoppingList(window.localStorage);
+    if (restoredList.unavailable) {
+      setStorageError("Saved lists are unavailable in this browser. Your list still works in this session.");
+      return;
     }
+    if (!restoredList.value) return;
+
+    setShoppingList(restoredList.value.shoppingList);
+    if (restoredList.value.store) setStore(restoredList.value.store);
+    setBudget(restoredList.value.budget);
+    setRestored(true);
   }, []);
 
   const analyseList = (event: FormEvent<HTMLFormElement>) => {
@@ -63,11 +63,22 @@ export function FourSapienHome() {
   };
 
   const saveList = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("4planet.embla.shopping-list.v1", JSON.stringify({ shoppingList, store, budget, savedAt: new Date().toISOString() }));
-    }
-    setSaved(true);
+    const persisted = typeof window !== "undefined" && saveEmblaShoppingList(window.localStorage, {
+      shoppingList,
+      store,
+      budget,
+      savedAt: new Date().toISOString(),
+    });
+
     setRestored(false);
+    if (!persisted) {
+      setSaved(false);
+      setStorageError("This list could not be saved on this device. It still works in this session.");
+      return;
+    }
+
+    setStorageError(null);
+    setSaved(true);
     trackEvent("decision_saved", { product_area: "4sapien", decision_kind: "shopping_list" });
   };
 
@@ -157,6 +168,7 @@ export function FourSapienHome() {
                 </div>
                 <button type="button" onClick={saveList}>Use this list</button>
               </div>
+              {storageError ? <p className="embla02__saved" role="status" aria-live="polite">{storageError}</p> : null}
               {saved ? <p className="embla02__saved">Saved on this device. This is the first bounded LEARN receipt — not a claim that products were purchased.</p> : null}
             </section>
           ) : null}
