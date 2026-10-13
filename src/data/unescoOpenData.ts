@@ -280,6 +280,13 @@ export const normaliseUnescoPoint = (value: any): { lat: number; lon: number } |
   return { lat, lon };
 };
 
+export const asOptionalFiniteNumber = (value: unknown): number | undefined => {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string" && value.trim() === "") return undefined;
+  const numeric = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
+};
+
 const slugify = (value: string) =>
   value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -369,7 +376,6 @@ export const normaliseUnescoAtlasRecord = (
 
   const title = String(f.area_name ?? "").trim();
   if (!title) return null;
-  const threatenedShare = Number(f.pct_threatened);
   return {
     id: `place:obis:area:${String(f.area_id ?? f.uuid ?? slugify(title))}`,
     datasetId,
@@ -381,12 +387,12 @@ export const normaliseUnescoAtlasRecord = (
     category: String(f.area_type ?? "").trim() || undefined,
     sourceUrl: safeHttpUrl(f.source_url) || UNESCO_DATASETS.ioc001.referenceUrl,
     metrics: {
-      observations: Number.isFinite(Number(f.n_observations)) ? Number(f.n_observations) : undefined,
-      species: Number.isFinite(Number(f.n_species)) ? Number(f.n_species) : undefined,
-      taxa: Number.isFinite(Number(f.n_taxa)) ? Number(f.n_taxa) : undefined,
-      datasets: Number.isFinite(Number(f.n_datasets)) ? Number(f.n_datasets) : undefined,
-      threatenedSpecies: Number.isFinite(Number(f.n_threatened_species)) ? Number(f.n_threatened_species) : undefined,
-      threatenedShare: Number.isFinite(threatenedShare) ? threatenedShare : undefined,
+      observations: asOptionalFiniteNumber(f.n_observations),
+      species: asOptionalFiniteNumber(f.n_species),
+      taxa: asOptionalFiniteNumber(f.n_taxa),
+      datasets: asOptionalFiniteNumber(f.n_datasets),
+      threatenedSpecies: asOptionalFiniteNumber(f.n_threatened_species),
+      threatenedShare: asOptionalFiniteNumber(f.pct_threatened),
       firstYear: String(f.year_first ?? "").trim() || undefined,
       lastYear: String(f.year_last ?? "").trim() || undefined,
     },
