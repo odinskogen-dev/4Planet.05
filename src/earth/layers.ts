@@ -15,6 +15,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 /* eslint-disable */
 // @ts-nocheck
+import { UNESCO_DATASETS, fetchUnescoDataset, normaliseUnescoAtlasRecord } from "../data/unescoOpenData";
 
 export const MONO = "'Fragment Mono', ui-monospace, monospace";
 export const C = {
@@ -203,6 +204,34 @@ export const DOMAINS = [
   { id: "S4PIENS", label: "S4PIENS", color: C.red },
 ];
 
+const formatCount = (value) => Number.isFinite(Number(value)) ? Number(value).toLocaleString("en-GB") : "UNKNOWN";
+const formatPct = (value) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(1)}%` : "UNKNOWN";
+
+const unescoAtlasRows = async (datasetId) => {
+  const response = await fetchUnescoDataset(datasetId);
+  return response.records
+    .map((record) => normaliseUnescoAtlasRecord(datasetId, record))
+    .filter(Boolean)
+    .map((record) => {
+      const sourceHref = safeHttpHref(record.sourceUrl);
+      const sourceLink = sourceHref ? `<a class="pl" href="${esc(sourceHref)}" target="_blank" rel="noopener">Open source ↗</a>` : "";
+      const licenceLink = `<a class="pl" href="${UNESCO_DATASETS[datasetId].rights.licenceUrl}" target="_blank" rel="noopener">CC BY-SA 4.0 ↗</a>`;
+      let detail = "";
+      if (record.kind === "OCEAN_BIODIVERSITY_AREA") {
+        const m = record.metrics || {};
+        detail = `<span class="lat">${esc(record.category || "OCEAN AREA")}</span><br><span class="lat">${formatCount(m.species)} recorded species · ${formatCount(m.observations)} occurrence records</span><br><span class="lat">${formatCount(m.datasets)} contributing datasets · threatened share ${formatPct(m.threatenedShare)}</span><br><span class="lat">record span ${esc(m.firstYear || "UNKNOWN")}–${esc(m.lastYear || "UNKNOWN")}</span>`;
+      } else {
+        const context = [record.country || record.iso2 || "", record.category || "", record.date || ""].filter(Boolean).join(" · ");
+        detail = context ? `<span class="lat">${esc(context)}</span>` : "";
+      }
+      return {
+        lon: record.lon,
+        lat: record.lat,
+        html: `<b>${esc(record.title)}</b><br>${detail}${sourceLink}${licenceLink}`,
+      };
+    });
+};
+
 export const LAYERS = [
   { id: "bluemarble", dom: "PLANET", group: "EARTH", kind: "raster", domain: ["PLANET", "OCE4N", "E4RTH", "S4PIENS"],
     label: "EARTH " + DOT + " BLUE MARBLE", color: C.white, src: "NASA GIBS", opacity: 1, maxzoom: 8,
@@ -282,6 +311,27 @@ export const LAYERS = [
     label: "PROTECTED AREAS", color: C.green, src: "Protected Planet / WDPA",
     note: "The world's protected areas (WDPA). The API needs a free UNEP-WCMC token, which we have not wired up yet \u2014 so no protected-area polygons are drawn. We would rather show nothing than fake a boundary.",
     attr: "" },
+
+  { id: "unesco-biospheres", dom: "E4RTH", group: "PLACES", kind: "point", domain: ["PLANET", "E4RTH", "OCE4N"],
+    label: "BIOSPHERE RESERVES", color: C.green, src: "UNESCO / MAB", r: 4,
+    note: "UNESCO Man and the Biosphere designation records. Points are source-provided representative coordinates — not reserve boundaries or proof of current ecosystem health.",
+    rights: "CC BY-SA 4.0 · attribution + ShareAlike", period: "Designation / source-record dates",
+    load: async () => unescoAtlasRows("mab001") },
+  { id: "unesco-world-heritage", dom: "PLANET", group: "PLACES", kind: "point", domain: ["PLANET", "E4RTH", "OCE4N", "S4PIENS"],
+    label: "WORLD HERITAGE", color: C.amber, src: "UNESCO World Heritage", r: 4,
+    note: "UNESCO World Heritage sites. A designation is not a measure of present ecological or cultural condition; the source point is not the full site boundary.",
+    rights: "CC BY-SA 4.0 · attribution + ShareAlike", period: "Inscription / annual list state",
+    load: async () => unescoAtlasRows("whc001") },
+  { id: "unesco-geoparks", dom: "E4RTH", group: "PLACES", kind: "point", domain: ["PLANET", "E4RTH", "S4PIENS"],
+    label: "GLOBAL GEOPARKS", color: C.pink, src: "UNESCO Global Geoparks", r: 4,
+    note: "UNESCO Global Geoparks. Points are source-provided representative coordinates, not geopark boundaries or live environmental-condition measurements.",
+    rights: "CC BY-SA 4.0 · attribution + ShareAlike", period: "Designation / source-record dates",
+    load: async () => unescoAtlasRows("eg0001") },
+  { id: "unesco-ocean-biodiversity", dom: "OCE4N", group: "LIFE", kind: "point", domain: ["PLANET", "OCE4N", "S4PIENS"],
+    label: "OCEAN BIODIVERSITY AREAS", color: C.blue, src: "IOC-UNESCO / OBIS", r: 5,
+    note: "Area-level OBIS biodiversity summaries for EEZ, high-seas/ABNJ and EBSA areas. Counts reflect occurrence records and sampling effort — not abundance, complete richness, range or live positions. Points are representative area coordinates, not boundaries.",
+    rights: "CC BY-SA 4.0 · attribution + ShareAlike", period: "Historical record span per area",
+    load: async () => unescoAtlasRows("ioc001") },
 
   { id: "biodiv", dom: "E4RTH", group: "LIFE", kind: "raster", domain: ["PLANET", "E4RTH", "OCE4N"],
     label: "BIODIVERSITY DENSITY", color: C.green, src: "GBIF", opacity: 0.85, maxzoom: 14, xyz: true,

@@ -14,9 +14,14 @@ const inat = read("functions/api/inaturalist.ts");
 const truth = read("src/data/truthSpine.ts");
 const earthLayers = read("src/earth/layers.ts");
 const sourceControl = read("src/earth/atlasSourceControl.ts");
-const earthLayersRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(earthLayers, {
+const unescoOpenData = read("src/data/unescoOpenData.ts");
+const unescoRuntimeUrl = `data:text/javascript;base64,${Buffer.from(ts.transpileModule(unescoOpenData, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
-}).outputText).toString("base64")}`);
+}).outputText).toString("base64")}`;
+const earthLayersCompiled = ts.transpileModule(earthLayers, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText.replace(/(["'])\.\.\/data\/unescoOpenData\1/g, JSON.stringify(unescoRuntimeUrl));
+const earthLayersRuntime = await import(`data:text/javascript;base64,${Buffer.from(earthLayersCompiled).toString("base64")}`);
 const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(obis, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`);

@@ -1,3 +1,19 @@
+# GREEN DATA → COMPOUNDING PRODUCT VALUE 02 — SHARED DATA + NATUREBRAIN + ATLAS — 13 OCT 2026
+
+**STATUS:** FOUNDER-DIRECTED MAKER CANDIDATE ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person explores a place, country or human system and needs authoritative data to become understandable, spatial and reusable without losing source, time, rights or limitations.
+**ONE THING TO UNDERSTAND:** one qualified source integration should improve multiple 4PLANET lenses without creating multiple versions of reality.
+**PRIMARY ACTION:** register the qualified UNESCO source family in the existing NATUREBRAIN source federation, expose bounded shared country/source contracts, and add four curated spatial layers through the existing ATLAS engine.
+**P1 ATLAS:** Biosphere Reserves, World Heritage, Global Geoparks and OBIS ocean-area biodiversity summaries are optional curated layers; inactive layers make no product fetch.
+**P2 COUNTRY / S4PIENS:** UNESCO Member States supplies bounded country identity/context; WDI supplies country-scoped metric/series read paths with individual years preserved for Claude's 4NATION/S4PIENS product work.
+**P3 NATUREBRAIN:** source/dataset/feed metadata uses the existing planetbrain schema; all six candidate feeds remain disabled and no source records, claims, relationships or measurements are bulk-created by this slice.
+**P4 RIGHTS:** implemented UNESCO DataHub datasets are recorded as CC BY-SA 4.0 with attribution + ShareAlike; raw OBIS occurrence licences remain a separate record-level/dataset-level contract.
+**ACCEPTANCE:** current upstream endpoint/schema probes; bounded Norway WDI probe; shared contract tests; TypeScript; production build; Chromium + WebKit ATLAS layer/failure-state browser proof; independent Gold on the exact HEIR SHA.
+**TRUTH BOUNDARY:** designation ≠ ecosystem health; representative point ≠ boundary; occurrence/record count ≠ abundance or complete richness; national average ≠ local condition; mixed vintages remain visible; missing/source failure ≠ zero; UNESCO membership context ≠ sovereignty adjudication.
+**CLAUDE BOUNDARY:** Claude owns the 4NATION Country Object and S4PIENS Human Systems product experiences. This slice supplies shared data/contracts and ATLAS capability only; no second map engine or truth store is authorised.
+**BASE / ROLLBACK:** `king/test@0997cc6157894f7ea943ae1242a56ebcbff1117c`; revert this single bounded integration commit if Gold finds a valid regression.
+**MAKER ≠ JUDGE:** AXE supplies the bounded HEIR candidate; independent Gold judges exact evidence. No production promotion is authorised by this brief.
+
 # 4PLANET GET INVOLVED — TIME + CORE-COST FAIL-CLOSED CORRECTION — 13 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.

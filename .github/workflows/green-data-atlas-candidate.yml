@@ -1,0 +1,100 @@
+name: Green Data Atlas Candidate
+
+on:
+  pull_request:
+    branches: [king/test]
+    paths:
+      - "src/data/unescoOpenData.ts"
+      - "src/data/unescoCountryContext.ts"
+      - "functions/api/unesco-data.ts"
+      - "functions/api/unesco-country.ts"
+      - "src/earth/layers.ts"
+      - "src/earth/atlasSourceControl.ts"
+      - "src/pages/v5/Atlas.tsx"
+      - "scripts/unesco-green-data-contract.test.mjs"
+      - "tests/e2e/atlas-green-data.spec.ts"
+      - "supabase/migrations/20261013120500_naturebrain_unesco_source_family_v01.sql"
+      - ".github/workflows/green-data-atlas-candidate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify current UNESCO DataHub endpoints and minimum schema
+        run: |
+          node <<'NODE'
+          const datasets = {
+            mab001: ["mab_id", "title_en", "coordinates"],
+            whc001: ["id_no", "name_en", "coordinates"],
+            eg0001: ["ugg_id", "title_en", "coordinates"],
+            ioc001: ["area_id", "area_name", "coordinates", "n_species"],
+            cou001: ["iso2", "iso3", "country_title_en", "coordinates"],
+          };
+          for (const [id, required] of Object.entries(datasets)) {
+            const select = required.join(",");
+            const url = `https://data.unesco.org/api/explore/v2.1/catalog/datasets/${id}/records?limit=1&select=${encodeURIComponent(select)}`;
+            const response = await fetch(url, {
+              headers: { accept: "application/json", "user-agent": "4PLANET-GREEN-DATA-QA/1.0" },
+            });
+            if (!response.ok) throw new Error(`${id}: HTTP ${response.status}`);
+            const body = await response.json();
+            if (!Array.isArray(body.results) || body.results.length < 1) throw new Error(`${id}: no records`);
+            const record = body.results[0]?.fields ?? body.results[0];
+            for (const field of required) {
+              if (!(field in record)) throw new Error(`${id}: missing field ${field}`);
+            }
+            console.log(`${id}: endpoint/schema PASS; total=${body.total_count ?? "unknown"}`);
+          }
+
+          const wdiUrl = 'https://data.unesco.org/api/explore/v2.1/catalog/datasets/wdi001/records?limit=3&select=year,country,country_title_en,population_total,gdp_total,gdp_per_capita,life_expectancy&where=' + encodeURIComponent('country="NO"') + '&order_by=' + encodeURIComponent('year desc');
+          const wdiResponse = await fetch(wdiUrl, { headers: { accept: "application/json", "user-agent": "4PLANET-GREEN-DATA-QA/1.0" } });
+          if (!wdiResponse.ok) throw new Error(`wdi001: HTTP ${wdiResponse.status}`);
+          const wdi = await wdiResponse.json();
+          if (!Array.isArray(wdi.results) || wdi.results.length < 1) throw new Error("wdi001: no Norway rows");
+          if (wdi.results.some((row) => String((row.fields ?? row).country || "").toUpperCase() !== "NO")) throw new Error("wdi001: country filter escaped boundary");
+          console.log(`wdi001: country filter/schema PASS; Norway rows=${wdi.total_count ?? "unknown"}`);
+          NODE
+
+      - name: Shared-data and Atlas contract
+        run: node --test scripts/unesco-green-data-contract.test.mjs
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start local preview
+        shell: bash
+        run: |
+          npm run preview -- --host 0.0.0.0 > green-data-preview.log 2>&1 &
+          for attempt in {1..45}; do
+            if curl --fail --silent http://127.0.0.1:4173/atlas > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat green-data-preview.log
+          exit 1
+
+      - name: Install Chromium + WebKit
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Browser proof — curated Atlas layers
+        env:
+          BASE_URL: http://127.0.0.1:4173
+          ATLAS_LOCAL_PRECHECK: "1"
+        run: |
+          npx playwright test tests/e2e/atlas-green-data.spec.ts             --project=desktop-1440             --project=mobile-390             --project=webkit-desktop             --project=webkit-390
