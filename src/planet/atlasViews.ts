@@ -1,7 +1,9 @@
 /* ATLAS saved views — recovered selectively from V37CX My Atlas.
    Follow/Watch already supersedes the donor's duplicate saved-species/place lists,
    so TEST KING only recovers the genuinely missing primitive: named map views.
-   Local device only. No account, sync or server-side tracking is implied. */
+   Guest and authenticated account caches are deliberately separate. */
+
+import { accountStorageKey } from "./accountStorageScope";
 
 export interface AtlasSavedView {
   id: string;
@@ -16,13 +18,15 @@ export interface AtlasSavedViewsState {
 }
 
 const KEY = "4planet-atlas-saved-views-v1";
+let activeAccountId: string | null = null;
+const storageKey = () => accountStorageKey(KEY, activeAccountId);
 const empty = (): AtlasSavedViewsState => ({ version: 1, views: [] });
 const asRecord = (v: unknown): Record<string, unknown> => v && typeof v === "object" ? v as Record<string, unknown> : {};
 
 export function readAtlasSavedViews(): AtlasSavedViewsState {
   if (typeof window === "undefined") return empty();
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(storageKey());
     if (!raw) return empty();
     const parsed = asRecord(JSON.parse(raw));
     if (parsed.version !== 1 || !Array.isArray(parsed.views)) return empty();
@@ -39,8 +43,13 @@ export function readAtlasSavedViews(): AtlasSavedViewsState {
 
 export function writeAtlasSavedViews(state: AtlasSavedViewsState) {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(KEY, JSON.stringify({ version: 1, views: state.views.slice(0, 30) })); }
+  try { window.localStorage.setItem(storageKey(), JSON.stringify({ version: 1, views: state.views.slice(0, 30) })); }
   catch { /* private/locked storage: fail closed without breaking ATLAS */ }
+  window.dispatchEvent(new CustomEvent("4p:atlas-views"));
+}
+
+export function setAtlasViewsStorageAccount(accountId: string | null) {
+  activeAccountId = accountId?.trim() || null;
   window.dispatchEvent(new CustomEvent("4p:atlas-views"));
 }
 
