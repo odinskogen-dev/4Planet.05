@@ -96,7 +96,8 @@ export function ImpactLivingActionNetwork() {
   const { payload, state } = useImpactLan();
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
-  const issue = (params.get("issue") || "ALL_").toUpperCase();
+  const issueParam = (params.get("issue") || "all").toUpperCase();
+  const issue = issueParam.endsWith("_") ? issueParam : issueParam + "_";
 
   const issueKeys = useMemo(() => {
     if (!payload) return ["ALL_"];
