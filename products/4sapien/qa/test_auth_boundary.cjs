@@ -21,4 +21,12 @@ assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const c=card
 assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const c=cardByKey\('Mat'\)/, "stale Food rejection must not paint error state");
 assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return false;state\.textContent='Notater kunne ikke lastes akkurat nå\.'/ , "stale Notes rejection must not paint error state");
 
-console.log("PASS 4SAPIEN root auth boundary: cache + private DOM reset and stale-response guards");
+assert.match(source, /id="fs-notes-state" class="fs-service-state" role="status" aria-live="polite"/, "notes mutations must expose an accessible live status");
+assert.match(source, /async function removeNote\(id\)\{const epoch=authEpoch;try\{await api\(/, "note deletion must bind to the initiating identity epoch");
+assert.match(source, /if\(!authCurrent\(epoch\)\)return;const rows=await noteRows\(\);if\(!authCurrent\(epoch\)\)return;/, "note deletion must guard authoritative readback across auth changes");
+assert.match(source, /if\(rows\.some\(row=>String\(row\.id\)===String\(id\)\)\)throw new Error\('NOTE_DELETE_NOT_CONFIRMED'\)/, "note deletion must not claim success while the note remains authoritative");
+assert.match(source, /await renderNotes\(epoch,rows\);if\(!authCurrent\(epoch\)\)return;/, "confirmed note deletion must render only in the initiating identity epoch");
+assert.match(source, /state\.textContent='Huskelappen ble fjernet\.'/ , "confirmed note deletion must announce success");
+assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const state=document\.getElementById\('fs-notes-state'\);if\(state\)state\.textContent='Kunne ikke fjerne huskelappen\. Den kan fortsatt være lagret\. Prøv igjen\.'/ , "failed note deletion must preserve truth and announce uncertainty");
+
+console.log("PASS 4SAPIEN root auth boundary: cache + private DOM reset, stale-response guards, and truthful note deletion");
