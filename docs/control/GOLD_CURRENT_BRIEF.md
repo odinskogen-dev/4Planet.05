@@ -456,3 +456,28 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 # IMPACT — EVIDENCE TIMESTAMP INTEGRITY WITHOUT AGE POLICY — 09 OCT 2026
 
 **STATUS:** BOUNDED HEIR TRUTH
+# ATLAS-09 — ACCOUNT-ISOLATED MY ATLAS STATE — 13 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** A person saves ATLAS views or follows on a shared browser and must not expose or upload those choices to another signed-in account.
+
+**ONE THING TO UNDERSTAND:** Guest device state and each authenticated account are separate namespaces; sign-in is not consent to import guest state.
+
+**PRIMARY ACTION:** Switch saved-view and Follow storage to the active account namespace before hydration, then merge only that account's local cache with its RLS-bound remote state.
+
+**P1 DOMINANT:** Guest data is never automatically merged into a newly authenticated account.
+
+**P2 ORIENTATION:** Account A and account B use disjoint local keys; sign-out restores the guest namespace.
+
+**P3 ACTION:** Late hydration or debounced sync from an inactive account cannot update the current account's UI or sync state.
+
+**P4 DEPTH:** Deterministic contracts and build/type checks do not prove independent Gold, RLS configuration, deployment or LIVE behaviour.
+
+**WHAT MUST BE REUSED:** Existing My Atlas controls, existing Follow primitive, existing `four_planet_atlas_state` account endpoint, issue #244 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** This correction isolates application-visible browser state. It does not add explicit guest import, change server schema/RLS or claim that browser storage is a secure vault.
+
+**BASE / ROLLBACK:** `king/test@d63bd4106651c1f037df6afa21d72a1e56d706a7`; revert this bounded correction if independent Gold finds a valid account persistence regression.
+
+**MAKER ≠ JUDGE:** Factory consumes the returned correction; independent Gold judges the exact HEIR SHA. No product Gold, deployment or production release is authorised.
