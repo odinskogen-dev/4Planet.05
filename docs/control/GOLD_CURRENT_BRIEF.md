@@ -1,3 +1,14 @@
+# 4PLANET GET INVOLVED — TIME + CORE-COST FAIL-CLOSED CORRECTION — 13 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person filters public participation options by available time and whether essential participation costs are covered.
+**ONE THING TO UNDERSTAND:** a weekend is not a week, and one covered category is not evidence that all core costs are covered.
+**PRIMARY ACTION:** match week-scale duration only on explicit week or fortnight tokens; pass `COSTS_COVERED` only when travel, accommodation and food are each explicitly covered, provided, included, funded or not required.
+**ACCEPTANCE:** deterministic controls reject `one weekend` for WEEKS, accept explicit week/fortnight duration, keep unknown duration UNKNOWN, keep partial/ambiguous core-cost evidence UNKNOWN, fail participant-paid core costs, and pass only complete coverage/not-required evidence.
+**TRUTH BOUNDARY:** synthetic deterministic fixtures prove gate semantics only. They do not prove current opportunity terms, consented analytics, recommendation quality, independent Gold, deployment or LIVE behaviour.
+**BASE / ROLLBACK:** `king/test@dffba7b342bece03f5b33415637809b899273738`; revert this bounded correction if independent Gold finds a valid participation-filter regression.
+**MAKER ≠ JUDGE:** Factory corrects the existing receiver; independent Gold judges the exact resulting SHA. No publish, merge, deployment or production mutation is authorised.
+
 # ATLAS — GBIF LICENCE FAIL-CLOSED CORRECTION — 13 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
