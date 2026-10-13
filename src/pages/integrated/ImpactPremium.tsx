@@ -113,6 +113,7 @@ export function ImpactStory() {
   if (!u) return <NotFound />;
   const backHref = contextHref("/impact", location.search);
   const statusAcid = u.delivery.status === "PARTNER_VALIDATION_PENDING";
+  const fieldPartnerAppointed = !u.delivery.fieldPartner.startsWith("TO BE SELECTED");
   return (
     <PublicShell>
       <article className="impact-article">
@@ -134,8 +135,9 @@ export function ImpactStory() {
           <h2 className="impact-h">Why we chose this mission</h2>
           <p className="impact-p">{u.whyWeChose}</p>
           <p className="impact-p" style={{ color: "rgba(255,255,255,.66)", fontSize: 14.5 }}>
-            4PLANET is the mission owner and initiator. Delivery is carried out by a chosen field partner — see the
-            status below.
+            4PLANET is the mission owner and initiator. {fieldPartnerAppointed
+              ? "The currently listed field partner is named below; delivery is not claimed until proof is available."
+              : "No field partner has been appointed. Delivery is intended only after a partner is selected and verified."}
           </p>
 
           <h2 className="impact-h">Why it helps Earth</h2>

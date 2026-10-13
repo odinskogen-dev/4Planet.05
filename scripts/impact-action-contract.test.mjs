@@ -38,6 +38,17 @@ test("IMPACT home never implies that an unappointed field partner has delivered 
   assert.doesNotMatch(impactHomeSource, /delivered by a chosen field\s+partner/i);
 });
 
+test("IMPACT detail pages condition partner copy on an actual appointment", () => {
+  assert.equal(impactUnits.IMPACT_UNITS.length, 4);
+  for (const unit of impactUnits.IMPACT_UNITS) {
+    assert.equal(unit.delivery.fieldPartner.startsWith("TO BE SELECTED"), true);
+  }
+  assert.match(impactHomeSource, /fieldPartnerAppointed = !u\.delivery\.fieldPartner\.startsWith\("TO BE SELECTED"\)/);
+  assert.match(impactHomeSource, /No field partner has been appointed\. Delivery is intended only after a partner is selected and verified\./);
+  assert.match(impactHomeSource, /delivery is not claimed until proof is available\./);
+  assert.doesNotMatch(impactHomeSource, /Delivery is carried out by a chosen field partner/);
+});
+
 test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
   const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
   assert.equal(contract.programmeEvidence.annualSurveys.state, "KNOWN");
