@@ -59,7 +59,7 @@ test("ATLAS source control keeps endpoint and map evidence separate from rights"
   ]) {
     assert.match(control, new RegExp(`"${id}"`));
   }
-  assert.match(control, /endpoint: "PENDING"/);
+  assert.match(control, /endpoint: "PASS"/);
   assert.match(control, /map: "PENDING"/);
   assert.match(control, /rights: "PASS"/);
 });
