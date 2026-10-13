@@ -495,7 +495,8 @@ function AtlasMap() {
     });
     m.on("moveend", () => writeUrl());
     m.on("click", (e) => {
-      const ids = LAYERS.filter((l) => (l.kind === "point" || l.kind === "live") && m.getLayer(l.id)).map((l) => l.id)\n        .concat(["search", "nearme"].filter((id) => m.getLayer(id)));
+      const ids = LAYERS.filter((l) => (l.kind === "point" || l.kind === "live") && m.getLayer(l.id)).map((l) => l.id)
+        .concat(["search", "nearme"].filter((id) => m.getLayer(id)));
       const hit = ids.length ? m.queryRenderedFeatures(e.point, { layers: ids }) : [];
       if (!hit.length) askHere(e.lngLat.lng, e.lngLat.lat);
     });
