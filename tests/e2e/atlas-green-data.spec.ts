@@ -1,3 +1,4 @@
+// GREEN DATA GOLD rerun 02 — exact current king/test + no-op trigger.
 import { test, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
