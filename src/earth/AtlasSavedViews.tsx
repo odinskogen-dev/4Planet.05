@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { addCurrentAtlasView, readAtlasSavedViews, removeAtlasView, writeAtlasSavedViews } from "@/planet/atlasViews";
-import { getFollows, replaceFollows } from "@/planet/follow";
+import { addCurrentAtlasView, readAtlasSavedViews, removeAtlasView, setAtlasViewsStorageAccount, writeAtlasSavedViews } from "@/planet/atlasViews";
+import { getFollows, replaceFollows, setFollowStorageAccount } from "@/planet/follow";
+import { isActiveAccount } from "@/planet/accountStorageScope";
 import type { Follow } from "@/planet/types";
 import { getIdentityClient, identityAccountUrl, identityLoginUrl, type FourPlanetSession } from "@/identity/identityClient";
 import { readAtlasAccountState, writeAtlasAccountState } from "./atlasAccountState";
@@ -49,6 +50,7 @@ export function AtlasSavedViews() {
   const [syncState, setSyncState] = useState<"LOCAL" | "SYNCING" | "SYNCED" | "OFFLINE">("LOCAL");
   const sessionRef = useRef<FourPlanetSession | null>(null);
   const hydrating = useRef(false);
+  const hydrationAccountRef = useRef<string | null>(null);
   const syncTimer = useRef<number | null>(null);
 
   useEffect(() => {
@@ -59,11 +61,24 @@ export function AtlasSavedViews() {
         const client = await getIdentityClient();
         const current = await client.auth.getSession();
         if (!alive) return;
+        const accountId = current.data.session?.user.id || null;
         sessionRef.current = current.data.session;
+        hydrationAccountRef.current = accountId;
+        hydrating.current = Boolean(accountId);
+        setFollowStorageAccount(accountId);
+        setAtlasViewsStorageAccount(accountId);
+        setState(readAtlasSavedViews());
         setSession(current.data.session);
         const listener = client.auth.onAuthStateChange((_event, next) => {
           if (!alive) return;
+          if (syncTimer.current) window.clearTimeout(syncTimer.current);
+          const accountId = next?.user.id || null;
           sessionRef.current = next;
+          hydrationAccountRef.current = accountId;
+          hydrating.current = Boolean(accountId);
+          setFollowStorageAccount(accountId);
+          setAtlasViewsStorageAccount(accountId);
+          setState(readAtlasSavedViews());
           setSession(next);
           setSyncState(next ? "SYNCING" : "LOCAL");
         });
@@ -82,23 +97,25 @@ export function AtlasSavedViews() {
   useEffect(() => {
     if (!session) return;
     let cancelled = false;
+    const accountId = session.user.id;
+    hydrationAccountRef.current = accountId;
     hydrating.current = true;
     setSyncState("SYNCING");
     (async () => {
       try {
         const remote = await readAtlasAccountState(session);
-        if (cancelled) return;
+        if (cancelled || !isActiveAccount(accountId, sessionRef.current?.user.id)) return;
         const mergedFollows = mergeFollows(getFollows(), remote?.follows || []);
         const mergedViews = mergeViews(readAtlasSavedViews().views, remote?.savedViews || []);
         replaceFollows(mergedFollows);
         writeAtlasSavedViews({ version: 1, views: mergedViews });
         setState({ version: 1, views: mergedViews });
         await writeAtlasAccountState(session, { follows: mergedFollows, savedViews: mergedViews });
-        if (!cancelled) setSyncState("SYNCED");
+        if (!cancelled && isActiveAccount(accountId, sessionRef.current?.user.id)) setSyncState("SYNCED");
       } catch {
-        if (!cancelled) setSyncState("OFFLINE");
+        if (!cancelled && isActiveAccount(accountId, sessionRef.current?.user.id)) setSyncState("OFFLINE");
       } finally {
-        hydrating.current = false;
+        if (hydrationAccountRef.current === accountId) hydrating.current = false;
       }
     })();
     return () => { cancelled = true; };
@@ -121,14 +138,15 @@ export function AtlasSavedViews() {
       if (syncTimer.current) window.clearTimeout(syncTimer.current);
       setSyncState("SYNCING");
       syncTimer.current = window.setTimeout(async () => {
+        if (!isActiveAccount(active.user.id, sessionRef.current?.user.id)) return;
         try {
           await writeAtlasAccountState(active, {
             follows: getFollows(),
             savedViews: readAtlasSavedViews().views,
           });
-          setSyncState("SYNCED");
+          if (isActiveAccount(active.user.id, sessionRef.current?.user.id)) setSyncState("SYNCED");
         } catch {
-          setSyncState("OFFLINE");
+          if (isActiveAccount(active.user.id, sessionRef.current?.user.id)) setSyncState("OFFLINE");
         }
       }, 700);
     };
