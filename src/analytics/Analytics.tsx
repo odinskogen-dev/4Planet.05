@@ -140,7 +140,15 @@ function configuredDomains(): string[] {
 
 export function isAnalyticsHostAllowed(hostname: string): boolean {
   const host = canonicalHost(hostname);
-  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".pages.dev")) return false;
+  if (
+    !host
+    || host === "localhost"
+    || host.endsWith(".localhost")
+    || host.endsWith(".pages.dev")
+    || host.endsWith(".workers.dev")
+    || host === "test.4planet.org"
+    || host.endsWith(".test.4planet.org")
+  ) return false;
   return configuredDomains().includes(host);
 }
 
