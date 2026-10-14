@@ -3,7 +3,7 @@ on:
   push:
     branches: [sprint/species-100-gold-20261014]
     paths: [.github/workflows/species-100-authority-media-research.yml]
-permissions: {contents: read}
+permissions: {contents: write}
 jobs:
   research:
     runs-on: ubuntu-latest
@@ -21,6 +21,22 @@ jobs:
           name: species-100-gbif-commons-editorial-research-20261014
           path: qa-output/species-100-candidate-authority-media-research.json
           retention-days: 30
+      - name: Preserve taxon and photo lead evidence inside existing SPECIES documentation (not canonical source data)
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/species/evidence
+          cp qa-output/species-100-candidate-authority-media-research.json docs/species/evidence/SPECIES_100_AUTHORITY_MEDIA_CANDIDATES_20261014.json
+          git config user.name "4PLANET Evidence Factory"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/species/evidence/SPECIES_100_AUTHORITY_MEDIA_CANDIDATES_20261014.json
+          if git diff --cached --quiet; then
+            echo "Source evidence unchanged" >> "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "evidence(species): 79 taxonomy matches and 11 licensing/image leads, NOT Gold"
+            git push origin HEAD:refs/heads/sprint/species-100-gold-20261014
+          fi
       - name: Report exact candidate states and blockers
         if: success()
         run: |
