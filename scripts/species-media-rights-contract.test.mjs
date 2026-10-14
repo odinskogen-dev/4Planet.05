@@ -297,3 +297,38 @@ test("mocked GBIF request path withholds unissued licence versions", async () =>
   assert.equal(result.blockedCount, 4);
   assert.match(result.note, /4 media items were withheld/);
 });
+
+
+test("versionless CC BY labels fail closed while issued versions remain displayable", async () => {
+  const licences = [
+    ["versionless-by.jpg", "CC BY"],
+    ["versionless-by-sa.jpg", "CC BY-SA"],
+    ["canonical-by.jpg", "CC BY 4.0"],
+    ["canonical-by-sa.jpg", "CC BY-SA 2.5"],
+  ];
+  const fetchMock = async () => jsonResponse({
+    results: [{
+      key: 791,
+      media: licences.map(([name, license]) => ({
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier: `https://example.test/${name}`,
+        license,
+      })),
+    }],
+  });
+  const { classifySpeciesMediaRights, fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  assert.equal(classifySpeciesMediaRights("CC BY"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC BY-SA"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC BY 4.0"), "DISPLAYABLE");
+  assert.equal(classifySpeciesMediaRights("CC BY-SA 2.5"), "DISPLAYABLE");
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 8 });
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    [...result.data].map((image) => image.identifier),
+    ["https://example.test/canonical-by.jpg", "https://example.test/canonical-by-sa.jpg"],
+  );
+  assert.equal(result.blockedCount, 2);
+});
