@@ -1,0 +1,48 @@
+{
+  "assetId": "4p:species:orca:asset-pack:v1",
+  "species": {
+    "canonicalId": "taxon:gbif:2440483",
+    "scientificName": "Orcinus orca"
+  },
+  "status": "ACTIVE_REFERENCE_PACK",
+  "truthBoundary": "This pack mixes production media, evidence/reference assets and candidate source records. A source record is not automatically a reusable image or a scientifically measured 3D model.",
+  "localAssets": [
+    {"path": "/assets/species/orca/hero.jpg", "class": "production_media", "rights": "SEE_EXISTING_SOURCE_PROVENANCE"},
+    {"path": "/assets/species/orca/hero-mobile.jpg", "class": "production_media", "rights": "SEE_EXISTING_SOURCE_PROVENANCE"},
+    {"path": "/assets/species/orca/lume-orca-v1.png", "class": "illustrative", "rights": "SEE_EXISTING_SOURCE_PROVENANCE"},
+    {"path": "/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3", "class": "real_audio_evidence_reference", "rights": "NPS_SOURCE_PROVENANCE_REQUIRED"}
+  ],
+  "openReferenceAssets": [
+    {
+      "provider": "NOAA / Wikimedia Commons",
+      "source": "https://commons.wikimedia.org/wiki/File:Orcinus_orca_NOAA.jpg",
+      "class": "real_photo_reference",
+      "rights": "PUBLIC_DOMAIN",
+      "currentUse": "ORCA LUME photo base"
+    },
+    {
+      "provider": "Smithsonian National Museum of Natural History",
+      "source": "https://www.si.edu/object/nmnhvz_7511072",
+      "class": "measured_specimen_metadata_reference",
+      "object": "skull specimen",
+      "metadataRights": "CC0",
+      "mediaRights": "VERIFY_ITEM_MEDIA_BEFORE_REUSE",
+      "state": "REFERENCE_ONLY"
+    },
+    {
+      "provider": "Smithsonian National Museum of Natural History",
+      "source": "https://www.si.edu/object/nmnhvz_7510883",
+      "class": "measured_specimen_metadata_reference",
+      "object": "partial skeleton specimen",
+      "metadataRights": "CC0",
+      "mediaRights": "VERIFY_ITEM_MEDIA_BEFORE_REUSE",
+      "state": "REFERENCE_ONLY"
+    }
+  ],
+  "missingAssets": [
+    {"type": "scientifically_grounded_3d_orca", "state": "NOT_FOUND_IN_SMITHSONIAN_3D_SEARCH", "next": "build reference-grounded model from measured anatomy + rights-cleared multi-view reference; label reconstruction"},
+    {"type": "underwater_habitat_world", "state": "TO_BUILD", "next": "Living World Factory proof"}
+  ],
+  "consumers": ["SPECIES", "ATLAS", "WILD_ORCA", "GAME_LAB", "LIVING_WORLD_FACTORY"],
+  "updatedAt": "2026-10-14"
+}

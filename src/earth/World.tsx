@@ -55,6 +55,7 @@ import {
 import { ContextLayer, TYPE_COLOR, type ContextState } from "./Context";
 import { WorldBoundary } from "./Boundary";
 import { atlasLayerIntentMatches } from "./AtlasSearchIntentBridge";
+import { installAtlasResourceExtensions } from "./atlasResourceExtensions";
 
 import { field } from "@/planet/types";
 import { DEMO_WHALE_OBSERVATION, DEMO_WHALE_OCCURRENCE } from "@/data/demoWhaleOccurrence";
@@ -71,6 +72,10 @@ import {
 import { CLASS_LABEL, EMPTY_POOL, loadSignalPool, signalsNear, timeAgo } from "@/planet/signals";
 import { useFollows } from "@/planet/follow";
 import { EMPTY_WATCH, WATCH_WINDOW_DAYS, matchPool, matchTaxa } from "@/planet/watch";
+
+// Shared resource extension mutates the existing ATLAS layer registry before URL state is read.
+// It does not create a second map/layer authority.
+installAtlasResourceExtensions();
 
 /* ── URL state (V36) ─────────────────────────────────────────────────────── */
 

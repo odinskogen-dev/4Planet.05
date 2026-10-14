@@ -765,3 +765,40 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 **HUMAN SUCCESS:** downstream 4NGO presentation can distinguish unknown requirements from proven capability and can publish delivery/outcome/impact only from reviewed source-and-evidence records.
 **BASE / ROLLBACK:** `king/test@341925aad5e6ed17b08be3195ea5ae9e5752c4c2`; revert this bounded Actor contract correction if independent Gold finds a valid regression.
 **MAKER != JUDGE:** Factory implements on the sole HEIR; independent Gold judges the exact resulting SHA. Founder release remains separate.
+
+
+# RESOURCE COMPOUNDING — GEM ATLAS + ORCA ASSET PROOF — 14 OCT 2026
+
+**STATUS:** FOUNDER-DIRECTED HEIR PRODUCT CANDIDATE / SOURCE-BOUNDED / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person exploring a real place in ATLAS needs to understand nearby energy/industrial infrastructure and its sourced ownership context without turning source records into emissions, responsibility or impact claims.
+
+**ONE THING TO UNDERSTAND:** PLACE intelligence can connect physical infrastructure, company/ownership context, emissions and living systems only when each edge preserves its own source, date, rights and confidence.
+
+**PRIMARY ACTION:** add a bounded Norway Global Energy Monitor layer to the existing ATLAS layer registry and expose source-bound ownership traversal through the same product authority.
+
+**P1 DOMINANT:** energy/industrial assets become visible as real place context, not a parallel map or new truth store.
+
+**P2 ORIENTATION:** asset type, status, capacity and direct owner appear only when supplied by GEM; missing means missing.
+
+**P3 ACTION / NEXT:** GEM ownership graph is available as a separate source-preserving drill-down; verified legal-company crosswalks must use identifiers such as LEI/PermID or independent evidence.
+
+**P4 DEPTH:** later PLACE CELL work may combine population, buildings, AlphaEarth/change, Climate TRACE, nature, public investment and procurement through the same canonical Place object.
+
+**ORCA ASSET PROOF:** register an Orca asset manifest in the existing physical asset path. Separate production media, real reference media, museum specimen metadata and future reconstruction needs. A procedural/reference-grounded Orca is never labelled a measured or Smithsonian-scanned 3D animal.
+
+**WHAT MUST BE REUSED:** existing ATLAS LAYERS/World authority, existing Climate TRACE integration, existing canonical Orca identity/assets, existing source/evidence boundaries and sole `king/test` HEIR.
+
+**WHAT MAY NOT BE CREATED:** second ATLAS engine, parallel BRAIN, parallel asset truth store, automatic owner→responsibility inference, fake measured 3D provenance.
+
+**S4PIENS / 4SAPIEN BOUNDARY:** public human-system PLACE context belongs to S4PIENS; 4SAPIEN remains the personal life-helper application and may only consume private/user-relevant projections within tenant boundaries.
+
+**MOBILE-FIRST RISK:** new point density and popup information must remain bounded; first slice is Norway-only and limited to 250 source records.
+
+**HUMAN SUCCESS:** a person can switch on GEM in ATLAS, see real infrastructure context, understand what the source does and does not establish, and have a controlled path toward ownership intelligence.
+
+**TRUTH BOUNDARY:** GEM asset ≠ emissions; owner ≠ responsibility; tracked status ≠ independently observed operation; source absence ≠ real-world absence. Orca reconstruction ≠ measured anatomy.
+
+**ROLLBACK:** parent HEIR `b2dd0e09b13bb95b6fcafa55bd85921dfe6f0f7c`.
+
+**MAKER ≠ JUDGE:** deterministic contracts and candidate build run on the HEIR; independent Gold judges the resulting exact SHA. LIVE remains Founder-gated.
