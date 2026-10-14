@@ -113,6 +113,18 @@ export function isAnalyticsHostAllowed(hostname: string): boolean {
   return configuredDomains().includes(host);
 }
 
+/**
+ * Block analytics while OAuth credentials, one-time codes or authorisation
+ * identifiers remain in the browser URL. The identity SDK owns their removal.
+ */
+export function isSensitiveAnalyticsNavigation(): boolean {
+  if (typeof window === "undefined") return false;
+  const { pathname, search, hash } = window.location;
+  if (/^\/(?:auth\/(?:4planet\/)?callback|oauth\/(?:callback|consent))\/?$/i.test(pathname)) return true;
+  const sensitive = /(?:^|[?#&])(?:access_token|refresh_token|id_token|token_hash|authorization_code|authorization_id|code|state|client_secret|session_token|auth_return)=/i;
+  return sensitive.test(search) || sensitive.test(hash);
+}
+
 function readConsent(): ConsentState {
   const value = window.localStorage.getItem(ANALYTICS_STORAGE_KEY);
   return value === "granted" || value === "denied" ? value : null;
@@ -168,7 +180,7 @@ function updateConsent(next: Exclude<ConsentState, null>) {
 }
 
 function installGoogleTag(id: string, domains: string[]) {
-  if (!id || document.getElementById("4planet-ga4")) return;
+  if (!id || isSensitiveAnalyticsNavigation() || document.getElementById("4planet-ga4")) return;
 
   ensureGtag();
   updateConsent("granted");
@@ -183,6 +195,9 @@ function installGoogleTag(id: string, domains: string[]) {
   window.gtag?.("js", new Date());
   window.gtag?.("config", id, {
     send_page_view: false,
+    // Initial automatic events must use a safe, token-free location.
+    page_location: `${window.location.origin}${window.location.pathname}`,
+    page_path: window.location.pathname,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
   });
@@ -195,7 +210,7 @@ function installGoogleTag(id: string, domains: string[]) {
 }
 
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname)) return;
+  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname) || isSensitiveAnalyticsNavigation()) return;
 
   const shared = {
     ...parameters,
@@ -224,7 +239,7 @@ export function Analytics() {
   }, [allowedHost, consent, id]);
 
   useEffect(() => {
-    if (!allowedHost || !id || consent !== "granted") return;
+    if (!allowedHost || !id || consent !== "granted" || isSensitiveAnalyticsNavigation()) return;
     installGoogleTag(id, configuredDomains());
 
     // Deliberately exclude query strings and fragments from analytics. OAuth
@@ -246,7 +261,7 @@ export function Analytics() {
     trackDiscoveryEntryOnce(location.pathname);
   }, [allowedHost, consent, id, location.pathname]);
 
-  if (!allowedHost || !id || consent !== null) return null;
+  if (!allowedHost || !id || consent !== null || isSensitiveAnalyticsNavigation()) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);

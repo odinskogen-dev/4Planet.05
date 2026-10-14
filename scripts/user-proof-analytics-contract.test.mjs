@@ -1,4 +1,6 @@
 import test from "node:test";
+import ts from "typescript";
+import vm from "node:vm";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
@@ -207,4 +209,37 @@ test("discovery attribution records only bounded channel labels, never raw refer
   assert.match(analytics, /safeHostname\(document\.referrer\)/);
   assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}document\.referrer/);
   assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}window\.location\.search/);
+});
+
+
+test("OAuth credential-bearing URLs never start measurement", () => {
+  assert.match(analytics, /export function isSensitiveAnalyticsNavigation\(\): boolean/);
+  assert.match(analytics, /isSensitiveAnalyticsNavigation\(\) \|\| document\.getElementById/);
+  assert.match(analytics, /consent !== "granted" \|\| isSensitiveAnalyticsNavigation\(\)/);
+  assert.match(analytics, /readConsent\(\) !== "granted"[^\n]*isSensitiveAnalyticsNavigation\(\)/);
+  assert.match(analytics, /page_location:.*window\.location\.origin.*window\.location\.pathname/);
+  const source = analytics.match(/export function isSensitiveAnalyticsNavigation\(\): boolean \{[\s\S]*?\n\}/)?.[0];
+  assert.ok(source, "missing OAuth navigation guard");
+  const js = ts.transpileModule(source, { compilerOptions: {
+    target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS
+  }}).outputText;
+  const check = (url) => {
+    const context = { exports: {}, window: { location: new URL(url) } };
+    vm.runInNewContext(js, context);
+    return context.exports.isSensitiveAnalyticsNavigation();
+  };
+  for (const url of [
+    "https://id.4planet.org/login#access_token=TEST",
+    "https://id.4planet.org/login?auth_return=google",
+    "https://4planet.org/auth/4planet/callback#token_hash=TEST",
+    "https://id.4planet.org/oauth/consent?authorization_id=TEST",
+    "https://4planet.org/?code=TEST",
+    "https://4planet.org/?state=TEST",
+    "https://4planet.org/#refresh_token=TEST"
+  ]) assert.equal(check(url), true);
+  for (const url of [
+    "https://4planet.org/oslofjord",
+    "https://4planet.org/atlas?utm_source=chatgpt.com",
+    "https://4planetmagazine.com/magazine"
+  ]) assert.equal(check(url), false);
 });

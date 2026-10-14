@@ -1,3 +1,17 @@
+# EXPO-13 — OAuth-safe analytics P0 / 14 October 2026
+
+**STATUS:** HEIR CODE ONLY, independent security Gold and LIVE verification required.
+**HUMAN NEED:** Privacy-preserving access to public tools and reliable account login.
+**PRIMARY ACTION:** Prevent analytics SDK installation, automatic initial measurements and custom events while sensitive auth values remain in the browser URL.
+**REUSE:** Existing analytics consent, 4PLANET ID SDK, GA4 and PostHog event spine, issue #173.
+**TRUTH BOUNDARY:** No historical GA4 deletion, token revocation, external collector/legacy live proof or product outcome is claimed. The identity SDK continues to consume OAuth callbacks; this gate deliberately skips analytics on callbacks until navigation is safe.
+**MOBILE:** Test iOS Safari callback and cross-domain bridge with Chrome; browser-network capture and 0 secrets in measured URLs required.
+**VALUE:** Clean public pages can still be measured after consent, without capturing confidential redirects.
+**OWNER / GATES:** EXPO-13 Maker, separate Gold security judge, action-specific Founder release for LIVE.
+**PARENT / ROLLBACK:** king/test@64ee6b31158a1b1102f28f268e9ee0ef828603a5.
+
+---
+
 # EXPO-03 — OSLOFJORD PUBLIC CRAWLER SCOPE / 14 OCT 2026
 
 **STATUS:** BOUNDED INFRASTRUCTURE DRAFT / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
