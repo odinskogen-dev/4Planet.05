@@ -5,6 +5,7 @@ on:
     branches: [release/founder-4nation-s4piens-20261014]
     paths:
       - .github/workflows/founder-live-4nation-s4piens-20261014.yml
+      - ops/release/**
 
 permissions:
   contents: read
