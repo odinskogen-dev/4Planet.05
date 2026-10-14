@@ -1,3 +1,34 @@
+# v2 UPDATE — 14 Oct 2026 (Country Object 02)
+
+**STATE: OUTPUT RECEIVED / AWAITING GPT AUDIT.** Registered SANDBOX `claude/4nation-country-object-01` (PRODUCT_SURFACE_REGISTRY → `4NATION.sandbox`; AXE/GPT to ratify). Forward-synced to `king/test@bff54ef`. `product-authority-gate` PASS.
+
+**What changed for users**
+- **What stands out:** every country opens with its own 1–3 global positions (e.g. "14th highest life expectancy · of 196 · 2023"). Each is computed live from World Bank WDI latest values across countries and territories; ties and thin coverage are skipped. This is a description, not a score.
+- **Every World Bank figure shows where the country stands** (a small position line: "27th highest of 196").
+- **New chapter, Energy & land:** renewable share of final energy, electricity access, forest, farmland, protected areas, water stress.
+- **People:** urban share and internet use. **Economy:** manufacturing and agriculture share of GDP, plus where people work (agriculture / industry / services).
+- **Identity facts** from Wikidata in Land: official languages, currency, highest point with elevation, national anthem.
+- **Compare** `/compare/norway-vs-brazil`: both outlines at one shared scale, a size sentence, and a side-by-side table with year and position for each. Swap, replace and share. Not indexed.
+- **Brand OS reconciliation** (fresh Drive read): Black #000000 / White #FFFFFF lock (07 Oct); Light = white with a faint projected-light beam and grid (no grey substrate); capsule buttons; one soft radius for panels, sheets and map frames; smaller chapter headings (typographic restraint).
+
+**New source adapters (source gate in file header + contract test)**
+| Adapter | Source | Licence | Cache |
+|---|---|---|---|
+| `functions/api/worldbank-country.ts` | World Bank Indicators API v2, WDI (16 allowlisted indicators; `?country=ISO3` series, `?rank=1` global latest) | CC BY 4.0 | 24h edge |
+| `functions/api/country-identity.ts` | Wikidata SPARQL (P37, P38, P610 + P2044, P85 via P297 ISO code) | CC0 1.0 | 7 days edge |
+
+**Verify first on the preview**
+1. `/api/worldbank-country?country=NOR` and `?rank=1` return `ok:true` (the multi-indicator call uses `source=2`).
+2. `/api/country-identity?iso2=NO` returns languages, currency and highest point. Some countries have several Wikidata items for one ISO code; the adapter keeps the item with the most facts.
+3. Sanity-check Norway's signature against data.worldbank.org.
+4. Population, GDP per person and life expectancy in the readout come from UNESCO's WDI mirror (existing contract), while positions come from the World Bank API. Years can differ by one; both are shown. Recommend converging on one source in a later slice.
+
+**Files (v2):** `functions/api/{worldbank-country,country-identity}.ts`, `src/data/worldBankCountry.ts`, `src/nation/{CountryPage,ComparePage,NationApp,NationHome,data,Globe}.tsx|ts`, `src/nation/nation.css`, `ops/nation/4nation-live-worker.js` (compare meta), `scripts/data-value-source-gate-contract.test.mjs`, `scripts/nation-visual-qa.mjs`, `docs/control/{PRODUCT_SURFACE_REGISTRY.json,CODE_LINEAGE_REGISTER.md,GOLD_CURRENT_BRIEF.md}`.
+
+**Held:** decision streams; account-synced My Country; share images; licensed photography (living-world presence is CONTEXT, not ENCOUNTER, until rights-cleared images exist).
+
+---
+
 # GPT PROJECT LEAD HANDOFF — 4NATION COUNTRY OBJECT 01
 
 **STATE: OUTPUT RECEIVED / AWAITING GPT AUDIT.** Maker = Claude. Not LIVE. Not Founder-accepted.

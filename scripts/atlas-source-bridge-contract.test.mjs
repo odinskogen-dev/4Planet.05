@@ -247,6 +247,48 @@ test("OBIS keeps accepted licences narrow and preserves original dataset evidenc
   }
 });
 
+test("OBIS licence authority rejects negated and spoofed open-rights claims before map admission", async () => {
+  const originalFetch = globalThis.fetch;
+  const rows = [
+    ["cc0-token", "CC0 1.0", "OPEN_CC0", true],
+    ["by-token", "CC BY 4.0", "OPEN_ATTRIBUTION", true],
+    ["cc0-url", "https://creativecommons.org/publicdomain/zero/1.0/", "OPEN_CC0", true],
+    ["by-url", "https://creativecommons.org/licenses/by/4.0/", "OPEN_ATTRIBUTION", true],
+    ["negated-cc0", "NOT CC0", "REVIEW_REQUIRED", false],
+    ["spoofed-cc0", "https://evil.example/CC0", "REVIEW_REQUIRED", false],
+    ["negated-by", "NOT CC-BY", "REVIEW_REQUIRED", false],
+    ["spoofed-by", "https://evil.example/CC-BY", "REVIEW_REQUIRED", false],
+    ["lookalike-host", "https://creativecommons.org.evil.example/licenses/by/4.0/", "REVIEW_REQUIRED", false],
+    ["ambiguous-by", "CC BY with attribution", "REVIEW_REQUIRED", false],
+  ];
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    results: rows.map(([id, license]) => ({
+      occurrenceID: id,
+      occurrenceStatus: "PRESENT",
+      decimalLatitude: 12,
+      decimalLongitude: 32,
+      license,
+    })),
+    total: rows.length,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request(`https://test.4planet.org/api/obis?scientificName=Cetacea&size=${rows.length}`),
+    });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    const byId = Object.fromEntries(body.records.map((record) => [record.occurrenceId, record]));
+
+    for (const [id, , expectedClass, mapAdmitted] of rows) {
+      assert.equal(byId[id].licenceClass, expectedClass, id);
+      assert.equal(Boolean(earthLayersRuntime.obisOccurrencePoint(byId[id], body.retrievedAt)), mapAdmitted, id);
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("Truth Spine can retain precision/generalisation/citation state from source adapters", () => {
   for (const needle of ["sourceAuthority", "datasetName", "citationIdentifier", "coordinateUncertaintyM", "locationGeneralised", "generalisationNote", "occurrenceStatus"]) {
     assert.ok(truth.includes(needle), `Truth Spine missing ${needle}`);

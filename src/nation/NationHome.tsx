@@ -69,6 +69,7 @@ export default function NationHome({ theme }: { theme: string }) {
           {my && !FEATURED.includes(my.iso2 as typeof FEATURED[number]) && <CountryTile c={my} tag="MY COUNTRY" />}
           {FEATURED.map((iso) => { const c = countryByIso(iso); return c ? <CountryTile key={iso} c={c} tag={my?.iso2 === iso ? "MY COUNTRY" : undefined} /> : null; })}
         </div>
+        <p className="n-home__compare"><Link className="n-link" to={`${nationBase()}/compare/norway-vs-brazil`}>Compare two countries side by side, at the same scale →</Link></p>
       </section>
 
       <section className="n-band n-band--how">
@@ -78,7 +79,7 @@ export default function NationHome({ theme }: { theme: string }) {
         </header>
         <ol className="n-how">
           <li><span className="n-mono">30 SECONDS</span><h3>The readout</h3><p>Population, capital, economy, life expectancy and what the world recognises it for — at a glance.</p></li>
-          <li><span className="n-mono">5 MINUTES</span><h3>The chapters</h3><p>Land, people, work, learning, nature and the capital — each with change over time and a source behind every figure.</p></li>
+          <li><span className="n-mono">5 MINUTES</span><h3>The chapters</h3><p>Land, people, work, energy, learning, nature and the capital — each with change over time, where the country stands globally, and a source behind every figure.</p></li>
           <li><span className="n-mono">AS DEEP AS YOU LIKE</span><h3>Atlas mode</h3><p>The country on the shared 4PLANET ATLAS: Earth imagery, heritage, biosphere reserves, geoparks and ocean biodiversity.</p></li>
         </ol>
         <p className="n-how__decisions">Public decisions are arriving country by country. The first source-backed case — Norway — is <Link to={`${nationBase()}/decisions`}>open now</Link>.</p>

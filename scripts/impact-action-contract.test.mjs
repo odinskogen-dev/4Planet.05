@@ -5,6 +5,7 @@ import ts from "typescript";
 
 const source = await readFile(new URL("../src/impact/actionContract.ts", import.meta.url), "utf8");
 const impactHomeSource = await readFile(new URL("../src/pages/integrated/ImpactPremium.tsx", import.meta.url), "utf8");
+const impactActionProofSource = await readFile(new URL("../src/pages/integrated/ImpactActionProof.tsx", import.meta.url), "utf8");
 const impactUnitsSource = await readFile(new URL("../src/data/impactUnits.ts", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
@@ -43,10 +44,19 @@ test("IMPACT detail pages condition partner copy on an actual appointment", () =
   for (const unit of impactUnits.IMPACT_UNITS) {
     assert.equal(unit.delivery.fieldPartner.startsWith("TO BE SELECTED"), true);
   }
-  assert.match(impactHomeSource, /fieldPartnerAppointed = !u\.delivery\.fieldPartner\.startsWith\("TO BE SELECTED"\)/);
+  assert.match(impactHomeSource, /fieldPartnerAppointed = isFieldPartnerAppointed\(u\.delivery\)/);
   assert.match(impactHomeSource, /No field partner has been appointed\. Delivery is intended only after a partner is selected and verified\./);
   assert.match(impactHomeSource, /delivery is not claimed until proof is available\./);
   assert.doesNotMatch(impactHomeSource, /Delivery is carried out by a chosen field partner/);
+});
+
+test("Bay Proof Ladder keeps desktop comparison and stacks without mobile overflow", () => {
+  assert.match(impactActionProofSource, /data-testid="impact-proof-ladder"/);
+  assert.match(impactActionProofSource, /data-testid="impact-proof-ladder-row"/);
+  assert.match(impactActionProofSource, /gridTemplateColumns: "minmax\(70px,\.25fr\) minmax\(160px,\.65fr\) minmax\(220px,1fr\)"/);
+  assert.match(impactActionProofSource, /@media \(max-width: 600px\)[\s\S]*\.impact-proof-ladder-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(impactActionProofSource, /\.impact-proof-ladder-row > \* \{ min-width: 0; \}/);
+  assert.match(impactActionProofSource, /DOES NOT PROVE/);
 });
 
 test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
@@ -260,4 +270,14 @@ test("resource flow opens only when provider-bound quantity, diligence, economic
       successCriteriaLockedAt: invalidLock,
     }, plasticBankBinding), false);
   }
+});
+
+test("field-partner appointment fails closed from one explicit state", () => {
+  const base = impactUnits.IMPACT_UNITS[0].delivery;
+  for (const fieldPartner of ["", "   ", "UNKNOWN", "TO BE CONFIRMED", "TO BE SELECTED — partner", "PENDING"]) {
+    assert.equal(impactUnits.isFieldPartnerAppointed({ ...base, appointmentState: "PENDING", fieldPartner }), false);
+  }
+  assert.equal(impactUnits.isFieldPartnerAppointed({ ...base, appointmentState: "APPOINTED", fieldPartner: "Verified Partner Foundation" }), true);
+  assert.equal(impactUnits.isFieldPartnerAppointed({ ...base, appointmentState: "APPOINTED", fieldPartner: "UNKNOWN" }), false);
+  assert.match(impactHomeSource, /fieldPartnerAppointed \? "FIELD PARTNER APPOINTED — DELIVERY NOT YET CLAIMED" : "FIELD PARTNER NOT YET APPOINTED"/);
 });

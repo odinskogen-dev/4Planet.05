@@ -49,6 +49,20 @@ test("4RT reaches its mission surface and product lenses preserve supported cont
   assert.match(shell, /LENSES\.map\(\(\[title, line, to\]\) => <LensLink/);
 });
 
+test("public footer product transitions reuse the shared supported-context contract", () => {
+  assert.match(shell, /const \{ pathname, search \} = useLocation\(\)/);
+  assert.match(shell, /const productHref = \(to: string\) =>/);
+  assert.match(shell, /contextHref\(to, search\)/);
+  assert.match(shell, /to=\{productHref\("\/atlas"\)\}/);
+  assert.match(shell, /to=\{productHref\("\/species"\)\}/);
+  assert.match(shell, /to=\{productHref\(to\)\}/);
+  for (const path of ["/atlas", "/species", "/living-systems", "/impact"]) {
+    assert.match(shell, new RegExp(`"${path.replaceAll("/", "\\/")}"`));
+  }
+  assert.match(shell, /<Link to="\/about"/);
+  assert.match(shell, /<Link to="\/privacy"/);
+});
+
 test("mobile navigation exposes Culture and contains keyboard focus", () => {
   assert.match(shell, />CULTURE_<\/div>/);
   assert.match(shell, /CULTURE\.map/);
@@ -109,3 +123,4 @@ test("homepage exposes the complete public universe and three guided entry journ
   assert.match(home, /Action journey/);
   assert.match(home, /These action pathways are in development\./);
 });
+

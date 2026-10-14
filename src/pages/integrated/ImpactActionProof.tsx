@@ -25,6 +25,15 @@ export function BayActionProof() {
 
   return (
     <PublicShell>
+      <style>{`
+        @media (max-width: 600px) {
+          .impact-proof-ladder-row {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 12px !important;
+          }
+          .impact-proof-ladder-row > * { min-width: 0; }
+        }
+      `}</style>
       <Section pad="clamp(86px,10vw,136px)">
         <Link to="/impact" style={{ ...mono, color: T.blue }}>← IMPACT</Link>
 
@@ -124,9 +133,9 @@ export function BayActionProof() {
       <Section>
         <div style={{ ...mono, color: T.blue }}>05 · PROOF LADDER</div>
         <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(34px,4.5vw,62px)", lineHeight: 1 }}>Every stronger claim needs a stronger state.</h2>
-        <div style={{ marginTop: 26, borderTop: `1px solid ${T.line}` }}>
+        <div data-testid="impact-proof-ladder" aria-label="Proof ladder" style={{ marginTop: 26, borderTop: `1px solid ${T.line}` }}>
           {cell.proofLadder.map((step, index) => (
-            <div key={step.state} style={{ display: "grid", gridTemplateColumns: "minmax(70px,.25fr) minmax(160px,.65fr) minmax(220px,1fr)", gap: 16, padding: "18px 0", borderBottom: `1px solid ${T.line}` }}>
+            <div className="impact-proof-ladder-row" data-testid="impact-proof-ladder-row" key={step.state} style={{ display: "grid", gridTemplateColumns: "minmax(70px,.25fr) minmax(160px,.65fr) minmax(220px,1fr)", gap: 16, padding: "18px 0", borderBottom: `1px solid ${T.line}` }}>
               <span style={{ ...mono, color: T.blue }}>0{index + 1}</span>
               <div><strong>{step.state}</strong><p style={{ margin: "7px 0 0", fontSize: 13, lineHeight: 1.5 }}>{step.proves}</p></div>
               <div><span style={{ ...mono, color: T.red }}>DOES NOT PROVE</span><p style={{ margin: "7px 0 0", fontSize: 13, lineHeight: 1.5, color: "rgba(8,8,8,.68)" }}>{step.doesNotProve}</p></div>

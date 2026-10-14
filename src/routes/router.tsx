@@ -11,6 +11,8 @@ import {
   ImpactTestJourney,
   PersonalImpactRecordPage,
   ImpactPublicHome,
+  ImpactProjectProfilePage,
+  ImpactActorProfilePage,
   ImpactStory,
   BayActionProof,
   CheckoutReturn,
@@ -149,6 +151,8 @@ export function AppRoutes() {
       <Route path="/4sapien/finance" element={<FourFinanceHome />} />
       <Route path="/food/pick" element={<PickPrototype />} />
       <Route path="/impact" element={<ImpactPublicHome />} />
+      <Route path="/impact/project/:slug" element={<ImpactProjectProfilePage />} />
+      <Route path="/impact/actors/:slug" element={<ImpactActorProfilePage />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
       <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />

@@ -85,6 +85,17 @@ Every one of these receives a complete donor matrix before total closure:
 12. 4MARKET / COMMERCE / ECONOMY / Stripe
 13. BRAIN / PSI / Decision Intelligence / Brand OS / Trust / LABS
 
+## 4NATION COUNTRY OBJECT — registered SANDBOX sequence (2026-10-14)
+
+| Identity | Role now | Branch / PR | Exact identity | HEIR obligation |
+|---|---|---|---|---|
+| 4NATION LIVE | PRODUCTION / READ-ONLY | worker `4planet-nation-live` | origin `https://9c7fe142.4planet-05.pages.dev`, source `ba354a82b443f9e0cd2124af6ead75a995ed0e8c` | Preserve until Founder-gated exact-artifact promotion. |
+| 4NATION decision case (Oslofjord) | MUST PRESERVE | `src/pages/nation/NationPage.tsx` on HEIR | unchanged | Remains reachable at `/decisions`; not rewritten. |
+| 4NATION COUNTRY OBJECT 01 | FIXED REVIEW | `claude/4nation-country-object-01` / #444 | `285b62c2` (parent `king/test@0b933aa`) | First top-down Country Object; fixture-only visual proof. |
+| 4NATION COUNTRY OBJECT 02 | ACTIVE DEVELOPMENT (registered SANDBOX) | `claude/4nation-country-object-01` / #444 | forward-synced to `king/test@bff54ef`; registration SHA in PRODUCT_SURFACE_REGISTRY | Brand OS 07-Oct reconciliation (Black/White, capsule geometry), country signature (global position), energy/forest/water, Wikidata identity, compare. Returns only to `king/test`. |
+
+Donors: none adopted. Old 4NATION visual design rejected by Founder (13 Oct 2026); only plumbing reused (AtlasEmbed, unesco contracts, identityClient, nation worker).
+
 ## MUST NOT LOSE — global
 - shared source/provenance/truth boundaries;
 - one shared ATLAS engine and Product Context continuity;

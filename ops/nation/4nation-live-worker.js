@@ -18,6 +18,13 @@ function pageMeta(pathname) {
       description: "Understand " + name + ": people, land, economy, learning, nature and heritage. Every figure dated and linked to its source — World Bank via UNESCO, UNESCO, Natural Earth.",
       ld: { "@context": "https://schema.org", "@type": "WebPage", name: name + " — country profile", url, isPartOf: site, about: { "@type": "Country", name } } };
   }
+  const cmp = path.match(/^\/compare\/([a-z0-9-]+)-vs-([a-z0-9-]+)$/);
+  if (cmp) {
+    const nm = (x) => FEATURED[x] || x.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const t = nm(cmp[1]) + " and " + nm(cmp[2]) + " compared · 4NATION";
+    return { url, index: false, h1: t, title: t, description: "Two countries side by side at the same scale, from the same sources, with every year shown.",
+      ld: { "@context": "https://schema.org", "@type": "WebPage", name: t, url, isPartOf: site } };
+  }
   if (path === "/decisions" || path.startsWith("/decisions/")) {
     return { url: "https://4nation.org/decisions", index: true, h1: "Public decisions — 4NATION",
       title: "Public decisions · 4NATION",

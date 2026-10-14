@@ -1,14 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-
-import {
-  PARTICIPATION_OPPORTUNITIES,
-  explainParticipationMatch,
-} from "../src/content/participation.ts";
+import ts from "typescript";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 const model = read("src/content/participation.ts");
+const participationRuntime = ts.transpileModule(model, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const {
+  PARTICIPATION_OPPORTUNITIES,
+  explainParticipationMatch,
+} = await import(`data:text/javascript;base64,${Buffer.from(participationRuntime).toString("base64")}`);
+
 const page = read("src/pages/v5/Participation.tsx");
 const actorPage = read("src/pages/v5/ActorGold.tsx");
 const router = read("src/routes/router.tsx");

@@ -62,6 +62,76 @@ test("UNESCO ocean metrics preserve missing values while retaining genuine zero"
   }
 });
 
+test("UNESCO geopoints fail closed on unknown components while preserving real zero and bounds", async () => {
+  const source = read("src/data/unescoOpenData.ts");
+  const javascript = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const moduleUrl = `data:text/javascript;base64,${Buffer.from(javascript).toString("base64")}`;
+  const { normaliseUnescoPoint, normaliseUnescoAtlasRecord } = await import(moduleUrl);
+
+  for (const coordinates of [
+    [null, null],
+    [null, 20],
+    [undefined, 20],
+    ["", 20],
+    ["   ", 20],
+    [false, 20],
+    { lat: "", lon: 20 },
+    { lat: true, lon: 20 },
+    { lat: 91, lon: 20 },
+    { lat: 20, lon: 181 },
+  ]) {
+    assert.equal(normaliseUnescoPoint(coordinates), null);
+    assert.equal(normaliseUnescoAtlasRecord("eg0001", {
+      ugg_id: "invalid-point",
+      title_en: "Invalid Point",
+      coordinates,
+    }), null);
+  }
+
+  assert.deepEqual(normaliseUnescoPoint([0, 20]), { lat: 0, lon: 20 });
+  assert.deepEqual(normaliseUnescoPoint([-90, 180]), { lat: -90, lon: 180 });
+  assert.deepEqual(normaliseUnescoPoint({ lat: "0", lon: "20" }), { lat: 0, lon: 20 });
+});
+
+test("UNESCO geoparks expose mixed source editions without promoting designation into protection or outcome", async () => {
+  const source = read("src/data/unescoOpenData.ts");
+  const javascript = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const moduleUrl = `data:text/javascript;base64,${Buffer.from(javascript).toString("base64")}`;
+  const { UNESCO_DATASETS, normaliseUnescoAtlasRecord } = await import(moduleUrl);
+
+  const metadata = UNESCO_DATASETS.eg0001;
+  assert.equal(metadata.edition.status, "MIXED_EDITION");
+  assert.equal(metadata.edition.datasetDescriptionAsOf, "2025-01-15");
+  assert.equal(metadata.edition.datasetProcessedAt, "UNKNOWN");
+  assert.equal(metadata.edition.referenceUpdatedAt, "2026-07-24");
+  assert.equal(metadata.edition.referenceCountSummary, "241 geoparks / 51 countries");
+  assert.match(metadata.edition.limitation, /stale reference text/i);
+  assert.match(metadata.edition.limitation, /must not be presented as the same edition/i);
+
+  const record = normaliseUnescoAtlasRecord("eg0001", {
+    ugg_id: "qa-geopark",
+    title_en: "QA Global Geopark",
+    coordinates: { lat: 10, lon: 20 },
+    date: "2021",
+  });
+  assert.ok(record);
+  assert.equal(record.designationType, "UNESCO_GLOBAL_GEOPARK");
+  assert.equal(record.legalProtection, "UNKNOWN");
+  assert.equal(record.revalidationStatus, "UNKNOWN");
+  assert.equal(record.ecologicalOutcome, "UNKNOWN");
+
+  const layers = read("src/earth/layers.ts");
+  assert.match(layers, /description.*stale/i);
+  assert.match(layers, /legal protection UNKNOWN/);
+  assert.match(layers, /revalidation status UNKNOWN/);
+  assert.match(layers, /ecological outcome UNKNOWN/);
+  assert.match(layers, /Current UNESCO list/);
+});
+
 test("UNESCO API adapter is bounded and allowlisted", () => {
   const api = read("functions/api/unesco-data.ts");
   for (const id of ["mab001", "whc001", "eg0001", "ioc001", "cou001"]) {
@@ -140,3 +210,4 @@ test("NATUREBRAIN source-family migration registers metadata but keeps ingestion
   assert.doesNotMatch(migration, /insert into planetbrain\.claims/i);
   assert.doesNotMatch(migration, /insert into planetbrain\.relationships/i);
 });
+

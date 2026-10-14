@@ -430,8 +430,12 @@ function footerCtx(pathname: string): { acc: string; label: string } {
 }
 
 function Footer() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { acc } = footerCtx(pathname);
+  const productHref = (to: string) =>
+    ["/atlas", "/species", "/living-systems", "/impact"].includes(to)
+      ? contextHref(to, search)
+      : to;
   const isMagazine =
     pathname === "/magazine" ||
     pathname.startsWith("/magazine/") ||
@@ -450,8 +454,8 @@ function Footer() {
             <p style={{ marginTop: 12, maxWidth: 360, fontSize: 13.5, lineHeight: 1.5, color: T.dim }}>For a Living Planet.</p>
           </div>
           <nav style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-            <Link to="/atlas" style={{ ...mono, color: T.ink, textDecoration: "none" }}>ATLAS</Link>
-            <Link to="/species" style={{ ...mono, color: T.ink, textDecoration: "none" }}>SPECIES</Link>
+            <Link to={productHref("/atlas")} style={{ ...mono, color: T.ink, textDecoration: "none" }}>ATLAS</Link>
+            <Link to={productHref("/species")} style={{ ...mono, color: T.ink, textDecoration: "none" }}>SPECIES</Link>
             <Link to="/about" style={{ ...mono, color: T.ink, textDecoration: "none" }}>ABOUT</Link>
             <Link to="/privacy" style={{ ...mono, color: T.ink, textDecoration: "none" }}>PRIVACY</Link>
           </nav>
@@ -490,7 +494,7 @@ function Footer() {
           {cols.map(([head, items]) => (
             <nav key={head} style={{ display: "grid", gap: 12 }}>
               <span className="mono" style={{ fontSize: 10.5, letterSpacing: ".14em", color: acc }}>{head}</span>
-              {items.map(([t, to]) => <Link key={t + to} to={to} className="foot-link" style={{ fontSize: 14.5, color: "rgba(255,255,255,.82)", textDecoration: "none", width: "fit-content" }}>{t}</Link>)}
+              {items.map(([t, to]) => <Link key={t + to} to={productHref(to)} className="foot-link" style={{ fontSize: 14.5, color: "rgba(255,255,255,.82)", textDecoration: "none", width: "fit-content" }}>{t}</Link>)}
             </nav>
           ))}
         </div>
@@ -558,3 +562,4 @@ export function PublicShell({ children }: { children: ReactNode }) {
     </>
   );
 }
+
