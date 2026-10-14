@@ -291,10 +291,15 @@ export const safeHttpUrl = (value: unknown): string => {
  * changes, but are never guessed when both values are not finite.
  */
 export const normaliseUnescoPoint = (value: any): { lat: number; lon: number } | null => {
+  const decimalCoordinate = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
   const coordinateNumber = (component: unknown): number | null => {
-    if (component === null || component === undefined || typeof component === "boolean") return null;
-    if (typeof component === "string" && component.trim() === "") return null;
-    const numeric = typeof component === "number" ? component : Number(component);
+    if (typeof component === "number") {
+      return Number.isFinite(component) ? component : null;
+    }
+    if (typeof component !== "string") return null;
+    const trimmed = component.trim();
+    if (!decimalCoordinate.test(trimmed)) return null;
+    const numeric = Number(trimmed);
     return Number.isFinite(numeric) ? numeric : null;
   };
 
