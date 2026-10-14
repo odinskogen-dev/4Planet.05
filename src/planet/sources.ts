@@ -55,6 +55,20 @@ export interface SourceDescriptor {
 }
 
 export const SOURCES: Record<string, SourceDescriptor> = {
+  naturalearth: {
+    id: "naturalearth",
+    name: "Natural Earth",
+    authority: "Natural Earth (naturalearthdata.com), community cartographic dataset",
+    covers: "Generalised country outlines, names, ISO codes and capital points for orientation (4NATION globe and glyphs).",
+    limitation:
+      "Cartographic generalisation at 1:50m / 1:110m. De facto boundaries are not an official 4PLANET position. Computed areas are approximate.",
+    licence: "Public domain.",
+    attribution: "Made with Natural Earth",
+    implStatus: "LIVE_READ_IN_PROTOTYPE",
+    rightsReview: "PENDING",
+    costRisk: "Static build-time files served from 4PLANET; no runtime calls.",
+    home: "https://www.naturalearthdata.com",
+  },
   gbif: {
     id: "gbif",
     name: "GBIF",

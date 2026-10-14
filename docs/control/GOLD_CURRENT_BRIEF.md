@@ -1,3 +1,25 @@
+# 4NATION COUNTRY OBJECT 02 — UNDERSTAND ANY COUNTRY — 14 OCT 2026
+
+**STATUS:** REGISTERED SANDBOX (`claude/4nation-country-object-01`, PR #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
+**USER ARRIVES BECAUSE:** a person wants to understand a country — often their own — quickly, truthfully and with a sense of place.
+**ONE THING TO UNDERSTAND:** what this country is, and what makes it different from others, in under 30 seconds.
+**PRIMARY ACTION:** open a country; read its readout and signature; continue into chapters or Atlas mode.
+**SECONDARY DEPTH:** chapters (Land, People, Economy & work, Energy & nature, Learning, Heritage, Capital, Decisions only where sourced), source drawer, compare, Atlas mode on the shared engine.
+**P1 DOMINANT:** country name + globe flown to the country (one anchor).
+**P2 ORIENTATION:** six-fact readout with year + source; the country signature (where it stands globally).
+**P3 ACTION:** Profile / Atlas, Set as my country, Compare, Share.
+**P4 DEPTH:** chapters, series tables in the source drawer, decision case.
+**WHAT CAN BE REMOVED:** decision-first framing; floating ID chip; card grids; duplicate country stores.
+**WHAT MUST BE REUSED:** `/atlas` embed + `atlasViewContract`; `unescoOpenData`/`unescoCountryContext`; `identityClient`; nation worker; existing decision case.
+**TRUTH BOUNDARY:** every value shows value, unit, year, source; unknown ≠ zero; national average ≠ local condition; rank = position among countries reporting that indicator in that source, never a score; computed area labelled approximate; designation ≠ condition.
+**MOBILE-FIRST RISK:** globe + six readouts must fit without overflow at 390px; chapter nav horizontal scroll; Atlas panel becomes bottom sheet.
+**HUMAN SUCCESS:** “I understand this place better than I did five minutes ago” — and every country feels like itself.
+**BRAND OS PREFLIGHT (fresh read 14 Oct 2026):** mode = calm intelligence surface; dominant idea = one country; anchor = globe/outline; next action = explore chapters; living-world presence = CONTEXT (no licensed photography yet — deferred); accent = 4PLANET Blue #2E2EFF (no 4NATION accent locked); neutrals White #FFFFFF / Black #000000 (07-Oct lock); type = Instrument Sans restrained display, DM Sans body/UI, Fragment Mono source/year only; grid = 1px rules, editorial columns, no card walls; geometry = capsule buttons, one soft radius for panels/sheets/frames, sharp tables/rules; deferred = photography, decision streams, share images.
+**DONOR DECISION:** no historical 4NATION visual donor adopted (Founder instruction 13 Oct: design new).
+**BASE / ROLLBACK:** forward-synced onto current `king/test`; rollback via PR revert plus preserved pre-release branch `backup/pre-claude-4nation-s4piens-live-20261014`.
+
+---
+
 # EXPO-03 — INDEXNOW CONTRACT CORRECTION / 14 OCT 2026
 
 **STATE:** HEIR ONLY, NO EXTERNAL URL SUBMISSION.

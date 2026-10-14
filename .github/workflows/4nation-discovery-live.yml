@@ -34,7 +34,7 @@ jobs:
           node --check ops/nation/4nation-live-worker.js
           grep -Fq 'https://4nation.org/sitemap.xml' ops/nation/4nation-live-worker.js
           grep -Fq 'Disallow: /auth/' ops/nation/4nation-live-worker.js
-          grep -Fq '4NATION — Better Nation' ops/nation/4nation-live-worker.js
+          grep -Fq '4NATION — Understand any country' ops/nation/4nation-live-worker.js
       - name: Deploy existing 4planet-nation-live script only
         run: |
           set -euo pipefail
@@ -52,7 +52,7 @@ jobs:
           curl -fsS https://4nation.org/robots.txt | grep -Fq 'Sitemap: https://4nation.org/sitemap.xml'
           curl -fsS https://4nation.org/sitemap.xml | grep -Fq 'https://4nation.org/'
           html=$(curl -fsS https://4nation.org/)
-          grep -Fq '4NATION — Better Nation' <<<"$html"
+          grep -Fq '4NATION — Understand any country' <<<"$html"
           grep -Fq 'index,follow,max-image-preview:large' <<<"$html"
           ah=$(curl -sSI --max-time 15 https://4nation.org/auth/4planet/callback | tr -d '\r')
           grep -qi '^x-robots-tag:.*noindex' <<<"$ah"
