@@ -96,6 +96,17 @@ Every one of these receives a complete donor matrix before total closure:
 
 Donors: none adopted. Old 4NATION visual design rejected by Founder (13 Oct 2026); only plumbing reused (AtlasEmbed, unesco contracts, identityClient, nation worker).
 
+## S4PIENS HUMAN SYSTEMS — registered SANDBOX sequence (2026-10-14)
+
+| Identity | Role now | Branch / PR | Exact identity | HEIR obligation |
+|---|---|---|---|---|
+| S4PIENS LIVE | PRODUCTION / READ-ONLY | s4piens.com (4planet-05 custom domain) | READBACK REQUIRED | Preserve until Founder-gated promotion. |
+| S4PIENS domain world + FOOD lens | MUST PRESERVE | `/domains/s4piens`, `/s4piens/food/lens` on HEIR | unchanged | Not rewritten; new app lives at `/human-systems`. |
+| S4PIENS HUMAN SYSTEMS 01 | FIXED REVIEW | `claude/s4piens-human-systems-01` / #447 | `e3054b9` (stacked on 4NATION 01) | First human-first chain explorer; fixture-only proof. |
+| S4PIENS HUMAN SYSTEMS 02 | ACTIVE DEVELOPMENT (registered SANDBOX) | `claude/s4piens-human-systems-01` / #447 | descends from `king/test@bff54ef` via 4NATION 02 | Object journeys (object + system view), Brand OS lock. Merge after #444. |
+
+Donors: PR #75 and `axe/s4piens-giga-multisprint-*` not adopted (Founder 13 Oct: design new). Shared registry entries extended, not forked.
+
 ## MUST NOT LOSE — global
 - shared source/provenance/truth boundaries;
 - one shared ATLAS engine and Product Context continuity;

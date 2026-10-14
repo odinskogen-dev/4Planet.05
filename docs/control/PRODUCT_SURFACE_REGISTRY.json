@@ -194,7 +194,19 @@
         "review_path": "/s4piens",
         "origin_path": "/domains/s4piens"
       },
-      "sandbox": null
+      "sandbox": {
+        "branch": "claude/s4piens-human-systems-01",
+        "sha_at_registration": "3e1541c9fb568be39583ca60ec646ce1a3ef557c",
+        "review_path": "/s4piens/sandbox",
+        "origin_path": "/human-systems",
+        "live_authority": false,
+        "registered": "2026-10-14",
+        "registered_by": "Claude (maker) at Founder request 2026-10-14; AXE/GPT ratification required",
+        "product_version": "S4PIENS HUMAN SYSTEMS 02",
+        "pr": "#447",
+        "depends_on": "4NATION sandbox PR #444 (merge first)",
+        "return_path": "PR → king/test"
+      }
     },
     "4SAPIEN": {
       "live": {

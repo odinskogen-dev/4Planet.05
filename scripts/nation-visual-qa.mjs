@@ -63,6 +63,10 @@ async function fixture(page) {
     const series = Object.fromEntries(WBI.map((i) => [i, Array.from({ length: 24 }, (_, k) => [String(2000 + k), +(hash(c + i) / 99.73 * (1 + k * 0.01)).toFixed(2)])]));
     route.fulfill({ json: { ok: true, mode: "series", country: c, retrievedAt: new Date().toISOString(), indicators: ind, series } });
   });
+  await page.route("**/api/climate-trace?**", (route) => {
+    const assets = Array.from({ length: 12 }, (_, i) => ({ id: "fx" + i, name: "Fixture source " + (i + 1), subsector: "fixture-subsector", co2e: Math.round(9e6 / (i + 1.3)), year: 2024, lat: 60, lon: 10 }));
+    route.fulfill({ json: { ok: true, source: "climatetrace", assets } });
+  });
   await page.route("**/api/country-identity?**", (route) => route.fulfill({ json: { ok: true, itemUrl: "https://www.wikidata.org/wiki/Q0", source: { retrievedAt: new Date().toISOString(), url: "https://www.wikidata.org/" }, languages: ["Fixture language A", "Fixture language B"], currencies: ["Fixture currency"], highestPoint: { name: "Fixture peak", elevationM: 2469 }, anthem: "Fixture anthem" } }));
   await page.addInitScript(() => {
     addEventListener("DOMContentLoaded", () => {
@@ -85,7 +89,10 @@ async function quiet(page) {
 }
 
 const VIEWPORTS = [["desktop", 1440, 900], ["tablet", 834, 1112], ["m430", 430, 932], ["m390", 390, 844]];
-const ROUTES = [["home", "/4nation"], ["norway", "/4nation/country/norway"], ["kenya", "/4nation/country/kenya"], ["japan-atlas", "/4nation/country/japan?mode=atlas&l=unesco-world-heritage"], ["compare", "/4nation/compare/norway-vs-brazil"]];
+const S4 = process.argv.includes("--s4piens");
+const ROUTES = S4
+  ? [["s4-home", "/human-systems"], ["s4-food", "/human-systems/system/food?c=NO"], ["s4-energy", "/human-systems/system/energy-and-industry?step=processing&c=NO"], ["s4-object", "/human-systems/object/bread"], ["s4-object-sys", "/human-systems/object/smartphone?view=system"]]
+  : [["home", "/4nation"], ["norway", "/4nation/country/norway"], ["kenya", "/4nation/country/kenya"], ["japan-atlas", "/4nation/country/japan?mode=atlas&l=unesco-world-heritage"], ["compare", "/4nation/compare/norway-vs-brazil"]];
 const THEMES = ["light", "dark", "paper"];
 
 const browser = await (engine === "webkit" ? webkit : chromium).launch({ executablePath: exe });
@@ -94,14 +101,14 @@ for (const [vp, w, h] of VIEWPORTS) {
   for (const theme of THEMES) {
     if (theme !== "light" && vp !== "desktop" && vp !== "m390") continue;
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: vp.startsWith("m") ? 2 : 1 });
-    await ctx.addInitScript((t) => { try { localStorage.setItem("4nation.theme", t); } catch {} }, theme);
+    await ctx.addInitScript((t) => { try { localStorage.setItem("4nation.theme", t); localStorage.setItem("s4piens.theme", t); } catch {} }, theme);
     const page = await ctx.newPage();
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await quiet(page);
     if (useFixture) await fixture(page);
     for (const [name, path] of ROUTES) {
-      if (theme !== "light" && (name === "kenya" || name === "compare")) continue;
+      if (theme !== "light" && (name === "kenya" || name === "compare" || name === "s4-object-sys")) continue;
       await page.goto(base + path, { waitUntil: "domcontentloaded" });
       await page.waitForTimeout(2600);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

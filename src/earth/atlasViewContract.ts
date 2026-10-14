@@ -3,7 +3,7 @@ import { atlasHrefFromState, canonicalReturnState, type AtlasState } from "@/pro
 
 /** A View is a read configuration over the existing MapLibre ATLAS and PLANETBRAIN. */
 export const ATLAS_VIEW_KINDS = [
-  "NEWS", "SPECIES", "PLACE", "IMPACT", "NATION", "BRANDS", "PERSONAL", "SOLUTIONS",
+  "NEWS", "SPECIES", "PLACE", "IMPACT", "NATION", "BRANDS", "PERSONAL", "SOLUTIONS", "S4PIENS",
 ] as const;
 export type AtlasViewKind = (typeof ATLAS_VIEW_KINDS)[number];
 
