@@ -44,7 +44,7 @@ test("IMPACT detail pages condition partner copy on an actual appointment", () =
   for (const unit of impactUnits.IMPACT_UNITS) {
     assert.equal(unit.delivery.fieldPartner.startsWith("TO BE SELECTED"), true);
   }
-  assert.match(impactHomeSource, /fieldPartnerAppointed = !u\.delivery\.fieldPartner\.startsWith\("TO BE SELECTED"\)/);
+  assert.match(impactHomeSource, /fieldPartnerAppointed = isFieldPartnerAppointed\(u\.delivery\)/);
   assert.match(impactHomeSource, /No field partner has been appointed\. Delivery is intended only after a partner is selected and verified\./);
   assert.match(impactHomeSource, /delivery is not claimed until proof is available\./);
   assert.doesNotMatch(impactHomeSource, /Delivery is carried out by a chosen field partner/);
@@ -270,4 +270,14 @@ test("resource flow opens only when provider-bound quantity, diligence, economic
       successCriteriaLockedAt: invalidLock,
     }, plasticBankBinding), false);
   }
+});
+
+test("field-partner appointment fails closed from one explicit state", () => {
+  const base = impactUnits.IMPACT_UNITS[0].delivery;
+  for (const fieldPartner of ["", "   ", "UNKNOWN", "TO BE CONFIRMED", "TO BE SELECTED — partner", "PENDING"]) {
+    assert.equal(impactUnits.isFieldPartnerAppointed({ ...base, appointmentState: "PENDING", fieldPartner }), false);
+  }
+  assert.equal(impactUnits.isFieldPartnerAppointed({ ...base, appointmentState: "APPOINTED", fieldPartner: "Verified Partner Foundation" }), true);
+  assert.equal(impactUnits.isFieldPartnerAppointed({ ...base, appointmentState: "APPOINTED", fieldPartner: "UNKNOWN" }), false);
+  assert.match(impactHomeSource, /fieldPartnerAppointed \? "FIELD PARTNER APPOINTED — DELIVERY NOT YET CLAIMED" : "FIELD PARTNER NOT YET APPOINTED"/);
 });
