@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import { capturePostHog } from "@/analytics/PostHogSink";
 
 export const ANALYTICS_STORAGE_KEY = "4planet.analytics.consent.v1";
+export const INTERNAL_ANALYTICS_STORAGE_KEY = "4planet.analytics.internal.v1";
+const INTERNAL_ANALYTICS_QUERY_KEY = "4p_internal";
 
 const DEFAULT_GA_MEASUREMENT_ID = "G-Q79Y9HJRL8";
 const DEFAULT_ANALYTICS_DOMAINS = [
@@ -46,13 +48,20 @@ const DISCOVERY_SESSION_KEY = "4planet.discovery.entry.v1";
 type DiscoveryChannel =
   | "AI_CHATGPT"
   | "AI_PERPLEXITY"
+  | "AI_CLAUDE"
+  | "AI_GEMINI"
+  | "AI_COPILOT"
   | "SEARCH_GOOGLE"
   | "SEARCH_BING"
+  | "SEARCH_ECOSIA"
+  | "SEARCH_DUCKDUCKGO"
   | "SOCIAL_INSTAGRAM"
   | "SOCIAL_FACEBOOK"
   | "SOCIAL_LINKEDIN"
   | "EMAIL"
   | "DIRECT"
+  | "INTERNAL_4PLANET"
+  | "AUTH_OR_INFRA"
   | "REFERRAL_OTHER";
 
 function safeHostname(rawUrl: string): string {
@@ -64,15 +73,33 @@ function safeHostname(rawUrl: string): string {
   }
 }
 
+export function isInternalOrInfrastructureReferrer(hostname: string): boolean {
+  const host = canonicalHost(hostname);
+  if (!host) return false;
+  return isAnalyticsHostAllowed(host)
+    || host === "accounts.google.com"
+    || host.endsWith(".workers.dev")
+    || host.endsWith(".pages.dev")
+    || host === "localhost"
+    || host.endsWith(".localhost");
+}
+
 function classifyDiscoveryEntry(): DiscoveryChannel {
   const source = (new URLSearchParams(window.location.search).get("utm_source") || "").trim().toLowerCase();
   const medium = (new URLSearchParams(window.location.search).get("utm_medium") || "").trim().toLowerCase();
   const referrerHost = safeHostname(document.referrer);
 
+  if (isAnalyticsHostAllowed(referrerHost)) return "INTERNAL_4PLANET";
+  if (referrerHost === "accounts.google.com" || referrerHost.endsWith(".workers.dev") || referrerHost.endsWith(".pages.dev")) return "AUTH_OR_INFRA";
   if (source.includes("chatgpt") || referrerHost === "chatgpt.com" || referrerHost.endsWith(".chatgpt.com")) return "AI_CHATGPT";
   if (source.includes("perplexity") || referrerHost === "perplexity.ai" || referrerHost.endsWith(".perplexity.ai")) return "AI_PERPLEXITY";
+  if (source.includes("claude") || referrerHost === "claude.ai" || referrerHost.endsWith(".claude.ai")) return "AI_CLAUDE";
+  if (source.includes("gemini") || referrerHost === "gemini.google.com") return "AI_GEMINI";
+  if (source.includes("copilot") || referrerHost === "copilot.microsoft.com" || referrerHost === "copilot.microsoft365.com") return "AI_COPILOT";
   if (source === "google" || referrerHost.startsWith("google.") || referrerHost.includes(".google.")) return "SEARCH_GOOGLE";
   if (source === "bing" || referrerHost === "bing.com" || referrerHost.endsWith(".bing.com")) return "SEARCH_BING";
+  if (source === "ecosia" || referrerHost === "ecosia.org" || referrerHost.endsWith(".ecosia.org")) return "SEARCH_ECOSIA";
+  if (source === "duckduckgo" || referrerHost === "duckduckgo.com" || referrerHost.endsWith(".duckduckgo.com")) return "SEARCH_DUCKDUCKGO";
   if (source.includes("instagram") || source === "ig" || referrerHost === "instagram.com" || referrerHost.endsWith(".instagram.com")) return "SOCIAL_INSTAGRAM";
   if (source.includes("facebook") || referrerHost === "facebook.com" || referrerHost.endsWith(".facebook.com")) return "SOCIAL_FACEBOOK";
   if (source.includes("linkedin") || referrerHost === "linkedin.com" || referrerHost.endsWith(".linkedin.com")) return "SOCIAL_LINKEDIN";
@@ -84,6 +111,10 @@ function classifyDiscoveryEntry(): DiscoveryChannel {
 function trackDiscoveryEntryOnce(pagePath: string) {
   if (window.sessionStorage.getItem(DISCOVERY_SESSION_KEY)) return;
   const discoveryChannel = classifyDiscoveryEntry();
+  if (discoveryChannel === "INTERNAL_4PLANET" || discoveryChannel === "AUTH_OR_INFRA") {
+    window.sessionStorage.setItem(DISCOVERY_SESSION_KEY, discoveryChannel);
+    return;
+  }
   window.gtag?.("event", "discovery_entry", {
     discovery_channel: discoveryChannel,
     landing_product: productArea(pagePath, window.location.hostname),
@@ -116,6 +147,26 @@ export function isAnalyticsHostAllowed(hostname: string): boolean {
 function readConsent(): ConsentState {
   const value = window.localStorage.getItem(ANALYTICS_STORAGE_KEY);
   return value === "granted" || value === "denied" ? value : null;
+}
+
+function applyInternalAnalyticsControl(): boolean {
+  const params = new URLSearchParams(window.location.search);
+  const raw = (params.get(INTERNAL_ANALYTICS_QUERY_KEY) || "").trim().toLowerCase();
+  if (["1", "true", "on"].includes(raw)) window.localStorage.setItem(INTERNAL_ANALYTICS_STORAGE_KEY, "1");
+  if (["0", "false", "off"].includes(raw)) window.localStorage.removeItem(INTERNAL_ANALYTICS_STORAGE_KEY);
+
+  if (params.has(INTERNAL_ANALYTICS_QUERY_KEY)) {
+    params.delete(INTERNAL_ANALYTICS_QUERY_KEY);
+    const query = params.toString();
+    const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+    window.history.replaceState(window.history.state, "", nextUrl);
+  }
+
+  return window.localStorage.getItem(INTERNAL_ANALYTICS_STORAGE_KEY) === "1";
+}
+
+function isInternalAnalyticsBrowser(): boolean {
+  return window.localStorage.getItem(INTERNAL_ANALYTICS_STORAGE_KEY) === "1";
 }
 
 function productArea(pathname: string, hostname: string): string {
@@ -181,10 +232,14 @@ function installGoogleTag(id: string, domains: string[]) {
   }
 
   window.gtag?.("js", new Date());
+  const referrerHost = safeHostname(document.referrer);
   window.gtag?.("config", id, {
     send_page_view: false,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
+    // Prevent our own domains, auth redirects and deployment infrastructure from
+    // polluting acquisition as external referrals. External referrers remain intact.
+    ignore_referrer: isInternalOrInfrastructureReferrer(referrerHost),
   });
 
   const script = document.createElement("script");
@@ -195,7 +250,7 @@ function installGoogleTag(id: string, domains: string[]) {
 }
 
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname)) return;
+  if (readConsent() !== "granted" || isInternalAnalyticsBrowser() || !isAnalyticsHostAllowed(window.location.hostname)) return;
 
   const shared = {
     ...parameters,
@@ -215,16 +270,17 @@ export function Analytics() {
   const location = useLocation();
   const id = measurementId();
   const allowedHost = useMemo(() => isAnalyticsHostAllowed(window.location.hostname), []);
+  const [internalTraffic] = useState(() => applyInternalAnalyticsControl());
   const [consent, setConsent] = useState<ConsentState>(() => readConsent());
 
   useEffect(() => {
-    if (!allowedHost || !id) return;
+    if (!allowedHost || !id || internalTraffic) return;
     setConsentDefaultDenied();
     if (consent === "denied") updateConsent("denied");
-  }, [allowedHost, consent, id]);
+  }, [allowedHost, consent, id, internalTraffic]);
 
   useEffect(() => {
-    if (!allowedHost || !id || consent !== "granted") return;
+    if (!allowedHost || !id || internalTraffic || consent !== "granted") return;
     installGoogleTag(id, configuredDomains());
 
     // Deliberately exclude query strings and fragments from analytics. OAuth
@@ -244,9 +300,9 @@ export function Analytics() {
     });
     capturePostHog("$pageview", pageProperties);
     trackDiscoveryEntryOnce(location.pathname);
-  }, [allowedHost, consent, id, location.pathname]);
+  }, [allowedHost, consent, id, internalTraffic, location.pathname]);
 
-  if (!allowedHost || !id || consent !== null) return null;
+  if (!allowedHost || !id || internalTraffic || consent !== null) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);
