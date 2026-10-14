@@ -152,9 +152,11 @@
     "IMPACT": {
       "live": {
         "url": "https://4planet.org/impact",
-        "source_sha": "c78f3b9814e823fdaa9167ccc784d2a88283215d",
-        "immutable_pages_deployment": "https://d3d3fae0.4planet-05.pages.dev/impact",
-        "identity_state": "IMMUTABLE_PAGES_ORIGIN_VERIFIED_2026_09_08"
+        "source_sha": "63526e3557caeb1dffe7ebdba175f4863e8ae2e6",
+        "immutable_pages_deployment": "https://c2cb9671.4planet-05.pages.dev/impact",
+        "identity_state": "IMMUTABLE_PAGES_ORIGIN_AND_CANONICAL_BUILD_ID_VERIFIED_2026_10_14",
+        "release_evidence": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/38640454640",
+        "release_note": "Founder-directed exact-artifact IMPACT promotion only; main and king/test were not promoted as product lineages."
       },
       "heir": {
         "review_path": "/impact",
