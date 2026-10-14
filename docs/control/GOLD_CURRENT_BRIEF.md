@@ -1,28 +1,6 @@
-# S4PIENS HUMAN SYSTEMS 02 — FOLLOW ONE THING — 14 OCT 2026
-
-**STATUS:** REGISTERED SANDBOX (`claude/s4piens-human-systems-01`, PR #447, after #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
-**USER ARRIVES BECAUSE:** they want to understand how something they use every day — bread, coffee, a phone — actually reaches them.
-**ONE THING TO UNDERSTAND:** every everyday object is the last step of a chain through places and living systems; the same chain grammar explains the whole system.
-**PRIMARY ACTION:** pick an object and follow it step by step; switch to the system view to see where it sits.
-**SECONDARY DEPTH:** system chain, Atlas place layers, country lens (Climate TRACE), living systems, problems, solutions (maturity ≠ evidence).
-**P1 DOMINANT:** the human with the needs orbit (home) / the object's journey line (object page).
-**P2 ORIENTATION:** chain stations with one question each.
-**P3 ACTION:** Follow · Object/System toggle · See it on the Atlas · Choose a country.
-**P4 DEPTH:** problems, solutions, sources.
-**WHAT CAN BE REMOVED:** dashboards, scores, footprint/guilt framing, graph spaghetti.
-**WHAT MUST BE REUSED:** shared ATLAS embed (kind S4PIENS), `src/planet/livingSystems.ts`, `/api/climate-trace`, 4NATION primitives and country identity.
-**TRUTH BOUNDARY:** station and object text = labelled 4PLANET CONTEXT (explanation, no numbers); quantities only from sourced adapters; proximity ≠ cause; a solution's maturity ≠ its evidence; no flows drawn until sourced.
-**MOBILE-FIRST RISK:** orbit labels at 390px; journey line single column; rail horizontal scroll.
-**HUMAN SUCCESS:** “I never understood that all of this was connected.”
-**BRAND OS PREFLIGHT (fresh read 14 Oct 2026):** mode = editorial/story surface; anchor = human figure / journey line; accent = S4PIENS_ #FF4D22 (text: Rust #842810 / Light Orange #FF7D50 from controlled library); neutrals White/Black lock; Instrument Sans restrained; capsule buttons, one soft radius; living-world presence = TRACE/CONTEXT (no rights-cleared photography yet — deferred).
-**DONOR DECISION:** PR #75 and AXE s4piens multisprint branches not adopted (Founder instruction: design new).
-**BASE / ROLLBACK:** revert PR #447.
-
----
-
 # 4NATION COUNTRY OBJECT 02 — UNDERSTAND ANY COUNTRY — 14 OCT 2026
 
-**STATUS:** REGISTERED SANDBOX (`claude/4nation-country-object-01`, PR #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**STATUS:** REGISTERED SANDBOX (`claude/4nation-country-object-01`, PR #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
 **USER ARRIVES BECAUSE:** a person wants to understand a country — often their own — quickly, truthfully and with a sense of place.
 **ONE THING TO UNDERSTAND:** what this country is, and what makes it different from others, in under 30 seconds.
 **PRIMARY ACTION:** open a country; read its readout and signature; continue into chapters or Atlas mode.
@@ -38,7 +16,97 @@
 **HUMAN SUCCESS:** “I understand this place better than I did five minutes ago” — and every country feels like itself.
 **BRAND OS PREFLIGHT (fresh read 14 Oct 2026):** mode = calm intelligence surface; dominant idea = one country; anchor = globe/outline; next action = explore chapters; living-world presence = CONTEXT (no licensed photography yet — deferred); accent = 4PLANET Blue #2E2EFF (no 4NATION accent locked); neutrals White #FFFFFF / Black #000000 (07-Oct lock); type = Instrument Sans restrained display, DM Sans body/UI, Fragment Mono source/year only; grid = 1px rules, editorial columns, no card walls; geometry = capsule buttons, one soft radius for panels/sheets/frames, sharp tables/rules; deferred = photography, decision streams, share images.
 **DONOR DECISION:** no historical 4NATION visual donor adopted (Founder instruction 13 Oct: design new).
-**BASE / ROLLBACK:** sandbox descends from `king/test@bff54ef`; revert PR #444.
+**BASE / ROLLBACK:** forward-synced onto current `king/test`; rollback via PR revert plus preserved pre-release branch `backup/pre-claude-4nation-s4piens-live-20261014`.
+
+---
+
+# EXPO-03 — INDEXNOW CONTRACT CORRECTION / 14 OCT 2026
+
+**STATE:** HEIR ONLY, NO EXTERNAL URL SUBMISSION.
+**HUMAN NEED:** Only source-approved public canonical content reaches search submission.
+**FIX:** Strengthen stale test for current generated-sitemap-only selection, deduplication, exact origin and explicit founder release.
+**REUSE:** Existing IndexNow script and discovery test, no new service.
+**TRUTH:** No indexing, traffic or LIVE release proof. Maker != Judge; exact-head CI required.
+**BASE:** f897dca9a40efce81fe9437c09428d1c9299c7f5.
+
+---
+
+# EXPO-13 — Google Search Console existing-service-account read-only probe / 14 October 2026
+
+**STATUS:** HEIR DIAGNOSTIC, no GSC property ownership claim. **NEED:** Free, independently verifiable Google search reporting. **ACTION:** Read Search Console site list using existing approved GA4 service-account credentials with `webmasters.readonly`; restrict displayed site metadata to known 4PLANET domain families; never PUT, POST, create, verify or submit. **TRUTH:** zero GSC sites from this service account would not imply zero properties in the founder Google account. **SECURITY:** never print Google secrets, raw URLs containing auth tokens, arbitrary sites or credential responses. **MAKER/JUDGE:** code + runtime CI, independent review; existing GSC owner must explicitly add read-only access if necessary. **BASE:** king/test@b909bdb1f1d0a70d7530cfa25bbd2af5d48ebc5f.
+
+---
+
+# EXPO-14 — DISTRIBUTION MEASUREMENT INTEGRITY — 14 OCTOBER 2026
+
+**STATUS:** FOUNDER-DIRECTED P0/P1 MEASUREMENT CORRECTION ON TEST KING / NO PRODUCTION CLAIM.
+## USER ARRIVES BECAUSE
+4PLANET needs trustworthy ecosystem-level traffic and distribution reporting before early signals are used for decisions.
+## ONE THING TO UNDERSTAND
+External discovery, internal cross-domain navigation, auth infrastructure and founder testing must not be counted as the same thing.
+## PRIMARY ACTION
+Keep credential-bearing navigation out of analytics, isolate internal browsers, suppress owned/auth/deployment referral pollution, classify Google/Bing/Ecosia/DuckDuckGo and major AI referrers, and submit only canonical sitemap URLs through IndexNow.
+## SECONDARY DEPTH
+GA4 remains the behaviour/acquisition layer; native Search Console and Bing Webmaster Tools remain the search-impression/ranking layer.
+## P1 DOMINANT
+Clean measurement truth.
+## P2 ORIENTATION
+Discovery channel and landing product/path.
+## P3 ACTION / NEXT
+Verify deterministic contracts and exact TEST KING behaviour before any production promotion.
+## P4 DEPTH
+Search visibility, query, page, CTR and index-state reporting remain separate from on-site behaviour.
+## WHAT CAN BE REMOVED
+Self-referrals, auth/deployment referrals, founder/internal browser traffic and legacy redirect-route IndexNow submissions.
+## WHAT MUST BE REUSED
+Existing GA4 property, consent gate, sensitive-navigation block, shared ProductAnalytics spine, canonical sitemap generator and Founder release law.
+## TRUTH BOUNDARY
+A session is not a unique person; a search click is not an impression; an IndexNow submission is not indexing; an AI citation is not a click; internal product movement is not external acquisition.
+## MOBILE-FIRST RISK
+None introduced by this measurement-only runtime change; the control query is removed from the visible URL immediately after use.
+## HUMAN SUCCESS
+Founder reporting can distinguish real external discovery from internal testing and can identify which product/search landing surface earned the visit.
+
+**MAKER ≠ JUDGE:** AXE implemented the bounded measurement correction. Existing independent Gold/TEST KING gates judge the resulting SHA. No production release is claimed by this brief.
+
+---
+
+# EXPO-13 — GA4 Admin automatic-write prevention / 14 October 2026
+
+**STATUS:** HEIR security fix / independent CI, QA and readback pending. **HUMAN VALUE:** Analysis remains trustworthy without accidental third-party account mutation on routine code push. **PRIMARY ACTION:** GA4 Admin push is strictly audit/read-only; a manual APPLY requires exact 'enig send' Founder release input and explicit choice. **REUSE:** existing GA4 property, scripts, GitHub workflow and issue #173. **TRUTH:** No GA4 configuration was changed by this source patch and LIVE/GA4 provider state remains unverified. **BASE / ROLLBACK:** king/test@7aff9971073234b82f653c41e358ae43a5bcaf3d.
+
+---
+
+# EXPO-13 — OAuth-safe analytics P0 / 14 October 2026
+
+**STATUS:** HEIR CODE ONLY, independent security Gold and LIVE verification required.
+**HUMAN NEED:** Privacy-preserving access to public tools and reliable account login.
+**PRIMARY ACTION:** Prevent analytics SDK installation, automatic initial measurements and custom events while sensitive auth values remain in the browser URL.
+**REUSE:** Existing analytics consent, 4PLANET ID SDK, GA4 and PostHog event spine, issue #173.
+**TRUTH BOUNDARY:** No historical GA4 deletion, token revocation, external collector/legacy live proof or product outcome is claimed. The identity SDK continues to consume OAuth callbacks; this gate deliberately skips analytics on callbacks until navigation is safe.
+**MOBILE:** Test iOS Safari callback and cross-domain bridge with Chrome; browser-network capture and 0 secrets in measured URLs required.
+**VALUE:** Clean public pages can still be measured after consent, without capturing confidential redirects.
+**OWNER / GATES:** EXPO-13 Maker, separate Gold security judge, action-specific Founder release for LIVE.
+**PARENT / ROLLBACK:** king/test@64ee6b31158a1b1102f28f268e9ee0ef828603a5.
+
+---
+
+# EXPO-03 — OSLOFJORD PUBLIC CRAWLER SCOPE / 14 OCT 2026
+
+**STATUS:** BOUNDED INFRASTRUCTURE DRAFT / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person searching for Oslofjord nature and restoration should reach public evidence, not a blocked prefix.
+**ONE THING TO UNDERSTAND:** /os is a private operations path; /oslofjord is a public ecological place.
+**PRIMARY ACTION:** make /os inaccessible to crawlers without excluding /oslofjord.
+**SECONDARY DEPTH:** Googlebot, Bingbot, OAI-SearchBot and wildcard all inherit identical restrictions; generator matches static file.
+**P1 / P2 / P3 / P4:** public discovery / reliable URL scope / access to evidence / deeper source links.
+**REMOVE:** overbroad Disallow: /os and exceptional unrestricted crawler groups.
+**REUSE:** existing robots file, sitemap generator, discovery SEO test, BRAND-6 / EXPO-03 and 4PLANET HEIR.
+**TRUTH BOUNDARY:** crawler policy is not server access control; draft PR and CI are not production indexing or acquired real users.
+**MOBILE RISK:** no visual change; deployed mobile/browser crawl checks still required.
+**HUMAN SUCCESS:** /os remains excluded for all listed crawlers, /oslofjord remains eligible for search discovery.
+**DONOR DECISION:** no historical donor, bounded correction of existing infrastructure only.
+**BASE / ROLLBACK:** king/test@74a6b7987d0675cc21c3ae504cb65789f78901a0; this OPS-only support branch is non-authoritative and never automatically releases.
+**MAKER / JUDGE:** independent exact-SHA review and production release authority remain mandatory.
 
 ---
 

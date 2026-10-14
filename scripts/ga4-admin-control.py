@@ -68,6 +68,52 @@ def host(uri: str) -> str:
         return ""
 
 
+
+def audit_search_console_readonly(info):
+    """List Google Search Console properties using the existing GA4 service
+    account with a separate read-only OAuth scope. Never creates or verifies
+    a property, modifies settings, or prints credentials and query URLs.
+    """
+    scope = "https://www.googleapis.com/auth/webmasters.readonly"
+    allowed = {
+        "4planet.org", "4species.com", "4planetatlas.com",
+        "4planetmagazine.com", "4sapien.com", "s4piens.com",
+        "4brands.org", "4nation.org", "4planetmarket.com",
+        "cre4tors.com", "4brain.app",
+    }
+    try:
+        creds = service_account.Credentials.from_service_account_info(
+            info, scopes=[scope],
+        )
+        reader = AuthorizedSession(creds)
+        response = reader.get(
+            "https://www.googleapis.com/webmasters/v3/sites", timeout=20,
+        )
+    except Exception as exc:
+        print(f"GSC_READONLY_STATUS=TRANSPORT_OR_AUTH_BLOCKED ({type(exc).__name__})")
+        return
+    if response.status_code != 200:
+        print(f"GSC_READONLY_STATUS=UNAVAILABLE_HTTP_{response.status_code}")
+        return
+    try:
+        entries = response.json().get("siteEntry", [])
+    except (ValueError, AttributeError):
+        print("GSC_READONLY_STATUS=INVALID_PROVIDER_RESPONSE")
+        return
+    matching = []
+    for entry in entries:
+        url = entry.get("siteUrl", "")
+        domain = url.removeprefix("sc-domain:").lower() if url.startswith("sc-domain:") else host(url)
+        if domain in allowed:
+            matching.append((url, entry.get("permissionLevel", "unknown")))
+    print(f"GSC_READONLY_STATUS=ACCESSIBLE")
+    print(f"GSC_READONLY_TOTAL_VISIBLE={len(entries)}")
+    print(f"GSC_READONLY_4PLANET_VISIBLE={len(matching)}")
+    for url, permission in sorted(matching):
+        print(f"GSC_4PLANET_SITE={url} permission={permission}")
+    write_output("gsc_readonly_visible", str(len(matching)))
+
+
 def main():
     raw = os.getenv("GA4_SERVICE_ACCOUNT_JSON", "").strip()
     if not raw:
@@ -191,6 +237,7 @@ def main():
     write_output("measurement_id", measurement_id)
     write_output("primary_stream", primary.get("name", ""))
     print("\nGA4 admin control PASS" if APPLY else "\nGA4 admin audit PASS")
+    audit_search_console_readonly(info)
 
 
 if __name__ == "__main__":

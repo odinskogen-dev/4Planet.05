@@ -6,11 +6,15 @@ on:
       mode:
         description: Audit or apply the canonical 4PLANET GA4 configuration
         required: true
-        default: apply
+        default: audit
         type: choice
         options:
           - audit
           - apply
+      founder_release:
+        description: "For apply only: exact action-specific approval, enig send"
+        required: false
+        type: string
   push:
     branches: [king/test]
     paths:
@@ -27,8 +31,13 @@ jobs:
     env:
       GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
       GA4_PROPERTY_ID: "551422989"
-      GA4_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'audit' && 'false' || 'true' }}
+      GA4_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.founder_release == 'enig send' && 'true' || 'false' }}
     steps:
+      - name: Reject unapproved GA4 configuration writes
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.founder_release != 'enig send' }}
+        run: |
+          echo "GA4 APPLY requires explicit Founder release" >&2
+          exit 1
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -49,6 +58,9 @@ jobs:
       - name: Install Google auth runtime
         run: python -m pip install --disable-pip-version-check --no-cache-dir google-auth requests
 
+      - name: Compile Google admin and read-only Search Console probe
+        run: python -m py_compile scripts/ga4-admin-control.py
+
       - name: Apply canonical GA4 configuration
         id: ga4
         run: python scripts/ga4-admin-control.py
@@ -65,6 +77,7 @@ jobs:
             echo "Measurement ID: ${{ steps.ga4.outputs.measurement_id }}"
             echo "Mode: ${GA4_APPLY}"
             echo "Outcome: ${{ steps.ga4.outcome }}"
+            echo "GSC properties visible to existing service identity: ${{ steps.ga4.outputs.gsc_readonly_visible }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report result to GA4 tracking issue

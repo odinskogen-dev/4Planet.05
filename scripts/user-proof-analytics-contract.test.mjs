@@ -1,4 +1,6 @@
 import test from "node:test";
+import ts from "typescript";
+import vm from "node:vm";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
@@ -109,6 +111,8 @@ test("PostHog reuses the same consented event spine and fails closed without con
 test("analytics is fail-closed to the approved production product-domain set", () => {
   for (const host of requiredAnalyticsHosts) assert.ok(analytics.includes(`\"${host}\"`), `analytics host missing: ${host}`);
   assert.match(analytics, /\.pages\.dev/);
+  assert.match(analytics, /\.workers\.dev/);
+  assert.match(analytics, /test\.4planet\.org/);
   assert.match(analytics, /localhost/);
   assert.match(analytics, /isAnalyticsHostAllowed/);
 });
@@ -207,4 +211,73 @@ test("discovery attribution records only bounded channel labels, never raw refer
   assert.match(analytics, /safeHostname\(document\.referrer\)/);
   assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}document\.referrer/);
   assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}window\.location\.search/);
+});
+
+
+test("OAuth credential-bearing URLs never start measurement", () => {
+  assert.match(analytics, /export function isSensitiveAnalyticsNavigation\(\): boolean/);
+  assert.match(analytics, /isSensitiveAnalyticsNavigation\(\) \|\| document\.getElementById/);
+  assert.match(analytics, /consent !== "granted" \|\| isSensitiveAnalyticsNavigation\(\)/);
+  assert.match(analytics, /readConsent\(\) !== "granted"[^\n]*isSensitiveAnalyticsNavigation\(\)/);
+  assert.match(analytics, /page_location:.*window\.location\.origin.*window\.location\.pathname/);
+  const source = analytics.match(/export function isSensitiveAnalyticsNavigation\(\): boolean \{[\s\S]*?\n\}/)?.[0];
+  assert.ok(source, "missing OAuth navigation guard");
+  const js = ts.transpileModule(source, { compilerOptions: {
+    target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS
+  }}).outputText;
+  const check = (url) => {
+    const context = { exports: {}, window: { location: new URL(url) } };
+    vm.runInNewContext(js, context);
+    return context.exports.isSensitiveAnalyticsNavigation();
+  };
+  for (const url of [
+    "https://id.4planet.org/login#access_token=TEST",
+    "https://id.4planet.org/login?auth_return=google",
+    "https://4planet.org/auth/4planet/callback#token_hash=TEST",
+    "https://id.4planet.org/oauth/consent?authorization_id=TEST",
+    "https://4planet.org/?code=TEST",
+    "https://4planet.org/?state=TEST",
+    "https://4planet.org/#refresh_token=TEST"
+  ]) assert.equal(check(url), true);
+  for (const url of [
+    "https://4planet.org/oslofjord",
+    "https://4planet.org/atlas?utm_source=chatgpt.com",
+    "https://4planetmagazine.com/magazine"
+  ]) assert.equal(check(url), false);
+});
+
+test("GA4 admin push never silently modifies the property", () => {
+  const yaml = read(".github/workflows/ga4-admin-control.yml");
+  assert.match(yaml, /default: audit/);
+  assert.match(yaml, /inputs\.mode == 'apply' && inputs\.founder_release == 'enig send'/);
+  assert.match(yaml, /Reject unapproved GA4 configuration writes/);
+  assert.doesNotMatch(yaml, /inputs\.mode == 'audit' && 'false' \|\| 'true'/);
+});
+
+
+test("measurement integrity isolates internal traffic and expands discovery attribution", () => {
+  assert.match(analytics, /INTERNAL_ANALYTICS_STORAGE_KEY/);
+  assert.match(analytics, /4p_internal/);
+  assert.match(analytics, /ignore_referrer:/);
+  assert.match(analytics, /INTERNAL_4PLANET/);
+  assert.match(analytics, /AUTH_OR_INFRA/);
+  assert.match(analytics, /SEARCH_ECOSIA/);
+  assert.match(analytics, /SEARCH_DUCKDUCKGO/);
+  assert.match(analytics, /AI_CLAUDE/);
+  assert.match(analytics, /AI_GEMINI/);
+  assert.match(analytics, /AI_COPILOT/);
+  assert.match(routeAnalytics, /isInternalOrInfrastructureReferrer/);
+});
+
+test("Search Console first-party probe is read-only, existing-identity scoped and fails closed", () => {
+  const python = read("scripts/ga4-admin-control.py");
+  const workflow = read(".github/workflows/ga4-admin-control.yml");
+  assert.match(python, /def audit_search_console_readonly\(info\):/);
+  assert.match(python, /https:\/\/www\.googleapis\.com\/auth\/webmasters\.readonly/);
+  assert.match(python, /reader\.get\(/);
+  assert.match(python, /https:\/\/www\.googleapis\.com\/webmasters\/v3\/sites/);
+  assert.match(python, /GSC_READONLY_STATUS=UNAVAILABLE_HTTP_/);
+  assert.doesNotMatch(python, /reader\.(put|post|patch|delete)\(/);
+  assert.match(workflow, /python -m py_compile scripts\/ga4-admin-control\.py/);
+  assert.match(workflow, /GSC properties visible to existing service identity/);
 });

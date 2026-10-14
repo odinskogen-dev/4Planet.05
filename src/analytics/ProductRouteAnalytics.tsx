@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { trackEvent } from "@/analytics/Analytics";
+import { isInternalOrInfrastructureReferrer, trackEvent } from "@/analytics/Analytics";
 import { trackMeaningfulUse, trackProductEntry, type ProductArea } from "@/analytics/ProductAnalytics";
 
 function canonicalHost(hostname: string): string {
@@ -27,7 +27,8 @@ function classifyProduct(pathname: string, hostname: string): ProductArea {
 function entryKind(): "direct" | "internal" | "shared_link" {
   if (typeof document === "undefined" || !document.referrer) return "direct";
   try {
-    return new URL(document.referrer).host === window.location.host ? "internal" : "shared_link";
+    const referrerHost = new URL(document.referrer).hostname;
+    return canonicalHost(referrerHost) === canonicalHost(window.location.hostname) || isInternalOrInfrastructureReferrer(referrerHost) ? "internal" : "shared_link";
   } catch {
     return "direct";
   }
