@@ -240,10 +240,43 @@ if (mode === "pr-main") {
     && files.includes("scripts/identity-csp-contract.test.mjs")
     && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
     && git(["hash-object", "public/_headers"]) === "3f4d0dfc836131462ad7bc02ac9dd9d551292ce4";
-  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix) {
+  const p0AtlasGreenDataHotfix = head === "release/atlas-green-data-live-20261014"
+    && manifest.status === "FOUNDER_ACCEPTED"
+    && manifest.boundedRelease === true
+    && manifest.releaseKind === "P0_ATLAS_GREEN_DATA_LAYERS"
+    && manifest.hotfixBranch === head
+    && manifest.sourceBranch === "king/test"
+    && manifest.testKingSha === "8dc330f67b6fd5488d8099b9b7c1a7c0be93c03d"
+    && manifest.priorLiveSha === "2c3152fcc5748a6a75bc2741f6ad45795ee1004b"
+    && manifest.founderDecisionRef?.includes("Founder 2026-10-14")
+    && JSON.stringify((manifest.hotfixPaths || []).slice().sort()) === JSON.stringify([
+      "functions/api/unesco-data.ts",
+      "src/data/unescoOpenData.ts",
+      "src/earth/World.tsx",
+      "src/earth/atlasSourceControl.ts",
+      "src/earth/layers.ts",
+      "tests/e2e/atlas-green-data.spec.ts"
+    ].sort())
+    && JSON.stringify(files.filter(isProductFacing).sort()) === JSON.stringify([
+      "functions/api/unesco-data.ts",
+      "src/data/unescoOpenData.ts",
+      "src/earth/World.tsx",
+      "src/earth/atlasSourceControl.ts",
+      "src/earth/layers.ts",
+      "tests/e2e/atlas-green-data.spec.ts"
+    ].sort())
+    && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
+    && files.includes(".github/workflows/atlas-green-data-live-release.yml")
+    && git(["hash-object", "functions/api/unesco-data.ts"]) === "f730131668c7e4482b494f1f8e3e6a653901309e"
+    && git(["hash-object", "src/data/unescoOpenData.ts"]) === "f49af033507f789920c37b56e2ae352e73fd37e5"
+    && git(["hash-object", "src/earth/World.tsx"]) === "1912175f71f5aaa1de65895d60e0f6d16e9b1bd7"
+    && git(["hash-object", "src/earth/atlasSourceControl.ts"]) === "b24ce6f01c0446d009b8c62b5086890ca6305f9a"
+    && git(["hash-object", "src/earth/layers.ts"]) === "5b79d44e26e5220f7707fe7841e8cd5e2dbab339"
+    && git(["hash-object", "tests/e2e/atlas-green-data.spec.ts"]) === "f5b110d3f1191b0502734e48021648239f32415b";
+  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix && !p0AtlasGreenDataHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
-  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix || p0IdCspHotfix) && !draft) validateLivePromotion();
+  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix || p0IdCspHotfix || p0AtlasGreenDataHotfix) && !draft) validateLivePromotion();
 }
 
 if (mode === "main-push" && files.some(isProductFacing)) validateLivePromotion();
