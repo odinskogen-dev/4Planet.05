@@ -27,7 +27,8 @@ function meta(pathname) {
   return {title:"S4PIENS — How human systems work",desc:"Start with a human need and follow the real systems behind it — food, energy and industry — to the places, living systems, problems and solutions they connect to."};
 }
 export default {
- async fetch(request, env, ctx) {\n  const api=await dispatchReleaseApi(request,env,ctx); if(api) return api;
+ async fetch(request, env, ctx) {
+  const api=await dispatchReleaseApi(request,env,ctx); if(api) return api;
   const incoming=new URL(request.url);
   if(!ALLOWED.has(incoming.hostname) && !incoming.hostname.endsWith(".workers.dev")) return new Response("Not found",{status:404});
   if(incoming.hostname==="www.s4piens.com"){incoming.hostname="s4piens.com";return Response.redirect(incoming.toString(),308);}
