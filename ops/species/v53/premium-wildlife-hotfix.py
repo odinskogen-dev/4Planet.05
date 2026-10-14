@@ -292,6 +292,16 @@ template_source=template_source.replace(original_robots,public_profile_robots,1)
 p.write_text(template_source)
 print("CLAUDE_SEO_PUBLIC_HOST_HYDRATION_INDEX_LABS_NOINDEX_PASS")
 
+# Unique, honest OG fallback uses Claude's OWN SEO metadata, not a new UI.
+# An editorially vetted photograph in page.hero always wins.
+replace_once(template,
+    '      image: image?.url,',
+    '      image: image?.url || ' + chr(96) + 'https://4species.com/species-og/v1/${page.slug}.png' + chr(96) + ',')
+replace_once(template,
+    '      imageAlt: image?.alt,',
+    '      imageAlt: image?.alt || page.identity.commonName + " (" + page.identity.scientificName + ") — 4PLANET SPECIES",')
+print("SPECIES_CLAUDE_NATIVE_SOCIAL_METADATA_FALLBACK_READY")
+
 # SOURCE INTEGRITY: no replacement source engine. Assert Claude references,
 # Glance source superscripts, and Sources-and-limits list remain present.
 source=Path(template).read_text()
