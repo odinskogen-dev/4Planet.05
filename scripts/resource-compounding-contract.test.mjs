@@ -14,7 +14,7 @@ test("GEM Atlas slice is bounded and exposes ownership without overclaiming",asy
   assert.match(layer,/country=Norway/);
   assert.match(layer,/OWNER/);
   assert.match(layer,/ownershipEndpoint/);
-  assert.doesNotMatch(layer,/owner ≠ responsibility/i); // UI uses uppercase factual boundaries instead of Unicode inequality.
+  assert.match(layer,/owner ≠ responsibility/i);
 });
 
 test("S4PIENS owns human-system ATLAS domain; resource extension never names 4SAPIEN",async()=>{
