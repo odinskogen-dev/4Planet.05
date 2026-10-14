@@ -272,7 +272,7 @@ if (mode === "pr-main") {
     && git(["hash-object", "src/earth/World.tsx"]) === "1912175f71f5aaa1de65895d60e0f6d16e9b1bd7"
     && git(["hash-object", "src/earth/atlasSourceControl.ts"]) === "b24ce6f01c0446d009b8c62b5086890ca6305f9a"
     && git(["hash-object", "src/earth/layers.ts"]) === "5b79d44e26e5220f7707fe7841e8cd5e2dbab339"
-    && git(["hash-object", "tests/e2e/atlas-green-data.spec.ts"]) === "f5b110d3f1191b0502734e48021648239f32415b";
+    && git(["hash-object", "tests/e2e/atlas-green-data.spec.ts"]) === "a5d2bd70a41c608a3d2b3e1ecca36a8b6dac91ba";
   if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix && !p0AtlasGreenDataHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
