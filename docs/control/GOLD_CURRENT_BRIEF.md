@@ -1,3 +1,9 @@
+# EXPO-13 — GA4 Admin automatic-write prevention / 14 October 2026
+
+**STATUS:** HEIR security fix / independent CI, QA and readback pending. **HUMAN VALUE:** Analysis remains trustworthy without accidental third-party account mutation on routine code push. **PRIMARY ACTION:** GA4 Admin push is strictly audit/read-only; a manual APPLY requires exact 'enig send' Founder release input and explicit choice. **REUSE:** existing GA4 property, scripts, GitHub workflow and issue #173. **TRUTH:** No GA4 configuration was changed by this source patch and LIVE/GA4 provider state remains unverified. **BASE / ROLLBACK:** king/test@7aff9971073234b82f653c41e358ae43a5bcaf3d.
+
+---
+
 # EXPO-13 — OAuth-safe analytics P0 / 14 October 2026
 
 **STATUS:** HEIR CODE ONLY, independent security Gold and LIVE verification required.

@@ -243,3 +243,11 @@ test("OAuth credential-bearing URLs never start measurement", () => {
     "https://4planetmagazine.com/magazine"
   ]) assert.equal(check(url), false);
 });
+
+test("GA4 admin push never silently modifies the property", () => {
+  const yaml = read(".github/workflows/ga4-admin-control.yml");
+  assert.match(yaml, /default: audit/);
+  assert.match(yaml, /inputs\.mode == 'apply' && inputs\.founder_release == 'enig send'/);
+  assert.match(yaml, /Reject unapproved GA4 configuration writes/);
+  assert.doesNotMatch(yaml, /inputs\.mode == 'audit' && 'false' \|\| 'true'/);
+});

@@ -6,11 +6,15 @@ on:
       mode:
         description: Audit or apply the canonical 4PLANET GA4 configuration
         required: true
-        default: apply
+        default: audit
         type: choice
         options:
           - audit
           - apply
+      founder_release:
+        description: "For apply only: exact action-specific approval, enig send"
+        required: false
+        type: string
   push:
     branches: [king/test]
     paths:
@@ -27,8 +31,13 @@ jobs:
     env:
       GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
       GA4_PROPERTY_ID: "551422989"
-      GA4_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'audit' && 'false' || 'true' }}
+      GA4_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.founder_release == 'enig send' && 'true' || 'false' }}
     steps:
+      - name: Reject unapproved GA4 configuration writes
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'apply' && inputs.founder_release != 'enig send' }}
+        run: |
+          echo "GA4 APPLY requires explicit Founder release" >&2
+          exit 1
       - name: Checkout
         uses: actions/checkout@v4
 
