@@ -1,0 +1,36 @@
+name: SPECIES 100 — Existing 21 Gold Red-Team + AI Search
+on:
+  push:
+    branches: [sprint/species-100-gold-20261014]
+    paths: [.github/workflows/species-100-gold-audit.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Audit all existing 21 live articles, source targets, SEO, and AI crawler access
+        run: node ops/species/v53/species-gold-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-21-live-gold-audit-20261014
+          path: qa-output/species-gold-20261014.json
+          retention-days: 21
+      - name: Summarise actual verified defects; do not claim Gold
+        if: success()
+        shell: bash
+        run: |
+          node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const q=require('./qa-output/species-gold-20261014.json');
+          console.log('## SPECIES — existing 21 public profiles, factual red-team');
+          console.log('| Check | Observed |\n|---|---|');
+          for(const [k,v] of Object.entries(q.summary))console.log(`| ${k} | ${v} |`);
+          console.log(`\n**AI-bot HTTP**: ${q.searchBots.map(b=>b.agent+':'+b.pageHttp).join(', ')}.`);
+          console.log(`\n**Sitemap URLs**: ${q.sitemap.total}, missing ${q.sitemap.speciesMissing.length}.`);
+          console.log('\n**This is not GOLD:** science/foto rights and copy signoff require editorial checks.');
+          NODE
