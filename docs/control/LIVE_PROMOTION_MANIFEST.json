@@ -2,18 +2,23 @@
   "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "9f4a917d6837953e494d15d927697316119df968",
-  "priorLiveSha": "8c78be69266f2bf6ecae4b3147fe9b6791c85375",
+  "testKingSha": "8dc330f67b6fd5488d8099b9b7c1a7c0be93c03d",
+  "priorLiveSha": "2c3152fcc5748a6a75bc2741f6ad45795ee1004b",
   "releaseCommitSha": null,
   "boundedRelease": true,
-  "releaseKind": "P0_ID_CLOUDFLARE_CSP_AUTH",
-  "hotfixBranch": "release/p0-id-cloudflare-csp-20261009",
+  "releaseKind": "P0_ATLAS_GREEN_DATA_LAYERS",
+  "hotfixBranch": "release/atlas-green-data-live-20261014",
   "hotfixPaths": [
-    "public/_headers"
+    "functions/api/unesco-data.ts",
+    "src/data/unescoOpenData.ts",
+    "src/earth/World.tsx",
+    "src/earth/atlasSourceControl.ts",
+    "src/earth/layers.ts",
+    "tests/e2e/atlas-green-data.spec.ts"
   ],
-  "founderDecisionRef": "Founder 2026-10-08: explicitly authorised urgent ID production repair. Founder 2026-10-09: Google returns to login after account selection; resolve ASAP without changes to 4SAPIEN.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/427",
-  "rollbackRef": "main@8c78be69266f2bf6ecae4b3147fe9b6791c85375",
+  "founderDecisionRef": "Founder 2026-10-14: explicitly authorised pushing the new curated data layers to LIVE ATLAS now, with the existing UX/design preserved and no damage to current value.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/456",
+  "rollbackRef": "main@2c3152fcc5748a6a75bc2741f6ad45795ee1004b",
   "releaseControlCommit": true,
-  "note": "Exact public/_headers CSP blob 3f4d0dfc836131462ad7bc02ac9dd9d551292ce4 from test king. Adds only https://ghvdzetmplqkdtfqiror.supabase.co to connect-src (2 existing policies). Retains all other CSP directives, no 4SAPIEN files changed. Live CSP header + browser auth bridge must pass before DONE."
+  "note": "Exactly bounded LIVE carrier from current main. Adds only the curated UNESCO/OBIS Atlas data path and release proof. Four layers remain opt-in; existing default Atlas view and map engine are preserved. Production claim requires PR #456 release gate and post-merge runtime readback."
 }
