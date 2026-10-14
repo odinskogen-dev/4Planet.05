@@ -75,23 +75,40 @@ jobs:
           npm run build
           npm run test:smoke
 
-      - name: Deploy exact immutable Pages review artifact
+      - name: Deploy exact Pages release artifact and resolve Functions-capable origin
         shell: bash
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch founder-4nation-s4piens-20261014 --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee artifacts/release/pages-deploy.txt
-          url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' artifacts/release/pages-deploy.txt | head -n1 || true)
-          [ -n "$url" ] || { echo "IMMUTABLE_PAGES_URL_NOT_FOUND"; exit 10; }
-          echo "PREVIEW_URL=$url" >> "$GITHUB_ENV"
-          echo "$url" > artifacts/release/immutable-preview-url.txt
-          echo "IMMUTABLE_PREVIEW=$url"
+          static_url=$(grep -Eo 'https://[a-z0-9]{8}[.]4planet-05[.]pages[.]dev' artifacts/release/pages-deploy.txt | head -n1 || true)
+          alias_url=$(sed -n 's/.*Deployment alias URL: \(https:\/\/[^[:space:]]*\.4planet-05\.pages\.dev\).*/\1/p' artifacts/release/pages-deploy.txt | head -n1 || true)
+          [ -n "$static_url" ] || { echo "IMMUTABLE_PAGES_URL_NOT_FOUND"; exit 10; }
+          [ -n "$alias_url" ] || alias_url="$static_url"
+          echo "STATIC_PREVIEW_URL=$static_url" >> "$GITHUB_ENV"
+          echo "ALIAS_PREVIEW_URL=$alias_url" >> "$GITHUB_ENV"
+          printf '%s\n' "$static_url" > artifacts/release/immutable-preview-url.txt
+          printf '%s\n' "$alias_url" > artifacts/release/branch-preview-url.txt
+          echo "IMMUTABLE_STATIC_PREVIEW=$static_url"
+          echo "BRANCH_PREVIEW=$alias_url"
 
-      - name: Real-source verification on immutable artifact
+      - name: Real-source verification on deployed Pages Functions
         shell: bash
         run: |
           set -euo pipefail
+          runtime=""
+          for candidate in "$STATIC_PREVIEW_URL" "$ALIAS_PREVIEW_URL"; do
+            code=$(curl -sS --max-time 30 -o artifacts/release/function-probe.json -w '%{http_code}' "$candidate/api/worldbank-country" || true)
+            if [ "$code" = 400 ] && jq -e '.error=="INVALID_COUNTRY_ISO3"' artifacts/release/function-probe.json >/dev/null 2>&1; then
+              runtime="$candidate"; break
+            fi
+            echo "FUNCTION_PROBE candidate=$candidate http=$code"
+          done
+          [ -n "$runtime" ] || { echo "PAGES_FUNCTIONS_ROUTE_UNAVAILABLE"; exit 12; }
+          echo "PREVIEW_URL=$runtime" >> "$GITHUB_ENV"
+          echo "$runtime" > artifacts/release/functions-capable-preview-url.txt
+          echo "FUNCTIONS_CAPABLE_PREVIEW=$runtime"
           check_ok() { name="$1"; url="$2"; out="artifacts/release/$name.json"; curl -fsS --max-time 45 "$url" > "$out"; jq -e '.ok==true' "$out" >/dev/null; echo "$name=PASS"; }
-          check_ok worldbank-nor "$PREVIEW_URL/api/worldbank-country?country=NOR"
+          check_ok worldbank-nor "$runtime/api/worldbank-country?country=NOR"
           check_ok worldbank-rank "$PREVIEW_URL/api/worldbank-country?rank=1"
           check_ok country-identity-no "$PREVIEW_URL/api/country-identity?iso2=NO"
           check_ok unesco-wdi-no "$PREVIEW_URL/api/unesco-country?dataset=wdi001&country=NO"
