@@ -16,6 +16,7 @@ on:
       - "tests/e2e/atlas-green-data.spec.ts"
       - "supabase/migrations/20261013120500_naturebrain_unesco_source_family_v01.sql"
       - "supabase/migrations/20261013133000_naturebrain_green_un_data_sources_v01.sql"
+      - "supabase/migrations/20261014122500_naturebrain_country_public_sources_v01.sql"
       - "docs/control/GREEN_DATA_SOURCE_MATRIX_20261013.md"
       - ".github/workflows/green-data-atlas-candidate.yml"
   pull_request:
@@ -33,6 +34,7 @@ on:
       - "tests/e2e/atlas-green-data.spec.ts"
       - "supabase/migrations/20261013120500_naturebrain_unesco_source_family_v01.sql"
       - "supabase/migrations/20261013133000_naturebrain_green_un_data_sources_v01.sql"
+      - "supabase/migrations/20261014122500_naturebrain_country_public_sources_v01.sql"
       - "docs/control/GREEN_DATA_SOURCE_MATRIX_20261013.md"
       - ".github/workflows/green-data-atlas-candidate.yml"
   workflow_dispatch:
