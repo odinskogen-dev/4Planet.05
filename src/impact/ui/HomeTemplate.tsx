@@ -243,9 +243,10 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
         </div>
       </section>
 
-      <section className="iu-section iu-section--method" id="method" aria-labelledby="method-title">
+      <section className="iu-section iu-section--method" id="method" aria-labelledby="method-head">
         <div className="iu-wrap">
           <SectionHead
+            id="method-head"
             title="How records are reviewed"
             lead="There is no single green “verified” badge. Each record shows how far it has been checked — and the states 4PLANET has not earned yet stay reserved."
           />
@@ -263,7 +264,7 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
               })}
             </ol>
             <div className="iu-method__rules">
-              <h3 id="method-title">Kept separate, always</h3>
+              <h3>Kept separate, always</h3>
               <ul>{TRUST_SEPARATIONS.map((line) => <li key={line}>{line}</li>)}</ul>
               <h3>Independence</h3>
               <ul>{INDEPENDENCE_RULES.map((line) => <li key={line}>{line}</li>)}</ul>

@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: impact-universe-sandbox-proof
@@ -91,6 +92,76 @@ jobs:
       - name: Record verdict
         if: success()
         run: printf 'IMPACT UNIVERSE SANDBOX PROOF PASS\nSHA=%s\nURL=%s/impact\nLIVE_AUTHORITY=ABSENT\n' "$EXACT_SHA" "$BASE_URL" > impact-sandbox-verdict.txt
+
+      - name: Report exact-SHA evidence to the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          cat > report.mjs <<'JS'
+          import fs from "node:fs";
+          import { chromium } from "playwright";
+          const base = process.env.BASE_URL;
+          const sha = process.env.EXACT_SHA;
+          const key = "sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE";
+          const rpc = async (name) => {
+            const r = await fetch(`https://ghvdzetmplqkdtfqiror.supabase.co/rest/v1/rpc/${name}`, { method: "POST", headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: "{}" });
+            if (!r.ok) return `${name}: HTTP ${r.status}`;
+            const d = await r.json();
+            return `${name}: ${d.version} · projects=${(d.projects || []).length}${d.issues ? ` · issues=${d.issues.length} · actors=${d.actors.length}` : ""}`;
+          };
+          const probes = [await rpc("impact_lan_v02"), await rpc("impact_lan_gold_v01")];
+          let stats = "no results.json";
+          try { const s = JSON.parse(fs.readFileSync("artifacts/atlas-gold/results.json", "utf8")).stats; stats = `expected=${s.expected} unexpected=${s.unexpected} skipped=${s.skipped} flaky=${s.flaky}`; } catch {}
+          const build = fs.existsSync("impact-sandbox-build.json") ? fs.readFileSync("impact-sandbox-build.json", "utf8").trim() : "missing";
+          const browser = await chromium.launch();
+          const rows = [];
+          const thumbs = [];
+          const routes = ["/impact", "/impact/project/florida-coral-restoration", "/impact/actors/the-ocean-cleanup", "/impact/issue/reef-degradation", "/impact/solution/forest-garden-agroforestry"];
+          for (const [w, h] of [[390, 844], [1440, 900]]) {
+            const page = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 500, hasTouch: w < 500 });
+            for (const route of routes) {
+              await page.goto(base + route, { waitUntil: "networkidle" }).catch(() => undefined);
+              await page.waitForTimeout(1200);
+              const info = await page.evaluate(() => ({
+                h1: document.querySelector("h1")?.textContent?.trim(),
+                tiles: document.querySelectorAll(".iu-section--index .iu-tile").length,
+                claims: document.querySelectorAll(".iu-claim").length,
+                overflow: document.documentElement.scrollWidth - window.innerWidth,
+                provenance: document.querySelector(".iu-provenance")?.textContent?.trim(),
+              }));
+              rows.push(`| ${w} | \`${route}\` | ${info.h1 ?? "—"} | ${info.tiles} | ${info.claims} | ${info.overflow} |`);
+              if (w === 390 && (route === "/impact" || route.includes("/project/"))) {
+                for (const y of route === "/impact" ? [0, 560] : [0]) {
+                  await page.evaluate((top) => window.scrollTo(0, top), y);
+                  await page.waitForTimeout(500);
+                  const buf = await page.screenshot({ type: "jpeg", quality: 30 });
+                  thumbs.push(`${route}@${y}:${buf.toString("base64")}`);
+                }
+              }
+              if (route === "/impact" && w === 1440) rows.push(`| | provenance | ${info.provenance ?? "—"} | | | |`);
+            }
+            await page.close();
+          }
+          await browser.close();
+          const body = [
+            `### IMPACT Universe sandbox proof — \`${sha.slice(0, 12)}\``,
+            `Sandbox: ${base}/impact · LIVE authority: **absent** · status: OUTPUT RECEIVED / AWAITING GPT AUDIT`,
+            "", "**Exact build**", "```json", build, "```",
+            "**Live NATUREBRAIN probe (from the runner)**", ...probes.map((p) => `- ${p}`),
+            "", `**Playwright** ${stats}`, "",
+            "| width | route | h1 | index tiles | claims | overflow px |", "|---|---|---|---|---|---|", ...rows,
+            "", `<!-- impact-thumbs ${thumbs.join(" ")} -->`,
+          ].join("\n");
+          fs.writeFileSync("pr-report.md", body.slice(0, 64000));
+          JS
+          node report.mjs
+          pr=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:claude/impact-universe-01&state=open" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const a=JSON.parse(d);console.log(a[0]?.number||"")})')
+          if [ -n "$pr" ]; then
+            node -e 'process.stdout.write(JSON.stringify({body:require("fs").readFileSync("pr-report.md","utf8")}))' > comment.json
+            curl -fsS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Content-Type: application/json" "https://api.github.com/repos/${{ github.repository }}/issues/$pr/comments" --data @comment.json > /dev/null
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
