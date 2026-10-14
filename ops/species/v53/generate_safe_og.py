@@ -22,7 +22,7 @@ dest.mkdir(parents=True,exist_ok=True)
 made=[]
 def upsert_meta(content,field,name,value):
     tag='<meta '+field+'="'+name+'" content="'+html.escape(value,quote=True)+'" />'
-    pattern=r'<meta\s+'+re.escape(field)+r'=["\\']'+re.escape(name)+r'["\\'][^>]*>'
+    pattern=r'<meta\s+'+re.escape(field)+r'="'+re.escape(name)+r'"[^>]*>'
     if re.search(pattern,content,flags=re.I):return re.sub(pattern,lambda _:tag,content,count=1,flags=re.I)
     assert "</head>" in content
     return content.replace("</head>","    "+tag+"\n</head>",1)
