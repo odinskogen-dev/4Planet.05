@@ -10,7 +10,13 @@ test("IndexNow is prepared but fails closed without explicit Founder release", (
   assert.match(indexNow, /FOUNDER_INDEXNOW_RELEASE/);
   assert.match(indexNow, /ENIG_INDEXNOW/);
   assert.match(indexNow, /https:\/\/api\.indexnow\.org\/indexnow/);
-  assert.match(indexNow, /item\.indexable === true/);
+  // Verify the canonical sitemap as the sole eligible URL source; no submission here.
+  assert.match(indexNow, /sitemapPath/);
+  assert.match(indexNow, /sitemap\.matchAll/);
+  assert.match(indexNow, /new URL\(url\)\.origin === origin/);
+  assert.match(indexNow, /new Set\(urlList\)/);
+  assert.match(indexNow, /uniqueUrls\.length === 0/);
+  assert.match(indexNow, /release !== RELEASE_TOKEN/);
   assert.equal(read("public/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt").trim(), "8f4c2d91a7b64e3fa1c9d0b6e5274a83");
 });
 
@@ -142,3 +148,6 @@ test("P0 crawler policy excludes private OS without blocking public Oslofjord", 
 
 
 test("IndexNow canonical sitemap source",()=>{const indexNow=read("scripts/submit-indexnow.mjs");assert.ok(indexNow.includes("public"));assert.ok(indexNow.includes("sitemap.xml"));assert.ok(indexNow.includes("matchAll"));});
+
+
+test("about trailing slash canonical",()=>{const redirects=read("public/_redirects");assert.ok(redirects.includes("/about/  /about  301"));});
