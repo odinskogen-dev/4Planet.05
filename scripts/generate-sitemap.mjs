@@ -98,7 +98,20 @@ fs.writeFileSync(path.join(publicDir, "rss.xml"), rss, "utf8");
 const newsSitemapDeclaration = newsStories.length > 0
   ? `Sitemap: ${absoluteUrl(origin, "/news-sitemap.xml")}\n`
   : "";
-const robots = `User-agent: OAI-SearchBot\nAllow: /\n\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: Bingbot\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /labs\nDisallow: /os\nDisallow: /sandbox\nDisallow: /checkout\nDisallow: /api\nDisallow: /4nation\n\nSitemap: ${absoluteUrl(origin, "/sitemap.xml")}\n${newsSitemapDeclaration}`;
+// A single restricted-path policy applies to all recognised crawlers.
+// /os is private; /oslofjord remains a public, discoverable path.
+const robotsDisallow = ["/labs", "/os$", "/os/", "/os?", "/sandbox", "/checkout", "/api", "/4nation"];
+const robotsGroup = (agent) => [
+  "User-agent: " + agent,
+  "Allow: /",
+  ...robotsDisallow.map((route) => "Disallow: " + route),
+  "",
+].join("\n");
+const robots = [
+  ...["OAI-SearchBot", "Googlebot", "Bingbot", "*"].map(robotsGroup),
+  "Sitemap: " + absoluteUrl(origin, "/sitemap.xml"),
+  newsSitemapDeclaration.trimEnd(),
+].filter(Boolean).join("\n") + "\n";
 fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
 
 console.log(`Generated sitemap.xml with ${routes.length} URLs, news-sitemap.xml with ${newsStories.length} fresh stories, rss.xml with ${stories.length} story items for ${origin}`);

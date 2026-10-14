@@ -1,3 +1,22 @@
+# EXPO-03 — OSLOFJORD PUBLIC CRAWLER SCOPE / 14 OCT 2026
+
+**STATUS:** BOUNDED INFRASTRUCTURE DRAFT / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person searching for Oslofjord nature and restoration should reach public evidence, not a blocked prefix.
+**ONE THING TO UNDERSTAND:** /os is a private operations path; /oslofjord is a public ecological place.
+**PRIMARY ACTION:** make /os inaccessible to crawlers without excluding /oslofjord.
+**SECONDARY DEPTH:** Googlebot, Bingbot, OAI-SearchBot and wildcard all inherit identical restrictions; generator matches static file.
+**P1 / P2 / P3 / P4:** public discovery / reliable URL scope / access to evidence / deeper source links.
+**REMOVE:** overbroad Disallow: /os and exceptional unrestricted crawler groups.
+**REUSE:** existing robots file, sitemap generator, discovery SEO test, BRAND-6 / EXPO-03 and 4PLANET HEIR.
+**TRUTH BOUNDARY:** crawler policy is not server access control; draft PR and CI are not production indexing or acquired real users.
+**MOBILE RISK:** no visual change; deployed mobile/browser crawl checks still required.
+**HUMAN SUCCESS:** /os remains excluded for all listed crawlers, /oslofjord remains eligible for search discovery.
+**DONOR DECISION:** no historical donor, bounded correction of existing infrastructure only.
+**BASE / ROLLBACK:** king/test@74a6b7987d0675cc21c3ae504cb65789f78901a0; this OPS-only support branch is non-authoritative and never automatically releases.
+**MAKER / JUDGE:** independent exact-SHA review and production release authority remain mandatory.
+
+---
+
 # 4SAPIEN AUTHENTICATED EVENT DELIVERY RECEIPTS — 14 OCT 2026
 
 **STATUS:** RETURNED LIFE-OS-01 QA_CORRECT CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
