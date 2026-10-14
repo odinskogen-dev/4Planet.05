@@ -41,4 +41,5 @@ Disallow: /sandbox
 Disallow: /checkout
 Disallow: /api
 Disallow: /4nation
+
 Sitemap: https://4planet.org/sitemap.xml
