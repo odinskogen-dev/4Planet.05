@@ -1,3 +1,17 @@
+# LSI / EXPO-04 — CONSERVATIVE PUBLIC SPECIES TRUTH GATE / 14 OCTOBER 2026
+
+**STATUS:** HEIR CANDIDATE / LIVE UNCHANGED / INDEPENDENT SCIENTIFIC GOLD AND PRODUCT QA REQUIRED.
+**USER ARRIVES:** For authoritative biological understanding; a species route must not imply undocumented ecological beneficiaries.
+**ROOT CAUSE:** Generic function→service→recipient and failure-cascade paths were applied to all species, creating e.g. polar bear/orca predation→forests/wild plants without species-specific claim/source/context review.
+**ACTION:** Hide unreviewed causal-path widgets from public species route, preserve underlying graph and its code unchanged for evidentiary remediation, retain conservation, sources, biology, reviewed claim panel, ATLAS connections and threats/solutions.
+**TRUTH:** This blocks one misleading public presentation, not all unsourced links on other routes; does not claim reviewed provenance or scientific Gold.
+**DESIGN:** Reuse existing Section, Link and typography, no new visual tokens. Source-specific paths may return only after NATUREBRAIN claim/evidence rights and scientific review.
+**HUMAN SUCCESS:** A visitor receives sourced biological content rather than a false precise impact graph; truth uncertainty is visible.
+**MOBILE:** Existing responsive public template unchanged aside from bounded narrative; desktop/mobile browser Gold pending.
+**BASE / ROLLBACK:** king/test@eaafb4b327031bd1a4e6d4371dc1dca73b04b3e6; no LIVE action. **OWNER:** LSI / NATUREBRAIN science steward; independent Gold.
+
+---
+
 # 4NATION COUNTRY OBJECT 02 — UNDERSTAND ANY COUNTRY — 14 OCT 2026
 
 **STATUS:** REGISTERED SANDBOX (`claude/4nation-country-object-01`, PR #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.

@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { speciesList, getSpeciesBySlug } from "@/data/species";
 import { Section, DataRow, HumanNote, StatusBadge } from "@/components/ui";
-import { RelationshipChain } from "@/components/RelationshipChain";
-import { FailureCascade } from "@/components/FailureCascade";
 import { SpeciesScoreGrid } from "@/components/SpeciesScoreGrid";
 import { SpeciesThreatMatrix } from "@/components/SpeciesThreatMatrix";
 import { SpeciesSolutionMatrix } from "@/components/SpeciesSolutionMatrix";
@@ -93,14 +91,20 @@ export default function SpeciesProfilePage({
 
       <NodeTrustSummary nodeId={s.id} />
 
-      {/* RELATIONSHIP CHAIN — the dominant narrative, surfaced first */}
-      <Section
-        index="01"
-        title="How this species supports living systems"
-        hint="Functions → Services → Recipients"
-      >
-        <RelationshipChain species={s} />
-        <FailureCascade nodeId={s.id} />
+      {/* Multi-hop generic graph paths are not species-specific causal evidence.
+          Keep the reusable graph internally. Public chains require source/review
+          qualification per edge and species context before reactivation. */}
+      <Section index="01" title="Ecological connections" hint="Evidence status">
+        <p className="max-w-2xl text-[14px] leading-relaxed text-muted">
+          This species is part of a connected living system. We are reviewing
+          species-specific evidence for individual ecological relationships.
+          We do not yet present modelled multi-step pathways as established
+          causal effects. Explore the species facts, conservation pressures,
+          limitations and source records below.
+        </p>
+        <Link href="/trust" className="mt-4 inline-block text-[13px] underline underline-offset-4">
+          How 4PLANET reviews ecological evidence
+        </Link>
       </Section>
 
       {/* Identity */}
