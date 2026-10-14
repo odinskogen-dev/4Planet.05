@@ -2,6 +2,23 @@ export const COL_XR_SOURCE_AUTHORITY = "Catalogue of Life eXtended Release";
 export const MIN_AUTO_REGISTRY_CONFIDENCE = 95;
 
 export type TaxonomyIdentityReviewState = "ELIGIBLE_FOR_TEST_REGISTRY" | "REVIEW_REQUIRED";
+export type TaxonomyAssertionLinkState = "EXPLICIT_EQUIVALENCE_ELIGIBLE" | "REVIEW_REQUIRED";
+
+export interface AuthorityTaxonAssertion {
+  sourceAuthority?: string;
+  authorityVersion?: string;
+  scientificName?: string;
+  rank?: string;
+  commonName?: string;
+  ambiguous?: boolean;
+}
+
+export interface AuthorityTaxonAssertionReview {
+  state: TaxonomyAssertionLinkState;
+  reasons: string[];
+  left: AuthorityTaxonAssertion;
+  right: AuthorityTaxonAssertion;
+}
 
 export interface TaxonomyMatchReviewInput {
   sourceAuthority: string;
@@ -37,6 +54,11 @@ export interface TaxonomyMatchReview {
   synonym: boolean;
 }
 
+const normaliseText = (value?: string) => {
+  const text = String(value ?? "").trim();
+  return text || undefined;
+};
+
 const normaliseRank = (value?: string) => {
   const rank = String(value ?? "").trim().toUpperCase();
   return rank || undefined;
@@ -51,6 +73,56 @@ const normaliseIssues = (issues?: unknown[]) =>
   (Array.isArray(issues) ? issues : [])
     .map((issue) => String(issue ?? "").trim().toUpperCase())
     .filter(Boolean);
+
+const normaliseAuthorityAssertion = (assertion: AuthorityTaxonAssertion): AuthorityTaxonAssertion => ({
+  sourceAuthority: normaliseText(assertion.sourceAuthority),
+  authorityVersion: normaliseText(assertion.authorityVersion),
+  scientificName: normaliseText(assertion.scientificName),
+  rank: normaliseRank(assertion.rank),
+  commonName: normaliseText(assertion.commonName),
+  ambiguous: Boolean(assertion.ambiguous),
+});
+
+/**
+ * Fail-closed gate for linking two authority-owned taxonomy assertions.
+ *
+ * This gate never invents a synonym across authorities. It only permits an
+ * explicit equivalence candidate when both assertions carry the same
+ * authority, authority version, scientific name, and rank. Every assertion is
+ * returned with its own provenance so downstream products can preserve the
+ * disagreement instead of collapsing it into one identity.
+ */
+export function reviewAuthorityTaxonomyLink(
+  leftInput: AuthorityTaxonAssertion,
+  rightInput: AuthorityTaxonAssertion,
+): AuthorityTaxonAssertionReview {
+  const left = normaliseAuthorityAssertion(leftInput);
+  const right = normaliseAuthorityAssertion(rightInput);
+  const reasons: string[] = [];
+
+  if (!left.sourceAuthority || !right.sourceAuthority) reasons.push("SOURCE_AUTHORITY_UNKNOWN");
+  if (!left.authorityVersion || !right.authorityVersion) reasons.push("AUTHORITY_VERSION_UNKNOWN");
+  if (!left.scientificName || !right.scientificName) reasons.push("SCIENTIFIC_NAME_UNKNOWN");
+  if (!left.rank || !right.rank) reasons.push("RANK_UNKNOWN");
+  if (left.ambiguous || right.ambiguous) reasons.push("AMBIGUOUS_ASSERTION");
+  if (left.sourceAuthority && right.sourceAuthority && left.sourceAuthority !== right.sourceAuthority) {
+    reasons.push("CROSS_AUTHORITY_ASSERTIONS");
+  }
+  if (left.authorityVersion && right.authorityVersion && left.authorityVersion !== right.authorityVersion) {
+    reasons.push("AUTHORITY_VERSION_CONFLICT");
+  }
+  if (left.scientificName && right.scientificName && left.scientificName !== right.scientificName) {
+    reasons.push("SCIENTIFIC_NAME_CONFLICT");
+  }
+  if (left.rank && right.rank && left.rank !== right.rank) reasons.push("RANK_CONFLICT");
+
+  return {
+    state: reasons.length ? "REVIEW_REQUIRED" : "EXPLICIT_EQUIVALENCE_ELIGIBLE",
+    reasons: [...new Set(reasons)],
+    left,
+    right,
+  };
+}
 
 /**
  * 4PLANET policy gate for TEST identity persistence.
