@@ -1,0 +1,79 @@
+name: SPECIES Search and Embed Read-Only Audit 20261014
+on:
+  push:
+    branches: [audit/species-seo-discovery-embed-20261014]
+    paths: [.github/workflows/species-search-embed-audit-20261014.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install Chromium browser
+        shell: bash
+        run: |
+          set -e
+          npm install --prefix /tmp/species-audit playwright@1.56.0
+          /tmp/species-audit/node_modules/.bin/playwright install --with-deps chromium
+      - name: Audit canonical HTML and hydrated SEO on LIVE website
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/species-audit/node_modules/playwright/index.mjs';
+          const origin='https://4species.com';
+          const urls=['/','/orca','/lion','/tiger','/gray-wolf','/giant-panda','/blue-whale','/black-rhinoceros','/monarch-butterfly','/explore','/group/mammals','/about','/quiz','/sitemap.xml','/robots.txt'];
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          for(const path of urls){
+            const response=await fetch(origin+path,{redirect:'follow'});
+            const raw=await response.text();
+            const type=response.headers.get('content-type')||'';
+            const meta=(raw.match(/<meta[^>]+name=["']robots["'][^>]*>/i)||[])[0]||'';
+            const canon=(raw.match(/<link[^>]+rel=["']canonical["'][^>]*>/i)||[])[0]||'';
+            const og=(raw.match(/<meta[^>]+property=["']og:image["'][^>]*>/i)||[])[0]||'';
+            const jsonld=[...raw.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/ig)].map(m=>{try{const j=JSON.parse(m[1]);return {'@type':j['@type'],image:j.image}}catch{return {invalid:true}}});
+            let after=null;
+            if(type.includes('html')){
+              const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+              const errors=[];page.on('pageerror',e=>errors.push(e.message.slice(0,140)));
+              try{
+                await page.goto(origin+path,{waitUntil:'domcontentloaded',timeout:25000});
+                await page.waitForTimeout(1300);
+                after=await page.evaluate(()=>({
+                  url:location.href,title:document.title,
+                  robots:document.querySelector('meta[name="robots"]')?.getAttribute('content'),
+                  canonical:document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
+                  ogImage:document.querySelector('meta[property="og:image"]')?.getAttribute('content'),
+                  ogTitle:document.querySelector('meta[property="og:title"]')?.getAttribute('content'),
+                  desc:document.querySelector('meta[name="description"]')?.getAttribute('content')?.slice(0,170),
+                  jsonLD:[...document.querySelectorAll('script[type="application/ld+json"]')].map(x=>{try{return JSON.parse(x.textContent)['@type']}catch{return "INVALID"}}),
+                  h1:[...document.querySelectorAll('h1')].slice(0,3).map(x=>x.innerText.slice(0,130)),
+                  links:[...document.querySelectorAll('a[href]')].filter(a=>a.getAttribute('href')?.startsWith('/')).length,
+                  imageCount:document.querySelectorAll('img').length,
+                  frameHeader:document.documentElement.getAttribute('data-csp')||null,
+                  imageErrors:[...document.querySelectorAll('img')].filter(x=>x.complete&&!x.naturalWidth).slice(0,7).map(x=>x.currentSrc.slice(0,130))
+                }));
+              }catch(e){after={error:String(e)}}
+              after.errors=errors;await page.close();
+            }
+            console.log("SEO_LIVE_AUDIT "+JSON.stringify({path,status:response.status,finalUrl:response.url,contentType:type,headerRobots:response.headers.get('x-robots-tag'),frameOpts:response.headers.get('x-frame-options'),csp:response.headers.get('content-security-policy')?.slice(0,230),htmlLength:raw.length,serverRobots:meta,serverCanonical:canon,serverOgImage:og,jsonld,hydrated:after,containsTitle:raw.includes('<title>')}));
+          }
+          await browser.close();
+          NODE
+      - name: Audit sitemap URLs and IndexNow file and preview noindex
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import urllib.request, xml.etree.ElementTree as ET
+          base='https://4species.com'
+          for path in ['/robots.txt','/sitemap.xml','/species-sitemap.xml','/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt']:
+              try:
+                  with urllib.request.urlopen(base+path,timeout=20) as r:
+                      body=r.read();print('SEARCH_ENDPOINT',path,r.status,r.headers.get('content-type'),len(body),body[:165])
+                      if 'sitemap' in path:
+                          root=ET.fromstring(body)
+                          urls=[n.text for n in root.findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url/{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+                          print('SITEMAP_URLS',path,len(urls),urls[:14])
+              except Exception as e:print('SEARCH_ENDPOINT_ERROR',path,str(e))
+          PY
