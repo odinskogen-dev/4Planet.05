@@ -77,8 +77,16 @@ test("UNESCO geopoints fail closed on unknown components while preserving real z
     ["", 20],
     ["   ", 20],
     [false, 20],
+    [[], 20],
+    [[20], 30],
+    [[""], 20],
     { lat: "", lon: 20 },
     { lat: true, lon: 20 },
+    { lat: [], lon: 20 },
+    { lat: [0], lon: [20] },
+    { lat: { value: 10 }, lon: 20 },
+    ["1e2", 20],
+    ["0x10", 20],
     { lat: 91, lon: 20 },
     { lat: 20, lon: 181 },
   ]) {
@@ -93,6 +101,7 @@ test("UNESCO geopoints fail closed on unknown components while preserving real z
   assert.deepEqual(normaliseUnescoPoint([0, 20]), { lat: 0, lon: 20 });
   assert.deepEqual(normaliseUnescoPoint([-90, 180]), { lat: -90, lon: 180 });
   assert.deepEqual(normaliseUnescoPoint({ lat: "0", lon: "20" }), { lat: 0, lon: 20 });
+  assert.deepEqual(normaliseUnescoPoint([".5", "20."]), { lat: 0.5, lon: 20 });
 });
 
 test("UNESCO geoparks expose mixed source editions without promoting designation into protection or outcome", async () => {
