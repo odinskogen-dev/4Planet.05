@@ -87,7 +87,7 @@ export function classifySpeciesMediaRights(license?: string): SpeciesMediaRights
 
   if (ccLicenseUrl.test(value)) return "DISPLAYABLE";
   // Short labels are not authority-bearing without an issued legal-code version.
-  if (/^cc[-\\s]+by(?:[-\\s]+sa)?[-\\s]+(?:1\\.0|2\\.0|2\\.5|3\\.0|4\\.0)$/.test(value)) {
+  if (/^cc[-\s]+by(?:[-\s]+sa)?[-\s]+(?:1\.0|2\.0|2\.5|3\.0|4\.0)$/.test(value)) {
     return "DISPLAYABLE";
   }
 
