@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readStories, absoluteUrl } from "./magazine-content.mjs";
+import { impactSitemapRoutes } from "./prerender-impact-seo.mjs";
 
 const root = process.cwd();
 const publicDir = path.join(root, "public");
@@ -54,8 +55,7 @@ const discoveryRoutes = [
   ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
   ...(atlasDiscovery.objects ?? []).filter((item) => item.indexable === true).map((item) => `/atlas/${item.slug}`),
   ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),
-  ...(impactDiscovery.projects ?? []).map((item) => `/impact/project/${item.slug}`),
-  ...Array.from(new Set((impactDiscovery.projects ?? []).map((item) => item.actor?.slug).filter(Boolean))).map((slug) => `/impact/actors/${slug}`),
+  ...impactSitemapRoutes(impactDiscovery),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 

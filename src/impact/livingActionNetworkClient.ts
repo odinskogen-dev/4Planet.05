@@ -1,183 +1,111 @@
-import { getIdentityClient } from "@/identity/identityClient";
+/* ═══════════════════════════════════════════════════════════════════════════
+   4PLANET IMPACT — NATUREBRAIN runtime client
+   Reads the controlled public projection directly over PostgREST with the
+   public publishable key (no SDK download needed for a public read).
 
-export type ImpactEvidence = {
-  claim_id: string;
-  statement: string;
-  review_status: string;
-  evidence_strength: string;
-  interpretation_status: string;
-  citation: string | null;
-  source_name: string | null;
-  source_url: string | null;
-  source_rights: string | null;
-  limitations: string[];
-};
+   Order: public.impact_lan_v02()  →  public.impact_lan_gold_v01() (fallback).
+   v01 remains the guaranteed contract for the four Gold objects; v02 is the
+   scalable contract AXE publishes into by data alone.
 
-export type ImpactEntityRef = {
-  id: string;
-  name: string;
-  description?: string | null;
-};
+   There is no static copy of project truth in the frontend. If NATUREBRAIN is
+   unreachable the UI says SOURCE UNAVAILABLE — never "zero projects".
+   ═══════════════════════════════════════════════════════════════════════════ */
+import { useEffect, useState } from "react";
+import { identityConstants } from "@/identity/identityClient";
+import { index, normaliseV01, normaliseV02, type ImpactGraph, type ImpactIndex } from "./livingActionNetworkGraph";
 
-export type ImpactActor = ImpactEntityRef & {
-  actor_type?: string | null;
-  relationship_state?: string | null;
-};
+export const IMPACT_PROJECTIONS = ["impact_lan_v02", "impact_lan_gold_v01"] as const;
 
-export type ImpactPlace = ImpactEntityRef & {
-  geometry_status?: string | null;
-};
+class ProjectionMissing extends Error {}
 
-export type ImpactSolution = ImpactEntityRef & {
-  solution_type?: string | null;
-};
-
-export type ImpactAction = ImpactEntityRef & {
-  action_type?: string | null;
-  url?: string | null;
-  processed_by_4planet?: boolean;
-};
-
-export type ImpactLanProject = {
-  id: string;
-  name: string;
-  description: string;
-  issue_label: string;
-  issue_short: string;
-  year_label: string;
-  review_state: string;
-  image_path: string;
-  image_role: string;
-  official_url: string;
-  atlas_place_id: string;
-  coverage_note?: string | null;
-  issue: ImpactEntityRef | null;
-  actor: ImpactActor | null;
-  place: ImpactPlace | null;
-  solution: ImpactSolution | null;
-  action: ImpactAction | null;
-  evidence: ImpactEvidence[];
-};
-
-export type ImpactLanPayload = {
-  version: string;
-  generated_at: string;
-  truth_boundaries: string[];
-  projects: ImpactLanProject[];
-};
-
-type RpcClient = {
-  rpc: (
-    functionName: string,
-    params?: Record<string, never>,
-  ) => Promise<{ data: unknown; error: { message?: string } | null }>;
-};
-
-const text = (value: unknown) => typeof value === "string" ? value.trim() : "";
-
-function normaliseEvidence(value: unknown): ImpactEvidence[] {
-  if (!Array.isArray(value)) return [];
-  return value.flatMap((row) => {
-    if (!row || typeof row !== "object") return [];
-    const item = row as Record<string, unknown>;
-    const statement = text(item.statement);
-    if (!statement) return [];
-    return [{
-      claim_id: text(item.claim_id),
-      statement,
-      review_status: text(item.review_status),
-      evidence_strength: text(item.evidence_strength),
-      interpretation_status: text(item.interpretation_status),
-      citation: text(item.citation) || null,
-      source_name: text(item.source_name) || null,
-      source_url: text(item.source_url) || null,
-      source_rights: text(item.source_rights) || null,
-      limitations: Array.isArray(item.limitations)
-        ? item.limitations.map(text).filter(Boolean)
-        : [],
-    }];
+async function rpc(name: string, signal?: AbortSignal): Promise<unknown> {
+  const response = await fetch(`${identityConstants.supabaseUrl}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: {
+      apikey: identityConstants.publishableKey,
+      Authorization: `Bearer ${identityConstants.publishableKey}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+    signal,
   });
+  if (response.status === 404) throw new ProjectionMissing(name);
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    // PostgREST reports an unknown function as PGRST202 (sometimes with 400/404).
+    if (/PGRST202|Could not find the function/i.test(body)) throw new ProjectionMissing(name);
+    throw new Error(`NATUREBRAIN ${name} failed (${response.status})`);
+  }
+  return response.json();
 }
 
-function entity(value: unknown): ImpactEntityRef | null {
-  if (!value || typeof value !== "object") return null;
-  const row = value as Record<string, unknown>;
-  const id = text(row.id);
-  const name = text(row.name);
-  if (!id || !name) return null;
-  return { id, name, description: text(row.description) || null };
+export async function readImpactGraph(signal?: AbortSignal): Promise<ImpactGraph> {
+  try {
+    return normaliseV02(await rpc("impact_lan_v02", signal));
+  } catch (error) {
+    if (!(error instanceof ProjectionMissing)) {
+      // v02 exists but failed: still try the guaranteed v01 contract before giving up.
+      if ((error as Error)?.name === "AbortError") throw error;
+    }
+  }
+  return normaliseV01(await rpc("impact_lan_gold_v01", signal));
 }
 
-function normaliseProject(value: unknown): ImpactLanProject | null {
-  if (!value || typeof value !== "object") return null;
-  const row = value as Record<string, unknown>;
-  const base = entity(row);
-  if (!base) return null;
-  const actorBase = entity(row.actor);
-  const placeBase = entity(row.place);
-  const solutionBase = entity(row.solution);
-  const actionBase = entity(row.action);
-  const actorRow = row.actor && typeof row.actor === "object" ? row.actor as Record<string, unknown> : {};
-  const placeRow = row.place && typeof row.place === "object" ? row.place as Record<string, unknown> : {};
-  const solutionRow = row.solution && typeof row.solution === "object" ? row.solution as Record<string, unknown> : {};
-  const actionRow = row.action && typeof row.action === "object" ? row.action as Record<string, unknown> : {};
+/* One in-flight read per page session; navigation between templates reuses it. */
+let cached: Promise<ImpactIndex> | null = null;
+let resolved: ImpactIndex | null = null;
 
-  return {
-    id: base.id,
-    name: base.name,
-    description: base.description || "",
-    issue_label: text(row.issue_label),
-    issue_short: text(row.issue_short),
-    year_label: text(row.year_label),
-    review_state: text(row.review_state),
-    image_path: text(row.image_path),
-    image_role: text(row.image_role),
-    official_url: text(row.official_url),
-    atlas_place_id: text(row.atlas_place_id),
-    coverage_note: text(row.coverage_note) || null,
-    issue: entity(row.issue),
-    actor: actorBase ? {
-      ...actorBase,
-      actor_type: text(actorRow.actor_type) || null,
-      relationship_state: text(actorRow.relationship_state) || null,
-    } : null,
-    place: placeBase ? {
-      ...placeBase,
-      geometry_status: text(placeRow.geometry_status) || null,
-    } : null,
-    solution: solutionBase ? {
-      ...solutionBase,
-      solution_type: text(solutionRow.solution_type) || null,
-    } : null,
-    action: actionBase ? {
-      ...actionBase,
-      action_type: text(actionRow.action_type) || null,
-      url: text(actionRow.url) || null,
-      processed_by_4planet: actionRow.processed_by_4planet === true,
-    } : null,
-    evidence: normaliseEvidence(row.evidence),
-  };
+export function loadImpactIndex(): Promise<ImpactIndex> {
+  if (!cached) {
+    cached = readImpactGraph()
+      .then((graph) => {
+        resolved = index(graph);
+        return resolved;
+      })
+      .catch((error) => {
+        cached = null; // allow a retry on the next mount
+        throw error;
+      });
+  }
+  return cached;
 }
 
+export type ImpactLoadState =
+  | { state: "LOADING"; idx: null }
+  | { state: "READY"; idx: ImpactIndex }
+  | { state: "ERROR"; idx: null };
+
+export function useImpactIndex(): ImpactLoadState & { retry: () => void } {
+  const [value, setValue] = useState<ImpactLoadState>(() => (resolved ? { state: "READY", idx: resolved } : { state: "LOADING", idx: null }));
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (resolved) {
+      setValue({ state: "READY", idx: resolved });
+      return;
+    }
+    let alive = true;
+    setValue({ state: "LOADING", idx: null });
+    loadImpactIndex()
+      .then((idx) => alive && setValue({ state: "READY", idx }))
+      .catch(() => alive && setValue({ state: "ERROR", idx: null }));
+    return () => {
+      alive = false;
+    };
+  }, [attempt]);
+  return { ...value, retry: () => setAttempt((n) => n + 1) };
+}
+
+/* Canonical public routes — the only URL grammar templates use. */
+export const impactRoutes = {
+  home: "/impact",
+  project: (slug: string) => `/impact/project/${slug}`,
+  actor: (slug: string) => `/impact/actors/${slug}`,
+  issue: (slug: string) => `/impact/issue/${slug}`,
+  solution: (slug: string) => `/impact/solution/${slug}`,
+  method: "/impact#method",
+} as const;
+
+/** Back-compat for callers of the v01 helpers. */
 export const impactProjectSlug = (id: string) => id.split(":").pop() || id;
 export const impactActorSlug = (id: string) => id.split(":").pop() || id;
-
-export async function readImpactLan(): Promise<ImpactLanPayload> {
-  const client = await getIdentityClient() as unknown as RpcClient;
-  const { data, error } = await client.rpc("impact_lan_gold_v01");
-  if (error) throw new Error(error.message || "NATUREBRAIN read failed");
-  if (!data || typeof data !== "object") throw new Error("NATUREBRAIN returned no Impact payload");
-  const row = data as Record<string, unknown>;
-  const projects = Array.isArray(row.projects)
-    ? row.projects.map(normaliseProject).filter((item): item is ImpactLanProject => Boolean(item))
-    : [];
-  if (!projects.length) throw new Error("NATUREBRAIN returned no publishable Impact projects");
-  return {
-    version: text(row.version) || "unknown",
-    generated_at: text(row.generated_at),
-    truth_boundaries: Array.isArray(row.truth_boundaries)
-      ? row.truth_boundaries.map(text).filter(Boolean)
-      : [],
-    projects,
-  };
-}

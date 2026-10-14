@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { renderImpactRoutes } from "./prerender-impact-seo.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -181,73 +182,17 @@ for (const object of atlasObjects) {
 
 
 
-const impactProjects = impactDiscovery.projects ?? [];
-writeRoute("/impact", pageHtml({
-  pathName: "/impact",
-  title: "Impact — Find ecological action | 4PLANET",
-  description: "Discover source-aware ecological projects, actors, places and solutions — with evidence and ways to act kept close.",
-  image: "/assets/missions/rewild/hero.jpg",
-  body: `<main><p>4PLANET IMPACT</p><h1>Find people bringing life back.</h1><p>Discover ecological projects, actors, places and solutions with original sources kept close.</p><ul>${impactProjects.map((project) => `<li><a href="/impact/project/${esc(project.slug)}">${esc(project.name)}</a> — ${esc(project.place)}</li>`).join("")}</ul></main>`,
-  jsonLd: {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: "4PLANET Impact",
-    url: origin + "/impact",
-    mainEntity: {
-      "@type": "ItemList",
-      itemListElement: impactProjects.map((project, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        name: project.name,
-        url: origin + `/impact/project/${project.slug}`,
-      })),
-    },
-  },
-}));
-
-for (const project of impactProjects) {
-  const pathName = `/impact/project/${project.slug}`;
-  writeRoute(pathName, pageHtml({
-    pathName,
-    title: `${project.name} — Impact | 4PLANET`,
-    description: project.description,
-    image: project.image,
-    body: `<main><p>4PLANET IMPACT / PROJECT</p><h1>${esc(project.name)}</h1><p>${esc(project.description)}</p><p><strong>Actor:</strong> <a href="/impact/actors/${esc(project.actor.slug)}">${esc(project.actor.name)}</a></p><p><strong>Place:</strong> ${esc(project.place)}</p><h2>Sources</h2><ul>${project.citations.map((url) => `<li><a href="${esc(url)}">${esc(new URL(url).hostname.replace(/^www\\./, ""))}</a></li>`).join("")}</ul><p><a href="/impact">Explore Impact</a> · <a href="/atlas">Open ATLAS</a></p></main>`,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: project.name,
-      description: project.description,
-      url: origin + pathName,
-      image: origin + project.image,
-      citation: project.citations,
-      about: { "@type": "Project", name: project.name },
-      mentions: { "@type": "Organization", name: project.actor.name, url: origin + `/impact/actors/${project.actor.slug}` },
-      spatialCoverage: { "@type": "Place", name: project.place },
-      isPartOf: { "@type": "CollectionPage", name: "4PLANET Impact", url: origin + "/impact" },
-    },
-  }));
-}
-
-const impactActors = Array.from(new Map(impactProjects.map((project) => [project.actor.slug, project.actor])).values());
-for (const actor of impactActors) {
-  const related = impactProjects.filter((project) => project.actor.slug === actor.slug);
-  const citations = Array.from(new Set(related.flatMap((project) => project.citations)));
-  const pathName = `/impact/actors/${actor.slug}`;
-  writeRoute(pathName, pageHtml({
-    pathName,
-    title: `${actor.name} — Actor | 4PLANET Impact`,
-    description: `Public actor record in 4PLANET Impact, connected to ${related.map((project) => project.name).join(", ")}.`,
-    body: `<main><p>4PLANET IMPACT / ACTOR</p><h1>${esc(actor.name)}</h1><p>Public record. Listing does not imply 4PLANET partnership or endorsement.</p><h2>Projects in this Gold slice</h2><ul>${related.map((project) => `<li><a href="/impact/project/${esc(project.slug)}">${esc(project.name)}</a></li>`).join("")}</ul><h2>Sources</h2><ul>${citations.map((url) => `<li><a href="${esc(url)}">${esc(new URL(url).hostname.replace(/^www\\./, ""))}</a></li>`).join("")}</ul></main>`,
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: actor.name,
-      url: origin + pathName,
-      subjectOf: related.map((project) => ({ "@type": "WebPage", name: project.name, url: origin + `/impact/project/${project.slug}` })),
-    },
-  }));
-}
+const impactCounts = renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc, origin });
+// Exact build identity for sandbox/HEIR browser proof (Cloudflare Pages exposes these at build time).
+fs.writeFileSync(path.join(dist, "impact-build.json"), JSON.stringify({
+  sha: process.env.CF_PAGES_COMMIT_SHA || process.env.GITHUB_SHA || null,
+  branch: process.env.CF_PAGES_BRANCH || null,
+  impactProjection: impactDiscovery.projection || null,
+  impactSnapshotGeneratedAt: impactDiscovery.generatedAt || null,
+  impactProjects: impactCounts.projects,
+}, null, 2) + "\n");
+const impactProjects = { length: impactCounts.projects };
+const impactActors = { length: impactCounts.actors };
 
 const earthNow = discovery.earthNow;
 writeRoute("/now", pageHtml({
@@ -315,4 +260,4 @@ for (const topic of discoveryTopics) {
   }));
 }
 
-console.log(`Prerendered discovery HTML: ${species.length} species + ${places.length} places + ${atlasObjects.length} ATLAS objects + ${discoveryTopics.length} canonical topics + ${impactProjects.length} Impact projects + ${impactActors.length} Impact actors + Earth Now + indexes`);
+console.log(`Prerendered discovery HTML: ${species.length} species + ${places.length} places + ${atlasObjects.length} ATLAS objects + ${discoveryTopics.length} canonical topics + ${impactProjects.length} Impact projects + ${impactActors.length} Impact actors + ${impactCounts.issues} Impact issues + Earth Now + indexes`);
