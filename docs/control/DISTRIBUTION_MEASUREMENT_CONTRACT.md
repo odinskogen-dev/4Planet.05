@@ -126,3 +126,16 @@ IndexNow submission != indexing.
 Ranking estimate != Search Console observation.
 AI citation != referral session.
 Owned-domain navigation != external referral.
+
+
+## GA4 ADMIN REGISTRATION
+Current property already has custom dimensions for site_host, destination_product, share_method, completion_type, entry_kind, use_kind, product_area and interest_surface.
+
+Register these additional event-scoped custom dimensions so discovery telemetry can be queried directly:
+- discovery_channel
+- landing_product
+- landing_path
+
+Mark the approved outcome events above as GA4 key events only after verifying they fire once at the intended outcome boundary. Current property returns no key events.
+
+Historical credential-bearing URL data must be handled by a GA4 Admin Data Deletion Request. This is an account-admin operation and cannot be performed by a read-only reporting connector.
