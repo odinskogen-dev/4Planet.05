@@ -198,15 +198,407 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for host in heir-render.4planet.org atlas-sandbox-render.4planet.org magazine-sandbox-render.4planet.org; do
+          node <<'NODE' > "$RUNNER_TEMP/render-hosts.txt"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          const hosts=new Set([new URL(r.heir.render_origin).hostname]);
+          for(const item of Object.values(r.sandboxes||{})) if(item.render_origin) hosts.add(new URL(item.render_origin).hostname);
+          for(const host of hosts) console.log(host);
+          NODE
+          while IFS= read -r host; do
+            [ -z "$host" ] && continue
             ok=0
             for attempt in $(seq 1 24); do
               headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "https://$host/" | tr -d '\r' || true)
-              if printf '%s\n' "$headers" | grep -qi '^x-4planet-render-proxy: read-only-v1$'; then ok=1; break; fi
+              if printf '%s\n' "$headers" | grep -qi '^x-4planet-render-proxy: read-only-v1
+
+      - name: Build isolated review/archive Worker
+        run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
+
+      - name: Deploy review control Worker on new subdomains only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-four-state-control-v1"
+          main = "$RUNNER_TEMP/four-state-worker.mjs"
+          compatibility_date = "2026-09-04"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "test.4planet.org"
+          custom_domain = true
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
+
+      - name: Verify public Founder review surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 24); do
+            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+; then ok=1; break; fi
               sleep 5
             done
             [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
+          done < "$RUNNER_TEMP/render-hosts.txt"
+
+      - name: Build isolated review/archive Worker
+        run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
+
+      - name: Deploy review control Worker on new subdomains only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-four-state-control-v1"
+          main = "$RUNNER_TEMP/four-state-worker.mjs"
+          compatibility_date = "2026-09-04"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "test.4planet.org"
+          custom_domain = true
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
+
+      - name: Verify public Founder review surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 24); do
+            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$'; then ok=1; break; fi
+            sleep 5
           done
+          [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
+          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
+          atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
+          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
+          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
+          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
+          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
+          grep -q 'heir-render.4planet.org/atlas' <<<"$atlas_heir"
+          grep -q 'atlas-sandbox-render.4planet.org/atlas' <<<"$atlas_sandbox"
+          grep -q 'magazine-sandbox-render.4planet.org/magazine' <<<"$mag_sandbox"
+          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+ && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+; then ok=1; break; fi
+              sleep 5
+            done
+            [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
+          done < "$RUNNER_TEMP/render-hosts.txt"
+
+      - name: Build isolated review/archive Worker
+        run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
+
+      - name: Deploy review control Worker on new subdomains only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-four-state-control-v1"
+          main = "$RUNNER_TEMP/four-state-worker.mjs"
+          compatibility_date = "2026-09-04"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "test.4planet.org"
+          custom_domain = true
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
+
+      - name: Verify public Founder review surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 24); do
+            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$'; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
+          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
+          atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
+          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
+          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
+          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
+          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
+          grep -q 'heir-render.4planet.org/atlas' <<<"$atlas_heir"
+          grep -q 'atlas-sandbox-render.4planet.org/atlas' <<<"$atlas_sandbox"
+          grep -q 'magazine-sandbox-render.4planet.org/magazine' <<<"$mag_sandbox"
+          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
+
+          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
+          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
+          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
+          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+
+          # Exact HEIR proof on a real product route.
+          heir_sha=$(jq -r '.heir.sha' artifacts/four-state-runtime.json)
+          want="heir-${heir_sha:0:12}"
+          impact_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/impact' | tr -d '\r')
+          printf '%s\n' "$impact_headers" | grep -qi '^x-4planet-control-plane: four-state-v1
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+; then ok=1; break; fi
+              sleep 5
+            done
+            [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
+          done < "$RUNNER_TEMP/render-hosts.txt"
+
+      - name: Build isolated review/archive Worker
+        run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
+
+      - name: Deploy review control Worker on new subdomains only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-four-state-control-v1"
+          main = "$RUNNER_TEMP/four-state-worker.mjs"
+          compatibility_date = "2026-09-04"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "test.4planet.org"
+          custom_domain = true
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
+
+      - name: Verify public Founder review surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 24); do
+            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$'; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
+          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
+          atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
+          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
+          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
+          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
+          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
+          grep -q 'heir-render.4planet.org/atlas' <<<"$atlas_heir"
+          grep -q 'atlas-sandbox-render.4planet.org/atlas' <<<"$atlas_sandbox"
+          grep -q 'magazine-sandbox-render.4planet.org/magazine' <<<"$mag_sandbox"
+          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+
+          printf '%s\n' "$impact_headers" | grep -qi "^x-4planet-review-source: ${want}$"
+
+          # Verify every currently registered sandbox from registry/runtime.
+          node <<'NODE' > "$RUNNER_TEMP/sandbox-review.tsv"
+          const fs=require('fs');
+          const registry=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const runtime=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          for(const [product,item] of Object.entries(registry.products||{})) {
+            if(!item.sandbox) continue;
+            const r=runtime.sandboxes?.[product];
+            if(!r?.render_origin) throw new Error('missing sandbox runtime for '+product);
+            console.log([item.sandbox.review_path,r.render_origin+item.sandbox.origin_path].join('\t'));
+          }
+          NODE
+          while IFS=
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+; then ok=1; break; fi
+              sleep 5
+            done
+            [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
+          done < "$RUNNER_TEMP/render-hosts.txt"
+
+      - name: Build isolated review/archive Worker
+        run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
+
+      - name: Deploy review control Worker on new subdomains only
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp artifacts/four-state-worker.mjs "$RUNNER_TEMP/four-state-worker.mjs"
+          cat > "$RUNNER_TEMP/wrangler.toml" <<EOF
+          name = "4planet-four-state-control-v1"
+          main = "$RUNNER_TEMP/four-state-worker.mjs"
+          compatibility_date = "2026-09-04"
+          account_id = "$CLOUDFLARE_ACCOUNT_ID"
+          [[routes]]
+          pattern = "test.4planet.org"
+          custom_domain = true
+          [[routes]]
+          pattern = "archive.4planet.org"
+          custom_domain = true
+          EOF
+          npx --yes wrangler@latest deploy --config "$RUNNER_TEMP/wrangler.toml" | tee artifacts/four-state/wrangler-deploy.txt
+
+      - name: Verify public Founder review surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for attempt in $(seq 1 24); do
+            test_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control' | tr -d '\r' || true)
+            archive_headers=$(curl -fsSI --connect-timeout 10 --max-time 30 'https://archive.4planet.org/' | tr -d '\r' || true)
+            if printf '%s\n' "$test_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$archive_headers" | grep -qi '^x-4planet-control-plane: four-state-v1$'; then ok=1; break; fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
+          test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
+          atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
+          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
+          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
+          archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
+          grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
+          grep -q 'heir-render.4planet.org/atlas' <<<"$atlas_heir"
+          grep -q 'atlas-sandbox-render.4planet.org/atlas' <<<"$atlas_sandbox"
+          grep -q 'magazine-sandbox-render.4planet.org/magazine' <<<"$mag_sandbox"
+          grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+\t' read -r review_path expected; do
+            [ -z "$review_path" ] && continue
+            html=$(curl -fsS --connect-timeout 10 --max-time 30 "https://test.4planet.org${review_path}")
+            grep -Fq "$expected" <<<"$html"
+          done < "$RUNNER_TEMP/sandbox-review.tsv"
+
+          echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
+
+      - name: Upload control-plane evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: four-state-control-plane
+          path: |
+            artifacts/four-state-runtime.json
+            artifacts/four-state-worker.mjs
+            artifacts/four-state
+          if-no-files-found: warn
+          retention-days: 90
+; then ok=1; break; fi
+              sleep 5
+            done
+            [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
+          done < "$RUNNER_TEMP/render-hosts.txt"
 
       - name: Build isolated review/archive Worker
         run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
