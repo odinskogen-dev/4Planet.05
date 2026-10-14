@@ -1,3 +1,56 @@
+# ATLAS GREEN DATA — BOUNDED LIVE RELEASE — 14 OCT 2026
+
+**STATUS:** FOUNDER_ACCEPTED / EXACTLY BOUNDED ATLAS LIVE CANDIDATE / RELEASE-SPECIFIC QA REQUIRED BEFORE MERGE.
+
+**FOUNDER DECISION:** Founder 2026-10-14 — “push nå de nye datalagene til live atlas uten endre UX eller ødelegge noe. Atlas skal ha samme design bare få de nye lagene riktig integrert.”
+
+**TEST KING SOURCE EVIDENCE:** GREEN DATA functionality was proven on TEST KING functional base `8dc330f67b6fd5488d8099b9b7c1a7c0be93c03d` with live UNESCO endpoint/schema, contract, typecheck, production build and Chromium/WebKit map proof. This production carrier is independently rebased from current LIVE `main@2c3152fcc5748a6a75bc2741f6ad45795ee1004b` and contains only the bounded Atlas data-layer overlay plus release QA/control.
+
+**LIVE SCOPE:** preserve current LIVE Atlas UX and map engine. Add one bounded UNESCO DataHub server adapter, one shared Atlas normaliser, four opt-in curated layers — Biosphere Reserves, World Heritage, Global Geoparks and Ocean Biodiversity Areas — one PLACES grouping inside the existing layer console, and source/rights/time lines inside the existing information drawer. No new default layers. No redesign. No 4NATION or S4PIENS UI. No wholesale TEST KING promotion.
+
+**ROLLBACK:** exact prior LIVE `main@2c3152fcc5748a6a75bc2741f6ad45795ee1004b` plus the prior immutable Cloudflare Pages deployment.
+
+## USER ARRIVES BECAUSE
+They want to explore credible geographic knowledge on the existing ATLAS without leaving the map or learning a new interface.
+
+## ONE THING TO UNDERSTAND
+ATLAS remains the same map-first product; four authoritative UNESCO/OBIS datasets become optional layers inside the existing layer system.
+
+## PRIMARY ACTION
+Open LAYERS and toggle Biosphere Reserves, World Heritage, Global Geoparks or Ocean Biodiversity Areas.
+
+## SECONDARY DEPTH
+Open the existing layer information drawer to inspect the source, rights, time semantics and limitations, then click mapped objects for source-grounded context.
+
+## P1 DOMINANT
+The existing ATLAS Earth/map experience remains visually and behaviourally dominant.
+
+## P2 ORIENTATION
+A new PLACES grouping keeps place-designation layers understandable without crowding EARTH, LIFE or SIGNALS.
+
+## P3 ACTION / NEXT
+Explore a mapped place or ocean area, inspect its source context, isolate a layer, or continue through existing ATLAS navigation.
+
+## P4 DEPTH
+Dataset provenance, licence/ShareAlike state, record timing and explicit truth boundaries remain attached to the layer/object.
+
+## WHAT CAN BE REMOVED
+Nothing from the current Atlas UX. No parallel map, dashboard, catalogue, default-on clutter or decorative redesign is introduced.
+
+## WHAT MUST BE REUSED
+The existing MapLibre engine, World renderer, layer console, point lifecycle, info drawer, source-failure semantics, camera controls and current visual system.
+
+## TRUTH BOUNDARY
+Designation ≠ current ecosystem health. Representative point ≠ boundary. OBIS occurrence/species counts reflect records and sampling effort, not abundance, complete richness, range or live positions. Missing/source failure ≠ zero.
+
+## MOBILE-FIRST RISK
+Adding four optional layers must not create horizontal overflow, cover existing map controls, or materially degrade map interaction/performance at 390/430 widths.
+
+## HUMAN SUCCESS
+A user opens the same ATLAS they already know, sees no redesign or default clutter, and can deliberately add credible new place/ocean intelligence with source and limits attached.
+
+---
+
 # WHAT WE BELIEVE — BOUNDED LIVE RELEASE — 07 OCT 2026
 
 **STATUS:** FOUNDER_ACCEPTED / EXACT TEST KING VALUES CANDIDATE GREEN / BOUNDED LIVE PROMOTION AUTHORISED.
