@@ -62,6 +62,39 @@ test("UNESCO ocean metrics preserve missing values while retaining genuine zero"
   }
 });
 
+test("UNESCO geopoints fail closed on unknown components while preserving real zero and bounds", async () => {
+  const source = read("src/data/unescoOpenData.ts");
+  const javascript = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const moduleUrl = `data:text/javascript;base64,${Buffer.from(javascript).toString("base64")}`;
+  const { normaliseUnescoPoint, normaliseUnescoAtlasRecord } = await import(moduleUrl);
+
+  for (const coordinates of [
+    [null, null],
+    [null, 20],
+    [undefined, 20],
+    ["", 20],
+    ["   ", 20],
+    [false, 20],
+    { lat: "", lon: 20 },
+    { lat: true, lon: 20 },
+    { lat: 91, lon: 20 },
+    { lat: 20, lon: 181 },
+  ]) {
+    assert.equal(normaliseUnescoPoint(coordinates), null);
+    assert.equal(normaliseUnescoAtlasRecord("eg0001", {
+      ugg_id: "invalid-point",
+      title_en: "Invalid Point",
+      coordinates,
+    }), null);
+  }
+
+  assert.deepEqual(normaliseUnescoPoint([0, 20]), { lat: 0, lon: 20 });
+  assert.deepEqual(normaliseUnescoPoint([-90, 180]), { lat: -90, lon: 180 });
+  assert.deepEqual(normaliseUnescoPoint({ lat: "0", lon: "20" }), { lat: 0, lon: 20 });
+});
+
 test("UNESCO geoparks expose mixed source editions without promoting designation into protection or outcome", async () => {
   const source = read("src/data/unescoOpenData.ts");
   const javascript = ts.transpileModule(source, {
@@ -73,7 +106,7 @@ test("UNESCO geoparks expose mixed source editions without promoting designation
   const metadata = UNESCO_DATASETS.eg0001;
   assert.equal(metadata.edition.status, "MIXED_EDITION");
   assert.equal(metadata.edition.datasetDescriptionAsOf, "2025-01-15");
-  assert.equal(metadata.edition.datasetProcessedAt, "2026-05-28");
+  assert.equal(metadata.edition.datasetProcessedAt, "UNKNOWN");
   assert.equal(metadata.edition.referenceUpdatedAt, "2026-07-24");
   assert.equal(metadata.edition.referenceCountSummary, "241 geoparks / 51 countries");
   assert.match(metadata.edition.limitation, /stale reference text/i);
@@ -177,3 +210,4 @@ test("NATUREBRAIN source-family migration registers metadata but keeps ingestion
   assert.doesNotMatch(migration, /insert into planetbrain\.claims/i);
   assert.doesNotMatch(migration, /insert into planetbrain\.relationships/i);
 });
+
