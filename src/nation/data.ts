@@ -101,3 +101,66 @@ export const fmt = {
   pct: (n: number) => nf(1).format(n) + "%",
   usd: (n: number) => "US$" + nf(0).format(n),
 };
+
+/* ── World Bank WDI (shared adapter) + Wikidata identity ───────────────── */
+import { fetchWbCountry, fetchWbRanks, positionOf, WB_SOURCE, type RankPosition, type WbCountry, type WbRanks } from "@/data/worldBankCountry";
+import { COUNTRIES } from "./geo";
+export { WB_SOURCE, positionOf };
+export type { RankPosition, WbCountry, WbRanks };
+
+function useLoad<T>(key: string | null, fn: () => Promise<T>): Load<T> {
+  const [s, set] = useState<Load<T>>({ status: "loading" });
+  useEffect(() => {
+    if (!key) return;
+    let alive = true;
+    set({ status: "loading" });
+    fn().then((data) => alive && set({ status: "ready", data }), (e) => alive && set({ status: "error", error: String(e?.message || e) }));
+    return () => { alive = false; };
+  }, [key]);
+  return s;
+}
+const ALLOWED_ISO3 = new Set(COUNTRIES.map((c) => c.iso3));
+export const useWb = (iso3: string) => useLoad(iso3, () => fetchWbCountry(iso3));
+export const useRanks = () => useLoad("ranks", () => fetchWbRanks(ALLOWED_ISO3));
+
+export type Identity = { itemUrl: string; source: { retrievedAt: string; url: string }; languages: string[]; currencies: string[]; highestPoint: { name: string; elevationM: number | null } | null; anthem: string | null };
+const idCache = new Map<string, Promise<Identity>>();
+export const useIdentity = (iso2: string) => useLoad("id:" + iso2, () => {
+  if (!idCache.has(iso2)) idCache.set(iso2, fetch(`/api/country-identity?iso2=${iso2}`).then((r) => r.json()).then((b) => { if (!b?.ok) throw new Error(b?.error || "WIKIDATA_UNAVAILABLE"); return b as Identity; }).catch((e) => { idCache.delete(iso2); throw e; }));
+  return idCache.get(iso2)!;
+});
+export const WIKIDATA_SOURCE = { label: "Wikidata", long: "Wikidata (Wikimedia Foundation), community-edited", licence: "CC0 1.0", url: "https://www.wikidata.org/", limitation: "Community-edited structured data. Values can change and some may be contested; 4PLANET lists them as recorded and does not adjudicate." };
+
+export const W = {
+  pop: "SP.POP.TOTL", life: "SP.DYN.LE00.IN", gdppc: "NY.GDP.PCAP.CD", urban: "SP.URB.TOTL.IN.ZS", internet: "IT.NET.USER.ZS",
+  elec: "EG.ELC.ACCS.ZS", renew: "EG.FEC.RNEW.ZS", forest: "AG.LND.FRST.ZS", agriLand: "AG.LND.AGRI.ZS", protected: "ER.PTD.TOTL.ZS",
+  water: "ER.H2O.FWST.ZS", manuf: "NV.IND.MANF.ZS", agriGdp: "NV.AGR.TOTL.ZS", jobsAgri: "SL.AGR.EMPL.ZS", jobsInd: "SL.IND.EMPL.ZS", jobsSrv: "SL.SRV.EMPL.ZS",
+} as const;
+
+/** Neutral nouns for the signature sentence. */
+export const SIGNATURE_NOUN: Record<string, string> = {
+  [W.pop]: "population", [W.life]: "life expectancy", [W.gdppc]: "GDP per person", [W.urban]: "share of people in cities",
+  [W.internet]: "internet use", [W.elec]: "electricity access", [W.renew]: "renewable share of energy", [W.forest]: "forest cover",
+  [W.agriLand]: "share of farmland", [W.protected]: "protected share of territory", [W.water]: "water stress",
+  [W.manuf]: "manufacturing share of GDP", [W.agriGdp]: "farming, forestry and fishing share of GDP",
+};
+
+export interface SignatureItem { id: string; noun: string; side: "highest" | "lowest"; place: number; of: number; year: string }
+/** The 2–3 indicators where a country stands furthest from the middle. Ties and thin coverage are skipped. */
+export function signatureOf(ranks: WbRanks | undefined, iso3: string, max = 3): SignatureItem[] {
+  if (!ranks) return [];
+  const out: (SignatureItem & { ext: number })[] = [];
+  for (const id of Object.keys(SIGNATURE_NOUN)) {
+    const m = ranks.values[id], own = m?.get(iso3);
+    if (!m || !own || m.size < 60) continue;
+    let higher = 0, equal = 0;
+    for (const v of m.values()) { if (v.value > own.value) higher++; else if (v.value === own.value) equal++; }
+    if (equal > 3) continue;
+    const top = higher + 1, bottom = m.size - higher - equal + 1;
+    const side = top <= bottom ? "highest" : "lowest";
+    const place = side === "highest" ? top : bottom;
+    if (place > Math.max(10, Math.round(m.size * 0.06))) continue;
+    out.push({ id, noun: SIGNATURE_NOUN[id], side, place, of: m.size, year: own.year, ext: place / m.size });
+  }
+  return out.sort((a, b) => a.ext - b.ext).slice(0, max).map(({ ext, ...r }) => r);
+}

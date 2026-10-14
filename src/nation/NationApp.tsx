@@ -11,6 +11,7 @@ import NationHome from "./NationHome";
 import "./nation.css";
 
 const CountryPage = lazy(() => import("./CountryPage"));
+const ComparePage = lazy(() => import("./ComparePage"));
 const DecisionsPage = lazy(() => import("@/pages/nation/NationPage"));
 
 export const isNationHost = () => {
@@ -161,7 +162,7 @@ export default function NationApp() {
   const setTheme = (t: Theme) => { setThemeState(t); store.set("4nation.theme", t); };
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
-    meta?.setAttribute("content", theme === "dark" ? "#08080A" : theme === "paper" ? "#FFFFFF" : "#ECEDEF");
+    meta?.setAttribute("content", theme === "dark" ? "#000000" : "#FFFFFF");
   }, [theme]);
   return (
     <div className="n-app" data-ntheme={theme}>
@@ -171,6 +172,7 @@ export default function NationApp() {
           <Routes>
             <Route index element={<NationHome theme={theme} />} />
             <Route path="country/:slug" element={<CountryPage theme={theme} />} />
+            <Route path="compare/:pair" element={<ComparePage theme={theme} />} />
             <Route path="decisions/*" element={<div className="n-legacy"><DecisionsPage /></div>} />
             <Route path="*" element={<NationHome theme={theme} />} />
           </Routes>

@@ -32,3 +32,9 @@ test("TED, Stortinget and SSB carry explicit reuse, access and rate boundaries",
   assert.match(ssb,/800000 data cells/);
   assert.match(ssb,/30 queries\/minute/);
 });
+
+test("World Bank WDI and Wikidata country adapters carry explicit licence, reuse, rate and truth boundaries",async()=>{
+  const [wb,wd]=await Promise.all([read("functions/api/worldbank-country.ts"),read("functions/api/country-identity.ts")]);
+  for(const needle of ["CC BY 4.0","commercialReuse: PERMITTED_WITH_ATTRIBUTION","redistribution: PERMITTED_UNDER_CC_BY_4_0","24h edge cache","EMPTY_OR_CONTRACT_MISMATCH","each value keeps its own year"]) assert.ok(wb.includes(needle),needle);
+  for(const needle of ["CC0 1.0","commercialReuse: PERMITTED_CC0","descriptive User-Agent","7-day edge cache","never resolved by 4PLANET"]) assert.ok(wd.includes(needle),needle);
+});

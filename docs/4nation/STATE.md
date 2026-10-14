@@ -34,9 +34,18 @@ Any agent resuming this work reads THIS file first. Updated after each step.
 - [x] Worker (`ops/nation/4nation-live-worker.js`): per-path title/description/canonical/robots/OG, sitemap with launch countries, removed floating ID button (header owns sign-in)
 - [x] QA Chromium 1440/834/430/390 × light/dark/paper with LAYOUT FIXTURE: 0 overflow, 0 page errors. WebKit NOT run (no WebKit in sandbox) → AXE must run `--browser=webkit`.
 - [x] ZIP + GPT handoff (docs/4nation/DEPLOY_CLOUDFLARE.md, GPT_PROJECT_LEAD_HANDOFF.md); branch pushed, PR → king/test
-- [ ] Then S4PIENS (s4piens.com) — separate STATE in docs/s4piens/
+- [x] S4PIENS v1 → PR #447 (docs/s4piens/)
 
 ## Open / held
 - "Known for" uses UNESCO World Heritage inscriptions (sourced). Wikidata identity facts HELD (no adapter, egress blocked).
 - Distinctiveness ranking across all countries HELD (bounded per-country API; needs a global snapshot job).
 - Protected areas (WDPA) remain HELD (token not wired) — not shown.
+
+## v2 (14 Oct 2026) — Country Object 02
+- [x] Governance: registered SANDBOX in PRODUCT_SURFACE_REGISTRY (4NATION entry added), CODE_LINEAGE_REGISTER section, GOLD_CURRENT_BRIEF section; product-authority-gate PASS; forward-synced to king/test@bff54ef.
+- [x] Brand OS fresh read (Drive 1bOIr3…): White #FFFFFF / Black #000000 lock, capsule buttons, one soft radius, restrained display type. Light theme = white + projected-light beam/grid (no grey substrate).
+- [x] New adapters (source-gated): `functions/api/worldbank-country.ts` (WDI series + global latest values), `functions/api/country-identity.ts` (Wikidata CC0). Shared client `src/data/worldBankCountry.ts`.
+- [x] Country signature "What stands out" (top/bottom positions, ties/thin coverage skipped), rank line on every WB metric.
+- [x] New chapter Energy & land; People + urban/internet; Economy + manufacturing/agriculture share + jobs mix; Land + languages/currency/highest point/anthem.
+- [x] Compare `/compare/{a}-vs-{b}`: true-scale outlines, side-by-side table with year + position; noindex.
+- Open: real-data verification (WB + Wikidata + UNESCO) on preview; WebKit.

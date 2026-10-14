@@ -11,7 +11,10 @@ import type { CountryDevelopmentContext } from "@/data/unescoCountryContext";
 import type { UnescoAtlasRecord } from "@/data/unescoOpenData";
 import { Globe } from "./Globe";
 import { FEATURED, GEO_SOURCE, atlasCamera, countryBySlug, loadCountryRings, mainBbox, silhouettePath, typeLabel, type NationCountry, type Ring } from "./geo";
-import { M, SOURCE_LINES, compact, fmt, latestOf, num, seriesOf, useCountryContext, useCountrySites, type CountrySites, type Load } from "./data";
+import { M, SOURCE_LINES, W, WB_SOURCE, WIKIDATA_SOURCE, compact, fmt, latestOf, num, positionOf, seriesOf, signatureOf, useCountryContext, useCountrySites, useIdentity, useRanks, useWb, type CountrySites, type Load, type WbCountry, type WbRanks } from "./data";
+import { ordinal } from "@/data/worldBankCountry";
+import { useNavigate } from "react-router-dom";
+import { searchCountries } from "./geo";
 import { AgeBar, LineChart, Readout, useSourceDrawer, type SourceRef } from "./ui";
 import { CountrySearch, nationBase, useMyCountry } from "./NationApp";
 import { NationFooter } from "./NationFooter";
@@ -75,6 +78,92 @@ function Metric({ ctx, load, id, label, format, unitOverride, chart }: {
         value={f ? f.value : null} unit={unitOverride ?? f?.unit} period={m?.period} source={SOURCE_LINES.wdi}
         onSource={() => open({ title: label, source: SOURCE_LINES.wdi, period: m?.period, retrievedAt: m?.vintage.retrievedAt, series, format: plain })} />
       {chart && series && series.observations.length > 2 && <LineChart series={series} format={plain} label={label} />}
+    </div>
+  );
+}
+
+/* ── World Bank metric with global position ────────────────────────────── */
+function RankLine({ ranks, id, iso3 }: { ranks: WbRanks | undefined; id: string; iso3: string }) {
+  const p = positionOf(ranks, id, iso3);
+  if (!p) return null;
+  const fromTop = p.rank <= p.of / 2;
+  return (
+    <span className="n-rank" title={`Position among ${p.of} countries and territories reporting this indicator (${p.year}).`}>
+      <span className="n-rank__track" aria-hidden><i style={{ left: `${p.pct * 100}%` }} /></span>
+      <span>{fromTop ? `${ordinal(p.rank)} highest` : `${ordinal(p.of - p.rank + 1)} lowest`} of {p.of}</span>
+    </span>
+  );
+}
+function WbMetric({ wb, ranks, iso3, id, label, format, chart }: {
+  wb: Load<WbCountry>; ranks: WbRanks | undefined; iso3: string; id: string; label: string; format: (n: number) => { value: string; unit?: string }; chart?: boolean;
+}) {
+  const open = useSourceDrawer();
+  const series = wb.status === "ready" ? wb.data.series[id] : undefined;
+  const last = series?.observations[series.observations.length - 1];
+  const v = typeof last?.value === "number" ? last.value : null;
+  const f = v !== null ? format(v) : null;
+  const plain = (n: number) => { const x = format(n); return x.value + (x.unit ? " " + x.unit : ""); };
+  return (
+    <div className={"n-metric" + (chart ? " n-metric--chart" : "")}>
+      <Readout label={label} loading={wb.status === "loading"} unavailable={wb.status === "error"} value={f ? f.value : null} unit={f?.unit}
+        period={last?.period} source={WB_SOURCE} onSource={() => open({ title: label, source: WB_SOURCE, period: last?.period, retrievedAt: last?.vintage.retrievedAt, series, format: plain })} />
+      {v !== null && <RankLine ranks={ranks} id={id} iso3={iso3} />}
+      {chart && series && series.observations.length > 2 && <LineChart series={series} format={plain} label={label} />}
+    </div>
+  );
+}
+const pct = (n: number) => ({ value: fmt.d1(n), unit: "%" });
+function JobsMix({ wb }: { wb: Load<WbCountry> }) {
+  const open = useSourceDrawer();
+  if (wb.status !== "ready") return null;
+  const get = (id: string) => { const s = wb.data.series[id]; const o = s?.observations[s.observations.length - 1]; return o && typeof o.value === "number" ? { v: o.value, y: o.period } : null; };
+  const a = get(W.jobsAgri), i = get(W.jobsInd), sv = get(W.jobsSrv);
+  if (!a || !i || !sv) return null;
+  return (
+    <div className="n-metric">
+      <span className="n-readout__label">Where people work · {sv.y}</span>
+      <AgeBar parts={[{ label: "Farming", value: a.v }, { label: "Industry", value: i.v }, { label: "Services", value: sv.v }]} />
+      <button className="n-source" onClick={() => open({ title: "Employment by sector", source: WB_SOURCE, period: sv.y, note: "Modelled ILO estimates published in World Development Indicators." })}><span>{sv.y}</span><span>World Bank</span><i aria-hidden>↗</i></button>
+    </div>
+  );
+}
+
+function Signature({ c, ranks }: { c: NationCountry; ranks: Load<WbRanks> }) {
+  const open = useSourceDrawer();
+  if (ranks.status !== "ready") return null;
+  const items = signatureOf(ranks.data, c.iso3);
+  if (!items.length) return null;
+  return (
+    <div className="n-signature" aria-label={`What stands out about ${c.short}`}>
+      <span className="n-mono">WHAT STANDS OUT</span>
+      <ul>
+        {items.map((i) => (
+          <li key={i.id}>
+            <b>{i.place === 1 ? (i.side === "highest" ? "Highest" : "Lowest") : `${ordinal(i.place)} ${i.side}`}</b> {i.noun}
+            <span className="n-mono"> · OF {i.of} · {i.year}</span>
+          </li>
+        ))}
+      </ul>
+      <button className="n-source" onClick={() => open({ title: "What stands out", source: WB_SOURCE, retrievedAt: ranks.data.retrievedAt, note: "Positions compare the latest reported value for each country or territory in World Development Indicators. Years differ between countries. A position is a description, not a score or a judgement." })}>
+        <span>World Bank</span><i aria-hidden>↗</i>
+      </button>
+    </div>
+  );
+}
+
+function ComparePicker({ c, onClose }: { c: NationCountry; onClose: () => void }) {
+  const [q, setQ] = useState("");
+  const nav = useNavigate();
+  const res = useMemo(() => searchCountries(q, 6).filter((x) => x.iso2 !== c.iso2), [q, c.iso2]);
+  return (
+    <div className="n-compare-pick" role="dialog" aria-label={`Compare ${c.short} with`}>
+      <div className="n-search">
+        <svg viewBox="0 0 16 16" aria-hidden className="n-search__icon"><circle cx="7" cy="7" r="5" /><path d="M11 11l3.5 3.5" /></svg>
+        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Compare ${c.short} with…`} aria-label="Country to compare with"
+          onKeyDown={(e) => { if (e.key === "Escape") onClose(); if (e.key === "Enter" && res[0]) nav(`${nationBase()}/compare/${c.slug}-vs-${res[0].slug}`); }} />
+        {res.length > 0 && <ul className="n-search__list" role="listbox">{res.map((x) => <li key={x.iso2} role="option" aria-selected={false}><button onClick={() => nav(`${nationBase()}/compare/${c.slug}-vs-${x.slug}`)}><span>{x.name}</span><span className="n-mono">{x.iso3}</span></button></li>)}</ul>}
+      </div>
+      <button className="n-link" onClick={onClose}>Cancel</button>
     </div>
   );
 }
@@ -170,7 +259,7 @@ function SiteList({ title, set, sites, src, empty }: { title: string; set: keyof
 
 /* ── page ──────────────────────────────────────────────────────────────── */
 const CHAPTERS = [
-  ["land", "Land"], ["people", "People"], ["economy", "Economy & work"], ["learning", "Learning"],
+  ["land", "Land"], ["people", "People"], ["economy", "Economy & work"], ["energy", "Energy & land"], ["learning", "Learning"],
   ["nature", "Nature & heritage"], ["capital", "Capital"], ["decisions", "Decisions"], ["sources", "Sources"],
 ] as const;
 
@@ -203,6 +292,11 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
   const wdi = useCountryContext(c.iso2);
   const ctx = wdi.status === "ready" ? wdi.data : undefined;
   const sites = useCountrySites(c.iso2, c.short);
+  const wb = useWb(c.iso3);
+  const rankLoad = useRanks();
+  const ranks = rankLoad.status === "ready" ? rankLoad.data : undefined;
+  const ident = useIdentity(c.iso2);
+  const [comparing, setComparing] = useState(false);
   const [rings, setRings] = useState<Ring[] | null>(null);
   useEffect(() => { let a = true; loadCountryRings(c.iso2).then((r) => a && setRings(r)).catch(() => undefined); return () => { a = false; }; }, [c.iso2]);
   const [my, setMy] = useMyCountry();
@@ -240,6 +334,7 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
           <p className="n-kicker n-mono">{c.iso2} · {c.iso3} · {c.continent.toUpperCase()}{c.subregion !== c.continent ? " / " + c.subregion.toUpperCase() : ""}</p>
           <h1 id="n-country-name" className="n-display n-display--country">{c.short}</h1>
           <p className="n-lead">{sentence}</p>
+          <Signature c={c} ranks={rankLoad} />
           <div className="n-actions">
             <div className="n-seg" role="tablist" aria-label="View">
               <button role="tab" aria-selected={mode === "profile"} onClick={() => setMode("profile")}>Profile</button>
@@ -248,10 +343,14 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
             <button className="n-btn" aria-pressed={my?.iso2 === c.iso2} onClick={() => setMy(my?.iso2 === c.iso2 ? null : c.iso2)}>
               {my?.iso2 === c.iso2 ? "✓ My country" : "Set as my country"}
             </button>
+            <button className="n-btn n-btn--ghost n-btn--icon" onClick={() => setComparing(true)} aria-label={"Compare " + c.short + " with another country"}>
+              <svg viewBox="0 0 16 16" aria-hidden><path d="M2 5h9M8 2l3 3-3 3M14 11H5M8 8l-3 3 3 3" /></svg><span>Compare</span>
+            </button>
             <button className="n-btn n-btn--ghost n-btn--icon" onClick={() => share()} aria-label={"Share " + c.short}>
               <svg viewBox="0 0 16 16" aria-hidden><path d="M8 10V2M5 5l3-3 3 3M3 8v5h10V8" /></svg><span>Share</span>
             </button>
           </div>
+          {comparing && <ComparePicker c={c} onClose={() => setComparing(false)} />}
           {my?.iso2 === c.iso2 && <p className="n-fine">Saved on this device. Account sync with 4PLANET ID is the next step.</p>}
         </div>
 
@@ -296,7 +395,12 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
                 <div><dt>Latitude</dt><dd>{span[1].toFixed(1)}° to {span[3].toFixed(1)}°</dd></div>
                 <div><dt>Longitude</dt><dd>{span[0].toFixed(1)}° to {span[2].toFixed(1)}°</dd></div>
                 <div><dt>North–south</dt><dd>≈ {fmt.int(nsKm)} km</dd></div>
+                {ident.status === "ready" && ident.data.highestPoint && <div><dt>Highest point</dt><dd>{ident.data.highestPoint.name}{ident.data.highestPoint.elevationM ? ` · ${fmt.int(ident.data.highestPoint.elevationM)} m` : ""}</dd></div>}
+                {ident.status === "ready" && ident.data.languages.length > 0 && <div><dt>Official languages</dt><dd>{ident.data.languages.join(", ")}</dd></div>}
+                {ident.status === "ready" && ident.data.currencies.length > 0 && <div><dt>Currency</dt><dd>{ident.data.currencies.join(", ")}</dd></div>}
+                {ident.status === "ready" && ident.data.anthem && <div><dt>National anthem</dt><dd>{ident.data.anthem}</dd></div>}
               </dl>
+              {ident.status === "ready" && <button className="n-source" onClick={() => open({ title: "Identity facts", source: { ...WIKIDATA_SOURCE, url: ident.data.itemUrl }, retrievedAt: ident.data.source.retrievedAt })}><span>Wikidata</span><i aria-hidden>↗</i></button>}
               <div className="n-cta">
                 <p>See the land itself — satellite imagery, forest and lights at night on the shared ATLAS.</p>
                 <button className="n-btn" onClick={() => openAtlas(["truecolor"])}>Open the land in Atlas</button>
@@ -316,6 +420,8 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
                   : <p className="n-unknown">{failed ? "Source unavailable right now." : "Not reported in this source."}</p>}
               </div>
               <Metric ctx={ctx} load={wdi} id={M.female} label="Women in the population" format={(n) => ({ value: fmt.d1(n), unit: "%" })} />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.urban} label="Living in cities" format={pct} />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.internet} label="Using the internet" format={pct} />
             </div>
           </Chapter>
 
@@ -327,11 +433,30 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
               <Metric ctx={ctx} load={wdi} id={M.unemp} label="Unemployment" chart format={(n) => ({ value: fmt.d1(n), unit: "% of labour force" })} />
               <Metric ctx={ctx} load={wdi} id={M.lfpF} label="Women in the labour force" format={(n) => ({ value: fmt.d1(n), unit: "% participation" })} />
               <Metric ctx={ctx} load={wdi} id={M.lfpM} label="Men in the labour force" format={(n) => ({ value: fmt.d1(n), unit: "% participation" })} />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.manuf} label="Manufacturing" format={(n) => ({ value: fmt.d1(n), unit: "% of GDP" })} chart />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.agriGdp} label="Farming, forestry and fishing" format={(n) => ({ value: fmt.d1(n), unit: "% of GDP" })} chart />
+              <JobsMix wb={wb} />
             </div>
             <p className="n-fine">GDP in current US dollars is not adjusted for prices or purchasing power. A national average says nothing about how income is shared.</p>
           </Chapter>
 
-          <Chapter id="learning" n="04" title="Learning" lead="School and university enrolment. Gross ratios can exceed 100% when older or younger students enrol.">
+          <Chapter id="energy" n="04" title="Energy & land" lead="How the country is powered, how its land is used and how much pressure there is on its fresh water.">
+            <div className="n-grid">
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.renew} label="Renewable energy" format={(n) => ({ value: fmt.d1(n), unit: "% of final energy use" })} chart />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.elec} label="Access to electricity" format={(n) => ({ value: fmt.d1(n), unit: "% of people" })} />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.forest} label="Forest" format={(n) => ({ value: fmt.d1(n), unit: "% of land" })} chart />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.agriLand} label="Farmland" format={(n) => ({ value: fmt.d1(n), unit: "% of land" })} />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.protected} label="Protected areas" format={(n) => ({ value: fmt.d1(n), unit: "% of land and sea" })} />
+              <WbMetric wb={wb} ranks={ranks} iso3={c.iso3} id={W.water} label="Water stress" format={(n) => ({ value: fmt.d1(n), unit: "% of fresh water withdrawn" })} />
+            </div>
+            <div className="n-cta">
+              <p>See forest cover, vegetation and lights at night for {c.short} on the shared ATLAS.</p>
+              <button className="n-btn" onClick={() => openAtlas(["forest", "night"])}>Open in Atlas</button>
+            </div>
+            <p className="n-fine">A protected-area share counts designations, not how well they are managed. Water stress above 100% means more fresh water is withdrawn than is renewably available.</p>
+          </Chapter>
+
+          <Chapter id="learning" n="05" title="Learning" lead="School and university enrolment. Gross ratios can exceed 100% when older or younger students enrol.">
             <div className="n-grid">
               <Metric ctx={ctx} load={wdi} id={M.prim} label="Primary enrolment" format={(n) => ({ value: fmt.d1(n), unit: "% gross" })} />
               <Metric ctx={ctx} load={wdi} id={M.sec} label="Secondary enrolment" format={(n) => ({ value: fmt.d1(n), unit: "% gross" })} />
@@ -340,7 +465,7 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
             </div>
           </Chapter>
 
-          <Chapter id="nature" n="05" title="Nature & heritage" lead="What the world has formally recognised here — and what has been recorded in its waters. A designation is not proof of present condition.">
+          <Chapter id="nature" n="06" title="Nature & heritage" lead="What the world has formally recognised here — and what has been recorded in its waters. A designation is not proof of present condition.">
             <div className="n-sites-grid">
               <SiteList title="World Heritage" set="whc001" sites={sites} src={SOURCE_LINES.whc001} empty="No World Heritage inscription listed for this country in this source." />
               <SiteList title="Biosphere reserves" set="mab001" sites={sites} src={SOURCE_LINES.mab001} empty="No biosphere reserve listed for this country in this source." />
@@ -354,7 +479,7 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
             <p className="n-fine">Ocean figures count occurrence records and sampling effort. They do not measure abundance, complete species richness or ecosystem health.</p>
           </Chapter>
 
-          <Chapter id="capital" n="06" title={c.capital ? c.capital : "Capital"} lead={c.capital ? `${c.capital} is the capital of ${c.short}. Place context in 4NATION starts here and grows outward to other places.` : "No capital is recorded for this territory in the outline source."}>
+          <Chapter id="capital" n="07" title={c.capital ? c.capital : "Capital"} lead={c.capital ? `${c.capital} is the capital of ${c.short}. Place context in 4NATION starts here and grows outward to other places.` : "No capital is recorded for this territory in the outline source."}>
             {c.capitalLonLat && (() => {
               const view: AtlasView = { kind: "NATION", title: (c.capital ?? "") + " — capital", camera: { lng: c.capitalLonLat[0], lat: c.capitalLonLat[1], zoom: 7.5 }, layers: ["bluemarble"], limitation: "Navigation view centred on the capital point. Not a municipal or metropolitan boundary." };
               const embed = atlasEmbedHref(view), full = atlasHrefForView(view);
@@ -373,7 +498,7 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
           </Chapter>
 
           {hasDecision && (
-            <Chapter id="decisions" n="07" title="Decisions" lead="Important public choices, read from the original documents. A proposal is not a decision; a decision is not an outcome.">
+            <Chapter id="decisions" n="08" title="Decisions" lead="Important public choices, read from the original documents. A proposal is not a decision; a decision is not an outcome.">
               <article className="n-decision">
                 <span className="n-state n-mono">{nationDecision.status}</span>
                 <h3>{nationDecision.title} <small>{nationDecision.period}</small></h3>
@@ -389,9 +514,9 @@ function Country({ c, theme }: { c: NationCountry; theme: string }) {
             </Chapter>
           )}
 
-          <Chapter id="sources" n={hasDecision ? "08" : "07"} title="Sources & method" lead="How this profile is made. Every figure links to its original dataset.">
+          <Chapter id="sources" n={hasDecision ? "09" : "08"} title="Sources & method" lead="How this profile is made. Every figure links to its original dataset.">
             <ul className="n-srclist">
-              {([SOURCE_LINES.wdi, SOURCE_LINES.whc001, SOURCE_LINES.mab001, SOURCE_LINES.eg0001, SOURCE_LINES.ioc001, GEO] as SourceRef[]).map((s) => (
+              {([SOURCE_LINES.wdi, WB_SOURCE, WIKIDATA_SOURCE, SOURCE_LINES.whc001, SOURCE_LINES.mab001, SOURCE_LINES.eg0001, SOURCE_LINES.ioc001, GEO] as SourceRef[]).map((s) => (
                 <li key={s.label}><a href={s.url} target="_blank" rel="noreferrer">{s.long ?? s.label} ↗</a><span className="n-mono">{s.licence.toUpperCase()}</span><p>{s.limitation}</p></li>
               ))}
             </ul>

@@ -78,7 +78,7 @@ export function Globe({ focus, interactive = false, onPick, onHover, theme, labe
       line: col("--n-globe-line", "rgba(10,10,10,.28)"), grat: col("--n-globe-grat", "rgba(10,10,10,.08)"),
       limb: col("--n-globe-limb", "rgba(10,10,10,.35)"), accent: col("--n-accent", "#2E2EFF"),
       fill: col("--n-globe-fill", "rgba(46,46,255,.14)"), land: col("--n-globe-land", "rgba(10,10,10,.035)"),
-      ink: col("--n-ink", "#0A0A0A"), hover: col("--n-globe-hover", "rgba(46,46,255,.10)"),
+      ink: col("--n-ink", "#000000"), hover: col("--n-globe-hover", "rgba(46,46,255,.10)"),
     };
     const resize = () => {
       const r = host.getBoundingClientRect();
