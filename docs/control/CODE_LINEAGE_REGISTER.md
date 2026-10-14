@@ -107,6 +107,17 @@ Donors: none adopted. Old 4NATION visual design rejected by Founder (13 Oct 2026
 
 Donors: PR #75 and `axe/s4piens-giga-multisprint-*` not adopted (Founder 13 Oct: design new). Shared registry entries extended, not forked.
 
+## IMPACT LIVING ACTION NETWORK — registered SANDBOX sequence (2026-10-14)
+
+| Identity | Role now | Branch / PR | Exact identity | HEIR obligation |
+|---|---|---|---|---|
+| IMPACT LIVE | PRODUCTION / READ-ONLY | `https://4planet.org/impact` | source `c78f3b9814e823fdaa9167ccc784d2a88283215d` | Preserve until Founder-gated exact-artifact promotion. |
+| IMPACT LAN GOLD 01 | FIXED REVIEW / MUST PRESERVE | `king/test` | `fd74b6e57711836d5084fc5dcb5800a890ba2887` (exact TEST-domain proof PASS) | Four NATUREBRAIN Gold objects, `public.impact_lan_gold_v01()`, canonical `/impact/project/:slug` and `/impact/actors/:slug` URLs must continue to render. |
+| IMPACT legacy routes | MUST PRESERVE | `/impact/:slug`, `/impact/lab/*`, `/impact/actions/bay-of-biscay-survey` on HEIR | unchanged | Not rewritten by Universe 01. |
+| IMPACT UNIVERSE 01 | ACTIVE DEVELOPMENT (registered SANDBOX) | `claude/impact-universe-01` | parent `king/test@7a0989f7958861fcd58f5f611b57c0eb009c8640` | Reusable Home / Issue / Project / Actor / Solution-skeleton templates over one normalised NATUREBRAIN graph model (v02 projection preferred, v01 fallback); discovery/search; SEO prerender from NATUREBRAIN. Returns only to `king/test`. |
+
+Donors: current `ImpactLivingActionNetwork.tsx` (data flow, truth copy, analytics events, Atlas handoff) — ADOPTED and refactored; visual layer REPLACED (mono-heavy labels deprecated by Brand OS for public copy). No other donor lines.
+
 ## MUST NOT LOSE — global
 - shared source/provenance/truth boundaries;
 - one shared ATLAS engine and Product Context continuity;

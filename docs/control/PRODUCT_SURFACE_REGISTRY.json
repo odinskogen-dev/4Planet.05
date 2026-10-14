@@ -160,7 +160,17 @@
         "review_path": "/impact",
         "origin_path": "/impact"
       },
-      "sandbox": null
+      "sandbox": {
+        "branch": "claude/impact-universe-01",
+        "sha_at_registration": "7a0989f7958861fcd58f5f611b57c0eb009c8640",
+        "review_path": "/impact/sandbox",
+        "origin_path": "/impact",
+        "live_authority": false,
+        "registered": "2026-10-14",
+        "registered_by": "Claude (Product Engineering Lead, maker) under Founder brief IMPACT_LIVING_ACTION_NETWORK_MASTER_BUILD_BRIEF_2026-10-14; AXE/GPT ratification required",
+        "product_version": "IMPACT UNIVERSE 01 — PREMIUM UNIVERSE BUILD 01",
+        "return_path": "PR → king/test"
+      }
     },
     "MAGAZINE": {
       "live": {

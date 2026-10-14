@@ -1,3 +1,25 @@
+# IMPACT LIVING ACTION NETWORK — UNIVERSE 01 — 14 OCT 2026
+
+**STATUS:** REGISTERED SANDBOX (`claude/impact-universe-01`, parent `king/test@7a0989f`) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / NO LIVE AUTHORITY. Authority: Founder brief `docs/impact/IMPACT_LIVING_ACTION_NETWORK_MASTER_BUILD_BRIEF_2026-10-14.md`.
+**USER ARRIVES BECAUSE:** they want to know who is actually working on an ecological problem — often landing from search on one project, organisation or problem — and whether the claims hold up.
+**ONE THING TO UNDERSTAND:** real projects and the organisations doing them, each with what the sources establish and what they do not.
+**PRIMARY ACTION:** scan the dense visual index (or search) → open a project.
+**SECONDARY DEPTH:** issue pages, actor profiles, solution records (limited), evidence + sources, ATLAS place, external official action.
+**P1 DOMINANT:** home — the living-world hero then the project index; project — the project name over its visual; actor — the organisation name.
+**P2 ORIENTATION:** issue · place · lead organisation · review state, in one quiet line.
+**P3 ACTION:** open project / open actor / official action route / open in ATLAS.
+**P4 DEPTH:** claims, evidence strength, limitations, sources, retrieved dates, proof ladder.
+**WHAT CAN BE REMOVED:** mono-everywhere labels, the oversized issue-family buttons, the stand-alone "truth rail" repeated on every page, KPI framing, card walls, nested `<main>`.
+**WHAT MUST BE REUSED:** PublicShell (menu, 4PLANET ID sign-in, footer), `Seo` + JSON-LD helper, `AtlasEmbed` + `atlasViewContract` (no second map), `trackEvent`, local-first `follow` store, NATUREBRAIN `public.impact_lan_gold_v01()` (preserved), existing site visuals already in `/public/assets`.
+**TRUTH BOUNDARY:** every visible state comes from NATUREBRAIN; LISTING ≠ ENDORSEMENT; ACTOR EXISTENCE ≠ PARTNERSHIP; EXTERNAL FLAGSHIP ≠ 4PLANET VERIFICATION; SOURCE-REPORTED ≠ INDEPENDENTLY VERIFIED; TARGET ≠ DELIVERY; issue-family visuals labelled as not project evidence; no match ≠ no project exists; source unavailable ≠ zero; 4PLANET REVIEWED reserved.
+**MOBILE-FIRST RISK:** two-column index titles at 390px; section nav horizontal scroll; evidence rows must not overflow; touch targets ≥ 44px.
+**HUMAN SUCCESS:** a search visitor understands one project, who runs it and what is (not) verified within 60 seconds; AXE can add a NATUREBRAIN project and it appears with no redesign.
+**BRAND OS PREFLIGHT (fresh Drive read 14 Oct 2026):** mode = calm intelligence / premium field guide (DEEP INFORMATION MODE, light); dominant idea per template as P1; anchor = documentary living-world image (labelled issue visual) then index; next action = open a project; living-world presence = ENCOUNTER (hero) → CONTEXT (index); accent = masterbrand 4PLANET Blue on White only; on dark image/Black surfaces the issue Domain accent (OCE4N_ #2E2EFF, E4RTH_ #3AE86F) or White — never blue on black outside OCE4N_; neutrals White #FFFFFF / Black #000000 (07-Oct lock); type = Instrument Sans 450/500 restrained, DM Sans body/UI + 12px/500 kickers (matching current 4planet.org), Fragment Mono only for proof/source/ID metadata; grid = 12-col editorial, 1px rules, ruled lists not card walls; geometry = capsule buttons, one soft radius family (24/20/16 image modules as on 4planet.org home), sharp rules/tables; motion = 180–420 ms REST→SENSE→RESPOND→SETTLE, reduced-motion off; deferred = project photography (no rights-cleared project media yet), Capital view, public Solution index, claim-this-profile workflow.
+**DONOR DECISION:** current IMPACT LAN Gold page — data flow, truth copy and analytics ADOPTED; visual layer REPLACED.
+**BASE / ROLLBACK:** `king/test@7a0989f7958861fcd58f5f611b57c0eb009c8640`; rollback = do not merge / revert the PR; v01 projection untouched.
+
+---
+
 # S4PIENS HUMAN SYSTEMS 02 — FOLLOW ONE THING — 14 OCT 2026
 
 **STATUS:** REGISTERED SANDBOX (`claude/s4piens-human-systems-01`, PR #447, after #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
