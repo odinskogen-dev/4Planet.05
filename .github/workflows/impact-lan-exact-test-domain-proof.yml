@@ -63,21 +63,33 @@ jobs:
           done
           [ "$ok" -eq 1 ] || { echo "Exact IMPACT HEIR did not reach test.4planet.org/impact"; exit 1; }
 
-      - name: Wait for rendered IMPACT content
+      - name: Wait for rendered IMPACT content and runtime assets
         shell: bash
         run: |
           set -euo pipefail
           ok=0
-          for attempt in $(seq 1 100); do
+          for attempt in $(seq 1 120); do
             body=$(curl -fsSL --max-redirs 5 --connect-timeout 10 --max-time 30 "$BASE_URL/impact" 2>/dev/null || true)
-            if printf '%s\n' "$body" | grep -Fqi 'Find people bringing life back'; then
+            js_path=$(printf '%s\n' "$body" | grep -oE 'src="/assets/[^"]+\.js[^"]*"' | head -1 | cut -d'"' -f2 || true)
+            css_path=$(printf '%s\n' "$body" | grep -oE 'href="/assets/[^"]+\.css[^"]*"' | head -1 | cut -d'"' -f2 || true)
+            html_ok=0
+            js_ok=0
+            css_ok=0
+            printf '%s\n' "$body" | grep -Fqi 'Find people bringing life back' && html_ok=1
+            [ -n "$js_path" ] && curl -fsSI --connect-timeout 10 --max-time 30 "$BASE_URL$js_path" >/dev/null 2>&1 && js_ok=1
+            if [ -z "$css_path" ]; then
+              css_ok=1
+            elif curl -fsSI --connect-timeout 10 --max-time 30 "$BASE_URL$css_path" >/dev/null 2>&1; then
+              css_ok=1
+            fi
+            if [ "$html_ok" -eq 1 ] && [ "$js_ok" -eq 1 ] && [ "$css_ok" -eq 1 ]; then
               ok=1
               break
             fi
-            echo "Waiting for rendered IMPACT content — attempt $attempt/100"
+            echo "Waiting for IMPACT HTML + runtime assets — attempt $attempt/120"
             sleep 6
           done
-          [ "$ok" -eq 1 ] || { echo "Rendered IMPACT content did not become ready"; exit 1; }
+          [ "$ok" -eq 1 ] || { echo "IMPACT HTML/runtime assets did not become ready"; exit 1; }
 
       - name: Browser proof — canonical IMPACT TEST URL
         run: >-
