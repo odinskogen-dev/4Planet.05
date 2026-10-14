@@ -17,7 +17,9 @@
 export type DeliveryStatus =
   | "PARTNER_PATHWAY_IN_DEVELOPMENT"
   | "PARTNER_VALIDATION_PENDING"
-  | "PROOF_MODEL_PLANNED";\n\nexport type FieldPartnerAppointmentState = "PENDING" | "APPOINTED";
+  | "PROOF_MODEL_PLANNED";
+
+export type FieldPartnerAppointmentState = "PENDING" | "APPOINTED";
 
 export interface WhyFact {
   /** short plain-language headline */
@@ -59,11 +61,20 @@ export interface ImpactUnit {
   /** our operational model — honest status, never a settled promise */
   delivery: {
     status: DeliveryStatus;
+    appointmentState: FieldPartnerAppointmentState;
     fieldPartner: string;        // who would carry it out (or "TO BE SELECTED")
     where: string;               // region focus
     whyPartner: string;          // why this kind of partner / selection basis
     proof: string;               // what the user would get back — as a plan
   };
+}
+
+/** Appointment is an explicit operational fact, never inferred from display copy. */
+export function isFieldPartnerAppointed(delivery: ImpactUnit["delivery"]): boolean {
+  if (delivery.appointmentState !== "APPOINTED") return false;
+  const partner = delivery.fieldPartner.trim();
+  if (!partner) return false;
+  return !/^(?:unknown|tbd|to be|pending|not (?:yet )?appointed)\b/i.test(partner);
 }
 
 const CLIM4TE = "#3AE86F"; // E4RTH green — IMPACT main accent
@@ -108,6 +119,7 @@ export const IMPACT_UNITS: ImpactUnit[] = [
     ],
     delivery: {
       status: "PARTNER_VALIDATION_PENDING",
+      appointmentState: "PENDING",
       fieldPartner: "TO BE SELECTED — verified restoration partner",
       where: "Priority: biodiverse, high-leverage restoration landscapes",
       whyPartner: "4PLANET owns and initiates the mission; delivery is carried out by a field partner selected for verified planting, survival monitoring and transparent reporting — native-species and right-place-first, not monoculture offset volume.",
@@ -146,6 +158,7 @@ export const IMPACT_UNITS: ImpactUnit[] = [
     ],
     delivery: {
       status: "PARTNER_PATHWAY_IN_DEVELOPMENT",
+      appointmentState: "PENDING",
       fieldPartner: "TO BE SELECTED — verified collection partner",
       where: "Priority: high-leakage coastlines and river mouths",
       whyPartner: "4PLANET owns the mission; a field partner carries out collection and weighing. Selection requires transparent chain-of-custody and mass verification, not unaudited totals.",
@@ -190,6 +203,7 @@ export const IMPACT_UNITS: ImpactUnit[] = [
     ],
     delivery: {
       status: "PARTNER_PATHWAY_IN_DEVELOPMENT",
+      appointmentState: "PENDING",
       fieldPartner: "TO BE SELECTED — reef-restoration partner",
       where: "Priority: reef systems with viable restoration science",
       whyPartner: "4PLANET owns the mission; a field partner carries out restoration. Selection requires published survival/outcome monitoring — restoration is not guaranteed and only supported where the science supports it.",
@@ -228,6 +242,7 @@ export const IMPACT_UNITS: ImpactUnit[] = [
     ],
     delivery: {
       status: "PARTNER_PATHWAY_IN_DEVELOPMENT",
+      appointmentState: "PENDING",
       fieldPartner: "TO BE SELECTED — local restoration partner",
       where: "Priority: degraded land with local stewardship",
       whyPartner: "4PLANET owns the mission; a local field partner carries out recovery. Selection favours native-ecosystem recovery and community stewardship over cosmetic planting.",
