@@ -1,0 +1,75 @@
+name: SPECIES 100 — Free Google Bing Credential Audit
+on:
+  push:
+    branches: [sprint/species-100-gold-20261014]
+    paths: [.github/workflows/species-100-search-access-audit.yml]
+permissions: {contents: read}
+jobs:
+  access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    env:
+      GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+      GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+      GOOGLE_SEARCH_CONSOLE_TOKEN: ${{ secrets.GOOGLE_SEARCH_CONSOLE_TOKEN }}
+      GOOGLE_OAUTH_REFRESH_TOKEN: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+      BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
+      BING_API_KEY: ${{ secrets.BING_API_KEY }}
+      BING_WEBMASTER_TOKEN: ${{ secrets.BING_WEBMASTER_TOKEN }}
+      BING_WEBMASTER_ACCESS_TOKEN: ${{ secrets.BING_WEBMASTER_ACCESS_TOKEN }}
+      BING_WEBMASTERTOOLS_API_KEY: ${{ secrets.BING_WEBMASTERTOOLS_API_KEY }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --quiet google-auth requests
+      - name: Test private keys without printing secret values
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,os,requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import AuthorizedSession
+          report=[]
+          def say(k,v):
+              report.append(f'| {k} | {v} |')
+              print('SPECIES_ACCESS',k,v)
+          keys=['GA4_SERVICE_ACCOUNT_JSON','GSC_SERVICE_ACCOUNT_JSON','GOOGLE_SEARCH_CONSOLE_TOKEN','GOOGLE_OAUTH_REFRESH_TOKEN','BING_WEBMASTER_API_KEY','BING_API_KEY','BING_WEBMASTER_TOKEN','BING_WEBMASTER_ACCESS_TOKEN','BING_WEBMASTERTOOLS_API_KEY']
+          for k in keys:say('SECRET_PRESENT '+k, 'YES' if os.getenv(k) else 'NO')
+          source=next((x for x in ['GSC_SERVICE_ACCOUNT_JSON','GA4_SERVICE_ACCOUNT_JSON'] if os.getenv(x)),None)
+          if source:
+              try:
+                  data=json.loads(os.environ[source])
+                  say('GOOGLE_IDENTITY_TYPE',data.get('type','unknown'))
+                  creds=service_account.Credentials.from_service_account_info(data,scopes=['https://www.googleapis.com/auth/webmasters.readonly'])
+                  session=AuthorizedSession(creds)
+                  r=session.get('https://www.googleapis.com/webmasters/v3/sites',timeout=25)
+                  say('GSC_LIST_HTTP',r.status_code)
+                  if r.status_code==200:
+                      items=r.json().get('siteEntry',[])
+                      say('VISIBLE_GSC_PROPERTIES',len(items))
+                      matches=[x for x in items if '4species.com' in x.get('siteUrl','')]
+                      say('GSC_4SPECIES_VISIBLE',str(bool(matches)).upper())
+                  else:
+                      e=r.json().get('error',{}) if 'json' in (r.headers.get('content-type') or '') else {}
+                      reasons=[x.get('reason','') for x in e.get('errors',[]) if isinstance(x,dict)]
+                      say('GSC_403_CLASSIFICATION',','.join(reasons) if reasons else ('ACCESS_DENIED_OR_API_NOT_ENABLED' if r.status_code==403 else 'OTHER'))
+              except Exception as e: say('GSC_RUNTIME','ERROR_'+type(e).__name__)
+          bing=next((os.getenv(k) for k in ['BING_WEBMASTER_API_KEY','BING_API_KEY','BING_WEBMASTERTOOLS_API_KEY','BING_WEBMASTER_TOKEN','BING_WEBMASTER_ACCESS_TOKEN'] if os.getenv(k)),None)
+          if bing:
+              try:
+                  r=requests.get('https://ssl.bing.com/webmaster/api.svc/json/GetUserSites',params={'apikey':bing},timeout=25)
+                  say('BING_JSON_REST_HTTP',r.status_code)
+                  if r.status_code==200:
+                      sites=r.json().get('d',[])
+                      if isinstance(sites,dict):sites=sites.get('results',[])
+                      say('BING_4SPECIES_SITE_VISIBLE',str(any('4species.com' in str(x.get('Url','')) for x in sites if isinstance(x,dict))).upper())
+                      say('BING_VISIBLE_SITE_COUNT',len(sites))
+              except Exception as e:say('BING_RUNTIME','ERROR_'+type(e).__name__)
+          else:say('BING_JSON_REST_HTTP','NO_CREDENTIAL_AVAILABLE')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## SPECIES GSC + Bing — existing GitHub secrets and actual API access\n')
+              f.write('| Check | Result |\n|---|---|\n'+'\n'.join(report)+'\n')
+              f.write('No tokens, client emails or Google account identifiers are printed.\n')
+          PY
