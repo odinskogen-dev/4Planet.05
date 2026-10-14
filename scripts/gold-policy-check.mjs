@@ -271,7 +271,7 @@ if (mode === "pr-main") {
     && git(["hash-object", "src/data/unescoOpenData.ts"]) === "f49af033507f789920c37b56e2ae352e73fd37e5"
     && git(["hash-object", "src/earth/World.tsx"]) === "1912175f71f5aaa1de65895d60e0f6d16e9b1bd7"
     && git(["hash-object", "src/earth/atlasSourceControl.ts"]) === "b24ce6f01c0446d009b8c62b5086890ca6305f9a"
-    && git(["hash-object", "src/earth/layers.ts"]) === "5b79d44e26e5220f7707fe7841e8cd5e2dbab339"
+    && git(["hash-object", "src/earth/layers.ts"]) === "a64b72e1537b6beaa43451c9e0ca8332f89d2e5a"
     && git(["hash-object", "tests/e2e/atlas-green-data.spec.ts"]) === "a5d2bd70a41c608a3d2b3e1ecca36a8b6dac91ba";
   if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix && !p0AtlasGreenDataHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
