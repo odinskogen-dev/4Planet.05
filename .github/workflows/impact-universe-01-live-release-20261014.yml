@@ -1,0 +1,115 @@
+name: IMPACT Universe 01 — exact LIVE release 2026-10-14
+
+on:
+  push:
+    branches:
+      - release/impact-universe-01-live-20261014
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TARGET_SHA: 63526e3557caeb1dffe7ebdba175f4863e8ae2e6
+    steps:
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo "missing Cloudflare token"; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Resolve Cloudflare account and prior production deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo "no Cloudflare account id"; exit 1; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          prior=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=1" "${auth[@]}")
+          echo "Prior LIVE:"
+          jq -r '.result[0] | {id,url,created_on,environment,commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}' <<<"$prior"
+
+      - name: Checkout exact proven IMPACT artifact
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+
+      - name: Verify exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          echo "Releasing exact source $TARGET_SHA"
+
+      - name: Use Node.js 20.19
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build exact artifact
+        env:
+          CF_PAGES: "1"
+        run: npm run build
+
+      - name: Verify IMPACT build identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/impact-build.json
+          cat dist/impact-build.json
+          built=$(jq -r '.sha // empty' dist/impact-build.json)
+          test "$built" = "$TARGET_SHA"
+
+      - name: Deploy exact artifact to Cloudflare Pages production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist \
+            --project-name 4planet-05 \
+            --branch main \
+            --commit-hash "$TARGET_SHA" \
+            --commit-dirty=false
+
+      - name: Verify canonical LIVE
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 18); do
+            body=$(curl -fsS --max-time 20 https://4planet.org/impact-build.json || true)
+            sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
+            echo "LIVE probe $i: ${sha:-unresolved}"
+            if [ "$sha" = "$TARGET_SHA" ]; then
+              curl -fsS --max-time 20 https://4planet.org/impact >/dev/null
+              echo "LIVE exact artifact verified: https://4planet.org/impact"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Canonical LIVE did not expose target build identity" >&2
+          exit 1
