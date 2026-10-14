@@ -1,3 +1,43 @@
+# IMP-06 — MOBILE PROOF-LADDER READING ORDER — 14 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMPTION ON SOLE HEIR / MAKER CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
+
+## USER ARRIVES BECAUSE
+A person opens the documented Bay action on a phone to understand which claims each proof state can and cannot support.
+
+## ONE THING TO UNDERSTAND
+Every stronger claim requires a stronger state, and each `DOES NOT PROVE` boundary must remain visible beside the state it limits.
+
+## PRIMARY ACTION
+Read the Proof Ladder from state to evidence meaning to limitation without horizontal scrolling at 390px or 430px.
+
+## SECONDARY DEPTH
+Desktop retains the existing three-column comparison while mobile uses the same content and DOM reading order in one column.
+
+## P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH
+The proof state is dominant; the numbered step orients; the evidence meaning explains; `DOES NOT PROVE` preserves the action/claim boundary.
+
+## WHAT CAN BE REMOVED
+The fixed 482px minimum grid width that cannot fit the required mobile viewports.
+
+## WHAT MUST BE REUSED
+The existing Bay action route, `cell.proofLadder` data, state/proves/doesNotProve copy, PublicShell/Section hierarchy, IMP-06/#151 receiver and sole `king/test` HEIR.
+
+## TRUTH BOUNDARY
+Responsive layout does not promote contribution, delivery, evidence, outcome or impact state. No proof copy or operational state changes.
+
+## MOBILE-FIRST RISK
+The single-column layout must preserve DOM reading order, visible limitation labels and a no-horizontal-overflow contract at both 390px and 430px; desktop must remain three columns.
+
+## HUMAN SUCCESS
+A phone reader can read every proof state and its limitation without horizontal scrolling or losing the relationship between them.
+
+**DONOR DECISION:** no donor; correct the current HEIR component in place.
+**BASE / ROLLBACK:** `king/test@57471cc8e1e7cf8f515d99bc802d94ad5d1d3a67`; revert only this bounded correction if independent Gold finds a valid layout, accessibility or truth regression.
+**MAKER ≠ JUDGE:** Factory implements and returns an exact SHA. Independent Gold must run Chromium and WebKit at 390/430 plus desktop. No merge, deployment, release or LIVE claim is authorised.
+
+---
+
 # IMPACT-LAN-GOLD-01 / GOLD-TEMPLATE-REFINEMENT-02 — 4PLANET IMPACT LIVING ACTION NETWORK — 13 OCT 2026
 
 **STATUS:** TEST KING GOLD CANDIDATE / NO PRODUCTION LIVE RELEASE / FOUNDER RELEASE STILL REQUIRED / ENIG LIVE NOT GIVEN FOR PRODUCTION.
