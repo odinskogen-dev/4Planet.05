@@ -75,48 +75,61 @@ jobs:
           npm run build
           npm run test:smoke
 
-      - name: Deploy exact Pages release artifact and resolve Functions-capable origin
+      - name: Deploy hash-pinned frontend artifact
         shell: bash
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch founder-4nation-s4piens-20261014 --commit-hash "$GITHUB_SHA" --commit-dirty=false | tee artifacts/release/pages-deploy.txt
           static_url=$(grep -Eo 'https://[a-z0-9]{8}[.]4planet-05[.]pages[.]dev' artifacts/release/pages-deploy.txt | head -n1 || true)
-          alias_url=$(sed -n 's/.*Deployment alias URL: \(https:\/\/[^[:space:]]*\.4planet-05\.pages\.dev\).*/\1/p' artifacts/release/pages-deploy.txt | head -n1 || true)
           [ -n "$static_url" ] || { echo "IMMUTABLE_PAGES_URL_NOT_FOUND"; exit 10; }
-          [ -n "$alias_url" ] || alias_url="$static_url"
           echo "STATIC_PREVIEW_URL=$static_url" >> "$GITHUB_ENV"
-          echo "ALIAS_PREVIEW_URL=$alias_url" >> "$GITHUB_ENV"
           printf '%s\n' "$static_url" > artifacts/release/immutable-preview-url.txt
-          printf '%s\n' "$alias_url" > artifacts/release/branch-preview-url.txt
           echo "IMMUTABLE_STATIC_PREVIEW=$static_url"
-          echo "BRANCH_PREVIEW=$alias_url"
 
-      - name: Real-source verification on deployed Pages Functions
+      - name: Build and deploy bounded preview Workers with source APIs
         shell: bash
         run: |
           set -euo pipefail
-          runtime=""
-          for candidate in "$STATIC_PREVIEW_URL" "$ALIAS_PREVIEW_URL"; do
-            code=$(curl -sS --max-time 30 -o artifacts/release/function-probe.json -w '%{http_code}' "$candidate/api/worldbank-country" || true)
-            if [ "$code" = 400 ] && jq -e '.error=="INVALID_COUNTRY_ISO3"' artifacts/release/function-probe.json >/dev/null 2>&1; then
-              runtime="$candidate"; break
-            fi
-            echo "FUNCTION_PROBE candidate=$candidate http=$code"
-          done
-          [ -n "$runtime" ] || { echo "PAGES_FUNCTIONS_ROUTE_UNAVAILABLE"; exit 12; }
-          echo "PREVIEW_URL=$runtime" >> "$GITHUB_ENV"
-          echo "$runtime" > artifacts/release/functions-capable-preview-url.txt
-          echo "FUNCTIONS_CAPABLE_PREVIEW=$runtime"
-          check_ok() { name="$1"; url="$2"; out="artifacts/release/$name.json"; curl -fsS --max-time 45 "$url" > "$out"; jq -e '.ok==true' "$out" >/dev/null; echo "$name=PASS"; }
-          check_ok worldbank-nor "$runtime/api/worldbank-country?country=NOR"
-          check_ok worldbank-rank "$PREVIEW_URL/api/worldbank-country?rank=1"
-          check_ok country-identity-no "$PREVIEW_URL/api/country-identity?iso2=NO"
-          check_ok unesco-wdi-no "$PREVIEW_URL/api/unesco-country?dataset=wdi001&country=NO"
-          check_ok unesco-heritage "$PREVIEW_URL/api/unesco-data?dataset=whc001"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          origin=os.environ["STATIC_PREVIEW_URL"]
+          sha=os.environ["GITHUB_SHA"]
+          for src,dst in [
+            ("ops/release/4nation-release-worker.ts","ops/release/4nation-release-worker-built.ts"),
+            ("ops/release/s4piens-release-worker.ts","ops/release/s4piens-release-worker-built.ts")
+          ]:
+            p=Path(src).read_text().replace("__STATIC_ORIGIN__",origin).replace("__IMMUTABLE_ORIGIN__",origin).replace("__SOURCE_SHA__",sha)
+            Path(dst).write_text(p)
+          PY
+          npx --yes wrangler@4.128.0 deploy ops/release/4nation-release-worker-built.ts --name 4planet-4nation-release-preview-20261014 --compatibility-date 2026-10-14 | tee artifacts/release/4nation-preview-worker.txt
+          npx --yes wrangler@4.128.0 deploy ops/release/s4piens-release-worker-built.ts --name 4planet-s4piens-release-preview-20261014 --compatibility-date 2026-10-14 | tee artifacts/release/s4piens-preview-worker.txt
+          nurl=$(grep -Eo 'https://[^[:space:]]+[.]workers[.]dev' artifacts/release/4nation-preview-worker.txt | tail -n1 || true)
+          surl=$(grep -Eo 'https://[^[:space:]]+[.]workers[.]dev' artifacts/release/s4piens-preview-worker.txt | tail -n1 || true)
+          [ -n "$nurl" ] && [ -n "$surl" ] || { echo "PREVIEW_WORKER_URL_UNRESOLVED"; exit 12; }
+          echo "NATION_PREVIEW_URL=$nurl" >> "$GITHUB_ENV"
+          echo "S4_PREVIEW_URL=$surl" >> "$GITHUB_ENV"
+          printf '%s\n' "$nurl" > artifacts/release/4nation-preview-url.txt
+          printf '%s\n' "$surl" > artifacts/release/s4piens-preview-url.txt
+          echo "4NATION_PREVIEW=$nurl"
+          echo "S4PIENS_PREVIEW=$surl"
+
+      - name: Real-source verification through exact preview Workers
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_ok() { name="$1"; url="$2"; out="artifacts/release/$name.json"; curl -fsS --max-time 60 "$url" > "$out"; jq -e '.ok==true' "$out" >/dev/null; echo "$name=PASS"; }
+          probe=$(curl -sS --max-time 30 -o artifacts/release/function-probe.json -w '%{http_code}' "$NATION_PREVIEW_URL/api/worldbank-country" || true)
+          [ "$probe" = 400 ] && jq -e '.error=="INVALID_COUNTRY_ISO3"' artifacts/release/function-probe.json >/dev/null || { echo "BUNDLED_API_PROBE_FAIL http=$probe"; exit 13; }
+          check_ok worldbank-nor "$NATION_PREVIEW_URL/api/worldbank-country?country=NOR"
+          check_ok worldbank-rank "$NATION_PREVIEW_URL/api/worldbank-country?rank=1"
+          check_ok country-identity-no "$NATION_PREVIEW_URL/api/country-identity?iso2=NO"
+          check_ok unesco-wdi-no "$NATION_PREVIEW_URL/api/unesco-country?dataset=wdi001&country=NO"
+          check_ok unesco-heritage "$NATION_PREVIEW_URL/api/unesco-data?dataset=whc001"
           success=0
           for sector in agriculture power fossil-fuel-operations manufacturing; do
             out="artifacts/release/climate-$sector.json"
-            if curl -fsS --max-time 45 "$PREVIEW_URL/api/climate-trace?sectors=$sector&limit=8" > "$out" && jq -e '.ok==true and (.assets|length)>0' "$out" >/dev/null; then
+            if curl -fsS --max-time 60 "$S4_PREVIEW_URL/api/climate-trace?sectors=$sector&limit=8" > "$out" && jq -e '.ok==true and (.assets|length)>0' "$out" >/dev/null; then
               echo "CLIMATE_TRACE_$sector=PASS"; success=$((success+1))
             else
               echo "CLIMATE_TRACE_$sector=SOURCE_UNAVAILABLE_OR_CONTRACT_WARNING"
@@ -124,37 +137,25 @@ jobs:
           done
           [ "$success" -ge 1 ] || { echo "CLIMATE_TRACE_ALL_SECTORS_UNAVAILABLE_HOLD"; exit 11; }
 
-      - name: Chromium and WebKit visual/data QA on immutable artifact
+      - name: Chromium and WebKit visual/data QA on preview Workers
         shell: bash
         run: |
           set -euo pipefail
           npx playwright install --with-deps chromium webkit
-          node scripts/nation-visual-qa.mjs "$PREVIEW_URL" artifacts/release/nation-chromium --browser=chromium | tee artifacts/release/nation-chromium.log
-          node scripts/nation-visual-qa.mjs "$PREVIEW_URL" artifacts/release/nation-webkit --browser=webkit | tee artifacts/release/nation-webkit.log
-          node scripts/nation-visual-qa.mjs "$PREVIEW_URL" artifacts/release/s4-chromium --s4piens --browser=chromium | tee artifacts/release/s4-chromium.log
-          node scripts/nation-visual-qa.mjs "$PREVIEW_URL" artifacts/release/s4-webkit --s4piens --browser=webkit | tee artifacts/release/s4-webkit.log
+          node scripts/nation-visual-qa.mjs "$NATION_PREVIEW_URL" artifacts/release/nation-chromium --browser=chromium | tee artifacts/release/nation-chromium.log
+          node scripts/nation-visual-qa.mjs "$NATION_PREVIEW_URL" artifacts/release/nation-webkit --browser=webkit | tee artifacts/release/nation-webkit.log
+          node scripts/nation-visual-qa.mjs "$S4_PREVIEW_URL" artifacts/release/s4-chromium --s4piens --browser=chromium | tee artifacts/release/s4-chromium.log
+          node scripts/nation-visual-qa.mjs "$S4_PREVIEW_URL" artifacts/release/s4-webkit --s4piens --browser=webkit | tee artifacts/release/s4-webkit.log
 
-      - name: Deploy only the two Founder-authorised live adapters
+      - name: Deploy only the two Founder-authorised live Workers
         shell: bash
         run: |
           set -euo pipefail
           touch /tmp/live-mutation-started
-          python - <<'PY'
-          import os,re
-          from pathlib import Path
-          origin=os.environ["PREVIEW_URL"]
-          sha=os.environ["GITHUB_SHA"]
-          p=Path("ops/nation/4nation-live-worker.js").read_text()
-          p=re.sub(r'const IMMUTABLE_ORIGIN = "[^"]+";', f'const IMMUTABLE_ORIGIN = "{origin}";', p)
-          p=re.sub(r'const SOURCE_SHA = "[^"]+";', f'const SOURCE_SHA = "{sha}";', p)
-          Path("artifacts/release/4nation-live-worker-release.js").write_text(p)
-          s=Path("ops/s4piens/s4piens-live-worker.js").read_text().replace("__IMMUTABLE_ORIGIN__",origin).replace("__SOURCE_SHA__",sha)
-          Path("artifacts/release/s4piens-live-worker-release.js").write_text(s)
-          PY
-          npx --yes wrangler@4.128.0 deploy artifacts/release/4nation-live-worker-release.js --name 4planet-nation-live --compatibility-date 2026-09-21 --keep-vars | tee artifacts/release/4nation-live-deploy.txt
-          cat > artifacts/release/s4-live-wrangler.toml <<'EOF'
+          npx --yes wrangler@4.128.0 deploy ops/release/4nation-release-worker-built.ts --name 4planet-nation-live --compatibility-date 2026-10-14 --keep-vars | tee artifacts/release/4nation-live-deploy.txt
+          cat > s4-live-wrangler.toml <<'EOF'
           name = "4planet-s4piens-live"
-          main = "s4piens-live-worker-release.js"
+          main = "ops/release/s4piens-release-worker-built.ts"
           compatibility_date = "2026-10-14"
           workers_dev = true
           [[routes]]
@@ -164,7 +165,7 @@ jobs:
           pattern = "www.s4piens.com/*"
           zone_name = "s4piens.com"
           EOF
-          (cd artifacts/release && npx --yes wrangler@4.128.0 deploy --config s4-live-wrangler.toml --keep-vars) | tee artifacts/release/s4piens-live-deploy.txt
+          npx --yes wrangler@4.128.0 deploy --config s4-live-wrangler.toml --keep-vars | tee artifacts/release/s4piens-live-deploy.txt
 
       - name: Verify exact live domains in Chromium and WebKit
         shell: bash
