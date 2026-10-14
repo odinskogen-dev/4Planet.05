@@ -339,10 +339,30 @@ export default {
       return request.method === "GET" || request.method === "HEAD"
         ? proxySpeciesV53(request) : proxyRaw(request,path);
     }
+    // Public discovery endpoints must be handled before the v53 catch-all proxy.
+    // Only index the four generic v53 entry routes. Species profiles remain
+    // excluded until exact canonical URLs, review, media rights and indexability pass.
+    if (path === `/${INDEXNOW_KEY}.txt`)
+      return new Response(INDEXNOW_KEY, { headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "cache-control": "public, max-age=86400",
+      } });
     if (path === "/robots.txt")
-      return new Response("User-agent: *\nAllow: /\n", {headers:{"content-type":"text/plain; charset=utf-8"}});
-    if (path === "/sitemap.xml")
-      return new Response("Sitemap awaits content quality approval", {status:404,headers:{"content-type":"text/plain"}});
+      return new Response(
+        "User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://4species.com/sitemap.xml\n",
+        { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=300" } },
+      );
+    if (path === "/sitemap.xml") {
+      const approved = ["/", "/explore", "/quiz", "/about"];
+      const body = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + approved.map((p) => `<url><loc>https://4species.com${p}</loc></url>`).join("\n")
+        + '\n</urlset>\n';
+      return new Response(body, { headers: {
+        "content-type": "application/xml; charset=utf-8",
+        "cache-control": "public, max-age=300",
+      } });
+    }
     return proxySpeciesV53(request);
 
     if (path === "/" || path === "") return redirect(`https://4species.com/species/${url.search}`);
