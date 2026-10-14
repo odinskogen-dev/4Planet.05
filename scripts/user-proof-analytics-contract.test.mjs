@@ -111,6 +111,8 @@ test("PostHog reuses the same consented event spine and fails closed without con
 test("analytics is fail-closed to the approved production product-domain set", () => {
   for (const host of requiredAnalyticsHosts) assert.ok(analytics.includes(`\"${host}\"`), `analytics host missing: ${host}`);
   assert.match(analytics, /\.pages\.dev/);
+  assert.match(analytics, /\.workers\.dev/);
+  assert.match(analytics, /test\.4planet\.org/);
   assert.match(analytics, /localhost/);
   assert.match(analytics, /isAnalyticsHostAllowed/);
 });
