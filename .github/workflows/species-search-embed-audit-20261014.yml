@@ -1,4 +1,4 @@
-name: SPECIES Search and Embed Read-Only Audit 20261014
+name: SPECIES Independent Live SEO Readback 20261014
 on:
   push:
     branches: [audit/species-seo-discovery-embed-20261014]
@@ -24,6 +24,7 @@ jobs:
           const origin='https://4species.com';
           const urls=['/','/orca','/lion','/tiger','/gray-wolf','/giant-panda','/blue-whale','/black-rhinoceros','/monarch-butterfly','/explore','/group/mammals','/about','/quiz','/sitemap.xml','/robots.txt'];
           const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const errors=[];
           for(const path of urls){
             const response=await fetch(origin+path,{redirect:'follow'});
             const raw=await response.text();
@@ -57,8 +58,25 @@ jobs:
               after.errors=errors;await page.close();
             }
             console.log("SEO_LIVE_AUDIT "+JSON.stringify({path,status:response.status,finalUrl:response.url,contentType:type,headerRobots:response.headers.get('x-robots-tag'),frameOpts:response.headers.get('x-frame-options'),csp:response.headers.get('content-security-policy')?.slice(0,230),htmlLength:raw.length,serverRobots:meta,serverCanonical:canon,serverOgImage:og,jsonld,hydrated:after,containsTitle:raw.includes('<title>')}));
+            if(type.includes('html')){
+              if(!after?.robots?.startsWith('index,follow')) errors.push('hydration_noindex:'+path);
+              if(!after?.canonical?.startsWith(origin))errors.push('wrong_canonical:'+path);
+              if(response.status!==200)errors.push('not_200:'+path);
+              if(meta.includes('noindex')) errors.push('server_noindex:'+path);
+            }
+
           }
+          const unknown=await browser.newPage();
+          await unknown.goto(origin+'/species-unknown-verify-12345',{waitUntil:'domcontentloaded',timeout:25000});
+          await unknown.waitForTimeout(1400);
+          const unknownRobots=await unknown.locator('meta[name="robots"]').getAttribute('content');
+          console.log('SPECIES_UNKNOWN_TAXON_ROBOTS '+unknownRobots);
+          if(!unknownRobots?.includes('noindex'))errors.push('unknown_taxon_accidentally_indexable');
+          await unknown.close();
           await browser.close();
+          console.log('SPECIES_LIVE_SEO_ASSERTIONS '+JSON.stringify(errors));
+          if(errors.length) process.exitCode=1;
+
           NODE
       - name: Audit sitemap URLs and IndexNow file and preview noindex
         shell: bash
