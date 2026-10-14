@@ -265,6 +265,22 @@ public_robots='''robots={typeof window !== "undefined" && ["4species.com","www.4
 for source_file in ["src/pages/integrated/SpeciesHome.tsx","src/pages/integrated/SpeciesExplore.tsx"]:
     replace_once(source_file, 'robots="noindex,nofollow"', public_robots)
 
+# The public About and Quiz page routes share Claude's existing <Seo>.
+# They were also reverting to noindex after hydration. Preserve noindex on
+# labs/preview and do not change any visual component.
+for source_file in ["src/pages/integrated/SpeciesAbout.tsx",
+                    "src/pages/integrated/SpeciesQuiz.tsx"]:
+    pmeta=Path(source_file)
+    meta=pmeta.read_text()
+    if 'robots="noindex,nofollow"' in meta:
+        count=meta.count('robots="noindex,nofollow"')
+        pmeta.write_text(meta.replace('robots="noindex,nofollow"',public_robots))
+        print("SPECIES_EXISTING_SEO_ABOUT_QUIZ_PUBLIC_INDEX_ONLY",source_file,count)
+    elif '<Seo' in meta:
+        print("SPECIES_SEO_RETAINS_EXISTING_DEFAULT",source_file)
+    else:
+        raise ValueError("Missing Claude <Seo> in "+source_file)
+
 p=Path("src/pages/integrated/SpeciesTemplate.tsx")
 template_source=p.read_text()
 original_robots='robots="noindex,nofollow"'
