@@ -1,3 +1,25 @@
+# S4PIENS HUMAN SYSTEMS 02 — FOLLOW ONE THING — 14 OCT 2026
+
+**STATUS:** REGISTERED SANDBOX (`claude/s4piens-human-systems-01`, PR #447, after #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
+**USER ARRIVES BECAUSE:** they want to understand how something they use every day — bread, coffee, a phone — actually reaches them.
+**ONE THING TO UNDERSTAND:** every everyday object is the last step of a chain through places and living systems; the same chain grammar explains the whole system.
+**PRIMARY ACTION:** pick an object and follow it step by step; switch to the system view to see where it sits.
+**SECONDARY DEPTH:** system chain, Atlas place layers, country lens (Climate TRACE), living systems, problems, solutions (maturity ≠ evidence).
+**P1 DOMINANT:** the human with the needs orbit (home) / the object's journey line (object page).
+**P2 ORIENTATION:** chain stations with one question each.
+**P3 ACTION:** Follow · Object/System toggle · See it on the Atlas · Choose a country.
+**P4 DEPTH:** problems, solutions, sources.
+**WHAT CAN BE REMOVED:** dashboards, scores, footprint/guilt framing, graph spaghetti.
+**WHAT MUST BE REUSED:** shared ATLAS embed (kind S4PIENS), `src/planet/livingSystems.ts`, `/api/climate-trace`, 4NATION primitives and country identity.
+**TRUTH BOUNDARY:** station and object text = labelled 4PLANET CONTEXT (explanation, no numbers); quantities only from sourced adapters; proximity ≠ cause; a solution's maturity ≠ its evidence; no flows drawn until sourced.
+**MOBILE-FIRST RISK:** orbit labels at 390px; journey line single column; rail horizontal scroll.
+**HUMAN SUCCESS:** “I never understood that all of this was connected.”
+**BRAND OS PREFLIGHT (fresh read 14 Oct 2026):** mode = editorial/story surface; anchor = human figure / journey line; accent = S4PIENS_ #FF4D22 (text: Rust #842810 / Light Orange #FF7D50 from controlled library); neutrals White/Black lock; Instrument Sans restrained; capsule buttons, one soft radius; living-world presence = TRACE/CONTEXT (no rights-cleared photography yet — deferred).
+**DONOR DECISION:** PR #75 and AXE s4piens multisprint branches not adopted (Founder instruction: design new).
+**BASE / ROLLBACK:** forward-synced after PR #444; rollback via PR #447 revert plus preserved pre-release branch `backup/pre-claude-4nation-s4piens-live-20261014`.
+
+---
+
 # 4NATION COUNTRY OBJECT 02 — UNDERSTAND ANY COUNTRY — 14 OCT 2026
 
 **STATUS:** REGISTERED SANDBOX (`claude/4nation-country-object-01`, PR #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
