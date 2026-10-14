@@ -113,7 +113,7 @@ export const UNESCO_DATASETS: Record<UnescoDatasetId, DatasetMetadata> = {
     productRoles: ["ATLAS", "4NATION", "NATUREBRAIN"],
     edition: {
       datasetDescriptionAsOf: "2025-01-15",
-      datasetProcessedAt: "2026-05-28",
+      datasetProcessedAt: "UNKNOWN",
       recordsetVersion: "RETRIEVED_AT_REQUEST_TIME",
       referenceLabel: "UNESCO official Global Geoparks list",
       referenceUrl: "https://www.unesco.org/en/iggp/geoparks",
@@ -291,18 +291,27 @@ export const safeHttpUrl = (value: unknown): string => {
  * changes, but are never guessed when both values are not finite.
  */
 export const normaliseUnescoPoint = (value: any): { lat: number; lon: number } | null => {
-  let lat: number;
-  let lon: number;
+  const coordinateNumber = (component: unknown): number | null => {
+    if (component === null || component === undefined || typeof component === "boolean") return null;
+    if (typeof component === "string" && component.trim() === "") return null;
+    const numeric = typeof component === "number" ? component : Number(component);
+    return Number.isFinite(numeric) ? numeric : null;
+  };
+
+  let rawLat: unknown;
+  let rawLon: unknown;
   if (Array.isArray(value) && value.length >= 2) {
-    lat = Number(value[0]);
-    lon = Number(value[1]);
+    [rawLat, rawLon] = value;
   } else if (value && typeof value === "object") {
-    lat = Number(value.lat ?? value.latitude);
-    lon = Number(value.lon ?? value.lng ?? value.longitude);
+    rawLat = value.lat ?? value.latitude;
+    rawLon = value.lon ?? value.lng ?? value.longitude;
   } else {
     return null;
   }
-  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+
+  const lat = coordinateNumber(rawLat);
+  const lon = coordinateNumber(rawLon);
+  if (lat === null || lon === null || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
   return { lat, lon };
 };
 
@@ -458,3 +467,4 @@ export async function fetchUnescoDataset(dataset: UnescoDatasetId): Promise<Unes
     rights: meta.rights,
   };
 }
+
