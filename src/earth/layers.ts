@@ -15,7 +15,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 /* eslint-disable */
 // @ts-nocheck
-import { UNESCO_DATASETS, fetchUnescoDataset, normaliseUnescoAtlasRecord } from "../data/unescoOpenData";
+import { UNESCO_DATASETS, fetchUnescoDataset, normaliseUnescoAtlasRecord, safeHttpUrl } from "../data/unescoOpenData";
 
 export const MONO = "'Fragment Mono', ui-monospace, monospace";
 export const C = {
@@ -104,10 +104,10 @@ const unescoAtlasRows = async (datasetId) => {
     .map((record) => normaliseUnescoAtlasRecord(datasetId, record))
     .filter(Boolean)
     .map((record) => {
-      const sourceHref = safeHttpHref(record.sourceUrl);
+      const sourceHref = safeHttpUrl(record.sourceUrl);
       const sourceLink = sourceHref ? `<a class="pl" href="${esc(sourceHref)}" target="_blank" rel="noopener">Open source ↗</a>` : "";
       const licenceLink = `<a class="pl" href="${metadata.rights.licenceUrl}" target="_blank" rel="noopener">CC BY-SA 4.0 ↗</a>`;
-      const referenceHref = safeHttpHref(metadata.edition?.referenceUrl);
+      const referenceHref = safeHttpUrl(metadata.edition?.referenceUrl);
       const referenceLink = referenceHref ? `<a class="pl" href="${esc(referenceHref)}" target="_blank" rel="noopener">Current UNESCO list ↗</a>` : "";
       let detail = "";
       if (record.kind === "OCEAN_BIODIVERSITY_AREA") {
