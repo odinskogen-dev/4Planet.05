@@ -1,3 +1,37 @@
+# EXPO-14 — DISTRIBUTION MEASUREMENT INTEGRITY — 14 OCTOBER 2026
+
+**STATUS:** FOUNDER-DIRECTED P0/P1 MEASUREMENT CORRECTION ON TEST KING / NO PRODUCTION CLAIM.
+## USER ARRIVES BECAUSE
+4PLANET needs trustworthy ecosystem-level traffic and distribution reporting before early signals are used for decisions.
+## ONE THING TO UNDERSTAND
+External discovery, internal cross-domain navigation, auth infrastructure and founder testing must not be counted as the same thing.
+## PRIMARY ACTION
+Keep credential-bearing navigation out of analytics, isolate internal browsers, suppress owned/auth/deployment referral pollution, classify Google/Bing/Ecosia/DuckDuckGo and major AI referrers, and submit only canonical sitemap URLs through IndexNow.
+## SECONDARY DEPTH
+GA4 remains the behaviour/acquisition layer; native Search Console and Bing Webmaster Tools remain the search-impression/ranking layer.
+## P1 DOMINANT
+Clean measurement truth.
+## P2 ORIENTATION
+Discovery channel and landing product/path.
+## P3 ACTION / NEXT
+Verify deterministic contracts and exact TEST KING behaviour before any production promotion.
+## P4 DEPTH
+Search visibility, query, page, CTR and index-state reporting remain separate from on-site behaviour.
+## WHAT CAN BE REMOVED
+Self-referrals, auth/deployment referrals, founder/internal browser traffic and legacy redirect-route IndexNow submissions.
+## WHAT MUST BE REUSED
+Existing GA4 property, consent gate, sensitive-navigation block, shared ProductAnalytics spine, canonical sitemap generator and Founder release law.
+## TRUTH BOUNDARY
+A session is not a unique person; a search click is not an impression; an IndexNow submission is not indexing; an AI citation is not a click; internal product movement is not external acquisition.
+## MOBILE-FIRST RISK
+None introduced by this measurement-only runtime change; the control query is removed from the visible URL immediately after use.
+## HUMAN SUCCESS
+Founder reporting can distinguish real external discovery from internal testing and can identify which product/search landing surface earned the visit.
+
+**MAKER ≠ JUDGE:** AXE implemented the bounded measurement correction. Existing independent Gold/TEST KING gates judge the resulting SHA. No production release is claimed by this brief.
+
+---
+
 # EXPO-13 — GA4 Admin automatic-write prevention / 14 October 2026
 
 **STATUS:** HEIR security fix / independent CI, QA and readback pending. **HUMAN VALUE:** Analysis remains trustworthy without accidental third-party account mutation on routine code push. **PRIMARY ACTION:** GA4 Admin push is strictly audit/read-only; a manual APPLY requires exact 'enig send' Founder release input and explicit choice. **REUSE:** existing GA4 property, scripts, GitHub workflow and issue #173. **TRUTH:** No GA4 configuration was changed by this source patch and LIVE/GA4 provider state remains unverified. **BASE / ROLLBACK:** king/test@7aff9971073234b82f653c41e358ae43a5bcaf3d.
