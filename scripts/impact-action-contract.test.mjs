@@ -5,6 +5,7 @@ import ts from "typescript";
 
 const source = await readFile(new URL("../src/impact/actionContract.ts", import.meta.url), "utf8");
 const impactHomeSource = await readFile(new URL("../src/pages/integrated/ImpactPremium.tsx", import.meta.url), "utf8");
+const impactActionProofSource = await readFile(new URL("../src/pages/integrated/ImpactActionProof.tsx", import.meta.url), "utf8");
 const impactUnitsSource = await readFile(new URL("../src/data/impactUnits.ts", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
@@ -47,6 +48,15 @@ test("IMPACT detail pages condition partner copy on an actual appointment", () =
   assert.match(impactHomeSource, /No field partner has been appointed\. Delivery is intended only after a partner is selected and verified\./);
   assert.match(impactHomeSource, /delivery is not claimed until proof is available\./);
   assert.doesNotMatch(impactHomeSource, /Delivery is carried out by a chosen field partner/);
+});
+
+test("Bay Proof Ladder keeps desktop comparison and stacks without mobile overflow", () => {
+  assert.match(impactActionProofSource, /data-testid="impact-proof-ladder"/);
+  assert.match(impactActionProofSource, /data-testid="impact-proof-ladder-row"/);
+  assert.match(impactActionProofSource, /gridTemplateColumns: "minmax\(70px,\.25fr\) minmax\(160px,\.65fr\) minmax\(220px,1fr\)"/);
+  assert.match(impactActionProofSource, /@media \(max-width: 600px\)[\s\S]*\.impact-proof-ladder-row[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(impactActionProofSource, /\.impact-proof-ladder-row > \* \{ min-width: 0; \}/);
+  assert.match(impactActionProofSource, /DOES NOT PROVE/);
 });
 
 test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
