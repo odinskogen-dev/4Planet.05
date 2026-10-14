@@ -139,3 +139,6 @@ test("P0 crawler policy excludes private OS without blocking public Oslofjord", 
   for (const pattern of ["/os$", "/os/", "/os?"]) assert.ok(generator.includes(JSON.stringify(pattern)));
   for (const agent of agents) assert.ok(generator.includes(JSON.stringify(agent)));
 });
+
+
+test("IndexNow canonical sitemap source",()=>{const indexNow=read("scripts/submit-indexnow.mjs");assert.ok(indexNow.includes("public"));assert.ok(indexNow.includes("sitemap.xml"));assert.ok(indexNow.includes("matchAll"));});
