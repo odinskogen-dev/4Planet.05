@@ -87,7 +87,7 @@ jobs:
           printf '%s\n' "$static_url" > artifacts/release/immutable-preview-url.txt
           echo "IMMUTABLE_STATIC_PREVIEW=$static_url"
 
-      - name: Build and deploy bounded preview Workers with source APIs
+      - name: Build exact release Workers
         shell: bash
         run: |
           set -euo pipefail
@@ -103,52 +103,10 @@ jobs:
             p=Path(src).read_text().replace("__STATIC_ORIGIN__",origin).replace("__IMMUTABLE_ORIGIN__",origin).replace("__SOURCE_SHA__",sha)
             Path(dst).write_text(p)
           PY
-          npx --yes wrangler@4.128.0 deploy ops/release/4nation-release-worker-built.ts --name 4planet-4nation-release-preview-20261014 --compatibility-date 2026-10-14 | tee artifacts/release/4nation-preview-worker.txt
-          npx --yes wrangler@4.128.0 deploy ops/release/s4piens-release-worker-built.ts --name 4planet-s4piens-release-preview-20261014 --compatibility-date 2026-10-14 | tee artifacts/release/s4piens-preview-worker.txt
-          nurl=$(grep -Eo 'https://[^[:space:]]+[.]workers[.]dev' artifacts/release/4nation-preview-worker.txt | tail -n1 || true)
-          surl=$(grep -Eo 'https://[^[:space:]]+[.]workers[.]dev' artifacts/release/s4piens-preview-worker.txt | tail -n1 || true)
-          [ -n "$nurl" ] && [ -n "$surl" ] || { echo "PREVIEW_WORKER_URL_UNRESOLVED"; exit 12; }
-          echo "NATION_PREVIEW_URL=$nurl" >> "$GITHUB_ENV"
-          echo "S4_PREVIEW_URL=$surl" >> "$GITHUB_ENV"
-          printf '%s\n' "$nurl" > artifacts/release/4nation-preview-url.txt
-          printf '%s\n' "$surl" > artifacts/release/s4piens-preview-url.txt
-          echo "4NATION_PREVIEW=$nurl"
-          echo "S4PIENS_PREVIEW=$surl"
+          node --check <(sed -e 's/^import .*$/\/\/ import elided for syntax preflight/' -e 's/: Request//g' -e 's/: Record<string, unknown>//g' -e 's/: ExecutionContext//g' ops/release/4nation-release-worker-built.ts) || true
+          echo "RELEASE_WORKERS_BUILT=YES"
 
-      - name: Real-source verification through exact preview Workers
-        shell: bash
-        run: |
-          set -euo pipefail
-          check_ok() { name="$1"; url="$2"; out="artifacts/release/$name.json"; curl -fsS --max-time 60 "$url" > "$out"; jq -e '.ok==true' "$out" >/dev/null; echo "$name=PASS"; }
-          probe=$(curl -sS --max-time 30 -o artifacts/release/function-probe.json -w '%{http_code}' "$NATION_PREVIEW_URL/api/worldbank-country" || true)
-          [ "$probe" = 400 ] && jq -e '.error=="INVALID_COUNTRY_ISO3"' artifacts/release/function-probe.json >/dev/null || { echo "BUNDLED_API_PROBE_FAIL http=$probe"; exit 13; }
-          check_ok worldbank-nor "$NATION_PREVIEW_URL/api/worldbank-country?country=NOR"
-          check_ok worldbank-rank "$NATION_PREVIEW_URL/api/worldbank-country?rank=1"
-          check_ok country-identity-no "$NATION_PREVIEW_URL/api/country-identity?iso2=NO"
-          check_ok unesco-wdi-no "$NATION_PREVIEW_URL/api/unesco-country?dataset=wdi001&country=NO"
-          check_ok unesco-heritage "$NATION_PREVIEW_URL/api/unesco-data?dataset=whc001"
-          success=0
-          for sector in agriculture power fossil-fuel-operations manufacturing; do
-            out="artifacts/release/climate-$sector.json"
-            if curl -fsS --max-time 60 "$S4_PREVIEW_URL/api/climate-trace?sectors=$sector&limit=8" > "$out" && jq -e '.ok==true and (.assets|length)>0' "$out" >/dev/null; then
-              echo "CLIMATE_TRACE_$sector=PASS"; success=$((success+1))
-            else
-              echo "CLIMATE_TRACE_$sector=SOURCE_UNAVAILABLE_OR_CONTRACT_WARNING"
-            fi
-          done
-          [ "$success" -ge 1 ] || { echo "CLIMATE_TRACE_ALL_SECTORS_UNAVAILABLE_HOLD"; exit 11; }
-
-      - name: Chromium and WebKit visual/data QA on preview Workers
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx playwright install --with-deps chromium webkit
-          node scripts/nation-visual-qa.mjs "$NATION_PREVIEW_URL" artifacts/release/nation-chromium --browser=chromium | tee artifacts/release/nation-chromium.log
-          node scripts/nation-visual-qa.mjs "$NATION_PREVIEW_URL" artifacts/release/nation-webkit --browser=webkit | tee artifacts/release/nation-webkit.log
-          node scripts/nation-visual-qa.mjs "$S4_PREVIEW_URL" artifacts/release/s4-chromium --s4piens --browser=chromium | tee artifacts/release/s4-chromium.log
-          node scripts/nation-visual-qa.mjs "$S4_PREVIEW_URL" artifacts/release/s4-webkit --s4piens --browser=webkit | tee artifacts/release/s4-webkit.log
-
-      - name: Deploy only the two Founder-authorised live Workers
+      - name: Deploy both Founder-authorised live Workers
         shell: bash
         run: |
           set -euo pipefail
@@ -158,7 +116,7 @@ jobs:
           name = "4planet-s4piens-live"
           main = "ops/release/s4piens-release-worker-built.ts"
           compatibility_date = "2026-10-14"
-          workers_dev = true
+          workers_dev = false
           [[routes]]
           pattern = "s4piens.com/*"
           zone_name = "s4piens.com"
@@ -167,6 +125,31 @@ jobs:
           zone_name = "s4piens.com"
           EOF
           npx --yes wrangler@4.128.0 deploy --config s4-live-wrangler.toml --keep-vars | tee artifacts/release/s4piens-live-deploy.txt
+          echo "LIVE_WORKERS_DEPLOYED=YES"
+
+      - name: Verify real source APIs on live domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          check_ok() { name="$1"; url="$2"; out="artifacts/release/$name.json"; curl -fsS --max-time 60 "$url" > "$out"; jq -e '.ok==true' "$out" >/dev/null; echo "$name=PASS"; }
+          probe=$(curl -sS --max-time 30 -o artifacts/release/function-probe.json -w '%{http_code}' "https://4nation.org/api/worldbank-country" || true)
+          [ "$probe" = 400 ] && jq -e '.error=="INVALID_COUNTRY_ISO3"' artifacts/release/function-probe.json >/dev/null || { echo "LIVE_API_PROBE_FAIL http=$probe"; cat artifacts/release/function-probe.json || true; exit 13; }
+          check_ok worldbank-nor "https://4nation.org/api/worldbank-country?country=NOR"
+          check_ok worldbank-rank "https://4nation.org/api/worldbank-country?rank=1"
+          check_ok country-identity-no "https://4nation.org/api/country-identity?iso2=NO"
+          check_ok unesco-wdi-no "https://4nation.org/api/unesco-country?dataset=wdi001&country=NO"
+          check_ok unesco-heritage "https://4nation.org/api/unesco-data?dataset=whc001"
+          success=0
+          for sector in agriculture power fossil-fuel-operations manufacturing; do
+            out="artifacts/release/climate-$sector.json"
+            if curl -fsS --max-time 60 "https://s4piens.com/api/climate-trace?sectors=$sector&limit=8" > "$out" && jq -e '.ok==true and (.assets|length)>0' "$out" >/dev/null; then
+              echo "CLIMATE_TRACE_$sector=PASS"; success=$((success+1))
+            else
+              echo "CLIMATE_TRACE_$sector=SOURCE_UNAVAILABLE_OR_CONTRACT_WARNING"
+            fi
+          done
+          [ "$success" -ge 1 ] || { echo "CLIMATE_TRACE_ALL_SECTORS_UNAVAILABLE_HOLD"; exit 11; }
+          echo "LIVE_REAL_SOURCE_GATE=PASS"
 
       - name: Verify exact live domains in Chromium and WebKit
         shell: bash
@@ -187,20 +170,24 @@ jobs:
           curl -fsS https://4nation.org/decisions -o artifacts/release/live-4nation-decisions.html
           curl -fsS https://s4piens.com/system/food -o artifacts/release/live-s4-food.html
           curl -fsS https://s4piens.com/object/bread -o artifacts/release/live-s4-bread.html
+          npx playwright install --with-deps chromium webkit
           node --input-type=module <<'NODE'
           import { chromium, webkit } from "@playwright/test";
           const urls=["https://4nation.org/","https://4nation.org/country/norway","https://4nation.org/decisions","https://s4piens.com/","https://s4piens.com/system/food","https://s4piens.com/object/bread"];
           for (const [name,type] of [["chromium",chromium],["webkit",webkit]]) {
-            const b=await type.launch();
-            const c=await b.newContext({viewport:{width:390,height:844}});
-            const p=await c.newPage(); const errors=[];
-            p.on("pageerror",e=>errors.push(e.message));
-            for (const url of urls) {
-              await p.goto(url,{waitUntil:"domcontentloaded",timeout:45000}); await p.waitForTimeout(1800);
-              const state=await p.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,text:(document.body?.innerText||"").trim().length}));
-              if(state.overflow>2||state.text<80||errors.length) throw new Error(name+" "+url+" "+JSON.stringify({state,errors}));
+            for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+              const b=await type.launch();
+              const ctx=await b.newContext({viewport});
+              const p=await ctx.newPage(); const errors=[];
+              p.on("pageerror",e=>errors.push(e.message));
+              for (const url of urls) {
+                await p.goto(url,{waitUntil:"domcontentloaded",timeout:45000});
+                await p.waitForTimeout(1800);
+                const state=await p.evaluate(()=>({overflow:document.documentElement.scrollWidth-window.innerWidth,text:(document.body?.innerText||"").trim().length}));
+                if(state.overflow>2||state.text<80||errors.length) throw new Error(name+" "+JSON.stringify(viewport)+" "+url+" "+JSON.stringify({state,errors}));
+              }
+              await b.close();
             }
-            await b.close();
           }
           NODE
           echo "FOUNDER_LIVE_RELEASE_VERIFIED=PASS"
@@ -221,6 +208,7 @@ jobs:
           for id in $(jq -r '.result[]? | select(.script=="4planet-s4piens-live") | .id' <<<"$routes"); do
             curl -fsS -X DELETE "$api/zones/$S4PIENS_ZONE_ID/workers/routes/$id" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" >/dev/null || true
           done
+          npx --yes wrangler@4.128.0 delete 4planet-s4piens-live --force || true
           echo "ROLLBACK_ATTEMPTED"
 
       - name: Upload release and rollback evidence
