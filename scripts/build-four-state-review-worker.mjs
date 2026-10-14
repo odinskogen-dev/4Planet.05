@@ -82,7 +82,8 @@ export default { async fetch(request) {
   const url = new URL(request.url);
   if (url.hostname === CONFIG.archiveHost) return archive();
   if (url.hostname !== CONFIG.reviewHost) return new Response("Unknown control host", {status:404});
-  const path = normalise(url.pathname);
+  const rawPath = url.pathname || '/';
+  const path = normalise(rawPath);
 
   if (path === '/_control') return dashboard();
 
@@ -107,7 +108,10 @@ export default { async fetch(request) {
     if (reviewPath === '/') continue;
     if (path === reviewPath || path.startsWith(reviewPath + '/')) {
       const originPath = normalise(p.heir.origin_path);
-      const suffix = path.slice(reviewPath.length);
+      // Preserve the browser's trailing slash when mapping to the immutable
+      // Pages origin. Pages may legitimately redirect /impact -> /impact/;
+      // collapsing the redirected request back to /impact creates a loop.
+      const suffix = rawPath.slice(reviewPath.length);
       const targetPath = originPath === '/' ? (suffix || '/') : originPath + suffix;
       return proxyHeir(request, url, targetPath);
     }
