@@ -1,3 +1,9 @@
+# EXPO-13 — Google Search Console existing-service-account read-only probe / 14 October 2026
+
+**STATUS:** HEIR DIAGNOSTIC, no GSC property ownership claim. **NEED:** Free, independently verifiable Google search reporting. **ACTION:** Read Search Console site list using existing approved GA4 service-account credentials with `webmasters.readonly`; restrict displayed site metadata to known 4PLANET domain families; never PUT, POST, create, verify or submit. **TRUTH:** zero GSC sites from this service account would not imply zero properties in the founder Google account. **SECURITY:** never print Google secrets, raw URLs containing auth tokens, arbitrary sites or credential responses. **MAKER/JUDGE:** code + runtime CI, independent review; existing GSC owner must explicitly add read-only access if necessary. **BASE:** king/test@b909bdb1f1d0a70d7530cfa25bbd2af5d48ebc5f.
+
+---
+
 # EXPO-14 — DISTRIBUTION MEASUREMENT INTEGRITY — 14 OCTOBER 2026
 
 **STATUS:** FOUNDER-DIRECTED P0/P1 MEASUREMENT CORRECTION ON TEST KING / NO PRODUCTION CLAIM.

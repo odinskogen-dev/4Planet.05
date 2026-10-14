@@ -58,6 +58,9 @@ jobs:
       - name: Install Google auth runtime
         run: python -m pip install --disable-pip-version-check --no-cache-dir google-auth requests
 
+      - name: Compile Google admin and read-only Search Console probe
+        run: python -m py_compile scripts/ga4-admin-control.py
+
       - name: Apply canonical GA4 configuration
         id: ga4
         run: python scripts/ga4-admin-control.py
@@ -74,6 +77,7 @@ jobs:
             echo "Measurement ID: ${{ steps.ga4.outputs.measurement_id }}"
             echo "Mode: ${GA4_APPLY}"
             echo "Outcome: ${{ steps.ga4.outcome }}"
+            echo "GSC properties visible to existing service identity: ${{ steps.ga4.outputs.gsc_readonly_visible }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report result to GA4 tracking issue

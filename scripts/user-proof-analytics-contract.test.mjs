@@ -266,3 +266,16 @@ test("measurement integrity isolates internal traffic and expands discovery attr
   assert.match(analytics, /AI_COPILOT/);
   assert.match(routeAnalytics, /isInternalOrInfrastructureReferrer/);
 });
+
+test("Search Console first-party probe is read-only, existing-identity scoped and fails closed", () => {
+  const python = read("scripts/ga4-admin-control.py");
+  const workflow = read(".github/workflows/ga4-admin-control.yml");
+  assert.match(python, /def audit_search_console_readonly\(info\):/);
+  assert.match(python, /https:\/\/www\.googleapis\.com\/auth\/webmasters\.readonly/);
+  assert.match(python, /reader\.get\(/);
+  assert.match(python, /https:\/\/www\.googleapis\.com\/webmasters\/v3\/sites/);
+  assert.match(python, /GSC_READONLY_STATUS=UNAVAILABLE_HTTP_/);
+  assert.doesNotMatch(python, /reader\.(put|post|patch|delete)\(/);
+  assert.match(workflow, /python -m py_compile scripts\/ga4-admin-control\.py/);
+  assert.match(workflow, /GSC properties visible to existing service identity/);
+});
