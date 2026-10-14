@@ -1,3 +1,9 @@
+# LSI / EXPO-04 — MANDATORY TRUTH REGRESSION IN SHARED SMOKE / 14 OCT 2026
+
+**STATUS:** HEIR test wiring; no LIVE or acceptance claim. One reviewed public species truth gate added to existing `npm run test:smoke` execution rather than creating a separate QA facility. Preserve Maker!=Judge and rollback. HUMAN SUCCESS: source-unreviewed species model chains cannot silently reappear in the public page. BASE: king/test@00d2a290354c59dde4de86751b5516b32d05a8c8.
+
+---
+
 # LSI / EXPO-04 — CONSERVATIVE PUBLIC SPECIES TRUTH GATE / 14 OCTOBER 2026
 
 **STATUS:** HEIR CANDIDATE / LIVE UNCHANGED / INDEPENDENT SCIENTIFIC GOLD AND PRODUCT QA REQUIRED.
