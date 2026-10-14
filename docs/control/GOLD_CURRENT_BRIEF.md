@@ -1,3 +1,19 @@
+# 4SAPIEN AUTHENTICATED EVENT DELIVERY RECEIPTS — 14 OCT 2026
+
+**STATUS:** RETURNED LIFE-OS-01 QA_CORRECT CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person returns to their private 4SAPIEN world and the product must measure that return without mixing them with another signed-in person who used the same tab.
+**ONE THING TO UNDERSTAND:** a per-session product-event receipt belongs to one authenticated identity and exists only after the server acknowledges delivery.
+**PRIMARY ACTION:** isolate each deduplication key by authenticated user identity, keep concurrent duplicate attempts coalesced, and record `delivered` only after a successful event response.
+**SECONDARY DEPTH:** a failed delivery remains retryable; an A→B→A account switch preserves each identity's own acknowledged receipt.
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** truthful return measurement / private identity boundary / acknowledged delivery / deterministic negative regression coverage.
+**WHAT CAN BE REMOVED:** pre-delivery receipt writes and cross-account event suppression.
+**WHAT MUST BE REUSED:** the existing 4SAPIEN event endpoint, authenticated `user()` boundary, session storage lifetime, issue #317 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** an acknowledged event is delivery evidence, not proof of human value, retention, independent Gold, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** none to layout; exact-head browser/auth proof remains required because this is a signed-in runtime path.
+**HUMAN SUCCESS:** two people using one browser tab are counted independently, while a transient delivery failure cannot silently suppress the next valid attempt.
+**BASE / ROLLBACK:** `king/test@6e0d3543bc1f2ec6d5f2d5459393a324225cb301`; revert only the bounded event-receipt correction if independent Gold rejects it.
+**MAKER ≠ JUDGE:** Factory implements and runs deterministic contracts; independent Gold judges the exact HEIR SHA. No production release is authorised.
+
 # IMP-06 — MOBILE PROOF-LADDER READING ORDER — 14 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMPTION ON SOLE HEIR / MAKER CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
@@ -233,8 +249,6 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 - **HUMAN SUCCESS:** blank search selects nothing; a valid selected place/case survives copy, reload and back; unsupported or mismatched URL state resolves to one valid registered pair; users are not led to read Oslofjord evidence as municipal-case evidence.
 
 **MAKER ≠ JUDGE:** deterministic tests, typecheck/build and exact-SHA readback prove implementation only. Independent Gold must run Bergen/Oslo/Norway, blank/unknown, source-identity, copy/reload/back and 390/430/1440 browser checks. No deploy, Gold or LIVE claim is authorised.
-
----
 
 # ATLAS CANONICAL TAXON SEARCH IDENTITY — 11 OCT 2026
 
