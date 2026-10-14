@@ -131,6 +131,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          settled=0
+          for i in $(seq 1 36); do
+            nh=$(curl -LsSI --max-time 20 https://4nation.org/ || true)
+            sh=$(curl -LsSI --max-time 20 https://s4piens.com/ || true)
+            if grep -qi "x-4nation-sha: $GITHUB_SHA" <<<"$nh" && grep -qi "x-s4piens-sha: $GITHUB_SHA" <<<"$sh"; then
+              settled=1
+              echo "LIVE_EXACT_SHA_SETTLED=PASS attempt=$i"
+              break
+            fi
+            sleep 5
+          done
+          [ "$settled" = 1 ] || { echo "LIVE_EXACT_SHA_NOT_SETTLED"; exit 12; }
           check_ok() { name="$1"; url="$2"; out="artifacts/release/$name.json"; curl -fsS --max-time 60 "$url" > "$out"; jq -e '.ok==true' "$out" >/dev/null; echo "$name=PASS"; }
           probe=$(curl -sS --max-time 30 -o artifacts/release/function-probe.json -w '%{http_code}' "https://4nation.org/api/worldbank-country" || true)
           [ "$probe" = 400 ] && jq -e '.error=="INVALID_COUNTRY_ISO3"' artifacts/release/function-probe.json >/dev/null || { echo "LIVE_API_PROBE_FAIL http=$probe"; cat artifacts/release/function-probe.json || true; exit 13; }
