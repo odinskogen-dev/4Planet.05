@@ -1,0 +1,40 @@
+name: SPECIES 100 — All Catalogue Cards Coverage
+on:
+  push:
+    branches: [sprint/species-100-gold-20261014]
+    paths: [.github/workflows/species-100-card-coverage.yml]
+permissions: {contents: read}
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - run: npm install --prefix /tmp/species-card-crawl playwright@1.56.0
+      - run: /tmp/species-card-crawl/node_modules/.bin/playwright install --with-deps chromium
+      - name: Compare every Claude SpeciesCard against prerendered sitemap and linked pages
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from '/tmp/species-card-crawl/node_modules/playwright/index.mjs';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const p=await browser.newPage({viewport:{width:1440,height:900}});
+          await p.goto('https://4species.com/explore',{waitUntil:'domcontentloaded',timeout:25000});
+          await p.waitForTimeout(2600);
+          const cards=await p.evaluate(()=>[...document.querySelectorAll('.spx-card')].map(c=>({slug:c.getAttribute('data-card'),title:c.innerText.slice(0,90),href:c.querySelector('a[href]')?.getAttribute('href'),source:c.querySelector('a.spx-card-source')?.getAttribute('href'),credit:c.querySelector('a.spx-card-credit')?.innerText||''})));
+          const sitemap=await (await fetch('https://4species.com/sitemap.xml')).text();
+          const urls=[...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
+          const enriched=[];
+          for(const card of cards){
+            const url='https://4species.com/'+card.slug;
+            const matched=urls.includes(url);
+            let status=null,canon=null,robots=null;
+            try{
+              const response=await fetch(url);status=response.status;const html=await response.text();
+              canon=(html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/i)||[])[1]||null;
+              robots=(html.match(/<meta\s+name="robots"\s+content="([^"]+)"/i)||[])[1]||null;
+            }catch(e){status=String(e).slice(0,90)}
+            enriched.push({...card,listedInSitemap:matched,status,canon,robots});
+          }
+          console.log('SPECIES_CATALOGUE_COVERAGE '+JSON.stringify({count:enriched.length,sitemapCount:urls.length,missing:enriched.filter(c=>!c.listedInSitemap),badLinks:enriched.filter(c=>c.status!==200),noSources:enriched.filter(c=>!c.source),all:enriched.map(c=>({slug:c.slug,listedInSitemap:c.listedInSitemap,http:c.status,source:!!c.source,canonical:c.canon}))}));
+          await browser.close();
+          NODE
