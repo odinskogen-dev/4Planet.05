@@ -13,6 +13,8 @@ import {
   ImpactPublicHome,
   ImpactProjectProfilePage,
   ImpactActorProfilePage,
+  ImpactIssuePage,
+  ImpactSolutionPage,
   ImpactStory,
   BayActionProof,
   CheckoutReturn,
@@ -153,6 +155,8 @@ export function AppRoutes() {
       <Route path="/impact" element={<ImpactPublicHome />} />
       <Route path="/impact/project/:slug" element={<ImpactProjectProfilePage />} />
       <Route path="/impact/actors/:slug" element={<ImpactActorProfilePage />} />
+      <Route path="/impact/issue/:slug" element={<ImpactIssuePage />} />
+      <Route path="/impact/solution/:slug" element={<ImpactSolutionPage />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
       <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />

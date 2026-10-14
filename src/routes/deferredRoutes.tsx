@@ -15,6 +15,8 @@ export const PersonalImpactRecordPage = lazy(() => import("@/pages/integrated/Im
 export const ImpactPublicHome = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactLivingActionNetwork })));
 export const ImpactProjectProfilePage = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactProjectProfilePage })));
 export const ImpactActorProfilePage = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactActorProfilePage })));
+export const ImpactIssuePage = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactIssuePage })));
+export const ImpactSolutionPage = lazy(() => import("@/pages/integrated/ImpactLivingActionNetwork").then((m) => ({ default: m.ImpactSolutionPage })));
 export const ImpactStory = lazy(() => import("@/pages/integrated/ImpactPremium").then((m) => ({ default: m.ImpactStory })));
 export const BayActionProof = lazy(() => import("@/pages/integrated/ImpactActionProof").then((m) => ({ default: m.BayActionProof })));
 

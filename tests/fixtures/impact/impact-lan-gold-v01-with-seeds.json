@@ -1,0 +1,316 @@
+{
+  "version": "impact-lan-gold-v01",
+  "projects": [
+    {
+      "id": "project:4p:impact:african-forest-gardens",
+      "name": "African Farmers Transforming Food Systems",
+      "actor": {
+        "id": "actor:4p:trees-for-the-future",
+        "name": "Trees for the Future",
+        "actor_type": "nonprofit",
+        "description": "Nonprofit organisation leading the African Farmers Transforming Food Systems flagship.",
+        "relationship_state": "public_record"
+      },
+      "issue": {
+        "id": "problem:4p:impact:land-degradation",
+        "name": "Land degradation and food-system pressure",
+        "description": "Degraded agricultural land, soil and associated biodiversity loss."
+      },
+      "place": {
+        "id": "place:4p:kenya",
+        "name": "Kenya",
+        "description": "One of five countries in the African Farmers Transforming Food Systems flagship.",
+        "geometry_status": "navigation_context"
+      },
+      "action": {
+        "id": "action:4p:impact:trees-support",
+        "url": "https://donate.trees.org/",
+        "name": "Support Trees for the Future",
+        "action_type": "external_support",
+        "description": "External support route on the organisation's own site.",
+        "processed_by_4planet": false
+      },
+      "evidence": [
+        {
+          "citation": "UN Decade on Ecosystem Restoration — African Farmers Transforming Food Systems",
+          "claim_id": "claim:4p:impact:trees:flagship",
+          "statement": "African Farmers Transforming Food Systems is recognised as a UN World Restoration Flagship, led by Trees for the Future.",
+          "source_url": "https://www.decadeonrestoration.org/african-farmers-transforming-food-systems",
+          "limitations": [
+            "UN-reported initiative metrics; not independently measured by 4PLANET"
+          ],
+          "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+          "review_status": "externally_reviewed",
+          "source_rights": "reference_and_fact_extraction_only; page-content-republication-rights-not-assumed; separately-listed-UN-flagship-media-may-have-explicit-attribution-permissions",
+          "evidence_strength": "strong",
+          "interpretation_status": "external_review"
+        },
+        {
+          "citation": "UN Decade profile — initiative metrics",
+          "claim_id": "claim:4p:impact:trees:hectares",
+          "statement": "The UN profile reports 41,345 hectares under restoration and a 229,000 hectare goal for 2030.",
+          "source_url": "https://www.decadeonrestoration.org/african-farmers-transforming-food-systems",
+          "limitations": [
+            "UN-reported initiative metrics; not independently measured by 4PLANET"
+          ],
+          "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+          "review_status": "source_checked",
+          "source_rights": "reference_and_fact_extraction_only; page-content-republication-rights-not-assumed; separately-listed-UN-flagship-media-may-have-explicit-attribution-permissions",
+          "evidence_strength": "source_reported",
+          "interpretation_status": "reported_not_independently_verified"
+        }
+      ],
+      "solution": {
+        "id": "solution:4p:impact:forest-garden-agroforestry",
+        "name": "Forest Garden agroforestry",
+        "description": "Farmer-led regenerative agroforestry using layered trees, shrubs and crops.",
+        "solution_type": "regenerative_agroforestry"
+      },
+      "image_path": "/assets/missions/clim4te/hero.jpg",
+      "image_role": "issue_family_visual_not_project_evidence",
+      "year_label": "UN FLAGSHIP",
+      "description": "Farmer-led regenerative agroforestry using Forest Gardens across multiple African countries.",
+      "issue_label": "LAND & FOOD SYSTEMS",
+      "issue_short": "FOREST_",
+      "official_url": "https://www.decadeonrestoration.org/african-farmers-transforming-food-systems",
+      "review_state": "EXTERNALLY VETTED",
+      "coverage_note": "Mali, Senegal, Tanzania, Uganda and Kenya",
+      "atlas_place_id": "place:4p:kenya"
+    },
+    {
+      "id": "project:4p:impact:florida-coral-restoration",
+      "name": "Florida Keys Coral Restoration",
+      "actor": {
+        "id": "actor:4p:coral-restoration-foundation",
+        "name": "Coral Restoration Foundation",
+        "actor_type": "nonprofit",
+        "description": "Nonprofit coral-restoration organisation operating nursery, outplanting and monitoring programmes.",
+        "relationship_state": "public_record"
+      },
+      "issue": {
+        "id": "problem:4p:impact:reef-degradation",
+        "name": "Reef and coastal ecosystem degradation",
+        "description": "Loss and degradation of coral reefs and connected coastal ecosystems."
+      },
+      "place": {
+        "id": "place:4p:florida-keys",
+        "name": "Florida Keys",
+        "description": "Florida Keys marine and reef context in the United States.",
+        "geometry_status": "context_only_no_boundary_geometry"
+      },
+      "action": {
+        "id": "action:4p:impact:crf-support",
+        "url": "https://coralrestoration.org/one-time-donation/",
+        "name": "Support Coral Restoration Foundation",
+        "action_type": "external_support",
+        "description": "External support route on the organisation's own site.",
+        "processed_by_4planet": false
+      },
+      "evidence": [
+        {
+          "citation": "Coral Restoration Foundation — 2025 Annual Report",
+          "claim_id": "claim:4p:impact:crf:nursery",
+          "statement": "CRF's 2025 annual report says its Florida coral stock reached nearly 39,000 colonies across three production nurseries at the end of 2025.",
+          "source_url": "https://coralrestoration.org/wp-content/uploads/2026/04/CRF-2025-Annual-Report_DIGITAL.pdf",
+          "limitations": [
+            "Organisation annual-report figure; not independently audited by 4PLANET"
+          ],
+          "source_name": "Coral Restoration Foundation",
+          "review_status": "source_checked",
+          "source_rights": "reference_and_fact_extraction_only; republication_rights_not_assumed",
+          "evidence_strength": "source_reported",
+          "interpretation_status": "reported_not_independently_verified"
+        },
+        {
+          "citation": "Coral Restoration Foundation — 26 June 2026 restoration update",
+          "claim_id": "claim:4p:impact:crf:outplants",
+          "statement": "Coral Restoration Foundation reports that 15,846 corals from 17 species were outplanted to 10 Florida Keys reef sites between 1 October 2025 and June 2026.",
+          "source_url": "https://coralrestoration.org/tourism-funding-helps-rebuild-florida-keys-reefs/",
+          "limitations": [
+            "Organisation-reported delivery; ecological outcome not independently verified by 4PLANET"
+          ],
+          "source_name": "Coral Restoration Foundation",
+          "review_status": "source_checked",
+          "source_rights": "reference_and_fact_extraction_only; republication_rights_not_assumed",
+          "evidence_strength": "source_reported",
+          "interpretation_status": "delivery_report_not_outcome_verification"
+        }
+      ],
+      "solution": {
+        "id": "solution:4p:impact:coral-nursery-outplanting",
+        "name": "Coral nursery and monitored outplanting",
+        "description": "Coral propagation, nursery production, outplanting and monitoring.",
+        "solution_type": "coral_restoration"
+      },
+      "image_path": "/assets/missions/cor4l/detail-coral-01.jpg",
+      "image_role": "issue_family_visual_not_project_evidence",
+      "year_label": "ACTIVE 2026",
+      "description": "Coral nursery, propagation, outplanting and monitoring work across the Florida Reef Tract.",
+      "issue_label": "OCEANS & REEFS",
+      "issue_short": "CORAL_",
+      "official_url": "https://coralrestoration.org/where-we-work/crf-florida/",
+      "review_state": "SOURCE-CHECKED",
+      "coverage_note": null,
+      "atlas_place_id": "place:4p:florida-keys"
+    },
+    {
+      "id": "project:4p:impact:great-pacific-garbage-patch",
+      "name": "Great Pacific Garbage Patch Cleanup",
+      "actor": {
+        "id": "actor:4p:the-ocean-cleanup",
+        "name": "The Ocean Cleanup",
+        "actor_type": "nonprofit",
+        "description": "Nonprofit organisation developing and operating technology for river interception and ocean plastic cleanup.",
+        "relationship_state": "public_record"
+      },
+      "issue": {
+        "id": "problem:4p:impact:ocean-plastic",
+        "name": "Ocean plastic pollution",
+        "description": "Persistent plastic pollution entering or accumulating in marine environments."
+      },
+      "place": {
+        "id": "place:4p:north-pacific",
+        "name": "North Pacific Ocean",
+        "description": "Broad ocean context for Great Pacific Garbage Patch cleanup operations.",
+        "geometry_status": "broad_context_not_gpgp_boundary"
+      },
+      "action": {
+        "id": "action:4p:impact:ocean-cleanup-support",
+        "url": "https://theoceancleanup.com/donate/",
+        "name": "Support The Ocean Cleanup",
+        "action_type": "external_support",
+        "description": "External support route on the organisation's own site.",
+        "processed_by_4planet": false
+      },
+      "evidence": [
+        {
+          "citation": "The Ocean Cleanup — July 2026 operations update",
+          "claim_id": "claim:4p:impact:toc:optimisation",
+          "statement": "A July 2026 operations update describes ongoing work to improve hotspot detection and maximise plastic removal efficiency.",
+          "source_url": "https://theoceancleanup.com/updates/integrating-new-technologies-to-tackle-the-great-pacific-garbage-patch/",
+          "limitations": [
+            "Organisation-reported operations; full ecological impact accounting not independently verified by 4PLANET"
+          ],
+          "source_name": "The Ocean Cleanup",
+          "review_status": "source_checked",
+          "source_rights": "reference_and_fact_extraction_only; site_content_all_rights_reserved_unless_otherwise_stated",
+          "evidence_strength": "source_reported",
+          "interpretation_status": "operational_update"
+        },
+        {
+          "citation": "The Ocean Cleanup — System 03 FAQ / operational record",
+          "claim_id": "claim:4p:impact:toc:system03",
+          "statement": "The Ocean Cleanup states that System 03 is its current cleanup system operating in the Great Pacific Garbage Patch.",
+          "source_url": "https://theoceancleanup.com/updates/integrating-new-technologies-to-tackle-the-great-pacific-garbage-patch/",
+          "limitations": [
+            "Organisation-reported operations; full ecological impact accounting not independently verified by 4PLANET"
+          ],
+          "source_name": "The Ocean Cleanup",
+          "review_status": "source_checked",
+          "source_rights": "reference_and_fact_extraction_only; site_content_all_rights_reserved_unless_otherwise_stated",
+          "evidence_strength": "source_reported",
+          "interpretation_status": "operational_status"
+        }
+      ],
+      "solution": {
+        "id": "solution:4p:impact:offshore-plastic-extraction",
+        "name": "Offshore plastic extraction",
+        "description": "Technology and operations for locating and removing legacy floating plastic from the ocean.",
+        "solution_type": "pollution_removal"
+      },
+      "image_path": "/assets/domains/oce4n/hero.jpg",
+      "image_role": "issue_family_visual_not_project_evidence",
+      "year_label": "ACTIVE 2026",
+      "description": "Operating ocean-cleanup programme using System 03 while developing improved hotspot detection and removal efficiency.",
+      "issue_label": "PLASTIC POLLUTION",
+      "issue_short": "PLASTIC_",
+      "official_url": "https://theoceancleanup.com/updates/integrating-new-technologies-to-tackle-the-great-pacific-garbage-patch/",
+      "review_state": "SOURCE-CHECKED",
+      "coverage_note": null,
+      "atlas_place_id": "place:4p:north-pacific"
+    },
+    {
+      "id": "project:4p:impact:northern-mozambique-channel",
+      "name": "Restoring the Northern Mozambique Channel",
+      "actor": {
+        "id": "actor:4p:northern-mozambique-restoration-network",
+        "name": "Northern Mozambique Channel restoration network",
+        "actor_type": "restoration_network",
+        "description": "Multi-organisation regional restoration effort; leading organisations listed by the UN include WWF and other regional partners.",
+        "relationship_state": "public_record"
+      },
+      "issue": {
+        "id": "problem:4p:impact:reef-degradation",
+        "name": "Reef and coastal ecosystem degradation",
+        "description": "Loss and degradation of coral reefs and connected coastal ecosystems."
+      },
+      "place": {
+        "id": "place:4p:northern-mozambique-channel",
+        "name": "Northern Mozambique Channel",
+        "description": "Multi-country marine and coastal region spanning Comoros, Madagascar, Mozambique and Tanzania.",
+        "geometry_status": "context_only_no_boundary_geometry"
+      },
+      "action": {
+        "id": "action:4p:impact:northern-mozambique-un",
+        "url": "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region",
+        "name": "Visit UN initiative",
+        "action_type": "external_information",
+        "description": "Open the official UN flagship record.",
+        "processed_by_4planet": false
+      },
+      "evidence": [
+        {
+          "citation": "UN Decade on Ecosystem Restoration — Restoring the Northern Mozambique Channel Region",
+          "claim_id": "claim:4p:impact:nmc:flagship",
+          "statement": "The initiative is recognised by the UN Decade on Ecosystem Restoration as a World Restoration Flagship.",
+          "source_url": "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region",
+          "limitations": [
+            "UN-reported initiative metrics; not independently measured by 4PLANET"
+          ],
+          "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+          "review_status": "externally_reviewed",
+          "source_rights": "reference_and_fact_extraction_only; page-content-republication-rights-not-assumed; separately-listed-UN-flagship-media-may-have-explicit-attribution-permissions",
+          "evidence_strength": "strong",
+          "interpretation_status": "external_review"
+        },
+        {
+          "citation": "UN Decade profile — initiative metrics",
+          "claim_id": "claim:4p:impact:nmc:hectares",
+          "statement": "The UN profile reports 1,259,336 hectares under restoration and a 4,850,000 hectare goal for 2030.",
+          "source_url": "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region",
+          "limitations": [
+            "UN-reported initiative metrics; not independently measured by 4PLANET"
+          ],
+          "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+          "review_status": "source_checked",
+          "source_rights": "reference_and_fact_extraction_only; page-content-republication-rights-not-assumed; separately-listed-UN-flagship-media-may-have-explicit-attribution-permissions",
+          "evidence_strength": "source_reported",
+          "interpretation_status": "reported_not_independently_verified"
+        }
+      ],
+      "solution": {
+        "id": "solution:4p:impact:connected-seascape-restoration",
+        "name": "Connected seascape restoration",
+        "description": "Integrated restoration and management across connected marine, coastal and terrestrial systems.",
+        "solution_type": "ecosystem_restoration"
+      },
+      "image_path": "/assets/impact/restore-coral/hero.jpg",
+      "image_role": "issue_family_visual_not_project_evidence",
+      "year_label": "UN FLAGSHIP",
+      "description": "Regional restoration across connected coral, mangrove, coastal and terrestrial systems in the Northern Mozambique Channel.",
+      "issue_label": "OCEANS & REEFS",
+      "issue_short": "CORAL_",
+      "official_url": "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region",
+      "review_state": "EXTERNALLY VETTED",
+      "coverage_note": null,
+      "atlas_place_id": "place:4p:northern-mozambique-channel"
+    }
+  ],
+  "generated_at": "2026-10-14T19:42:40.684+01:00",
+  "truth_boundaries": [
+    "Listing does not imply 4PLANET partnership or endorsement.",
+    "Contribution, delivery, outcome and verification remain separate truth states.",
+    "Source-reported metrics are not silently converted into independently verified outcomes.",
+    "Place context may be broad navigation context and is not automatically an ecological or legal boundary."
+  ]
+}

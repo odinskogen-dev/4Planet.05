@@ -1,0 +1,105 @@
+name: IMPACT Universe Sandbox Browser Proof
+
+# Exact-SHA browser proof for the registered IMPACT SANDBOX (claude/impact-universe-01).
+# Waits for the Cloudflare Pages branch preview to serve THIS commit, then runs:
+#   1. the IMPACT Gold continuity spec against live NATUREBRAIN (no fixtures);
+#   2. the Universe template spec with NATUREBRAIN fixtures injected in the browser
+#      (proves templates, the AXE-new-project path and responsive matrix on the deployed build).
+# No LIVE authority. Evidence is uploaded as an artifact for Founder / independent review.
+
+on:
+  push:
+    branches:
+      - claude/impact-universe-01
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: impact-universe-sandbox-proof
+  cancel-in-progress: true
+
+jobs:
+  prove-impact-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXACT_SHA: ${{ github.sha }}
+      BASE_URL: https://claude-impact-universe-01.4planet-05.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXACT_SHA }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Wait for the exact commit on the sandbox preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            body=$(curl -fsSL --connect-timeout 10 --max-time 20 "$BASE_URL/impact-build.json?t=$attempt" 2>/dev/null || true)
+            if printf '%s' "$body" | grep -q "\"sha\": \"$EXACT_SHA\""; then
+              printf '%s\n' "$body" | tee impact-sandbox-build.json
+              exit 0
+            fi
+            echo "Waiting for $EXACT_SHA on $BASE_URL — attempt $attempt/120"
+            sleep 10
+          done
+          echo "Sandbox preview did not serve the exact commit"; exit 1
+
+      - name: Gold continuity — live NATUREBRAIN on the sandbox
+        run: npx playwright test tests/e2e/impact-lan-gold.spec.ts --project=desktop-1440 --project=mobile-390
+
+      - name: Universe templates — deployed build with injected NATUREBRAIN fixtures
+        env:
+          IMPACT_FIXTURE: "1"
+        run: npx playwright test tests/e2e/impact-universe.spec.ts --project=desktop-1440
+
+      - name: Live-data route captures (real NATUREBRAIN)
+        if: always()
+        shell: bash
+        run: |
+          cat > /tmp/capture.mjs <<'JS'
+          import { chromium } from "playwright";
+          const base = process.env.BASE_URL;
+          const routes = ["/impact", "/impact/project/florida-coral-restoration", "/impact/project/african-forest-gardens", "/impact/actors/the-ocean-cleanup", "/impact/issue/reef-degradation", "/impact/solution/forest-garden-agroforestry"];
+          const browser = await chromium.launch();
+          for (const [w, h] of [[390, 844], [430, 932], [768, 1024], [1440, 900], [1920, 1080]]) {
+            const page = await browser.newPage({ viewport: { width: w, height: h }, isMobile: w < 500, hasTouch: w < 500 });
+            for (const route of routes) {
+              await page.goto(base + route, { waitUntil: "networkidle" }).catch(() => undefined);
+              await page.waitForTimeout(1500);
+              const name = route.replace(/\W+/g, "-").replace(/^-|-$/g, "");
+              await page.screenshot({ path: `artifacts/product-proof/live-${w}-${name}.png`, fullPage: true });
+            }
+            await page.close();
+          }
+          await browser.close();
+          JS
+          mkdir -p artifacts/product-proof
+          cp /tmp/capture.mjs ./capture-live.mjs && node capture-live.mjs
+
+      - name: Record verdict
+        if: success()
+        run: printf 'IMPACT UNIVERSE SANDBOX PROOF PASS\nSHA=%s\nURL=%s/impact\nLIVE_AUTHORITY=ABSENT\n' "$EXACT_SHA" "$BASE_URL" > impact-sandbox-verdict.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: impact-universe-sandbox-${{ env.EXACT_SHA }}
+          path: |
+            impact-sandbox-build.json
+            impact-sandbox-verdict.txt
+            artifacts/product-proof/*.png
+            artifacts/atlas-gold/results.json
+          if-no-files-found: warn
+          retention-days: 45
