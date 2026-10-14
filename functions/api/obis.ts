@@ -57,17 +57,54 @@ function bboxToWkt(value: string | null) {
   return `POLYGON ((${west} ${south}, ${west} ${north}, ${east} ${north}, ${east} ${south}, ${west} ${south}))`;
 }
 
-const licenceClass = (value: unknown) => {
-  const v = String(value || "").trim().toUpperCase().replace(/[\s_]+/g, "-");
-  if (v.includes("CC0") || v.includes("CC-0") || v.includes("PUBLICDOMAIN/ZERO")) return "OPEN_CC0";
-  const ccBy = v.includes("CC-BY") || v.includes("/BY/") || v.includes("/BY-");
-  if (ccBy) {
-    if (v.includes("-NC") || v.includes("/BY-NC")) return "NONCOMMERCIAL";
-    if (v.includes("-ND") || v.includes("/BY-ND")) return "NO_DERIVATIVES";
-    if (v.includes("-SA") || v.includes("/BY-SA")) return "SHARE_ALIKE_REVIEW";
-    return "OPEN_ATTRIBUTION";
+const ISSUED_CC_VERSIONS = new Set(["1.0", "2.0", "2.5", "3.0", "4.0"]);
+
+const officialCreativeCommonsCode = (value: unknown) => {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.toLowerCase();
+    if ((url.protocol !== "https:" && url.protocol !== "http:") ||
+        (host !== "creativecommons.org" && host !== "www.creativecommons.org") ||
+        url.username || url.password) {
+      return null;
+    }
+    const path = url.pathname.toLowerCase().replace(/\/+$/, "");
+    const publicDomain = path.match(/^\/publicdomain\/(zero|mark)\/(1\.0)(?:\/legalcode)?$/);
+    if (publicDomain) return publicDomain[1] === "zero" ? "CC0" : "PUBLIC_DOMAIN";
+    const licence = path.match(
+      /^\/licenses\/(by(?:-(?:nc(?:-(?:nd|sa))?|nd|sa))?)\/(1\.0|2\.0|2\.5|3\.0|4\.0)(?:\/legalcode)?$/,
+    );
+    return licence && ISSUED_CC_VERSIONS.has(licence[2]) ? licence[1].toUpperCase() : null;
+  } catch {
+    return null;
   }
-  return "REVIEW_REQUIRED";
+};
+
+const vettedLicenceCode = (value: unknown) => {
+  const official = officialCreativeCommonsCode(value);
+  if (official) return official;
+
+  const token = String(value || "").trim().toUpperCase().replace(/_/g, " ").replace(/\s+/g, " ");
+  if (/^(?:CC0|CC-0) 1\.0$/.test(token)) return "CC0";
+  if (token === "PUBLIC DOMAIN" || token === "PUBLIC DOMAIN MARK 1.0") return "PUBLIC_DOMAIN";
+
+  const licence = token.match(
+    /^CC[ -]BY(?:[ -](NC(?:[ -](?:ND|SA))?|ND|SA))?[ -](1\.0|2\.0|2\.5|3\.0|4\.0)$/,
+  );
+  if (!licence || !ISSUED_CC_VERSIONS.has(licence[2])) return null;
+  return licence[1] ? `BY-${licence[1].replace(/ /g, "-")}` : "BY";
+};
+
+const licenceClass = (value: unknown) => {
+  const code = vettedLicenceCode(value);
+  if (code === "CC0" || code === "PUBLIC_DOMAIN") return "OPEN_CC0";
+  if (!code?.startsWith("BY")) return "REVIEW_REQUIRED";
+  if (code.includes("-NC")) return "NONCOMMERCIAL";
+  if (code.includes("-ND")) return "NO_DERIVATIVES";
+  if (code.includes("-SA")) return "SHARE_ALIKE_REVIEW";
+  return "OPEN_ATTRIBUTION";
 };
 
 const licenceRestrictions = (value: unknown) => {

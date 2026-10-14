@@ -1,3 +1,107 @@
+# 4SAPIEN AUTHENTICATED EVENT DELIVERY RECEIPTS — 14 OCT 2026
+
+**STATUS:** RETURNED LIFE-OS-01 QA_CORRECT CONSUMED / SOLE HEIR MAKER CORRECTION / INDEPENDENT GOLD PENDING / NO LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person returns to their private 4SAPIEN world and the product must measure that return without mixing them with another signed-in person who used the same tab.
+**ONE THING TO UNDERSTAND:** a per-session product-event receipt belongs to one authenticated identity and exists only after the server acknowledges delivery.
+**PRIMARY ACTION:** isolate each deduplication key by authenticated user identity, keep concurrent duplicate attempts coalesced, and record `delivered` only after a successful event response.
+**SECONDARY DEPTH:** a failed delivery remains retryable; an A→B→A account switch preserves each identity's own acknowledged receipt.
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** truthful return measurement / private identity boundary / acknowledged delivery / deterministic negative regression coverage.
+**WHAT CAN BE REMOVED:** pre-delivery receipt writes and cross-account event suppression.
+**WHAT MUST BE REUSED:** the existing 4SAPIEN event endpoint, authenticated `user()` boundary, session storage lifetime, issue #317 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** an acknowledged event is delivery evidence, not proof of human value, retention, independent Gold, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** none to layout; exact-head browser/auth proof remains required because this is a signed-in runtime path.
+**HUMAN SUCCESS:** two people using one browser tab are counted independently, while a transient delivery failure cannot silently suppress the next valid attempt.
+**BASE / ROLLBACK:** `king/test@6e0d3543bc1f2ec6d5f2d5459393a324225cb301`; revert only the bounded event-receipt correction if independent Gold rejects it.
+**MAKER ≠ JUDGE:** Factory implements and runs deterministic contracts; independent Gold judges the exact HEIR SHA. No production release is authorised.
+
+# IMP-06 — MOBILE PROOF-LADDER READING ORDER — 14 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMPTION ON SOLE HEIR / MAKER CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
+
+## USER ARRIVES BECAUSE
+A person opens the documented Bay action on a phone to understand which claims each proof state can and cannot support.
+
+## ONE THING TO UNDERSTAND
+Every stronger claim requires a stronger state, and each `DOES NOT PROVE` boundary must remain visible beside the state it limits.
+
+## PRIMARY ACTION
+Read the Proof Ladder from state to evidence meaning to limitation without horizontal scrolling at 390px or 430px.
+
+## SECONDARY DEPTH
+Desktop retains the existing three-column comparison while mobile uses the same content and DOM reading order in one column.
+
+## P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH
+The proof state is dominant; the numbered step orients; the evidence meaning explains; `DOES NOT PROVE` preserves the action/claim boundary.
+
+## WHAT CAN BE REMOVED
+The fixed 482px minimum grid width that cannot fit the required mobile viewports.
+
+## WHAT MUST BE REUSED
+The existing Bay action route, `cell.proofLadder` data, state/proves/doesNotProve copy, PublicShell/Section hierarchy, IMP-06/#151 receiver and sole `king/test` HEIR.
+
+## TRUTH BOUNDARY
+Responsive layout does not promote contribution, delivery, evidence, outcome or impact state. No proof copy or operational state changes.
+
+## MOBILE-FIRST RISK
+The single-column layout must preserve DOM reading order, visible limitation labels and a no-horizontal-overflow contract at both 390px and 430px; desktop must remain three columns.
+
+## HUMAN SUCCESS
+A phone reader can read every proof state and its limitation without horizontal scrolling or losing the relationship between them.
+
+**DONOR DECISION:** no donor; correct the current HEIR component in place.
+**BASE / ROLLBACK:** `king/test@57471cc8e1e7cf8f515d99bc802d94ad5d1d3a67`; revert only this bounded correction if independent Gold finds a valid layout, accessibility or truth regression.
+**MAKER ≠ JUDGE:** Factory implements and returns an exact SHA. Independent Gold must run Chromium and WebKit at 390/430 plus desktop. No merge, deployment, release or LIVE claim is authorised.
+
+---
+
+# IMPACT-LAN-GOLD-01 / GOLD-TEMPLATE-REFINEMENT-02 — 4PLANET IMPACT LIVING ACTION NETWORK — 13 OCT 2026
+
+**STATUS:** TEST KING GOLD CANDIDATE / NO PRODUCTION LIVE RELEASE / FOUNDER RELEASE STILL REQUIRED / ENIG LIVE NOT GIVEN FOR PRODUCTION.
+
+## USER ARRIVES BECAUSE
+A person wants to quickly discover credible ecological action by problem, place, actor and solution, see enough options on one screen to compare and explore, then open evidence and a real action route without being misled about partnership or outcomes.
+
+## ONE THING TO UNDERSTAND
+4PLANET IMPACT is a living action network, not a catalogue of green badges: ISSUE → PLACE → ACTOR → PROJECT → SOLUTION → EVIDENCE → ACTION are connected objects in the existing NATUREBRAIN.
+
+## PRIMARY ACTION
+Browse a dense, image-led issue/project collection, open one project or actor profile, inspect original evidence and continue to the external action route or the existing first-party ATLAS.
+
+## SECONDARY DEPTH
+Project profiles expose actor, place, solution, source-backed claims, limitations, rights posture and ATLAS context. Actor profiles expose known projects and a public-record trust boundary. NATUREBRAIN remains the truth source; the static discovery manifest is SEO/prerender projection only.
+
+## P1 DOMINANT
+Human-first visual discovery using 4PLANET’s canonical premium language: strong living-world imagery, white/black/BRANDBLÅ system, Instrument Sans display, DM Sans reading/UI and Fragment Mono evidence/meta; these type roles are wired explicitly in the IMPACT stylesheet rather than relying on undefined local variables; high information density without generic SaaS cards, dashboards or oversized one-project-per-screen layouts.
+
+## P2 ORIENTATION
+Issue families and project metadata provide fast orientation. URL filters normalise to the canonical underscore IDs (for example ?issue=coral → CORAL_) and are exercised in the dedicated browser proof. Mobile keeps a two-column browse grid where possible, following the Founder’s preferred compact visual family pattern while remaining part of 4planet.org rather than a separate brand.
+
+## P3 ACTION / NEXT
+Open Project Profile → Actor Profile / ATLAS / original source / external support route. External support remains on the third party’s own site and does not create a 4PLANET contribution or delivery record.
+
+## P4 DEPTH
+Evidence rows preserve source-reported versus externally reviewed status, interpretation state, original source, rights posture and limitations. Graph relationships provide reusable context for later SOLUTIONS, CAPITAL, Magazine and other lenses without duplicating truth.
+
+## WHAT CAN BE REMOVED
+The prior generic-SaaS prototype grammar: giant dark dashboard hero, oversized project panels, decorative status-card chrome, graph-as-front-door and low-density single-object browsing. Legacy four-unit IMPACT remains only where required for compatibility; it is not the new discovery front door.
+
+## WHAT MUST BE REUSED
+Existing NATUREBRAIN planetbrain entity/relationship/claim/evidence/source model; public.impact_lan_gold_v01() controlled projection; existing 4PLANET ID / PublicShell; existing first-party ATLAS and AtlasEmbed; canonical 4PLANET analytics/SEO infrastructure; current rights-cleared 4PLANET media. No new Brain, database, map engine or parallel truth store.
+
+## TRUTH BOUNDARY
+Listing ≠ partnership or endorsement. External action ≠ 4PLANET contribution. Contribution ≠ delivery. Delivery ≠ ecological outcome. Outcome ≠ independent verification. External recognition is named as external recognition. Source-reported metrics remain source-reported. Issue-family imagery is not project evidence. Place boxes are navigation context, not automatically project, legal or ecological boundaries.
+
+## MOBILE-FIRST RISK
+The two-column mobile browse must remain legible at 390/430px: project names, actor names and review state cannot collapse into unreadable metadata; profile evidence and ATLAS must move to progressive depth rather than forcing horizontal dashboard layouts.
+
+## HUMAN SUCCESS
+A first-time visitor can see several meaningful options immediately, understand what each project is and who is doing it, distinguish source-checking from partnership/outcome verification, reach original evidence in one profile, and feel that IMPACT belongs to the same high-end 4PLANET brand as the main public world.
+
+**BASE / ROLLBACK:** Gold candidate introduced at TEST KING abe4c2f5390d9bb5aae818250473d8b453a6cbd4; revert that bounded integration and this brief if independent Gold finds a valid regression.
+**MAKER ≠ JUDGE:** AXE built the candidate. Independent Gold and TEST-domain browser evidence judge it. The applied NATUREBRAIN migration is persisted under supabase/migrations, a dedicated desktop-1440/mobile-390 IMPACT browser proof runs before unrelated shared product suites so its evidence cannot be suppressed by legacy failures, and an IMPACT-only exact-SHA workflow separately proves https://test.4planet.org/impact before any production authority is considered. No production promotion is authorised without the existing Founder release gate.
+
+---
+
 # GREEN DATA → COMPOUNDING PRODUCT VALUE 02 — SHARED DATA + NATUREBRAIN + ATLAS — 13 OCT 2026
 
 **STATUS:** FOUNDER-DIRECTED MAKER CANDIDATE ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT / NO LIVE RELEASE.
@@ -145,8 +249,6 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 - **HUMAN SUCCESS:** blank search selects nothing; a valid selected place/case survives copy, reload and back; unsupported or mismatched URL state resolves to one valid registered pair; users are not led to read Oslofjord evidence as municipal-case evidence.
 
 **MAKER ≠ JUDGE:** deterministic tests, typecheck/build and exact-SHA readback prove implementation only. Independent Gold must run Bergen/Oslo/Norway, blank/unknown, source-identity, copy/reload/back and 390/430/1440 browser checks. No deploy, Gold or LIVE claim is authorised.
-
----
 
 # ATLAS CANONICAL TAXON SEARCH IDENTITY — 11 OCT 2026
 
@@ -497,3 +599,15 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 **BASE / ROLLBACK:** `king/test@d63bd4106651c1f037df6afa21d72a1e56d706a7`; revert this bounded correction if independent Gold finds a valid account persistence regression.
 
 **MAKER ≠ JUDGE:** Factory consumes the returned correction; independent Gold judges the exact HEIR SHA. No product Gold, deployment or production release is authorised.
+# ACTOR GOLD / 4NGO — SHARED VALUE-PROOF CONTRACT — 14 OCT 2026
+
+**STATUS:** EXISTING HEIR BUILD/FIX / INDEPENDENT GOLD PENDING / NO PUBLIC OR LIVE CHANGE.
+**USER ARRIVES BECAUSE:** a person needs to understand what an organisation needs, can do, still requires, has delivered and has actually caused without partnership or impact inflation.
+**ONE THING TO UNDERSTAND:** need, capability, partner/capital requirement, delivery evidence, outcome evidence and independently supported impact are separate states.
+**PRIMARY ACTION:** connect a source-grounded Actor profile to the existing Universal IMPACT Action Contract while all unsupported delivery, outcome and impact claims fail closed.
+**WHAT CAN BE REMOVED:** parallel NGO actor/action/proof models and string-only impact assertions.
+**WHAT MUST BE REUSED:** the canonical Actor Gold projection, `ActionContract["id"]`, ACTOR-FP-01, issue #152, sole `king/test` HEIR and accepted PR #371 contract.
+**TRUTH BOUNDARY:** typed fields and deterministic contract tests do not prove a named partnership, funding, delivery, outcome, impact, independent Gold, deployment or LIVE behaviour.
+**HUMAN SUCCESS:** downstream 4NGO presentation can distinguish unknown requirements from proven capability and can publish delivery/outcome/impact only from reviewed source-and-evidence records.
+**BASE / ROLLBACK:** `king/test@341925aad5e6ed17b08be3195ea5ae9e5752c4c2`; revert this bounded Actor contract correction if independent Gold finds a valid regression.
+**MAKER != JUDGE:** Factory implements on the sole HEIR; independent Gold judges the exact resulting SHA. Founder release remains separate.

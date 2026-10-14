@@ -1,0 +1,73 @@
+{
+  "version": "impact-lan-gold-v01",
+  "sourceOfTruth": "NATUREBRAIN public.impact_lan_gold_v01()",
+  "generatedAt": "2026-10-13",
+  "projects": [
+    {
+      "id": "project:4p:impact:northern-mozambique-channel",
+      "slug": "northern-mozambique-channel",
+      "name": "Restoring the Northern Mozambique Channel",
+      "description": "Regional restoration across connected coral, mangrove, coastal and terrestrial systems in the Northern Mozambique Channel.",
+      "image": "/assets/impact/restore-coral/hero.jpg",
+      "actor": {
+        "id": "actor:4p:northern-mozambique-restoration-network",
+        "slug": "northern-mozambique-restoration-network",
+        "name": "Northern Mozambique Channel restoration network"
+      },
+      "place": "Northern Mozambique Channel",
+      "citations": [
+        "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region"
+      ]
+    },
+    {
+      "id": "project:4p:impact:african-forest-gardens",
+      "slug": "african-forest-gardens",
+      "name": "African Farmers Transforming Food Systems",
+      "description": "Farmer-led regenerative agroforestry using Forest Gardens across multiple African countries.",
+      "image": "/assets/missions/clim4te/hero.jpg",
+      "actor": {
+        "id": "actor:4p:trees-for-the-future",
+        "slug": "trees-for-the-future",
+        "name": "Trees for the Future"
+      },
+      "place": "Mali, Senegal, Tanzania, Uganda and Kenya",
+      "citations": [
+        "https://www.decadeonrestoration.org/african-farmers-transforming-food-systems"
+      ]
+    },
+    {
+      "id": "project:4p:impact:florida-coral-restoration",
+      "slug": "florida-coral-restoration",
+      "name": "Florida Keys Coral Restoration",
+      "description": "Coral nursery, propagation, outplanting and monitoring work across the Florida Reef Tract.",
+      "image": "/assets/missions/cor4l/detail-coral-01.jpg",
+      "actor": {
+        "id": "actor:4p:coral-restoration-foundation",
+        "slug": "coral-restoration-foundation",
+        "name": "Coral Restoration Foundation"
+      },
+      "place": "Florida Keys",
+      "citations": [
+        "https://coralrestoration.org/tourism-funding-helps-rebuild-florida-keys-reefs/",
+        "https://coralrestoration.org/wp-content/uploads/2026/04/CRF-2025-Annual-Report_DIGITAL.pdf"
+      ]
+    },
+    {
+      "id": "project:4p:impact:great-pacific-garbage-patch",
+      "slug": "great-pacific-garbage-patch",
+      "name": "Great Pacific Garbage Patch Cleanup",
+      "description": "Operating ocean-cleanup programme using System 03 while developing improved hotspot detection and removal efficiency.",
+      "image": "/assets/domains/oce4n/hero.jpg",
+      "actor": {
+        "id": "actor:4p:the-ocean-cleanup",
+        "slug": "the-ocean-cleanup",
+        "name": "The Ocean Cleanup"
+      },
+      "place": "North Pacific Ocean",
+      "citations": [
+        "https://theoceancleanup.com/updates/integrating-new-technologies-to-tackle-the-great-pacific-garbage-patch/",
+        "https://theoceancleanup.com/faq/is-the-cleanup-system-already-installed-and-cleaning-up-the-ocean/"
+      ]
+    }
+  ]
+}

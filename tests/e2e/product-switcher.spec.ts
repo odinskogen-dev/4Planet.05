@@ -79,3 +79,33 @@ test("Explore lenses retain supported context and 4RT resolves to the art missio
   await expect(page).toHaveURL(/\/missions\/4rt$/);
   await expect(page.getByText("4RT_ · WORKING PROTOTYPES", { exact: true })).toBeVisible();
 });
+
+test("Footer product links retain supported context without copying it to utility links", async ({ page }) => {
+  const context = "entity=taxon%3Aorca&journey=orca&record=proof-1";
+  await page.goto(`/species?${context}`, { waitUntil: "load" });
+
+  const footer = page.locator("footer");
+  await expect(footer.getByRole("link", { name: "Impact", exact: true })).toHaveAttribute(
+    "href",
+    `/impact?${context}`,
+  );
+  await expect(footer.getByRole("link", { name: "Living Systems", exact: true })).toHaveAttribute(
+    "href",
+    `/living-systems?${context}`,
+  );
+  await expect(footer.getByRole("link", { name: "The Story", exact: true })).toHaveAttribute("href", "/about/story");
+  await expect(footer.getByRole("link", { name: "PRIVACY", exact: true })).toHaveAttribute("href", "/privacy");
+
+  await page.goto(`/species/orca?${context}`, { waitUntil: "load" });
+  const compactFooter = page.locator("footer");
+  await expect(compactFooter.getByRole("link", { name: "ATLAS", exact: true })).toHaveAttribute(
+    "href",
+    `/atlas?${context}`,
+  );
+  await expect(compactFooter.getByRole("link", { name: "SPECIES", exact: true })).toHaveAttribute(
+    "href",
+    `/species?${context}`,
+  );
+  await expect(compactFooter.getByRole("link", { name: "ABOUT", exact: true })).toHaveAttribute("href", "/about");
+});
+

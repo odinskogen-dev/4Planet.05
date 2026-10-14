@@ -99,6 +99,30 @@ test("media licence classifier fails closed on restrictions and negated public-d
   assert.equal(classifySpeciesMediaRights("https://creativecommons.org/publicdomain/mark/1.0/"), "DISPLAYABLE");
 });
 
+test("media licence classifier accepts only issued Creative Commons versions", () => {
+  const { classifySpeciesMediaRights } = loadSpeciesMediaModule(async () => jsonResponse({ results: [] }));
+
+  for (const licence of [
+    "https://creativecommons.org/licenses/by/9.9/",
+    "https://creativecommons.org/licenses/by-sa/0.0/",
+    "https://creativecommons.org/publicdomain/zero/9.9/",
+    "https://creativecommons.org/publicdomain/mark/2.0/",
+    "CC BY 9.9",
+    "CC BY-SA 0.0",
+    "CC0 9.9",
+    "Public Domain Mark 2.0",
+  ]) {
+    assert.equal(classifySpeciesMediaRights(licence), "REVIEW_REQUIRED", licence);
+  }
+
+  for (const version of ["1.0", "2.0", "2.5", "3.0", "4.0"]) {
+    assert.equal(classifySpeciesMediaRights(`CC BY ${version}`), "DISPLAYABLE");
+    assert.equal(classifySpeciesMediaRights(`CC BY-SA ${version}`), "DISPLAYABLE");
+  }
+  assert.equal(classifySpeciesMediaRights("CC0 1.0"), "DISPLAYABLE");
+  assert.equal(classifySpeciesMediaRights("Public Domain Mark 1.0"), "DISPLAYABLE");
+});
+
 test("GBIF image resolution cannot inherit occurrence-level licence", () => {
   assert.doesNotMatch(source, /media\?\.license\s*\?\?\s*row\?\.license/);
   assert.match(
@@ -239,4 +263,72 @@ test("mocked GBIF request path withholds ambiguous licence labels before positiv
   );
   assert.equal(result.blockedCount, 8);
   assert.match(result.note, /8 media items were withheld/);
+});
+
+test("mocked GBIF request path withholds unissued licence versions", async () => {
+  const licences = [
+    ["invalid-by.jpg", "https://creativecommons.org/licenses/by/9.9/"],
+    ["invalid-by-sa.jpg", "CC BY-SA 0.0"],
+    ["invalid-cc0.jpg", "https://creativecommons.org/publicdomain/zero/9.9/"],
+    ["invalid-pdm.jpg", "Public Domain Mark 2.0"],
+    ["canonical-by-2-5.jpg", "https://creativecommons.org/licenses/by/2.5/"],
+    ["canonical-pdm.jpg", "https://creativecommons.org/publicdomain/mark/1.0/"],
+  ];
+  const fetchMock = async () => jsonResponse({
+    results: [{
+      key: 790,
+      media: licences.map(([name, license]) => ({
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier: `https://example.test/${name}`,
+        license,
+      })),
+    }],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 8 });
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    [...result.data].map((image) => image.identifier),
+    ["https://example.test/canonical-by-2-5.jpg", "https://example.test/canonical-pdm.jpg"],
+  );
+  assert.equal(result.blockedCount, 4);
+  assert.match(result.note, /4 media items were withheld/);
+});
+
+
+test("versionless CC BY labels fail closed while issued versions remain displayable", async () => {
+  const licences = [
+    ["versionless-by.jpg", "CC BY"],
+    ["versionless-by-sa.jpg", "CC BY-SA"],
+    ["canonical-by.jpg", "CC BY 4.0"],
+    ["canonical-by-sa.jpg", "CC BY-SA 2.5"],
+  ];
+  const fetchMock = async () => jsonResponse({
+    results: [{
+      key: 791,
+      media: licences.map(([name, license]) => ({
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier: `https://example.test/${name}`,
+        license,
+      })),
+    }],
+  });
+  const { classifySpeciesMediaRights, fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  assert.equal(classifySpeciesMediaRights("CC BY"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC BY-SA"), "REVIEW_REQUIRED");
+  assert.equal(classifySpeciesMediaRights("CC BY 4.0"), "DISPLAYABLE");
+  assert.equal(classifySpeciesMediaRights("CC BY-SA 2.5"), "DISPLAYABLE");
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 8 });
+  assert.equal(result.ok, true);
+  assert.deepEqual(
+    [...result.data].map((image) => image.identifier),
+    ["https://example.test/canonical-by.jpg", "https://example.test/canonical-by-sa.jpg"],
+  );
+  assert.equal(result.blockedCount, 2);
 });
