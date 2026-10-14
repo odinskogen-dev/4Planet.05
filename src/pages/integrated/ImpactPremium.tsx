@@ -2,7 +2,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { T } from "@/styles/tokens";
 import { contextHref } from "@/product/ProductNav";
-import { IMPACT_UNITS, findImpactUnit, DELIVERY_LABEL, type ImpactUnit } from "@/data/impactUnits";
+import { IMPACT_UNITS, findImpactUnit, DELIVERY_LABEL, isFieldPartnerAppointed, type ImpactUnit } from "@/data/impactUnits";
 import { NotFound } from "@/pages/system";
 
 const mono: React.CSSProperties = { fontFamily: T.mono };
@@ -113,7 +113,7 @@ export function ImpactStory() {
   if (!u) return <NotFound />;
   const backHref = contextHref("/impact", location.search);
   const statusAcid = u.delivery.status === "PARTNER_VALIDATION_PENDING";
-  const fieldPartnerAppointed = !u.delivery.fieldPartner.startsWith("TO BE SELECTED");
+  const fieldPartnerAppointed = isFieldPartnerAppointed(u.delivery);
   return (
     <PublicShell>
       <article className="impact-article">
@@ -196,7 +196,7 @@ export function ImpactStory() {
             ))}
           </ol>
           <p style={{ ...mono, marginTop: 14, fontSize: 10.5, letterSpacing: ".06em", color: T.acid }}>
-            CURRENT STATUS · {DELIVERY_LABEL[u.delivery.status]} — {u.delivery.fieldPartner.startsWith("TO BE") ? "FIELD PARTNER NOT YET APPOINTED" : "PARTNER SELECTION IN PROGRESS"} · NO STAGE IS ACTIVE
+            CURRENT STATUS · {DELIVERY_LABEL[u.delivery.status]} — {fieldPartnerAppointed ? "FIELD PARTNER APPOINTED — DELIVERY NOT YET CLAIMED" : "FIELD PARTNER NOT YET APPOINTED"} · NO STAGE IS ACTIVE
           </p>
 
           {/* Field partner + honest delivery status */}
