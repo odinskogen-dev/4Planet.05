@@ -52,8 +52,10 @@ test('contextual ATLAS CSS parses real newline boundaries so the first-party map
   assert.match(css, /\.atlas-embed\{margin:32px/);
 });
 
-test('4NATION full Atlas exit is not captured by the standalone Nation homepage', () => {
-  assert.match(app,/isNationHost\(\) && window\.location\.pathname === "\/atlas"/);
+test('4NATION and S4PIENS full Atlas exits are not captured by standalone homepages', () => {
+  assert.match(app,/\(\(isNationHost\(\) \|\| isS4piensHost\(\)\) && window\.location\.pathname === "\/atlas"\)/);
+  assert.match(app,/if \(isNationHost\(\)\)/);
+  assert.match(app,/if \(isS4piensHost\(\)\)/);
 });
 
 test('human-first Nation entry keeps one real case and one primary action', () => {
