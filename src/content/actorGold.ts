@@ -1,7 +1,81 @@
+import type { ActionContract } from "../impact/actionContract";
+
 export type ActorRelationshipState = "DIRECT_DIALOGUE" | "VERIFIED_PARTNER" | "PUBLIC_RECORD_ONLY";
 export type ActorPublicationState = "DEVELOPMENT" | "PUBLIC";
 export type ActorVisualMode = "IDENTITY_FIELD" | "ATLAS_PLACE" | "RELATIONSHIP_GRAPH" | "SOURCE_DATA" | "DOCUMENTARY";
 export type ActorEvidenceState = "VERIFIED_INTERNAL" | "SOURCE_READY" | "OPEN";
+
+export type ActorKnowledgeState = "KNOWN" | "UNKNOWN" | "TO_VERIFY";
+export type ActorClaimDistance = "DELIVERY" | "OUTCOME" | "IMPACT";
+export type ActorClaimState = "SUPPORTED" | "SOURCE_REQUIRED" | "PROHIBITED";
+export type ActorSourceAuthority = "FIRST_PARTY" | "INDEPENDENT" | "SELF_ATTESTED";
+export type ActorReviewState = "REVIEWED" | "UNREVIEWED";
+
+export interface ActorNeed {
+  id: string;
+  label: string;
+  state: ActorKnowledgeState;
+  sourceRefs: string[];
+  limitations: string[];
+}
+
+export interface ActorCapability {
+  id: string;
+  label: string;
+  state: ActorKnowledgeState;
+  sourceRefs: string[];
+  evidenceRefs: string[];
+  limitations: string[];
+}
+
+export interface ActorRequirement {
+  id: string;
+  kind: "PARTNER" | "CAPITAL";
+  label: string;
+  state: ActorKnowledgeState;
+  sourceRefs: string[];
+  limitations: string[];
+}
+
+export interface ActorDeliveryEvidence {
+  id: string;
+  label: string;
+  state: "SUPPORTED" | "SOURCE_REQUIRED";
+  sourceRefs: string[];
+  evidenceRefs: string[];
+  note: string;
+}
+
+export interface ActorOutcomeEvidence {
+  id: string;
+  label: string;
+  state: "SUPPORTED" | "SOURCE_REQUIRED";
+  sourceRefs: string[];
+  evidenceRefs: string[];
+  note: string;
+}
+
+export interface ActorSourceRecord {
+  id: string;
+  authority: ActorSourceAuthority;
+  reviewedAt: string | null;
+}
+
+export interface ActorEvidenceRecord {
+  id: string;
+  sourceRef: string;
+  reviewedAt: string | null;
+}
+
+export interface ActorClaimBoundary {
+  claim: string;
+  distance: "DELIVERY" | "OUTCOME" | "IMPACT";
+  state: "SUPPORTED" | "SOURCE_REQUIRED" | "PROHIBITED";
+  sourceRefs: string[];
+  evidenceRefs: string[];
+  sourceAuthority: "FIRST_PARTY" | "INDEPENDENT" | "SELF_ATTESTED";
+  reviewState: "REVIEWED" | "UNREVIEWED";
+}
 
 export interface ActorEvidenceItem {
   label: string;
@@ -27,6 +101,15 @@ export interface ActorGoldProfile {
   fieldFeed: Array<{ title: string; observedAt: string; sourcePackId: string; state: "PUBLIC" }>;
   magazineCoverage: Array<{ title: string; state: string; path: string }>;
   actions: Array<{ label: string; path?: string; state: "OPEN" | "LOCKED"; note?: string }>;
+  identifiedNeeds: ActorNeed[];
+  operationalCapabilities: ActorCapability[];
+  partnerRequirements: ActorRequirement[];
+  capitalRequirements: ActorRequirement[];
+  deliveryEvidence: ActorDeliveryEvidence[];
+  outcomeEvidence: ActorOutcomeEvidence[];
+  actionContractIds: ActionContract["id"][];
+  claimsAllowed: ActorClaimBoundary[];
+  claimsProhibited: ActorClaimBoundary[];
   visual: {
     primary: ActorVisualMode;
     fallbacks: ActorVisualMode[];
@@ -36,6 +119,39 @@ export interface ActorGoldProfile {
   };
   sourceAuthority: string;
   correctionsPath: string;
+}
+
+export function actorClaimCanPublish(
+  claim: ActorClaimBoundary,
+  sourceRecords: ActorSourceRecord[],
+  evidenceRecords: ActorEvidenceRecord[],
+): boolean {
+  const nonBlank = (values: string[]) =>
+    Array.isArray(values) && values.length > 0 && values.every((value) => value.trim().length > 0);
+
+  if (claim.state !== "SUPPORTED" || claim.reviewState !== "REVIEWED") return false;
+  if (!claim.claim.trim() || !nonBlank(claim.sourceRefs) || !nonBlank(claim.evidenceRefs)) return false;
+  if (!["DELIVERY", "OUTCOME", "IMPACT"].includes(claim.distance)) return false;
+
+  const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
+  if (sources.some((record) => !record?.reviewedAt)) return false;
+
+  const evidence = claim.evidenceRefs.map((id) =>
+    evidenceRecords.find((record) => record.id === id),
+  );
+  if (
+    evidence.some(
+      (record) => !record?.reviewedAt || !claim.sourceRefs.includes(record.sourceRef),
+    )
+  ) {
+    return false;
+  }
+
+  if (claim.distance === "IMPACT") {
+    return sources.every((record) => record?.authority === "INDEPENDENT");
+  }
+
+  return sources.every((record) => record?.authority !== "SELF_ATTESTED");
 }
 
 /**
@@ -105,6 +221,64 @@ export const ACTOR_GOLD_PROFILES: ActorGoldProfile[] = [
         label: "Fund a survey",
         state: "LOCKED",
         note: "Locked until exact offer, authority, price, delivery and proof model are verified.",
+      },
+    ],
+    identifiedNeeds: [
+      {
+        id: "need:orca:bay-survey-effort:v1",
+        label: "Bounded cetacean monitoring effort on the Bay of Biscay survey corridor",
+        state: "KNOWN",
+        sourceRefs: ["source:4planet:orca-dialogue:2026-09-04"],
+        limitations: [
+          "A monitoring need is not evidence of an agreed delivery scope, funding requirement or ecological outcome.",
+        ],
+      },
+    ],
+    operationalCapabilities: [
+      {
+        id: "capability:orca:survey-monitoring:v1",
+        label: "Repeated ferry-based cetacean survey monitoring",
+        state: "KNOWN",
+        sourceRefs: ["source:orca:2025-survey-season-summary"],
+        evidenceRefs: [],
+        limitations: [
+          "First-party capability evidence does not prove delivery of a future 4PLANET action contract.",
+        ],
+      },
+    ],
+    partnerRequirements: [
+      {
+        id: "requirement:orca:delivery-terms:v1",
+        kind: "PARTNER",
+        label: "Verified delivery authority, scope and proof terms",
+        state: "TO_VERIFY",
+        sourceRefs: [],
+        limitations: ["Direct dialogue is not a signed delivery partnership or endorsement."],
+      },
+    ],
+    capitalRequirements: [
+      {
+        id: "requirement:orca:bounded-funding:v1",
+        kind: "CAPITAL",
+        label: "Current bounded amount and survey-day quantity",
+        state: "UNKNOWN",
+        sourceRefs: [],
+        limitations: ["Previously discussed prices were placeholders and cannot be published as current terms."],
+      },
+    ],
+    deliveryEvidence: [],
+    outcomeEvidence: [],
+    actionContractIds: ["action:4p:orca:bay-of-biscay:survey-effort:v1"],
+    claimsAllowed: [],
+    claimsProhibited: [
+      {
+        claim: "The bounded action has produced verified ecological impact.",
+        distance: "IMPACT",
+        state: "PROHIBITED",
+        sourceRefs: [],
+        evidenceRefs: [],
+        sourceAuthority: "SELF_ATTESTED",
+        reviewState: "UNREVIEWED",
       },
     ],
     visual: {
