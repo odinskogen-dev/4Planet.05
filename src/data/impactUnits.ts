@@ -17,7 +17,7 @@
 export type DeliveryStatus =
   | "PARTNER_PATHWAY_IN_DEVELOPMENT"
   | "PARTNER_VALIDATION_PENDING"
-  | "PROOF_MODEL_PLANNED";
+  | "PROOF_MODEL_PLANNED";\n\nexport type FieldPartnerAppointmentState = "PENDING" | "APPOINTED";
 
 export interface WhyFact {
   /** short plain-language headline */
