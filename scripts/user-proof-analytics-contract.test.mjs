@@ -251,3 +251,18 @@ test("GA4 admin push never silently modifies the property", () => {
   assert.match(yaml, /Reject unapproved GA4 configuration writes/);
   assert.doesNotMatch(yaml, /inputs\.mode == 'audit' && 'false' \|\| 'true'/);
 });
+
+
+test("measurement integrity isolates internal traffic and expands discovery attribution", () => {
+  assert.match(analytics, /INTERNAL_ANALYTICS_STORAGE_KEY/);
+  assert.match(analytics, /4p_internal/);
+  assert.match(analytics, /ignore_referrer:/);
+  assert.match(analytics, /INTERNAL_4PLANET/);
+  assert.match(analytics, /AUTH_OR_INFRA/);
+  assert.match(analytics, /SEARCH_ECOSIA/);
+  assert.match(analytics, /SEARCH_DUCKDUCKGO/);
+  assert.match(analytics, /AI_CLAUDE/);
+  assert.match(analytics, /AI_GEMINI/);
+  assert.match(analytics, /AI_COPILOT/);
+  assert.match(routeAnalytics, /isInternalOrInfrastructureReferrer/);
+});
