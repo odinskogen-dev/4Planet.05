@@ -39,7 +39,9 @@ function pageMeta(pathname) {
       description: "Nonpartisan, source-grounded country intelligence and public decision context." } };
 }
 export default {
-  async fetch(request, env, ctx) {\n    const api = await dispatchReleaseApi(request, env, ctx);\n    if (api) return api;
+  async fetch(request, env, ctx) {
+    const api = await dispatchReleaseApi(request, env, ctx);
+    if (api) return api;
     const incoming = new URL(request.url);
     if (!ALLOWED.has(incoming.hostname) && !incoming.hostname.endsWith(".workers.dev")) return new Response("Not found", {status:404});
     if (incoming.hostname === "www.4nation.org") {
