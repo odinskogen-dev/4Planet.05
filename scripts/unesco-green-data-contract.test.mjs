@@ -159,10 +159,12 @@ test("ATLAS exposes the four curated P0 layer families without replacing Protect
 });
 
 test("ATLAS point lifecycle is data-driven and source depth is controlled", () => {
-  const atlas = read("src/pages/v5/Atlas.tsx");
-  assert.match(atlas, /l\.kind === "point" \|\| l\.kind === "live"/);
-  assert.match(atlas, /RIGHTS \{DOT\} \{l\.rights\}/);
-  assert.match(atlas, /TIME \{DOT\} \{l\.period\}/);
+  const atlas = read("src/earth/World.tsx");
+  assert.match(atlas, /drawPoints\(l\.id, l\.label, l\.src, l\.note, rows, l\.color, l\.r\)/);
+  assert.match(atlas, /l\.kind === "raster"/);
+  assert.match(atlas, /l\.kind === "live"/);
+  assert.match(atlas, /RIGHTS · \{l\.rights\}/);
+  assert.match(atlas, /TIME · \{l\.period\}/);
 });
 
 test("ATLAS source control keeps endpoint and map evidence separate from rights", () => {
@@ -211,3 +213,45 @@ test("NATUREBRAIN source-family migration registers metadata but keeps ingestion
   assert.doesNotMatch(migration, /insert into planetbrain\.relationships/i);
 });
 
+
+
+test("NATUREBRAIN additional qualified source families stay metadata-only and disabled", () => {
+  const migration = read("supabase/migrations/20261013133000_naturebrain_green_un_data_sources_v01.sql");
+  for (const source of [
+    "source:undp-hdro",
+    "source:unido-stat",
+    "source:ilostat",
+    "source:unhcr-refugee-statistics",
+    "source:undata-legacy",
+  ]) {
+    assert.ok(migration.includes(source), source);
+  }
+  for (const dataset of [
+    "dataset:unesco:uis001",
+    "dataset:unesco:edp002",
+    "dataset:unesco:voc001",
+    "dataset:undp:hdro-composite-indices",
+    "dataset:unido:country-profile",
+    "dataset:unido:indstat4",
+    "dataset:unido:national-accounts",
+    "dataset:unido:manufacturing-trade",
+    "dataset:unido:sdg9",
+    "dataset:unhcr:refugee-population-statistics",
+    "dataset:undata:country-profiles",
+  ]) {
+    assert.ok(migration.includes(dataset), dataset);
+  }
+  assert.match(migration, /REGISTERED_DISABLED/);
+  assert.match(migration, /enabled=false/);
+  assert.match(migration, /no_wholesale_ingest/);
+  assert.doesNotMatch(migration, /insert into planetbrain\.claims/i);
+  assert.doesNotMatch(migration, /insert into planetbrain\.relationships/i);
+});
+
+test("GREEN DATA source matrix preserves active versus registered-next boundary", () => {
+  const matrix = read("docs/control/GREEN_DATA_SOURCE_MATRIX_20261013.md");
+  assert.match(matrix, /P0 ACTIVE PRODUCT READS/i);
+  assert.match(matrix, /REGISTERED NEXT/i);
+  assert.match(matrix, /No bulk claims\/observations were created/i);
+  assert.match(matrix, /missing\/source failure is not zero/i);
+});
