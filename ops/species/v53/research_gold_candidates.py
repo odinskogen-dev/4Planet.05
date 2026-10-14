@@ -32,7 +32,7 @@ print("SPECIES_79_TAXONOMY_SUMMARY",json.dumps({"checked":len(matched),
 P0=[r for r in candidates if r["batch"]=="BUILD_01_CATALOGUE_P0"]
 assert len(P0)==11
 ALLOWED=("cc-by","cc by","cc0","public domain","pd-us","pd-author","cc-by-sa","cc by-sa")
-CAPTIVE=(" zoo","captiv","aquarium","cage","enclos","rehabilitation","animal park","oceanarium")
+CAPTIVE=(" zoo","captiv","aquarium","cage","enclos","rehabilitation","animal park","oceanarium","atlanterhavsparken","sealife","sea life centre","zoological")
 def strip_html(x):return re.sub(r"<[^>]*>"," ",x or "").replace("&nbsp;"," ").strip()
 def commons(row):
     data=get_json("https://commons.wikimedia.org/w/api.php",{
