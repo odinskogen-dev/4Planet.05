@@ -99,9 +99,25 @@ export default { async fetch(request) {
       return frame(runtime.render_origin + p.sandbox.origin_path, product, 'SANDBOX', runtime.sha);
     }
   }
+  // HEIR routes are direct read-only proxies, not iframe wrappers. This makes
+  // founder review URLs behave like the real product while preserving exact-SHA
+  // provenance in response headers and keeping LIVE authority absent.
   for (const [product,p] of Object.entries(CONFIG.products)) {
-    if (path === normalise(p.heir.review_path)) return frame(CONFIG.heir.render_origin + p.heir.origin_path, product, 'HEIR', CONFIG.heir.sha);
+    const reviewPath = normalise(p.heir.review_path);
+    if (reviewPath === '/') continue;
+    if (path === reviewPath || path.startsWith(reviewPath + '/')) {
+      const originPath = normalise(p.heir.origin_path);
+      const suffix = path.slice(reviewPath.length);
+      const targetPath = originPath === '/' ? (suffix || '/') : originPath + suffix;
+      return proxyHeir(request, url, targetPath);
+    }
   }
+
+  // The portfolio root remains explicit so it cannot swallow registered product
+  // review namespaces above.
+  const rootProduct = Object.values(CONFIG.products).find(p => normalise(p.heir.review_path) === '/');
+  if (path === '/' && rootProduct) return proxyHeir(request, url, normalise(rootProduct.heir.origin_path));
+
   return dashboard();
 }};
 `;
