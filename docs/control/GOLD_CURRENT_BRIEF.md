@@ -1,22 +1,20 @@
-# S4PIENS HUMAN SYSTEMS 02 — FOLLOW ONE THING — 14 OCT 2026
+# LSI / EXPO-04 — MANDATORY TRUTH REGRESSION IN SHARED SMOKE / 14 OCT 2026
 
-**STATUS:** REGISTERED SANDBOX (`claude/s4piens-human-systems-01`, PR #447, after #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
-**USER ARRIVES BECAUSE:** they want to understand how something they use every day — bread, coffee, a phone — actually reaches them.
-**ONE THING TO UNDERSTAND:** every everyday object is the last step of a chain through places and living systems; the same chain grammar explains the whole system.
-**PRIMARY ACTION:** pick an object and follow it step by step; switch to the system view to see where it sits.
-**SECONDARY DEPTH:** system chain, Atlas place layers, country lens (Climate TRACE), living systems, problems, solutions (maturity ≠ evidence).
-**P1 DOMINANT:** the human with the needs orbit (home) / the object's journey line (object page).
-**P2 ORIENTATION:** chain stations with one question each.
-**P3 ACTION:** Follow · Object/System toggle · See it on the Atlas · Choose a country.
-**P4 DEPTH:** problems, solutions, sources.
-**WHAT CAN BE REMOVED:** dashboards, scores, footprint/guilt framing, graph spaghetti.
-**WHAT MUST BE REUSED:** shared ATLAS embed (kind S4PIENS), `src/planet/livingSystems.ts`, `/api/climate-trace`, 4NATION primitives and country identity.
-**TRUTH BOUNDARY:** station and object text = labelled 4PLANET CONTEXT (explanation, no numbers); quantities only from sourced adapters; proximity ≠ cause; a solution's maturity ≠ its evidence; no flows drawn until sourced.
-**MOBILE-FIRST RISK:** orbit labels at 390px; journey line single column; rail horizontal scroll.
-**HUMAN SUCCESS:** “I never understood that all of this was connected.”
-**BRAND OS PREFLIGHT (fresh read 14 Oct 2026):** mode = editorial/story surface; anchor = human figure / journey line; accent = S4PIENS_ #FF4D22 (text: Rust #842810 / Light Orange #FF7D50 from controlled library); neutrals White/Black lock; Instrument Sans restrained; capsule buttons, one soft radius; living-world presence = TRACE/CONTEXT (no rights-cleared photography yet — deferred).
-**DONOR DECISION:** PR #75 and AXE s4piens multisprint branches not adopted (Founder instruction: design new).
-**BASE / ROLLBACK:** forward-synced after PR #444; rollback via PR #447 revert plus preserved pre-release branch `backup/pre-claude-4nation-s4piens-live-20261014`.
+**STATUS:** HEIR test wiring; no LIVE or acceptance claim. One reviewed public species truth gate added to existing `npm run test:smoke` execution rather than creating a separate QA facility. Preserve Maker!=Judge and rollback. HUMAN SUCCESS: source-unreviewed species model chains cannot silently reappear in the public page. BASE: king/test@00d2a290354c59dde4de86751b5516b32d05a8c8.
+
+---
+
+# LSI / EXPO-04 — CONSERVATIVE PUBLIC SPECIES TRUTH GATE / 14 OCTOBER 2026
+
+**STATUS:** HEIR CANDIDATE / LIVE UNCHANGED / INDEPENDENT SCIENTIFIC GOLD AND PRODUCT QA REQUIRED.
+**USER ARRIVES:** For authoritative biological understanding; a species route must not imply undocumented ecological beneficiaries.
+**ROOT CAUSE:** Generic function→service→recipient and failure-cascade paths were applied to all species, creating e.g. polar bear/orca predation→forests/wild plants without species-specific claim/source/context review.
+**ACTION:** Hide unreviewed causal-path widgets from public species route, preserve underlying graph and its code unchanged for evidentiary remediation, retain conservation, sources, biology, reviewed claim panel, ATLAS connections and threats/solutions.
+**TRUTH:** This blocks one misleading public presentation, not all unsourced links on other routes; does not claim reviewed provenance or scientific Gold.
+**DESIGN:** Reuse existing Section, Link and typography, no new visual tokens. Source-specific paths may return only after NATUREBRAIN claim/evidence rights and scientific review.
+**HUMAN SUCCESS:** A visitor receives sourced biological content rather than a false precise impact graph; truth uncertainty is visible.
+**MOBILE:** Existing responsive public template unchanged aside from bounded narrative; desktop/mobile browser Gold pending.
+**BASE / ROLLBACK:** king/test@eaafb4b327031bd1a4e6d4371dc1dca73b04b3e6; no LIVE action. **OWNER:** LSI / NATUREBRAIN science steward; independent Gold.
 
 ---
 
