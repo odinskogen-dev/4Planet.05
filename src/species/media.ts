@@ -72,19 +72,23 @@ export function classifySpeciesMediaRights(license?: string): SpeciesMediaRights
 
   // URL licences are authority-bearing inputs: accept only the canonical
   // Creative Commons host and an exact supported path, with no query/fragment.
-  const ccLicenseUrl =
-    /^https?:\/\/(?:www\.)?creativecommons\.org\/licenses\/(?:by|by-sa)\/\d(?:\.\d)?\/?$/;
+  const ccLicenceVersion = "(?:1\\.0|2\\.0|2\\.5|3\\.0|4\\.0)";
+  const ccLicenseUrl = new RegExp(
+    `^https?://(?:www\\.)?creativecommons\\.org/licenses/(?:by|by-sa)/${ccLicenceVersion}/?$`,
+  );
   const ccPublicDomainUrl =
-    /^https?:\/\/(?:www\.)?creativecommons\.org\/publicdomain\/(?:zero|mark)\/\d(?:\.\d)?\/?$/;
+    /^https?:\/\/(?:www\.)?creativecommons\.org\/publicdomain\/(?:zero|mark)\/1\.0\/?$/;
 
   if (ccPublicDomainUrl.test(value)) return "DISPLAYABLE";
   if (
-    /^cc0(?:[-\s]+\d(?:\.\d)?)?$/.test(value) ||
-    /^(?:the\s+)?public[-\s]+domain(?:[-\s]+mark(?:[-\s]+\d(?:\.\d)?)?)?$/.test(value)
+    /^cc0(?:[-\s]+1\.0)?$/.test(value) ||
+    /^(?:the\s+)?public[-\s]+domain(?:[-\s]+mark(?:[-\s]+1\.0)?)?$/.test(value)
   ) return "DISPLAYABLE";
 
   if (ccLicenseUrl.test(value)) return "DISPLAYABLE";
-  if (/^cc[-\s]+by(?:[-\s]+sa)?(?:[-\s]+\d(?:\.\d)?)?$/.test(value)) return "DISPLAYABLE";
+  if (/^cc[-\s]+by(?:[-\s]+sa)?(?:[-\s]+(?:1\.0|2\.0|2\.5|3\.0|4\.0))?$/.test(value)) {
+    return "DISPLAYABLE";
+  }
 
   return "REVIEW_REQUIRED";
 }
