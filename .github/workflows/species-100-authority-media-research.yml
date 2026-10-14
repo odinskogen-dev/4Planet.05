@@ -1,0 +1,36 @@
+name: SPECIES 100 — GBIF + Commons Editorial Research
+on:
+  push:
+    branches: [sprint/species-100-gold-20261014]
+    paths: [.github/workflows/species-100-authority-media-research.yml]
+permissions: {contents: read}
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Verify 100 editorial taxa and find authoritative match/image licence CANDIDATES
+        run: python3 ops/species/v53/research_gold_candidates.py
+      - name: Preserve structured results as QA artifact (not live species DB)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: species-100-gbif-commons-editorial-research-20261014
+          path: qa-output/species-100-candidate-authority-media-research.json
+          retention-days: 30
+      - name: Report exact candidate states and blockers
+        if: success()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          x=json.load(open('qa-output/species-100-candidate-authority-media-research.json'))
+          taxa=x['taxonomy'];media=x['firstGoldCohortMediaCandidates']
+          print('## SPECIES 100 — candidate research, no publication')
+          print('Candidate taxa:',len(taxa),'GBIF exact matches:',sum(t['classification']=='POTENTIAL_MATCH_NOT_GOLD' for t in taxa))
+          print('\nMedia candidate metadata counts (NOT image Gold):')
+          for m in media:print('- '+m['slug']+': '+str(m['count']))
+          print('\nNo first Gold cohort was published or approved by this read-only process.')
+          PY
