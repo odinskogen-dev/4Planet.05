@@ -45,23 +45,54 @@ jobs:
       - name: Install exact Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Wait for exact HEIR on canonical IMPACT TEST URL
+      - name: Wait for exact usable IMPACT HEIR on canonical TEST URL
         shell: bash
         run: |
           set -euo pipefail
           want="heir-${EXACT_SHA:0:12}"
           ok=0
-          for attempt in $(seq 1 90); do
+          for attempt in $(seq 1 100); do
             headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "$BASE_URL/impact" | tr -d '\r' || true)
-            if printf '%s\n' "$headers" | grep -qi '^x-4planet-control-plane: four-state-v1$' && printf '%s\n' "$headers" | grep -qi "^x-4planet-review-source: ${want}$"; then
+            body=$(curl -fsSL --max-redirs 5 --connect-timeout 10 --max-time 30 "$BASE_URL/impact" 2>/dev/null || true)
+            if printf '%s\n' "$headers" | grep -qi '^x-4planet-control-plane: four-state-v1
+
+      - name: Browser proof — canonical IMPACT TEST URL
+        run: >-
+          npm run test:e2e --
+          tests/e2e/impact-lan-gold.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+
+      - name: Record verdict
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'IMPACT LAN EXACT TEST DOMAIN PASS\nSHA=%s\nURL=%s/impact\nLIVE_AUTHORITY=ABSENT\n' "$EXACT_SHA" "$BASE_URL" > impact-lan-test-domain-verdict.txt
+
+      - name: Upload IMPACT TEST evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: impact-lan-test-domain-${{ env.EXACT_SHA }}
+          path: |
+            impact-lan-test-domain-sha.txt
+            impact-lan-test-domain-headers.txt
+            impact-lan-test-domain-verdict.txt
+            artifacts/product-proof/impact-lan-*.png
+            artifacts/atlas-gold
+          if-no-files-found: warn
+          retention-days: 45
+ \
+              && printf '%s\n' "$headers" | grep -qi "^x-4planet-review-source: ${want}$" \
+              && printf '%s\n' "$body" | grep -Fqi 'Find people bringing life back'; then
               ok=1
               printf '%s\n' "$headers" > impact-lan-test-domain-headers.txt
               break
             fi
-            echo "Waiting for exact IMPACT HEIR ${EXACT_SHA:0:12} — attempt $attempt/90"
+            echo "Waiting for exact usable IMPACT HEIR ${EXACT_SHA:0:12} — attempt $attempt/100"
             sleep 6
           done
-          [ "$ok" -eq 1 ] || { echo "Exact IMPACT HEIR did not reach test.4planet.org/impact"; exit 1; }
+          [ "$ok" -eq 1 ] || { echo "Exact usable IMPACT HEIR did not reach test.4planet.org/impact"; exit 1; }
 
       - name: Browser proof — canonical IMPACT TEST URL
         run: >-
