@@ -85,6 +85,7 @@ test("GA4 remains gated by explicit consent and a real measurement id", () => {
   assert.match(analytics, /readConsent\(\) !== \"granted\"/);
   assert.match(analytics, /allow_google_signals: false/);
   assert.match(analytics, /allow_ad_personalization_signals: false/);
+  assert.match(analytics, /ignore_referrer:/);
 });
 
 test("analytics page telemetry strips query strings and fragments", () => {
@@ -93,6 +94,9 @@ test("analytics page telemetry strips query strings and fragments", () => {
   assert.match(analytics, /safePageLocation = `\$\{window\.location\.origin\}\$\{location\.pathname\}`/);
   assert.match(analytics, /page_location:\s*safePageLocation/);
   assert.match(analytics, /page_path:\s*location\.pathname/);
+  assert.match(analytics, /INTERNAL_ANALYTICS_STORAGE_KEY/);
+  assert.match(analytics, /4p_internal/);
+  assert.match(analytics, /isInternalAnalyticsBrowser\(\)/);
 });
 
 test("PostHog reuses the same consented event spine and fails closed without configuration", () => {
@@ -215,6 +219,14 @@ test("discovery attribution records only bounded channel labels, never raw refer
   assert.match(analytics, /AI_CHATGPT/);
   assert.match(analytics, /SEARCH_GOOGLE/);
   assert.match(analytics, /SOCIAL_INSTAGRAM/);
+  assert.match(analytics, /SEARCH_ECOSIA/);
+  assert.match(analytics, /SEARCH_DUCKDUCKGO/);
+  assert.match(analytics, /AI_CLAUDE/);
+  assert.match(analytics, /AI_GEMINI/);
+  assert.match(analytics, /AI_COPILOT/);
+  assert.match(analytics, /INTERNAL_4PLANET/);
+  assert.match(analytics, /AUTH_OR_INFRA/);
+  assert.match(routeAnalytics, /isInternalOrInfrastructureReferrer/);
   assert.match(analytics, /new URLSearchParams\(window\.location\.search\)\.get\("utm_source"\)/);
   assert.match(analytics, /safeHostname\(document\.referrer\)/);
   assert.doesNotMatch(analytics, /discovery_(entry|channel)[\s\S]{0,500}document\.referrer/);
