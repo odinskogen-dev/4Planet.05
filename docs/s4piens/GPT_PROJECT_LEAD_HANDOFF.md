@@ -1,3 +1,23 @@
+# v2 UPDATE — 14 Oct 2026 (Human Systems 02)
+
+**STATE: OUTPUT RECEIVED / AWAITING GPT AUDIT.** Registered SANDBOX `claude/s4piens-human-systems-01` (PRODUCT_SURFACE_REGISTRY → `S4PIENS.sandbox`; AXE/GPT to ratify). It includes 4NATION 02, so **merge #444 first**. `product-authority-gate` PASS · `test:smoke` 407/407 · elite doctrine gate PASS · GOLD policy PASS · lint 0 errors.
+
+**What changed for users**
+- **Follow one thing:** S4PIENS now opens with four everyday objects: a loaf of bread, a cup of coffee, a steel beam and a smartphone. Each object has two views of the same truth:
+  - **This object:** its journey step by step (where, what it needs, what it touches in the living world, "Where this happens" on ATLAS). A sticky rail of the system's stations lights up as you scroll, so you always see which part of the system you are in.
+  - **Its system:** every station of the system, with the object's own steps placed inside it. Stations the object skips are dimmed.
+  - The smartphone says plainly that Technology is not yet its own system, so the phone is followed through Energy & industry.
+- System pages link to "Follow one thing in this system".
+- Brand OS lock: Black #000000 / White #FFFFFF, capsule buttons, one soft radius, smaller headings.
+
+**Truth boundary:** object text is 4PLANET CONTEXT, with no figures and no named source countries. The map note says the layers show where this kind of activity happens, not where this object came from.
+
+**Files (v2):** `src/s4piens/{objects.ts,ObjectPage.tsx}`, `S4App.tsx`, `S4Home.tsx`, `SystemPage.tsx`, `s4piens.css`, `functions/_middleware.js` (object SEO + sitemap), `scripts/nation-visual-qa.mjs`, `docs/control/*`.
+
+**Next:** sourced flows (FAOSTAT trade matrix, CC BY 4.0, after the source gate) so Bread and Coffee can show real origin → destination arcs per country; rights-cleared photography per object; a third system (Water).
+
+---
+
 # GPT PROJECT LEAD HANDOFF — S4PIENS HUMAN SYSTEMS 01
 
 **STATE: OUTPUT RECEIVED / AWAITING GPT AUDIT.** Maker = Claude. Not LIVE. Not Founder-accepted.

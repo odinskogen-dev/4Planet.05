@@ -14,6 +14,7 @@ import "@/nation/nation.css";
 import "./s4piens.css";
 
 const SystemPage = lazy(() => import("./SystemPage"));
+const ObjectPage = lazy(() => import("./ObjectPage"));
 
 export const isS4Host = () => {
   if (typeof window === "undefined") return false;
@@ -38,6 +39,7 @@ function Header({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) => voi
     <header className="n-header">
       <Link to={s4Base() || "/"} className="n-wordmark s-wordmark" aria-label="S4PIENS home">S4PIENS<span>HUMAN SYSTEMS</span></Link>
       <nav className="n-header__nav s-header__nav" aria-label="Systems">
+        <Link to={`${s4Base()}/object/bread`}>Follow one thing</Link>
         <Link to={systemHref("food")}>Food</Link>
         <Link to={systemHref("energy-and-industry")}>Energy & industry</Link>
         <a href={atlasHome()}>Atlas ↗</a>
@@ -55,6 +57,7 @@ function Header({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) => voi
       </div>
       {menu && (
         <div className="n-menu" onClick={() => setMenu(false)}>
+          <Link to={`${s4Base()}/object/bread`}>Follow one thing</Link>
           <Link to={systemHref("food")}>Food</Link>
           <Link to={systemHref("energy-and-industry")}>Energy & industry</Link>
           <a href={atlasHome()}>Full ATLAS ↗</a>
@@ -103,6 +106,7 @@ export default function S4App() {
           <Routes>
             <Route index element={<S4Home />} />
             <Route path="system/:slug" element={<SystemPage theme={theme} />} />
+            <Route path="object/:slug" element={<ObjectPage />} />
             <Route path="*" element={<S4Home />} />
           </Routes>
         </Suspense>

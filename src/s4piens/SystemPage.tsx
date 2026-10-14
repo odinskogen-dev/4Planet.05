@@ -14,6 +14,8 @@ import { useMyCountry } from "@/nation/NationApp";
 import { useSourceDrawer, type SourceRef } from "@/nation/ui";
 import { SYSTEMS, systemBySlug, type HumanSystem } from "./systems";
 import { HumanFigure } from "./S4Home";
+import { OBJECTS } from "./objects";
+import { ObjectGlyph, objectHref } from "./ObjectPage";
 import { S4Footer, nationOrigin, systemHref } from "./S4App";
 
 const TRACE: SourceRef = {
@@ -207,6 +209,12 @@ function System({ sys }: { sys: HumanSystem; theme: string }) {
           <div className="s-example">
             <span className="n-mono">EXAMPLE · {sys.example.title.toUpperCase()}</span>
             <ol>{sys.example.steps.map((x) => <li key={x}>{x}</li>)}</ol>
+          </div>
+        )}
+        {OBJECTS.some((o) => o.system === sys.slug) && (
+          <div className="s-follow">
+            <span className="n-mono">FOLLOW ONE THING IN THIS SYSTEM</span>
+            <div>{OBJECTS.filter((o) => o.system === sys.slug).map((o) => <Link key={o.slug} className="s-follow__item" to={objectHref(o.slug)}><ObjectGlyph slug={o.slug} />{o.article}</Link>)}</div>
           </div>
         )}
       </section>

@@ -95,7 +95,7 @@ const PUBLIC_HOSTS = {
       ["ATLAS", "https://4planetatlas.com/atlas/"],
     ],
     schemaType: "WebApplication",
-    sitemap: ["/", "/system/food", "/system/energy-and-industry"],
+    sitemap: ["/", "/system/food", "/system/energy-and-industry", "/object/bread", "/object/coffee", "/object/steel-beam", "/object/smartphone"],
   },
 };
 
@@ -2247,6 +2247,10 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
   const S4_SYSTEMS = {
     "/system/food": ["Food — how the system works · S4PIENS", "Follow food from human need to end of life — inputs, production, processing, trade, eating and waste — and the places, living systems, problems and solutions it connects to."],
     "/system/energy-and-industry": ["Energy & Industry — how the system works · S4PIENS", "Follow energy and heavy industry from extraction to end of life, with the largest emitting sources by country from Climate TRACE, and the solutions being built."],
+    "/object/bread": ["A loaf of bread — follow it · S4PIENS", "From a field of wheat to the crust left on the plate: follow bread step by step through the food system."],
+    "/object/coffee": ["A cup of coffee — follow it · S4PIENS", "From a shaded hillside in the tropics to the grounds in your bin: follow coffee step by step through the food system."],
+    "/object/steel-beam": ["A steel beam — follow it · S4PIENS", "From iron ore in the ground to a building that stands for a century: follow steel through energy and industry."],
+    "/object/smartphone": ["A smartphone — follow it · S4PIENS", "Dozens of materials from mines on several continents: follow a phone through mining, refining, manufacturing and energy."],
   };
   if (host === "s4piens.com" && S4_SYSTEMS[url.pathname.replace(/\/+$/, "")]) {
     const [t, d] = S4_SYSTEMS[url.pathname.replace(/\/+$/, "")];

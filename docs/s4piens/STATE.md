@@ -25,3 +25,9 @@ S4PIENS = Human Systems / value chains (NOT 4SAPIEN, no personal footprint, no g
 - Trade flows (UN Comtrade), material flows (UNEP IRP), FAOSTAT, AQUASTAT: HELD — source gate not run, sandbox egress blocked.
 - Systems WATER, BUILT ENVIRONMENT, MOBILITY, FASHION, TECHNOLOGY, TRADE shown as "In preparation" (not openable).
 - Actor/capital traversal: architecture hook only (solution.actors from shared registry). No new actor DB.
+
+## v2 (14 Oct 2026) — Human Systems 02
+- [x] Governance: S4PIENS SANDBOX registered (PRODUCT_SURFACE_REGISTRY → S4PIENS.sandbox), lineage section, GOLD brief; product-authority-gate PASS; merged 4NATION 02 (descends from king/test@bff54ef).
+- [x] Brand OS lock applied (Black/White, capsule, one soft radius, restrained headings).
+- [x] Follow one thing: `src/s4piens/objects.ts` (bread, coffee, steel beam, smartphone) + `ObjectPage.tsx` with two views — "This object" (journey, system rail lights up while scrolling) and "Its system" (stations with the object's steps placed inside). Home leads with objects; system pages link their objects. Middleware SEO + sitemap for /object/*.
+- Open: real-data verification; WebKit; FAOSTAT/Comtrade flows (HELD).

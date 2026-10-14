@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GRAMMAR, ORBIT, SYSTEMS, systemBySlug } from "./systems";
+import { OBJECTS } from "./objects";
+import { ObjectCard } from "./ObjectPage";
 import { S4Footer, systemHref } from "./S4App";
 
 const STATUS_LABEL = { GOLD: "Mapped in depth", PROOF: "Mapped", NEXT: "In preparation" } as const;
@@ -83,6 +85,15 @@ export default function S4Home() {
       <section className="n-band">
         <header className="n-band__head">
           <span className="n-mono">01</span>
+          <h2>Start with something in your hand</h2>
+          <p>Pick an everyday thing and follow it, step by step, back through the system that made it. Switch to the system view at any time to see where it sits.</p>
+        </header>
+        <div className="s-objects">{OBJECTS.map((o) => <ObjectCard key={o.slug} o={o} />)}</div>
+      </section>
+
+      <section className="n-band">
+        <header className="n-band__head">
+          <span className="n-mono">02</span>
           <h2>One way to read any system</h2>
           <p>Every system in S4PIENS is read with the same grammar, so food and steel can be understood side by side. Each step answers one question.</p>
         </header>
@@ -93,7 +104,7 @@ export default function S4Home() {
 
       <section className="n-band">
         <header className="n-band__head">
-          <span className="n-mono">02</span>
+          <span className="n-mono">03</span>
           <h2>Two systems, followed end to end</h2>
           <p>Food is the first system mapped in depth. Energy & industry tests that the same grammar holds for something completely different. More systems follow only when their sources are ready.</p>
         </header>
@@ -116,7 +127,7 @@ export default function S4Home() {
 
       <section className="n-band s-honest">
         <header className="n-band__head">
-          <span className="n-mono">03</span>
+          <span className="n-mono">04</span>
           <h2>How we keep it honest</h2>
         </header>
         <ul className="s-honest__list">
