@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 let engine;
+let matchGate;
 let scratch;
 
 async function compile(sourcePath, outputName, replacements = []) {
@@ -23,6 +24,7 @@ test.before(async () => {
   await compile("src/data/gbifOccurrenceTruth.ts", "gbifOccurrenceTruth.mjs");
   await compile("src/species/registry.ts", "registry.mjs");
   await compile("src/species/matchGate.ts", "matchGate.mjs");
+  matchGate = await import(`${pathToFileURL(join(scratch, "matchGate.mjs")).href}?v=${Date.now()}`);
   await compile("src/species/engine.ts", "engine.mjs", [
     ['from "./registry"', 'from "./registry.mjs"'],
     ['from "./matchGate"', 'from "./matchGate.mjs"'],
@@ -106,4 +108,71 @@ test("legacy crosswalk keeps missing source rank unknown while preserving the ex
   assert.equal(result.data.taxonomyMatch.returnedRank, undefined);
   assert.equal(result.data.taxonomyMatch.state, "REVIEW_REQUIRED");
   assert.equal(result.data.taxonomyMatch.identifierBased, true);
+});
+
+
+test("cross-authority Orca species/subspecies assertions remain separate", () => {
+  const result = matchGate.reviewAuthorityTaxonomyLink(
+    {
+      sourceAuthority: "Society for Marine Mammalogy",
+      authorityVersion: "2026-04",
+      scientificName: "Orcinus orca rectipinnus",
+      rank: "subspecies",
+    },
+    {
+      sourceAuthority: "ITIS",
+      authorityVersion: "2026",
+      scientificName: "Orcinus rectipinnus",
+      rank: "species",
+    },
+  );
+
+  assert.equal(result.state, "REVIEW_REQUIRED");
+  assert.deepEqual(result.reasons, [
+    "CROSS_AUTHORITY_ASSERTIONS",
+    "AUTHORITY_VERSION_CONFLICT",
+    "SCIENTIFIC_NAME_CONFLICT",
+    "RANK_CONFLICT",
+  ]);
+  assert.equal(result.left.sourceAuthority, "Society for Marine Mammalogy");
+  assert.equal(result.left.authorityVersion, "2026-04");
+  assert.equal(result.left.rank, "SUBSPECIES");
+  assert.equal(result.right.sourceAuthority, "ITIS");
+  assert.equal(result.right.authorityVersion, "2026");
+  assert.equal(result.right.rank, "SPECIES");
+});
+
+test("common-name-only and ambiguous assertions fail closed", () => {
+  const result = matchGate.reviewAuthorityTaxonomyLink(
+    {
+      sourceAuthority: "Field observation",
+      authorityVersion: "2026-10-14",
+      commonName: "killer whale",
+      ambiguous: true,
+    },
+    {
+      sourceAuthority: "Field observation",
+      authorityVersion: "2026-10-14",
+      scientificName: "Orcinus orca",
+      rank: "species",
+    },
+  );
+
+  assert.equal(result.state, "REVIEW_REQUIRED");
+  assert.ok(result.reasons.includes("SCIENTIFIC_NAME_UNKNOWN"));
+  assert.ok(result.reasons.includes("RANK_UNKNOWN"));
+  assert.ok(result.reasons.includes("AMBIGUOUS_ASSERTION"));
+});
+
+test("same authority/version/name/rank is eligible only for explicit equivalence", () => {
+  const assertion = {
+    sourceAuthority: "Catalogue of Life eXtended Release",
+    authorityVersion: "2026-10-14",
+    scientificName: "Orcinus orca",
+    rank: "species",
+  };
+  const result = matchGate.reviewAuthorityTaxonomyLink(assertion, assertion);
+
+  assert.equal(result.state, "EXPLICIT_EQUIVALENCE_ELIGIBLE");
+  assert.deepEqual(result.reasons, []);
 });
