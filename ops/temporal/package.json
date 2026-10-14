@@ -1,0 +1,17 @@
+{
+  "name": "@4planet/durable-workers",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=20 <25" },
+  "scripts": {
+    "worker": "node src/worker.mjs",
+    "start:workflow": "node src/start-workflow.mjs"
+  },
+  "dependencies": {
+    "@temporalio/activity": "1.24.0",
+    "@temporalio/client": "1.24.0",
+    "@temporalio/worker": "1.24.0",
+    "@temporalio/workflow": "1.24.0"
+  }
+}
