@@ -45,7 +45,7 @@ jobs:
           ok=0
           for i in $(seq 1 60); do
             page=$(curl -fsSL --max-time 20 https://4species.com/ || true)
-            if grep -Fq 'wild-orca-play' <<<"$page"               && grep -Fq 'https://4planet.org/games' <<<"$page"               && grep -Fq 'WILD: ORCA' <<<"$page"; then
+            if grep -Eq 'wild-orca-play|data-wild-orca-cta' <<<"$page" && grep -Fq 'https://4planet.org/games' <<<"$page" && grep -Fq 'WILD: ORCA' <<<"$page"; then
               ok=1
               break
             fi
