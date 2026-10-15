@@ -1,0 +1,137 @@
+name: LABS OS — canonical hostname release (public-safe exact artifact)
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/labs-os-domain-release.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+  issues: write
+concurrency:
+  group: labs-os-domain-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout existing LABS project source
+        uses: actions/checkout@v4
+      - name: Verify previously approved exact source, immutable preview, and route isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='13fd59158c876b69d6601d27121334301fc25fa0'
+          url='https://fcbcda02.4planet-05.pages.dev'
+          account="${CLOUDFLARE_ACCOUNT_ID:-d53c17b06219066a0325eec01c21729e}"
+          api='https://api.cloudflare.com/client/v4'
+          node --check ops/labs-domain-adapter/src/index.js
+          grep -Fq "$target" ops/labs-domain-adapter/src/index.js
+          grep -Fq 'labs.4planet.org/*' ops/labs-domain-adapter/wrangler.jsonc
+          run="$(curl -fsS --max-time 25 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/35459355612")"
+          [[ "$(jq -r '.conclusion' <<< "$run")" == success ]]
+          [[ "$(jq -r '.head_sha' <<< "$run")" == "$target" ]]
+          marker="$(curl -fsS --max-time 25 "$url/product-build.txt")"
+          grep -Fq "Remote SHA: $target" <<< "$marker"
+          grep -Fq "Deployment URL: $url" <<< "$marker"
+          account_response="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4planet.org")"
+          zone="$(jq -r '.result[0].id // empty' <<< "$account_response")"
+          [[ -n "$zone" ]]
+          echo "zone=$zone" >> "$GITHUB_ENV"
+          route_response="$(curl -fsS --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone/workers/routes")"
+          existing="$(jq -r '[.result[]? | select(.pattern|contains("labs.4planet.org"))] | length' <<< "$route_response")"
+          [[ "$existing" == 0 ]] || { echo "LABS route already claimed: fail closed"; exit 3; }
+          echo "Verified approved $target and existing LABS Pages domain; no route collision."
+      - name: Deploy only the LABS domain adapter via EXISTING Cloudflare secret
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+          workingDirectory: ops/labs-domain-adapter
+          wranglerVersion: '4.41.0'
+          command: deploy --config wrangler.jsonc
+      - name: Canonical runtime, source header and blast-radius verification
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='13fd59158c876b69d6601d27121334301fc25fa0'
+          for p in / /labs /4planet /4planet/product /4planet/product/one-interface; do
+            passed=0
+            for attempt in $(seq 1 18); do
+              headers="$(curl -sSIL --max-time 35 "https://labs.4planet.org$p" | tr -d '\r' || true)"
+              if grep -Fiq "x-labs-source-commit: $target" <<< "$headers"; then passed=1; break; fi
+              echo "Cloudflare LABS route not at exact source on $p (attempt $attempt); checking propagation."
+              sleep 5
+            done
+            if [[ "$passed" != 1 ]]; then
+              echo "WRONG LIVE SOURCE: $p (route propagation exhausted)"
+              printf '%s\n' "$headers" | grep -Ei '^(HTTP/|server:|location:|x-|cf-)' | head -n 18 || true
+              exit 4
+            fi
+            grep -Fiq 'x-robots-tag: noindex' <<< "$headers" || { echo "NOINDEX MISSING: $p"; exit 5; }
+            echo "LABS verified host-only: $p"
+          done
+          curl -fsSL --max-time 30 https://labs.4planet.org/product-build.txt | grep -Fq "Remote SHA: $target"
+          html="$(curl -fsSL --max-time 30 https://labs.4planet.org/)"
+          asset="$(grep -oE '/assets/index-[A-Za-z0-9_-]+\.js' <<< "$html" | head -n 1)"
+          [[ -n "$asset" ]]
+          curl -fsSI --max-time 30 "https://labs.4planet.org$asset" | grep -Fiq "x-labs-source-commit: $target"
+          for host in 4planet.org s4piens.com 4brands.org; do
+            status="$(curl -sSL --max-time 30 -o /dev/null -w '%{http_code}' "https://$host/" || true)"
+            [[ "$status" == 200 ]] || { echo "UNRELATED HOST DEGRADED: $host $status"; exit 6; }
+          done
+          echo "Verified canonical LABS URL, immutable SHA, deep paths, static asset, and unrelated host availability."
+      - name: Real desktop and mobile browser smoke on canonical LABS
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npx playwright install chromium --with-deps
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser = await chromium.launch({headless:true});
+          try {
+            for (const width of [1440, 390]) {
+              const page = await browser.newPage({viewport:{width,height:900}});
+              const errors=[];
+              page.on('pageerror', e=>errors.push(String(e)));
+              const root=await page.goto('https://labs.4planet.org/',{waitUntil:'domcontentloaded',timeout:35000});
+              if(root?.status()!==200)throw Error('LABS root HTTP status '+root?.status());
+              await page.getByText('4PLANET LABS',{exact:false}).first().waitFor({timeout:30000});
+              await page.goto('https://labs.4planet.org/4planet/product',{waitUntil:'domcontentloaded',timeout:35000});
+              await page.getByText('PROJECT BRIEF',{exact:false}).first().waitFor({timeout:30000});
+              if(errors.length)throw Error('LABS browser errors: '+errors.slice(0,3).join(' | '));
+              console.log('LABS remote browser PASS at '+width+'px');
+              await page.close();
+            }
+          } finally {await browser.close()}
+          NODE
+      - name: Auto-rollback ONLY newly installed LABS Worker route on any release failure
+        if: failure()
+        shell: bash
+        run: |
+          set +e
+          zone="${zone:-}"
+          if [[ -n "$zone" && -n "${CLOUDFLARE_API_TOKEN:-}" ]]; then
+            api='https://api.cloudflare.com/client/v4'
+            routes="$(curl -sS --max-time 20 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone/workers/routes")"
+            id="$(jq -r '[.result[]? | select(.pattern=="labs.4planet.org/*" and .script=="4planet-labs-os-domain-adapter")][0].id // empty' <<<"$routes")"
+            if [[ -n "$id" ]]; then
+              curl -sS --max-time 20 -X DELETE -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone/workers/routes/$id" | jq '{success,errors}'
+              echo "LABS host-only Worker route rolled back to previous Pages handling."
+            else
+              echo "No matching LABS adapter route installed; no rollback mutation."
+            fi
+          fi
+      - name: Report success or failure to existing LABS execution issue
+        if: always()
+        shell: bash
+        run: |
+          gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body "LABS CANONICAL ROUTE: workflow https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID ; pinned QA approved 13fd59158c876b69d6601d27121334301fc25fa0, preview https://fcbcda02.4planet-05.pages.dev/labs . Inspect exact run conclusion: only a successful run means host routing and real-browser QA PASS. Public-safe dated LABS snapshot only; private BRAIN/auth/automatic sync remain separate hard gates. No change to shared Pages production branch or Factory."

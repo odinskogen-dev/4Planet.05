@@ -1,0 +1,127 @@
+.labs-shell {
+  --accent-fourplanet:#39ff78;
+}
+
+/* LABS-only founder experiment: brand blue is too low-readability on black.
+   White mode keeps canonical brand blue; dark mode maps BRAND + PRODUCT accents to green. */
+.labs-shell[data-theme="dark"] {
+  --accent-brand:#39ff78;
+  --accent-product:#39ff78;
+  --accent-fourplanet:#39ff78;
+}
+
+.labs-shell[data-theme="light"] {
+  --accent-brand:#2e2eff;
+  --accent-product:#2e2eff;
+  --accent-fourplanet:#2e2eff;
+}
+
+.labs-shell[data-theme="dark"] .labs-universe--4planet,
+.labs-shell[data-theme="dark"] .labs-universe--4planet .labs-universe-head {
+  --accent:var(--accent-fourplanet) !important;
+}
+
+.labs-shell[data-theme="light"] .labs-universe--4planet {
+  --accent:var(--accent-fourplanet) !important;
+}
+
+.labs-subhead--early {
+  margin-top:2px;
+  border-top:1px solid color-mix(in srgb,var(--accent-fourplanet) 54%,transparent);
+  color:var(--accent-fourplanet);
+  background:color-mix(in srgb,var(--accent-fourplanet) 5%,#000);
+}
+
+.labs-shell[data-theme="light"] .labs-subhead--early {
+  background:color-mix(in srgb,var(--accent-fourplanet) 4%,#fff);
+}
+
+.labs-early-grid {
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  padding:0 8px 8px;
+}
+
+.labs-project-box--early {
+  min-height:90px;
+}
+
+.labs-project-box--early .labs-box-title {
+  margin:9px 0 7px;
+}
+
+.labs-project-box--early .labs-box-title strong {
+  font-size:clamp(14px,1.15vw,19px);
+}
+
+.labs-project-box--early .labs-box-title span {
+  font-size:7px;
+}
+
+@media (max-width:1180px) {
+  .labs-early-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+
+@media (max-width:900px) {
+  .labs-early-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width:760px) {
+  .labs-page--portfolio .labs-inspector { display:none; }
+  .labs-portfolio-layout { display:block; }
+}
+
+@media (max-width:620px) {
+  .labs-page { overflow-x:hidden; }
+  .labs-header-tools { gap:6px; }
+  .labs-theme-switch button { min-height:36px; padding:7px 9px; }
+  .labs-command-card { min-height:82px; padding:10px; }
+  .labs-command-card small { line-height:1.2; }
+
+  /* The founder maze should scan, not become one extremely long single-column list. */
+  .labs-core-grid,
+  .labs-early-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:4px;
+    padding-inline:6px;
+  }
+
+  .labs-core-grid .labs-project-box,
+  .labs-project-box--early {
+    min-height:104px;
+  }
+
+  .labs-core-grid .labs-box-title strong,
+  .labs-project-box--early .labs-box-title strong {
+    font-size:15px;
+    overflow-wrap:anywhere;
+  }
+
+  .labs-project-box--early .labs-box-bottom span:last-child { display:none; }
+  .labs-project-box--early .labs-box-bottom { justify-content:flex-start; }
+
+  .labs-universe-meta {
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px 12px;
+    justify-content:flex-start;
+  }
+
+  .labs-subhead--early {
+    align-items:flex-start;
+    flex-direction:column;
+    gap:4px;
+  }
+
+  .labs-subhead--early span:last-child {
+    opacity:.68;
+  }
+}
+
+@media (max-width:360px) {
+  .labs-core-grid,
+  .labs-early-grid { grid-template-columns:1fr; }
+}
