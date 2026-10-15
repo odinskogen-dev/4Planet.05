@@ -1875,6 +1875,32 @@ export async function onRequest(context) {
       }));
   }
 
+  if (host === "4species.com" && (url.pathname === "/" || url.pathname === "")) {
+    const response = await context.next();
+    if (privateSurface) return withSecurityHeaders(response, true);
+    const headers = new Headers(response.headers);
+    const contentType = headers.get("content-type") || "";
+    if (!contentType.toLowerCase().includes("text/html")) {
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    }
+    const gameCta = '<style>.wild-orca-play{position:fixed;right:18px;bottom:max(18px,calc(env(safe-area-inset-bottom) + 10px));z-index:9999;display:inline-flex;align-items:center;gap:8px;padding:11px 15px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(5,12,15,.88);backdrop-filter:blur(14px);color:#fff;text-decoration:none;font:800 10px/1 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;letter-spacing:.08em;box-shadow:0 10px 36px rgba(0,0,0,.25)}.wild-orca-play span{color:#9cecff;font-size:8px;letter-spacing:.15em}@media(max-width:600px){.wild-orca-play{right:12px;bottom:max(12px,calc(env(safe-area-inset-bottom) + 8px));padding:10px 13px;font-size:9px}}</style><a class="wild-orca-play" href="https://4planet.org/games" aria-label="Play WILD: ORCA"><span>PLAY</span> WILD: ORCA</a>';
+    return new HTMLRewriter()
+      .on("body", {
+        element(element) {
+          element.append(gameCta, { html: true });
+        },
+      })
+      .transform(new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      }));
+  }
+
   if (host === "4planet.org") {
     const pathname = url.pathname.replace(/\/+$/, "") || "/";
     if (pathname.startsWith("/place/")) {

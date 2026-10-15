@@ -1,11 +1,41 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#061419">
-<title>4PLANET Games — WILD: ORCA</title>
-<meta name="description" content="Play WILD: ORCA — an early playable 4PLANET prototype set in a Svalbard-inspired Arctic ocean.">
-<link rel="canonical" href="https://4planet.org/games/">
-<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#061419;color:#f4fbfb;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh;display:flex;flex-direction:column}.top{display:flex;justify-content:space-between;align-items:center;padding:24px clamp(20px,4vw,56px);font-size:12px;letter-spacing:.12em}.brand{font-weight:800}.back{color:inherit;text-decoration:none;opacity:.72}main{flex:1;display:grid;place-items:center;padding:32px 20px 64px}.card{width:min(920px,100%);min-height:560px;border-radius:28px;overflow:hidden;position:relative;display:flex;align-items:flex-end;background:radial-gradient(circle at 70% 25%,rgba(116,222,238,.22),transparent 25%),linear-gradient(155deg,#0a3140 0%,#061a24 46%,#02090d 100%);border:1px solid rgba(218,250,255,.13);box-shadow:0 36px 110px rgba(0,0,0,.35)}.card:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(2,9,13,.15) 50%,rgba(2,9,13,.83) 100%),repeating-radial-gradient(ellipse at 66% -10%,transparent 0 76px,rgba(188,244,250,.025) 78px 80px)}.copy{position:relative;z-index:1;padding:clamp(28px,6vw,64px);max-width:680px}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.22em;color:#a8f4ff;margin-bottom:16px}.copy h1{font-size:clamp(54px,10vw,112px);line-height:.85;letter-spacing:-.055em;margin:0 0 22px;font-weight:900}.copy p{font-size:clamp(16px,2.4vw,22px);line-height:1.45;color:rgba(244,251,251,.76);max-width:590px;margin:0 0 28px}.actions{display:flex;gap:12px;flex-wrap:wrap}.play{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 24px;border-radius:999px;background:#eefdfd;color:#061419;text-decoration:none;font-size:12px;font-weight:900;letter-spacing:.12em}.species{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:0 20px;border-radius:999px;border:1px solid rgba(234,255,255,.22);color:#eefdfd;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:.08em}.meta{margin-top:20px;font-size:10px;line-height:1.5;letter-spacing:.08em;color:rgba(234,255,255,.48)}footer{padding:20px clamp(20px,4vw,56px) 32px;font-size:11px;color:rgba(244,251,251,.48)}@media(max-width:620px){.top{padding-top:max(18px,env(safe-area-inset-top))}.card{min-height:66vh;border-radius:22px}.copy{padding:28px 24px 34px}.copy h1{font-size:58px}.play,.species{width:100%}}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <title>WILD: ORCA — Play an Orca in a Living Arctic World | 4PLANET</title>
+  <meta name="description" content="Play WILD: ORCA, an early living-ocean game from 4PLANET. Swim with an Orca pod through a Svalbard-inspired Arctic world on mobile or desktop.">
+  <link rel="canonical" href="https://4planet.org/games">
+  <meta property="og:title" content="WILD: ORCA — 4PLANET">
+  <meta property="og:description" content="Become an Orca in a living Arctic world. An early playable WILD build by 4PLANET.">
+  <meta property="og:url" content="https://4planet.org/games">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#02090d">
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02090d;color:#eefcff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{display:grid;grid-template-rows:auto 1fr}
+    .bar{height:44px;padding:max(8px,env(safe-area-inset-top)) 14px 8px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(225,250,255,.1);background:rgba(2,9,13,.98);z-index:2}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:inherit}.brand b{font-size:11px;letter-spacing:.14em;white-space:nowrap}.brand span{font-size:8px;letter-spacing:.15em;opacity:.52;white-space:nowrap}
+    .state{font-size:7px;letter-spacing:.16em;opacity:.56;white-space:nowrap}
+    .game{position:relative;min-height:0}.game iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#03151d}
+    @media(max-width:560px){.bar{height:38px;padding:6px 10px}.brand b{font-size:9px}.brand span{display:none}.state{font-size:6px}}
+  </style>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"WILD: ORCA","url":"https://4planet.org/games","description":"An early playable living-ocean game from 4PLANET set in a compressed, Svalbard-inspired Arctic world.","gamePlatform":["Web Browser","Mobile Web"],"publisher":{"@type":"Organization","name":"4PLANET","url":"https://4planet.org/"}}</script>
 </head>
-<body><header class="top"><div class="brand">4PLANET_ GAMES</div><a class="back" href="/">4PLANET ↗</a></header><main><article class="card"><div class="copy"><div class="eyebrow">EARLY PLAYABLE PROTOTYPE · SVALBARD</div><h1>WILD:<br>ORCA</h1><p>Become a killer whale. Swim with your pod, dive beneath Arctic light, hunt, communicate, breach the surface and discover a living ocean.</p><div class="actions"><a class="play" href="./wild-orca/">PLAY WILD: ORCA →</a><a class="species" href="https://4species.com/orca">MEET THE ORCA</a></div><div class="meta">Built as a living GAME LAB prototype. The world is source-informed and stylised — not a navigation-grade reconstruction.</div></div></article></main><footer>4PLANET_ For a Living Planet.</footer></body>
+<body>
+  <header class="bar">
+    <a class="brand" href="/" aria-label="Back to 4PLANET"><b>4PLANET_ GAMES</b><span>FOR A LIVING PLANET</span></a>
+    <div class="state">EARLY PLAYABLE BUILD</div>
+  </header>
+  <main class="game">
+    <iframe
+      src="https://wild-orca-4planet-k97053.v2.appdeploy.ai/"
+      title="WILD: ORCA"
+      allow="autoplay; fullscreen"
+      allowfullscreen
+      loading="eager"
+      referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </main>
+</body>
 </html>
