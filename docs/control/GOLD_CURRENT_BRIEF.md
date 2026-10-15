@@ -1,3 +1,16 @@
+# WILD: ORCA — PUBLIC ALPHA RELEASE 01 — 15 OCTOBER 2026
+
+**STATUS:** FOUNDER-ACCEPTED PUBLIC ALPHA / NOT GOLD / BOUNDED LIVE PROMOTION AUTHORISED.
+**FOUNDER EVIDENCE:** Founder voluntarily played Claude Challenger 01 for approximately six minutes and explicitly reported that the first build was already fun/impressive, then authorised immediate public release at 4planet.org/games and a small Play WILD: ORCA entry point on 4species.com.
+**EXACT HEIR:** king/test@90a150080ad902297821c7b8e8863b236169aca7. Public Preview Gate PASS run 38661730055; GOLD / WORLD CLASS Enforcement PASS run 38661730058; FOUR STATE Product Authority Gate PASS run 38661730136.
+**LIVE SCOPE:** add only /games, /games/wild-orca and its frozen Challenger runtime assets; extend CSP only for runtime hosts required by the accepted artifact. The 4species homepage CTA remains on the existing separately deployed Worker release path.
+**PRODUCT STATE:** EARLY PLAYABLE PROTOTYPE / PUBLIC ALPHA. Founder enjoyment is meaningful first-party product evidence, not broad retention, market fit, independent Gold or scientific validation.
+**TRUTH / RIGHTS:** Hero Orca = Trouvaille/ORCAST CC BY 4.0 derivative; humpback = Tidewater MIT; Arctic environment is source-informed, compressed and stylised; it is not a navigation-grade reconstruction. GEBCO bathymetry is not claimed baked unless separately verified.
+**ROLLBACK:** remove the bounded games files/CSP host additions. Existing 4PLANET architecture remains preserved.
+**MAKER ≠ JUDGE:** Claude built the Challenger artifact; AXE packages/promotes the Founder-accepted build; exact-SHA public readback remains required after deployment.
+
+---
+
 # WHAT WE BELIEVE — BOUNDED LIVE RELEASE — 07 OCT 2026
 
 **STATUS:** FOUNDER_ACCEPTED / EXACT TEST KING VALUES CANDIDATE GREEN / BOUNDED LIVE PROMOTION AUTHORISED.
