@@ -1,3 +1,42 @@
+# WILD: ORCA — EMBEDDED ORIGINAL RENDERING CORRECTION — 15 OCTOBER 2026
+
+**FOUNDER EVIDENCE:** Founder submitted a production screenshot with a white orca despite Claude Challenger 02 original screenshots showing the black-white orca. This is a confirmed visual regression, regardless of static asset hash success.
+**ROOT-CAUSE HYPOTHESIS:** Claude's original standalone published HTML embeds the model, textures, and associated media in `window.__WILD_EMBED`. The prior 4PLANET deployment used the split Vite build with network-fetched GLB. Identical external file bytes did not prove WebGL asset activation. Model-selection/fallback behavior on iPhone was not checked.
+**CORRECTION:** Serve original unmodified `publish/WILD_ORCA_single_file.html` as `/games/wild-orca/index.html`, Git object `f0114ba1b3103fe02f4047cc9e81e9a4e1ee41d1`, SHA256 `666d04803d9118a8b12bc2619a58c3609f5b4f0347e12e0f7ab9bb34bdfdb95d`.
+**SCRIPT POLICY:** Two exact inline script hashes only, no global unsafe-inline: `sha256-AAFnkLX8/k0wjBNmP8S3ba7c7bTLiIc2HvFjJykd0dc=` (embedded media) and `sha256-OARO1lDpRsoNKF+o/JPex5J3yymk87t7kZySvn8L54U=` (unmodified bundled game code).
+**SCOPE:** No gameplay or audio code changes. Keep prior split dist JavaScript/CSS/GLB on disk for rollback. Existing SPECIES Play and /games wrapper unchanged.
+**QA:** Verify HTML production SHA256 and CSP hashes. Source integrity does not alone prove correct display or sound on iPhone; founder photo and device test remain required.
+**TRUTH STATE:** Visual fix deployed only after precise production readback; independently verified iPhone presentation pending.
+
+## USER ARRIVES BECAUSE
+They want the exact Claude Challenger 02 with a black-white orca and responsive mobile controls.
+## ONE THING TO UNDERSTAND
+Embedded assets avoid dependency on separately fetched mobile textures.
+## PRIMARY ACTION
+Play WILD: ORCA from existing /games entry point.
+## SECONDARY DEPTH
+Verify model selection, sound and gameplay on an actual iPhone.
+## P1 DOMINANT
+Black-white hero orca visible.
+## P2 ORIENTATION
+Same Challenger 02 world, controls, and audio.
+## P3 ACTION / NEXT
+Play using the existing controls.
+## P4 DEPTH
+Preserve model and asset rights attribution.
+## WHAT CAN BE REMOVED
+No unrelated product changes.
+## WHAT MUST BE REUSED
+Exact Claude published HTML and the original 4PLANET release paths.
+## TRUTH BOUNDARY
+Source equivalence does not prove visual rendering on every device.
+## MOBILE-FIRST RISK
+iOS in-app browser shader/material behavior; inline script CSP.
+## HUMAN SUCCESS
+The production orca is visually identical to the original Challenger 02 after loading.
+
+---
+
 # WILD: ORCA — CHALLENGER 02 BOUNDED LIVE UPDATE — 15 OCTOBER 2026
 
 **FOUNDER DECISION:** Explicitly requested publication of Claude Challenger 02 to https://4planet.org/games and correction of SPECIES Play navigation on 15 October 2026. This authorises the bounded game update, not an unrelated portfolio-wide release.
