@@ -267,7 +267,7 @@ test("Drive content classifier fails closed on unlabelled sensitive and unknown 
     ["Møtte en privatperson hjemme i går.","UNREVIEWED"]
   ];
   for(const [line,category] of cases){
-    const result=classifyContentForIngest("NEXT: independent Gold reviews exact SHA.\\n"+line);
+    const result=classifyContentForIngest("NEXT: independent Gold reviews exact SHA.\n"+line);
     assert.equal(result.state,"REDACTED",line);
     assert.equal(result.redactedLines,1,line);
     assert.ok(result.categories.includes(category),line);
