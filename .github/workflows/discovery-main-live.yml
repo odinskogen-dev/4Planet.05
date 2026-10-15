@@ -9,6 +9,8 @@ on:
       - scripts/build-living-systems-v142.mjs
       - scripts/living-systems-v142-zero-loss.test.mjs
       - public/_redirects
+      - public/_headers
+      - public/games/**
       - package.json
       - src/pages/integrated/AtlasDiscoveryPage.tsx
       - src/pages/v5/PlanetProof.tsx
