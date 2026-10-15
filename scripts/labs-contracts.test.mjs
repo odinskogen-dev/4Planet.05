@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V1"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V2"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -239,6 +239,25 @@ test("Drive content classifier redacts sensitive body and sheet-cell content des
   assert.match(mixed.content,/Next: independent Gold/);
   assert.doesNotMatch(mixed.content,/private health detail|do-not-ingest/);
   assert.deepEqual(mixed.categories,["HEALTH","SECRET"]);
+});
+
+test("Drive content classifier fail-closes common Gold-returned sensitive variants",()=>{
+  const cases=[
+    ["health: chronic condition","HEALTH"],
+    ["helse: privat opplysning","HEALTH"],
+    ["IBAN: NO9386011117947","FINANCE"],
+    ["private email: person@example.org","PERSON"],
+    ["Authorization: Basic dXNlcjpwYXNzd29yZA==","SECRET"],
+    ["DOB: 1990-01-02","PERSON"],
+    ["confidential: ambiguous private note","AMBIGUOUS_PRIVATE"]
+  ];
+  for(const [line,category] of cases){
+    const result=classifyContentForIngest(`Public project update.\n${line}\nNext public action.`);
+    assert.equal(result.state,"REDACTED",line);
+    assert.equal(result.redactedLines,1,line);
+    assert.ok(result.categories.includes(category),line);
+    assert.doesNotMatch(result.content,new RegExp(line.split(":")[1].trim().replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),line);
+  }
 });
 
 test("fully sensitive content is quarantined and cannot enter an ingest batch",()=>{

@@ -33,14 +33,15 @@ const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
 const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
-const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V1";
+const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V2";
 const CONTENT_RULES=Object.freeze([
- {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\bBearer\s+[A-Za-z0-9._~+\/-]{16,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
+ {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\b(?:authorization\s*:\s*)?(?:Basic|Bearer)\s+[A-Za-z0-9._~+\/=\/-]{8,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
  {category:"TENANT",pattern:/\btenant(?:_id)?\s*[:=]\s*(?!null\b|none\b|unknown\b)[A-Za-z0-9_-]+|\b(?:private_context|private_profile|personal_brain_record|tenant_private_data)\s*[:=]/i},
- {category:"PERSON",pattern:/\b(?:social security number|national identity number|f[øo]dselsnummer|date of birth|private address)\s*[:=]/i},
- {category:"HEALTH",pattern:/\b(?:diagnosis|diagnose|medical record|health record|medication|medisin(?:er)?)\s*[:=]/i},
- {category:"FINANCE",pattern:/\b(?:personal debt|private finance|bank account|account number|tax debt|private investment account)\s*[:=]/i},
+ {category:"PERSON",pattern:/\b(?:social security number|national identity number|f[øo]dselsnummer|date of birth|birth date|f[øo]dselsdato|dob|private address|private e-?mail|personal e-?mail|private contact|personal contact|contact details?|email address)\s*[:=]/i},
+ {category:"HEALTH",pattern:/\b(?:diagnosis|diagnose|medical record|health record|health|medical|helse(?:opplysninger|journal)?|medication|medisin(?:er)?)\s*[:=]/i},
+ {category:"FINANCE",pattern:/\b(?:personal debt|private finance|bank account|account number|bankkonto|kontonummer|iban|swift|bic|routing number|tax debt|private investment account)\s*[:=]/i},
  {category:"LEGAL",pattern:/\b(?:personal legal|legal case|court case|lawsuit|case number)\s*[:=]/i}
+ ,{category:"AMBIGUOUS_PRIVATE",pattern:/\b(?:confidential|strictly private|sensitive personal|personally identifiable information|pii)\s*[:=]/i}
 ]);
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
