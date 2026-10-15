@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - public/games/**
+      - public/_redirects
       - functions/_middleware.js
       - .github/workflows/wild-orca-public-release-qa.yml
   workflow_dispatch:
