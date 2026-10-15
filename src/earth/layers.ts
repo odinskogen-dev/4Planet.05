@@ -62,14 +62,22 @@ export const safeHttpHref = (value) => {
   }
 };
 
+const STRICT_DECIMAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
+export const strictCoordinateNumber = (value) => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!normalized || !STRICT_DECIMAL.test(normalized)) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
 export const obisOccurrencePoint = (record, retrievedAt = "") => {
   const occurrenceStatus = String(record?.occurrenceStatus ?? "").trim().toUpperCase();
   if (occurrenceStatus !== "PRESENT") return null;
-  const rawLat = record?.latitude;
-  const rawLon = record?.longitude;
-  if (rawLat === null || rawLat === undefined || rawLat === "" || rawLon === null || rawLon === undefined || rawLon === "") return null;
-  const lat = Number(rawLat);
-  const lon = Number(rawLon);
+  const lat = strictCoordinateNumber(record?.latitude);
+  const lon = strictCoordinateNumber(record?.longitude);
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
   if (!["OPEN_CC0", "OPEN_ATTRIBUTION"].includes(String(record?.licenceClass ?? ""))) return null;
   if (Array.isArray(record?.licenceRestrictions) && record.licenceRestrictions.length > 0) return null;
@@ -98,11 +106,8 @@ export const obisOccurrencePoint = (record, retrievedAt = "") => {
 };
 
 export const gbifOccurrencePoint = (record, retrievedAt = new Date().toISOString()) => {
-  const rawLat = record?.decimalLatitude;
-  const rawLon = record?.decimalLongitude;
-  if (rawLat === null || rawLat === undefined || rawLat === "" || rawLon === null || rawLon === undefined || rawLon === "") return null;
-  const lat = Number(rawLat);
-  const lon = Number(rawLon);
+  const lat = strictCoordinateNumber(record?.decimalLatitude);
+  const lon = strictCoordinateNumber(record?.decimalLongitude);
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
 
   const occurrenceStatus = String(record?.occurrenceStatus ?? "").trim().toUpperCase();
