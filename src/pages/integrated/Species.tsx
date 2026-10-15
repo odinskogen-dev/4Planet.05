@@ -218,6 +218,7 @@ export function SpeciesIndex() {
               style={{ flex: "1 1 320px", minWidth: 0, border: "1px solid rgba(255,255,255,.4)", padding: "14px 16px", fontSize: 15, fontFamily: T.sans, background: "rgba(5,8,27,.35)", color: "#fff" }} />
             <a href="#species-results" style={{ ...mono, fontSize: 12, letterSpacing: ".1em", background: "#fff", color: "#000", padding: "14px 18px", textDecoration: "none" }}>SEARCH →</a>
           </div>
+          <a href="/games/" data-testid="species-home-orca-play" style={{ alignSelf: "flex-start", display: "inline-flex", alignItems: "center", minHeight: 46, padding: "0 18px", marginTop: 18, background: "#a8f4ff", color: "#021219", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>PLAY WILD: ORCA →</a>
           <div style={{ ...mono, marginTop: 18, color: "rgba(255,255,255,.6)", letterSpacing: ".2em", fontSize: 10 }}>{SPECIES_PROFILES.length} SPECIES · SCROLL ↓</div>
         </div>
       </section>
@@ -301,6 +302,7 @@ function OrcaEditorialProfile({
                   >
                     EXPLORE ORCA IN ATLAS →
                   </Link>
+                  <a href="/games/" className="editorial-primary" data-testid="species-orca-play">PLAY WILD: ORCA →</a>
                   <button type="button" onClick={onToggle} className="editorial-secondary">
                     {followed ? "FOLLOWING ORCA" : "FOLLOW ORCA"}
                   </button>
@@ -431,6 +433,7 @@ function OrcaEditorialPage({
                   onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
                   style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
                 >EXPLORE ORCA IN ATLAS →</Link>
+                <a href="/games/" data-testid="species-orca-play-hero" style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: "#a8f4ff", color: "#021219", textDecoration: "none", fontWeight: 800 }}>PLAY WILD: ORCA →</a>
                 <Link to="/species" style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: "#FFFFFF", color: T.ink, textDecoration: "none" }}>ALL SPECIES</Link>
               </div>
             </div>
