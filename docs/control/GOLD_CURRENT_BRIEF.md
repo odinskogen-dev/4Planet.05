@@ -1,3 +1,24 @@
+# 4PLANET HOMEPAGE — MOBILE HERO CONTAINMENT — 16 OCT 2026
+
+**STATUS:** EXISTING HEIR BUILD/FIX / INDEPENDENT GOLD PENDING / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a new visitor needs to understand 4PLANET and reach its primary action from a short or narrow mobile screen without clipped copy or controls.
+**ONE THING TO UNDERSTAND:** 4PLANET is one living-planet interface; the existing first-screen story must remain readable when viewport height, width, safe-area and browser zoom reduce available space.
+**PRIMARY ACTION:** explore ATLAS through the existing hero action.
+**SECONDARY DEPTH:** continue through the existing secondary hero action and guided public-universe paths.
+**P1 DOMINANT:** the existing living-world hero and headline.
+**P2 ORIENTATION:** the existing purpose line.
+**P3 ACTION:** the existing primary and secondary hero actions.
+**P4 DEPTH:** the existing homepage sections below the hero.
+**WHAT CAN BE REMOVED:** the fixed 680px mobile floor, forced headline no-wrap and fixed 40px narrow-phone override that can clip content.
+**WHAT MUST BE REUSED:** existing homepage hero, media, copy, buttons, routes, Brand OS, issue #13 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** responsive containment does not change public copy, product claims, Canon, Gold state, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** 320×568 and 375×667 phones, safe-area insets and 200% browser zoom can reduce the first viewport; vertical scroll is acceptable at extreme zoom, horizontal clipping or inaccessible actions are not.
+**HUMAN SUCCESS:** at ordinary small-phone size the headline, purpose and both hero actions remain usable without clipping; under extreme narrowing or zoom the hero grows vertically, text wraps, actions stack when required and all content remains reachable.
+**BASE / ROLLBACK:** `king/test@d84be8cbe33e755adb01d794fbeb8b56d331e962`; revert the bounded CSS/test/brief commit sequence if independent Gold finds a desktop, visual, interaction or browser regression.
+**MAKER ≠ JUDGE:** Factory implements the bounded responsive correction; independent Gold must judge the exact resulting SHA in real browsers before any authorised release.
+
+---
+
 # ACTOR GOLD / 4NGO — PRODUCT-CONSUMED VALUE PATH — 15 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT ON EXISTING HEIR / MAKER IMPLEMENTATION / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
