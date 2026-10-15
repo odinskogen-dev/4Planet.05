@@ -1,3 +1,19 @@
+# WILD: ORCA — PUBLIC ALPHA RELEASE 01 — 15 OCTOBER 2026
+
+**STATUS:** FOUNDER-ACCEPTED PUBLIC ALPHA / NOT GOLD / EXACT CHALLENGER ARTIFACT STAGED ON HEIR.
+**USER ARRIVES BECAUSE:** a person wants to enter a living Arctic world and experience movement, hunting, pod behaviour and ecological discovery as an Orca rather than only reading about the species.
+**ONE THING TO UNDERSTAND:** WILD: ORCA is an early playable 4PLANET nature-game proof — source-informed and stylised, not a navigation-grade or exact ecological reconstruction.
+**PRIMARY ACTION:** open 4PLANET Games → PLAY WILD: ORCA → swim, dive, burst, hunt, communicate with the pod, breach and discover the habitat.
+**FOUNDER HUMAN EVIDENCE:** Founder voluntarily played the Claude Challenger 01 build for approximately six minutes on 15 Oct 2026 and explicitly reported that it was already fun/impressive, then authorised immediate public release at 4planet.org/games plus a small Play WILD: ORCA entry point on 4species.com.
+**PUBLIC SURFACE:** /games is a bounded 4PLANET Games landing surface; /games/wild-orca is the game runtime. 4species CTA is intentionally a small cross-product entry point, not a SPECIES redesign.
+**ARTIFACT:** Claude Challenger 01 derives from AXE handoff snapshot 1792015769429; bundled browser runtime is published as a frozen early-alpha artifact with external-source provenance retained.
+**TRUTH / RIGHTS:** Hero Orca = Trouvaille/ORCAST CC BY 4.0 derivative with attribution; humpback = Tidewater MIT; Arctic world is compressed/stylised; ArcticDEM may inform land relief; GEBCO bathymetry is not claimed baked unless separately verified; occurrence ≠ abundance/current position.
+**QUALITY BOUNDARY:** Founder enjoyment is meaningful first-party product evidence, not broad retention, market-fit, Gold or independent QA. Public label remains EARLY PLAYABLE PROTOTYPE / PUBLIC ALPHA.
+**ROLLBACK:** revert the bounded public/games files, CSP host additions and 4species CTA router mutation; prior GAME LAB/AppDeploy and prior public 4PLANET/SPECIES surfaces remain preserved.
+**MAKER ≠ JUDGE:** Claude built Challenger 01; AXE packages the accepted artifact into existing 4PLANET release infrastructure; existing exact-SHA gates and public readback remain the independent release checks.
+
+---
+
 # S4PIENS HUMAN SYSTEMS 02 — FOLLOW ONE THING — 14 OCT 2026
 
 **STATUS:** REGISTERED SANDBOX (`claude/s4piens-human-systems-01`, PR #447, after #444) / MAKER CANDIDATE / INDEPENDENT GOLD PENDING / FOUNDER LIVE RELEASE AUTHORISED 14 OCT 2026; technical release still requires exact-artifact verification.
