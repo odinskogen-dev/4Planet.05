@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url="https://00474e24.4planet-05.pages.dev/games/wild-orca/"
+          url="https://95dcfae7.4planet-05.pages.dev/games/wild-orca/"
           curl -fsSL --max-time 40 "$url" -o /tmp/orca07-preview.html
           actual=$(sha256sum /tmp/orca07-preview.html | awk '{print $1}')
           expected="9b255c6f7b92000b77b567eef026e9dbd0eb26197a40ba4f3a5549e98a5093f4"
@@ -55,5 +55,5 @@ jobs:
           grep -Fq "'sha256-cXHmk9tgdh+3sliCzY58Ny1KuJMbYMLt8Dd8LlWl57A='" <<< "$headers"
           grep -Fq "media-src 'self' data: blob:" <<< "$headers"
           echo 'ORCA07_PREVIEW_EXACT_SHA256_AND_CSP_PASS'
-          curl -fsSL --max-time 20 https://00474e24.4planet-05.pages.dev/games/ | grep -Fq 'src="/games/wild-orca/"'
+          curl -fsSL --max-time 20 https://95dcfae7.4planet-05.pages.dev/games/ | grep -Fq 'src="/games/wild-orca/"'
           echo 'GAME_HUB_EXISTING_ROUTE_PASS'
