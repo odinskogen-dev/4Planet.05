@@ -29,7 +29,7 @@ jobs:
           ok=0
           for i in $(seq 1 60); do
             page=$(curl -fsSL --max-time 20 https://4planet.org/games || true)
-            if grep -Fq 'WILD: ORCA' <<<"$page"               && grep -Fq 'wild-orca-4planet-k97053.v2.appdeploy.ai' <<<"$page"               && grep -Fq 'EARLY PLAYABLE BUILD' <<<"$page"; then
+            if grep -Fq 'WILD: ORCA' <<<"$page"               && grep -Fq '4planet.org/games/orca/' <<<"$page"               && grep -Fq 'Early playable build' <<<"$page"; then
               ok=1
               break
             fi
@@ -58,6 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          page=$(curl -fsSL --max-time 20 https://wild-orca-4planet-k97053.v2.appdeploy.ai/)
+          page=$(curl -fsSL --max-time 30 https://4planet.org/games/orca/)
           grep -Fq 'WILD: ORCA' <<<"$page"
+          test "${#page}" -gt 1500000
           echo 'WILD_ORCA_RUNTIME_LIVE_PASS'
