@@ -439,14 +439,46 @@ export const usgsSignals = async (): Promise<Result<Signal[]>> => {
 
 /* ── iNaturalist photo (reference imagery only) ──────────────────────────── */
 
+export type TaxonPhotoRightsState = "DISPLAYABLE" | "BLOCKED";
+
 export interface TaxonPhoto {
   url: string;
   attribution: string;
+  creator: string;
+  licence: string;
+  rightsState: "DISPLAYABLE";
+  usageScope: "PUBLIC_DISPLAY_CC0_OR_CC_BY";
+  sourceId: "inaturalist";
+  sourceRecordId: string;
+  sourceUrl: string;
+  checkedAt: string;
 }
 
 /**
- * Preserved from V36, including its bug fix: iNat fuzzy-matches, and asking for
- * "Cetacea" once returned a deer. Only an exact scientific-name match is trusted.
+ * iNaturalist photo rights are item-specific. Its compact license_code is an
+ * authority-bearing field for the photo item; an observation or taxon licence
+ * must never be inherited. Only CC0 and CC BY are admitted here. NC, ND, SA,
+ * all-rights-reserved, missing, unknown and lookalike values fail closed.
+ */
+export function classifyInaturalistTaxonPhotoRights(licenceCode?: string): TaxonPhotoRightsState {
+  const value = String(licenceCode ?? "").trim().toLowerCase().replace(/_/g, "-");
+  if (value === "cc0" || value === "cc-by") return "DISPLAYABLE";
+
+  if (/^https?:\/\/(?:www\.)?creativecommons\.org\/publicdomain\/zero\/1\.0\/?$/.test(value)) {
+    return "DISPLAYABLE";
+  }
+  if (
+    /^https?:\/\/(?:www\.)?creativecommons\.org\/licenses\/by\/(?:1\.0|2\.0|2\.5|3\.0|4\.0)\/?$/.test(value)
+  ) {
+    return "DISPLAYABLE";
+  }
+  return "BLOCKED";
+}
+
+/**
+ * Preserved from V36, including its exact-name guard: iNaturalist fuzzy-matches,
+ * and asking for "Cetacea" once returned a deer. Reference imagery is now also
+ * fail-closed on item identity, item rights and attribution.
  */
 export const taxonPhoto = async (scientificName: string): Promise<TaxonPhoto | null> => {
   const q = String(scientificName ?? "").trim();
@@ -456,12 +488,28 @@ export const taxonPhoto = async (scientificName: string): Promise<TaxonPhoto | n
     8000,
   );
   if (!r.ok) return null;
+
   const want = q.toLowerCase();
-  const t = (r.data.results ?? []).find((x: any) => String(x.name ?? "").toLowerCase() === want);
-  const url = t?.default_photo?.medium_url ?? t?.default_photo?.square_url;
-  if (!url) return null;
+  const taxon = (r.data.results ?? []).find((x: any) => String(x.name ?? "").toLowerCase() === want);
+  const photo = taxon?.default_photo;
+  const url = String(photo?.medium_url ?? photo?.square_url ?? "").trim();
+  const sourceRecordId = String(photo?.id ?? "").trim();
+  const attribution = String(photo?.attribution ?? "").replace(/<[^>]*>/g, "").trim();
+  const licence = String(photo?.license_code ?? photo?.license ?? "").trim();
+  const rightsState = classifyInaturalistTaxonPhotoRights(licence);
+
+  if (!url || !sourceRecordId || !attribution || rightsState !== "DISPLAYABLE") return null;
+
   return {
     url,
-    attribution: String(t.default_photo.attribution ?? "iNaturalist").replace(/<[^>]*>/g, ""),
+    attribution,
+    creator: attribution,
+    licence,
+    rightsState,
+    usageScope: "PUBLIC_DISPLAY_CC0_OR_CC_BY",
+    sourceId: "inaturalist",
+    sourceRecordId,
+    sourceUrl: `https://www.inaturalist.org/photos/${encodeURIComponent(sourceRecordId)}`,
+    checkedAt: now(),
   };
 };

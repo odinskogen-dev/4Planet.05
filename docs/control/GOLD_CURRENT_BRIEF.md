@@ -1,3 +1,24 @@
+# ATLAS / LIVING SYSTEMS — ITEM-SPECIFIC TAXON PHOTO RIGHTS — 16 OCT 2026
+
+**STATUS:** EXISTING HEIR BUILD/FIX / INDEPENDENT GOLD PENDING / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opening a taxon in ATLAS needs a trustworthy reference image without 4PLANET silently reusing media whose item-specific permission is missing or incompatible.
+**ONE THING TO UNDERSTAND:** a taxon or observation licence is not a photo licence; every displayed photo must carry its own identity, source, attribution, licence and rights-check time.
+**PRIMARY ACTION:** inspect the taxon and its recorded observations; follow the displayed photo to the authoritative iNaturalist item when a rights-cleared image exists.
+**SECONDARY DEPTH:** read the exact item licence and rights-check date without mistaking reference imagery for an occurrence record.
+**P1 DOMINANT:** the existing ATLAS taxon context and Earth view.
+**P2 ORIENTATION:** an admitted CC0/CC BY reference photo with source-bound credit, or an explicit no-rights-cleared-photo state.
+**P3 ACTION:** open the canonical iNaturalist photo item; continue through existing observation and living-system actions.
+**P4 DEPTH:** source/licence evidence and independent Gold/browser review.
+**WHAT CAN BE REMOVED:** arbitrary default photos admitted by URL plus attribution alone.
+**WHAT MUST BE REUSED:** issue #244, TECH-07, the existing iNaturalist connector, shared ATLAS context panel, existing species-media rights discipline and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** only item-specific CC0 or CC BY is admitted in this path; NC, ND, SA, all-rights-reserved, missing, unknown and spoofed rights fail closed. A withheld photo does not mean the taxon or its observations are absent.
+**MOBILE-FIRST RISK:** the added source/licence caption must wrap without obscuring the taxon panel at 390/430 widths and must remain keyboard/screen-reader accessible.
+**HUMAN SUCCESS:** every visible ATLAS taxon photo has a source link, item identity, attribution, licence and checked date; incompatible or incomplete items render no photo and say why.
+**BASE / ROLLBACK:** `king/test@9dac0e7fe0ddd236cffce702b08fd8ff03a6ad16`; revert this bounded connector/context/contract/brief commit if independent Gold finds a rights, truth, accessibility or layout regression.
+**MAKER ≠ JUDGE:** Factory implements the source-verified rights correction; independent Gold judges the exact resulting SHA in real browsers. Founder release remains separate.
+
+---
+
 # 4PLANET HOMEPAGE — MOBILE HERO CONTAINMENT — 16 OCT 2026
 
 **STATUS:** EXISTING HEIR BUILD/FIX / INDEPENDENT GOLD PENDING / NO DEPLOYMENT OR LIVE RELEASE.

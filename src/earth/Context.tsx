@@ -489,13 +489,26 @@ export const ContextLayer: React.FC<ContextProps> = ({
       <div className="ctx">
         {head(r.label, r.sub, r.id)}
         <div className="ctx-body">
-          {photo && (
-            <>
-              <img className="ctx-hero" src={photo.url} alt={r.sub ?? r.label} style={{ marginTop: 14 }} />
-              <div className="src-line" style={{ marginTop: 5 }}>
-                PHOTO · {photo.attribution}
-              </div>
-            </>
+          {photo ? (
+            <figure style={{ margin: 0 }}>
+              <img
+                className="ctx-hero"
+                src={photo.url}
+                alt={`${r.sub ?? r.label} — reference photo, not an occurrence record`}
+                style={{ marginTop: 14 }}
+              />
+              <figcaption className="src-line" style={{ marginTop: 5, lineHeight: 1.6 }}>
+                <a href={photo.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  PHOTO · {photo.creator} ↗
+                </a>
+                <br />
+                {photo.licence.toUpperCase()} · RIGHTS CHECKED {photo.checkedAt.slice(0, 10)}
+              </figcaption>
+            </figure>
+          ) : (
+            <div className="note-box" style={{ color, marginTop: 14 }}>
+              No rights-cleared reference photo is available. Observation records and taxon identity are unchanged.
+            </div>
           )}
 
           <Section

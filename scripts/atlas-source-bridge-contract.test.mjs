@@ -14,6 +14,8 @@ const inat = read("functions/api/inaturalist.ts");
 const truth = read("src/data/truthSpine.ts");
 const earthLayers = read("src/earth/layers.ts");
 const sourceControl = read("src/earth/atlasSourceControl.ts");
+const connectors = read("src/planet/connectors.ts");
+const contextPanel = read("src/earth/Context.tsx");
 const unescoOpenData = read("src/data/unescoOpenData.ts");
 const unescoRuntimeUrl = `data:text/javascript;base64,${Buffer.from(ts.transpileModule(unescoOpenData, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
@@ -23,6 +25,14 @@ const earthLayersCompiled = ts.transpileModule(earthLayers, {
 }).outputText.replace(/(["'])\.\.\/data\/unescoOpenData\1/g, JSON.stringify(unescoRuntimeUrl));
 const earthLayersRuntime = await import(`data:text/javascript;base64,${Buffer.from(earthLayersCompiled).toString("base64")}`);
 const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(obis, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText).toString("base64")}`);
+
+const inatRightsFunction = connectors.match(
+  /export function classifyInaturalistTaxonPhotoRights[\\s\\S]*?\\n}/u,
+)?.[0];
+assert.ok(inatRightsFunction, "ATLAS iNaturalist photo rights classifier must exist");
+const inatRightsRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(inatRightsFunction, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`);
 
@@ -587,4 +597,55 @@ test("GBIF and OBIS reject coercible non-primitive coordinates end to end", asyn
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+
+test("ATLAS iNaturalist taxon photos fail closed on item-specific rights", () => {
+  const classify = inatRightsRuntime.classifyInaturalistTaxonPhotoRights;
+  for (const licence of [
+    "cc0",
+    "cc-by",
+    "https://creativecommons.org/publicdomain/zero/1.0/",
+    "https://creativecommons.org/licenses/by/4.0/",
+  ]) {
+    assert.equal(classify(licence), "DISPLAYABLE", licence);
+  }
+
+  for (const licence of [
+    undefined,
+    "",
+    "cc-by-nc",
+    "cc-by-nd",
+    "cc-by-sa",
+    "all rights reserved",
+    "CC BY",
+    "https://evil.example/creativecommons.org/licenses/by/4.0/",
+    "https://creativecommons.org.evil.example/licenses/by/4.0/",
+    "https://creativecommons.org/licenses/by/4.0/?via=forged",
+  ]) {
+    assert.equal(classify(licence), "BLOCKED", String(licence));
+  }
+});
+
+test("ATLAS taxon-photo adapter requires a complete rights/source envelope", () => {
+  for (const needle of [
+    "photo?.id",
+    "photo?.attribution",
+    "photo?.license_code",
+    'rightsState !== "DISPLAYABLE"',
+    'usageScope: "PUBLIC_DISPLAY_CC0_OR_CC_BY"',
+    "https://www.inaturalist.org/photos/",
+    "checkedAt: now()",
+  ]) {
+    assert.ok(connectors.includes(needle), `missing taxon-photo gate: ${needle}`);
+  }
+  assert.match(connectors, /if \(!url \|\| !sourceRecordId \|\| !attribution \|\| rightsState !== "DISPLAYABLE"\) return null/);
+});
+
+test("ATLAS taxon context links photo source and explains a rights-blocked fallback", () => {
+  assert.match(contextPanel, /href=\{photo\.sourceUrl\}/);
+  assert.match(contextPanel, /\{photo\.licence\.toUpperCase\(\)\}/);
+  assert.match(contextPanel, /RIGHTS CHECKED/);
+  assert.match(contextPanel, /No rights-cleared reference photo is available/);
+  assert.match(contextPanel, /Observation records and taxon identity are unchanged/);
 });
