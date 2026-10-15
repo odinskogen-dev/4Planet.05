@@ -30,8 +30,13 @@ function SourceMark({ opportunity }: { opportunity: ParticipationOpportunity }) 
 
 function FinancialReality({ opportunity }: { opportunity: ParticipationOpportunity }) {
   const { financials } = opportunity;
+  const payLabel = financials.paid === true
+    ? "Paid opportunity"
+    : financials.paid === false
+      ? "Unpaid opportunity"
+      : "Compensation not verified";
   const rows = [
-    ["PAY", financials.paid ? "Paid opportunity" : "Unpaid / volunteer"],
+    ["PAY", payLabel],
     ["TRAINING", financials.trainingCost],
     ["MEMBERSHIP", financials.membershipCost],
     ["TRAVEL", financials.travel],
@@ -79,7 +84,9 @@ export function OpportunityCard({ opportunity, compact = false }: { opportunity:
       )}
       <SourceMark opportunity={opportunity} />
       <div className="participation-card-actions">
-        <a href={opportunity.applicationUrl} target="_blank" rel="noreferrer">OPEN OFFICIAL SOURCE <span aria-hidden>↗</span></a>
+        <a href={opportunity.applicationUrl} target="_blank" rel="noreferrer">
+          {opportunity.source.assertion === "ACTOR_OFFICIAL" ? "OPEN ACTOR SOURCE" : "OPEN LISTING SOURCE"} <span aria-hidden>↗</span>
+        </a>
         {opportunity.actorId === "P17-A036" && <Link to="/actors/orca">ACTOR PROFILE →</Link>}
       </div>
     </article>

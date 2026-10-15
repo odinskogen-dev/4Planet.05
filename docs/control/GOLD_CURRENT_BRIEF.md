@@ -1,3 +1,24 @@
+# ACTOR GOLD / 4NGO — PRODUCT-CONSUMED VALUE PATH — 15 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT ON EXISTING HEIR / MAKER IMPLEMENTATION / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs to see whether an organisation has a documented need, a real capability, unresolved partner or capital requirements, and credible delivery or outcome evidence before choosing a participation path.
+**ONE THING TO UNDERSTAND:** need → capability → requirements → action → delivery → outcome is a source- and state-bounded progression; unknown compensation, availability, partnership, delivery or outcome must stay unknown.
+**PRIMARY ACTION:** inspect the Actor value path, then continue to a current source-bound participation route only when its truth state is explicit.
+**SECONDARY DEPTH:** inspect canonical Action Contract IDs, limitations, prohibited claims and the separate delivery/outcome evidence states without creating an NGO-specific truth store.
+**P1 DOMINANT:** the organisation's existing typed Actor value path is visible in the profile.
+**P2 ORIENTATION:** every value-path item exposes its current knowledge/evidence state and limitations.
+**P3 ACTION:** Get Involved remains the next action, but uncertain availability or compensation is labelled UNKNOWN and cannot pass a paid-only match.
+**P4 DEPTH:** Action Contract identity and prohibited-claim boundaries are visible; empty evidence remains explicitly not evidenced.
+**WHAT CAN BE REMOVED:** legacy certainty labels that turn missing compensation into “unpaid” or a conflicted training listing into “training open”.
+**WHAT MUST BE REUSED:** ACTOR-FP-01, the canonical Actor Gold model, Universal IMPACT `ActionContract["id"]`, existing Get Involved objects, issue #152 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** product consumption of typed fields does not prove partnership, current seat availability, compensation, funding, delivery, outcome, ecological impact, independent Gold, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** the value path adds depth below the existing dominant Actor story; exact-head mobile/browser review must confirm readable order and no action burial.
+**HUMAN SUCCESS:** a new visitor can distinguish known need/capability from unresolved partner/capital terms and cannot mistake missing pay or seat evidence for a verified state.
+**BASE / ROLLBACK:** `king/test@827b5f37419791ec51c99a439be3cccc384c4c0c`; revert this bounded correction if independent Gold finds a truth, interaction or hierarchy regression.
+**MAKER ≠ JUDGE:** Factory implements the returned correction; independent Gold judges the exact resulting SHA. Founder release remains separate.
+
+---
+
 # WILD: ORCA — PUBLIC ALPHA RELEASE 01 — 15 OCTOBER 2026
 
 **STATUS:** FOUNDER-ACCEPTED PUBLIC ALPHA / NOT GOLD / EXACT CHALLENGER ARTIFACT STAGED ON HEIR.

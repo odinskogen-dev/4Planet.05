@@ -211,6 +211,74 @@ export function ActorProfilePage() {
         </div>
       </section>
 
+      <section className="actor-gold-section actor-gold-section-dark" aria-label="Actor value path">
+        <SectionIntro
+          number="07"
+          eyebrow="NEED → CAPABILITY → REQUIREMENTS → PROOF"
+          title="See the value path before you act."
+          copy="Known capability is not a partnership, funding commitment, delivered action or ecological outcome. Each step keeps its own state, sources and limitations."
+        />
+        <div className="actor-gold-project-grid">
+          {actor.identifiedNeeds.map((item) => (
+            <article key={item.id}>
+              <span>IDENTIFIED NEED · {item.state}</span>
+              <h3>{item.label}</h3>
+              <p>{item.limitations.join(" ")}</p>
+              <p>SOURCES · {item.sourceRefs.length ? item.sourceRefs.join(", ") : "NONE REVIEWED"}</p>
+            </article>
+          ))}
+          {actor.operationalCapabilities.map((item) => (
+            <article key={item.id}>
+              <span>OPERATIONAL CAPABILITY · {item.state}</span>
+              <h3>{item.label}</h3>
+              <p>{item.limitations.join(" ")}</p>
+              <p>EVIDENCE · {item.evidenceRefs.length ? item.evidenceRefs.join(", ") : "NOT YET ATTACHED"}</p>
+            </article>
+          ))}
+          {[...actor.partnerRequirements, ...actor.capitalRequirements].map((item) => (
+            <article key={item.id}>
+              <span>{item.kind} REQUIREMENT · {item.state}</span>
+              <h3>{item.label}</h3>
+              <p>{item.limitations.join(" ")}</p>
+              <p>SOURCES · {item.sourceRefs.length ? item.sourceRefs.join(", ") : "NOT YET VERIFIED"}</p>
+            </article>
+          ))}
+          <article>
+            <span>UNIVERSAL IMPACT LINK</span>
+            <h3>{actor.actionContractIds.length ? "Canonical action connected" : "NO ACTION CONNECTED"}</h3>
+            <p>{actor.actionContractIds.length ? actor.actionContractIds.join(", ") : "No Action Contract ID is attached."}</p>
+          </article>
+          <article>
+            <span>DELIVERY EVIDENCE</span>
+            <h3>{actor.deliveryEvidence.length ? "Evidence attached" : "NOT YET EVIDENCED"}</h3>
+            {actor.deliveryEvidence.length
+              ? actor.deliveryEvidence.map((item) => <p key={item.id}>{item.state} · {item.label} · {item.note}</p>)
+              : <p>No reviewed delivery evidence is attached to this profile.</p>}
+          </article>
+          <article>
+            <span>OUTCOME EVIDENCE</span>
+            <h3>{actor.outcomeEvidence.length ? "Evidence attached" : "NOT YET EVIDENCED"}</h3>
+            {actor.outcomeEvidence.length
+              ? actor.outcomeEvidence.map((item) => <p key={item.id}>{item.state} · {item.label} · {item.note}</p>)
+              : <p>No reviewed outcome evidence is attached. Delivery must not be presented as outcome.</p>}
+          </article>
+          <article>
+            <span>PUBLISHABLE CLAIMS</span>
+            <h3>{actor.claimsAllowed.length ? "Reviewed claims available" : "NONE YET"}</h3>
+            {actor.claimsAllowed.length
+              ? actor.claimsAllowed.map((item) => <p key={item.claim}>{item.distance} · {item.claim}</p>)
+              : <p>No delivery, outcome or impact claim is currently cleared for publication.</p>}
+          </article>
+          {actor.claimsProhibited.map((item) => (
+            <article key={item.claim}>
+              <span>PROHIBITED CLAIM · {item.distance}</span>
+              <h3>{item.claim}</h3>
+              <p>{item.state} · {item.reviewState} · unsupported claims fail closed.</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <GetInvolvedSection actorId={actor.id} />
 
       <section className="actor-gold-section actor-gold-section-action">

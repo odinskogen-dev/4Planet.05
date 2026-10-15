@@ -23,7 +23,7 @@ export interface ParticipationSource {
 }
 
 export interface ParticipationFinancials {
-  paid: boolean;
+  paid: boolean | null;
   programmeFee?: string;
   trainingCost?: string;
   membershipCost?: string;
@@ -59,7 +59,7 @@ export interface ParticipationOpportunity {
   external?: boolean;
 }
 
-const CHECKED_AT = "2026-08-26";
+const CHECKED_AT = "2026-10-13";
 
 export const PARTICIPATION_OPPORTUNITIES: ParticipationOpportunity[] = [
   {
@@ -86,7 +86,7 @@ export const PARTICIPATION_OPPORTUNITIES: ParticipationOpportunity[] = [
       "OceanWatchers app for field data collection",
     ],
     financials: {
-      paid: false,
+      paid: null,
       trainingCost: "£15 identification course + £20 OceanWatchers course, or £35 current course bundle",
       membershipCost: "Active ORCA membership is required for full app access; membership pricing is handled by ORCA",
       travel: "No programme travel is required; you choose where to survey",
@@ -137,17 +137,17 @@ export const PARTICIPATION_OPPORTUNITIES: ParticipationOpportunity[] = [
       "Distance-sampling and effort-based survey protocol",
     ],
     financials: {
-      paid: false,
+      paid: null,
       trainingCost: "£120 surveyor course + £15 prerequisite, or £135 current bundle",
       membershipCost: "ORCA states membership starts at £5/month or £60/year",
       travel: "Survey-route ticket is provided; volunteer pays travel to and from the port",
       accommodation: "Cabin is provided where an overnight survey-route sailing requires one",
       food: "Volunteer pays for food on board",
       insurance: "Volunteer is responsible for their own travel insurance",
-      note: "Training does not guarantee a survey place. ORCA states trained active members can apply for offshore surveys.",
+      note: "Training does not guarantee a survey place. The 7 November course date is listed, but remaining seats conflict with an indexed 2026 fully-booked notice; current availability is UNKNOWN.",
     },
     applicationUrl: "https://orca.org.uk/training/marine-mammal-surveyor",
-    availability: "TRAINING_OPEN",
+    availability: "UNKNOWN",
     source: {
       id: "source:orca:marine-mammal-surveyor",
       label: "ORCA — Marine Mammal Surveyor",
@@ -156,7 +156,7 @@ export const PARTICIPATION_OPPORTUNITIES: ParticipationOpportunity[] = [
       checkedAt: CHECKED_AT,
       assertion: "ACTOR_OFFICIAL",
     },
-    confidence: "HIGH",
+    confidence: "MEDIUM",
   },
 ];
 
@@ -190,7 +190,7 @@ export function externalRecordToOpportunity(record: ExternalParticipationRecord)
     eligibility: ["Eligibility is controlled by the source organisation; review the original listing before applying"],
     training: [],
     financials: {
-      paid: false,
+      paid: null,
       note: "Cost, travel, accommodation and other terms are unknown unless the original listing states them. 4PLANET does not infer missing terms.",
     },
     applicationUrl: record.sourceUrl,
@@ -273,8 +273,16 @@ export function explainParticipationMatch(
   let payState: "PASS" | "UNKNOWN" | "FAIL" = "PASS";
   let payReason = "No pay constraint selected.";
   if (preference.cost === "PAID_ONLY") {
-    payState = opportunity.financials.paid ? "PASS" : "FAIL";
-    payReason = opportunity.financials.paid ? "The opportunity is marked paid." : "This opportunity is unpaid.";
+    if (opportunity.financials.paid === true) {
+      payState = "PASS";
+      payReason = "The checked source marks this opportunity as paid.";
+    } else if (opportunity.financials.paid === false) {
+      payState = "FAIL";
+      payReason = "The checked source marks this opportunity as unpaid.";
+    } else {
+      payState = "UNKNOWN";
+      payReason = "The checked source does not verify whether this opportunity is paid.";
+    }
   } else if (preference.cost === "LOW_COST") {
     const termsKnown = Boolean(opportunity.financials.trainingCost || opportunity.financials.programmeFee || opportunity.financials.membershipCost || opportunity.source.assertion === "ACTOR_OFFICIAL");
     if (!termsKnown) {

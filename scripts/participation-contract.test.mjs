@@ -10,6 +10,7 @@ const participationRuntime = ts.transpileModule(model, {
 }).outputText;
 const {
   PARTICIPATION_OPPORTUNITIES,
+  externalRecordToOpportunity,
   explainParticipationMatch,
 } = await import(`data:text/javascript;base64,${Buffer.from(participationRuntime).toString("base64")}`);
 
@@ -66,6 +67,30 @@ test("Matching is explainable and unknown external terms cannot become a recomme
   assert.doesNotMatch(model, /confidenceScore\s*:/);
   assert.doesNotMatch(model, /score\s*:/);
   assert.match(model, /local match requires the user's location/i);
+});
+
+test("missing compensation and conflicted survey availability stay unknown", () => {
+  const external = externalRecordToOpportunity({
+    id: "external:test",
+    actorName: "Example",
+    title: "Example opportunity",
+    summary: "Source listing without compensation terms",
+    remote: true,
+    activities: [],
+    dates: "",
+    duration: "",
+    place: "Remote",
+    sourceUrl: "https://example.org/opportunity",
+    checkedAt: "2026-10-15",
+  });
+  const surveyor = PARTICIPATION_OPPORTUNITIES.find((item) => item.id === "participation:orca:marine-mammal-surveyor");
+  assert.equal(external.financials.paid, null);
+  assert.equal(gateState(explainParticipationMatch({ ...external, availability: "OPEN" }, preference({ cost: "PAID_ONLY" })), "COST"), "UNKNOWN");
+  assert.equal(surveyor?.financials.paid, null);
+  assert.equal(surveyor?.availability, "UNKNOWN");
+  assert.match(page, /Compensation not verified/);
+  assert.match(page, /OPEN LISTING SOURCE/);
+  assert.doesNotMatch(page, /Unpaid \/ volunteer/);
 });
 
 test("week duration matching does not promote weekend text", () => {

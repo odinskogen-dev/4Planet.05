@@ -48,6 +48,24 @@ test("Actor Gold page exposes work place living context editorial proof and acti
   assert.match(router, /path="\/actors\/:slug"/);
 });
 
+test("Actor Gold product consumes the typed 4NGO value and proof path", () => {
+  for (const field of [
+    "identifiedNeeds",
+    "operationalCapabilities",
+    "partnerRequirements",
+    "capitalRequirements",
+    "actionContractIds",
+    "deliveryEvidence",
+    "outcomeEvidence",
+    "claimsAllowed",
+    "claimsProhibited",
+  ]) assert.match(page, new RegExp(`actor\\.${field}`));
+  assert.match(page, /NEED → CAPABILITY → REQUIREMENTS → PROOF/);
+  assert.match(page, /No reviewed delivery evidence is attached/);
+  assert.match(page, /No reviewed outcome evidence is attached/);
+  assert.match(page, /No delivery, outcome or impact claim is currently cleared/);
+});
+
 test("Actor Gold has a responsive rights-safe signature visual", () => {
   assert.match(page, /actor-gold-route/);
   assert.match(page, /Illustrative monitoring corridor/);
