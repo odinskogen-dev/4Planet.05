@@ -6,11 +6,59 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
 const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";
+const PROFILE_DATA_PREFIX = "/species-data/v1/";
+
+async function profileReviewState(pathname) {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length !== 1) return null;
+  const slug = parts[0];
+  if (["explore", "quiz", "about"].includes(slug)) return null;
+  const response = await fetch(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
+    headers: { accept: "application/json" },
+  });
+  if (!response.ok) return null;
+  try {
+    const page = await response.json();
+    return page?.provenance?.review || "UNREVIEWED";
+  } catch {
+    return "UNREVIEWED";
+  }
+}
+
+async function reviewedSpeciesSitemap(request) {
+  const upstream = await fetch(`${SPECIES_V53_ORIGIN}/species-sitemap.xml`, {
+    method: request.method,
+    headers: { accept: "application/xml,text/xml" },
+  });
+  if (!upstream.ok || request.method === "HEAD") {
+    return new Response(null, { status: upstream.status, headers: upstream.headers });
+  }
+  const xml = await upstream.text();
+  const blocks = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
+  const kept = [];
+  for (const block of blocks) {
+    const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!loc) continue;
+    const review = await profileReviewState(new URL(loc).pathname);
+    if (review === null || review === "REVIEWED") kept.push(block);
+  }
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
+  return new Response(body, {
+    headers: {
+      "content-type": "application/xml; charset=utf-8",
+      "cache-control": "public, max-age=300, must-revalidate",
+      "x-4species-index-gate": "human-review-v1",
+    },
+  });
+}
+
 async function proxySpeciesV53(request) {
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", {status:405});
   const incoming = new URL(request.url);
+  if (incoming.pathname === "/species-sitemap.xml") return reviewedSpeciesSitemap(request);
   const target = new URL(incoming.pathname+incoming.search, SPECIES_V53_ORIGIN);
+  const reviewState = await profileReviewState(incoming.pathname);
   const headers = new Headers();
   for(const name of ["accept","accept-language","user-agent"]) {
     const value = request.headers.get(name); if(value) headers.set(name,value);
@@ -33,8 +81,18 @@ async function proxySpeciesV53(request) {
         "; frame-src 'self' https://4planetatlas.com https://www.4planetatlas.com");
     }
     out.set("x-4species-html-cache", "no-store-v53-hotfix");
+    if (reviewState !== null && reviewState !== "REVIEWED") {
+      out.set("x-robots-tag", "noindex, nofollow, noarchive");
+      out.set("x-4species-index-gate", `review-${reviewState.toLowerCase()}`);
+    }
   }
   const response = new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
+  if (request.method === "GET" && reviewState !== null && reviewState !== "REVIEWED" && (out.get("content-type")||"").includes("text/html")) {
+    return new HTMLRewriter()
+      .on('meta[name="robots"]', { element(el) { el.setAttribute("content", "noindex,nofollow,noarchive"); } })
+      .on("head", { element(el) { el.append('<meta name="googlebot" content="noindex,nofollow,noarchive">', { html: true }); } })
+      .transform(response);
+  }
   if ((incoming.pathname === "/" || incoming.pathname === "") && request.method === "GET" && (out.get("content-type")||"").includes("text/html")) {
     return new HTMLRewriter()
       .on("body", { element(el) { el.append('<a class="wild-orca-play" href="https://4planet.org/games" data-wild-orca-cta style="position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:2147483000;padding:11px 16px;border-radius:999px;background:#08181c;color:#f6ffff;border:1px solid rgba(230,255,255,.22);box-shadow:0 8px 28px rgba(0,0,0,.25);font:800 11px/1 ui-sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;letter-spacing:.06em;text-decoration:none">Play WILD: ORCA</a>', { html: true }); } })
