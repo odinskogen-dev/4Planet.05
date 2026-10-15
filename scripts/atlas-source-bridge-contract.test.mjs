@@ -504,3 +504,87 @@ test("OBIS bridge and routed WH4LES preserve explicit presence and missing-coord
   }
 });
 
+test("GBIF and OBIS reject coercible non-primitive coordinates end to end", async () => {
+  const retrievedAt = "2026-10-15T07:30:00.000Z";
+  const gbifBase = {
+    decimalLatitude: "10.5",
+    decimalLongitude: "-20.25",
+    occurrenceStatus: "PRESENT",
+    hasGeospatialIssues: false,
+    issues: [],
+    license: "CC0 1.0",
+  };
+  const obisBase = {
+    latitude: "10.5",
+    longitude: "-20.25",
+    occurrenceStatus: "PRESENT",
+    licenceClass: "OPEN_CC0",
+    licenceRestrictions: [],
+  };
+
+  assert.ok(earthLayersRuntime.gbifOccurrencePoint(gbifBase, retrievedAt));
+  assert.ok(earthLayersRuntime.obisOccurrencePoint(obisBase, retrievedAt));
+  assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...gbifBase, decimalLatitude: 0, decimalLongitude: 0 }, retrievedAt));
+  assert.ok(earthLayersRuntime.obisOccurrencePoint({ ...obisBase, latitude: 0, longitude: 0 }, retrievedAt));
+
+  const coercibleValues = [
+    [],
+    [10],
+    [[10]],
+    true,
+    false,
+    {},
+    { valueOf: () => 10 },
+    "0x10",
+    "1e1",
+    "Infinity",
+  ];
+  for (const value of coercibleValues) {
+    assert.equal(
+      earthLayersRuntime.gbifOccurrencePoint({ ...gbifBase, decimalLatitude: value }, retrievedAt),
+      null,
+      `GBIF admitted ${JSON.stringify(value)}`,
+    );
+    assert.equal(
+      earthLayersRuntime.obisOccurrencePoint({ ...obisBase, latitude: value }, retrievedAt),
+      null,
+      `OBIS admitted ${JSON.stringify(value)}`,
+    );
+  }
+
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    results: [
+      { occurrenceID: "array", occurrenceStatus: "PRESENT", decimalLatitude: [10], decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "nested", occurrenceStatus: "PRESENT", decimalLatitude: [[10]], decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "boolean", occurrenceStatus: "PRESENT", decimalLatitude: true, decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "object", occurrenceStatus: "PRESENT", decimalLatitude: {}, decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "hex", occurrenceStatus: "PRESENT", decimalLatitude: "0x10", decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "exponent", occurrenceStatus: "PRESENT", decimalLatitude: "1e1", decimalLongitude: 20, license: "CC0 1.0" },
+      { occurrenceID: "decimal", occurrenceStatus: "PRESENT", decimalLatitude: "10.5", decimalLongitude: "-20.25", license: "CC0 1.0" },
+      { occurrenceID: "zero", occurrenceStatus: "PRESENT", decimalLatitude: 0, decimalLongitude: 0, license: "CC0 1.0" },
+    ],
+    total: 8,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request("https://test.4planet.org/api/obis?scientificName=Cetacea&size=8"),
+    });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    const byId = Object.fromEntries(body.records.map((record) => [record.occurrenceId, record]));
+    for (const id of ["array", "nested", "boolean", "object", "hex", "exponent"]) {
+      assert.equal(byId[id].latitude, null, id);
+      assert.equal(earthLayersRuntime.obisOccurrencePoint(byId[id], body.retrievedAt), null, id);
+    }
+    assert.equal(byId.decimal.latitude, 10.5);
+    assert.equal(byId.decimal.longitude, -20.25);
+    assert.ok(earthLayersRuntime.obisOccurrencePoint(byId.decimal, body.retrievedAt));
+    assert.equal(byId.zero.latitude, 0);
+    assert.equal(byId.zero.longitude, 0);
+    assert.ok(earthLayersRuntime.obisOccurrencePoint(byId.zero, body.retrievedAt));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
