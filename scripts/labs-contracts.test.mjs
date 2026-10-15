@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import {classifyContentForIngest,prepareClassifiedRecords} from "./os-brain-sync.mjs";
 
 const overview = fs.readFileSync("src/pages/labs/LabsOverviewCurrent.tsx", "utf8");
 const baseFresh = fs.readFileSync("src/pages/labs/labsFreshProjection.ts", "utf8");
@@ -220,4 +221,48 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V1"/);
+  assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
+    "content classification must finish before the first ingest write");
+});
+
+test("Drive content classifier redacts sensitive body and sheet-cell content despite innocuous names",()=>{
+  const mixed=classifyContentForIngest([
+    "Project decision: preserve the existing receiver.",
+    "diagnosis: private health detail",
+    "2: Safe cell | client_secret=do-not-ingest",
+    "Next: independent Gold."
+  ].join("\n"));
+  assert.equal(mixed.state,"REDACTED");
+  assert.equal(mixed.redactedLines,2);
+  assert.match(mixed.content,/Project decision: preserve/);
+  assert.match(mixed.content,/Next: independent Gold/);
+  assert.doesNotMatch(mixed.content,/private health detail|do-not-ingest/);
+  assert.deepEqual(mixed.categories,["HEALTH","SECRET"]);
+});
+
+test("fully sensitive content is quarantined and cannot enter an ingest batch",()=>{
+  const result=classifyContentForIngest("tenant_id=odin-private\npassword=never-send");
+  assert.equal(result.state,"QUARANTINED");
+  assert.equal(result.content,null);
+});
+
+test("classified projection preserves mandatory safe truth and fail-closes before start when it cannot",()=>{
+  const base={mime_type:"application/vnd.google-apps.document",source_url:"https://example.invalid",
+   parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY/Safe file",
+   source_modified_at:"2026-10-15T00:00:00Z",source_hash:"before",object_type:"source_document",
+   metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}};
+  const prepared=prepareClassifiedRecords([
+   {...base,source_id:"lead",title:"Quarterly planning",content:"Current priority: Graph safety.\npersonal debt: private"},
+   {...base,source_id:"tasks",title:"Operations table",content:"1: Task | READY\n2: Note | tenant_id=other-company"},
+   {...base,source_id:"notes",title:"Meeting notes",content:"client_secret=blocked"}
+  ],["lead","tasks"]);
+  assert.equal(prepared.redacted,2);
+  assert.equal(prepared.quarantined,1);
+  assert.equal(prepared.records.find(x=>x.source_id==="notes").content,null);
+  assert.ok(prepared.records.every(x=>!String(x.content).includes("private")&&!String(x.content).includes("other-company")&&!String(x.content).includes("blocked")));
+  assert.throws(()=>prepareClassifiedRecords([
+   {...base,source_id:"lead",title:"Quarterly planning",content:"diagnosis: private"},
+   {...base,source_id:"tasks",title:"Operations table",content:"Current task: safe"}
+  ],["lead","tasks"]),/MANDATORY_CANONICAL_SOURCE_UNREADABLE_AFTER_CLASSIFICATION/);
 });

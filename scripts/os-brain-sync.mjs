@@ -6,6 +6,7 @@ import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {execFileSync} from "node:child_process";
+import {pathToFileURL} from "node:url";
 const ROOT="16UzbrS_xiSxvsrWkmUvp9M3OABOebiSG"; // Canonical parent ID for traceability ONLY; NEVER enumerate/share root.
 // Reviewed, scoped organisational entrypoints. Share access to ONLY these exact folders,
 // never the Knowledge OS parent and never personal / VAULT / archived subtrees.
@@ -32,9 +33,69 @@ const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
 const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
+const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V1";
+const CONTENT_RULES=Object.freeze([
+ {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\bBearer\s+[A-Za-z0-9._~+\/-]{16,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
+ {category:"TENANT",pattern:/\btenant(?:_id)?\s*[:=]\s*(?!null\b|none\b|unknown\b)[A-Za-z0-9_-]+|\b(?:private_context|private_profile|personal_brain_record|tenant_private_data)\s*[:=]/i},
+ {category:"PERSON",pattern:/\b(?:social security number|national identity number|f[øo]dselsnummer|date of birth|private address)\s*[:=]/i},
+ {category:"HEALTH",pattern:/\b(?:diagnosis|diagnose|medical record|health record|medication|medisin(?:er)?)\s*[:=]/i},
+ {category:"FINANCE",pattern:/\b(?:personal debt|private finance|bank account|account number|tax debt|private investment account)\s*[:=]/i},
+ {category:"LEGAL",pattern:/\b(?:personal legal|legal case|court case|lawsuit|case number)\s*[:=]/i}
+]);
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
 function safeError(e){return e instanceof Error?e.message.replace(/Bearer\s+[^\s]+/g,"[REDACTED]").slice(0,180):"UNKNOWN";}
+function sensitiveCategories(line){
+ return CONTENT_RULES.filter(rule=>rule.pattern.test(line)).map(rule=>rule.category);
+}
+export function classifyContentForIngest(input){
+ const original=String(input??"");
+ const categories=new Set();let redactedLines=0;
+ const content=original.split(/\r?\n/).map(line=>{
+  const found=sensitiveCategories(line);
+  if(!found.length)return line;
+  found.forEach(category=>categories.add(category));redactedLines++;
+  const rowPrefix=line.match(/^\s*\d+:\s*/)?.[0]||"";
+  return rowPrefix+"[REDACTED:SENSITIVE]";
+ }).join("\n");
+ const usable=content.split(/\r?\n/).some(line=>line.trim() && !/^\s*(?:\d+:\s*)?\[REDACTED:SENSITIVE\]\s*$/.test(line));
+ return {
+  state:redactedLines?(usable?"REDACTED":"QUARANTINED"):"SAFE",
+  content:usable||!redactedLines?content:null,
+  categories:[...categories].sort(),redactedLines,originalHash:sha(original)
+ };
+}
+export function prepareClassifiedRecords(records,mustRead=MUST_READ){
+ let redacted=0,quarantined=0;
+ const prepared=records.map(record=>{
+  if(typeof record.content!=="string")return record;
+  const result=classifyContentForIngest(record.content);
+  if(result.state==="REDACTED")redacted++;
+  if(result.state==="QUARANTINED")quarantined++;
+  const readDepth=result.state==="SAFE"?record.metadata?.readDepth:
+   result.state==="REDACTED"?record.metadata?.readDepth+"_REDACTED":"QUARANTINED";
+  return {...record,content:result.content,
+   source_hash:result.content===null?record.source_hash:sha(result.content),
+   object_type:result.content===null?"source_inventory":record.object_type,
+   metadata:{...record.metadata,readDepth,contentSafety:{
+    version:CONTENT_SAFETY_VERSION,state:result.state,categories:result.categories,
+    redactedLines:result.redactedLines,originalHash:result.originalHash
+   }}
+  };
+ });
+ for(const id of mustRead){
+  const doc=prepared.find(x=>x.source_id===id);
+  if(!doc?.content || !String(doc.metadata?.readDepth||"").startsWith("CONTENT"))
+   throw Error("MANDATORY_CANONICAL_SOURCE_UNREADABLE_AFTER_CLASSIFICATION");
+ }
+ for(const record of prepared){
+  if(typeof record.content!=="string")continue;
+  if(record.content.split(/\r?\n/).some(line=>sensitiveCategories(line).length))
+   throw Error("SENSITIVE_CONTENT_SURVIVED_CLASSIFICATION");
+ }
+ return {records:prepared,redacted,quarantined,
+  usableContent:prepared.filter(x=>typeof x.content==="string"&&x.content.trim()).length};
+}
 async function get(url,headers={},method="GET",body){
  let error;
  for(let retry=0;retry<5;retry++){
@@ -201,20 +262,20 @@ async function main(){
   }
  }
  // Never claim an un-read inventory title is equivalent to current project truth.
- const ordered=records.sort((a,b)=>a.source_id.localeCompare(b.source_id));
- const manifest=sha(ordered.map(x=>[x.source_id,x.source_hash,x.object_type].join(":")).join("\n"));
  console.log("Read-only Drive extraction completed; authoritative-content="+readCount+
   " structuredTabs="+sheetTabs+" unreadable="+denied+" inventoryEntries="+files.length+
-  " projectionRecords="+ordered.length+" ; unhydrated=UNKNOWN.");
- // Safety and completeness: failure cannot replace the last good projection.
- if(readCount<2)throw Error("CANONICAL_SOURCE_READ_TOO_SPARSE");
- for(const id of MUST_READ){
-  const doc=records.find(x=>x.source_id===id);
-  if(!doc || !doc.content || doc.metadata?.readDepth!=="CONTENT")
-   throw Error("MANDATORY_CANONICAL_SOURCE_UNREADABLE");
- }
- if(ordered.some(x=>PRIVATE.test(x.parent_path||"") || PRIVATE.test(x.title||"")))
+  " projectionRecords="+records.length+" ; unhydrated=UNKNOWN.");
+ // Content is classified before ANY ingest write. Classification failure leaves the
+ // last successful projection untouched because ingest("start") has not run yet.
+ if(records.some(x=>PRIVATE.test(x.parent_path||"") || PRIVATE.test(x.title||"")))
   throw Error("PRIVATE_OR_ARCHIVED_SOURCE_IN_PROJECTION");
+ const classified=prepareClassifiedRecords(records);
+ if(classified.usableContent<2)throw Error("CANONICAL_SOURCE_READ_TOO_SPARSE_AFTER_CLASSIFICATION");
+ const ordered=classified.records.sort((a,b)=>a.source_id.localeCompare(b.source_id));
+ const manifest=sha(ordered.map(x=>[x.source_id,x.source_hash,x.object_type].join(":")).join("\n"));
+ console.log("Content safety verified; classifier="+CONTENT_SAFETY_VERSION+
+  " redacted="+classified.redacted+" quarantined="+classified.quarantined+
+  " usableContent="+classified.usableContent);
  console.log("Safe organisational source scope verified; scope="+SCOPE_VERSION+
   " approvedRoots="+SAFE_ROOTS.length+" mandatoryDocs="+MUST_READ.length);
  await ingest("start",{revision:sourceRevision});
@@ -236,4 +297,5 @@ async function main(){
   throw e;
  }
 }
-main().catch(e=>{console.error("SYNC_NOT_COMMITTED",safeError(e));process.exitCode=1;});
+if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href)
+ main().catch(e=>{console.error("SYNC_NOT_COMMITTED",safeError(e));process.exitCode=1;});
