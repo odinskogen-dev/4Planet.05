@@ -1,0 +1,62 @@
+name: WILD ORCA Public Release QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - public/games/**
+      - functions/_middleware.js
+      - .github/workflows/wild-orca-public-release-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wild-orca-public-release-qa
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify 4PLANET Games live
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 60); do
+            page=$(curl -fsSL --max-time 20 https://4planet.org/games || true)
+            if grep -Fq 'WILD: ORCA' <<<"$page"               && grep -Fq 'wild-orca-4planet-k97053.v2.appdeploy.ai' <<<"$page"               && grep -Fq 'EARLY PLAYABLE BUILD' <<<"$page"; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          test "$ok" = "1"
+          echo 'WILD_ORCA_4PLANET_GAMES_LIVE_PASS'
+
+      - name: Verify 4SPECIES play entry live
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 60); do
+            page=$(curl -fsSL --max-time 20 https://4species.com/ || true)
+            if grep -Fq 'wild-orca-play' <<<"$page"               && grep -Fq 'https://4planet.org/games' <<<"$page"               && grep -Fq 'WILD: ORCA' <<<"$page"; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          test "$ok" = "1"
+          echo 'WILD_ORCA_4SPECIES_ENTRY_LIVE_PASS'
+
+      - name: Verify public game runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          page=$(curl -fsSL --max-time 20 https://wild-orca-4planet-k97053.v2.appdeploy.ai/)
+          grep -Fq 'WILD: ORCA' <<<"$page"
+          echo 'WILD_ORCA_RUNTIME_LIVE_PASS'
