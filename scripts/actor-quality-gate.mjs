@@ -38,7 +38,13 @@ for (const profile of profiles) {
   const oneLine = text(property(profile, "oneLine"));
   const publicationState = text(property(profile, "publicationState"));
   const disclosure = text(property(profile, "editorialDisclosure"));
+  const domain = text(property(profile, "domain"));
+  const workMode = text(property(profile, "workMode"));
+  const problems = array(property(profile, "problems"));
+  const solutions = array(property(profile, "solutions"));
   const sourceAuthority = text(property(profile, "sourceAuthority"));
+  const sourceLinks = array(property(profile, "sourceLinks"));
+  const lastReviewed = text(property(profile, "lastReviewed"));
   const correctionsPath = text(property(profile, "correctionsPath"));
   const work = array(property(profile, "work"));
   const places = array(property(profile, "places"));
@@ -54,7 +60,12 @@ for (const profile of profiles) {
   if (!actorType || actorType.length < 8) fail(`${key}: meaningful actor type required`);
   if (!oneLine || oneLine.length < 40) fail(`${key}: one-line public job statement is too weak`);
   if (!disclosure || disclosure.length < 60) fail(`${key}: relationship/editorial disclosure required`);
+  if (!domain || !workMode) fail(`${key}: domain and work mode required`);
+  if (problems.length < 1) fail(`${key}: at least one source-bounded problem / pressure required`);
+  if (solutions.length < 1) fail(`${key}: at least one source-bounded solution / method required`);
   if (!sourceAuthority || sourceAuthority.length < 20) fail(`${key}: source authority required`);
+  if (sourceLinks.length < 1) fail(`${key}: at least one direct source link required`);
+  if (!lastReviewed || !/^20\d\d-\d\d-\d\d$/.test(lastReviewed)) fail(`${key}: ISO last-reviewed date required`);
   if (!correctionsPath?.startsWith("/")) fail(`${key}: corrections path required`);
   if (work.length < 2) fail(`${key}: at least two concrete work classes required`);
   if (places.length < 1) fail(`${key}: at least one geography role required`);
@@ -62,6 +73,16 @@ for (const profile of profiles) {
   if (!publicationState || !["DEVELOPMENT", "PUBLIC"].includes(publicationState)) fail(`${key}: publication state invalid`);
   if (id && ids.has(id)) fail(`${key}: duplicate canonical actor id ${id}`); else if (id) ids.add(id);
   if (slug && slugs.has(slug)) fail(`${key}: duplicate slug ${slug}`); else if (slug) slugs.add(slug);
+
+  for (const sourceNode of sourceLinks) {
+    const source = object(sourceNode);
+    if (!source) { fail(`${key}: source links must be literal objects`); continue; }
+    const url = text(property(source, "url"));
+    const checkedAt = text(property(source, "checkedAt"));
+    if (!text(property(source, "label")) || !url?.startsWith("https://") || !/^20\d\d-\d\d-\d\d$/.test(checkedAt ?? "")) {
+      fail(`${key}: source links need label, https URL and ISO checked date`);
+    }
+  }
 
   for (const placeNode of places) {
     const place = object(placeNode);
@@ -114,4 +135,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`ACTOR GOLD PASS: ${profiles.length} controlled profile(s); unique ids/slugs; visual, source, action and field-feed gates closed.`);
+console.log(`ACTOR GOLD PASS: ${profiles.length} controlled profile(s); unique ids/slugs; problem, solution, source, action and field-feed gates closed.`);

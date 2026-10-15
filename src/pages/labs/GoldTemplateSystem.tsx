@@ -81,6 +81,111 @@ function ObjectFacts({ object }: { object: GoldObjectProof }) {
   );
 }
 
+function SolutionIntelligencePanel({ object }: { object: GoldObjectProof }) {
+  const intelligence = object.solutionIntelligence;
+  if (!intelligence) return null;
+
+  return (
+    <section className="gold-relationships" aria-labelledby={`solution-intelligence-${object.slug}`}>
+      <div className="gold-section-head">
+        <p className="gold-kicker">SOLUTION INTELLIGENCE</p>
+        <h2 id={`solution-intelligence-${object.slug}`}>From an interesting intervention to a decision-grade object.</h2>
+      </div>
+
+      <section className="gold-facts" aria-label={`${object.title} decision facts`}>
+        <article><div className="gold-facts__top"><span>PROBLEM</span><EvidenceMark state="KNOWN" /></div><strong>{intelligence.problem}</strong></article>
+        <article><div className="gold-facts__top"><span>MECHANISM</span><EvidenceMark state="KNOWN" /></div><strong>{intelligence.causalMechanism}</strong></article>
+        <article><div className="gold-facts__top"><span>MATURITY</span><EvidenceMark state="INTERPRETED" /></div><strong>{intelligence.maturity}</strong></article>
+        <article><div className="gold-facts__top"><span>EVIDENCE LEVEL</span><EvidenceMark state="INTERPRETED" /></div><strong>{intelligence.evidenceLevel}</strong></article>
+      </section>
+
+      <div className="gold-object-story">
+        <article className="gold-object-section">
+          <div className="gold-object-section__index">A</div>
+          <div className="gold-object-section__body">
+            <p className="gold-kicker">WHERE IT FITS</p>
+            <h2>Applicability before scale.</h2>
+            {intelligence.humanSystemPosition.map((item) => <p key={item}>HUMAN SYSTEM · {item}</p>)}
+            {intelligence.applicability.map((item) => <p key={item}>{item}</p>)}
+          </div>
+        </article>
+        <article className="gold-object-section">
+          <div className="gold-object-section__index">B</div>
+          <div className="gold-object-section__body">
+            <p className="gold-kicker">IMPLEMENTATION REQUIREMENTS</p>
+            <h2>What must be true before action.</h2>
+            {intelligence.implementationRequirements.map((item) => <p key={item}>{item}</p>)}
+          </div>
+        </article>
+        <article className="gold-object-section">
+          <div className="gold-object-section__index">C</div>
+          <div className="gold-object-section__body">
+            <p className="gold-kicker">LIMITATIONS / FAILURE MODES</p>
+            <h2>What can break the thesis.</h2>
+            {intelligence.limitations.map((item) => <p key={item}>{item}</p>)}
+          </div>
+        </article>
+      </div>
+
+      <div className="gold-section-head">
+        <p className="gold-kicker">OUTCOMES / ECONOMICS</p>
+        <h2>Observed, interpreted and unknown stay separate.</h2>
+      </div>
+      <ObjectFacts object={{ ...object, facts: [...intelligence.demonstratedOutcomes, ...intelligence.economics] }} />
+
+      <div className="gold-section-head">
+        <p className="gold-kicker">ACTORS / CAPITAL</p>
+        <h2>Who can act — and what is not yet known.</h2>
+      </div>
+      <div className="gold-relationship-list">
+        {intelligence.actors.map((actor, index) => {
+          const body = (
+            <>
+              <div className="gold-relationship-list__number">{String(index + 1).padStart(2, "0")}</div>
+              <div>
+                <div className="gold-relationship-list__identity"><span>{actor.actorId}</span><EvidenceMark state={actor.state} /></div>
+                <h3>{actor.name}</h3>
+                <p>{actor.role}</p>
+              </div>
+              {actor.href ? <b aria-hidden>↗</b> : null}
+            </>
+          );
+          return actor.href ? <Link key={actor.actorId} to={actor.href} className="gold-relationship-row">{body}</Link> : <div key={actor.actorId} className="gold-relationship-row">{body}</div>;
+        })}
+        <div className="gold-relationship-row">
+          <div className="gold-relationship-list__number">C</div>
+          <div>
+            <div className="gold-relationship-list__identity"><span>CAPITAL</span><EvidenceMark state={intelligence.capital.state} /></div>
+            <h3>Capital requirement</h3>
+            <p>{intelligence.capital.note}</p>
+          </div>
+        </div>
+      </div>
+
+      {intelligence.currentActions.length ? (
+        <div className="gold-next">
+          <p className="gold-kicker">CURRENT ACTIONS</p>
+          <h2>Legitimate routes, not implied impact.</h2>
+          <div className="gold-next-list">
+            {intelligence.currentActions.map((action) => (
+              <a key={action.href} href={action.href} target="_blank" rel="noreferrer">
+                <span>{action.state} · CHECKED {action.checkedAt}</span>
+                <strong>{action.label}</strong>
+                <b>{action.provider} ↗</b>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <details className="gold-donor-note">
+        <summary>OPEN UNKNOWNS</summary>
+        {intelligence.unknowns.map((item) => <p key={item}>{item}</p>)}
+      </details>
+    </section>
+  );
+}
+
 function GoldObjectShell({ object }: { object: GoldObjectProof }) {
   return (
     <PublicShell>
@@ -110,6 +215,8 @@ function GoldObjectShell({ object }: { object: GoldObjectProof }) {
         </header>
 
         <ObjectFacts object={object} />
+
+        <SolutionIntelligencePanel object={object} />
 
         <section className="gold-object-story" aria-label={`${object.title} reading journey`}>
           {object.sections.map((section) => (
