@@ -1,0 +1,145 @@
+name: SPECIES SEO Client Indexability Candidate QA 20261014
+on:
+  push:
+    branches: [audit/species-seo-discovery-embed-20261014]
+    paths: [.github/workflows/species-seo-hydration-browser-qa-20261014.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install Chromium
+        shell: bash
+        run: |
+          set -e
+          npm install --prefix /tmp/sqa playwright@1.56.0
+          /tmp/sqa/node_modules/.bin/playwright install --with-deps chromium
+      - name: Map exact immutable candidate into public host without changing DNS
+        shell: bash
+        run: |
+          set -eu
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/sqa/node_modules/playwright/index.mjs';
+          import fs from 'node:fs';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const immutable="https://72494005.4planet-05.pages.dev";
+          const species=["orca","gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale","tiger","lion","bornean-orangutan","monarch-butterfly"];
+          let problems=[];
+          for(const slug of ["",...species]) {
+            const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            await context.route('https://4species.com/**',async route=>{
+              const u=new URL(route.request().url());
+              const target=immutable+u.pathname+u.search;
+              try{
+                const resp=await route.fetch({url:target,maxRedirects:8,timeout:25000});
+                await route.fulfill({response:resp,headers:{...resp.headers(),"access-control-allow-origin":"*"}});
+              }catch(e){console.log("PROXY_ERROR",slug,u.pathname,String(e).slice(0,250));await route.abort();}
+            });
+            const page=await context.newPage();
+            const err=[];page.on('pageerror',e=>err.push(e.message));
+            try{
+              await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(2800);
+              const d=await page.evaluate(()=>{
+                let imgs=[...document.querySelectorAll("img")].filter(el=>el.getClientRects().length>0 && getComputedStyle(el).display!=="none").map(el=>({alt:el.alt,src:(el.currentSrc||el.src).split("?")[0],naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight,position:getComputedStyle(el).objectPosition})).slice(0,12);
+                return {url:location.href, h1:document.querySelector('h1')?.innerText||'',spx:document.querySelectorAll('.spx').length,sourceRefs:document.querySelectorAll('.spx-ref').length,sourceSection:document.querySelectorAll('.spx-source-list').length,hero:document.querySelector('.spx-hero')?.getBoundingClientRect().height,imgs,text:document.body.innerText.slice(0,230)};
+              });
+              console.log('HOST_MAPPED_SPECIES_QA '+JSON.stringify({slug:slug||"home",...d,errors:err}));
+              const meta=await page.evaluate(()=>({
+                robots:document.querySelector('meta[name="robots"]')?.getAttribute('content'),
+                canonical:document.querySelector('link[rel="canonical"]')?.getAttribute('href'),
+                og:document.querySelector('meta[property="og:url"]')?.getAttribute('content')
+              }));
+              console.log('SEO_PUBLIC_HOST_HYDRATION '+JSON.stringify({slug:slug||'home',meta}));
+              if(!meta.robots?.startsWith('index,follow'))problems.push('Hydrated public noindex '+slug);
+              if(meta.canonical!=='https://4species.com/'+slug)problems.push('Wrong canonical '+slug);
+
+              if (slug==="orca" && !(d.spx && d.sourceRefs)) problems.push("Orca premium source-bearing template missing");
+              if (["gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale"].includes(slug)) {
+                if (d.imgs.some(im=>/Eurasian_wolf_2|paris|jardin.des.plantes|cage|zoo|nome.alaska/i.test(im.src+" "+im.alt)))problems.push("Unsafe image for "+slug);
+                if (d.imgs.length===0)problems.push("No wild photo for "+slug);
+                if(d.imgs.some(im=>!im.naturalWidth))problems.push("Broken selected photo for "+slug);
+              }
+              if (!slug && !(d.hero>950)) problems.push("Home cinema hero too short "+d.hero);
+              if (["","orca","gray-wolf","polar-bear","green-sea-turtle"].includes(slug)){
+                await page.screenshot({path:"/tmp/"+(slug||"home")+"-premium.png",animations:'disabled'});
+              }
+            }catch(e){problems.push(slug+" "+String(e).slice(0,300))}
+            await context.close();
+          }
+          // Device fold assertion: search input must be visibly anchored to
+          // the lower screen edge; a taller photograph alone is insufficient.
+          for(const [w,h] of [[390,844],[375,667],[430,932]]) {
+            const context=await browser.newContext({viewport:{width:w,height:h},deviceScaleFactor:1});
+            await context.route('https://4species.com/**',async route=>{
+              const u=new URL(route.request().url());
+              try{
+                const resp=await route.fetch({url:immutable+u.pathname+u.search,maxRedirects:8,timeout:25000});
+                await route.fulfill({response:resp,headers:{...resp.headers(),"access-control-allow-origin":"*"}});
+              }catch(e){await route.abort();}
+            });
+            const page=await context.newPage();
+            try{
+              await page.goto('https://4species.com/',{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(1700);
+              const d=await page.evaluate(()=>{
+                const search=document.querySelector('.spx-u-hero [role=search]');
+                const hero=document.querySelector('.spx-u-hero');
+                const body=document.querySelector('.spx-u-hero-body');
+                const rect=el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height}};
+                return {screen:innerHeight,search:search?rect(search):null,hero:hero?rect(hero):null,body:body?rect(body):null};
+              });
+              console.log('MOBILE_BOTTOM_HERO_QA '+JSON.stringify({w,h,...d}));
+              if(!d.search||d.search.bottom<h-52||d.search.bottom>h-8)problems.push('Mobile search not at bottom: '+w+'x'+h);
+              if(!d.hero||Math.abs(d.hero.height-h)>8)problems.push('Mobile hero not viewport length: '+w+'x'+h);
+              await page.screenshot({path:'/tmp/mobile-'+w+'x'+h+'-premium.png',animations:'disabled'});
+            }catch(e){problems.push('Mobile render '+w+'x'+h+': '+String(e).slice(0,250));}
+            await context.close();
+          }
+          // Every Claude catalogue card must cite the actual copy source.
+          // Photo creator/licence is shown separately and never substituted.
+          {
+            const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            await context.route('https://4species.com/**',async route=>{
+              const u=new URL(route.request().url());
+              try{
+                const resp=await route.fetch({url:immutable+u.pathname+u.search,maxRedirects:8,timeout:25000});
+                await route.fulfill({response:resp,headers:{...resp.headers(),"access-control-allow-origin":"*"}});
+              }catch(e){await route.abort();}
+            });
+            const page=await context.newPage();
+            await page.goto('https://4species.com/explore',{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForTimeout(4200);
+            const result=await page.evaluate(()=>{
+              const cards=[...document.querySelectorAll('.spx-card')];
+              const bad=cards.filter(c=>!c.querySelector('a.spx-card-source')).map(c=>c.getAttribute('data-card'));
+              const invalid=cards.filter(c=>[...c.querySelectorAll('a.spx-card-source')].some(a=>!a.href.startsWith("http")&&!a.href.startsWith("/"))).map(c=>c.getAttribute('data-card'));
+              return {total:cards.length,cardSources:document.querySelectorAll('a.spx-card-source').length,bad,invalid,sample:cards.slice(0,8).map(c=>({slug:c.getAttribute('data-card'),source:c.querySelector('a.spx-card-source')?.getAttribute('href'),imageCredit:!!c.querySelector('a.spx-card-credit'),unsourcedCopy:!!(c.querySelector('.spx-card-line')&&!c.querySelector('a.spx-card-source'))}))};
+            });
+            console.log('CLAUDE_SPECIES_CARDS_QA '+JSON.stringify(result));
+            if (result.total<20 || result.bad.length || result.invalid.length || result.cardSources!==result.total)problems.push("Claude source cards not complete");
+            await page.screenshot({path:'/tmp/species-explore-sourced-cards-premium.png',animations:'disabled'});
+            await context.close();
+          }
+          // Actual preview host MUST stay noindex, to avoid test-site duplication.
+          {
+            const p=await browser.newPage({viewport:{width:390,height:844}});
+            await p.goto(immutable+'/orca',{waitUntil:'domcontentloaded',timeout:25000});
+            await p.waitForTimeout(1100);
+            const robots=await p.locator('meta[name=robots]').getAttribute('content');
+            console.log('SEO_PREVIEW_HOST_ROBOTS '+robots);
+            if(!robots?.includes('noindex'))problems.push('Preview indexed accidentally');
+            await p.close();
+          }
+          await browser.close();
+          console.log("ISSUES "+JSON.stringify(problems));
+          if(problems.length) process.exit(1);
+          console.log("CLAUDE_PREMIUM_AND_WILD_IMAGES_BROWSER_QA_PASS");
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-claude-premium-hotfix-qa
+          path: /tmp/*-premium.png
+          retention-days: 5
