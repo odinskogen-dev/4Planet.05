@@ -1,0 +1,66 @@
+name: 4SPECIES Public Readback — 21 Canonical Species
+on:
+  push:
+    branches: [release/species-v53-21-20261012]
+    paths: [.github/workflows/species-v53-live-readback.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Verify public routes, species source data, final robots and sitemap
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pair in \
+            'orca|Orcinus orca' \
+            'lion|Panthera leo' \
+            'tiger|Panthera tigris' \
+            'african-savanna-elephant|Loxodonta africana' \
+            'asian-elephant|Elephas maximus' \
+            'bald-eagle|Haliaeetus leucocephalus' \
+            'black-rhinoceros|Diceros bicornis' \
+            'blue-whale|Balaenoptera musculus' \
+            'bornean-orangutan|Pongo pygmaeus' \
+            'cheetah|Acinonyx jubatus' \
+            'chimpanzee|Pan troglodytes' \
+            'emperor-penguin|Aptenodytes forsteri' \
+            'giant-panda|Ailuropoda melanoleuca' \
+            'giraffe|Giraffa camelopardalis' \
+            'gray-wolf|Canis lupus' \
+            'great-white-shark|Carcharodon carcharias' \
+            'green-sea-turtle|Chelonia mydas' \
+            'hippopotamus|Hippopotamus amphibius' \
+            'jaguar|Panthera onca' \
+            'monarch-butterfly|Danaus plexippus' \
+            'polar-bear|Ursus maritimus'; do
+            slug="${pair%%|*}"
+            sci="${pair#*|}"
+            code=$(curl -sSL --retry 3 --retry-delay 2 --max-time 30 -D /tmp/all-headers -o /tmp/species.html -w '%{http_code}' "https://4species.com/$slug")
+            test "$code" = 200
+            grep -Fq "$sci" /tmp/species.html
+            grep -Fq 'href="https://4species.com/'"$slug"'"' /tmp/species.html
+            # Intermediate Pages 308 headers may include preview-only noindex; inspect FINAL response.
+            awk '/^HTTP\// { final="" } {final=final $0 "\n"} END{printf "%s",final}' /tmp/all-headers >/tmp/final-header
+            if grep -Eqi '^x-robots-tag:[[:space:]]*noindex' /tmp/final-header; then
+              echo "FAIL: final response is noindex: $slug"
+              cat /tmp/final-header
+              exit 1
+            fi
+            json_status=$(curl -sSL --retry 3 --retry-delay 2 --max-time 30 -D /tmp/json-headers -o /tmp/species.json -w '%{http_code}' "https://4species.com/species-data/v1/$slug.json")
+            if [ "$json_status" != 200 ] || ! jq -e --arg slug "$slug" --arg sci "$sci" '.slug==$slug and .identity.scientificName==$sci' /tmp/species.json >/dev/null 2>&1; then
+              echo "DATA ERROR $slug HTTP $json_status"
+              grep -Ei '^HTTP/|^content-type:|^location:' /tmp/json-headers || true
+              head -c 400 /tmp/species.json || true
+              exit 1
+            fi
+            echo "PASSED: $slug ($sci), HTML+JSON canonical"
+          done
+          curl -fsS https://4species.com/sitemap.xml -o /tmp/species-sitemap.xml
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear; do
+            grep -Fq "<loc>https://4species.com/$slug</loc>" /tmp/species-sitemap.xml
+          done
+          curl -fsS https://4species.com/robots.txt | grep -Fq "Sitemap: https://4species.com/sitemap.xml"
+          curl -fsS https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt | grep -Fxq '8f4c2d91a7b64e3fa1c9d0b6e5274a83'
+          echo "ORCA_PLUS_20_PRODUCTION_HTML_JSON_AND_SITEMAP_PASS"

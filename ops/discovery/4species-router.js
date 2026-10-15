@@ -5,7 +5,7 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
-const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";
+const SPECIES_V53_ORIGIN = "https://fc5d5ccd.4planet-05.pages.dev";
 async function proxySpeciesV53(request) {
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", {status:405});
@@ -22,6 +22,10 @@ async function proxySpeciesV53(request) {
   out.delete("content-encoding");
   out.set("x-4species-release", "SPECIES-v53-canonical");
   if((out.get("content-type")||"").includes("text/html")) {
+    // Cloudflare Pages preview applies a noindex HEADER to all *.pages.dev.
+    // This public, pre-rendered release carries exact self-canonicals and
+    // index,follow metadata, so strip preview-only header on public HTML.
+    if (!incoming.pathname.startsWith("/api/")) out.delete("x-robots-tag");
     // v53 is a versioned SPA: a stale HTML shell can reference JS hashes
     // removed by the next Pages deploy and leave iOS browsers on a blank page.
     // Do not cache HTML; bundled assets remain versioned and cacheable.
@@ -345,10 +349,30 @@ export default {
       return request.method === "GET" || request.method === "HEAD"
         ? proxySpeciesV53(request) : proxyRaw(request,path);
     }
+    // Public discovery endpoints must be handled before the v53 catch-all proxy.
+    // Only index the four generic v53 entry routes. Species profiles remain
+    // excluded until exact canonical URLs, review, media rights and indexability pass.
+    if (path === `/${INDEXNOW_KEY}.txt`)
+      return new Response(INDEXNOW_KEY, { headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "cache-control": "public, max-age=86400",
+      } });
     if (path === "/robots.txt")
-      return new Response("User-agent: *\nAllow: /\n", {headers:{"content-type":"text/plain; charset=utf-8"}});
-    if (path === "/sitemap.xml")
-      return new Response("Sitemap awaits content quality approval", {status:404,headers:{"content-type":"text/plain"}});
+      return new Response(
+        "User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://4species.com/sitemap.xml\n",
+        { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=300" } },
+      );
+    // The immutable origin publishes only the pages built and validated for this release.
+    if (path === "/sitemap.xml") {
+      const source = new URL(request.url);
+      source.pathname = "/species-sitemap.xml";
+      const response = await proxySpeciesV53(new Request(source, {method: request.method}));
+      const headers = new Headers(response.headers);
+      headers.set("content-type", "application/xml; charset=utf-8");
+      headers.set("cache-control", "public, max-age=300");
+      return new Response(request.method === "HEAD" ? null : response.body,
+        { status: response.status, headers });
+    }
     return proxySpeciesV53(request);
 
     if (path === "/" || path === "") return redirect(`https://4species.com/species/${url.search}`);

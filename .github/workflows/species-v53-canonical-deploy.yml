@@ -1,4 +1,4 @@
-name: SPECIES v53 Canonical Cloudflare Build
+name: SPECIES v53 — Orca + 20 distinct species canonical live release
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
@@ -62,11 +62,28 @@ jobs:
             cp -a "$GITHUB_WORKSPACE/public/species-media" public/species-media
           fi
           python3 - <<'PY'
+          import base64, gzip, json, os
+          from pathlib import Path
+          original = Path(os.environ["GITHUB_WORKSPACE"]) / "ops/species/v53/batch-20-original-json.gz.b64"
+          pages = json.loads(gzip.decompress(base64.b64decode(original.read_text().strip(), validate=True)))
+          assert len(pages) == 20, "exactly twenty distinct original species"
+          assert len({page["slug"] for page in pages.values()}) == 20
+          dest = Path("public/species-data/v1")
+          dest.mkdir(parents=True, exist_ok=True)
+          for filename, page in sorted(pages.items()):
+              assert filename == page["slug"] + ".json", filename
+              assert page["schema"] == "4PLANET_SPECIES_PAGE_01", filename
+              assert page["slug"] != "orca", "never overwrite original Orca"
+              assert page["identity"]["scientificName"] and page["identity"]["commonName"], filename
+              assert page["provenance"]["review"] == "DRAFT", filename
+              assert not (dest / filename).exists(), "candidate collision: " + filename
+              (dest / filename).write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n")
+          print("SPECIES_20_EXACT_INDIVIDUAL_PROFILES_STAGED", len(pages))
+          PY
+          python3 - <<'PY'
           from pathlib import Path
           p=Path('src/pages/integrated/SpeciesTemplate.tsx')
           s=p.read_text()
-          s=s.replace('          {draft && <span className="spx-credit spx-draft" role="note">Draft — not yet reviewed by a person</span>}', '')
-          s=s.replace('{LEVEL_TEXT[level]}{draft ? " Draft — not yet reviewed by a person." : ""}', '{LEVEL_TEXT[level]}')
           p.write_text(s)
           p=Path('src/pages/integrated/SpeciesHome.tsx')
           home=p.read_text()
@@ -94,12 +111,47 @@ jobs:
           npm ci
           npm run typecheck
           npm run species:validate
-          SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          SPECIES_INDEX=1 SPECIES_CANONICAL_BASE=https://4species.com npm run build
           test -f dist/index.html
           grep -Eiq 'species|Meet life' dist/index.html
           test -f dist/quiz/index.html
           test -f dist/explore/index.html
           test -f dist/species-data/v1/english-oak.json
+          # The Claude v52 renderer writes /labs/species/{slug}; the standalone
+          # public host MUST serve species-specific static HTML at /{slug}.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, shutil, re
+          dist = Path("dist")
+          pages = json.loads(Path("public/species-data/v1/index.json").read_text())["pages"]
+          slugs = {p["slug"] for p in pages}
+          expected = {
+            "orca","lion","tiger","african-savanna-elephant","asian-elephant",
+            "bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan",
+            "cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe",
+            "gray-wolf","great-white-shark","green-sea-turtle","hippopotamus",
+            "jaguar","monarch-butterfly","polar-bear",
+          }
+          assert expected <= slugs, "missing Orca or one of the twenty new species"
+          for slug in sorted(slugs):
+              dst = dist / slug / "index.html"
+              legacy = dist / "labs/species" / slug / "index.html"
+              if not dst.is_file() and legacy.is_file():
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copyfile(legacy, dst)
+              assert dst.is_file(), "missing v53 canonical HTML for " + slug
+              html = dst.read_text()
+              assert "https://4species.com/" + slug in html, "wrong canonical: " + slug
+              assert "noindex" not in html.lower(), "unindexable page: " + slug
+          for slug in ["", "explore", "quiz", "about"]:
+              path = dist / slug / "index.html" if slug else dist / "index.html"
+              if not path.is_file(): continue
+              html = path.read_text()
+              html = re.sub(r'<meta\s+name=["\']robots["\'][^>]*>', '<meta name="robots" content="index,follow,max-image-preview:large" />', html, flags=re.I)
+              path.write_text(html)
+          assert (dist/"species-sitemap.xml").is_file()
+          print("SPECIES_CANONICAL_HTML_READY", len(slugs))
+          PY
           git add -A
           built_tree=$(git write-tree)
           payload_digest=$(find dist -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
@@ -121,8 +173,8 @@ jobs:
           set -euo pipefail
           test -n "${CLOUDFLARE_API_TOKEN:-}"
           cd ../species-v53-build
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53 --commit-hash "$GITHUB_SHA" --commit-message "4PLANET SPECIES v53 $GITHUB_SHA" 2>&1 | tee /tmp/species-v53-deploy.log
-          deployment_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species-v53-deploy.log | tail -n 1)
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-v53-21 --commit-hash "$GITHUB_SHA" --commit-message "4PLANET SPECIES v53 $GITHUB_SHA" 2>&1 | tee /tmp/species-v53-deploy.log
+          deployment_url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species-v53-deploy.log | head -n 1)
           test -n "$deployment_url"
           echo "V53_DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
           echo SPECIES_V53_PAGES_PUBLISHED
@@ -131,7 +183,7 @@ jobs:
         run: |
           set -euo pipefail
           ORIGIN="$V53_DEPLOYMENT_URL"
-          for path in / /explore /quiz /about /orca /english-oak; do
+          for path in / /explore /quiz /about /orca /english-oak /lion /tiger /african-savanna-elephant /giant-panda /blue-whale; do
             code=$(curl --retry 4 --retry-delay 3 -sSL --max-time 30 -o /tmp/v53-check.html -w '%{http_code}' "$ORIGIN$path")
             echo "$path: $code"
             test "$code" = 200
@@ -146,3 +198,81 @@ jobs:
             echo "- deployment_url: $V53_DEPLOYMENT_URL"
           } >> "$GITHUB_STEP_SUMMARY"
           echo V53_PUBLIC_PAGES_PREVIEW_QA_PASS
+          # Assert that real species pages are distinct, crawlable and served by the exact preview.
+          curl -fsS "$ORIGIN/lion" -o /tmp/lion-qa.html
+          curl -fsS "$ORIGIN/tiger" -o /tmp/tiger-qa.html
+          echo "LION_HTTP_META:"; grep -oE '<title>[^<]*</title>|<link rel="canonical"[^>]*>' /tmp/lion-qa.html | head -n 5 || true
+          echo "TIGER_HTTP_META:"; grep -oE '<title>[^<]*</title>|<link rel="canonical"[^>]*>' /tmp/tiger-qa.html | head -n 5 || true
+          if ! grep -Fq 'Panthera leo' /tmp/lion-qa.html; then echo "FAIL lion is generic; HTML HEAD:"; head -c 700 /tmp/lion-qa.html; exit 1; fi
+          if ! grep -Fq 'Panthera tigris' /tmp/tiger-qa.html; then echo "FAIL tiger is generic; HTML HEAD:"; head -c 700 /tmp/tiger-qa.html; exit 1; fi
+          for slug in lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear; do
+            curl -fsS --max-time 25 "$ORIGIN/species-data/v1/$slug.json" | jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01"' >/dev/null
+            curl -fsS --max-time 25 "$ORIGIN/$slug" -o /tmp/species-$slug.html
+            grep -Fq "https://4species.com/$slug" /tmp/species-$slug.html
+            if grep -qi 'content="noindex' /tmp/species-$slug.html; then echo "NOINDEX $slug"; exit 1; fi
+          done
+          curl -fsS "$ORIGIN/species-sitemap.xml" | grep -Fq 'https://4species.com/tiger'
+          echo SPECIES_20_UNIQUE_ROUTES_AND_INDEXABLE_HTML_PASS
+      - name: Capture 4SPECIES rollback version and bind immutable preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$V53_DEPLOYMENT_URL"
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.128.0 deployments list --name 4species-router 2>&1 | tee /tmp/4species-old-deployments.log
+          old_version=$(grep -Ei 'Version ID:' /tmp/4species-old-deployments.log | head -n 1 | grep -Eo '[0-9a-f]{8}-[0-9a-f-]{27,}' | head -n 1 || true)
+          if [ -z "$old_version" ]; then
+            echo "Rollback version not verifiable; refusing LIVE deploy" >&2
+            exit 1
+          fi
+          echo "ROLLBACK_WORKER_VERSION=$old_version" >> "$GITHUB_ENV"
+          # Exact immutable Cloudflare Pages URL is pinned into the Worker at release time.
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          p=Path("ops/discovery/4species-router.js")
+          text=p.read_text()
+          old='const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";'
+          new='const SPECIES_V53_ORIGIN = "'+os.environ['V53_DEPLOYMENT_URL']+'";'
+          assert text.count(old)==1, "unsafe router-origin mismatch"
+          p.write_text(text.replace(old,new,1))
+          PY
+          node --check ops/discovery/4species-router.js
+          echo SPECIES_IMMUTABLE_ORIGIN_AND_ROLLBACK_VERIFIED
+      - name: Promote exact tested release to 4species.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "Live release failed. Attempting rollback to $ROLLBACK_WORKER_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_WORKER_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-v53-21-worker-deploy.log
+          for path in / /explore /quiz /about /orca /english-oak /lion /tiger /african-savanna-elephant /asian-elephant /bald-eagle /black-rhinoceros /blue-whale /bornean-orangutan /cheetah /chimpanzee /emperor-penguin /giant-panda /giraffe /gray-wolf /great-white-shark /green-sea-turtle /hippopotamus /jaguar /monarch-butterfly /polar-bear; do
+            status=$(curl --retry 4 --retry-delay 2 -sSL --max-time 25 -o /tmp/species-live-page.html -w '%{http_code}' "https://4species.com$path")
+            test "$status" = "200"
+          done
+          curl -fsS https://4species.com/lion | grep -Fq 'Panthera leo'
+          curl -fsS https://4species.com/tiger | grep -Fq 'Panthera tigris'
+          curl -fsS https://4species.com/orca | grep -Fq 'Orcinus orca'
+          curl -fsS https://4species.com/sitemap.xml | grep -Fq 'https://4species.com/tiger'
+          curl -fsS https://4species.com/robots.txt | grep -Fq 'Sitemap: https://4species.com/sitemap.xml'
+          curl -fsS https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt | grep -Fxq '8f4c2d91a7b64e3fa1c9d0b6e5274a83'
+          for slug in orca lion tiger; do
+            curl -fsS "https://4species.com/$slug" -o /tmp/live-$slug.html
+            if grep -qi 'content="noindex' /tmp/live-$slug.html; then
+              echo "LIVE page is still noindex: $slug" >&2
+              exit 1
+            fi
+          done
+          trap - ERR
+          echo "RELEASE_LIVE_ORCA_PLUS_20_PASS"
+          {
+            echo "### 4SPECIES live receipt"
+            echo "- trigger: $GITHUB_SHA"
+            echo "- exact immutable preview: $V53_DEPLOYMENT_URL"
+            echo "- rollback version: $ROLLBACK_WORKER_VERSION"
+            echo "- 20 distinct source-linked species drafts: LIVE"
+            echo "- original Orca premium template: LIVE"
+          } >> "$GITHUB_STEP_SUMMARY"
