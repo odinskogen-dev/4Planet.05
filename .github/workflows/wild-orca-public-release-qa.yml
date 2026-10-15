@@ -54,24 +54,23 @@ jobs:
           test "$ok" = "1"
           echo 'WILD_ORCA_4SPECIES_ENTRY_LIVE_PASS'
 
-      - name: Verify Challenger 02 exact runtime and bundled audio
+      - name: Verify Claude original byte-exact embedded render bundle
         shell: bash
         run: |
           set -euo pipefail
           ok=0
           for i in $(seq 1 60); do
-            page=$(curl -fsSL --max-time 20 https://4planet.org/games/wild-orca/ || true)
-            if grep -Fq 'index-BbW3fnWW.js' <<<"$page" && grep -Fq 'WILD: ORCA' <<<"$page"; then
+            page=$(curl -fsSL --max-time 30 https://4planet.org/games/wild-orca/ || true)
+            if grep -Fq 'window.__WILD_EMBED=' <<<"$page" && grep -Fq 'orca_decoded.glb' <<<"$page" && grep -Fq 'WILD: ORCA' <<<"$page"; then
               ok=1
               break
             fi
             sleep 5
           done
           test "$ok" = "1"
-          js=$(curl -fsSL --max-time 45 https://4planet.org/games/wild-orca/assets/index-BbW3fnWW.js | sha256sum | cut -d' ' -f1)
-          test "$js" = "0f081397e8698afefcffd4053caf6f59897669d668925ed6ddaeec09996ce6c3"
-          css=$(curl -fsSL --max-time 30 https://4planet.org/games/wild-orca/assets/index-DL2byyip.css | sha256sum | cut -d' ' -f1)
-          test "$css" = "f0804118643f39b93fc50435c234315765df4ecbdaf2c69272539eb022e6c922"
-          model=$(curl -fsSL --max-time 40 https://4planet.org/games/wild-orca/assets/orca_decoded.glb | sha256sum | cut -d' ' -f1)
-          test "$model" = "4842393319a37cc72f8e8b478b63711aaca405ea8111fd082d5ba9f6b2ce208d"
-          echo 'WILD_ORCA_CHALLENGER02_EXACT_PUBLIC_ASSETS_PASS'
+          html_sha=$(curl -fsSL --max-time 60 https://4planet.org/games/wild-orca/ | sha256sum | cut -d' ' -f1)
+          test "$html_sha" = "666d04803d9118a8b12bc2619a58c3609f5b4f0347e12e0f7ab9bb34bdfdb95d"
+          response_headers=$(curl -fsSI --max-time 25 https://4planet.org/games/wild-orca/)
+          grep -Fq 'sha256-OARO1lDpRsoNKF+o/JPex5J3yymk87t7kZySvn8L54U=' <<<"$response_headers"
+          grep -Fq 'sha256-AAFnkLX8/k0wjBNmP8S3ba7c7bTLiIc2HvFjJykd0dc=' <<<"$response_headers"
+          echo 'CHALLENGER02_ORIGINAL_EMBEDDED_ORCA_BYTE_AND_CSP_PASS'
