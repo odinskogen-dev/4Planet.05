@@ -33,15 +33,21 @@ const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
 const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
-const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V2";
+const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V3_FAIL_CLOSED";
 const CONTENT_RULES=Object.freeze([
  {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\b(?:authorization\s*:\s*)?(?:Basic|Bearer)\s+[A-Za-z0-9._~+\/=\/-]{8,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
  {category:"TENANT",pattern:/\btenant(?:_id)?\s*[:=]\s*(?!null\b|none\b|unknown\b)[A-Za-z0-9_-]+|\b(?:private_context|private_profile|personal_brain_record|tenant_private_data)\s*[:=]/i},
  {category:"PERSON",pattern:/\b(?:social security number|national identity number|f[øo]dselsnummer|date of birth|birth date|f[øo]dselsdato|dob|private address|private e-?mail|personal e-?mail|private contact|personal contact|contact details?|email address)\s*[:=]/i},
- {category:"HEALTH",pattern:/\b(?:diagnosis|diagnose|medical record|health record|health|medical|helse(?:opplysninger|journal)?|medication|medisin(?:er)?)\s*[:=]/i},
- {category:"FINANCE",pattern:/\b(?:personal debt|private finance|bank account|account number|bankkonto|kontonummer|iban|swift|bic|routing number|tax debt|private investment account)\s*[:=]/i},
+ {category:"HEALTH",pattern:/\b(?:diagnosis|diagnose|medical record|health record|health|medical|helse(?:opplysninger|journal)?|medication|medisin(?:er)?|patient(?:en)?|pasient(?:en)?|chronic condition|kronisk tilstand|har diagnosen|uses? medication|bruker medisin(?:er)?)\b/i},
+ {category:"FINANCE",pattern:/\b(?:personal debt|private finance|bank account|account number|bankkonto|kontonummer|iban|swift|bic|routing number|tax debt|private investment account)\s*[:=]|\b[A-Z]{2}\d{2}(?:[\s-]?[A-Z0-9]){11,30}\b/i},
  {category:"LEGAL",pattern:/\b(?:personal legal|legal case|court case|lawsuit|case number)\s*[:=]/i}
  ,{category:"AMBIGUOUS_PRIVATE",pattern:/\b(?:confidential|strictly private|sensitive personal|personally identifiable information|pii)\s*[:=]/i}
+]);
+const SAFE_ORG_CONTENT=Object.freeze([
+ /\b(?:4planet|naturebrain|brain|atlas|species|s4piens|impact|labs)\b/i,
+ /\b(?:project|programme|program|portfolio|task|wbs|owner|status|state|goal|scope|authority|receiver|branch|commit|sha|pull request|pr\s*#|issue|workflow|runtime|source|dataset|actor|rights?)\b/i,
+ /\b(?:release|deploy|build|test|evidence|proof|gold|judge|maker|next|action|decision|result|learning|risk|dependency|gate|qa|ci|candidate|review|correction|canonical|control|public)\b/i,
+ /\b(?:blocked|hold|pending|pass(?:ed)?|fail(?:ed)?|success|ready|done|active|current|verified|accepted|rejected|unknown|not live)\b/i
 ]);
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
@@ -49,11 +55,23 @@ function safeError(e){return e instanceof Error?e.message.replace(/Bearer\s+[^\s
 function sensitiveCategories(line){
  return CONTENT_RULES.filter(rule=>rule.pattern.test(line)).map(rule=>rule.category);
 }
+function explicitlySafeOrganisationalLine(line){
+ const body=line.replace(/^\s*\d+:\s*/,"").trim();
+ if(!body || /^[-=_*#|:\s]+$/.test(body))return true;
+ const cells=body.split("|").map(cell=>cell.trim()).filter(Boolean);
+ return cells.length>0 && cells.every(cell=>{
+  if(SAFE_ORG_CONTENT.some(pattern=>pattern.test(cell)))return true;
+  if(/^(?:[A-Z][A-Z0-9_]{1,20}(?:-[A-Z0-9_]{1,20})+|[a-f0-9]{40}|(?:QA|CI|PR|SHA|WBS|P0|P1|P2|P3))$/i.test(cell))return true;
+  if(/^https:\/\/(?:github\.com|docs\.google\.com|drive\.google\.com|(?:[a-z0-9-]+\.)?4planet(?:atlas)?\.(?:org|com))(?:\/[^?#\s]*)?$/i.test(cell))return true;
+  return false;
+ });
+}
 export function classifyContentForIngest(input){
  const original=String(input??"");
  const categories=new Set();let redactedLines=0;
  const content=original.split(/\r?\n/).map(line=>{
   const found=sensitiveCategories(line);
+  if(!found.length && !explicitlySafeOrganisationalLine(line))found.push("UNREVIEWED");
   if(!found.length)return line;
   found.forEach(category=>categories.add(category));redactedLines++;
   const rowPrefix=line.match(/^\s*\d+:\s*/)?.[0]||"";

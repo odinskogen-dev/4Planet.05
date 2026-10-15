@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V2"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V3_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -258,6 +258,31 @@ test("Drive content classifier fail-closes common Gold-returned sensitive varian
     assert.ok(result.categories.includes(category),line);
     assert.doesNotMatch(result.content,new RegExp(line.split(":")[1].trim().replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),line);
   }
+});
+
+test("Drive content classifier fails closed on unlabelled sensitive and unknown prose",()=>{
+  const cases=[
+    ["Pasienten har en kronisk tilstand og bruker medisiner.","HEALTH"],
+    ["NO9386011117947","FINANCE"],
+    ["Møtte en privatperson hjemme i går.","UNREVIEWED"]
+  ];
+  for(const [line,category] of cases){
+    const result=classifyContentForIngest("NEXT: independent Gold reviews exact SHA.\\n"+line);
+    assert.equal(result.state,"REDACTED",line);
+    assert.equal(result.redactedLines,1,line);
+    assert.ok(result.categories.includes(category),line);
+    assert.ok(!result.content.includes(line),line);
+  }
+});
+
+test("Drive content classifier admits only explicit organisational cells in flattened sheets",()=>{
+  const safe=classifyContentForIngest("2: Task | Prepare release evidence | READY");
+  assert.equal(safe.state,"SAFE");
+  assert.match(safe.content,/Prepare release evidence/);
+  const unsafe=classifyContentForIngest("2: Task | Pasienten har en kronisk tilstand | READY");
+  assert.equal(unsafe.state,"QUARANTINED");
+  assert.equal(unsafe.content,null);
+  assert.ok(unsafe.categories.includes("HEALTH"));
 });
 
 test("fully sensitive content is quarantined and cannot enter an ingest batch",()=>{
