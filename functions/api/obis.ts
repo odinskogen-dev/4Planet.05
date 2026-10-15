@@ -117,9 +117,19 @@ const licenceRestrictions = (value: unknown) => {
   return restrictions;
 };
 
+const STRICT_DECIMAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
+
 const finiteCoordinate = (value: unknown, min: number, max: number) => {
-  if (value === null || value === undefined || (typeof value === "string" && !value.trim())) return null;
-  const number = Number(value);
+  let number: number;
+  if (typeof value === "number") {
+    number = value;
+  } else if (typeof value === "string") {
+    const normalized = value.trim();
+    if (!normalized || !STRICT_DECIMAL.test(normalized)) return null;
+    number = Number(normalized);
+  } else {
+    return null;
+  }
   return Number.isFinite(number) && number >= min && number <= max ? number : null;
 };
 
