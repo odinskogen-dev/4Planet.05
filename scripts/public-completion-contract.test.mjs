@@ -11,6 +11,21 @@ const about = readFileSync(new URL("../src/pages/v5/AboutPages.tsx", import.meta
 const join = readFileSync(new URL("../src/pages/v5/Join.tsx", import.meta.url), "utf8");
 const home = readFileSync(new URL("../src/pages/v5/Home.tsx", import.meta.url), "utf8");
 const orca = readFileSync(new URL("../public/journey/orca/index.html", import.meta.url), "utf8");
+const responseHeaders = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
+const wildOrcaBoot = readFileSync(new URL("../public/games/wild-orca/boot.js", import.meta.url), "utf8");
+
+const headerSections = new Map(
+  responseHeaders
+    .trim()
+    .split(/\n{2,}/)
+    .map((section) => {
+      const [pattern, ...lines] = section.split("\n");
+      return [pattern, lines.map((line) => line.trim())];
+    }),
+);
+
+const cspFor = (pattern) =>
+  (headerSections.get(pattern) ?? []).find((line) => line.startsWith("Content-Security-Policy:")) ?? "";
 
 test("participation routes and global menu expose all four ways to take part", () => {
   assert.ok(deferredRoutes.includes('export const Join = lazy(() => import("@/pages/v5/Join"));'));
@@ -122,5 +137,21 @@ test("homepage exposes the complete public universe and three guided entry journ
   assert.match(router, /path="\/living-systems\/oslofjord" element={<PlanetProofPage slug="oslofjorden" \/>}/);
   assert.match(home, /Action journey/);
   assert.match(home, /These action pathways are in development\./);
+});
+
+test("WILD ORCA's blob module exception is scoped away from the public shell", () => {
+  const globalCsp = cspFor("/*");
+  const wildOrcaHeaders = headerSections.get("/games/wild-orca/*") ?? [];
+  const wildOrcaCsp = cspFor("/games/wild-orca/*");
+
+  assert.ok(globalCsp, "the public shell must keep an explicit global CSP");
+  assert.doesNotMatch(globalCsp, /script-src[^;]*\bblob:/, "non-game routes must not permit blob scripts");
+  assert.ok(
+    wildOrcaHeaders.includes("! Content-Security-Policy"),
+    "the game route must detach the inherited CSP before replacing it",
+  );
+  assert.match(wildOrcaCsp, /script-src[^;]*\bblob:/, "WILD ORCA must retain its blob module allowance");
+  assert.match(wildOrcaBoot, /URL\.createObjectURL\(new Blob/, "the game boot must create a module blob");
+  assert.match(wildOrcaBoot, /await import\(moduleUrl\)/, "the game boot must import that scoped module URL");
 });
 
