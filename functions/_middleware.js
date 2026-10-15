@@ -1827,7 +1827,7 @@ export async function onRequest(context) {
 
 
   if (host === "4planet.org" && (url.pathname === "/games" || url.pathname === "/games/")) {
-    const gameOrigin = "https://wild-orca-4planet-k97053.v2.appdeploy.ai/";
+    const gameOrigin = "https://4planet.org/games/orca/";
     const canonical = "https://4planet.org/games";
     const body = `<!doctype html>
 <html lang="en">
