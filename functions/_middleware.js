@@ -1826,6 +1826,8 @@ export async function onRequest(context) {
     (Boolean(PUBLIC_HOSTS[host]) && privatePath);
 
 
+  if (host === "4planet.org" && (url.pathname === "/games/wild-orca" || url.pathname === "/games/wild-orca/")) return Response.redirect("https://4planet.org/games", 308);
+
   if (host === "4planet.org" && (url.pathname === "/games" || url.pathname === "/games/")) {
     const gameOrigin = "https://4planet.org/games/orca/";
     const canonical = "https://4planet.org/games";
