@@ -1,0 +1,46 @@
+name: 4SPECIES WILD ORCA CTA One-Off Founder Release
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/4species-wild-orca-cta-once.yml
+permissions:
+  contents: read
+concurrency:
+  group: 4species-wild-orca-cta-once
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate founder-approved bounded change
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'SPECIES-v53-canonical' ops/discovery/4species-router.js
+          grep -Fq 'class="wild-orca-play" href="https://4planet.org/games"' ops/discovery/4species-router.js
+      - name: Deploy existing 4species Worker with only CTA href correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+      - name: Verify live homepage CTA and preserved SPECIES
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 24); do
+            curl -fsSL --max-time 20 https://4species.com/ -o /tmp/species-home.html || true
+            if grep -Fq 'class="wild-orca-play"' /tmp/species-home.html && grep -Fq 'https://4planet.org/games' /tmp/species-home.html; then ok=1; break; fi
+            sleep 4
+          done
+          test "$ok" = 1
+          curl -fsSL --max-time 20 https://4species.com/orca -o /tmp/species-orca.html
+          grep -Eq 'id="root"|/assets/|__species' /tmp/species-orca.html
+          echo 'WILD_ORCA_4SPECIES_CTA_LIVE_PASS'
