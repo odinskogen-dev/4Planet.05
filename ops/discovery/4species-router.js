@@ -37,7 +37,7 @@ async function proxySpeciesV53(request) {
   const response = new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
   if ((incoming.pathname === "/" || incoming.pathname === "") && request.method === "GET" && (out.get("content-type")||"").includes("text/html")) {
     return new HTMLRewriter()
-      .on("body", { element(el) { el.append('<a href="https://4planet.org/games/wild-orca/" data-wild-orca-cta style="position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:2147483000;padding:11px 16px;border-radius:999px;background:#08181c;color:#f6ffff;border:1px solid rgba(230,255,255,.22);box-shadow:0 8px 28px rgba(0,0,0,.25);font:800 11px/1 ui-sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;letter-spacing:.06em;text-decoration:none">Play WILD: ORCA</a>', { html: true }); } })
+      .on("body", { element(el) { el.append('<a class="wild-orca-play" href="https://4planet.org/games" data-wild-orca-cta style="position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:2147483000;padding:11px 16px;border-radius:999px;background:#08181c;color:#f6ffff;border:1px solid rgba(230,255,255,.22);box-shadow:0 8px 28px rgba(0,0,0,.25);font:800 11px/1 ui-sans-serif,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;letter-spacing:.06em;text-decoration:none">Play WILD: ORCA</a>', { html: true }); } })
       .transform(response);
   }
   return response;
