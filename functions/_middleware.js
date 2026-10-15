@@ -1836,10 +1836,16 @@ export async function onRequest(context) {
     headers.set("X-Content-Type-Options", "nosniff");
     return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   }
-  if (host === "4planet.org" && (url.pathname === "/games/wild-orca" || url.pathname === "/games/wild-orca/")) return Response.redirect("https://4planet.org/games", 308);
+  if (host === "4planet.org" && (url.pathname === "/games/wild-orca" || url.pathname === "/games/wild-orca/" || url.pathname === "/games/wild-orca/index.html")) {
+    const response = await context.next();
+    const headers = new Headers(response.headers);
+    headers.set("Cache-Control", "no-store");
+    headers.set("X-Content-Type-Options", "nosniff");
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  }
 
   if (host === "4planet.org" && (url.pathname === "/games" || url.pathname === "/games/")) {
-    const gameOrigin = "https://4planet.org/games/orca/";
+    const gameOrigin = "https://4planet.org/games/wild-orca/";
     const canonical = "https://4planet.org/games";
     const body = `<!doctype html>
 <html lang="en">

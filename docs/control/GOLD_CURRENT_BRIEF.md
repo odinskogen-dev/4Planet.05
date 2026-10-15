@@ -1,3 +1,55 @@
+# WILD: ORCA — CHALLENGER 02 BOUNDED LIVE UPDATE — 15 OCTOBER 2026
+
+**FOUNDER DECISION:** Explicitly requested publication of Claude Challenger 02 to https://4planet.org/games and correction of SPECIES Play navigation on 15 October 2026. This authorises the bounded game update, not an unrelated portfolio-wide release.
+**SCOPE:** Preserve the existing public landing shell and 4SPECIES Play CTA; update the Cloudflare Pages middleware gameOrigin to /games/wild-orca/ and permit its static runtime to pass through unchanged. All 10 Challenger 02 dist files have matching source Git blob hashes. The old runtime remains reachable at /games/orca/ and is also archived under /games/wild-orca-v1/.
+**SOURCE:** WILD_ORCA_CLAUDE_CHALLENGER_02.zip, Claude source commit 1e280d3. Local Vite dist shipped byte-for-byte; no gameplay/audio source edits.
+**SOUND:** Existing WebAudio program code and playback audioSession carried intact. Audio with iPhone silent switch is NOT independently device verified.
+**RIGHTS:** ORCAST orca derivative attribution (CC BY 4.0) and Tidewater humpback MIT credits remain bundled.
+**PROOF:** Exact-sha static public verification is performed by WILD ORCA Public Release QA on main push. Do not state that the update is public until this new check passes against the production domain.
+**ROLLBACK:** Revert the two bounded game-release commits; preserve prior static v1 snapshot and middleware /games/orca route.
+**GOLD STATE:** Candidate public alpha, not independent GOLD. Gameplay/fun and mobile audio require human validation.
+
+## USER ARRIVES BECAUSE
+They want to immediately play a mobile-first wild orca game.
+
+## ONE THING TO UNDERSTAND
+The game is a stylised, playable prototype, not a scientifically exact reconstruction.
+
+## PRIMARY ACTION
+Select PLAY WILD: ORCA at 4species.com or open 4planet.org/games.
+
+## SECONDARY DEPTH
+Species facts and habitat evidence are separate from game interpretation.
+
+## P1 DOMINANT
+Enter the ocean and play.
+
+## P2 ORIENTATION
+Orca in a living Arctic world.
+
+## P3 ACTION / NEXT
+Play, explore and replay.
+
+## P4 DEPTH
+Source licences, species cards and reusable GAME LAB core.
+
+## WHAT CAN BE REMOVED
+No unrelated marketing or app rebuild.
+
+## WHAT MUST BE REUSED
+Existing game route, public shell, canonical SPECIES Play and source assets.
+
+## TRUTH BOUNDARY
+Game simulation is not biological field observation or navigation-grade terrain.
+
+## MOBILE-FIRST RISK
+Touch control, performance, device-dependent audio, iframe fullscreen and Safari autoplay restrictions.
+
+## HUMAN SUCCESS
+A real user can enter, hear sound after interaction, swim and complete the experience without a broken route.
+
+---
+
 # WILD: ORCA — PUBLIC ALPHA RELEASE 01 — 15 OCTOBER 2026
 
 **STATUS:** FOUNDER-ACCEPTED PUBLIC ALPHA / NOT GOLD / BOUNDED LIVE PROMOTION AUTHORISED.
