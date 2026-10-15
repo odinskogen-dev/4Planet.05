@@ -1825,6 +1825,55 @@ export async function onRequest(context) {
     host.endsWith(".localhost") ||
     (Boolean(PUBLIC_HOSTS[host]) && privatePath);
 
+
+  if (host === "4planet.org" && (url.pathname === "/games" || url.pathname === "/games/")) {
+    const gameOrigin = "https://wild-orca-4planet-k97053.v2.appdeploy.ai/";
+    const canonical = "https://4planet.org/games";
+    const body = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#021219">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <title>WILD: ORCA — Play | 4PLANET</title>
+  <meta name="description" content="Play WILD: ORCA, an early 4PLANET browser game prototype set in a living Arctic ocean.">
+  <link rel="canonical" href="${canonical}">
+  <meta property="og:title" content="WILD: ORCA — Play | 4PLANET">
+  <meta property="og:description" content="Enter a living Arctic ocean as an Orca in this early playable 4PLANET prototype.">
+  <meta property="og:url" content="${canonical}">
+  <meta property="og:type" content="website">
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;background:#021219;color:#eefcff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}body{min-height:100dvh}
+    .shell{min-height:100dvh;display:grid;grid-template-rows:auto 1fr;background:radial-gradient(circle at 50% 10%,#0b3944,#03151d 48%,#02090d)}
+    header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(14px);background:rgba(2,18,25,.72);position:relative;z-index:2}
+    .brand{font-size:12px;font-weight:700;letter-spacing:.12em}.brand span{opacity:.45}.open{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid rgba(255,255,255,.26);border-radius:999px;color:#fff;text-decoration:none;font-size:11px;font-weight:700;letter-spacing:.08em;background:rgba(255,255,255,.06)}
+    .stage{position:relative;min-height:calc(100dvh - 58px);overflow:hidden}.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#021219}
+    .fallback{position:absolute;inset:auto 16px 16px;z-index:1;pointer-events:none;color:rgba(255,255,255,.5);font-size:9px;letter-spacing:.08em}.fallback a{pointer-events:auto;color:#fff}
+    @media(max-width:640px){header{height:52px;padding:0 12px}.brand{font-size:10px}.open{min-height:32px;padding:0 11px;font-size:9px}.stage{min-height:calc(100dvh - 52px)}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header><div class="brand">4PLANET <span>/ GAMES /</span> WILD: ORCA</div><a class="open" href="${gameOrigin}" target="_blank" rel="noopener">PLAY FULLSCREEN</a></header>
+    <section class="stage" aria-label="WILD: ORCA game">
+      <iframe src="${gameOrigin}" title="WILD: ORCA" allow="fullscreen; autoplay" loading="eager"></iframe>
+      <div class="fallback">Early playable build · <a href="${gameOrigin}" target="_blank" rel="noopener">open directly if the game does not appear</a></div>
+    </section>
+  </main>
+</body>
+</html>`;
+    return new Response(body, {
+      status: 200,
+      headers: {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "public, max-age=60",
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+      },
+    });
+  }
+
   if (url.pathname === "/robots.txt" && privateSurface) {
     return new Response(robotsText(host, true), {
       status: 200,
@@ -2099,6 +2148,24 @@ export async function onRequest(context) {
   const response = await context.next();
 
   if (privateSurface) return withSecurityHeaders(response, true);
+
+
+  if (
+    host === "4species.com" &&
+    (url.pathname === "/" || url.pathname === "/species" || url.pathname === "/species/") &&
+    (response.headers.get("content-type") || "").toLowerCase().includes("text/html")
+  ) {
+    const headers = new Headers(response.headers);
+    headers.delete("X-Robots-Tag");
+    const cta = '<a href="https://4planet.org/games" aria-label="Play WILD: ORCA" style="position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:2147483000;display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:999px;background:rgba(3,20,27,.88);border:1px solid rgba(255,255,255,.28);box-shadow:0 10px 34px rgba(0,0,0,.32);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;text-decoration:none;font:700 10px/1 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;letter-spacing:.1em;text-transform:uppercase">PLAY WILD: ORCA</a>';
+    return new HTMLRewriter()
+      .on("body", { element(element) { element.append(cta, { html: true }); } })
+      .transform(new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      }));
+  }
 
   if (!config) return response;
 
