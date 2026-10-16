@@ -1,3 +1,24 @@
+# 4SAPIEN — DUE-TODAY CALENDAR TRUTH — 16 OCT 2026
+
+**STATUS:** RETURNED LIFE-OS-01 QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs bills, spending and income due today to remain visible for the whole local calendar day, not disappear when the clock passes an invented midday timestamp.
+**ONE THING TO UNDERSTAND:** “Neste 30 dager” is a calendar-date view of recorded finance events; a due date has no hidden time-of-day.
+**PRIMARY ACTION:** review known upcoming obligations and income without a due-today item jumping to next month or year after noon.
+**SECONDARY DEPTH:** inspect deterministic once/monthly/yearly recurrence, month-end and leap-day behaviour while unknown data remains unknown.
+**P1 DOMINANT:** known money in/out in the next 30 local calendar days.
+**P2 ORIENTATION:** the next known income and largest known payment retain their recorded dates.
+**P3 ACTION:** continue using the existing finance surface; no new action or navigation is introduced.
+**P4 DEPTH:** existing annual model, categories, data-quality warnings and source truth remain unchanged.
+**WHAT CAN BE REMOVED:** the invented noon comparison and duration-based 30-day boundary that can hide due-today items or drift across local clock changes.
+**WHAT MUST BE REUSED:** LIFE-OS-01, issue #317, existing finance-event schema and panel, existing auth/owner isolation, sole `king/test` HEIR and existing local calendar semantics.
+**TRUTH BOUNDARY:** the correction schedules only recorded events; it does not infer missing obligations, rewrite user data, prove category accuracy, change recurrence definitions, grant Gold, deploy or alter LIVE.
+**MOBILE-FIRST RISK:** no layout or interaction changes; exact-head mobile/authenticated browser review must still confirm due-today visibility and unchanged panel hierarchy.
+**HUMAN SUCCESS:** once, monthly and yearly events due today remain visible at 10:00 and 13:00; past one-offs stay absent; future, month-end, leap-day and inclusive 30-day boundaries remain deterministic.
+**BASE / ROLLBACK:** `king/test@93b49f4a367a39b9bf79bccd10fcda8bd139216a`; revert this bounded source/test/brief commit if independent Gold finds recurrence, calendar, owner-isolation or forecast-truth regression.
+**MAKER ≠ JUDGE:** Factory closes the returned deterministic defect; independent Gold judges the exact resulting SHA in authenticated mobile/browser conditions. Founder release remains separate.
+
+---
+
 # ATLAS / LIVING SYSTEMS — ITEM-SPECIFIC TAXON PHOTO RIGHTS — 16 OCT 2026
 
 **STATUS:** EXISTING HEIR BUILD/FIX / INDEPENDENT GOLD PENDING / NO DEPLOYMENT OR LIVE RELEASE.
