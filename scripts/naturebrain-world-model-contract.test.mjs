@@ -14,7 +14,7 @@ const compiled = ts.transpileModule(adapterSource, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText;
 const runtime = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
-const { natureBrainProductLinks, natureBrainLsiEdges, natureBrainEvidenceFrame, NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY } = runtime;
+const { natureBrainProductLinks, natureBrainLsiEdges, natureBrainEvidenceFrame, natureBrainRelationshipIsProductReady, NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY } = runtime;
 
 const orca = {
   canonical_id: "taxon:gbif:2440483",
@@ -29,7 +29,7 @@ const orca = {
       predicate: "consumes",
       object: { canonical_id: "population:imr:nssh", entity_type: "population", name: "Norwegian spring-spawning herring" },
       claim_id: "claim:naturebrain:orca:preys-on-nssh",
-      review_status: "reviewed",
+      review_status: "needs_review",
       evidence_strength: "primary_institutional_source",
     },
     {
@@ -67,26 +67,100 @@ const orca = {
         source_record_id: "source_record:imr:killer-whale-topic:2024-12-03",
         citation: "https://www.hi.no/en/hi/temasider/species/killer-whale",
         reviewed_at: "2026-10-04T18:05:50Z",
+        provenance: { rights_boundary: "citation_and_structured_paraphrase_only" },
+      }],
+    },
+    {
+      claim_id: "claim:naturebrain:orca:fishery-interaction",
+      statement: "Source-backed fishery interaction.",
+      review_status: "reviewed",
+      evidence_strength: "primary_institutional_report",
+      interpretation_status: "source_paraphrase",
+      evidence: [{
+        evidence_id: "evidence:naturebrain:orca:imr-fishery-interaction",
+        relation: "supports",
+        evidence_type: "citation",
+        source_id: "source:imr_no",
+        dataset_id: "dataset:imr:fhf-901926",
+        source_record_id: "source_record:imr:fhf-901926:2026-30",
+        citation: "https://www.hi.no/en/hi/nettrapporter/rapport-fra-havforskningen-en-2026-30",
+        reviewed_at: "2026-10-04T18:05:50Z",
+        provenance: { rights_boundary: "citation_and_structured_paraphrase_only" },
       }],
     },
   ],
   measurements: [],
 };
 
-test("NATUREBRAIN adapter projects the same relationship state into product and LSI views", () => {
+test("NATUREBRAIN adapter projects only product-ready relationships into product and LSI views", () => {
   const links = natureBrainProductLinks(orca);
   const edges = natureBrainLsiEdges(orca);
-  assert.equal(links.length, 3);
-  assert.equal(edges.length, 3);
-  assert.equal(edges.find((e) => e.predicate === "consumes")?.category, "DEPENDENCY");
+  assert.equal(links.length, 2);
+  assert.equal(edges.length, 2);
+  assert.equal(edges.some((e) => e.relationshipId === "relationship:naturebrain:orca:consumes:nssh"), false);
   assert.equal(edges.find((e) => e.predicate === "interacts_with_human_system")?.category, "HUMAN_SYSTEM");
   assert.equal(edges.find((e) => e.predicate === "affects")?.category, "PRESSURE");
   assert.ok(edges.every((e) => e.claimId));
 });
 
+test("held ecological interpretations remain negative fixtures even with reviewed claim evidence", () => {
+  const herring = {
+    ...orca,
+    canonical_id: "population:imr:nssh",
+    name: "Norwegian spring-spawning herring",
+    outbound_relationships: [{
+      relationship_id: "relationship:naturebrain:nssh:part-of:norwegian-sea-pelagic",
+      predicate: "part_of_living_system",
+      object: { canonical_id: "living-system:4p:norwegian-sea-pelagic", entity_type: "living_system", name: "Norwegian Sea pelagic system" },
+      claim_id: "claim:naturebrain:nssh:pelagic-context",
+      review_status: "needs_review",
+      evidence_strength: "primary_institutional_source",
+    }],
+    inbound_relationships: [],
+    claims: [{
+      claim_id: "claim:naturebrain:nssh:pelagic-context",
+      statement: "Source-backed pelagic context.",
+      review_status: "reviewed",
+      evidence_strength: "primary_institutional_source",
+      evidence: [{
+        evidence_id: "evidence:naturebrain:nssh:imr-herring",
+        source_id: "source:imr_no",
+        dataset_id: "dataset:imr:nssh-herring-topic",
+        source_record_id: "source_record:imr:nssh-herring-topic:2025-08-19",
+        citation: "https://www.hi.no/en/hi/temasider/species/herring",
+        reviewed_at: "2026-10-04T18:05:50Z",
+        provenance: { rights_boundary: "citation_and_structured_paraphrase_only" },
+      }],
+    }],
+  };
+
+  assert.equal(natureBrainRelationshipIsProductReady(orca, orca.outbound_relationships[0]), false);
+  assert.equal(natureBrainProductLinks(herring).length, 0);
+  assert.equal(natureBrainLsiEdges(herring).length, 0);
+});
+
+test("reviewed edges require reviewed claim, reviewed source evidence and an explicit rights boundary", () => {
+  const reviewedConsumes = {
+    ...orca.outbound_relationships[0],
+    review_status: "reviewed",
+  };
+  const reviewedContext = {
+    ...orca,
+    outbound_relationships: [reviewedConsumes],
+    inbound_relationships: [],
+  };
+  assert.equal(natureBrainRelationshipIsProductReady(reviewedContext, reviewedConsumes), true);
+  assert.equal(natureBrainLsiEdges(reviewedContext)[0]?.category, "DEPENDENCY");
+
+  const missingRights = structuredClone(reviewedContext);
+  delete missingRights.claims[0].evidence[0].provenance;
+  assert.equal(natureBrainRelationshipIsProductReady(missingRights, missingRights.outbound_relationships[0]), false);
+  assert.equal(natureBrainProductLinks(missingRights).length, 0);
+});
+
 test("answer evidence frame returns stored claims and recorded HTTPS citations only", () => {
   const frame = natureBrainEvidenceFrame(orca);
-  assert.equal(frame.length, 1);
+  assert.equal(frame.length, 2);
   assert.equal(frame[0].claimId, "claim:naturebrain:orca:preys-on-nssh");
   assert.equal(frame[0].citations.length, 1);
   assert.match(frame[0].citations[0].citation, /^https:\/\//);

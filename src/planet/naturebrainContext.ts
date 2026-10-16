@@ -85,6 +85,7 @@ export interface NatureBrainEntityContext {
 }
 
 export type NatureBrainProductLink = {
+  relationshipId: string;
   id: string;
   label: string;
   relation: string;
@@ -95,6 +96,7 @@ export type NatureBrainProductLink = {
 };
 
 export type NatureBrainLsiEdge = {
+  relationshipId: string;
   from: string;
   to: string;
   predicate: string;
@@ -114,10 +116,41 @@ const categoryForPredicate = (predicate: string): NatureBrainLsiEdge["category"]
   return "OTHER";
 };
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+/**
+ * Product projections are publication surfaces, not raw graph inspection.
+ * A reviewed claim and citation do not promote an unreviewed relationship.
+ * The relationship, referenced claim, reviewed evidence and evidence rights
+ * boundary must all be present before an edge can enter SPECIES/ATLAS/LSI.
+ */
+export function natureBrainRelationshipIsProductReady(
+  context: NatureBrainEntityContext,
+  relationship: NatureBrainRelationship,
+): boolean {
+  if (relationship.review_status !== "reviewed" || !isNonEmptyString(relationship.claim_id)) return false;
+
+  const claim = context.claims.find((candidate) => candidate.claim_id === relationship.claim_id);
+  if (!claim || claim.review_status !== "reviewed") return false;
+
+  return claim.evidence.some((evidence) => {
+    const rightsBoundary = evidence.provenance?.rights_boundary;
+    return isNonEmptyString(evidence.reviewed_at)
+      && isNonEmptyString(evidence.source_id)
+      && isNonEmptyString(evidence.dataset_id)
+      && isNonEmptyString(evidence.source_record_id)
+      && isNonEmptyString(evidence.citation)
+      && evidence.citation.startsWith("https://")
+      && isNonEmptyString(rightsBoundary);
+  });
+}
+
 export function natureBrainProductLinks(context: NatureBrainEntityContext): NatureBrainProductLink[] {
   const outbound = context.outbound_relationships
-    .filter((r) => Boolean(r.object?.canonical_id))
+    .filter((r) => Boolean(r.object?.canonical_id) && natureBrainRelationshipIsProductReady(context, r))
     .map((r) => ({
+      relationshipId: r.relationship_id,
       id: r.object!.canonical_id,
       label: r.object!.name,
       relation: r.predicate,
@@ -127,8 +160,9 @@ export function natureBrainProductLinks(context: NatureBrainEntityContext): Natu
       claimId: r.claim_id,
     }));
   const inbound = context.inbound_relationships
-    .filter((r) => Boolean(r.subject?.canonical_id))
+    .filter((r) => Boolean(r.subject?.canonical_id) && natureBrainRelationshipIsProductReady(context, r))
     .map((r) => ({
+      relationshipId: r.relationship_id,
       id: r.subject!.canonical_id,
       label: r.subject!.name,
       relation: r.predicate,
@@ -143,8 +177,9 @@ export function natureBrainProductLinks(context: NatureBrainEntityContext): Natu
 /** LSI projection over NATUREBRAIN relationships. No new relationship is inferred. */
 export function natureBrainLsiEdges(context: NatureBrainEntityContext): NatureBrainLsiEdge[] {
   const outbound = context.outbound_relationships
-    .filter((r) => Boolean(r.object?.canonical_id))
+    .filter((r) => Boolean(r.object?.canonical_id) && natureBrainRelationshipIsProductReady(context, r))
     .map((r) => ({
+      relationshipId: r.relationship_id,
       from: context.canonical_id,
       to: r.object!.canonical_id,
       predicate: r.predicate,
@@ -154,8 +189,9 @@ export function natureBrainLsiEdges(context: NatureBrainEntityContext): NatureBr
       claimId: r.claim_id,
     }));
   const inbound = context.inbound_relationships
-    .filter((r) => Boolean(r.subject?.canonical_id))
+    .filter((r) => Boolean(r.subject?.canonical_id) && natureBrainRelationshipIsProductReady(context, r))
     .map((r) => ({
+      relationshipId: r.relationship_id,
       from: r.subject!.canonical_id,
       to: context.canonical_id,
       predicate: r.predicate,

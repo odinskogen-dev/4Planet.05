@@ -1031,3 +1031,23 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 - **HUMAN SUCCESS:** a forged or stale projection cannot retain impact eligibility after its claim, quantity, source reference, or evidence relationship is altered.
 - **DONOR DECISION:** no donor; correct the existing HEIR contract in place.
 - **ROLLBACK:** parent HEIR `516c65ca5855164c985ec169223d71b3b6d537fb`.
+# NATUREBRAIN / SPEC-GS-11 — REVIEWED-EDGE PRODUCT ADMISSION — 16 OCTOBER 2026
+
+**STATUS:** HEIR SHARED-INFRASTRUCTURE CORRECTION / INDEPENDENT SCIENCE + PRODUCT GOLD REQUIRED / NO DB OR LIVE CHANGE.
+**USER ARRIVES BECAUSE:** a person wants to understand a species or living system through ecological relationships without a bounded interpretation being presented as an approved fact.
+**ONE THING TO UNDERSTAND:** reviewed evidence for a claim does not independently approve the relationship inferred from that evidence.
+**PRIMARY ACTION:** consume only relationship records whose edge, referenced claim, reviewed source evidence and evidence-rights boundary all pass together.
+**SECONDARY DEPTH:** preserve held and unreviewed relationships for scientific review without projecting them into SPECIES, ATLAS or LSI product links.
+**P1 DOMINANT:** approved ecological relationship.
+**P2 ORIENTATION:** relationship predicate and direction.
+**P3 ACTION:** continue to the related entity only after full admission.
+**P4 DEPTH:** claim, evidence, source record, review and rights context.
+**WHAT CAN BE REMOVED:** product projection based only on entity presence or reviewed claim/evidence.
+**WHAT MUST BE REUSED:** the canonical `NatureBrainEntityContext`, existing relationship IDs, claims/evidence, SPEC-GS-11, issue #145, ATLAS #244 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** hiding a held edge does not disprove the relationship; source citation or reviewed claim does not approve a relationship; product admission does not prove deployment, scientific Gold or LIVE behaviour.
+**MOBILE-FIRST RISK:** none introduced; this correction changes shared admission data before rendering and adds no layout.
+**HUMAN SUCCESS:** a held synthesis cannot appear as an approved SPECIES/ATLAS/LSI relationship, while a fully reviewed and rights-bounded edge still transfers through the same shared adapter.
+**BASE / ROLLBACK:** `king/test@ad7ab7bc49e7c050a4d158affe9efd02de65a90e`; revert the bounded adapter/test/brief commit if independent Gold finds a legitimate reviewed edge is wrongly suppressed.
+**MAKER ≠ JUDGE:** Factory implements the returned gate; independent science/product Gold judges the exact SHA. Founder release remains separate.
+
+---
