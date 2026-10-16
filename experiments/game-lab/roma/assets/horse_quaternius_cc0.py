@@ -9,7 +9,7 @@ url="https://drive.google.com/drive/folders/1uJ3N5HfB7jKTseJUNQr3N4YaN0UuEtHk?us
 licensepage="https://quaternius.com/packs/ultimateanimatedanimals.html"
 issues=[]
 try:
- files=gdown.download_folder(url=url,output="ROMA_HORSE_DOWNLOAD",remaining_ok=True,quiet=False)
+ files=gdown.download_folder(url=url,output="ROMA_HORSE_DOWNLOAD",quiet=False)
  print("GDOWN_FILES",str(files)[:12000],flush=True)
 except Exception as e:
  files=[];issues.append("Google Drive first-party download failed: "+str(e));print("GDOWN_BLOCKED",e,flush=True)
@@ -48,3 +48,5 @@ with (root/"ASSET_MANIFEST.csv").open("w",newline="") as f:
  cols=["file","source_url","author","license","license_evidence","date","sha256","bytes","notes"];w=csv.DictWriter(f,fieldnames=cols);w.writeheader();w.writerows(assets)
 (root/"REPORT.json").write_text(json.dumps({"files_count":len(assets),"issues":issues,"source":url,"note":"No animated horse GLB can be claimed until GLB actually exists and animation channels validated."},indent=2))
 print("HORSE_INTAKE_RESULT",len(assets),"ISSUES",issues,flush=True)
+
+if not assets: raise SystemExit('Horse source download not established; do not mark acquisition successful')
