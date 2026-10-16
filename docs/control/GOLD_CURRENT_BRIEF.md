@@ -961,3 +961,17 @@ Preserve the existing responsive v53 UI and all media.
 
 ## HUMAN SUCCESS
 Verified live public sitemap, preserved working animal cards, and discoverable reviewed species.
+
+## 16 OCTOBER 2026 — P0 OAUTH / GA4 / POSTHOG USER PRIVACY, CANONICAL HEIR
+
+**Founder direction:** Security first. Strip OAuth credentials and private values before analytics or identity cross-domain navigation. Any public release must preserve current UX, track legitimate anonymous value, and pass actual live verification.
+
+**Source:** Existing sole `king/test` HEIR; no parallel production tree or replacement BRAIN.
+
+**Bounded changes:** Sanitize `return_to` while preserving harmless ATLAS URL query state; reject URL fragments and sensitive callback paths; retain existing GA4 token-free `page_location` and internal traffic exclusion; filter credential / personal fields from `trackEvent` before GA4 and PostHog sinks. No account details or secret values printed by tests.
+
+**Evidence:** The previous standalone source candidate passed security and typecheck tests. This canonical HEIR update includes dedicated regression tests and CI; verify new exact commit, build, browser login and Analytics network traffic. Historic GA4 sensitive data deletion and session revocation remain separate, unverifiable until a privileged admin data-deletion tool is connected.
+
+**Rollback:** Save exact currently deployed Cloudflare production artifact before main promotion; no bypass of FOUNDER_GATED promotion or SOURCE_BRANCH=king/test. On regression, restore previous verified Worker/Pages version immediately.
+
+**Truth state:** SOURCE CODE COMPLETE; PUBLIC LIVE REMEDIATION NOT VERIFIED BY THIS COMMIT.

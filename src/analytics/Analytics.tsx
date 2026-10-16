@@ -267,11 +267,32 @@ function installGoogleTag(id: string, domains: string[]) {
   document.head.appendChild(script);
 }
 
+/**
+ * No free-text, PII, OAuth material or session credentials in event payloads.
+ * This applies to both GA4 and PostHog, without changing authorised product events.
+ */
+export function privacySafeEventParameters(parameters: Record<string, string | number | boolean>) {
+  const safe: Record<string, string | number | boolean> = {};
+  const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
+  for (const [key, value] of Object.entries(parameters)) {
+    const flatKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (blockedKeys.test(key) || /(?:accesstoken|refreshtoken|idtoken|tokenhash|authorizationcode|authorizationid|clientsecret|emailaddress|phonenumber|password|apikey|sessiontoken|jwt|onetimesecret)/.test(flatKey)) continue;
+    if (typeof value === "string") {
+      if (value.length > 240
+        || /\b[^\s@]+@[^\s@]+\.[a-z]{2,}\b/i.test(value)
+        || /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/.test(value)
+        || /(?:access_token|refresh_token|token_hash|authorization_code|client_secret)=/i.test(value)) continue;
+    }
+    safe[key] = value;
+  }
+  return safe;
+}
+
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
   if (readConsent() !== "granted" || isInternalAnalyticsBrowser() || !isAnalyticsHostAllowed(window.location.hostname) || isSensitiveAnalyticsNavigation()) return;
 
   const shared = {
-    ...parameters,
+    ...privacySafeEventParameters(parameters),
     site_host: canonicalHost(window.location.hostname),
   };
 
