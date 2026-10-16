@@ -18,7 +18,57 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build isolated ROMA game
+      - name: Expand verified ROMA Premium Alpha 08 source and 3D assets
+        working-directory: experiments/roma-alpha08
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=commonjs <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const zlib = require('node:zlib');
+          function unpack(file) {
+            const encoded = fs.readFileSync(file, 'utf8').trim();
+            return JSON.parse(zlib.brotliDecompressSync(Buffer.from(encoded, 'base64')).toString('utf8'));
+          }
+          function write(relative, content) {
+            const dest = path.resolve('premium08', relative);
+            if (!dest.startsWith(path.resolve('premium08') + path.sep)) throw Error('Invalid archive path');
+            fs.mkdirSync(path.dirname(dest), {recursive:true});
+            fs.writeFileSync(dest, content);
+          }
+          for (const [name, contents] of Object.entries(unpack('bundle/alpha08-source.br.base64'))) write(name, contents);
+          for (const [name, encoded] of Object.entries(unpack('bundle/alpha08-assets.br.base64'))) write('public/rome/assets/' + name, Buffer.from(encoded, 'base64'));
+          for (const [name, contents] of Object.entries(JSON.parse(fs.readFileSync('bundle/alpha08-aux.json', 'utf8')))) write(name, contents);
+          const bank=JSON.parse(fs.readFileSync('premium08/public/rome/ASSETBANK.json','utf8'));
+          if(bank.assets.length !== 11) throw Error('Expected 11 Roman assets');
+          const crypto=require('node:crypto');
+          for(const asset of bank.assets) {
+            const bytes=fs.readFileSync('premium08/'+asset.file);
+            const digest=crypto.createHash('sha256').update(bytes).digest('hex');
+            if(digest!==asset.sha256) throw Error('GLB SHA mismatch: '+asset.id);
+          }
+          console.log('ROMA_ALPHA08_SOURCE_TRANSFER_VALID', Object.keys(unpack('bundle/alpha08-source.br.base64')).length);
+          console.log('ROMA_ALPHA08_11_GLB_SHA256_PASS');
+          NODE
+      - name: Stage isolated Alpha 08 engine (preserve old games)
+        working-directory: experiments/roma-alpha08
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp roma-alpha08.html roma-alpha07.html
+          cp roma-alpha08.html roma.html
+          printf '%s\n' '<!doctype html><title>Prior RTS staging placeholder</title>' > rts.html
+          printf '%s\n' "import { defineConfig } from 'vite';export default defineConfig({ build: {rollupOptions:{ input: {romaAlpha07: 'roma-alpha07.html'}}}});" > vite.config.ts
+          python3 premium08/scripts/stage_alpha08.py --project . --dry-run
+          python3 premium08/scripts/stage_alpha08.py --project .
+          test -s src/roma08/rome/boot.js
+          test -s src/roma08/rts/simulation.js
+          test -s public/rome/assets/roman_forum.glb
+          test -s public/rome/assets/roman_siege_workshop.glb
+          grep -Fq './src/roma08/rome/boot.js' roma-alpha08.html
+          echo 'ROMA_PREMIUM_ALPHA08_STAGE_PASS'
+      - name: Build genuine Alpha08 playable game
         working-directory: experiments/roma-alpha08
         shell: bash
         run: |
@@ -26,9 +76,12 @@ jobs:
           npm install --no-audit --no-fund
           npm run build
           test -s dist/roma-alpha08.html
-          test -s dist/rts/assets/oak.glb
-          test -s dist/rts/assets/rock.glb
-          echo 'ROMA_BUILD_OK'
+          test -s dist/rome/assets/roman_forum.glb
+          test -s dist/rome/assets/roman_siege_workshop.glb
+          if grep -Fq 'src/rome/alpha08.js' dist/roma-alpha08.html; then
+            echo 'OLD_ROMA_INSTEAD_OF_PREMIUM'; exit 7
+          fi
+          echo 'ROMA_GENUINE_ALPHA08_BUILD_PASS'
       - name: Deploy to separate Cloudflare Pages project ONLY
         working-directory: experiments/roma-alpha08
         shell: bash
