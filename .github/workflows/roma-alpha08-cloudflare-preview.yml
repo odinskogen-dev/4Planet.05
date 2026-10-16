@@ -63,7 +63,7 @@ jobs:
           branch='roma-alpha08-preview-20261016'
           [ "$branch" != main ] || { echo 'PRODUCTION_DEPLOY_FORBIDDEN'; exit 8; }
           npx --yes wrangler@4.128.0 pages deploy dist --project-name "$project" --branch "$branch" --commit-hash "$GITHUB_SHA" | tee /tmp/roma-cloudflare-deploy.txt
-          preview=$(grep -Eo 'https://[a-z0-9-]+\\.4planet-05\\.pages\\.dev' /tmp/roma-cloudflare-deploy.txt | tail -1 || true)
+          preview=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/roma-cloudflare-deploy.txt | head -1 || true)
           if [ -z "$preview" ]; then echo 'DEPLOYMENT_URL_NOT_RETURNED'; exit 9; fi
           echo "ROMA_PREVIEW_DEPLOYMENT=$preview/roma-alpha08.html"
           for i in $(seq 1 15); do
