@@ -417,7 +417,7 @@ export default {
     }
     if (path === "/robots.txt")
       return new Response(
-        "User-agent: *\\nAllow: /\\nDisallow: /api/\\nDisallow: /__species_\\n\\nSitemap: https://4species.com/sitemap.xml\\n",
+        "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /__species_\n\nSitemap: https://4species.com/sitemap.xml\n",
         {headers:{"content-type":"text/plain; charset=utf-8", "cache-control":"public, max-age=300"}}
       );
     if (path === "/sitemap.xml") return reviewedSpeciesSitemap(request);
