@@ -58,23 +58,20 @@ jobs:
           account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
           [ -n "$account" ] || { echo 'CF_ACCOUNT_NOT_FOUND'; exit 4; }
           export CLOUDFLARE_ACCOUNT_ID="$account"
-          project='roma-alpha08-preview-odin'
-          [ "$project" != '4planet-05' ] || exit 5
-          existing=$(curl -sS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/$project" || true)
-          if ! jq -e '.success == true and .result.name == "roma-alpha08-preview-odin"' <<<"$existing" >/dev/null 2>&1; then
-            result=$(curl -sS -X POST "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data '{"name":"roma-alpha08-preview-odin","production_branch":"main"}')
-            if ! jq -e '.success == true' <<<"$result" >/dev/null; then
-              echo 'CF_PROJECT_CREATE_FAILED'; jq '{success,errors,messages}' <<<"$result" || true; exit 7
-            fi
-          fi
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$project" --branch main --commit-hash "$GITHUB_SHA"
+          # Branch preview only: NEVER deploy or update production branch main.
+          project='4planet-05'
+          branch='roma-alpha08-preview-20261016'
+          [ "$branch" != main ] || { echo 'PRODUCTION_DEPLOY_FORBIDDEN'; exit 8; }
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$project" --branch "$branch" --commit-hash "$GITHUB_SHA" | tee /tmp/roma-cloudflare-deploy.txt
+          preview=$(grep -Eo 'https://[a-z0-9-]+\\.4planet-05\\.pages\\.dev' /tmp/roma-cloudflare-deploy.txt | tail -1 || true)
+          if [ -z "$preview" ]; then echo 'DEPLOYMENT_URL_NOT_RETURNED'; exit 9; fi
+          echo "ROMA_PREVIEW_DEPLOYMENT=$preview/roma-alpha08.html"
           for i in $(seq 1 15); do
-            if curl -fsS --max-time 15 'https://roma-alpha08-preview-odin.pages.dev/roma-alpha08.html' | grep -Fq 'ROMA'; then
-              echo 'ROMA_CLOUDFLARE_LIVE_PASS'
-              echo 'ROMA_URL=https://roma-alpha08-preview-odin.pages.dev/roma-alpha08.html'
+            if curl -fsSL --max-time 15 "$preview/roma-alpha08.html" | grep -Fq 'ROMA'; then
+              echo 'ROMA_CLOUDFLARE_PREVIEW_LIVE_PASS'
               exit 0
             fi
             sleep 4
           done
-          echo 'ROMA_CLOUDFLARE_LIVE_UNCONFIRMED'
-          exit 6
+          echo 'PREVIEW_DEPLOYED_BUT_ROUTE_NOT_VERIFIED'
+          exit 10
