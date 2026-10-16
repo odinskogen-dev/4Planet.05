@@ -170,6 +170,19 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       // Fragments are normally client-only. Embedding one inside return_to would
       // copy OAuth credentials or other private state into a server-visible query.
       url.hash = "";
+      // return_to appears inside a server-visible URL. Never pass OAuth codes,
+      // session credentials, personal contact details or token-bearing values.
+      // Preserve non-sensitive ATLAS deep-link state and campaign parameters.
+      if (/^\/(?:auth(?:\/|$)|oauth(?:\/|$))/i.test(url.pathname)) return fallback;
+      const sensitiveKey = /(?:^|[_-])(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:$|[_-])/i;
+      const emailValue = /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i;
+      const jwtValue = /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/;
+      const embeddedCredential = /(?:access_token|refresh_token|token_hash|authorization_code|client_secret)=/i;
+      for (const [key, value] of [...url.searchParams]) {
+        if (sensitiveKey.test(key) || emailValue.test(value) || jwtValue.test(value) || embeddedCredential.test(value)) {
+          url.searchParams.delete(key);
+        }
+      }
       return url.href;
     }
   } catch {

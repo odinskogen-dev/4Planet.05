@@ -54,3 +54,29 @@ test("Google return never waits on profile hydration or loses early auth events"
   assert.ok(client.includes("await client.auth.setSession("));
   assert.ok(client.includes('window.history.replaceState({}, "", window.location.pathname + window.location.search)'));
 });
+
+test("return_to never forwards OAuth secrets or contact details to the identity host", () => {
+  const match = client.match(/export function safeReturnTo\([^\n]+\) \{([\s\S]*?)\n\}\n\nexport function identityLoginUrl/);
+  assert.ok(match, "safeReturnTo implementation should be testable");
+  // Evaluate this bounded helper only, with a known, fixed site origin.
+  const safeReturnTo = new Function(
+    "window",
+    "TRUSTED_RETURN_ORIGINS",
+    'return function safeReturnTo(value, fallback = "https://4planet.org/") {' + match[1] + '}',
+  )(
+    { location: { origin: "https://4planet.org" } },
+    new Set(["https://4planet.org", "https://4planetatlas.com"]),
+  );
+  assert.equal(
+    safeReturnTo("https://4planetatlas.com/atlas?m=OCE4N&l=whales&z=3.1#access_token=private"),
+    "https://4planetatlas.com/atlas?m=OCE4N&l=whales&z=3.1",
+  );
+  const result = safeReturnTo(
+    "https://4planet.org/atlas?access_token=private&refresh_token=private&code=secret&state=secret&email=person%40example.org&m=PLANET",
+  );
+  assert.equal(result, "https://4planet.org/atlas?m=PLANET");
+  assert.equal(safeReturnTo("https://4planet.org/?q=person%40example.org&year=2026"), "https://4planet.org/?year=2026");
+  assert.equal(safeReturnTo("https://4planet.org/?note=access_token%3Dsecret&year=2026"), "https://4planet.org/?year=2026");
+  assert.equal(safeReturnTo("https://4planet.org/auth/4planet/callback?code=secret"), "https://4planet.org/");
+  assert.equal(safeReturnTo("https://malicious.example/?next=https://4planet.org/"), "https://4planet.org/");
+});
