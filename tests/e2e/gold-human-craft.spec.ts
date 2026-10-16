@@ -74,7 +74,7 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
       const atlasFrameElement = page.getByTitle("Interactive 4PLANET ATLAS");
       await expect(atlasFrameElement).toBeVisible();
       await atlasFrameElement.scrollIntoViewIfNeeded();
-      const atlasFrame = page.frameLocator('iframe[title="Interactive 4PLANET ATLAS"]');
+      const atlasFrame = atlasFrameElement.contentFrame();
       await expect(atlasFrame.locator(".world.light")).toBeVisible({ timeout: 20_000 });
       await expect(atlasFrame.locator("canvas.maplibregl-canvas")).toBeVisible({ timeout: 20_000 });
 
