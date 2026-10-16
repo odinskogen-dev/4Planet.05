@@ -47,9 +47,14 @@ jobs:
           token=$(printf '%s' "$token" | tr -d '\r\n')
           token="${token#Bearer }"
           token="${token#bearer }"
+          token="${token#CLOUDFLARE_API_TOKEN=}"
+          token="${token#CF_API_TOKEN=}"
           echo "::add-mask::$token"
           export CLOUDFLARE_API_TOKEN="$token"
-          zone=$(curl -fsS --retry 3 --max-time 30 -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')
+          zone=$(curl -sS --retry 3 --max-time 30 -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')
+          if ! jq -e '.success == true' <<<"$zone" >/dev/null; then
+            echo 'CF_ZONE_QUERY_FAILED'; jq '{success,errors,messages}' <<<"$zone" || true; exit 4
+          fi
           account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
           [ -n "$account" ] || { echo 'CF_ACCOUNT_NOT_FOUND'; exit 4; }
           export CLOUDFLARE_ACCOUNT_ID="$account"
@@ -57,8 +62,10 @@ jobs:
           [ "$project" != '4planet-05' ] || exit 5
           existing=$(curl -sS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/$project" || true)
           if ! jq -e '.success == true and .result.name == "roma-alpha08-preview-odin"' <<<"$existing" >/dev/null 2>&1; then
-            result=$(curl -fsS -X POST "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data '{"name":"roma-alpha08-preview-odin","production_branch":"main"}')
-            jq -e '.success == true' <<<"$result"
+            result=$(curl -sS -X POST "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data '{"name":"roma-alpha08-preview-odin","production_branch":"main"}')
+            if ! jq -e '.success == true' <<<"$result" >/dev/null; then
+              echo 'CF_PROJECT_CREATE_FAILED'; jq '{success,errors,messages}' <<<"$result" || true; exit 7
+            fi
           fi
           npx --yes wrangler@4.128.0 pages deploy dist --project-name "$project" --branch main --commit-hash "$GITHUB_SHA"
           for i in $(seq 1 15); do
