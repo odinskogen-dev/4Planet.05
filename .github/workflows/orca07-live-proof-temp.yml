@@ -1,0 +1,49 @@
+name: ORCA07 LIVE exact release verification
+on:
+  push:
+    branches: [release/wild-orca-07-20261016]
+    paths: [.github/workflows/orca07-live-proof-temp.yml]
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Validate Cloudflare production deploy and exact live bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="9b255c6f7b92000b77b567eef026e9dbd0eb26197a40ba4f3a5549e98a5093f4"
+          commit="499a882f2fac846bf6afcdf918a8964ce0e86ab6"
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")
+          zone=$(curl -fsS --max-time 20 "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active" "${auth[@]}")
+          acct=$(jq -r '.result[0].account.id' <<<"$zone")
+          [[ -n "$acct" ]] || exit 2
+          good=0
+          for i in $(seq 1 45); do
+            latest=$(curl -fsS --max-time 20 "https://api.cloudflare.com/client/v4/accounts/$acct/pages/projects/4planet-05/deployments?page=1&per_page=12" "${auth[@]}")
+            status=$(jq -r --arg sha "$commit" '[.result[]|select(.environment=="production" and .deployment_trigger.metadata.commit_hash==$sha)][0].latest_stage.status // "not_found"' <<<"$latest")
+            stage=$(jq -r --arg sha "$commit" '[.result[]|select(.environment=="production" and .deployment_trigger.metadata.commit_hash==$sha)][0].latest_stage.name // "not_found"' <<<"$latest")
+            live=$(curl -sSL --max-time 25 https://4planet.org/games/wild-orca/ -o /tmp/orca07-live.html -w '%{http_code}' || true)
+            actual=$(sha256sum /tmp/orca07-live.html | cut -d' ' -f1)
+            echo "CHECK=$i CF_STAGE=$stage CF_STATUS=$status HTTP=$live SHA=$actual"
+            if [[ "$status" == "success" && "$stage" == "deploy" && "$live" == "200" && "$actual" == "$expected" ]]; then
+              good=1; break
+            fi
+            sleep 6
+          done
+          [[ "$good" == 1 ]] || { echo 'LIVE_NOT_VERIFIED'; exit 1; }
+          headers=$(curl -fsSI --max-time 30 https://4planet.org/games/wild-orca/)
+          grep -Fq "'sha256-NyoyCXWy2bG6xHRpw8YjWQuO4EOg3wZXkl/tRbaGLrM='" <<<"$headers"
+          grep -Fq "'sha256-cXHmk9tgdh+3sliCzY58Ny1KuJMbYMLt8Dd8LlWl57A='" <<<"$headers"
+          grep -Fq "media-src 'self' data: blob:" <<<"$headers"
+          curl -fsSL --max-time 30 https://4planet.org/games/ -o /tmp/orca07-hub.html
+          grep -Fq 'src="/games/wild-orca/"' /tmp/orca07-hub.html
+          for u in https://4planet.org/ https://4planet.org/games/; do
+            http=$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 20 "$u")
+            [[ "$http" == 200 ]] || { echo "OTHER_ROUTE_FAIL $u $http";exit 1; }
+          done
+          echo 'ORCA07_LIVE_EXACT_BYTES_CSP_HUB_ROOT_PROOF_PASS'
