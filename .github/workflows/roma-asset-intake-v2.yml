@@ -1,0 +1,65 @@
+name: GAME LAB ROMA Asset Intake V2 - Direct Download
+on:
+  push:
+    branches: [roma-asset-intake-20261017]
+    paths:
+      - 'experiments/game-lab/roma/assets/intake_v2_addon.py'
+      - '.github/workflows/roma-asset-intake-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vendor-download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install downloader
+        run: pip -q install requests beautifulsoup4
+      - name: Acquire and document only source-licenced assets
+        run: python -u experiments/game-lab/roma/assets/intake_v2_addon.py
+      - name: Archive source-licence webpage screenshots if Chrome available
+        shell: bash
+        run: |
+          set +e
+          if ! command -v google-chrome >/dev/null; then exit 0; fi
+          for pair in \
+          "quaternius_horse|https://quaternius.com/packs/ultimateanimatedanimals.html" \
+          "3dassets_roman|https://3dassets.dev/packs/roman-bathhouse-and-palaestra" \
+          "oga_sword|https://opengameart.org/content/swishes-sound-pack" \
+          "oga_battle|https://opengameart.org/content/battle-sound-effects" \
+          "kenney_nature|https://kenney.nl/assets/nature-kit"; do
+            n=$(echo "$pair"|cut -d'|' -f1); url=$(echo "$pair"|cut -d'|' -f2-)
+            timeout 12 google-chrome --headless --no-sandbox --disable-gpu --window-size=1100,900 \
+              --screenshot="ROMA_ASSETS_v2_ADDON/LICENSES/$n-page.png" "$url" >/dev/null 2>&1
+          done
+          exit 0
+      - name: Validate files and create addon ZIP
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib,json,hashlib,csv,zipfile
+          root=pathlib.Path("ROMA_ASSETS_v2_ADDON")
+          items=list(csv.DictReader((root/"ASSET_MANIFEST_ADDON.csv").open()))
+          for row in items:
+              p=root/row["file"]
+              assert p.is_file() and p.stat().st_size==int(row["bytes"]),row["file"]
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==row["sha256"],row["file"]
+              assert row["license"]=="CC0-1.0",row["file"]
+              if row["file"].endswith(".glb"):assert p.read_bytes()[:4]==b"glTF"
+          with zipfile.ZipFile("ROMA_ASSETS_v2_ADDON.zip","w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+              for p in sorted(root.rglob("*")):
+                  if p.is_file():z.write(p,p.as_posix())
+          print("ROMA_ADDON_TOTAL",len(items),"bytes",sum(int(x["bytes"]) for x in items),"zip",pathlib.Path("ROMA_ASSETS_v2_ADDON.zip").stat().st_size,flush=True)
+          print("ROMA_ADDON_SHA256",hashlib.sha256(pathlib.Path("ROMA_ASSETS_v2_ADDON.zip").read_bytes()).hexdigest(),flush=True)
+          print("ROMA_UNAVAILABLE",len(json.loads((root/"DOWNLOAD_RESULTS.json").read_text())),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ROMA_ASSETS_v2_ADDON
+          path: ROMA_ASSETS_v2_ADDON.zip
+          if-no-files-found: error
+          retention-days: 30
