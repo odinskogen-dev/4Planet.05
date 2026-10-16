@@ -83,6 +83,12 @@ jobs:
               ("z <= MAP.depth+150; z += 3", "z <= 310; z += 3")])
           rewrite('src/rts/main.js', [
               ('width="${MAP.width}" height="${MAP.depth}"', 'width="180" height="160"')])
+          p=Path('src/rts/main.js')
+          raw=p.read_text()
+          old="import { BUILDINGS, TROOPS, RESOURCE, VERSION, riverX, MAP } from './config.js';"
+          if raw.count(old)!=1: raise SystemExit('ROMA_MAIN_CONFIG_IMPORT_DIFFERENT')
+          raw=raw.replace(old,"import { MAP } from './config.js';\\nimport { BUILDINGS, TROOPS, RESOURCE, VERSION, riverX } from './config.js';".replace('\\n','\n'))
+          p.write_text(raw)
           print('ROMA_ALPHA07_STAGE_COMPAT_READY')
           PY
           python3 premium08/scripts/stage_alpha08.py --project . --dry-run
