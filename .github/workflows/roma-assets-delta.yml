@@ -1,0 +1,37 @@
+name: GAME LAB ROMA Direct Asset Delta
+on:
+  push:
+    branches: [roma-asset-intake-20261017]
+    paths:
+      - 'experiments/game-lab/roma/assets/delta_v1.py'
+      - '.github/workflows/roma-assets-delta.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -q requests numpy pillow rasterio
+      - run: python experiments/game-lab/roma/assets/delta_v1.py
+      - name: Bundle verified delta
+        run: |
+          python - <<'PY'
+          import zipfile,pathlib,os,json
+          root=pathlib.Path("ROMA_ASSET_DELTA")
+          with zipfile.ZipFile("ROMA_ASSET_DELTA.zip","w",zipfile.ZIP_DEFLATED) as z:
+            for p in root.rglob("*"):
+              if p.is_file(): z.write(p,str(p))
+          print("DELTA_ZIP_BYTES",os.stat("ROMA_ASSET_DELTA.zip").st_size)
+          print((root/"INTAKE_REPORT_DELTA.json").read_text())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ROMA_ASSET_DELTA
+          path: ROMA_ASSET_DELTA.zip
+          retention-days: 30
