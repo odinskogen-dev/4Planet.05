@@ -132,7 +132,11 @@ test("P0 crawler policy excludes private OS without blocking public Oslofjord", 
     assert.ok(group, "missing crawler group " + agent);
     const rules = group.split(/\r?\n/).filter((line) => line.startsWith("Disallow: ")).map((line) => line.slice("Disallow: ".length));
     const blocked = (url) => rules.some((rule) => rule.endsWith("$") ? url === rule.slice(0, -1) : url.startsWith(rule));
-    for (const path of ["/os", "/os/", "/os/projects", "/os?debug=1", "/labs", "/sandbox", "/checkout", "/api"]) {
+    for (const path of [
+      "/os", "/os/", "/os/projects", "/os?debug=1", "/labs", "/sandbox", "/checkout", "/api", "/4nation",
+      "/admin", "/admin/users", "/auth", "/auth/callback", "/account", "/account/profile", "/saved", "/saved/items",
+      "/id", "/id/profile", "/oauth", "/oauth/callback",
+    ]) {
       assert.ok(blocked(path), agent + " should exclude " + path);
     }
     for (const path of ["/oslofjord", "/oslofjord/", "/oslofjord-restoration", "/living-systems/oslofjord"]) {
@@ -142,8 +146,19 @@ test("P0 crawler policy excludes private OS without blocking public Oslofjord", 
   }
   const generator = read("scripts/generate-sitemap.mjs");
   assert.match(generator, /robotsDisallow/);
-  for (const pattern of ["/os$", "/os/", "/os?"]) assert.ok(generator.includes(JSON.stringify(pattern)));
+  for (const pattern of [
+    "/os$", "/os/", "/os?", "/admin", "/auth", "/account", "/saved", "/id", "/oauth",
+  ]) assert.ok(generator.includes(JSON.stringify(pattern)));
   for (const agent of agents) assert.ok(generator.includes(JSON.stringify(agent)));
+});
+
+test("generated robots artifact stays byte-identical to the checked-in crawler policy", async () => {
+  const { execFileSync } = await import("node:child_process");
+  execFileSync(process.execPath, ["scripts/generate-sitemap.mjs"], {
+    cwd: new URL("..", import.meta.url),
+    stdio: "pipe",
+  });
+  assert.equal(read("public/robots.txt"), robots);
 });
 
 

@@ -100,7 +100,22 @@ const newsSitemapDeclaration = newsStories.length > 0
   : "";
 // A single restricted-path policy applies to all recognised crawlers.
 // /os is private; /oslofjord remains a public, discoverable path.
-const robotsDisallow = ["/labs", "/os$", "/os/", "/os?", "/sandbox", "/checkout", "/api", "/4nation"];
+const robotsDisallow = [
+  "/labs",
+  "/os$",
+  "/os/",
+  "/os?",
+  "/sandbox",
+  "/checkout",
+  "/api",
+  "/4nation",
+  "/admin",
+  "/auth",
+  "/account",
+  "/saved",
+  "/id",
+  "/oauth",
+];
 const robotsGroup = (agent) => [
   "User-agent: " + agent,
   "Allow: /",
