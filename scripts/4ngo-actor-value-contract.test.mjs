@@ -173,10 +173,29 @@ async function loadFixture(source) {
   return import(`data:text/javascript;base64,${Buffer.from(output).toString("base64")}`);
 }
 
+function withCanonicalAuthorityFixture(source) {
+  return source
+    .replace(
+      "sourceRecords: [] as readonly ActorAuthoritativeSourceRecord[],",
+      `sourceRecords: [
+        { id: "source:independent:1", authority: "INDEPENDENT", reviewedAt: "2026-10-13T00:00:00Z", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
+        { id: "provider:delivery:1", authority: "FIRST_PARTY", reviewedAt: "2026-10-13T00:00:00Z", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
+      ] as readonly ActorAuthoritativeSourceRecord[],`,
+    )
+    .replace(
+      "evidenceRecords: [] as readonly ActorAuthoritativeEvidenceRecord[],",
+      `evidenceRecords: [
+        { id: "evidence:impact:1", sourceRef: "source:independent:1", reviewedAt: "2026-10-13T00:00:00Z", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
+        { id: "evidence:delivery:1", sourceRef: "provider:delivery:1", reviewedAt: "2026-10-13T00:00:00Z", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
+      ] as readonly ActorAuthoritativeEvidenceRecord[],`,
+    );
+}
+
 async function claimRuntimeFailures(source) {
   const structural = claimStructureFailures(source);
   if (structural.length) return structural;
-  const module = await loadFixture(source);
+  const module = await loadFixture(withCanonicalAuthorityFixture(source));
+  const unanchoredModule = await loadFixture(source);
   const gate = module.actorClaimCanPublish;
   if (typeof gate !== "function") return ["actorClaimCanPublish is not executable"];
   const sourceRecords = [
@@ -264,6 +283,23 @@ async function claimRuntimeFailures(source) {
       },
       false,
     ],
+    [
+      "invalid source review date passed",
+      baseImpact,
+      false,
+      sourceRecords.map((record) => record.id === "source:independent:1"
+        ? { ...record, reviewedAt: "2026-02-30T00:00:00Z" }
+        : record),
+    ],
+    [
+      "invalid evidence review date passed",
+      baseImpact,
+      false,
+      sourceRecords,
+      evidenceRecords.map((record) => record.id === "evidence:impact:1"
+        ? { ...record, reviewedAt: "not-a-date" }
+        : record),
+    ],
     ["reviewed independent impact claim did not pass", baseImpact, true],
     [
       "supported sourced delivery claim did not pass",
@@ -278,9 +314,13 @@ async function claimRuntimeFailures(source) {
       true,
     ],
   ];
-  return cases.flatMap(([message, claim, expected]) =>
-    gate(claim, sourceRecords, evidenceRecords) === expected ? [] : [message],
+  const failures = cases.flatMap(([message, claim, expected, sources = sourceRecords, evidence = evidenceRecords]) =>
+    gate(claim, sources, evidence) === expected ? [] : [message],
   );
+  if (unanchoredModule.actorClaimCanPublish(baseImpact, sourceRecords, evidenceRecords)) {
+    failures.push("caller-local records conferred publication authority without a canonical anchor");
+  }
+  return failures;
 }
 
 const conformingFixture = `
@@ -374,7 +414,7 @@ test("a genuinely conforming typed fixture satisfies structure and fail-closed b
   assert.deepEqual(pathFailures(conformingFixture), []);
   assert.deepEqual(evidenceFailures(conformingFixture), []);
   assert.deepEqual(actionLinkFailures(conformingFixture), []);
-  assert.deepEqual(await claimRuntimeFailures(conformingFixture), []);
+  assert.deepEqual(await claimRuntimeFailures(actor), []);
 });
 
 test("claim boundary fields must be collections rather than scalar aliases", () => {
@@ -405,8 +445,9 @@ test("self-attested, blank-source, unreviewed and evidence-free impact claims fa
 });
 
 test("asserted independent review cannot replace authoritative source and evidence records", async () => {
-  assert.deepEqual(claimStructureFailures(conformingFixture), []);
-  const { actorClaimCanPublish } = await loadFixture(conformingFixture);
+  assert.deepEqual(claimStructureFailures(actor), []);
+  const unanchored = await loadFixture(actor);
+  const anchored = await loadFixture(withCanonicalAuthorityFixture(actor));
   const sources = [
     { id: "source:independent:1", authority: "INDEPENDENT", reviewedAt: "2026-10-13T00:00:00Z" },
     { id: "provider:self-claim", authority: "SELF_ATTESTED", reviewedAt: null },
@@ -430,11 +471,19 @@ test("asserted independent review cannot replace authoritative source and eviden
     evidenceRefs: ["provider:self-evidence"],
   };
 
-  assert.equal(actorClaimCanPublish(reviewedImpact, sources, evidence), true);
-  assert.equal(actorClaimCanPublish(forgedImpact, sources, evidence), false);
-  assert.equal(actorClaimCanPublish(
+  assert.equal(unanchored.actorClaimCanPublish(reviewedImpact, sources, evidence), false);
+  assert.equal(anchored.actorClaimCanPublish(reviewedImpact, sources, evidence), true);
+  assert.equal(anchored.actorClaimCanPublish(forgedImpact, sources, evidence), false);
+  assert.equal(anchored.actorClaimCanPublish(
     { ...reviewedImpact, sourceRefs: ["source:missing"], evidenceRefs: ["evidence:missing"] },
     sources,
+    evidence,
+  ), false);
+  assert.equal(anchored.actorClaimCanPublish(
+    reviewedImpact,
+    sources.map((record) => record.id === "source:independent:1"
+      ? { ...record, reviewedAt: "2026-02-30T00:00:00Z" }
+      : record),
     evidence,
   ), false);
 });

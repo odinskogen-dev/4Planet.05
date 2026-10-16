@@ -1134,4 +1134,34 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **BASE / ROLLBACK:** `king/test@ad7ab7bc49e7c050a4d158affe9efd02de65a90e`; revert the bounded adapter/test/brief commit if independent Gold finds a legitimate reviewed edge is wrongly suppressed.
 **MAKER ≠ JUDGE:** Factory implements the returned gate; independent science/product Gold judges the exact SHA. Founder release remains separate.
 
+## 16 OCTOBER 2026 — 4NGO ACTOR PUBLICATION AUTHORITY CORRECTION
+
+**STATUS:** RETURNED QA_CORRECT IMPLEMENTED ON THE SOLE ACTOR HEIR / INDEPENDENT GOLD REQUIRED / RELEASE HOLD / NOT LIVE.
+
+**USER ARRIVES BECAUSE:** a person needs to distinguish a source-backed Actor statement from a locally asserted delivery, outcome or impact claim.
+
+**ONE THING TO UNDERSTAND:** profile-local source ids, authority labels and review dates do not create publication authority.
+
+**PRIMARY ACTION:** show a material claim only after its projected source and evidence records match the closed canonical publication-authority register exactly.
+
+**SECONDARY DEPTH:** inspect claim distance, source authority, evidence linkage, review chronology and limitations.
+
+**P1 / P2 / P3 / P4:** admitted claim / distance and authority / source inspection / limitations and correction path.
+
+**WHAT CAN BE REMOVED:** caller-local records as a substitute for canonical source/evidence approval, malformed review dates, future review dates and duplicate reference ids.
+
+**WHAT MUST BE REUSED:** existing `ActorGoldProfile`, `actorClaimCanPublish`, Actor Master projection, ACTOR-FP-01, issue #152 and sole PR #131 `king/test` HEIR.
+
+**TRUTH BOUNDARY:** the current ORCA development profile has no cleared public delivery, outcome or impact claims; the closed register therefore remains empty. This correction proves fail-closed source behavior, not Actor Gold, deployment, partnership, delivery, outcome or ecological impact.
+
+**MOBILE-FIRST RISK:** none introduced; the correction changes claim admission before the existing responsive renderer.
+
+**HUMAN SUCCESS:** forged local records and invalid dates cannot make a claim visible, while future canonically approved records have an explicit exact-match path.
+
+**DONOR DECISION:** no donor or new actor store; correct the existing shared gate in place.
+
+**BASE / ROLLBACK:** `king/test@69f333af1632be06296a7dfbd1ce588c90e52f15`; revert the bounded source/test/brief commit if independent Gold finds a legitimate canonical claim is wrongly suppressed.
+
+**MAKER ≠ JUDGE:** Factory returns the exact SHA to independent Gold. Founder-authorised release remains separate.
+
 ---

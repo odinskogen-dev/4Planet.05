@@ -67,6 +67,65 @@ export interface ActorEvidenceRecord {
   reviewedAt: string | null;
 }
 
+interface ActorAuthoritativeSourceRecord extends ActorSourceRecord {
+  reviewState: "APPROVED";
+  approvedAt: string;
+}
+
+interface ActorAuthoritativeEvidenceRecord extends ActorEvidenceRecord {
+  reviewState: "APPROVED";
+  approvedAt: string;
+}
+
+/**
+ * Publication authority is deliberately separate from the Actor profile projection.
+ * A profile cannot make its own records authoritative by copying an id, authority label
+ * or review date. Entries may be added here only from the canonical source/evidence
+ * review path. The current ORCA development profile has no cleared public claims, so the
+ * closed register is intentionally empty.
+ */
+const ACTOR_PUBLICATION_AUTHORITY = Object.freeze({
+  sourceRecords: [] as readonly ActorAuthoritativeSourceRecord[],
+  evidenceRecords: [] as readonly ActorAuthoritativeEvidenceRecord[],
+});
+
+const ACTOR_REVIEW_DATE_PATTERN =
+  /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(?:Z|[+-](\d{2}):(\d{2})))?$/;
+
+function validActorReviewDate(value: string | null): number | null {
+  if (!value) return null;
+  const match = ACTOR_REVIEW_DATE_PATTERN.exec(value);
+  if (!match) return null;
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, offsetHourText, offsetMinuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = hourText === undefined ? 0 : Number(hourText);
+  const minute = minuteText === undefined ? 0 : Number(minuteText);
+  const second = secondText === undefined ? 0 : Number(secondText);
+  const offsetHour = offsetHourText === undefined ? 0 : Number(offsetHourText);
+  const offsetMinute = offsetMinuteText === undefined ? 0 : Number(offsetMinuteText);
+  const daysInMonth = month >= 1 && month <= 12
+    ? new Date(Date.UTC(year, month, 0)).getUTCDate()
+    : 0;
+  const parsed = Date.parse(value);
+
+  if (
+    day < 1 ||
+    day > daysInMonth ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59 ||
+    offsetHour > 23 ||
+    offsetMinute > 59 ||
+    !Number.isFinite(parsed) ||
+    parsed > Date.now()
+  ) return null;
+
+  return parsed;
+}
+
 export interface ActorClaimBoundary {
   claim: string;
   distance: "DELIVERY" | "OUTCOME" | "IMPACT";
@@ -130,22 +189,68 @@ export function actorClaimCanPublish(
 ): boolean {
   const nonBlank = (values: string[]) =>
     Array.isArray(values) && values.length > 0 && values.every((value) => value.trim().length > 0);
+  const unique = (values: string[]) => new Set(values).size === values.length;
 
   if (claim.state !== "SUPPORTED" || claim.reviewState !== "REVIEWED") return false;
-  if (!claim.claim.trim() || !nonBlank(claim.sourceRefs) || !nonBlank(claim.evidenceRefs)) return false;
+  if (
+    !claim.claim.trim() ||
+    !nonBlank(claim.sourceRefs) ||
+    !nonBlank(claim.evidenceRefs) ||
+    !unique(claim.sourceRefs) ||
+    !unique(claim.evidenceRefs)
+  ) return false;
   if (!["DELIVERY", "OUTCOME", "IMPACT"].includes(claim.distance)) return false;
 
   const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
-  if (sources.some((record) => !record?.reviewedAt)) return false;
-  if (sources.some((record) => record?.authority !== claim.sourceAuthority)) return false;
+  const authoritativeSources = claim.sourceRefs.map((id) =>
+    ACTOR_PUBLICATION_AUTHORITY.sourceRecords.find((record) => record.id === id),
+  );
+  if (
+    sources.some((record, index) => {
+      const authoritative = authoritativeSources[index];
+      const reviewedAt = validActorReviewDate(record?.reviewedAt ?? null);
+      const authoritativeReviewedAt = validActorReviewDate(authoritative?.reviewedAt ?? null);
+      const approvedAt = validActorReviewDate(authoritative?.approvedAt ?? null);
+      return (
+        !record ||
+        !authoritative ||
+        authoritative.reviewState !== "APPROVED" ||
+        record.authority !== claim.sourceAuthority ||
+        record.authority !== authoritative.authority ||
+        record.reviewedAt !== authoritative.reviewedAt ||
+        reviewedAt === null ||
+        authoritativeReviewedAt === null ||
+        approvedAt === null ||
+        authoritativeReviewedAt > approvedAt
+      );
+    })
+  ) return false;
 
   const evidence = claim.evidenceRefs.map((id) =>
     evidenceRecords.find((record) => record.id === id),
   );
+  const authoritativeEvidence = claim.evidenceRefs.map((id) =>
+    ACTOR_PUBLICATION_AUTHORITY.evidenceRecords.find((record) => record.id === id),
+  );
   if (
-    evidence.some(
-      (record) => !record?.reviewedAt || !claim.sourceRefs.includes(record.sourceRef),
-    )
+    evidence.some((record, index) => {
+      const authoritative = authoritativeEvidence[index];
+      const reviewedAt = validActorReviewDate(record?.reviewedAt ?? null);
+      const authoritativeReviewedAt = validActorReviewDate(authoritative?.reviewedAt ?? null);
+      const approvedAt = validActorReviewDate(authoritative?.approvedAt ?? null);
+      return (
+        !record ||
+        !authoritative ||
+        authoritative.reviewState !== "APPROVED" ||
+        !claim.sourceRefs.includes(record.sourceRef) ||
+        record.sourceRef !== authoritative.sourceRef ||
+        record.reviewedAt !== authoritative.reviewedAt ||
+        reviewedAt === null ||
+        authoritativeReviewedAt === null ||
+        approvedAt === null ||
+        authoritativeReviewedAt > approvedAt
+      );
+    })
   ) {
     return false;
   }
