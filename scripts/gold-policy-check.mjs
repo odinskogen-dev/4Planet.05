@@ -254,17 +254,18 @@ if (mode === "pr-main") {
     && manifest.founderDecisionRef?.includes("Founder 2026-10-16")
     && manifest.evidenceRef?.includes("38830867639")
     && JSON.stringify((manifest.hotfixPaths || []).slice().sort()) === JSON.stringify([
-      "src/analytics/Analytics.tsx", "src/identity/identityClient.ts"
+      "package-lock.json", "src/analytics/Analytics.tsx", "src/identity/identityClient.ts"
     ].sort())
     && JSON.stringify(files.filter(isProductFacing).sort()) === JSON.stringify([
-      "src/analytics/Analytics.tsx", "src/identity/identityClient.ts"
+      "package-lock.json", "src/analytics/Analytics.tsx", "src/identity/identityClient.ts"
     ].sort())
     && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
     && files.includes("scripts/analytics-privacy-contract.test.mjs")
     && files.includes("scripts/identity-oauth-contract.test.mjs")
     && files.includes(".github/workflows/discovery-main-live.yml")
+    && git(["hash-object", "package-lock.json"]) === "9d01fbb165fe0ebc6b0e13fa6504e5b1db7673c5"
     && git(["hash-object", "src/analytics/Analytics.tsx"]) === "2df3a22e2f0516e7efe94b2efa9e7fbab339b3b3"
-    && git(["hash-object", "src/identity/identityClient.ts"]) === "436e4d04a6d572b40d855f05dd04bcc690294824";
+    && git(["hash-object", "src/identity/identityClient.ts"]) === "c640ffed7325ba9ef1ebbe4cc08027c83ab37f6d";
   if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix && !p0PrivacyHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }

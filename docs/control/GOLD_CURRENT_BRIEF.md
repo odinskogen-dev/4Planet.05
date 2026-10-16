@@ -1018,3 +1018,5 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **Truth state:** SOURCE PATCH + TESTS COMPLETE ON CANDIDATE. GOLD gate currently rejects direct main promotions from non-HEIR branches. Until existing release policy, source provenance and rollback gates are satisfied, LIVE IS NOT VERIFIED. No claim of completed production remediation.
 
 **Human success:** A user logs in normally, can return to ATLAS context, and none of their OAuth, email or session values appear in Analytics traffic or login URLs.
+
+**16 October P0 remediation addendum:** CI uncovered an actual ESLint unreachable-return defect in the new return URL sanitizer (removed), and one HIGH advisory in source-map-js 1.2.1. The bounded lockfile now pins source-map-js 1.2.2 with npm registry integrity. Both fixes are subject to full CI/audit before LIVE promotion. React Router moderate advisories remain separately assessed; no unsafe major-version upgrade under this auth hotfix.

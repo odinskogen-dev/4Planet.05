@@ -183,7 +183,6 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
   } catch {
     return fallback;
   }
-  return fallback;
 }
 
 export function identityLoginUrl(returnTo?: string) {
