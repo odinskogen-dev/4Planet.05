@@ -113,6 +113,12 @@ export function isAnalyticsHostAllowed(hostname: string): boolean {
   return configuredDomains().includes(host);
 }
 
+function isSensitiveAnalyticsNavigation(): boolean {
+  const { pathname, search, hash } = window.location;
+  if (/^\/(?:auth\/(?:4planet\/)?callback|oauth\/(?:callback|consent))\/?$/i.test(pathname)) return true;
+  return /(?:^|[?#&])(?:access_token|refresh_token|id_token|token_hash|authorization_code|authorization_id|code|state|client_secret|session_token)=/i.test(search + hash);
+}
+
 function readConsent(): ConsentState {
   const value = window.localStorage.getItem(ANALYTICS_STORAGE_KEY);
   return value === "granted" || value === "denied" ? value : null;
@@ -183,6 +189,9 @@ function installGoogleTag(id: string, domains: string[]) {
   window.gtag?.("js", new Date());
   window.gtag?.("config", id, {
     send_page_view: false,
+    // GA automatic collection must never ingest hash/query OAuth credentials.
+    page_location: `${window.location.origin}${window.location.pathname}`,
+    page_path: window.location.pathname,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
   });
@@ -194,11 +203,28 @@ function installGoogleTag(id: string, domains: string[]) {
   document.head.appendChild(script);
 }
 
+export function privacySafeEventParameters(parameters: Record<string, string | number | boolean>) {
+  const safe: Record<string, string | number | boolean> = {};
+  const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
+  for (const [key, value] of Object.entries(parameters)) {
+    const flatKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (blockedKeys.test(key) || /(?:accesstoken|refreshtoken|idtoken|tokenhash|authorizationcode|authorizationid|clientsecret|emailaddress|phonenumber|password|apikey|sessiontoken|jwt|onetimesecret)/.test(flatKey)) continue;
+    if (typeof value === "string") {
+      if (value.length > 240
+        || /\b[^\s@]+@[^\s@]+\.[a-z]{2,}\b/i.test(value)
+        || /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/.test(value)
+        || /(?:access_token|refresh_token|token_hash|authorization_code|client_secret)=/i.test(value)) continue;
+    }
+    safe[key] = value;
+  }
+  return safe;
+}
+
 export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname)) return;
+  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname) || isSensitiveAnalyticsNavigation()) return;
 
   const shared = {
-    ...parameters,
+    ...privacySafeEventParameters(parameters),
     site_host: canonicalHost(window.location.hostname),
   };
 
@@ -224,7 +250,7 @@ export function Analytics() {
   }, [allowedHost, consent, id]);
 
   useEffect(() => {
-    if (!allowedHost || !id || consent !== "granted") return;
+    if (!allowedHost || !id || consent !== "granted" || isSensitiveAnalyticsNavigation()) return;
     installGoogleTag(id, configuredDomains());
 
     // Deliberately exclude query strings and fragments from analytics. OAuth
@@ -246,7 +272,7 @@ export function Analytics() {
     trackDiscoveryEntryOnce(location.pathname);
   }, [allowedHost, consent, id, location.pathname]);
 
-  if (!allowedHost || !id || consent !== null) return null;
+  if (!allowedHost || !id || consent !== null || isSensitiveAnalyticsNavigation()) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);
