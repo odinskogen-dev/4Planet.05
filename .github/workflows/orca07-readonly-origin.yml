@@ -66,3 +66,55 @@ jobs:
           echo "$deps" | jq -c '[.result[] | {id,environment,branch:.deployment_trigger.metadata.branch,sha:.deployment_trigger.metadata.commit_hash,stage:.latest_stage,stages:.stages}]'
           curl -fsSL --max-time 10 https://95dcfae7.4planet-05.pages.dev/ -o /tmp/empty-preview.txt || true
           grep -i -E '<title>|404|project not found|pages' /tmp/empty-preview.txt | head -n 12 | cut -c1-180 || true
+
+      - name: Verify completed preview exact source and security
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://95dcfae7.4planet-05.pages.dev/games/wild-orca/"
+          curl -fsSL --max-time 50 "$url" -o /tmp/orca07-preview.html
+          actual=$(sha256sum /tmp/orca07-preview.html | cut -d' ' -f1)
+          expected="9b255c6f7b92000b77b567eef026e9dbd0eb26197a40ba4f3a5549e98a5093f4"
+          echo "PREVIEW_SHA=$actual"
+          [[ "$actual" == "$expected" ]]
+          grep -Fq 'WILD: ORCA 07' /tmp/orca07-preview.html
+          grep -Fq 'NATURE BANK' /tmp/orca07-preview.html
+          grep -Fq 'charset="utf-8"' /tmp/orca07-preview.html
+          grep -Fq 'viewport-fit=cover' /tmp/orca07-preview.html
+          headers=$(curl -fsSI --max-time 35 "$url")
+          grep -Fq "'sha256-NyoyCXWy2bG6xHRpw8YjWQuO4EOg3wZXkl/tRbaGLrM='" <<<"$headers"
+          grep -Fq "'sha256-cXHmk9tgdh+3sliCzY58Ny1KuJMbYMLt8Dd8LlWl57A='" <<<"$headers"
+          grep -Fq "media-src 'self' data: blob:" <<<"$headers"
+          curl -fsSL --max-time 25 https://95dcfae7.4planet-05.pages.dev/games/ -o /tmp/games-preview.html
+          grep -Fq 'src="/games/wild-orca/"' /tmp/games-preview.html
+          echo 'PREVIEW_SHA_CSP_GAME_HUB_PASS'
+      - name: Mobile Chromium smoke check (iPhone-sized viewport)
+        shell: bash
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install chromium >/dev/null
+          cat > /tmp/orca_mobile_smoke.py <<'PY'
+          from playwright.sync_api import sync_playwright
+          url='https://95dcfae7.4planet-05.pages.dev/games/wild-orca/'
+          with sync_playwright() as p:
+              browser=p.chromium.launch(headless=True,args=['--enable-webgl','--use-gl=angle','--use-angle=swiftshader'])
+              context=browser.new_context(viewport={'width':390,'height':844},device_scale_factor=3,is_mobile=True,has_touch=True)
+              page=context.new_page()
+              errors=[]
+              page.on('pageerror',lambda err:errors.append(str(err)))
+              page.on('console',lambda msg:errors.append('console: '+msg.text) if msg.type=='error' else None)
+              res=page.goto(url,wait_until='domcontentloaded',timeout=45000)
+              page.wait_for_timeout(10000)
+              print('BROWSER_HTTP',res.status)
+              body=page.locator('body').inner_text(timeout=15000)
+              print('BODY_OPENING',repr(body[:1250]))
+              print('PAGE_ERRORS',errors[:15])
+              page.screenshot(path='/tmp/orca07-mobile.png',full_page=False,timeout=15000)
+              assert res.status==200
+              assert 'WILD: ORCA' in body
+              assert 'NATURE BANK' in body
+              assert not any('Content Security Policy' in x or 'Refused to execute inline script' in x for x in errors)
+              print('MOBILE_SMOKE_PASS')
+              browser.close()
+          PY
+          python /tmp/orca_mobile_smoke.py
