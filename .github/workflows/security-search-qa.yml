@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'src/identity/identityClient.ts'
+      - 'src/analytics/Analytics.tsx'
+      - 'scripts/analytics-privacy-contract.test.mjs'
       - 'scripts/identity-oauth-contract.test.mjs'
       - 'ops/discovery/4species-router.js'
       - 'scripts/species-sitemap-safety.test.mjs'
@@ -29,6 +31,8 @@ jobs:
         run: node --test scripts/identity-oauth-contract.test.mjs
       - name: Verify reviewed-only SPECIES sitemap and robots route
         run: node --test scripts/species-sitemap-safety.test.mjs
+      - name: Reject sensitive Analytics parameters before both telemetry sinks
+        run: node --test scripts/analytics-privacy-contract.test.mjs
       - name: Verify types
         run: npm run typecheck
       - name: Observe actual public robots, sitemaps and landing pages without writing
