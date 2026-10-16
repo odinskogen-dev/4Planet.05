@@ -61,8 +61,12 @@ test("return_to never forwards OAuth secrets or contact details to the identity 
   // Evaluate this bounded helper only, with a known, fixed site origin.
   const safeReturnTo = new Function(
     "window",
+    "TRUSTED_RETURN_ORIGINS",
     'return function safeReturnTo(value, fallback = "https://4planet.org/") {' + match[1] + '}',
-  )({ location: { origin: "https://4planet.org" } });
+  )(
+    { location: { origin: "https://4planet.org" } },
+    new Set(["https://4planet.org", "https://4planetatlas.com"]),
+  );
   assert.equal(
     safeReturnTo("https://4planetatlas.com/atlas?m=OCE4N&l=whales&z=3.1#access_token=private"),
     "https://4planetatlas.com/atlas?m=OCE4N&l=whales&z=3.1",
