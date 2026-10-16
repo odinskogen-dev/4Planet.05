@@ -908,3 +908,56 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 **BASE / ROLLBACK:** `king/test@c9477d090e11cf4e3d440b59f1ec750f62c91139`; revert this bounded correction commit if independent Gold finds a valid regression.
 
 **MAKER ≠ JUDGE:** Factory implements the returned correction; independent Gold judges the exact resulting HEIR SHA. Founder release remains separate.
+
+## 16 OCTOBER 2026 — 4SPECIES SAFE PUBLIC DISCOVERY HOTFIX
+
+**Founder instruction:** Fix the broken public SPECIES sitemap and improve real search discoverability, without publishing draft species or changing released species visuals or game assets.
+
+**Source of authority:** Existing king/test sole HEIR and Worker ops/discovery/4species-router.js. No new project, competing BRAIN, feature changes, alternate production ownership, or bypass of release authority.
+
+**Verified failure:** Direct public HTTP audit found https://4species.com/sitemap.xml returned HTTP 404 and https://4species.com/robots.txt did not advertise a sitemap. These behaviors match the active Worker route before the patch.
+
+**Bounded implementation:** Route canonical /sitemap.xml to the existing review-gated sitemap proxy; retain fail-closed profile review; normalize legacy /species/ aliases and preview-domain entries to https://4species.com/{slug}; advertise sitemap in robots.txt. DRAFT and unavailable profiles are still excluded.
+
+**Rollout and rollback:** The exact source must be rebased onto king/test, pass unit, browser, upstream and all product authority checks, then pass the existing immutable Cloudflare Pages preview / Worker-version rollback contract. Do not silently change or bypass manual-only deployment enforcement.
+
+**Evidence needed:** HTTP 200 application/xml for /sitemap.xml on 4species.com, canonical URL list, no DRAFT species, and valid original product UX. An indexed status or live deployment is UNKNOWN until independently verified.
+
+## USER ARRIVES BECAUSE
+A person searches for a living species, receives a reliable species page and can interact with the existing product.
+
+## ONE THING TO UNDERSTAND
+Only approved source-backed species pages belong in public search and sitemap.
+
+## PRIMARY ACTION
+Open a factually reviewed 4SPECIES profile.
+
+## SECONDARY DEPTH
+Explore scientific sources and connected ATLAS mapping, without losing species context.
+
+## P1 DOMINANT
+Verified species content; no misleading index entries.
+
+## P2 ORIENTATION
+One canonical species URL per reviewed profile.
+
+## P3 ACTION / NEXT
+Continue to species knowledge, ATLAS, related species and real ecological context.
+
+## P4 DEPTH
+Sources, provenance and date limitations.
+
+## WHAT CAN BE REMOVED
+Dead 404 sitemap branch, preview URLs in sitemap.
+
+## WHAT MUST BE REUSED
+Current v53 species Worker, existing profileReviewState and permitsSpeciesIndexing, existing registry.
+
+## TRUTH BOUNDARY
+Search-engine crawlability does not prove actual Google indexation, traffic or human users.
+
+## MOBILE-FIRST RISK
+Preserve the existing responsive v53 UI and all media.
+
+## HUMAN SUCCESS
+Verified live public sitemap, preserved working animal cards, and discoverable reviewed species.
