@@ -97,6 +97,12 @@ const independentVerification = {
   limitations: [],
 };
 
+const authoritativeIndependentVerification = {
+  ...independentVerification,
+  authority: "INDEPENDENT_EVIDENCE_REGISTER",
+  reviewedAt: "2026-09-08T00:00:00Z",
+};
+
 test("TEST/FIXTURE state is pinned to D0 and Passport LITE", () => {
   const passport = proof.createProofPassport(passportInput());
   assert.equal(passport.claimDistance, "D0");
@@ -243,6 +249,7 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
     environment: "PRODUCTION",
     ...base,
     evidenceItems: [providerEvidence, independentVerification],
+    authoritativeEvidenceItems: [authoritativeIndependentVerification],
     uniqueClaimOrAllocationId: "claim:unique:1",
     doubleCountState: "INDEPENDENTLY_CHECKED",
     lastVerifiedAt: "2026-09-08T00:00:00Z",
@@ -250,8 +257,12 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
   assert.equal(passport.claimDistance, "D4");
   assert.equal(passport.depth, "VERIFIED");
   assert.match(passport.impactClaim, /verified bounded impact/i);
-  assert.equal(proof.proofPassportCanClaimImpact(passport, base), true);
-  assert.deepEqual(proof.validateProofPassport(passport), []);
+  const canonicalRecords = {
+    ...base,
+    authoritativeEvidenceItems: [authoritativeIndependentVerification],
+  };
+  assert.equal(proof.proofPassportCanClaimImpact(passport, canonicalRecords), true);
+  assert.deepEqual(proof.validateProofPassport(passport, canonicalRecords.authoritativeEvidenceItems), []);
 
   const unsafeVariants = [
     ["missing verification timestamp", { evidenceItems: [{ ...independentVerification, capturedAt: null }] }],
@@ -268,15 +279,15 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
 
   for (const [label, changes] of unsafeVariants) {
     const unsafe = { ...passport, ...changes };
-    assert.equal(proof.proofPassportCanClaimImpact(unsafe, base), false, label);
-    assert.ok(proof.validateProofPassport(unsafe).length > 0, label);
+    assert.equal(proof.proofPassportCanClaimImpact(unsafe, canonicalRecords), false, label);
+    assert.ok(proof.validateProofPassport(unsafe, canonicalRecords.authoritativeEvidenceItems).length > 0, label);
   }
 
   const callerForged = {
     ...passport,
     doubleCountState: "UNIQUE_CLAIM_ID",
   };
-  assert.equal(proof.proofPassportCanClaimImpact(callerForged, base), false, "caller flags cannot bypass independent double-count control");
+  assert.equal(proof.proofPassportCanClaimImpact(callerForged, canonicalRecords), false, "caller flags cannot bypass independent double-count control");
   assert.equal(proof.proofPassportCanClaimImpact(passport), false, "caller flags without canonical source records cannot claim impact");
   assert.equal(proof.proofPassportCanClaimImpact(passport, {
     ...base,
@@ -286,15 +297,34 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
   assert.equal(proof.proofPassportCanClaimImpact({
     ...passport,
     impactClaim: "A different impact claim.",
-  }, base), false, "displayed impact claim must match the canonical impact record");
+  }, canonicalRecords), false, "displayed impact claim must match the canonical impact record");
   assert.equal(proof.proofPassportCanClaimImpact({
     ...passport,
     quantity: passport.quantity + 1,
-  }, base), false, "displayed quantity must match the canonical contribution record");
+  }, canonicalRecords), false, "displayed quantity must match the canonical contribution record");
   assert.equal(proof.proofPassportCanClaimImpact({
     ...passport,
     evidenceItems: [{ ...independentVerification, sourceRef: "" }],
-  }, base), false, "independent verification requires a source reference");
+  }, canonicalRecords), false, "independent verification requires a source reference");
+
+  const provenanceFailures = [
+    ["missing authoritative evidence register", { ...base }],
+    ["unregistered evidence ID", {
+      ...base,
+      authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, id: "evidence:verification:other" }],
+    }],
+    ["replaced authoritative source", {
+      ...base,
+      authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, sourceRef: "source:independent:other" }],
+    }],
+    ["unreviewed authoritative evidence", {
+      ...base,
+      authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, reviewedAt: "not-a-date" }],
+    }],
+  ];
+  for (const [label, recordsWithProvenanceGap] of provenanceFailures) {
+    assert.equal(proof.proofPassportCanClaimImpact(passport, recordsWithProvenanceGap), false, label);
+  }
 });
 
 test("VVL maturity is sequential and cannot skip missing earlier value gates", () => {

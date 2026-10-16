@@ -1,3 +1,24 @@
+# IMPACT / IMP-01 — AUTHORITATIVE VERIFIER PROVENANCE — 16 OCT 2026
+
+**STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs an impact claim to depend on independently registered evidence, not a passport that merely supplies a plausible verifier ID and source string.
+**ONE THING TO UNDERSTAND:** passport evidence is a projection; only an exact, reviewed match in the authoritative evidence register may confer independent-verification status.
+**PRIMARY ACTION:** inspect a bounded impact passport whose verification source, claim identity and chronology resolve to the canonical evidence record.
+**SECONDARY DEPTH:** distinguish missing, replaced, unregistered or unreviewed verifier records from a valid D4 path.
+**P1 DOMINANT:** the existing contribution → delivery → outcome → impact proof chain.
+**P2 ORIENTATION:** the authoritative verifier record and its reviewed timestamp.
+**P3 ACTION:** continue only when the passport evidence ID, source, action, provider, impact and capture time exactly match the registered record.
+**P4 DEPTH:** existing double-count, claim-distance, environment and limitation boundaries.
+**WHAT CAN BE REMOVED:** eligibility based on a passport's self-declared non-empty verifier `sourceRef`.
+**WHAT MUST BE REUSED:** IMP-01, issue #151, the existing proof-passport contract, truth-spine records, PR #131 and the sole `king/test` HEIR.
+**TRUTH BOUNDARY:** an exact authoritative evidence match makes a passport eligible for independent Gold evaluation only; it does not prove provider selection, payment, resource flow, delivery, outcome, impact, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** none introduced; this correction changes the proof contract only. Product/browser review remains a separate release gate.
+**HUMAN SUCCESS:** missing registries, unknown evidence IDs, replaced source references and invalid review timestamps all fail closed, while one exact reviewed canonical record preserves the valid D4 path.
+**BASE / ROLLBACK:** `king/test@8a1be5badf151925af8bd681aa8356639c630a2b`; revert the bounded source/test/brief correction if independent Gold finds a canonical evidence, typing or proof-chain regression.
+**MAKER ≠ JUDGE:** Factory closes the returned provenance defect; independent Gold judges the exact resulting SHA. Founder release remains separate.
+
+---
+
 # SPECIES / JAGUAR — HIDDEN CONTROL FOCUS SAFETY — 16 OCT 2026
 
 **STATUS:** RETURNED SPEC-GS-09 QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
