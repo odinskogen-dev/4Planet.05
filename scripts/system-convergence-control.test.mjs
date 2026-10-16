@@ -72,10 +72,20 @@ test('candidate world has exactly one HEIR and no newest-wins/third-king path', 
   assert.match(lineage, /sole moving|single.*moving|permanent TEST KING/i);
 });
 
-test('LIVE remains fail-closed and Founder-gated', () => {
-  assert.equal(liveManifest.status, 'NOT_AUTHORISED');
+test('LIVE remains fail-closed and Founder-gated, including an exact bounded P0 release', () => {
+  assert.ok(['NOT_AUTHORISED', 'FOUNDER_ACCEPTED'].includes(liveManifest.status));
   assert.equal(liveManifest.sourceBranch, 'king/test');
-  assert.equal(liveManifest.founderDecisionRef, null);
+  if (liveManifest.status === 'FOUNDER_ACCEPTED') {
+    assert.equal(liveManifest.boundedRelease, true);
+    assert.match(liveManifest.testKingSha || '', /^[a-f0-9]{40}$/i);
+    assert.match(liveManifest.priorLiveSha || '', /^[a-f0-9]{40}$/i);
+    assert.match(liveManifest.founderDecisionRef || '', /Founder 20[0-9]{2}-[0-9]{2}-[0-9]{2}/);
+    assert.ok(liveManifest.evidenceRef && liveManifest.rollbackRef, 'accepted release needs proof and rollback');
+    assert.ok(Array.isArray(liveManifest.hotfixPaths) && liveManifest.hotfixPaths.length > 0,
+      'bounded release must list every eligible production product path');
+  } else {
+    assert.equal(liveManifest.founderDecisionRef, null);
+  }
   assert.equal(candidate.safety.no_live_or_main_development_by_this_register, true);
   assert.match(candidate.promotion_contract.live_promotion, /FOUNDER_AUTHORITY_REQUIRED/);
 });
