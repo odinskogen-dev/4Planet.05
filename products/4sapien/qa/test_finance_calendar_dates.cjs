@@ -6,7 +6,7 @@ const vm = require("node:vm");
 const sourcePath = process.argv[2] || path.join(__dirname, "..", "source", "4sapien-live-hardening.js");
 const source = fs.readFileSync(sourcePath, "utf8").replace(
   /\n\}\)\(\);\s*$/,
-  "\nwindow.__financeCalendarTest={nextOcc,addLocalCalendarDays};\n})();\n",
+  "\nwindow.__financeCalendarTest={nextOcc,occurrencesInWindow,addLocalCalendarDays};\n})();\n",
 );
 const context = {
   console,
@@ -27,7 +27,7 @@ context.window = context;
 vm.createContext(context);
 vm.runInContext(source, context, { filename: sourcePath });
 
-const { nextOcc, addLocalCalendarDays } = context.__financeCalendarTest;
+const { nextOcc, occurrencesInWindow, addLocalCalendarDays } = context.__financeCalendarTest;
 const event = (recurring, occurred_on) => ({ recurring, occurred_on });
 const key = (date) => date && [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
 
@@ -53,4 +53,34 @@ assert.ok(nextOcc(event("once", "2026-11-15"), start) <= end, "calendar day 30 i
 assert.ok(nextOcc(event("once", "2026-11-16"), start) > end, "calendar day 31 is excluded");
 assert.equal(nextOcc(event("once", "not-a-date"), start), null, "invalid calendar dates fail closed");
 
-console.log("PASS 4SAPIEN finance calendar: due-today, recurrence, leap/month-end, 30-day window");
+const febWindowStart = new Date(2027, 1, 28, 13);
+const febWindowEnd = addLocalCalendarDays(febWindowStart, 30);
+const monthlyBill = { ...event("monthly", "2024-01-28"), id: "owner-row-1", user_id: "owner-a", type: "bill", amount: 100 };
+const monthlyBillOccurrences = [...occurrencesInWindow(monthlyBill, febWindowStart, febWindowEnd)];
+assert.deepEqual(
+  monthlyBillOccurrences.map(key),
+  ["2027-02-28", "2027-03-28"],
+  "monthly recurrence counts every due occurrence in an inclusive 30-day window",
+);
+assert.equal(monthlyBillOccurrences.reduce((sum) => sum + Math.abs(monthlyBill.amount), 0), 200, "NOK 100 recurring twice contributes NOK 200");
+assert.deepEqual(monthlyBill, { recurring: "monthly", occurred_on: "2024-01-28", id: "owner-row-1", user_id: "owner-a", type: "bill", amount: 100 }, "enumeration never rewrites owner or source truth");
+assert.deepEqual(
+  [...occurrencesInWindow(event("monthly", "2024-01-31"), new Date(2026, 1, 28, 13), new Date(2026, 2, 31, 13))].map(key),
+  ["2026-02-28", "2026-03-31"],
+  "month-end recurrence preserves its anchor while enumerating",
+);
+assert.deepEqual(
+  [...occurrencesInWindow(event("yearly", "2024-02-29"), new Date(2027, 1, 28, 13), new Date(2028, 1, 29, 13))].map(key),
+  ["2027-02-28", "2028-02-29"],
+  "yearly recurrence enumerates clamped and leap-day occurrences",
+);
+assert.deepEqual(
+  [...occurrencesInWindow(event("once", "2026-11-15"), start, end)].map(key),
+  ["2026-11-15"],
+  "one-off appears exactly once inside the window",
+);
+assert.deepEqual([...occurrencesInWindow(event("once", "2026-11-16"), start, end)], [], "one-off outside the window is excluded");
+assert.deepEqual([...occurrencesInWindow(event("monthly", "not-a-date"), start, end)], [], "invalid recurrence fails closed");
+assert.deepEqual([...occurrencesInWindow(event("monthly", "2024-01-28"), end, start)], [], "invalid reversed window fails closed");
+
+console.log("PASS 4SAPIEN finance calendar: due-today, complete recurrence, leap/month-end, 30-day window");

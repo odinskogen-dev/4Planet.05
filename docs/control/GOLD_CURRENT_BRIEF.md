@@ -1,3 +1,24 @@
+# 4SAPIEN / LIFE-OS-01 — COMPLETE 30-DAY RECURRENCE — 16 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs the next-30-days total to include every known bill or spend occurrence due in that inclusive calendar window.
+**ONE THING TO UNDERSTAND:** a recurring event is a schedule, not a single future row; every bounded occurrence contributes to the forecast while the original private row remains unchanged.
+**PRIMARY ACTION:** inspect the known outgoing total and next dated income derived from registered finance events.
+**SECONDARY DEPTH:** distinguish monthly/yearly recurrence, one-off events, invalid dates and unknown event-fetch state.
+**P1 DOMINANT:** the existing Finance truth panel and registered event rows.
+**P2 ORIENTATION:** the inclusive local-calendar start and day-30 boundary.
+**P3 ACTION:** enumerate all bounded occurrences before summing known outgoings.
+**P4 DEPTH:** preserve month-end/leap anchors and existing actual-versus-forecast semantics.
+**WHAT CAN BE REMOVED:** the assumption that one call to `nextOcc` represents an entire 30-day recurring schedule.
+**WHAT MUST BE REUSED:** LIFE-OS-01, issue #317, PR #131, the existing finance-event owner-scoped API and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this corrects deterministic candidate arithmetic only; it does not prove event completeness, authenticated browser behaviour, deployment, LIVE state or measured user value.
+**MOBILE-FIRST RISK:** no layout or interaction change; independent authenticated mobile/browser review remains required.
+**HUMAN SUCCESS:** a NOK 100 monthly bill due on both 28 February and 28 March inside the inclusive window contributes NOK 200, while once/yearly/invalid and owner-source truth remain bounded.
+**BASE / ROLLBACK:** `king/test@103b27c64248146035c6231db9fcb830cabd21ae`; revert the bounded source/test/brief correction if independent Gold finds a recurrence, calendar or owner-isolation regression.
+**MAKER ≠ JUDGE:** Factory closes the returned recurrence undercount; independent Gold judges the exact resulting SHA. Founder release remains separate.
+
+---
+
 # IMPACT / IMP-01 — AUTHORITATIVE VERIFIER PROVENANCE — 16 OCT 2026
 
 **STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
