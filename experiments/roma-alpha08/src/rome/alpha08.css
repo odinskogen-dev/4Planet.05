@@ -1,0 +1,5 @@
+@import './alpha07.css';
+/* Standalone Cloudflare preview: prior game routes unaffected */
+.roma6-clean #labels .rts-regiment:not(.selected){opacity:0!important}
+.roma6-clean .top-hud,.roma6-clean .bottom-hud{background:transparent!important}
+.roma6-clean .wordmark{color:#f7e8cc!important}

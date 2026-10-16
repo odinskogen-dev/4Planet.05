@@ -1,0 +1,17 @@
+@import '../rts/style.css';
+.rts-app { font-family: 'Trebuchet MS', system-ui, sans-serif; background: #242921; color: #f3e8d7; }
+.rts-app .top-hud, .rts-app .bottom-hud {
+  background: linear-gradient(125deg,#252921eF,#352c25eB);
+  border-color: #c7a87e44;
+}
+.rts-app .dialog, .rts-app .sheet { background:linear-gradient(160deg,#34312af5,#1f2826fb);border-color:#d7b98a58; }
+.rts-app .wordmark { font-family: Georgia,serif;letter-spacing:.16em;color:#efdbb6;font-weight:700; }
+.rts-app .version-tag { color:#dfb68c; }
+.rts-app button.primary, .rts-app .primary { background:#a74733;color:#fff2dd; }
+.rts-app .camera-buttons button{background:#392f27da;color:#f1dcaf;}
+.rts-app .dialog h1{font:700 clamp(52px,11vw,86px)/.97 Georgia,serif;letter-spacing:-.07em;color:#ead0a4;}
+.republic-subtitle{font:500 13px/3 system-ui;letter-spacing:.36em;display:block;color:#c6a17a;}
+.rts-app .intro-line{color:#dfba85;letter-spacing:.09em;text-transform:uppercase;}
+.rts-app .mission { background:#292d24df; }
+.rts-app #world { touch-action:none; }
+@media(max-width:640px){.rts-app .camera-buttons{gap:3px}.rts-app .camera-buttons button{width:39px;height:39px;font-size:18px}.rts-app .mission{max-width:212px}}
