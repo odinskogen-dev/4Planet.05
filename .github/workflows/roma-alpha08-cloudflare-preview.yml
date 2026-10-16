@@ -1,0 +1,73 @@
+name: ROMA isolated Cloudflare test
+on:
+  push:
+    branches:
+      - roma-alpha08-cloudflare-preview-20261016
+    paths:
+      - 'experiments/roma-alpha08/**'
+      - '.github/workflows/roma-alpha08-cloudflare-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build isolated ROMA game
+        working-directory: experiments/roma-alpha08
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run build
+          test -s dist/roma-alpha08.html
+          test -s dist/rts/assets/oak.glb
+          test -s dist/rts/assets/rock.glb
+          echo 'ROMA_BUILD_OK'
+      - name: Deploy to separate Cloudflare Pages project ONLY
+        working-directory: experiments/roma-alpha08
+        shell: bash
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        run: |
+          set -euo pipefail
+          token=''
+          for t in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            if [ -n "$t" ]; then token="$t"; break; fi
+          done
+          [ -n "$token" ] || { echo 'CF_TOKEN_MISSING'; exit 3; }
+          token=$(printf '%s' "$token" | tr -d '\r\n')
+          token="${token#Bearer }"
+          token="${token#bearer }"
+          echo "::add-mask::$token"
+          export CLOUDFLARE_API_TOKEN="$token"
+          zone=$(curl -fsS --retry 3 --max-time 30 -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          [ -n "$account" ] || { echo 'CF_ACCOUNT_NOT_FOUND'; exit 4; }
+          export CLOUDFLARE_ACCOUNT_ID="$account"
+          project='roma-alpha08-preview-odin'
+          [ "$project" != '4planet-05' ] || exit 5
+          existing=$(curl -sS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects/$project" || true)
+          if ! jq -e '.success == true and .result.name == "roma-alpha08-preview-odin"' <<<"$existing" >/dev/null 2>&1; then
+            result=$(curl -fsS -X POST "https://api.cloudflare.com/client/v4/accounts/$account/pages/projects" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' --data '{"name":"roma-alpha08-preview-odin","production_branch":"main"}')
+            jq -e '.success == true' <<<"$result"
+          fi
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$project" --branch main --commit-hash "$GITHUB_SHA"
+          for i in $(seq 1 15); do
+            if curl -fsS --max-time 15 'https://roma-alpha08-preview-odin.pages.dev/roma-alpha08.html' | grep -Fq 'ROMA'; then
+              echo 'ROMA_CLOUDFLARE_LIVE_PASS'
+              echo 'ROMA_URL=https://roma-alpha08-preview-odin.pages.dev/roma-alpha08.html'
+              exit 0
+            fi
+            sleep 4
+          done
+          echo 'ROMA_CLOUDFLARE_LIVE_UNCONFIRMED'
+          exit 6
