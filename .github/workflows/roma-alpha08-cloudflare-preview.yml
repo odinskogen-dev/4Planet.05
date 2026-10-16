@@ -57,10 +57,34 @@ jobs:
         run: |
           set -euo pipefail
           cp roma-alpha08.html roma-alpha07.html
-          cp roma-alpha08.html roma.html
+          printf '%s\n' '<!doctype html><script type="module" src="./src/rome/entry.js"></script>' > roma.html
           rm roma-alpha08.html # original Alpha07 compatibility entry; stage creates genuine Alpha08 independently
-          printf '%s\n' '<!doctype html><title>Prior RTS staging placeholder</title>' > rts.html
+          printf '%s\n' '<!doctype html><script type="module" src="./src/rts/main.js"></script>' > rts.html
           printf '%s\n' "import { defineConfig } from 'vite';export default defineConfig({ build: {rollupOptions:{ input: {romaAlpha07: 'roma-alpha07.html'}}}});" > vite.config.ts
+          # Alpha07 already made several MAP dimensions dynamic; normalize only the
+          # disposable staging checkout for Alpha08's tested source upgrader.
+          python3 - <<'PY'
+          from pathlib import Path
+          def rewrite(path, pairs):
+              p=Path(path);text=p.read_text()
+              for old,new in pairs:
+                  if old not in text: raise SystemExit('ROMA_STAGE_NORMALIZE_MISSING: '+path+' '+old[:50])
+                  text=text.replace(old,new)
+              p.write_text(text)
+          rewrite('src/rts/simulation.js', [
+              ("if (x < 8 || z < 8 || x > MAP.width - 8 || z > MAP.depth - 8)",
+               "if (x < 8 || z < 8 || x > 172 || z > 152)"),
+              ("s.visible = new Uint8Array(MAP.width / MAP.cell * MAP.depth / MAP.cell);",
+               "s.visible = new Uint8Array(7200);")])
+          rewrite('src/rts/renderer.js', [
+              ("new T.PlaneGeometry(MAP.width+320, MAP.depth+320, MAP.width===180?180:230, MAP.depth===160?170:210)",
+               "new T.PlaneGeometry(500, 480, 180, 170)"),
+              ("g.translate(MAP.width/2, 0, MAP.depth/2)", "g.translate(90, 0, 80)"),
+              ("z <= MAP.depth+150; z += 3", "z <= 310; z += 3")])
+          rewrite('src/rts/main.js', [
+              ('width="${MAP.width}" height="${MAP.depth}"', 'width="180" height="160"')])
+          print('ROMA_ALPHA07_STAGE_COMPAT_READY')
+          PY
           python3 premium08/scripts/stage_alpha08.py --project . --dry-run
           python3 premium08/scripts/stage_alpha08.py --project .
           test -s src/roma08/rome/boot.js
