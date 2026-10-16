@@ -1,0 +1,59 @@
+name: Cloudflare Live Origin And Rollback Inventory
+
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/cloudflare-live-origin-inventory.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: 4planet-readonly-live-release-inventory
+  cancel-in-progress: false
+
+jobs:
+  read-only-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify canonical production source, Worker version and rollback context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CF_TOKEN:-}" || { echo "BLOCKED: no Cloudflare credential accessible"; exit 1; }
+          api=https://api.cloudflare.com/client/v4
+          token=$(printf '%s' "$CF_TOKEN" | tr -d '\r\n')
+          token="${token#Bearer }"
+          echo "::add-mask::$token"
+          auth=(-H "Authorization: Bearer $token")
+          zone=$(curl -fsS --max-time 20 "${auth[@]}" "$api/zones?name=4planet.org")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account" || { echo "BLOCKED: Cloudflare account not found"; exit 1; }
+          pages=$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05")
+          prod_branch=$(jq -r '.result.production_branch // empty' <<<"$pages")
+          prod_commit=$(jq -r '.result.canonical_deployment.deployment_trigger.metadata.commit_hash // .result.latest_deployment.deployment_trigger.metadata.commit_hash // empty' <<<"$pages")
+          deployment=$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5")
+          latest_prod_commit=$(jq -r '.result[0].deployment_trigger.metadata.commit_hash // empty' <<<"$deployment")
+          latest_prod_url=$(jq -r '.result[0].url // empty' <<<"$deployment")
+          latest_prod_status=$(jq -r '.result[0].latest_stage.status // empty' <<<"$deployment")
+          workers=$(curl -fsS --max-time 20 "${auth[@]}" "$api/accounts/$account/workers/scripts/4species-router/deployments")
+          active_deploy=$(jq -r '.result.deployments[0].id // .result[0].id // empty' <<<"$workers")
+          active_version=$(jq -r '.result.deployments[0].versions[0].version_id // .result[0].versions[0].version_id // empty' <<<"$workers")
+          test -n "$active_version" || { echo "BLOCKED: unable to verify existing Worker version for rollback"; exit 1; }
+          mkdir -p artifacts/cloudflare-readonly
+          jq -n --arg observed "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" --arg head "$GITHUB_SHA" --arg branch "$prod_branch" --arg prod "$latest_prod_commit" --arg fallback "$prod_commit" --arg prodUrl "$latest_prod_url" --arg prodStatus "$latest_prod_status" --arg workerDeployment "$active_deploy" --arg workerVersion "$active_version" '{observedAt:$observed,readOnly:true,sourceCommit:$head,pagesProject:"4planet-05",pagesProductionBranch:$branch,pagesProductionCommit:$prod,pagesProductionFallbackCommit:$fallback,pagesProductionUrl:$prodUrl,pagesStatus:$prodStatus,speciesWorker:"4species-router",speciesWorkerDeployment:$workerDeployment,speciesWorkerRollbackVersion:$workerVersion}' > artifacts/cloudflare-readonly/release-inventory.json
+          echo "CLOUDFLARE READONLY: Pages production branch=$prod_branch source=$latest_prod_commit status=$latest_prod_status"
+          echo "CLOUDFLARE READONLY: 4species-router previous active deployment=$active_deploy version=$active_version"
+          echo "No Cloudflare write or deployment was attempted."
+      - name: Save audit proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-readonly-release-inventory
+          path: artifacts/cloudflare-readonly
+          if-no-files-found: ignore
