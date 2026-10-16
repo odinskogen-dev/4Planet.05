@@ -58,6 +58,7 @@ jobs:
           set -euo pipefail
           cp roma-alpha08.html roma-alpha07.html
           cp roma-alpha08.html roma.html
+          rm roma-alpha08.html # original Alpha07 compatibility entry; stage creates genuine Alpha08 independently
           printf '%s\n' '<!doctype html><title>Prior RTS staging placeholder</title>' > rts.html
           printf '%s\n' "import { defineConfig } from 'vite';export default defineConfig({ build: {rollupOptions:{ input: {romaAlpha07: 'roma-alpha07.html'}}}});" > vite.config.ts
           python3 premium08/scripts/stage_alpha08.py --project . --dry-run
