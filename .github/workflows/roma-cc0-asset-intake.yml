@@ -1,0 +1,83 @@
+name: GAME LAB ROMA CC0 Asset Intake v1
+on:
+  push:
+    branches: [roma-asset-intake-20261017]
+    paths:
+      - 'experiments/game-lab/roma/assets/intake_v1.py'
+      - '.github/workflows/roma-cc0-asset-intake.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  download-verify-register:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install asset validation libraries
+        run: pip install --quiet requests pillow numpy rasterio
+      - name: Download CC0 packs and record provenance
+        run: python experiments/game-lab/roma/assets/intake_v1.py
+      - name: Snapshot original licence claim pages
+        shell: bash
+        run: |
+          set +e
+          for pair in \
+            'roma_architecture|https://3dassets.dev/packs/roman-bathhouse-and-palaestra' \
+            'roman_weapons|https://3dassets.dev/packs/swords-shields-and-melee-arms' \
+            'quaternius_ual1|https://opengameart.org/content/universal-animation-library' \
+            'kenney_ui|https://opengameart.org/content/interface-sounds' \
+            'ambientcg|https://ambientcg.com/license' \
+            'srtm_public|https://www.earthdata.nasa.gov/data/instruments/srtm'; do
+            name="$(echo "$pair" | cut -d'|' -f1)"
+            address="$(echo "$pair" | cut -d'|' -f2-)"
+            google-chrome --headless --no-sandbox --disable-gpu --hide-scrollbars \
+              --window-size=1100,860 \
+              --screenshot="ROMA_ASSETS_v1/LICENSES/$name.png" \
+              "$address" >/dev/null 2>&1
+            test -s "ROMA_ASSETS_v1/LICENSES/$name.png" || echo "Screenshot unavailable: $address"
+          done
+          exit 0
+      - name: Validate manifest and archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv,zipfile,pathlib,hashlib,json,os
+          root=pathlib.Path('ROMA_ASSETS_v1')
+          entries=list(csv.DictReader((root/'ASSET_MANIFEST.csv').open()))
+          if not entries: raise SystemExit('Asset bank empty')
+          for row in entries:
+              p=root/row['file']
+              assert p.is_file(),row['file']
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256'],row['file']
+              assert row['licence'] in ('CC0-1.0','SRTM-public-domain'),row['file']
+              if p.suffix=='.glb': assert p.read_bytes()[:4]==b'glTF',row['file']
+          selected=[p for p in root.rglob('*') if p.is_file()]
+          chosen=sum(p.stat().st_size for p in selected)
+          if chosen>57_000_000:
+              for p in sorted([p for p in selected if 'equipment/weapons_candidate' in str(p)],key=lambda x:x.stat().st_size,reverse=True):
+                  if chosen<56_000_000:break
+                  chosen-=p.stat().st_size
+                  p.unlink()
+              entries=[r for r in entries if (root/r['file']).is_file()]
+              with (root/'ASSET_MANIFEST.csv').open('w',newline='') as f:
+                  wr=csv.DictWriter(f,fieldnames=entries[0].keys());wr.writeheader();wr.writerows(entries)
+          with zipfile.ZipFile('ROMA_ASSETS_v1.zip','w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+              for p in sorted(root.rglob('*')):
+                  if p.is_file():z.write(p,p.as_posix())
+          size=os.stat('ROMA_ASSETS_v1.zip').st_size
+          assert size<=60*1024*1024,f'ZIP exceeds 60 MiB: {size}'
+          report=json.loads((root/'INTAKE_REPORT.json').read_text())
+          print('ROMA_ZIP_CREATED',size,'rows',len(entries),'failures',len(report['failures']))
+          print('ZIP_SHA256',hashlib.sha256(open('ROMA_ASSETS_v1.zip','rb').read()).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ROMA_ASSETS_v1
+          path: ROMA_ASSETS_v1.zip
+          if-no-files-found: error
+          retention-days: 30
