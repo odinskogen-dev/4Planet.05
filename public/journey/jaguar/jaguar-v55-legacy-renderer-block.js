@@ -51,18 +51,22 @@
     const encounterActive = v52Ready() && Number(root.dataset.scene || '0') === 0 && root.dataset.entered === 'true';
     const ariaState = encounterActive ? 'false' : 'true';
     if (controls.getAttribute('aria-hidden') !== ariaState) controls.setAttribute('aria-hidden', ariaState);
-    if (!encounterActive) return;
+    controls.toggleAttribute('inert', !encounterActive);
 
     controls.querySelectorAll('button[data-action="look"],button[data-action="move"],button[data-action="lume"]').forEach((button) => {
-      if (button.hidden) button.hidden = false;
-      if (button.disabled) button.disabled = false;
-      if (button.getAttribute('aria-hidden') === 'true') button.removeAttribute('aria-hidden');
-      if (button.tabIndex < 0) button.tabIndex = 0;
+      if (encounterActive) {
+        if (button.hidden) button.hidden = false;
+        if (button.disabled) button.disabled = false;
+        if (button.getAttribute('aria-hidden') === 'true') button.removeAttribute('aria-hidden');
+      }
+      button.tabIndex = encounterActive ? 0 : -1;
     });
   }
 
   function assertV52Authority() {
-    if (reconciling || !v52Ready()) return;
+    if (reconciling) return;
+    syncEncounterControls();
+    if (!v52Ready()) return;
     reconciling = true;
     try {
       setDataset('jaguar3d', 'ready');
@@ -74,7 +78,6 @@
       setDataset('jaguarMotionTruth', 'procedural-presentation-motion-not-source-animation');
       setDataset('jaguar3dActive', String(Number(root.dataset.scene || '0') === 0 && !document.hidden));
       ensureAttribution();
-      syncEncounterControls();
       if (Number(root.dataset.scene || '0') === 0 && status && status.textContent !== 'EAR JAGUAR · VOLUMETRIC 3D ACTIVE') {
         status.textContent = 'EAR JAGUAR · VOLUMETRIC 3D ACTIVE';
       }

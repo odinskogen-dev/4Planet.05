@@ -9,6 +9,7 @@ test('TEST KING Jaguar wires local Ear.Rodriguez V52 source-derived runtime with
   const runtime=read('public/journey/jaguar/jaguar-gold-v33.js');
   const local=read('public/journey/jaguar/jaguar-local-v52-quality.js');
   const authority=read('public/journey/jaguar/jaguar-v54-renderer-authority.js');
+  const legacyBlock=read('public/journey/jaguar/jaguar-v55-legacy-renderer-block.js');
   const localData=read('public/journey/jaguar/jaguar-local-v48-data.js');
   const recovery=read('public/journey/jaguar/jaguar-surface-recovery-v37.js');
   const calibration=read('public/journey/jaguar/jaguar-runtime-calibration-v38.js');
@@ -25,6 +26,13 @@ test('TEST KING Jaguar wires local Ear.Rodriguez V52 source-derived runtime with
   // V52 is the sole active local WebGL renderer; legacy V48 visual runtime must not reclaim ownership.
   assert.match(local,/window\.__JAGUAR_LOCAL_V48/);assert.match(local,/jaguar-local-v52/);assert.match(local,/volumetric-v52/);assert.match(local,/DecompressionStream/);assert.match(local,/gl\.drawElements\(gl\.TRIANGLES/);assert.match(local,/pointerdown/);assert.match(local,/pointermove/);assert.match(local,/visibilitychange/);assert.match(local,/CC BY 4\.0/);
   assert.match(authority,/jaguarV54Authority/);assert.match(authority,/ear-rodriguez-local-v52-source-derived/);assert.doesNotMatch(local,/sketchfab\.com\/models/);assert.doesNotMatch(local,/<iframe/);
+
+  // Hidden encounter controls must never remain in sequential focus order.
+  assert.match(html,/id="controls" aria-hidden="true" inert/);
+  assert.equal((html.match(/data-action="(?:look|move|lume)" tabindex="-1"/g)||[]).length,3);
+  assert.match(legacyBlock,/controls\.toggleAttribute\('inert', !encounterActive\)/);
+  assert.match(legacyBlock,/button\.tabIndex = encounterActive \? 0 : -1/);
+  assert.ok(legacyBlock.indexOf('syncEncounterControls();')<legacyBlock.indexOf('if (!v52Ready()) return;'),'focus safety must reconcile before the async renderer becomes ready');
 
   // Public copy must preserve the source/truth contract without leaking stale QA/implementation language into first read.
   assert.match(html,/SOURCE-DERIVED MODEL/);assert.match(html,/rights-verified Ear\.Rodriguez Jaguar master/i);assert.match(html,/coat shader and interaction motion are presentation layers/i);assert.match(html,/not source animation/i);assert.match(html,/CC BY 4\.0/);

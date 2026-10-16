@@ -1,3 +1,24 @@
+# SPECIES / JAGUAR — HIDDEN CONTROL FOCUS SAFETY — 16 OCT 2026
+
+**STATUS:** RETURNED SPEC-GS-09 QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a keyboard or assistive-technology user needs Jaguar encounter controls to exist in the focus order only while that encounter is visibly active.
+**ONE THING TO UNDERSTAND:** visually hidden chapter controls cannot remain keyboard-operable behind scenes 02–08 or before the accepted renderer is ready.
+**PRIMARY ACTION:** use LOOK, MOVE and LUME in the active scene 01 encounter.
+**SECONDARY DEPTH:** continue through the existing eight-scene Jaguar journey without hidden encounter actions intercepting keyboard focus.
+**P1 DOMINANT:** the active Jaguar encounter and source-derived renderer.
+**P2 ORIENTATION:** the existing scene copy, progress and truth boundary.
+**P3 ACTION:** encounter controls only in scene 01; existing chapter actions elsewhere.
+**P4 DEPTH:** existing evidence dialog, attribution and source boundary.
+**WHAT CAN BE REMOVED:** focusable descendants inside an `aria-hidden=true` control group.
+**WHAT MUST BE REUSED:** SPEC-GS-09, issue #133, the existing V52 Jaguar renderer authority, V55 legacy-renderer block, Jaguar contract and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** `inert` and tab-order reconciliation fix an accessibility defect only; they do not change media, source claims, renderer authority, Gold, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** none introduced; pointer/touch behaviour and layout remain unchanged. Exact-head keyboard and screen-reader review is still required.
+**HUMAN SUCCESS:** LOOK, MOVE and LUME start inert and at `tabindex=-1`, enter the tab order only when scene 01 is entered with V52 ready, and leave it again on every other scene.
+**BASE / ROLLBACK:** `king/test@af8889a05cbacdab500068a3e19b4e433c414a36`; revert the bounded HTML/runtime/contract/brief correction if independent Gold finds an encounter, keyboard or assistive-technology regression.
+**MAKER ≠ JUDGE:** Factory closes the returned focus defect; independent Gold judges the exact resulting SHA in real browsers. Founder release remains separate.
+
+---
+
 # EXPO-03 — PRIVATE CRAWLER POLICY PARITY — 16 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT PARTIALLY CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
