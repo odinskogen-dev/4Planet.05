@@ -54,3 +54,18 @@ test("Google return never waits on profile hydration or loses early auth events"
   assert.ok(client.includes("await client.auth.setSession("));
   assert.ok(client.includes('window.history.replaceState({}, "", window.location.pathname + window.location.search)'));
 });
+
+test("return_to strips secrets without destroying safe ATLAS parameters", () => {
+  const found = client.match(/export function safeReturnTo\([^\n]+\) \{([\s\S]*?)\n\}\n\nexport function identityLoginUrl/);
+  assert.ok(found);
+  const safeReturnTo = new Function("window", "TRUSTED_HOSTS",
+    'return function safeReturnTo(value, fallback = "https://4planet.org/") {' + found[1] + '}'
+  )({location:{origin:"https://4planet.org"}}, new Set(["4planet.org","4planetatlas.com"]));
+  assert.equal(safeReturnTo("https://4planetatlas.com/atlas?m=OCE4N&z=3.5#access_token=secret"),
+               "https://4planetatlas.com/atlas?m=OCE4N&z=3.5");
+  assert.equal(safeReturnTo("https://4planet.org/?access_token=secret&code=secret&m=PLANET"), "https://4planet.org/?m=PLANET");
+  assert.equal(safeReturnTo("http://4planet.org/"), "https://4planet.org/");
+  assert.equal(safeReturnTo("https://4planet.org/?q=person%40example.org&ok=1"),"https://4planet.org/?ok=1");
+  assert.equal(safeReturnTo("https://4planet.org/auth/4planet/callback?code=secret"),"https://4planet.org/");
+  assert.equal(safeReturnTo("https://evil.example/callback"),"https://4planet.org/");
+});
