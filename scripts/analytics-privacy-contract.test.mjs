@@ -15,7 +15,7 @@ const { privacySafeEventParameters } = await import(
 );
 
 test("keeps useful anonymous product events", () => {
-  const row = { object_kind: "species", object_slug: "orca", product_area: "species", clicks: 2, internal: false };
+  const row = { object_kind: "species", object_slug: "orca", product_area: "species", result_count: 2, internal: false };
   assert.deepEqual(privacySafeEventParameters(row), row);
 });
 
