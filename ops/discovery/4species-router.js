@@ -36,11 +36,23 @@ async function reviewedSpeciesSitemap(request) {
   const xml = await upstream.text();
   const blocks = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
   const kept = [];
+  // A sitemap is a publication list, never a backdoor around human review.
+  // The origin's preview-domain URLs are rewritten to this canonical host.
+  const publicIndex = new Set(["/", "/explore", "/about", "/quiz"]);
   for (const block of blocks) {
     const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
     if (!loc) continue;
-    const review = await profileReviewState(new URL(loc).pathname);
-    if (review === null || review === "REVIEWED") kept.push(block);
+    let path;
+    try {
+      const candidate = new URL(loc).pathname.replace(/\/+$/, "") || "/";
+      path = candidate.startsWith("/species/") ? candidate.replace(/^\/species\//, "/") : candidate;
+    } catch { continue; }
+    if (!/^\/[a-z0-9-]*$/.test(path)) continue;
+    const isPublicLandingPage = publicIndex.has(path);
+    const review = isPublicLandingPage ? null : await profileReviewState(path);
+    if (!isPublicLandingPage && review !== "REVIEWED") continue;
+    const canonical = `https://4species.com${path}`;
+    kept.push(block.replace(/<loc>[^<]+<\/loc>/, `<loc>${canonical}</loc>`));
   }
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
   return new Response(body, {
@@ -404,9 +416,11 @@ export default {
         ? proxySpeciesV53(request) : proxyRaw(request,path);
     }
     if (path === "/robots.txt")
-      return new Response("User-agent: *\nAllow: /\n", {headers:{"content-type":"text/plain; charset=utf-8"}});
-    if (path === "/sitemap.xml")
-      return new Response("Sitemap awaits content quality approval", {status:404,headers:{"content-type":"text/plain"}});
+      return new Response(
+        "User-agent: *\\nAllow: /\\nDisallow: /api/\\nDisallow: /__species_\\n\\nSitemap: https://4species.com/sitemap.xml\\n",
+        {headers:{"content-type":"text/plain; charset=utf-8", "cache-control":"public, max-age=300"}}
+      );
+    if (path === "/sitemap.xml") return reviewedSpeciesSitemap(request);
     return proxySpeciesV53(request);
 
     if (path === "/" || path === "") return redirect(`https://4species.com/species/${url.search}`);
