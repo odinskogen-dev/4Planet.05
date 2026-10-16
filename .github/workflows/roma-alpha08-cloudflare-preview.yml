@@ -58,20 +58,25 @@ jobs:
           account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
           [ -n "$account" ] || { echo 'CF_ACCOUNT_NOT_FOUND'; exit 4; }
           export CLOUDFLARE_ACCOUNT_ID="$account"
-          # Branch preview only: NEVER deploy or update production branch main.
-          project='4planet-05'
-          branch='roma-alpha08-preview-20261016'
-          [ "$branch" != main ] || { echo 'PRODUCTION_DEPLOY_FORBIDDEN'; exit 8; }
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name "$project" --branch "$branch" --commit-hash "$GITHUB_SHA" | tee /tmp/roma-cloudflare-deploy.txt
-          preview=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/roma-cloudflare-deploy.txt | head -1 || true)
-          if [ -z "$preview" ]; then echo 'DEPLOYMENT_URL_NOT_RETURNED'; exit 9; fi
-          echo "ROMA_PREVIEW_DEPLOYMENT=$preview/roma-alpha08.html"
-          for i in $(seq 1 15); do
-            if curl -fsSL --max-time 15 "$preview/roma-alpha08.html" | grep -Fq 'ROMA'; then
-              echo 'ROMA_CLOUDFLARE_PREVIEW_LIVE_PASS'
-              exit 0
+          # Standalone Cloudflare Worker with static assets. No Pages middleware or production domain.
+          worker='roma-republic-odin-test'
+          test "$worker" != '4planet-05'
+          npx --yes wrangler@4.128.0 deploy \
+            --name "$worker" \
+            --assets ./dist \
+            --compatibility-date 2026-10-16 \
+            --workers-dev true \
+            --keep-vars \
+            | tee /tmp/roma-workers-deploy.txt
+          url=$(grep -Eo 'https://[a-z0-9.-]+[.]workers[.]dev' /tmp/roma-workers-deploy.txt | head -1 || true)
+          if [ -z "$url" ]; then echo 'WORKER_URL_NOT_RETURNED'; exit 9; fi
+          echo "ROMA_WORKER_URL=$url/roma-alpha08.html"
+          for i in $(seq 1 12); do
+            response=$(curl -fsSL --max-time 15 "$url/roma-alpha08.html" || true)
+            if grep -qF 'src="__IGNORE_ME__"' <<<"$response"; then exit 11; fi
+            if grep -qF 'ROMA' <<<"$response" && grep -qF 'assets/rome-' <<<"$response" && ! grep -qF 'Off the map' <<<"$response"; then
+              echo 'ROMA_WORKER_ROUTE_VERIFIED'; exit 0
             fi
             sleep 4
           done
-          echo 'PREVIEW_DEPLOYED_BUT_ROUTE_NOT_VERIFIED'
-          exit 10
+          echo 'WORKER_HTML_NOT_VERIFIED'; exit 10
