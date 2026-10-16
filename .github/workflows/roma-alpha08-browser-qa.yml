@@ -1,0 +1,71 @@
+name: ROMA Alpha08 real browser QA
+on:
+  push:
+    branches: [roma-alpha08-cloudflare-preview-20261016]
+    paths:
+      - .github/workflows/roma-alpha08-browser-qa.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser driver
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+      - name: Test actual ROMA Alpha08 on mobile WebGL Chrome
+        env:
+          ROMA_TEST_URL: https://roma-republic-odin-test.odin-skogen.workers.dev/roma-alpha08.html
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser = await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const page = await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+            let problems=[];
+            page.on('pageerror',e=>problems.push('JS_ERROR: '+e.message));
+            page.on('response',r=>{if(/\\.glb(?:$|\\?)/.test(r.url())&&r.status()>=400)problems.push('GLB_HTTP_'+r.status()+' '+r.url())});
+            const response=await page.goto(process.env.ROMA_TEST_URL,{waitUntil:'domcontentloaded',timeout:60000});
+            if(response.status()!==200)throw Error('HTTP_'+response.status());
+            await page.waitForTimeout(2000);
+            const text=await page.locator('body').innerText();
+            if(!text.includes('ROMA')||text.includes('Off the map'))throw Error('NOT_ALPHA08_GAME');
+            if(!text.includes('ALPHA 08'))throw Error('GENUINE_ALPHA08_MARKER_MISSING');
+            await page.locator('#world').waitFor({state:'visible',timeout:12000});
+            const button=page.locator('#start-actions button').first();
+            console.log('FIRST_SCREEN_START_BUTTON_COUNT',await button.count());
+            if(await button.count()) await button.click({timeout:12000});
+            await page.waitForTimeout(2800);
+            const canvas=page.locator('canvas#world');
+            if(!(await canvas.isVisible()))throw Error('GAME_CANVAS_NOT_VISIBLE_AFTER_START');
+            const sizes=await canvas.boundingBox();
+            if(!sizes||sizes.width<300||sizes.height<350)throw Error('CANVAS_GEOMETRY_BAD');
+            const assets=await page.evaluate(async()=>{
+              const paths=['forum','barracks','domus','macellum','farm','tent','tower','gate','lumber','quarry','siege_workshop'];
+              const rows=[];
+              for(const n of paths){let r=await fetch('/rome/assets/roman_'+n+'.glb');const bytes=await r.arrayBuffer();rows.push([n,r.status,bytes.byteLength,new TextDecoder().decode(bytes.slice(0,4))]);}
+              return rows;
+            });
+            console.log('ALL_ROMA_GLB_CHECKS',JSON.stringify(assets));
+            if(assets.some(x=>x[1]!==200||x[2]<1000||x[3]!=='glTF'))throw Error('GLB_NOT_VALID');
+            await page.screenshot({path:'roma-alpha08-mobile.png',fullPage:true});
+            console.log('ROMA_MOBILE_CANVAS',JSON.stringify(sizes));
+            const metadata=await page.evaluate(()=>({title:document.title,selected:document.querySelector('.selection')?.textContent?.slice(0,100),resources:document.querySelector('.resources')?.textContent?.slice(0,130),buttons:document.querySelectorAll('button').length}));
+            console.log('ROMA_RUNTIME_METADATA',JSON.stringify(metadata));
+            if(problems.length)throw Error('BROWSER_RUNTIME_ERRORS '+JSON.stringify(problems));
+            console.log('ROMA_PREMIUM08_REAL_BROWSER_PASS');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: roma-alpha08-real-browser-mobile
+          path: roma-alpha08-mobile.png
+          retention-days: 7
