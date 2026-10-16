@@ -1,0 +1,39 @@
+name: GAME LAB ROMA Quaternius Horse Download
+on:
+  push:
+    branches: [roma-asset-intake-20261017]
+    paths:
+      - 'experiments/game-lab/roma/assets/horse_quaternius_cc0.py'
+      - '.github/workflows/roma-horse-asset-download.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  download-horse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -q gdown
+      - name: Download source horse model and trace rights
+        run: python -u experiments/game-lab/roma/assets/horse_quaternius_cc0.py
+      - name: Archive source files and manifest
+        run: |
+          python - <<'PY'
+          import zipfile,pathlib,hashlib,csv
+          r=pathlib.Path("ROMA_HORSE_CC0_v1")
+          with zipfile.ZipFile("ROMA_HORSE_CC0_v1.zip","w",zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+            for p in r.rglob("*"):
+              if p.is_file():z.write(p,p.as_posix())
+          print("HORSE_FILES",len(list(csv.DictReader((r/"ASSET_MANIFEST.csv").open()))))
+          print("HORSE_ZIP_BYTES",pathlib.Path("ROMA_HORSE_CC0_v1.zip").stat().st_size)
+          print("HORSE_ZIP_SHA256",hashlib.sha256(pathlib.Path("ROMA_HORSE_CC0_v1.zip").read_bytes()).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ROMA_HORSE_CC0_v1
+          path: ROMA_HORSE_CC0_v1.zip
+          retention-days: 30
