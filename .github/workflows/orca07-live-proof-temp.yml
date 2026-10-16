@@ -1,4 +1,4 @@
-name: ORCA07 Live Route and CSP Diagnostic
+name: ORCA07 Live Header and Hub Diagnosis
 on:
   push:
     branches: [release/wild-orca-07-20261016]
@@ -6,21 +6,23 @@ on:
 permissions:
   contents: read
 jobs:
-  verify:
+  debug:
     runs-on: ubuntu-latest
     steps:
-      - name: Diagnose live response
+      - name: Compare LIVE and preview headers and games wrapper
         shell: bash
         run: |
           set -euo pipefail
-          echo 'LIVE_HEADERS_BEGIN'
-          curl -sSI --max-time 25 'https://4planet.org/games/wild-orca/' | tr -d '\\r' | grep -iE '^HTTP/|^content-security-policy:|^cache-control:' || true
-          echo 'LIVE_HEADERS_END'
-          echo 'LIVE_RESPONSE_STATUS'
-          curl -fsSL --max-time 35 https://4planet.org/games/wild-orca/ -o /tmp/orca07.html
-          sha256sum /tmp/orca07.html
-          echo 'GAMES_ROUTE_STATUS'
-          curl -fsSL --max-time 25 https://4planet.org/games/ -o /tmp/games.html
-          grep -oE 'src="/games/[^"]+"' /tmp/games.html | head -n 3 || true
-          echo 'ROOT_STATUS'
-          curl -sSL --max-time 20 -o /dev/null -w '%{http_code}\n' https://4planet.org/
+          for u in https://4planet.org/games/wild-orca/ https://4planet.org/games/ https://95dcfae7.4planet-05.pages.dev/games/wild-orca/ https://95dcfae7.4planet-05.pages.dev/games/; do
+            echo "URL=$u"
+            curl -fsSL --max-time 30 -D /tmp/head.txt "$u" -o /tmp/page.html
+            echo 'HEADERS'
+            head -n 22 /tmp/head.txt | cut -c1-350
+            echo 'BODY_SHA'
+            sha256sum /tmp/page.html
+            echo 'BODY_BEGIN'
+            head -c 350 /tmp/page.html | tr '\n' ' ' || true
+            echo
+            echo 'GAMES_MATCH'
+            grep -oE 'src="/games/[^"]+"' /tmp/page.html | head -n 3 || true
+          done
