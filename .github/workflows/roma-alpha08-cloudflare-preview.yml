@@ -65,7 +65,6 @@ jobs:
             --name "$worker" \
             --assets ./dist \
             --compatibility-date 2026-10-16 \
-            --workers-dev true \
             --keep-vars \
             | tee /tmp/roma-workers-deploy.txt
           url=$(grep -Eo 'https://[a-z0-9.-]+[.]workers[.]dev' /tmp/roma-workers-deploy.txt | head -1 || true)
