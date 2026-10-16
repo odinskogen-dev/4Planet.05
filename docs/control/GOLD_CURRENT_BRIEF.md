@@ -1,3 +1,24 @@
+# EXPO-03 — PRIVATE CRAWLER POLICY PARITY — 16 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT PARTIALLY CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person or crawler needs public discovery routes without technical account, authentication or saved-state surfaces being advertised for indexing.
+**ONE THING TO UNDERSTAND:** every recognised crawler group must receive the same bounded restricted-path policy; robots metadata is a discovery instruction, not an access-control boundary.
+**PRIMARY ACTION:** crawl the public 4PLANET discovery surface while technical paths remain excluded.
+**SECONDARY DEPTH:** inspect generated sitemap and robots artifacts, canonical ownership and publication state before any authorised release.
+**P1 DOMINANT:** public discovery remains available, including `/oslofjord`.
+**P2 ORIENTATION:** OAI-SearchBot, Googlebot, Bingbot and generic agents share one generated policy.
+**P3 ACTION:** independent Gold verifies exact generated output and current canonical/publication ownership.
+**P4 DEPTH:** authorised release and later HTTP/Search Console readback remain separate.
+**WHAT CAN BE REMOVED:** drift between the generator and checked-in robots artifact, and omission of `/admin`, `/auth`, `/account`, `/saved`, `/id` and `/oauth` from recognised crawler groups.
+**WHAT MUST BE REUSED:** EXPO-03, the existing sitemap generator, checked-in robots artifact, discovery SEO contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** robots exclusions do not secure a route, prove canonical ownership, change publication authority, submit a sitemap, establish indexation, grant Gold, deploy or alter LIVE behaviour.
+**MOBILE-FIRST RISK:** none introduced; this correction changes generated discovery metadata only.
+**HUMAN SUCCESS:** generated and checked-in robots policies are byte-identical, all four agent groups exclude the six returned technical paths, private `/os` stays excluded, and public `/oslofjord` remains allowed.
+**BASE / ROLLBACK:** `king/test@ac5f28ab9b7e69a31f26a8e5519176126252e672`; revert the bounded generator/artifact/contract/brief correction if independent Gold finds a legitimate public discovery regression.
+**MAKER ≠ JUDGE:** Factory consumes the returned path-policy defect; independent Gold judges the exact resulting SHA. Canonical ownership, publication-state gating, release and LIVE verification remain open.
+
+---
+
 # ACTOR GOLD / 4NGO — CLAIM PUBLICATION BOUNDARY — 16 OCT 2026
 
 **STATUS:** RETURNED ACTOR-FP-01 QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
