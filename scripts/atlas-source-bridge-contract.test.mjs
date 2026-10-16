@@ -29,7 +29,7 @@ const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.t
 }).outputText).toString("base64")}`);
 
 const inatRightsFunction = connectors.match(
-  /export function classifyInaturalistTaxonPhotoRights[\\s\\S]*?\\n}/u,
+  /export function classifyInaturalistTaxonPhotoRights[\s\S]*?\n\}/u,
 )?.[0];
 assert.ok(inatRightsFunction, "ATLAS iNaturalist photo rights classifier must exist");
 const inatRightsRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(inatRightsFunction, {
