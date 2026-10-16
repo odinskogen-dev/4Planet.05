@@ -74,8 +74,8 @@ jobs:
           rewrite('src/rts/simulation.js', [
               ("if (x < 8 || z < 8 || x > MAP.width - 8 || z > MAP.depth - 8)",
                "if (x < 8 || z < 8 || x > 172 || z > 152)"),
-              ("s.visible = new Uint8Array(MAP.width / MAP.cell * MAP.depth / MAP.cell);",
-               "s.visible = new Uint8Array(7200);")])
+              ("    s.visible = new Uint8Array(MAP.width / MAP.cell * MAP.depth / MAP.cell);",
+               "    s.visible = new Uint8Array(7200);")])
           rewrite('src/rts/renderer.js', [
               ("new T.PlaneGeometry(MAP.width+320, MAP.depth+320, MAP.width===180?180:230, MAP.depth===160?170:210)",
                "new T.PlaneGeometry(500, 480, 180, 170)"),
