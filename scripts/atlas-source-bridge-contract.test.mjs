@@ -28,11 +28,34 @@ const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.t
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`);
 
-const inatRightsFunction = connectors.match(
-  /export function classifyInaturalistTaxonPhotoRights[\s\S]*?\n\}/u,
-)?.[0];
-assert.ok(inatRightsFunction, "ATLAS iNaturalist photo rights classifier must exist");
-const inatRightsRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(inatRightsFunction, {
+const connectorRuntimeNames = new Set([
+  "now",
+  "Result",
+  "getJson",
+  "TaxonPhotoRightsState",
+  "TaxonPhoto",
+  "classifyInaturalistTaxonPhotoRights",
+  "taxonPhoto",
+]);
+const connectorAst = ts.createSourceFile("connectors.ts", connectors, ts.ScriptTarget.ES2022, true, ts.ScriptKind.TS);
+const connectorRuntimeSource = connectorAst.statements
+  .filter((statement) => {
+    if (ts.isVariableStatement(statement)) {
+      return statement.declarationList.declarations.some(
+        (declaration) => ts.isIdentifier(declaration.name) && connectorRuntimeNames.has(declaration.name.text),
+      );
+    }
+    if (ts.isFunctionDeclaration(statement) || ts.isInterfaceDeclaration(statement) || ts.isTypeAliasDeclaration(statement)) {
+      return Boolean(statement.name && connectorRuntimeNames.has(statement.name.text));
+    }
+    return false;
+  })
+  .map((statement) => statement.getFullText(connectorAst))
+  .join("\n");
+for (const name of connectorRuntimeNames) {
+  assert.match(connectorRuntimeSource, new RegExp(`\\b${name}\\b`), `ATLAS connector runtime missing ${name}`);
+}
+const inatRightsRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(connectorRuntimeSource, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`);
 
@@ -624,6 +647,103 @@ test("ATLAS iNaturalist taxon photos fail closed on item-specific rights", () =>
     "https://creativecommons.org/licenses/by/4.0/?via=forged",
   ]) {
     assert.equal(classify(licence), "BLOCKED", String(licence));
+  }
+});
+
+test("ATLAS taxon-photo adapter executes the real API path and returns a complete rights envelope", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedUrls = [];
+  globalThis.fetch = async (url) => {
+    requestedUrls.push(String(url));
+    return new Response(JSON.stringify({
+      results: [
+        {
+          name: "Orcinus orca lookalike",
+          default_photo: {
+            id: 1,
+            medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/1/medium.jpg",
+            attribution: "Wrong taxon",
+            license_code: "cc0",
+          },
+        },
+        {
+          name: "Orcinus orca",
+          default_photo: {
+            id: 424242,
+            medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/424242/medium.jpg",
+            attribution: "<span>CC BY Jane Scientist</span>",
+            license_code: "cc-by",
+          },
+        },
+      ],
+    }), { status: 200, headers: { "content-type": "application/json" } });
+  };
+
+  try {
+    const photo = await inatRightsRuntime.taxonPhoto("  Orcinus orca  ");
+    assert.equal(requestedUrls.length, 1);
+    assert.match(requestedUrls[0], /api\.inaturalist\.org\/v1\/taxa\?q=Orcinus%20orca&per_page=5/);
+    assert.deepEqual({ ...photo, checkedAt: "<ISO>" }, {
+      url: "https://inaturalist-open-data.s3.amazonaws.com/photos/424242/medium.jpg",
+      attribution: "CC BY Jane Scientist",
+      creator: "CC BY Jane Scientist",
+      licence: "cc-by",
+      rightsState: "DISPLAYABLE",
+      usageScope: "PUBLIC_DISPLAY_CC0_OR_CC_BY",
+      sourceId: "inaturalist",
+      sourceRecordId: "424242",
+      sourceUrl: "https://www.inaturalist.org/photos/424242",
+      checkedAt: "<ISO>",
+    });
+    assert.ok(Number.isFinite(Date.parse(photo.checkedAt)));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("ATLAS taxon-photo adapter returns no-photo for incomplete, restricted or untrusted API records", async () => {
+  const originalFetch = globalThis.fetch;
+  const valid = {
+    id: 77,
+    medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/77/medium.jpg",
+    attribution: "CC BY Source Author",
+    license_code: "cc-by",
+  };
+  const cases = [
+    ["missing licence", { ...valid, license_code: undefined }],
+    ["noncommercial licence", { ...valid, license_code: "cc-by-nc" }],
+    ["share-alike licence", { ...valid, license_code: "cc-by-sa" }],
+    ["unknown licence", { ...valid, license_code: "unknown" }],
+    ["spoofed licence URL", { ...valid, license_code: "https://creativecommons.org.evil.example/licenses/by/4.0/" }],
+    ["missing item id", { ...valid, id: undefined }],
+    ["missing attribution", { ...valid, attribution: "" }],
+    ["missing image URL", { ...valid, medium_url: "" }],
+  ];
+
+  try {
+    for (const [label, photo] of cases) {
+      globalThis.fetch = async () => new Response(JSON.stringify({
+        results: [{ name: "Orcinus orca", default_photo: photo }],
+      }), { status: 200, headers: { "content-type": "application/json" } });
+      assert.equal(await inatRightsRuntime.taxonPhoto("Orcinus orca"), null, label);
+    }
+
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      results: [{ name: "Orcinus orca subspecies", default_photo: valid }],
+    }), { status: 200, headers: { "content-type": "application/json" } });
+    assert.equal(await inatRightsRuntime.taxonPhoto("Orcinus orca"), null, "exact scientific-name mismatch");
+
+    globalThis.fetch = async () => new Response("upstream unavailable", { status: 503 });
+    assert.equal(await inatRightsRuntime.taxonPhoto("Orcinus orca"), null, "upstream HTTP failure");
+
+    globalThis.fetch = async () => new Response("not json", { status: 200 });
+    assert.equal(await inatRightsRuntime.taxonPhoto("Orcinus orca"), null, "malformed upstream body");
+
+    globalThis.fetch = async () => { throw new Error("network unavailable"); };
+    assert.equal(await inatRightsRuntime.taxonPhoto("Orcinus orca"), null, "network failure");
+    assert.equal(await inatRightsRuntime.taxonPhoto("   "), null, "blank query");
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });
 
