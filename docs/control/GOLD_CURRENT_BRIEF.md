@@ -881,3 +881,19 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 **ROLLBACK:** parent HEIR `b2dd0e09b13bb95b6fcafa55bd85921dfe6f0f7c`.
 
 **MAKER ≠ JUDGE:** deterministic contracts and candidate build run on the HEIR; independent Gold judges the resulting exact SHA. LIVE remains Founder-gated.
+
+## 16 OCTOBER 2026 — SECURITY + 4SPECIES SEARCH CANDIDATE
+
+**Founder direction:** Fix P0 token leakage, then maximise verified organic exposure. All live releases require existing trusted source, preview, rollback and exact-host evidence.
+
+**Product files:** `src/identity/identityClient.ts`, `src/analytics/Analytics.tsx`, `ops/discovery/4species-router.js`. No new BRAIN, new game build or unrelated application code.
+
+**Improvement:** Reduce credential / contact-data propagation through return URLs and GA4 / PostHog event properties. Reconnect 4SPECIES active sitemap route, rewrite to canonical `4species.com` URLs, and include only pages marked `REVIEWED`, preserving non-indexable draft states.
+
+**Human outcome:** Account login still works; anonymous metrics stay useful; human-reviewed art pages can be discovered through a valid sitemap, while unreviewed pages remain non-indexable.
+
+**Evidence:** PR #476 targeted security and species tests passed; a 47-request public-domain audit observed live 4species.com sitemap HTTP 404 and noindex on inspected species routes. These were pre-release observations; exact production deployment and Search Console indexing are not yet proven.
+
+**Acceptance gates:** LIVE must pass exact SHA, reviewed-content authority, page HTML and canonical, Google-friendly sitemap, existing games and maps smoke tests, privacy / Auth flow in actual browser, rollback, and post-release live readback. No GOLD controls bypassed.
+
+**Truth state:** Candidate code with tests, NOT a live fix until separately deployed and verified.
