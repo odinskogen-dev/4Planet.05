@@ -1,4 +1,4 @@
-name: ORCA07 Live Header and Hub Diagnosis
+name: WILD ORCA 07 live mobile visual QA
 on:
   push:
     branches: [release/wild-orca-07-20261016]
@@ -6,23 +6,61 @@ on:
 permissions:
   contents: read
 jobs:
-  debug:
+  qa:
     runs-on: ubuntu-latest
+    timeout-minutes: 7
     steps:
-      - name: Compare LIVE and preview headers and games wrapper
+      - name: Show live games hub routing
         shell: bash
         run: |
           set -euo pipefail
-          for u in https://4planet.org/games/wild-orca/ https://4planet.org/games/ https://95dcfae7.4planet-05.pages.dev/games/wild-orca/ https://95dcfae7.4planet-05.pages.dev/games/; do
-            echo "URL=$u"
-            curl -fsSL --max-time 30 -D /tmp/head.txt "$u" -o /tmp/page.html
-            echo 'HEADERS'
-            head -n 22 /tmp/head.txt | cut -c1-350
-            echo 'BODY_SHA'
-            sha256sum /tmp/page.html
-            echo 'BODY_BEGIN'
-            head -c 350 /tmp/page.html | tr '\n' ' ' || true
-            echo
-            echo 'GAMES_MATCH'
-            grep -oE 'src="/games/[^"]+"' /tmp/page.html | head -n 3 || true
-          done
+          curl -fsSL --max-time 30 https://4planet.org/games/ -o /tmp/games_live.html
+          echo 'GAMES_PAGE_START'
+          head -c 3500 /tmp/games_live.html
+          echo
+          echo 'GAMES_PAGE_END'
+      - name: Simulate iPhone sized mobile browser and test STORY then CALL
+        shell: bash
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install chromium >/dev/null
+          cat > /tmp/test.py <<'PY'
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+            b=p.chromium.launch(headless=True,args=['--enable-webgl','--use-gl=angle','--use-angle=swiftshader'])
+            ctx=b.new_context(viewport={'width':390,'height':844},device_scale_factor=2,is_mobile=True,has_touch=True,permissions=[])
+            page=ctx.new_page()
+            errors=[]
+            page.on('pageerror',lambda e:errors.append(str(e)))
+            page.on('console',lambda m:errors.append('console: '+m.text) if m.type=='error' else None)
+            res=page.goto('https://4planet.org/games/wild-orca/',wait_until='domcontentloaded',timeout=45000)
+            page.wait_for_timeout(6500)
+            body=page.locator('body').inner_text(timeout=15000)
+            print('GAME_HTTP',res.status,'WILD07','WILD: ORCA 07' in body,'BANK','NATURE BANK' in body,'ERRORS',errors[:10],flush=True)
+            page.screenshot(path='/tmp/orca07-intro.png',full_page=False,timeout=12000)
+            assert res.status==200 and 'WILD: ORCA 07' in body and 'NATURE BANK' in body
+            story=page.get_by_text('STORY',exact=True)
+            print('STORY_BTN_COUNT',story.count(),flush=True)
+            if story.count():
+              story.first.click(timeout=6000)
+              page.wait_for_timeout(8500)
+              print('POST_STORY_TEXT',repr(page.locator('body').inner_text()[:600]),flush=True)
+              print('CANVASES',page.locator('canvas').count(),flush=True)
+              page.screenshot(path='/tmp/orca07-play.png',full_page=False,timeout=12000)
+              call=page.get_by_text('CALL',exact=True)
+              print('CALL_BTN_COUNT',call.count(),flush=True)
+              if call.count():
+                call.first.click(timeout=6000,force=True)
+                page.wait_for_timeout(1800)
+                print('CALL_TAPPED',flush=True)
+            print('FINAL_ERRORS',errors[:20],flush=True)
+            assert not any('Content Security Policy' in x or 'Refused to execute inline script' in x for x in errors)
+            b.close()
+          PY
+          python /tmp/test.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wild-orca-07-live-mobile-screenshots
+          path: /tmp/orca07-*.png
+          retention-days: 3
