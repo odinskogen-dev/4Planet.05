@@ -120,6 +120,8 @@ function claimStructureFailures(source) {
   const sourceFile = parse(source);
   const allowed = propertyType(sourceFile, "ActorGoldProfile", "claimsAllowed");
   const prohibited = propertyType(sourceFile, "ActorGoldProfile", "claimsProhibited");
+  const sourceRecords = propertyType(sourceFile, "ActorGoldProfile", "sourceRecords");
+  const evidenceRecords = propertyType(sourceFile, "ActorGoldProfile", "evidenceRecords");
   const sourceRefs = propertyType(sourceFile, "ActorClaimBoundary", "sourceRefs");
   const evidenceRefs = propertyType(sourceFile, "ActorClaimBoundary", "evidenceRefs");
   const distances = unionLiterals(sourceFile, "ActorClaimBoundary", "distance");
@@ -135,6 +137,12 @@ function claimStructureFailures(source) {
   }
   if (!isExactCollection(prohibited, "ActorClaimBoundary")) {
     failures.push("claimsProhibited must be an ActorClaimBoundary collection");
+  }
+  if (!isExactCollection(sourceRecords, "ActorSourceRecord")) {
+    failures.push("sourceRecords must be an ActorSourceRecord collection");
+  }
+  if (!isExactCollection(evidenceRecords, "ActorEvidenceRecord")) {
+    failures.push("evidenceRecords must be an ActorEvidenceRecord collection");
   }
   if (!sourceRefs || sourceRefs.replace(/\s+/g, "") !== "string[]") {
     failures.push("ActorClaimBoundary.sourceRefs must be string[]");
@@ -209,6 +217,23 @@ async function claimRuntimeFailures(source) {
         evidenceRefs: [],
         sourceAuthority: "FIRST_PARTY",
       },
+      false,
+    ],
+    [
+      "first-party delivery falsely labelled independent passed",
+      {
+        ...baseImpact,
+        claim: "Bounded work delivered",
+        distance: "DELIVERY",
+        sourceRefs: ["provider:delivery:1"],
+        evidenceRefs: ["evidence:delivery:1"],
+        sourceAuthority: "INDEPENDENT",
+      },
+      false,
+    ],
+    [
+      "independent impact falsely labelled first-party passed",
+      { ...baseImpact, sourceAuthority: "FIRST_PARTY" },
       false,
     ],
     [
@@ -292,6 +317,8 @@ export interface ActorGoldProfile {
   deliveryEvidence: ActorDeliveryEvidence[];
   outcomeEvidence: ActorOutcomeEvidence[];
   actionContractIds: ActionContract["id"][];
+  sourceRecords: ActorSourceRecord[];
+  evidenceRecords: ActorEvidenceRecord[];
   claimsAllowed: ActorClaimBoundary[];
   claimsProhibited: ActorClaimBoundary[];
 }
@@ -307,14 +334,15 @@ export function actorClaimCanPublish(
   if (!["DELIVERY", "OUTCOME", "IMPACT"].includes(claim.distance)) return false;
   const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
   if (sources.some((record) => !record || !record.reviewedAt)) return false;
+  if (sources.some((record) => record.authority !== claim.sourceAuthority)) return false;
   const evidence = claim.evidenceRefs.map((id) => evidenceRecords.find((record) => record.id === id));
   if (evidence.some((record) =>
     !record || !record.reviewedAt || !claim.sourceRefs.includes(record.sourceRef)
   )) return false;
   if (claim.distance === "IMPACT") {
-    return sources.every((record) => record?.authority === "INDEPENDENT");
+    return claim.sourceAuthority === "INDEPENDENT";
   }
-  return sources.every((record) => record?.authority !== "SELF_ATTESTED");
+  return claim.sourceAuthority !== "SELF_ATTESTED";
 }
 `;
 

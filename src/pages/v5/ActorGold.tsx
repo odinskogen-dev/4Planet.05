@@ -5,6 +5,7 @@ import {
   ACTOR_GOLD_RELEASE_RULES,
   ACTOR_GOLD_VISUAL_LADDER,
   actorBySlug,
+  actorClaimCanPublish,
   type ActorGoldProfile,
 } from "@/content/actorGold";
 import { GetInvolvedSection } from "@/pages/v5/Participation";
@@ -122,6 +123,9 @@ export function ActorProfilePage() {
   const { slug } = useParams();
   const actor = actorBySlug(slug);
   if (!actor) return <Navigate to="/actors" replace />;
+  const publishableClaims = actor.claimsAllowed.filter((claim) =>
+    actorClaimCanPublish(claim, actor.sourceRecords, actor.evidenceRecords),
+  );
 
   return (
     <main className="actor-gold">
@@ -264,9 +268,9 @@ export function ActorProfilePage() {
           </article>
           <article>
             <span>PUBLISHABLE CLAIMS</span>
-            <h3>{actor.claimsAllowed.length ? "Reviewed claims available" : "NONE YET"}</h3>
-            {actor.claimsAllowed.length
-              ? actor.claimsAllowed.map((item) => <p key={item.claim}>{item.distance} · {item.claim}</p>)
+            <h3>{publishableClaims.length ? "Reviewed claims available" : "NONE YET"}</h3>
+            {publishableClaims.length
+              ? publishableClaims.map((item) => <p key={item.claim}>{item.distance} · {item.claim}</p>)
               : <p>No delivery, outcome or impact claim is currently cleared for publication.</p>}
           </article>
           {actor.claimsProhibited.map((item) => (

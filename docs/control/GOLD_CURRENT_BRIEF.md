@@ -1,3 +1,24 @@
+# ACTOR GOLD / 4NGO — CLAIM PUBLICATION BOUNDARY — 16 OCT 2026
+
+**STATUS:** RETURNED ACTOR-FP-01 QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs every visible delivery, outcome or impact claim on an Actor profile to be backed by reviewed source and evidence records, not merely present in a display array.
+**ONE THING TO UNDERSTAND:** a claim becomes publishable only when the existing fail-closed Actor claim gate resolves its source, evidence, review and authority requirements.
+**PRIMARY ACTION:** inspect the Actor value path and only see claims that pass the authoritative publication gate.
+**SECONDARY DEPTH:** distinguish an empty or rejected publishable-claim set from separately listed prohibited claims and unresolved evidence.
+**P1 DOMINANT:** the organisation's existing typed value path.
+**P2 ORIENTATION:** publishable claims are derived from reviewed records rather than raw profile content.
+**P3 ACTION:** continue to Get Involved only after reading the Actor's truth-bounded state.
+**P4 DEPTH:** claim distance, reviewed source authority, evidence linkage and prohibited boundaries.
+**WHAT CAN BE REMOVED:** direct rendering of raw `claimsAllowed` entries before the publication gate runs.
+**WHAT MUST BE REUSED:** `actorClaimCanPublish`, the canonical Actor Gold source/evidence record types, ACTOR-FP-01, issue #152, PR #131 and the sole `king/test` HEIR.
+**TRUTH BOUNDARY:** passing the UI publication gate permits bounded display only; it does not prove partnership, funding, delivery, outcome, impact, independent Gold, deployment or LIVE behaviour.
+**MOBILE-FIRST RISK:** no layout or interaction grammar changes; exact-head mobile/browser review must still confirm the existing value-path hierarchy.
+**HUMAN SUCCESS:** a raw supported-looking claim with missing, unreviewed, mismatched or insufficient-authority records cannot appear as a reviewed claim.
+**BASE / ROLLBACK:** `king/test@60f60f53fa159ca86557a2c0e90857004f2979da`; revert this bounded model/UI/test/brief correction if independent Gold finds a truth, typing, rendering or hierarchy regression.
+**MAKER ≠ JUDGE:** Factory closes the returned publication-boundary defect; independent Gold judges the exact resulting SHA. Founder release remains separate.
+
+---
+
 # 4SAPIEN — DUE-TODAY CALENDAR TRUTH — 16 OCT 2026
 
 **STATUS:** RETURNED LIFE-OS-01 QA_CORRECT CONSUMED ON EXISTING HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT OR LIVE RELEASE.

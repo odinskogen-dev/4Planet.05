@@ -108,6 +108,8 @@ export interface ActorGoldProfile {
   deliveryEvidence: ActorDeliveryEvidence[];
   outcomeEvidence: ActorOutcomeEvidence[];
   actionContractIds: ActionContract["id"][];
+  sourceRecords: ActorSourceRecord[];
+  evidenceRecords: ActorEvidenceRecord[];
   claimsAllowed: ActorClaimBoundary[];
   claimsProhibited: ActorClaimBoundary[];
   visual: {
@@ -135,6 +137,7 @@ export function actorClaimCanPublish(
 
   const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
   if (sources.some((record) => !record?.reviewedAt)) return false;
+  if (sources.some((record) => record?.authority !== claim.sourceAuthority)) return false;
 
   const evidence = claim.evidenceRefs.map((id) =>
     evidenceRecords.find((record) => record.id === id),
@@ -148,10 +151,10 @@ export function actorClaimCanPublish(
   }
 
   if (claim.distance === "IMPACT") {
-    return sources.every((record) => record?.authority === "INDEPENDENT");
+    return claim.sourceAuthority === "INDEPENDENT";
   }
 
-  return sources.every((record) => record?.authority !== "SELF_ATTESTED");
+  return claim.sourceAuthority !== "SELF_ATTESTED";
 }
 
 /**
@@ -269,6 +272,19 @@ export const ACTOR_GOLD_PROFILES: ActorGoldProfile[] = [
     deliveryEvidence: [],
     outcomeEvidence: [],
     actionContractIds: ["action:4p:orca:bay-of-biscay:survey-effort:v1"],
+    sourceRecords: [
+      {
+        id: "source:4planet:orca-dialogue:2026-09-04",
+        authority: "FIRST_PARTY",
+        reviewedAt: "2026-09-04",
+      },
+      {
+        id: "source:orca:2025-survey-season-summary",
+        authority: "FIRST_PARTY",
+        reviewedAt: "2026-08-30",
+      },
+    ],
+    evidenceRecords: [],
     claimsAllowed: [],
     claimsProhibited: [
       {

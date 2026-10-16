@@ -66,6 +66,19 @@ test("Actor Gold product consumes the typed 4NGO value and proof path", () => {
   assert.match(page, /No delivery, outcome or impact claim is currently cleared/);
 });
 
+test("Actor Gold renders only claims admitted by the authoritative publication gate", () => {
+  assert.match(page, /actorClaimCanPublish/);
+  assert.match(
+    page,
+    /actor\.claimsAllowed\.filter\(\(claim\) =>\s*actorClaimCanPublish\(claim, actor\.sourceRecords, actor\.evidenceRecords\)/,
+  );
+  assert.match(page, /publishableClaims\.map/);
+  assert.doesNotMatch(page, /actor\.claimsAllowed\.map/);
+  assert.doesNotMatch(page, /actor\.claimsAllowed\.length/);
+  assert.match(engine, /sourceRecords: ActorSourceRecord\[\]/);
+  assert.match(engine, /evidenceRecords: ActorEvidenceRecord\[\]/);
+});
+
 test("Actor Gold has a responsive rights-safe signature visual", () => {
   assert.match(page, /actor-gold-route/);
   assert.match(page, /Illustrative monitoring corridor/);
