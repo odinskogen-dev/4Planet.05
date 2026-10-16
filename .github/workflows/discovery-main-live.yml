@@ -22,6 +22,8 @@ on:
       - src/pages/v5/AtlasHero.tsx
       - src/styles/home-brand-reset.css
       - src/App.tsx
+      - src/identity/identityClient.ts
+      - src/analytics/Analytics.tsx
       - src/earth/AtlasEmbedRuntime.tsx
       - src/routes/router.tsx
       - src/content/imageRegistry.ts
