@@ -63,7 +63,7 @@ test("pageview and discovery use the shared sanitiser for GA4 and PostHog", () =
   assert.match(discovery, /trackEvent\("discovery_entry"/);
   assert.doesNotMatch(discovery, /window\.gtag|capturePostHog/);
 
-  const page = source.slice(source.indexOf("const sharedPageProperties"), source.indexOf("trackDiscoveryEntryOnce\(location.pathname\)") + 45);
+  const page = source.slice(source.indexOf("const sharedPageProperties"), source.indexOf("trackDiscoveryEntryOnce(location.pathname)") + 45);
   assert.match(page, /privacySafeEventParameters/);
   assert.match(page, /window\.gtag\?\.\("event", "page_view", sharedPageProperties\)/);
   assert.match(page, /capturePostHog\("\$pageview", sharedPageProperties\)/);
