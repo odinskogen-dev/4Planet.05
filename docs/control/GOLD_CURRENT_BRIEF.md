@@ -975,3 +975,17 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **Rollback:** Save exact currently deployed Cloudflare production artifact before main promotion; no bypass of FOUNDER_GATED promotion or SOURCE_BRANCH=king/test. On regression, restore previous verified Worker/Pages version immediately.
 
 **Truth state:** SOURCE CODE COMPLETE; PUBLIC LIVE REMEDIATION NOT VERIFIED BY THIS COMMIT.
+## IMPACT proof-passport canonical-binding correction — 16 Oct 2026
+
+- **USER ARRIVES BECAUSE:** they need to distinguish a contribution from delivery, outcome, and independently verified impact.
+- **ONE THING TO UNDERSTAND:** an impact claim is eligible only when the displayed claim, quantity, evidence identity, and canonical proof records agree.
+- **PRIMARY ACTION:** inspect the bounded proof chain and its source-linked verification.
+- **SECONDARY DEPTH:** inspect limitations, double-count control, provider identity, and chronology.
+- **P1 / P2 / P3 / P4:** verified state / proof-chain orientation / source inspection / limitations and method.
+- **WHAT CAN BE REMOVED:** caller-supplied claim text, quantity, or context-only evidence as substitutes for canonical proof.
+- **WHAT MUST BE REUSED:** existing `ProofPassport`, truth-spine records, claim-distance law, and independent-verifier gate.
+- **TRUTH BOUNDARY:** CONTEXT_ONLY evidence cannot advance depth; blank verifier sources fail closed; an impact claim is emitted only for VERIFIED depth and remains ineligible if its text or quantity diverges from canonical records.
+- **MOBILE-FIRST RISK:** none added; this correction changes the shared proof contract, not layout.
+- **HUMAN SUCCESS:** a forged or stale projection cannot retain impact eligibility after its claim, quantity, source reference, or evidence relationship is altered.
+- **DONOR DECISION:** no donor; correct the existing HEIR contract in place.
+- **ROLLBACK:** parent HEIR `516c65ca5855164c985ec169223d71b3b6d537fb`.

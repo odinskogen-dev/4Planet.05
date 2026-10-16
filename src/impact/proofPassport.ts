@@ -224,6 +224,7 @@ function isBoundIndependentVerification(
   const verifiedAt = validProofTimestamp(lastVerifiedAt ?? null);
   return (
     item.kind === "VERIFICATION" &&
+    Boolean(item.sourceRef.trim()) &&
     item.verifierClass === "THIRD_PARTY" &&
     item.relationship === "IMPACT_LINKED" &&
     item.actionId === identity.actionId &&
@@ -233,6 +234,12 @@ function isBoundIndependentVerification(
     verifiedAt !== null &&
     capturedAt <= verifiedAt
   );
+}
+
+function isClaimLinkedEvidence(item: ProofEvidenceItem, input: ProofPassportInput): boolean {
+  if (!item.sourceRef.trim() || !item.relationship || item.relationship === "CONTEXT_ONLY") return false;
+  if (item.actionId !== input.actionId || item.providerId !== input.providerId) return false;
+  return item.relationship !== "IMPACT_LINKED" || item.impactId === input.impact.id;
 }
 
 /**
@@ -281,6 +288,7 @@ export function deriveProofPassportDepth(input: ProofPassportInput): ProofPasspo
   const hasIndependentVerification = evidenceItems.some((item) =>
     isBoundIndependentVerification(item, input, input.lastVerifiedAt),
   );
+  const hasClaimLinkedEvidence = evidenceItems.some((item) => isClaimLinkedEvidence(item, input));
 
   if (
     production &&
@@ -294,7 +302,7 @@ export function deriveProofPassportDepth(input: ProofPassportInput): ProofPasspo
   if (
     production &&
     claimDistanceNumber(claimDistance) >= 1 &&
-    evidenceItems.length > 0 &&
+    hasClaimLinkedEvidence &&
     hasAllocationIdentity
   ) return "STANDARD";
 
@@ -328,7 +336,7 @@ export function createProofPassport(input: ProofPassportInput): ProofPassport {
       ? `Delivery evidence attached for ${input.quantity} ${input.unitDefinition}.`
       : null,
     outcomeClaim: claimDistance === "D3" || claimDistance === "D4" ? input.outcome.claim : null,
-    impactClaim: claimDistance === "D4" ? input.impact.claim : null,
+    impactClaim: claimDistance === "D4" && depth === "VERIFIED" ? input.impact.claim : null,
     limitations: [...(input.limitations ?? [])],
     lastVerifiedAt: input.lastVerifiedAt ?? null,
     disclosure: isNonProduction
@@ -362,10 +370,12 @@ export function proofPassportCanClaimImpact(passport: ProofPassport, records?: P
   const derivedDepth = deriveProofPassportDepth({ ...passport, ...records });
   const proofChainMatchesPassport =
     records.contribution.id === passport.contributionId &&
+    records.contribution.quantity === passport.quantity &&
     records.delivery.id === passport.deliveryId &&
     records.delivery.providerId === passport.providerId &&
     records.outcome.id === passport.outcomeId &&
     records.impact.id === passport.impactId &&
+    records.impact.claim?.trim() === passport.impactClaim?.trim() &&
     records.contribution.environment === passport.environment &&
     derivedClaimDistance === passport.claimDistance &&
     derivedDepth === passport.depth;

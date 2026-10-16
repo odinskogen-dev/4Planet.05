@@ -75,7 +75,10 @@ const providerEvidence = {
   kind: "DELIVERY",
   sourceRef: "source:provider:1",
   capturedAt: "2026-09-08T00:00:00Z",
+  actionId: "action:test:plastic:1",
+  providerId: "provider:test",
   verifierClass: "PROVIDER",
+  relationship: "DELIVERY_LINKED",
   rights: "INTERNAL_TEST",
   limitations: ["Provider-originated evidence."],
 };
@@ -181,6 +184,30 @@ test("context-only third-party evidence cannot self-promote Passport VERIFIED or
   assert.equal(proof.proofPassportCanClaimImpact(passport), false);
 });
 
+test("context-only evidence alone cannot advance proof depth or emit an impact claim", () => {
+  const base = records("PRODUCTION");
+  base.delivery.status = "EVIDENCE_ATTACHED";
+  base.delivery.evidenceRefs = ["evidence:delivery:1"];
+  base.outcome.status = "INDEPENDENTLY_REVIEWED";
+  base.outcome.claim = "A bounded proximate outcome was observed.";
+  base.outcome.evidenceRefs = ["evidence:outcome:1"];
+  base.impact.status = "VERIFIED";
+  base.impact.claim = "Verified bounded impact claim.";
+  base.impact.method = "Independent attribution method v1";
+  const contextOnly = { ...independentVerification, id: "evidence:context-only:1", relationship: "CONTEXT_ONLY" };
+  const passport = proof.createProofPassport(passportInput({
+    environment: "PRODUCTION",
+    ...base,
+    evidenceItems: [contextOnly],
+    uniqueClaimOrAllocationId: "claim:unique:1",
+    doubleCountState: "UNIQUE_CLAIM_ID",
+  }));
+  assert.equal(passport.claimDistance, "D4");
+  assert.equal(passport.depth, "LITE");
+  assert.equal(passport.impactClaim, null);
+  assert.equal(proof.proofPassportCanClaimImpact(passport, base), false);
+});
+
 test("evidenced outcome can reach D3 without becoming verified impact", () => {
   const base = records("PRODUCTION");
   base.delivery.status = "EVIDENCE_ATTACHED";
@@ -255,6 +282,19 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
     ...base,
     delivery: { ...base.delivery, providerId: "provider:other" },
   }), false, "foreign delivery provider cannot claim impact");
+
+  assert.equal(proof.proofPassportCanClaimImpact({
+    ...passport,
+    impactClaim: "A different impact claim.",
+  }, base), false, "displayed impact claim must match the canonical impact record");
+  assert.equal(proof.proofPassportCanClaimImpact({
+    ...passport,
+    quantity: passport.quantity + 1,
+  }, base), false, "displayed quantity must match the canonical contribution record");
+  assert.equal(proof.proofPassportCanClaimImpact({
+    ...passport,
+    evidenceItems: [{ ...independentVerification, sourceRef: "" }],
+  }, base), false, "independent verification requires a source reference");
 });
 
 test("VVL maturity is sequential and cannot skip missing earlier value gates", () => {
