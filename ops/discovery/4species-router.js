@@ -7,17 +7,26 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // verified before the founder-approved production cutover.
 const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
+const PROFILE_REVIEW_TIMEOUT_MS = 3000;
+export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
+const PUBLIC_NON_PROFILE_PATHS = new Set(["/", "/explore", "/quiz", "/about"]);
 
-async function profileReviewState(pathname) {
+export function permitsSpeciesIndexing(reviewState) {
+  return reviewState === NON_PROFILE_REVIEW_STATE || reviewState === "REVIEWED";
+}
+
+export async function profileReviewState(pathname, fetchImpl = fetch) {
+  const normalizedPath = `/${pathname.split("?")[0].split("#")[0].split("/").filter(Boolean).join("/")}`;
+  if (PUBLIC_NON_PROFILE_PATHS.has(normalizedPath)) return NON_PROFILE_REVIEW_STATE;
   const parts = pathname.split("/").filter(Boolean);
-  if (parts.length !== 1) return null;
+  if (parts.length !== 1) return NON_PROFILE_REVIEW_STATE;
   const slug = parts[0];
-  if (["explore", "quiz", "about"].includes(slug)) return null;
-  const response = await fetch(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
-    headers: { accept: "application/json" },
-  });
-  if (!response.ok) return null;
   try {
+    const response = await fetchImpl(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(PROFILE_REVIEW_TIMEOUT_MS),
+    });
+    if (!response.ok) return "UNREVIEWED";
     const page = await response.json();
     return page?.provenance?.review || "UNREVIEWED";
   } catch {
@@ -40,7 +49,7 @@ async function reviewedSpeciesSitemap(request) {
     const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
     if (!loc) continue;
     const review = await profileReviewState(new URL(loc).pathname);
-    if (review === null || review === "REVIEWED") kept.push(block);
+    if (permitsSpeciesIndexing(review)) kept.push(block);
   }
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
   return new Response(body, {
@@ -81,13 +90,13 @@ async function proxySpeciesV53(request) {
         "; frame-src 'self' https://4planetatlas.com https://www.4planetatlas.com");
     }
     out.set("x-4species-html-cache", "no-store-v53-hotfix");
-    if (reviewState !== null && reviewState !== "REVIEWED") {
+    if (!permitsSpeciesIndexing(reviewState)) {
       out.set("x-robots-tag", "noindex, nofollow, noarchive");
       out.set("x-4species-index-gate", `review-${reviewState.toLowerCase()}`);
     }
   }
   const response = new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
-  if (request.method === "GET" && reviewState !== null && reviewState !== "REVIEWED" && (out.get("content-type")||"").includes("text/html")) {
+  if (request.method === "GET" && !permitsSpeciesIndexing(reviewState) && (out.get("content-type")||"").includes("text/html")) {
     return new HTMLRewriter()
       .on('meta[name="robots"]', { element(el) { el.setAttribute("content", "noindex,nofollow,noarchive"); } })
       .on("head", { element(el) { el.append('<meta name="googlebot" content="noindex,nofollow,noarchive">', { html: true }); } })

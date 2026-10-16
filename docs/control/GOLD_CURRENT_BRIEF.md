@@ -881,3 +881,30 @@ A first-time visitor cannot reasonably infer that 4PLANET has already appointed 
 **ROLLBACK:** parent HEIR `b2dd0e09b13bb95b6fcafa55bd85921dfe6f0f7c`.
 
 **MAKER ≠ JUDGE:** deterministic contracts and candidate build run on the HEIR; independent Gold judges the resulting exact SHA. LIVE remains Founder-gated.
+# SPECIES — PROFILE REVIEW STATE FAIL-CLOSED — 16 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD PENDING / NO DEPLOYMENT / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or search crawler opens a SPECIES profile and must not receive an indexable claim surface when the canonical human-review record is missing or unavailable.
+
+**ONE THING TO UNDERSTAND:** only an explicit canonical `provenance.review === "REVIEWED"` permits a profile to be indexed; absence, error and ambiguity are not approval.
+
+**PRIMARY ACTION:** fail closed to noindex and sitemap exclusion for missing, non-OK, malformed, incomplete or timed-out profile-review evidence.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** keep the profile experience unchanged when reviewed; preserve enumerated public universe routes; apply one shared indexing predicate to HTML and sitemap; independently verify exact-SHA browser and deployed header/meta/sitemap behaviour before release.
+
+**WHAT CAN BE REMOVED:** the `null`/unknown state that previously bypassed both the HTML robot gate and sitemap filter.
+
+**WHAT MUST BE REUSED:** existing v53 router, canonical `/species-data/v1/{slug}.json` provenance, issue #145, PR #131 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** deterministic source tests prove the HEIR gate semantics, not independent Gold, deployment, public runtime state or human review of any individual profile.
+
+**MOBILE-FIRST RISK:** none introduced in presentation; required 390/430/1440 Chromium/WebKit verification remains an independent acceptance gate.
+
+**HUMAN SUCCESS:** unreviewed or unverifiable profiles cannot silently become search-discoverable while reviewed profiles and explicit public universe routes remain reachable.
+
+**DONOR DECISION:** no donor; correct the existing returned HEIR path in place.
+
+**BASE / ROLLBACK:** `king/test@c9477d090e11cf4e3d440b59f1ec750f62c91139`; revert this bounded correction commit if independent Gold finds a valid regression.
+
+**MAKER ≠ JUDGE:** Factory implements the returned correction; independent Gold judges the exact resulting HEIR SHA. Founder release remains separate.
