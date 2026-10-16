@@ -52,3 +52,17 @@ jobs:
             head -c 160 /tmp/response.txt | tr '\\n' ' '; echo
           done
           echo 'PREVIEW_DIAG_COMPLETE'
+
+      - name: Explain why automatic Pages previews return 404
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H "Content-Type: application/json")
+          zone=$(curl -fsS "https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active" "${auth[@]}")
+          acct=$(jq -r '.result[0].account.id' <<<"$zone")
+          obj=$(curl -fsS "https://api.cloudflare.com/client/v4/accounts/$acct/pages/projects/4planet-05" "${auth[@]}")
+          echo "$obj" | jq -c '{name:.result.name,build_config:.result.build_config,source:.result.source,latest_deployment:{id:.result.latest_deployment.id,stage:.result.latest_deployment.latest_stage,status:.result.latest_deployment.status}}'
+          deps=$(curl -fsS "https://api.cloudflare.com/client/v4/accounts/$acct/pages/projects/4planet-05/deployments?page=1&per_page=12" "${auth[@]}")
+          echo "$deps" | jq -c '[.result[] | {id,environment,branch:.deployment_trigger.metadata.branch,sha:.deployment_trigger.metadata.commit_hash,stage:.latest_stage,stages:.stages}]'
+          curl -fsSL --max-time 10 https://95dcfae7.4planet-05.pages.dev/ -o /tmp/empty-preview.txt || true
+          grep -i -E '<title>|404|project not found|pages' /tmp/empty-preview.txt | head -n 12 | cut -c1-180 || true
