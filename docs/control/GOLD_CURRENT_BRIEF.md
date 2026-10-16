@@ -1000,3 +1000,21 @@ LIVE PROOF CONTROL: the real-domain browser workflow derives the expected SOURCE
 **MOBILE-FIRST RISK:** iOS Safari has additional cookie/localStorage behaviour independent of CSP.
 **HUMAN SUCCESS:** Login via Google leads from provider to 4PLANET ID to target 4planet.org with session retained.
 **RELEASE:** Exact public/_headers blob 3f4d0dfc836131462ad7bc02ac9dd9d551292ce4 verified on king/test commit 9f4a917d6837953e494d15d927697316119df968. Rollback main@8c78be69266f2bf6ecae4b3147fe9b6791c85375. Explicit founder hotfix authorisation 08–09 Oct 2026. No 4SAPIEN product changes.
+
+## 16 OCTOBER 2026 — P0 AUTH + ANALYTICS TOKEN-PRIVACY CANDIDATE
+
+**Founder instruction:** Direct live remediation requested in ChatGPT, 16 October 2026. This is authorisation to pursue a controlled release, not proof that prior-live, rollback and authority gates have been satisfied.
+
+**Affected authority:** `4PLANET ID`, `4PLANET Public World` shared analytics. Source `main` candidate `axe/live-security-closure-20261016`. No unrelated game, mission, SPECIES, ATLAS, CSS, imagery or application features changed.
+
+**Incident risk:** Token-bearing OAuth callback fragments and sensitive `return_to` query parameters must not enter browser history, Google Analytics, PostHog, or cross-domain login URLs. Historical Analytics evidence showed possible credential collection, but it does not prove an unexpired token remains exploitable.
+
+**Change:** Strip token-bearing URL fragments before SDK load; sanitise return destinations; set token-free GA4 config page location; block analytics during sensitive callbacks; redact unsafe event parameters before both sinks.
+
+**Acceptance:** OAuth regression tests, telemetry PII tests, TS typecheck, dependency/secret checks, complete source build, no unexpected product regressions; preview SHA and exact live origin readback. No credentials or account data in test logs.
+
+**Rollback:** Preserve exact prior `main` SHA and live Cloudflare deployment version before release. No blind promotion; do not edit immutable release-source or authority controls to suppress red gates.
+
+**Truth state:** SOURCE PATCH + TESTS COMPLETE ON CANDIDATE. GOLD gate currently rejects direct main promotions from non-HEIR branches. Until existing release policy, source provenance and rollback gates are satisfied, LIVE IS NOT VERIFIED. No claim of completed production remediation.
+
+**Human success:** A user logs in normally, can return to ATLAS context, and none of their OAuth, email or session values appear in Analytics traffic or login URLs.
