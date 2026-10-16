@@ -1,0 +1,55 @@
+name: ROMA CC0 Historical Equipment
+on:
+  push:
+    branches: [roma-asset-intake-20261017]
+    paths:
+      - experiments/game-lab/roma/assets/gear_cc0_rome.py
+      - .github/workflows/roma-gear-cc0.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q requests beautifulsoup4 trimesh pygltflib
+      - name: Download verified CC0 source and convert available GLBs
+        run: python -u experiments/game-lab/roma/assets/gear_cc0_rome.py
+      - name: Capture origin CC0 pages for rights evidence
+        shell: bash
+        run: |
+          set +e
+          for pair in \
+            "sword|https://opengameart.org/content/3d-swords-lowpol-cc0" \
+            "greek|https://opengameart.org/content/3d-greek-weapons-set" \
+            "helmet|https://opengameart.org/content/bucket-helmet"; do
+            name="$(echo "$pair"|cut -d'|' -f1)"
+            url="$(echo "$pair"|cut -d'|' -f2-)"
+            timeout 10 google-chrome --headless --no-sandbox --disable-gpu --window-size=1120,800 \
+              --screenshot="ROMA_GEAR_CC0/LICENSES/$name-license.png" "$url" >/dev/null 2>&1
+          done
+          exit 0
+      - name: Validate checksums and deliver
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib,csv,hashlib,zipfile
+          root=pathlib.Path('ROMA_GEAR_CC0')
+          files=list(csv.DictReader((root/'ASSET_MANIFEST.csv').open()))
+          assert files,"No gear files downloaded"
+          for row in files:
+              p=root/row['file'];assert hashlib.sha256(p.read_bytes()).hexdigest()==row['sha256']
+          with zipfile.ZipFile('ROMA_GEAR_CC0.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in root.rglob('*'):
+                  if p.is_file():z.write(p,p.as_posix())
+          print('ROMA_GEAR_TOTAL',len(files),'GLB_COUNT',len([x for x in files if x['file'].endswith('.glb')]),'ZIP_BYTES',pathlib.Path('ROMA_GEAR_CC0.zip').stat().st_size,flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ROMA_GEAR_CC0
+          path: ROMA_GEAR_CC0.zip
+          retention-days: 30
