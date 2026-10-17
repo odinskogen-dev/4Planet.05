@@ -1,0 +1,30 @@
+name: ORCA clarity patch dry run
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths: [.github/workflows/orca-clarity-dryrun.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate pixel ratio patch and source CSP without mutations
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,hashlib,base64
+          p=Path('public/games/wild-orca/index.html')
+          s=p.read_bytes()
+          target=b'let On=Math.min(window.devicePixelRatio||1,n?1.35:1.6);'
+          assert s.count(target)==1
+          script=[x.group(1) for x in re.finditer(rb'<script\b[^>]*>(.*?)</script>',s,re.I|re.S) if target in x.group(1)]
+          assert len(script)==1
+          digest='sha256-'+base64.b64encode(hashlib.sha256(script[0]).digest()).decode()
+          head=Path('public/_headers').read_text()
+          assert head.count(digest)==1
+          print('SAFE_ORCA_PATCH_AND_CSP_PREFLIGHT_PASS',digest)
+          PY
