@@ -88,34 +88,40 @@ test("Bay action is bound to the canonical ORCA Actor identity and exact profile
   assert.equal(contract.actor.id, actor.id);
   assert.equal(contract.actor.profilePath, `/actors/${actor.slug}`);
   assert.ok(actor.actionContractIds.includes(contract.id));
+  assert.equal(actorGold.actorForActionContract(contract)?.id, "P17-A036");
   assert.equal(
-    action.actionContractActorMatchesCanonicalIdentity(contract, "P17-A036", "/actors/orca"),
-    true,
+    actorGold.actorForActionContract({
+      ...contract,
+      actor: { ...contract.actor, id: "actor:orca", profilePath: "/actors/orca" },
+    }),
+    undefined,
   );
   assert.equal(
-    action.actionContractActorMatchesCanonicalIdentity(
-      { ...contract, actor: { ...contract.actor, id: "actor:orca" } },
-      "P17-A036",
-      "/actors/orca",
-    ),
-    false,
+    actorGold.actorForActionContract({
+      ...contract,
+      actor: { ...contract.actor, id: "P17-A999", profilePath: "/actors/not-orca" },
+    }),
+    undefined,
   );
   assert.equal(
-    action.actionContractActorMatchesCanonicalIdentity(contract, "actor:orca", "/actors/orca"),
-    false,
+    actorGold.actorForActionContract({
+      ...contract,
+      actor: { ...contract.actor, profilePath: "/actors/another-orca" },
+    }),
+    undefined,
   );
   assert.equal(
-    action.actionContractActorMatchesCanonicalIdentity(contract, "P17-A036", "/actors/orca/"),
-    false,
+    actorGold.actorForActionContract({ ...contract, id: "action:unknown" }),
+    undefined,
   );
-  assert.equal(
-    action.actionContractActorMatchesCanonicalIdentity(
-      { ...contract, actor: { ...contract.actor, profilePath: "/actors/another-orca" } },
-      "P17-A036",
-      "/actors/orca",
-    ),
-    false,
-  );
+});
+
+test("public Bay action path consumes the Actor Master identity gate and fails closed", () => {
+  assert.match(impactActionProofSource, /actorForActionContract\(action\)/);
+  assert.match(impactActionProofSource, /if \(!canonicalActor\)/);
+  assert.match(impactActionProofSource, /IDENTITY UNRESOLVED/);
+  assert.match(impactActionProofSource, /OPEN CANONICAL ACTOR PROFILE/);
+  assert.doesNotMatch(impactActionProofSource, /cell\.actor\.name/);
 });
 
 test("Bay survey action still fails closed while bounded quantity and current GBP terms are unresolved", () => {

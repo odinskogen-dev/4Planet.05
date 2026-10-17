@@ -4,6 +4,7 @@ import { PublicShell } from "@/components/layout/PublicShell";
 import { Section } from "@/components/ui";
 import { T } from "@/styles/tokens";
 import { BAY_OF_BISCAY_SURVEY_ACTION, actionContractTruthSummary } from "@/impact/actionContract";
+import { actorForActionContract } from "@/content/actorGold";
 import { ORCA_BAY_PARTNER_CELL, publicOrcaCellSources } from "@/partners/orcaPartnerCell";
 
 const mono: CSSProperties = { fontFamily: T.mono, fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase" };
@@ -17,11 +18,25 @@ function RuleList({ items }: { items: string[] }) {
 
 export function BayActionProof() {
   const action = BAY_OF_BISCAY_SURVEY_ACTION;
+  const canonicalActor = actorForActionContract(action);
   const cell = ORCA_BAY_PARTNER_CELL;
   const truth = actionContractTruthSummary(action);
   const surveys = truth.confirmedAnnualSurveys;
   const surveyDays = truth.confirmedAnnualSurveyDays;
   const publicSources = publicOrcaCellSources(cell);
+
+  if (!canonicalActor) {
+    return (
+      <PublicShell>
+        <Section pad="clamp(86px,10vw,136px)">
+          <Link to="/impact" style={{ ...mono, color: T.blue }}>← IMPACT</Link>
+          <p style={{ marginTop: 28, ...mono, color: T.red }}>IDENTITY UNRESOLVED</p>
+          <h1 style={{ margin: "16px 0 0", fontFamily: T.display, fontSize: "clamp(48px,7.4vw,96px)", lineHeight: .91, letterSpacing: "-.045em", maxWidth: "12ch" }}>This action is not available.</h1>
+          <p style={{ marginTop: 26, ...body }}>The action could not be bound to exactly one reviewed Actor Master record. Funding, delivery and impact claims remain closed.</p>
+        </Section>
+      </PublicShell>
+    );
+  }
 
   return (
     <PublicShell>
@@ -68,7 +83,7 @@ export function BayActionProof() {
         <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(34px,4.5vw,62px)", lineHeight: 1 }}>Portsmouth → Bay of Biscay → Santander.</h2>
         <p style={{ marginTop: 18, ...body }}>{cell.place.boundary}</p>
         <div style={{ marginTop: 26, ...grid }}>
-          <div style={panel}><div style={{ ...mono, color: T.blue }}>ACTOR</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>{cell.actor.name}</h3><p style={body}>{cell.actor.role}</p><div style={{ marginTop: 12, ...mono }}>{cell.actor.relationshipState.replaceAll("_", " ")}</div></div>
+          <div style={panel}><div style={{ ...mono, color: T.blue }}>ACTOR</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>{canonicalActor.name}</h3><p style={body}>{cell.actor.role}</p><div style={{ marginTop: 12, ...mono }}>{cell.actor.relationshipState.replaceAll("_", " ")}</div><Link to={`/actors/${canonicalActor.slug}`} style={{ display: "inline-block", marginTop: 12, ...mono, color: T.blue }}>OPEN CANONICAL ACTOR PROFILE →</Link></div>
           <div style={panel}><div style={{ ...mono, color: T.blue }}>2026 · PARTNER-CONFIRMED RANGE</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>{surveys ? `${surveys.min}–${surveys.max} surveys` : "—"}</h3><p style={body}>{surveyDays ? `${surveyDays.min}–${surveyDays.max} survey days across four-day return crossings.` : "Survey-day range unresolved."}</p><div style={{ marginTop: 12, ...mono }}>STEVE JONES · ORCA · 4 SEP 2026 · INTERNAL SOURCE</div></div>
           <div style={panel}><div style={{ ...mono, color: T.blue }}>PUBLIC CURRENT PROOF</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>22 JUN 2026</h3><p style={body}>ORCA publicly documents a Portsmouth–Santander survey through the English Channel and Bay of Biscay in June 2026.</p></div>
         </div>

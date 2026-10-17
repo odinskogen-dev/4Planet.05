@@ -211,24 +211,6 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   ],
 };
 
-/**
- * Bind an action to a caller-supplied canonical Actor identity without
- * guessing from a name or slug. The caller remains responsible for sourcing
- * that identity from the reviewed Actor Master projection.
- */
-export function actionContractActorMatchesCanonicalIdentity(
-  contract: ActionContract,
-  canonicalActorId: string,
-  canonicalProfilePath: `/actors/${string}`,
-): boolean {
-  return (
-    canonicalActorId.trim().length > 0 &&
-    /^\/actors\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(canonicalProfilePath) &&
-    contract.actor.id === canonicalActorId &&
-    contract.actor.profilePath === canonicalProfilePath
-  );
-}
-
 export function actionContractCanMatchFunding(contract: ActionContract): boolean {
   return (
     contract.readiness === "READY_FOR_FUNDER_MATCH" &&

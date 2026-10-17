@@ -497,3 +497,24 @@ export const ACTOR_TORTURE_TEST_ARCHETYPES = [
 export function actorBySlug(slug?: string) {
   return ACTOR_GOLD_PROFILES.find((actor) => actor.slug === slug);
 }
+
+/**
+ * Resolve an Action Contract only through the reviewed Actor Master projection.
+ *
+ * The contract's actor fields are a projection, not identity authority. A valid
+ * binding therefore requires exactly one Actor Master record to own the action
+ * id and that record's canonical id and route to match the projection exactly.
+ */
+export function actorForActionContract(
+  contract: Pick<ActionContract, "id" | "actor">,
+): ActorGoldProfile | undefined {
+  const linkedActors = ACTOR_GOLD_PROFILES.filter((actor) =>
+    actor.actionContractIds.includes(contract.id),
+  );
+  if (linkedActors.length !== 1) return undefined;
+
+  const actor = linkedActors[0];
+  return actor.id === contract.actor.id && `/actors/${actor.slug}` === contract.actor.profilePath
+    ? actor
+    : undefined;
+}

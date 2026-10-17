@@ -1,20 +1,20 @@
 # IMPACT / ACTOR — CANONICAL IDENTITY BINDING — 17 OCT 2026
 
-**STATUS:** RETURNED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
 **USER ARRIVES BECAUSE:** a person following ORCA from an Actor profile into an IMPACT action needs both surfaces to refer to the same canonical organisation.
-**ONE THING TO UNDERSTAND:** an action-contract name or local slug is not identity authority; the action must carry the existing reviewed Actor Master ID and exact profile route.
+**ONE THING TO UNDERSTAND:** action-contract actor fields are projections, not identity authority; the public action must resolve through exactly one reviewed Actor Master record.
 **PRIMARY ACTION:** inspect the bounded Bay of Biscay action while retaining an exact path back to the canonical ORCA Actor profile.
 **SECONDARY DEPTH:** review the existing funding, delivery, outcome, evidence and claim boundaries without inferring partnership or ecological impact.
 **P1 DOMINANT:** the existing bounded action and its fail-closed readiness.
 **P2 ORIENTATION:** canonical ORCA organisation identity `P17-A036` and profile route `/actors/orca`.
-**P3 ACTION:** continue through the existing Actor/IMPACT journey only when the exact identity binding passes.
+**P3 ACTION:** continue through the existing Actor/IMPACT journey only when the Actor Master owns the action ID and its exact ID and route match the action projection.
 **P4 DEPTH:** independent exact-head contract, browser and runtime verification before release.
-**WHAT CAN BE REMOVED:** the duplicate local alias `actor:orca` and any name/slug-based identity inference.
+**WHAT CAN BE REMOVED:** the caller-supplied identity gate, forged-pair bypass and any name/slug-based identity inference.
 **WHAT MUST BE REUSED:** ACTOR-FP-01, issue #152, canonical Actor Master ID `P17-A036`, the existing Bay action contract, PR #131 and sole `king/test` HEIR.
 **TRUTH BOUNDARY:** this binds an internal action projection to the existing canonical Actor identity; it does not create a partnership, approve funding, prove delivery/outcome/impact, grant Gold, deploy or alter LIVE.
 **MOBILE-FIRST RISK:** no layout or interaction change; exact-head mobile/keyboard and cross-route browser verification remain release gates.
-**HUMAN SUCCESS:** the existing ORCA action accepts only the exact canonical Actor ID and profile route; local aliases, wrong IDs and alternate routes fail closed.
-**BASE / ROLLBACK:** `king/test@f6b12d98e6ba1bd0f1231cf672fa65f109678871`; revert this bounded contract/test/brief correction if independent Gold finds an identity, route, funding or claim-boundary regression.
+**HUMAN SUCCESS:** the existing ORCA action resolves only when one Actor Master record owns its action ID and matches `P17-A036` plus `/actors/orca`; forged pairs, wrong IDs, alternate routes and unlinked actions fail closed before the public proof renders.
+**BASE / ROLLBACK:** `king/test@f49f5c062e0b3067a95cfcd472f9e7246ff1f117`; revert this bounded Actor/UI/contract/test/brief correction if independent Gold finds an identity, route, funding or claim-boundary regression.
 **MAKER ≠ JUDGE:** Factory closes the returned identity defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
 
 ---
