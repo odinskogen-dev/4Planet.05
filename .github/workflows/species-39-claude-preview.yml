@@ -1,4 +1,4 @@
-name: SPECIES 39 — Wild Source Cleared Claude Preview
+name: SPECIES 39 — Curated Wildlife Claude Premium Preview
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
@@ -130,6 +130,9 @@ jobs:
           python3 "$GITHUB_WORKSPACE/ops/species/v53/curate_cohort11_photos.py"
           test -f public/species-media/gold-candidates/rights-record-11.json
           test "$(find public/species-media/gold-candidates -maxdepth 1 -name '*.jpg' | wc -l)" = 11
+          # Curated hero media changed serialized pages; rebuild Claude index
+          # before existing no-drift validator runs.
+          node scripts/species-page-validate.mjs --write-index
           python3 "$GITHUB_WORKSPACE/ops/species/v53/premium-wildlife-hotfix.py"
           # Audit Claude's EXISTING per-claim citation records; do not create a source system.
           python3 - <<'PY'
