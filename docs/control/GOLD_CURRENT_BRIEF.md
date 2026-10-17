@@ -1,3 +1,24 @@
+# S4PIENS / COMPANY-GOLD-01 — CLIMATE TRACE FAILURE CACHE BOUNDARY — 17 OCT 2026
+
+**STATUS:** RETURNED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs recovered Climate TRACE data to become available immediately after a temporary upstream, schema or network failure.
+**ONE THING TO UNDERSTAND:** successful source records may use the existing one-hour public cache, but a 502 is not valid source data and must never advertise reusable caching.
+**PRIMARY ACTION:** retry the existing S4PIENS/ATLAS/4BRANDS Climate TRACE-backed view after a source failure without a stale error being treated like a successful response.
+**SECONDARY DEPTH:** distinguish upstream HTTP failure, empty/schema mismatch, unmappable coordinates and thrown network/parse failure while retaining the shared source truth boundary.
+**P1 DOMINANT:** currently available source-backed emissions data.
+**P2 ORIENTATION:** explicit unavailable/error state when the source cannot provide valid records.
+**P3 ACTION:** retry through the existing product path after recovery.
+**P4 DEPTH:** inspect source identity, year, geography, rights and limitations on successful records only.
+**WHAT CAN BE REMOVED:** the assumption that one cache policy is safe for both 200 source data and 502 source failures.
+**WHAT MUST BE REUSED:** COMPANY-GOLD-01, issue #148, the shared Climate TRACE proxy and contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** `no-store` prevents the application response from advertising a reusable failure; it does not prove a particular CDN configuration, upstream recovery, deployment, browser behaviour, Gold or LIVE state.
+**MOBILE-FIRST RISK:** no layout or interaction change; authorised browser and raw-response verification remain release gates.
+**HUMAN SUCCESS:** all 502 paths return `Cache-Control: no-store`, while a subsequent valid response retains `public, max-age=3600` and exposes the recovered source record.
+**BASE / ROLLBACK:** `king/test@ece82a9e1dc1adb413cfbc9c7868c0ce09bf7645`; revert the bounded proxy/test/brief commit if independent Gold finds an HTTP, cache or source-truth regression.
+**MAKER ≠ JUDGE:** Factory closes the returned cache-boundary defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
+
+---
+
 # SPECIES — NESTED-PATH HUMAN-REVIEW INDEX GATE — 17 OCT 2026
 
 **STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.

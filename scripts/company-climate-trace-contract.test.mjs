@@ -66,6 +66,38 @@ test("shared Climate TRACE proxy keeps missing values unknown without erasing re
  }
 });
 
+test("shared Climate TRACE proxy never advertises reusable caching for failures",async()=>{
+ const m=await load("../functions/api/climate-trace.ts");
+ const originalFetch=globalThis.fetch;
+ const steps=[
+  async()=>new Response("upstream unavailable",{status:503}),
+  async()=>new Response(JSON.stringify([]),{status:200,headers:{"content-type":"application/json"}}),
+  async()=>new Response(JSON.stringify([{id:"unmappable",latitude:null,longitude:""}]),{status:200,headers:{"content-type":"application/json"}}),
+  async()=>{throw new Error("network unavailable");},
+  async()=>new Response(JSON.stringify([{id:"recovered",latitude:59.91,longitude:10.75,emissionsQuantity:0}]),{status:200,headers:{"content-type":"application/json"}}),
+ ];
+ globalThis.fetch=async(...args)=>steps.shift()(...args);
+
+ try{
+  const request=()=>m.onRequestGet({request:new Request("https://test.4planet.org/api/climate-trace?countries=NOR&sectors=power"),env:{CLIMATE_TRACE_BASE:"https://example.test/v7"}});
+  for(const expectedError of ["UPSTREAM_503","EMPTY_OR_CONTRACT_MISMATCH","NO_MAPPABLE_COORDINATES","network unavailable"]){
+   const response=await request();
+   assert.equal(response.status,502);
+   assert.equal(response.headers.get("cache-control"),"no-store");
+   assert.match((await response.json()).error,new RegExp(expectedError));
+  }
+
+  const recovered=await request();
+  assert.equal(recovered.status,200);
+  assert.equal(recovered.headers.get("cache-control"),"public, max-age=3600");
+  const recoveredBody=await recovered.json();
+  assert.equal(recoveredBody.assets[0].id,"recovered");
+  assert.match(recoveredBody.sourceMeta.cachePolicy,/failures are no-store/);
+ }finally{
+  globalThis.fetch=originalFetch;
+ }
+});
+
 test("4BRANDS requires user review before fetching owner facilities",async()=>{
  const ui=await readFile(new URL("../src/pages/partners/FourBrand.tsx",import.meta.url),"utf8");
  assert.match(ui,/Find owner candidates/);

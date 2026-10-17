@@ -26,7 +26,7 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: {
       "content-type": "application/json",
-      "cache-control": "public, max-age=3600",
+      "cache-control": status >= 400 ? "no-store" : "public, max-age=3600",
       "access-control-allow-origin": "*",
     },
   });
@@ -125,7 +125,7 @@ export const onRequestGet: (ctx: { request: Request; env: Env }) => Promise<Resp
         license: "CC BY 4.0 for Climate TRACE emissions data/metadata, with listed external-dataset exceptions",
         commercialReuse: "PERMITTED_FOR_CLIMATE_TRACE_DATA_WITH_ATTRIBUTION; REVIEW_EXTERNAL_SOURCE_EXCEPTIONS",
         attribution: "Climate TRACE; indicate 4PLANET changes/normalisation",
-        cachePolicy: "4PLANET edge cache 1 hour",
+        cachePolicy: "Successful 4PLANET responses use a 1-hour public edge cache; failures are no-store",
         accessCost: "FREE_PUBLIC_API_BETA",
         rateLimit: "NOT_GUARANTEED; KEEP_VOLUME_LOW_WHILE_API_IS_BETA",
         rights: "Climate TRACE core emissions data/metadata are CC BY 4.0; source-level ownership and listed external datasets can carry separate terms that must travel with derived records.",
