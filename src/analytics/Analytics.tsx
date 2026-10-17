@@ -84,19 +84,12 @@ function classifyDiscoveryEntry(): DiscoveryChannel {
 function trackDiscoveryEntryOnce(pagePath: string) {
   if (window.sessionStorage.getItem(DISCOVERY_SESSION_KEY)) return;
   const discoveryChannel = classifyDiscoveryEntry();
-  window.gtag?.("event", "discovery_entry", {
+  const tracked = trackEvent("discovery_entry", {
     discovery_channel: discoveryChannel,
     landing_product: productArea(pagePath, window.location.hostname),
     landing_path: pagePath,
-    site_host: canonicalHost(window.location.hostname),
   });
-  capturePostHog("discovery_entry", {
-    discovery_channel: discoveryChannel,
-    landing_product: productArea(pagePath, window.location.hostname),
-    landing_path: pagePath,
-    site_host: canonicalHost(window.location.hostname),
-  });
-  window.sessionStorage.setItem(DISCOVERY_SESSION_KEY, discoveryChannel);
+  if (tracked) window.sessionStorage.setItem(DISCOVERY_SESSION_KEY, discoveryChannel);
 }
 
 function configuredDomains(): string[] {
@@ -111,6 +104,12 @@ export function isAnalyticsHostAllowed(hostname: string): boolean {
   const host = canonicalHost(hostname);
   if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".pages.dev")) return false;
   return configuredDomains().includes(host);
+}
+
+function isSensitiveAnalyticsNavigation(): boolean {
+  const { pathname, search, hash } = window.location;
+  if (/^\/(?:auth\/(?:4planet\/)?callback|oauth\/(?:callback|consent))\/?$/i.test(pathname)) return true;
+  return /(?:^|[?#&])(?:access_token|refresh_token|id_token|token_hash|authorization_code|authorization_id|code|state|client_secret|session_token)=/i.test(search + hash);
 }
 
 function readConsent(): ConsentState {
@@ -183,6 +182,9 @@ function installGoogleTag(id: string, domains: string[]) {
   window.gtag?.("js", new Date());
   window.gtag?.("config", id, {
     send_page_view: false,
+    // GA automatic collection must never ingest hash/query OAuth credentials.
+    page_location: `${window.location.origin}${window.location.pathname}`,
+    page_path: window.location.pathname,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
   });
@@ -194,16 +196,71 @@ function installGoogleTag(id: string, domains: string[]) {
   document.head.appendChild(script);
 }
 
-export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}) {
-  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname)) return;
+export function privacySafeEventParameters(parameters: Record<string, string | number | boolean>) {
+  const safe: Record<string, string | number | boolean> = {};
+  const allowedKeys = new Set([
+    "action_kind", "activation_kind", "analysis_status", "attempts", "auth_method",
+    "campaign_id", "canonical_entity", "claim_kind", "completion_type", "confirmation_state",
+    "content_group", "country_scope", "creation_kind", "decision_kind", "decision_state",
+    "decision_states", "destination", "destination_product", "destination_type",
+    "discovery_channel", "entry_kind", "entry_path", "error_kind", "event_id",
+    "evidence_ready_items", "from_product", "has_canonical_entity", "interest_surface",
+    "internal", "item_count", "landing_path", "landing_product", "legal_identity",
+    "memory_kind", "object_id", "object_kind", "object_slug", "object_type",
+    "opportunity_count", "opportunity_id", "option_count", "page_path", "placement",
+    "product_area", "product_key", "public_slug", "result_count", "share_method",
+    "site_host", "source_count", "source_host", "source_id", "source_kind",
+    "species_slug", "target_host", "to_product", "unsupported_items", "use_kind",
+    "value_kind", "variant_id",
+  ]);
+  const pathKeys = new Set(["entry_path", "landing_path", "page_path"]);
+  const hostKeys = new Set(["site_host", "source_host", "target_host"]);
+  const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
+  const sensitiveValue = /\b[^\s@]+@[^\s@]+\.[a-z]{2,}\b|eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}|\bbearer[\s_:.-]+[A-Za-z0-9._~-]{8,}|(?:access_token|refresh_token|id_token|token_hash|authorization_code|client_secret)=|(?:\+?\d[\d .()/-]{7,}\d)|\b\d{1,6}\s+[A-Za-z][A-Za-z .'-]{2,}\b/i;
+  const tokenValue = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
+  const pathValue = /^\/[A-Za-z0-9._~!$'()*+,;=:@%/-]{0,219}$/;
+  const hostValue = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 
-  const shared = {
+  for (const [key, value] of Object.entries(parameters)) {
+    const flatKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    if (!allowedKeys.has(key)
+      || blockedKeys.test(key)
+      || /(?:accesstoken|refreshtoken|idtoken|tokenhash|authorizationcode|authorizationid|clientsecret|emailaddress|phonenumber|password|apikey|sessiontoken|jwt|onetimesecret)/.test(flatKey)) continue;
+    if (typeof value === "number") {
+      if (Number.isFinite(value) && Math.abs(value) <= 1_000_000_000) safe[key] = value;
+      continue;
+    }
+    if (typeof value === "boolean") {
+      safe[key] = value;
+      continue;
+    }
+    const bounded = value.trim();
+    if (!bounded || bounded.length > 220 || sensitiveValue.test(bounded)) continue;
+    if (pathKeys.has(key)) {
+      if (pathValue.test(bounded) && !/[?#]/.test(bounded)) safe[key] = bounded;
+      continue;
+    }
+    if (hostKeys.has(key)) {
+      const host = bounded.toLowerCase().replace(/^www\./, "");
+      if (hostValue.test(host)) safe[key] = host;
+      continue;
+    }
+    if (tokenValue.test(bounded)) safe[key] = bounded;
+  }
+  return safe;
+}
+
+export function trackEvent(name: string, parameters: Record<string, string | number | boolean> = {}): boolean {
+  if (readConsent() !== "granted" || !isAnalyticsHostAllowed(window.location.hostname) || isSensitiveAnalyticsNavigation()) return false;
+
+  const shared = privacySafeEventParameters({
     ...parameters,
     site_host: canonicalHost(window.location.hostname),
-  };
+  });
 
   window.gtag?.("event", name, shared);
   capturePostHog(name, shared);
+  return true;
 }
 
 export function resetAnalyticsConsent() {
@@ -224,29 +281,23 @@ export function Analytics() {
   }, [allowedHost, consent, id]);
 
   useEffect(() => {
-    if (!allowedHost || !id || consent !== "granted") return;
+    if (!allowedHost || !id || consent !== "granted" || isSensitiveAnalyticsNavigation()) return;
     installGoogleTag(id, configuredDomains());
 
     // Deliberately exclude query strings and fragments from analytics. OAuth
     // callbacks and other routes can carry credentials or personal data there.
-    const safePageLocation = `${window.location.origin}${location.pathname}`;
-    const pageProperties = {
-      page_title: document.title,
+    const sharedPageProperties = privacySafeEventParameters({
       page_path: location.pathname,
       content_group: productArea(location.pathname, window.location.hostname),
       site_host: canonicalHost(window.location.hostname),
-    };
-
-    window.gtag?.("event", "page_view", {
-      ...pageProperties,
-      page_location: safePageLocation,
-      page_path: location.pathname,
     });
-    capturePostHog("$pageview", pageProperties);
+
+    window.gtag?.("event", "page_view", sharedPageProperties);
+    capturePostHog("$pageview", sharedPageProperties);
     trackDiscoveryEntryOnce(location.pathname);
   }, [allowedHost, consent, id, location.pathname]);
 
-  if (!allowedHost || !id || consent !== null) return null;
+  if (!allowedHost || !id || consent !== null || isSensitiveAnalyticsNavigation()) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);

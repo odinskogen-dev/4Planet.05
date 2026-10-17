@@ -240,10 +240,36 @@ if (mode === "pr-main") {
     && files.includes("scripts/identity-csp-contract.test.mjs")
     && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
     && git(["hash-object", "public/_headers"]) === "3f4d0dfc836131462ad7bc02ac9dd9d551292ce4";
-  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix) {
+  // 2026-10-16 Founder-authorised emergency release for two privacy-sensitive
+  // files, with independent Cloudflare prior-live confirmation and HEIR proof.
+  // Every touched product blob is pinned; all other product changes fail closed.
+  const p0PrivacyHotfix = head === "axe/live-security-closure-20261016"
+    && manifest.status === "FOUNDER_ACCEPTED"
+    && manifest.boundedRelease === true
+    && manifest.releaseKind === "P0_AUTH_ANALYTICS_PRIVACY"
+    && manifest.hotfixBranch === head
+    && manifest.sourceBranch === "king/test"
+    && manifest.testKingSha === "516c65ca5855164c985ec169223d71b3b6d537fb"
+    && manifest.priorLiveSha === "499a882f2fac846bf6afcdf918a8964ce0e86ab6"
+    && manifest.founderDecisionRef?.includes("Founder 2026-10-16")
+    && manifest.evidenceRef?.includes("38830867639")
+    && JSON.stringify((manifest.hotfixPaths || []).slice().sort()) === JSON.stringify([
+      "package-lock.json", "src/analytics/Analytics.tsx", "src/identity/identityClient.ts"
+    ].sort())
+    && JSON.stringify(files.filter(isProductFacing).sort()) === JSON.stringify([
+      "package-lock.json", "src/analytics/Analytics.tsx", "src/identity/identityClient.ts"
+    ].sort())
+    && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
+    && files.includes("scripts/analytics-privacy-contract.test.mjs")
+    && files.includes("scripts/identity-oauth-contract.test.mjs")
+    && files.includes(".github/workflows/discovery-main-live.yml")
+    && git(["hash-object", "package-lock.json"]) === "9d01fbb165fe0ebc6b0e13fa6504e5b1db7673c5"
+    && git(["hash-object", "src/analytics/Analytics.tsx"]) === "2df3a22e2f0516e7efe94b2efa9e7fbab339b3b3"
+    && git(["hash-object", "src/identity/identityClient.ts"]) === "c640ffed7325ba9ef1ebbe4cc08027c83ab37f6d";
+  if (hasProductDelta && head !== "king/test" && !p0IdHotfix && !p0IdGoogleHotfix && !p0IdReturnHotfix && !p0IdCspHotfix && !p0PrivacyHotfix) {
     fail(`direct LIVE product promotion from '${head || "unknown"}' is forbidden; user-facing production candidate must come from king/test or an exactly-scoped founder-approved P0 hotfix`);
   }
-  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix || p0IdCspHotfix) && !draft) validateLivePromotion();
+  if (hasProductDelta && (head === "king/test" || p0IdHotfix || p0IdGoogleHotfix || p0IdReturnHotfix || p0IdCspHotfix || p0PrivacyHotfix) && !draft) validateLivePromotion();
 }
 
 if (mode === "main-push" && files.some(isProductFacing)) validateLivePromotion();

@@ -2,18 +2,20 @@
   "schemaVersion": 4,
   "status": "FOUNDER_ACCEPTED",
   "sourceBranch": "king/test",
-  "testKingSha": "9f4a917d6837953e494d15d927697316119df968",
-  "priorLiveSha": "8c78be69266f2bf6ecae4b3147fe9b6791c85375",
+  "testKingSha": "516c65ca5855164c985ec169223d71b3b6d537fb",
+  "priorLiveSha": "499a882f2fac846bf6afcdf918a8964ce0e86ab6",
   "releaseCommitSha": null,
   "boundedRelease": true,
-  "releaseKind": "P0_ID_CLOUDFLARE_CSP_AUTH",
-  "hotfixBranch": "release/p0-id-cloudflare-csp-20261009",
+  "releaseKind": "P0_AUTH_ANALYTICS_PRIVACY",
+  "hotfixBranch": "axe/live-security-closure-20261016",
   "hotfixPaths": [
-    "public/_headers"
+    "package-lock.json",
+    "src/analytics/Analytics.tsx",
+    "src/identity/identityClient.ts"
   ],
-  "founderDecisionRef": "Founder 2026-10-08: explicitly authorised urgent ID production repair. Founder 2026-10-09: Google returns to login after account selection; resolve ASAP without changes to 4SAPIEN.",
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/427",
-  "rollbackRef": "main@8c78be69266f2bf6ecae4b3147fe9b6791c85375",
+  "founderDecisionRef": "Founder 2026-10-16: explicitly ordered direct live security closure and MAX EXPOSURE with no partial delivery, no shortcuts, and zero fake completion claims.",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/pull/477 ; canonical HEIR privacy source 516c65ca5855164c985ec169223d71b3b6d537fb ; Cloudflare production origin inventory 38830867639",
+  "rollbackRef": "Cloudflare Pages 4planet-05 main@499a882f2fac846bf6afcdf918a8964ce0e86ab6",
   "releaseControlCommit": true,
-  "note": "Exact public/_headers CSP blob 3f4d0dfc836131462ad7bc02ac9dd9d551292ce4 from test king. Adds only https://ghvdzetmplqkdtfqiror.supabase.co to connect-src (2 existing policies). Retains all other CSP directives, no 4SAPIEN files changed. Live CSP header + browser auth bridge must pass before DONE."
+  "note": "Precisely scoped OAuth return URL redaction, analytics event privacy and token-free page view. Two runtime files only. Runtime provenance from HEIR and independent selected hotfix branch. No product/games/other visuals affected. Exact Cloudflare pre-live main deployment SHA independently confirmed using Cloudflare API; production post-merge readback required. Fixed high-severity source-map-js dependency lock 1.2.1 -> 1.2.2 (no new package or feature). Release quality gates must prove npm ci, audit, build and browser behavior."
 }

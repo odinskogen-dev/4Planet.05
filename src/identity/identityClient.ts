@@ -165,11 +165,24 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
   try {
     const url = new URL(value, window.location.origin);
     if (url.hostname === "oddekalv.org" || url.hostname.endsWith(".oddekalv.org")) return fallback;
-    if (url.origin === window.location.origin || TRUSTED_HOSTS.has(url.hostname)) return url.href;
+    // Never relay OAuth material, email or other private values in return_to.
+    if (url.username || url.password) return fallback;
+    if (url.origin !== window.location.origin && !(url.protocol === "https:" && !url.port && TRUSTED_HOSTS.has(url.hostname))) return fallback;
+    if (/^\/(?:auth(?:\/|$)|oauth(?:\/|$))/i.test(url.pathname)) return fallback;
+    url.hash = "";
+    const sensitiveKey = /(?:^|[_-])(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:$|[_-])/i;
+    for (const [key, value] of [...url.searchParams]) {
+      if (
+        sensitiveKey.test(key)
+        || /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i.test(value)
+        || /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/.test(value)
+        || /(?:access_token|refresh_token|token_hash|authorization_code|client_secret)=/i.test(value)
+      ) url.searchParams.delete(key);
+    }
+    return url.href;
   } catch {
     return fallback;
   }
-  return fallback;
 }
 
 export function identityLoginUrl(returnTo?: string) {
@@ -191,6 +204,8 @@ export async function recoverOAuthSessionFromLocation(): Promise<FourPlanetSessi
   const accessToken = hash.get("access_token");
   const refreshToken = hash.get("refresh_token");
   if (!accessToken || !refreshToken) return null;
+  // Remove OAuth bearer credentials from browser history before loading SDKs.
+  window.history.replaceState({}, "", window.location.pathname + window.location.search);
   const client = await getIdentityClient();
   const result = await client.auth.setSession({
     access_token: accessToken,

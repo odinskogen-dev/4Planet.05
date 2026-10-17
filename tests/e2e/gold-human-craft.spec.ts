@@ -74,14 +74,14 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
       const atlasFrameElement = page.getByTitle("Interactive 4PLANET ATLAS");
       await expect(atlasFrameElement).toBeVisible();
       await atlasFrameElement.scrollIntoViewIfNeeded();
-      const atlasFrame = page.frameLocator('iframe[title="Interactive 4PLANET ATLAS"]');
+      const atlasFrame = atlasFrameElement.contentFrame();
       await expect(atlasFrame.locator(".world.light")).toBeVisible({ timeout: 20_000 });
       await expect(atlasFrame.locator("canvas.maplibregl-canvas")).toBeVisible({ timeout: 20_000 });
 
-      await expect(page.getByRole("heading", { name: "See the same living planet from different angles." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Four ways to understand the same planet." })).toBeVisible();
       await expect(page.locator(".home-lens")).toHaveCount(4);
       await expect(page.getByRole("heading", { name: "Meet the Orca." })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Four connected worlds." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Four domains. One connected planet." })).toBeVisible();
 
       const worlds = page.locator(".home-world");
       await expect(worlds).toHaveCount(4);
