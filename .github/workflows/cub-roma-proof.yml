@@ -1,0 +1,68 @@
+name: CUB LAB verify custom host and mobile ROMA
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths: [.github/workflows/cub-roma-proof.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Check public domain and worker hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha='37325597a089664ef048a2b899bf8ae39ec4abc1fb7ca431c36a562e13da3923'
+          for host in 'https://cub-lab-p4nther.odin-skogen.workers.dev' 'https://lab.p4nther.com'; do
+            echo "TEST_HOST=$host"
+            passed=0
+            for i in $(seq 1 12); do
+              if curl -fsSL --max-time 20 "$host/roma/index.html" -o /tmp/roma-check.html; then
+                actual=$(sha256sum /tmp/roma-check.html | cut -d' ' -f1)
+                if [ "$actual" = "$sha" ]; then passed=1; break; fi
+                echo "HASH_MISMATCH=$actual"
+                exit 9
+              fi
+              sleep 8
+            done
+            if [ "$passed" != 1 ]; then echo "HOST_NOT_READY=$host"; exit 8; fi
+            echo "ROMA_EXACT_PUBLIC_BYTES_PASS=$host"
+            curl -fsSI "$host/roma/index.html" | grep -i '^content-type: text/html'
+          done
+      - name: Install mobile browser harness
+        run: npm install --no-save --no-audit --no-fund playwright@1.56.1
+      - name: Run Chrome mobile ROMA on real URL
+        run: |
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
+            const page=await ctx.newPage();
+            let errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            const url='https://lab.p4nther.com/roma/index.html?q=high';
+            const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+            await page.waitForTimeout(2200);
+            const s=await page.locator('body').innerText();
+            console.log('ROMA_HTTP',response.status(),'TITLE',await page.title(),'BODY',s.slice(0,180));
+            console.log('DEVICE_PIXEL_RATIO',await page.evaluate(()=>window.devicePixelRatio));
+            console.log('CANVAS_COUNT',await page.locator('canvas').count());
+            await page.screenshot({path:'roma-cub-mobile-first-screen.png',fullPage:true});
+            if(response.status()!==200||!s.toLowerCase().includes('roma'))throw Error('ROMA_NOT_OPEN');
+            console.log('BROWSER_PAGE_ERRORS',JSON.stringify(errors));
+            await browser.close();
+            console.log('ROMA_CUB_REAL_BROWSER_SMOKE_OK');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-roma-mobile-browser-proof
+          path: roma-cub-mobile-first-screen.png
+          retention-days: 14
