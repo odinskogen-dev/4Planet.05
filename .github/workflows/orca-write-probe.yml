@@ -11,4 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check grant only
-        run: echo ORCA_GITHUB_WRITE_PROBE_READY
+        run: |
+          echo ORCA_GITHUB_WRITE_PROBE_READY
+          go run github.com/rhysd/actionlint/cmd/actionlint@latest -color=false .github/workflows/orca-clarity-fix.yml
