@@ -61,10 +61,35 @@ test("arbitrary nested and non-canonical profile paths fail closed", async () =>
     "/orca/../draft",
     "/orca%2Fdraft",
     "/Orca",
+    "/orca/",
+    "//orca",
+    "/./orca",
+    "/%6frca",
+    "/orca?preview=1",
+    "/orca#draft",
   ];
   for (const path of cases) {
     const state = await profileReviewState(path, async () => {
       throw new Error(`must not fetch non-canonical path: ${path}`);
+    });
+    assert.equal(state, "UNREVIEWED", path);
+    assert.equal(permitsSpeciesIndexing(state), false, path);
+  }
+});
+
+test("non-canonical variants cannot inherit the public non-profile allowlist", async () => {
+  const cases = [
+    "/explore/",
+    "//explore",
+    "/explore//",
+    "/./explore",
+    "/%65xplore",
+    "/about?preview=1",
+    "/quiz#draft",
+  ];
+  for (const path of cases) {
+    const state = await profileReviewState(path, async () => {
+      throw new Error(`must not fetch non-canonical public route: ${path}`);
     });
     assert.equal(state, "UNREVIEWED", path);
     assert.equal(permitsSpeciesIndexing(state), false, path);

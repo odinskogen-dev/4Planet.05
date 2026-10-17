@@ -19,12 +19,15 @@ export function permitsSpeciesIndexing(reviewState) {
 }
 
 export async function profileReviewState(pathname, fetchImpl = fetch) {
-  const normalizedPath = `/${pathname.split("?")[0].split("#")[0].split("/").filter(Boolean).join("/")}`;
-  if (PUBLIC_NON_PROFILE_PATHS.has(normalizedPath)) return NON_PROFILE_REVIEW_STATE;
-  const parts = normalizedPath.split("/").filter(Boolean);
-  if (parts.length !== 1) return "UNREVIEWED";
-  const slug = parts[0];
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return "UNREVIEWED";
+  // Index authority belongs only to an exact canonical pathname. Never
+  // collapse redundant slashes, remove dot segments, strip query/fragment
+  // data or decode an encoded variant before making the review decision:
+  // doing so can turn a malformed or alternate route into an allowlisted one.
+  if (typeof pathname !== "string" || !pathname.startsWith("/") ||
+      pathname.includes("?") || pathname.includes("#")) return "UNREVIEWED";
+  if (PUBLIC_NON_PROFILE_PATHS.has(pathname)) return NON_PROFILE_REVIEW_STATE;
+  if (!/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return "UNREVIEWED";
+  const slug = pathname.slice(1);
   try {
     const response = await fetchImpl(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
       headers: { accept: "application/json" },

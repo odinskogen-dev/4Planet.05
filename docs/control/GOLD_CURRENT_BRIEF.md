@@ -1396,3 +1396,32 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **BASE / ROLLBACK:** `king/test@ca42d70c55a7cee1a1129b8a1518e7f9a288b8ed`; revert the bounded source/test/brief commit if independent Gold finds an authorised PLACE suppressed by a conflicting current authority.
 
 **MAKER ≠ JUDGE:** Factory closes the code-path conflation only. Independent Gold judges the exact SHA; Founder retains canonical assignment and release authority.
+# SPECIES — EXACT PATH CANONICALITY GATE — 17 OCTOBER 2026
+
+**STATUS:** RETURNED `QA_CORRECT` IMPLEMENTED ON THE SOLE HEIR / INDEPENDENT GOLD REQUIRED / RELEASE HOLD / NOT LIVE.
+
+**USER ARRIVES BECAUSE:** a person or crawler should reach only an intentional public SPECIES route, never a malformed alternate path that silently inherits another route's publication authority.
+
+**ONE THING TO UNDERSTAND:** path normalisation is navigation convenience, not review or indexing authority.
+
+**PRIMARY ACTION:** decide profile and public-route eligibility from the exact raw pathname and fail closed on every non-canonical variant.
+
+**SECONDARY DEPTH:** preserve the existing source-bearing profile review lookup only after the exact one-segment lowercase slug contract passes.
+
+**P1 / P2 / P3 / P4:** canonical route / explicit review state / public profile or discovery action / source and limitation detail.
+
+**WHAT CAN BE REMOVED:** pre-authority slash collapsing, dot-segment removal, query/fragment stripping and encoded-path equivalence.
+
+**WHAT MUST BE REUSED:** existing `profileReviewState`, `permitsSpeciesIndexing`, public-route allowlist, issue #145 and sole PR #131 `king/test` HEIR.
+
+**TRUTH BOUNDARY:** this correction proves deterministic source behaviour only. It does not prove hosted HTTP/CDN behaviour, search-engine removal, browser rendering, independent Gold, deployment or LIVE state.
+
+**MOBILE-FIRST RISK:** none introduced; no layout or interaction changes.
+
+**HUMAN SUCCESS:** exact canonical routes retain their current behavior, while redundant/trailing slash, dot-segment, encoded, case-variant and helper-input query/fragment forms cannot inherit indexing permission.
+
+**DONOR DECISION:** no donor or new route system; correct the current HEIR gate in place.
+
+**BASE / ROLLBACK:** `king/test@c05da699dacd39009d32a38932f88a6e84d3f0d6`; revert this bounded router/test/brief commit if independent Gold identifies a legitimate canonical path that is suppressed.
+
+**MAKER ≠ JUDGE:** Factory consumes the returned QA correction; independent Gold judges the exact resulting SHA. Founder/release authority remains separate.
