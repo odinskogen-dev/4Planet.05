@@ -119,18 +119,23 @@ const licenceRestrictions = (value: unknown) => {
 
 const STRICT_DECIMAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 
+const finiteDecimal = (value: unknown) => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!normalized || !STRICT_DECIMAL.test(normalized)) return null;
+  const number = Number(normalized);
+  return Number.isFinite(number) ? number : null;
+};
+
 const finiteCoordinate = (value: unknown, min: number, max: number) => {
-  let number: number;
-  if (typeof value === "number") {
-    number = value;
-  } else if (typeof value === "string") {
-    const normalized = value.trim();
-    if (!normalized || !STRICT_DECIMAL.test(normalized)) return null;
-    number = Number(normalized);
-  } else {
-    return null;
-  }
-  return Number.isFinite(number) && number >= min && number <= max ? number : null;
+  const number = finiteDecimal(value);
+  return number !== null && number >= min && number <= max ? number : null;
+};
+
+const finiteNonNegativeMeasurement = (value: unknown) => {
+  const number = finiteDecimal(value);
+  return number !== null && number >= 0 ? number : null;
 };
 
 export const onRequestGet = async ({ request }: { request: Request }) => {
@@ -201,11 +206,9 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
           occurrenceStatus: row.occurrenceStatus,
           latitude: lat,
           longitude: lon,
-          coordinateUncertaintyM: Number.isFinite(Number(row?.coordinateUncertaintyInMeters))
-            ? Number(row.coordinateUncertaintyInMeters)
-            : null,
-          depthMinM: Number.isFinite(Number(row?.minimumDepthInMeters)) ? Number(row.minimumDepthInMeters) : null,
-          depthMaxM: Number.isFinite(Number(row?.maximumDepthInMeters)) ? Number(row.maximumDepthInMeters) : null,
+          coordinateUncertaintyM: finiteNonNegativeMeasurement(row?.coordinateUncertaintyInMeters),
+          depthMinM: finiteNonNegativeMeasurement(row?.minimumDepthInMeters),
+          depthMaxM: finiteNonNegativeMeasurement(row?.maximumDepthInMeters),
           datasetId: row?.dataset_id ?? row?.datasetID ?? row?.datasetKey ?? null,
           datasetName: row?.datasetName ?? row?.dataset_name ?? null,
           datasetCitation: row?.bibliographicCitation ?? row?.datasetCitation ?? row?.citation ?? null,
