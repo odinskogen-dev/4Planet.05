@@ -1,0 +1,99 @@
+name: CUB LAB ROMA exact-byte deploy
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths: [.github/workflows/cub-lab-roma-deploy.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Retrieve exact Claude release, NO rebuild
+        shell: bash
+        env:
+          SOURCE_FILE_URL: 'https://sdmntprnortheu.oaiusercontent.com/files/00000000-5e1c-81f4-8927-5a9dc70da46d/raw?se=2026-10-17T22%3A43%3A50Z&sp=r&sv=2026-02-06&sr=b&scid=67715db1-5a5b-5a30-9245-ae5da6f08691&skoid=0a4a0f0c-99ac-4752-9d87-cfac036fa93f&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-17T12%3A47%3A51Z&ske=2026-10-18T12%3A47%3A51Z&sks=b&skv=2026-02-06&sig=P7qEgW/ewljhaphcpbaBTS2USzq0kS8Po9h8eh9fooo%3D'
+        run: |
+          set -euo pipefail
+          mkdir -p site/roma
+          if [ ! -s site/roma/index.html ]; then curl -fsSL --retry 3 --max-time 70 "$SOURCE_FILE_URL" -o site/roma/index.html; fi
+          echo '37325597a089664ef048a2b899bf8ae39ec4abc1fb7ca431c36a562e13da3923  site/roma/index.html' | sha256sum -c -
+          test "$(stat -c%s site/roma/index.html)" = '2165007'
+          echo EXACT_ROMA_SOURCE_PASS
+      - name: Archive exact release in isolated GitHub branch
+        run: |
+          set -euo pipefail
+          if ! git ls-files --error-unmatch site/roma/index.html >/dev/null 2>&1; then
+            git config user.name 'CUB LAB deploy bot'
+            git config user.email 'actions@users.noreply.github.com'
+            git add site/roma/index.html
+            git commit -m 'Archive byte-identical ROMA Challenger 01 release'
+            git push origin HEAD:cub-lab-roma-challenger-20261018
+          fi
+      - name: Resolve existing Cloudflare token and account
+        shell: bash
+        env:
+          TOKEN1: '${{ secrets.CLOUDFLARE_API_TOKEN }}'
+          TOKEN2: '${{ secrets.CF_TOKEN }}'
+          TOKEN3: '${{ secrets.CLOUDFLARE_TOKEN }}'
+        run: |
+          set -euo pipefail
+          token=""
+          for a in "$TOKEN1" "$TOKEN2" "$TOKEN3"; do if [ -n "$a" ]; then token="$a"; break; fi; done
+          test -n "$token" || { echo 'CLOUDFLARE_TOKEN_MISSING'; exit 4; }
+          token=$(printf '%s' "$token" | tr -d '\r\n' | sed 's/^Bearer //')
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          zones=$(curl -fsS -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=p4nther.com')
+          account=$(jq -r '.result[0].account.id // empty' <<< "$zones")
+          zone=$(jq -r '.result[0].id // empty' <<< "$zones")
+          if [ -z "$account" ]; then
+            echo 'P4NTHER_ZONE_NOT_VISIBLE'
+            fallback=$(curl -fsS -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')
+            account=$(jq -r '.result[0].account.id // empty' <<< "$fallback")
+          else echo 'P4NTHER_ZONE_CONFIRMED'; fi
+          test -n "$account" || { echo 'CLOUDFLARE_ACCOUNT_MISSING'; exit 5; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "P4NTHER_ZONE_ID=$zone" >> "$GITHUB_ENV"
+      - name: Deploy independent CUB LAB static Worker
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --name cub-lab-p4nther --assets ./site --compatibility-date 2026-10-18 | tee /tmp/cub-deploy.log
+          site=$(grep -Eo 'https://[-a-z0-9.]+[.]workers[.]dev' /tmp/cub-deploy.log | head -1)
+          test -n "$site" || exit 7
+          echo "CUB_WORKER_URL=$site" >> "$GITHUB_ENV"
+      - name: Verify exact byte-for-byte HTTPS response
+        run: |
+          set -euo pipefail
+          for retry in $(seq 1 12); do
+            if curl -fsSL --max-time 20 "$CUB_WORKER_URL/roma/index.html" -o /tmp/roma-live.html; then break; fi
+            sleep 3
+          done
+          echo '37325597a089664ef048a2b899bf8ae39ec4abc1fb7ca431c36a562e13da3923  /tmp/roma-live.html' | sha256sum -c -
+          curl -fsSI "$CUB_WORKER_URL/roma/index.html" | grep -i '^content-type: text/html'
+          echo "CUB_ROMA_VERIFIED_URL=$CUB_WORKER_URL/roma/index.html"
+      - name: Attach lab.p4nther.com ONLY if hostname unoccupied
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$P4NTHER_ZONE_ID" ]; then echo 'DOMAIN_NOT_ATTACHED: zone not in account'; exit 0; fi
+          api=https://api.cloudflare.com/client/v4
+          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          list=$(curl -fsS -H "$auth" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/domains")
+          owner=$(jq -r '[.result[] | select(.hostname=="lab.p4nther.com") | .service][0] // empty' <<< "$list")
+          if [ -n "$owner" ] && [ "$owner" != 'cub-lab-p4nther' ]; then echo "DOMAIN_OCCUPIED_BY_WORKER=$owner"; exit 0; fi
+          records=$(curl -fsS -H "$auth" "$api/zones/$P4NTHER_ZONE_ID/dns_records?name=lab.p4nther.com")
+          if [ "$(jq '.result|length' <<< "$records")" != 0 ] && [ "$owner" != 'cub-lab-p4nther' ]; then echo 'DOMAIN_OCCUPIED_BY_DNS: no changes made'; exit 0; fi
+          if [ "$owner" = 'cub-lab-p4nther' ]; then echo 'DOMAIN_ALREADY_ATTACHED'; exit 0; fi
+          body=$(jq -nc --arg zone "$P4NTHER_ZONE_ID" '{hostname:"lab.p4nther.com",service:"cub-lab-p4nther",environment:"production",zone_id:$zone}')
+          reply=$(curl -sS -X PUT -H "$auth" -H 'Content-Type: application/json' --data "$body" "$api/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/domains")
+          if jq -e '.success==true' <<< "$reply" >/dev/null; then echo DOMAIN_ATTACHED; else echo DOMAIN_NOT_ATTACHED; jq '{errors,messages}' <<< "$reply"; fi
+      - name: Final release proof
+        run: |
+          echo "ROMA_RELEASE_SHA256=37325597a089664ef048a2b899bf8ae39ec4abc1fb7ca431c36a562e13da3923"
+          echo "ROMA_WORKER_LINK=$CUB_WORKER_URL/roma/index.html"
