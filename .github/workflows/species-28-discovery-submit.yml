@@ -1,0 +1,40 @@
+name: SPECIES Restore 28 — Submit IndexNow and Audit AI Discovery
+on:
+  push:
+    branches: [release/species-restore-20261017]
+    paths: [.github/workflows/species-28-discovery-submit.yml]
+permissions: {contents: read}
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Confirm every canonical is live/indexable, then submit 28 to IndexNow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import urllib.request,json,xml.etree.ElementTree as ET
+          base='https://4species.com'
+          source='https://4species.com/sitemap.xml'
+          with urllib.request.urlopen(source,timeout=20) as r: xml=r.read()
+          root=ET.fromstring(xml)
+          urls=[x.text for x in root.findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url/{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
+          slugs='orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx'.split()
+          required=[base+'/'+s for s in slugs]
+          assert len(slugs)==28 and all(x in urls for x in required)
+          for p in required:
+              request=urllib.request.Request(p,headers={'User-Agent':'OAI-SearchBot'})
+              with urllib.request.urlopen(request,timeout=20) as r:
+                  assert r.status==200 and 'noindex' not in r.headers.get('X-Robots-Tag','').lower(),p
+          key='8f4c2d91a7b64e3fa1c9d0b6e5274a83'
+          with urllib.request.urlopen(base+'/'+key+'.txt',timeout=20) as r: assert r.read().decode().strip()==key
+          payload={'host':'4species.com','key':key,'keyLocation':base+'/'+key+'.txt','urlList':required}
+          request=urllib.request.Request('https://api.indexnow.org/indexnow',data=json.dumps(payload).encode(),headers={'Content-Type':'application/json; charset=utf-8'},method='POST')
+          try:
+              with urllib.request.urlopen(request,timeout=25) as r:status=r.status
+          except urllib.error.HTTPError as e: status=e.code
+          print('INDEXNOW_28_SUBMISSION_HTTP',status)
+          assert status in (200,202),'IndexNow must confirm acceptance'
+          print('SPECIES_28_CANONICAL_SEARCH_AI_DISCOVERY_READY')
+          PY
