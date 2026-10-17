@@ -16,7 +16,11 @@ export function SpeciesRoute({ curatedElement }: { curatedElement: ReactNode }) 
   const media = curated && hasShowableImage(slug) ? speciesMedia(slug) : undefined;
   const sourceUrls = envelope?.records.map((record) => record.sourceUrl) ?? [];
   const limitations = envelope?.forbiddenInferences ?? [];
-  const relatedPlaces = curated ? discovery.places.filter((place) => place.indexable && place.relatedSpecies.some((species) => species.slug === slug && species.state === "CURATED")) : [];
+  const publicOrigin = (import.meta.env.VITE_PUBLIC_SITE_ORIGIN?.trim() || "https://4planet.org").replace(/\/$/, "");
+  const relatedPlaces = curated ? discovery.places.filter((place) => place.indexable
+    && place.publicationState === "READY_FOR_FOUNDER_RELEASE"
+    && place.canonicalOrigin === publicOrigin
+    && place.relatedSpecies.some((species) => species.slug === slug && species.state === "CURATED")) : [];
   const title = curated ? discoveryItem?.title || `${curated.commonName} (${curated.scientificName}) — 4PLANET SPECIES` : "Universal Species Profile — 4PLANET SPECIES";
   const description = curated
     ? discoveryItem?.description || curated.intro || curated.habitat || `Source-grounded profile for ${curated.commonName} with ATLAS context and reported observations.`

@@ -9,6 +9,9 @@ const discovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/discovery
 const impactDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/impactDiscovery.json"), "utf8"));
 const origin = (process.env.PUBLIC_SITE_ORIGIN || process.env.VITE_PUBLIC_SITE_ORIGIN || "https://4planet.org").replace(/\/$/, "");
 const base = fs.readFileSync(path.join(dist, "index.html"), "utf8");
+const placeIsReleasedForOrigin = (item) => item.indexable === true
+  && item.publicationState === "READY_FOR_FOUNDER_RELEASE"
+  && item.canonicalOrigin === origin;
 
 const esc = (value = "") =>
   String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
@@ -52,7 +55,7 @@ function writeRoute(pathName, html) {
 }
 
 const species = (inventory.species || []).filter((item) => item.indexable === true);
-const places = (inventory.places || []).filter((item) => item.indexable === true);
+const places = (inventory.places || []).filter(placeIsReleasedForOrigin);
 const atlasObjects = (atlasDiscovery.objects || []).filter((item) => item.indexable === true);
 const discoveryTopics = (discovery.topics || []).filter((item) => item.indexable === true);
 

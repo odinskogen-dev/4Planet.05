@@ -65,6 +65,37 @@ test("phase 03 expands discovery through existing ATLAS identities without a sec
   for(const id of ["amazon","congo-basin","borneo","svalbard","oslofjord"]) assert.ok(registry.includes(`placeId("${id}")`), `registry missing ${id}`);
 });
 
+test("PLACE discovery separates source curation from Founder release and canonical ownership",()=> {
+  const publicOrigin="https://4planet.org";
+  const released=(item)=>item.indexable===true&&item.publicationState==="READY_FOR_FOUNDER_RELEASE"&&item.canonicalOrigin===publicOrigin;
+  assert.equal(inv.places.filter((item)=>item.indexable===true).length,10);
+  assert.equal(inv.places.filter((item)=>item.publicationState==="READY_FOR_FOUNDER_RELEASE").length,1);
+  assert.equal(inv.places.filter(released).length,0,"canonical ownership is intentionally unresolved");
+  assert.ok(inv.places.every((item)=>item.canonicalOrigin===null));
+  assert.equal(released({...inv.places[0],canonicalOrigin:publicOrigin}),true,"positive fixture requires all three gates");
+  assert.equal(released({...inv.places[0],publicationState:"HEIR_CANDIDATE",canonicalOrigin:publicOrigin}),false,"candidate state cannot publish");
+  assert.equal(released({...inv.places[0],indexable:false,canonicalOrigin:publicOrigin}),false,"uncurated object cannot publish");
+  assert.equal(released({...inv.places[0],canonicalOrigin:"https://example.org"}),false,"canonical mismatch cannot publish");
+  assert.match(inv.publicationLaw,/source\/usefulness curation only/);
+  assert.match(inv.publicationLaw,/Missing or conflicting release\/canonical authority fails closed/);
+  assert.match(map,/filter\(placeIsReleasedForOrigin\)/);
+  assert.match(pre,/filter\(placeIsReleasedForOrigin\)/);
+  const placesPage=read("src/pages/integrated/Places.tsx");
+  assert.match(placesPage,/placeIsReleasedForOrigin/);
+  assert.match(placesPage,/canonical=\{released\}/);
+  assert.match(placesPage,/jsonLd=\{released \?/);
+  assert.match(sr,/place\.publicationState === "READY_FOR_FOUNDER_RELEASE"/);
+  assert.match(sr,/place\.canonicalOrigin === publicOrigin/);
+});
+
+test("generated sitemap fails closed for PLACE candidates without canonical authority",async()=> {
+  const { execFileSync } = await import("node:child_process");
+  execFileSync(process.execPath,["scripts/generate-sitemap.mjs"],{cwd:new URL("..",import.meta.url),stdio:"pipe"});
+  const sitemap=read("public/sitemap.xml");
+  assert.doesNotMatch(sitemap,/\/place\//);
+  assert.match(sitemap,/\/species\/orca/);
+});
+
 
 test("first ATLAS useful internet objects are source-grounded, indexable and bounded",()=>{
   assert.deepEqual(atlas.objects.map((item)=>item.slug).sort(),["earth","fires","whales"]);

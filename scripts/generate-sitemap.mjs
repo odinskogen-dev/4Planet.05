@@ -10,6 +10,9 @@ const discoveryInventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/
 const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
 const discoveryTopics = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryTopics.json"), "utf8"));
 const impactDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/impactDiscovery.json"), "utf8"));
+const placeIsReleasedForOrigin = (item) => item.indexable === true
+  && item.publicationState === "READY_FOR_FOUNDER_RELEASE"
+  && item.canonicalOrigin === origin;
 
 const staticRoutes = [
   "/",
@@ -50,7 +53,7 @@ const staticRoutes = [
 ];
 
 const discoveryRoutes = [
-  ...(discoveryInventory.places ?? []).filter((item) => item.indexable === true).map((item) => `/place/${item.slug}`),
+  ...(discoveryInventory.places ?? []).filter(placeIsReleasedForOrigin).map((item) => `/place/${item.slug}`),
   ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
   ...(atlasDiscovery.objects ?? []).filter((item) => item.indexable === true).map((item) => `/atlas/${item.slug}`),
   ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),

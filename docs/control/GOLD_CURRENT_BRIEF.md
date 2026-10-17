@@ -1342,3 +1342,36 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **ROLLBACK:** parent HEIR `fb2f672d1ba1c6e801e73fa11b09824a73e9e990`.
 
 **MAKER ≠ JUDGE:** contract/build/preview evidence required. LIVE and external asset redistribution remain separately gated.
+
+
+# EXPO-03 — PLACE PUBLICATION + CANONICAL OWNERSHIP GATE — 17 OCT 2026
+
+**STATUS:** RETURNED RELEASE DEBT / HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE IMPLIED.
+
+**USER ARRIVES BECAUSE:** a person searching for a real place should reach only a source-grounded PLACE object whose public publication and canonical owner are explicitly authorised.
+
+**ONE THING TO UNDERSTAND:** source/usefulness curation is not publication authority. `indexable=true` alone cannot publish a PLACE candidate.
+
+**PRIMARY ACTION:** fail closed across sitemap, prerender, Places UI and species-to-place discovery until one inventory object simultaneously has `indexable=true`, `publicationState=READY_FOR_FOUNDER_RELEASE`, and `canonicalOrigin` equal to the configured public origin.
+
+**P1 DOMINANT:** no `HEIR_CANDIDATE` PLACE appears in public discovery surfaces.
+
+**P2 ORIENTATION:** direct candidate routes remain available on the HEIR for review, but carry `noindex,follow` and omit canonical/JSON-LD ownership claims.
+
+**P3 ACTION / NEXT:** Founder/canonical authority may explicitly assign `canonicalOrigin` to an already reviewed `READY_FOR_FOUNDER_RELEASE` object; independent Gold then verifies the exact resulting artifact before any release.
+
+**P4 DEPTH:** species and other discovery inventories retain their existing bounded rules; this correction applies only to PLACE publication debt.
+
+**WHAT CAN BE REMOVED:** the false assumption that source curation, public release and canonical ownership are one boolean.
+
+**WHAT MUST BE REUSED:** existing `discoveryInventory.json`, sitemap/prerender pipelines, `/places`, `/place/:slug`, SPECIES related-place projection and sole HEIR `king/test`.
+
+**TRUTH BOUNDARY:** this correction assigns no canonical domain, promotes no publication state and submits no URL. Current inventory intentionally has zero publicly discoverable PLACE objects because canonical ownership remains unresolved.
+
+**MOBILE-FIRST RISK:** no new layout or interaction is introduced; fail-closed empty discovery must remain truthful rather than backfilling candidates.
+
+**HUMAN SUCCESS:** an unreleased PLACE cannot be inferred as public from sitemap, prerender, UI, related links, canonical metadata or JSON-LD.
+
+**BASE / ROLLBACK:** `king/test@ca42d70c55a7cee1a1129b8a1518e7f9a288b8ed`; revert the bounded source/test/brief commit if independent Gold finds an authorised PLACE suppressed by a conflicting current authority.
+
+**MAKER ≠ JUDGE:** Factory closes the code-path conflation only. Independent Gold judges the exact SHA; Founder retains canonical assignment and release authority.
