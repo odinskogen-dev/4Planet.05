@@ -64,7 +64,7 @@ for slug,(file,alt,focus) in choices.items():
     if "<" in photographer or ">" in photographer:photographer=clean(photographer)
     # preserve original string as attribution in a file-level ledger
     p["hero"]={
-      "url":"/species-media/gold-candidates/"+slug+".jpg",
+      "url":"https://4species.com/species-media/gold-candidates/"+slug+".jpg",
       "sourcePage":img.get("descriptionurl","https://commons.wikimedia.org/wiki/File:"+urllib.parse.quote(file.replace(" ","_"))),
       "credit":photographer[:170],
       "licence":lic,
