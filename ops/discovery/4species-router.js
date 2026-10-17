@@ -5,14 +5,17 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
-const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev";
+const SPECIES_V53_ORIGIN = "https://72494005.4planet-05.pages.dev";
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
 const PUBLIC_NON_PROFILE_PATHS = new Set(["/", "/explore", "/quiz", "/about"]);
 
+// Founder override, 2026-10-17: publish complete source-bearing original
+// Claude premium profiles regardless of editorial draft label. Preserve
+// DRAFT provenance honestly, do not confer Gold/REVIEWED approval.
 export function permitsSpeciesIndexing(reviewState) {
-  return reviewState === NON_PROFILE_REVIEW_STATE || reviewState === "REVIEWED";
+  return reviewState === NON_PROFILE_REVIEW_STATE || reviewState === "REVIEWED" || reviewState === "DRAFT";
 }
 
 export async function profileReviewState(pathname, fetchImpl = fetch) {
@@ -29,7 +32,17 @@ export async function profileReviewState(pathname, fetchImpl = fetch) {
     });
     if (!response.ok) return "UNREVIEWED";
     const page = await response.json();
-    return page?.provenance?.review || "UNREVIEWED";
+    // A search-visible species must have real canonical profile data and
+    // source-linked claims in Claude's original 4PLANET_SPECIES_PAGE_01.
+    if (page?.schema !== "4PLANET_SPECIES_PAGE_01" || page?.slug !== slug ||
+        !page?.identity?.scientificName || !page?.identity?.commonName) return "UNREVIEWED";
+    const containsSource = (value) => {
+      if (!value || typeof value !== "object") return false;
+      if (value.source?.url?.startsWith?.("https://")) return true;
+      return Object.values(value).some(containsSource);
+    };
+    if (!containsSource(page)) return "UNREVIEWED";
+    return page.provenance?.review === "REVIEWED" ? "REVIEWED" : "DRAFT";
   } catch {
     return "UNREVIEWED";
   }
@@ -87,7 +100,10 @@ async function proxySpeciesV53(request) {
   out.delete("set-cookie");
   out.delete("content-length");
   out.delete("content-encoding");
-  out.set("x-4species-release", "SPECIES-v53-canonical");
+  out.set("x-4species-release", "species-v53-immutable-72494005-restore-20261017");
+  // Pages preview emits preview-only noindex; never forward it to a completed
+  // public Claude profile, while still enforcing noindex for missing profiles.
+  if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");
   if((out.get("content-type")||"").includes("text/html")) {
     // v53 is a versioned SPA: a stale HTML shell can reference JS hashes
     // removed by the next Pages deploy and leave iOS browsers on a blank page.
@@ -425,6 +441,9 @@ export default {
     if (path === "/robots.txt")
       return new Response("User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://4species.com/sitemap.xml\n", {headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=300"}});
     if (path === "/sitemap.xml") return reviewedSpeciesSitemap(request);
+    if (path === `/${INDEXNOW_KEY}.txt`) return new Response(INDEXNOW_KEY, {
+      headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "public, max-age=86400" }
+    });
     return proxySpeciesV53(request);
 
     if (path === "/" || path === "") return redirect(`https://4species.com/species/${url.search}`);

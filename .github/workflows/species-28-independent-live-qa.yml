@@ -1,0 +1,64 @@
+name: SPECIES 28 — Independent Live Chromium + Searchbot Readback
+on:
+  push:
+    branches: [release/species-restore-20261017]
+    paths: [.github/workflows/species-28-independent-live-qa.yml]
+permissions: {contents: read}
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - run: |
+          npm install --prefix /tmp/species28 playwright@1.56.0
+          /tmp/species28/node_modules/.bin/playwright install --with-deps chromium
+      - name: 28 independent species in Claude premium template, HTTPS SEO, AI crawler access
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/species28/node_modules/playwright/index.mjs';
+          const slugs='orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx'.split(' ');
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          let failures=[];let cards=[];
+          for(const slug of slugs) {
+            const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+            const p=await ctx.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message.slice(0,120)));
+            try{
+              let response=await p.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:28000});
+              await p.waitForTimeout(900);
+              let info=await p.evaluate(()=>({
+                url:location.href,robots:document.querySelector('meta[name="robots"]')?.getAttribute("content"),
+                canonical:document.querySelector('link[rel=canonical]')?.getAttribute("href"),
+                title:document.title,h1:document.querySelector('h1')?.innerText.slice(0,85),
+                claudePremium:!!document.querySelector('.spx'),
+                sourceList:document.querySelectorAll('.spx-source-list').length,
+                referenceLinks:document.querySelectorAll('.spx-ref').length,
+                hero:document.querySelector('.spx-hero')?.getBoundingClientRect().height||0,
+                visibleImages:[...document.querySelectorAll('img')].filter(x=>x.getClientRects().length>0).length
+              }));
+              cards.push({slug,http:response?.status(),...info,errors});
+              if(response?.status()!==200 || !info.claudePremium||info.canonical!=='https://4species.com/'+slug||info.robots?.includes('noindex')||info.sourceList===0)failures.push('QA '+slug+':'+JSON.stringify(info).slice(0,400));
+              if(slug==='orca'||slug==='lion'||slug==='tiger')await p.screenshot({path:'/tmp/species-'+slug+'-live.png',animations:'disabled'});
+              console.log('LIVE_28_SPECIES_BROWSER '+JSON.stringify(cards.at(-1)));
+            }catch(e){failures.push(slug+':'+String(e).slice(0,150))}
+            await ctx.close();
+          }
+          await browser.close();
+          const ua=['Googlebot','bingbot','OAI-SearchBot','PerplexityBot','Claude-SearchBot'];
+          for(const useragent of ua){
+            const r=await fetch('https://4species.com/orca',{headers:{'User-Agent':useragent},signal:AbortSignal.timeout(15000)});
+            const html=await r.text();
+            const status={bot:useragent,http:r.status,noindex:r.headers.get('x-robots-tag'),orcainHTML:html.includes('Orcinus orca')};
+            console.log('AI_SEARCH_CRAWLER_RECOVERY '+JSON.stringify(status));
+            if(r.status!==200||status.noindex?.includes('noindex')||!status.orcainHTML)failures.push('BOT '+useragent);
+          }
+          console.log('SPECIES_28_BROWSER_SUMMARY '+JSON.stringify({total:cards.length,valid:cards.filter(c=>c.claudePremium&&c.sourceList&&c.canonical==='https://4species.com/'+c.slug&&!c.robots?.includes('noindex')).length,failures}));
+          if(failures.length)process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-28-live-claude-mobile-visual-proof
+          path: /tmp/species-*-live.png
+          retention-days: 7

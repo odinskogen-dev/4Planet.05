@@ -1,0 +1,44 @@
+name: SPECIES 20261017 Immutable Recovery Preflight
+on:
+  push:
+    branches: [release/species-restore-20261017]
+    paths: [.github/workflows/species-recovery-preflight.yml]
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Compare immutable Cloudflare archives and current mutable alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json,concurrent.futures
+          bases=['https://72494005.4planet-05.pages.dev','https://f84eedf2.4planet-05.pages.dev','https://c1926bb6.4planet-05.pages.dev','https://species-v53.4planet-05.pages.dev']
+          slugs=['orca','lion','tiger','african-savanna-elephant','asian-elephant','bald-eagle','black-rhinoceros','blue-whale','bornean-orangutan','cheetah','chimpanzee','emperor-penguin','giant-panda','giraffe','gray-wolf','great-white-shark','green-sea-turtle','hippopotamus','jaguar','monarch-butterfly','polar-bear','english-oak','western-honey-bee','fly-agaric','common-octopus','atlantic-puffin','sei-whale','eurasian-lynx','humpback-whale','sperm-whale','harbour-porpoise','bottlenose-dolphin','atlantic-cod','blue-mussel','whale-shark','leopard','eastern-gorilla','acropora-palmata','hyacinth-macaw']
+          def get(u):
+              try:
+                  req=urllib.request.Request(u,headers={'User-Agent':'4PLANET/1.0 species-recovery', 'Accept':'application/json'})
+                  with urllib.request.urlopen(req,timeout=14) as resp:return resp.status,resp.read(280000).decode('utf-8','replace')
+              except Exception as e:return 0,str(type(e).__name__)
+          def test(arg):
+              base,slug=arg
+              status,t=get(base+'/species-data/v1/'+slug+'.json')
+              try:
+                  v=json.loads(t);valid=v.get('slug')==slug and bool(v.get('identity',{}).get('scientificName')) and v.get('schema')=='4PLANET_SPECIES_PAGE_01'
+                  return {'origin':base,'slug':slug,'http':status,'valid':valid,'review':v.get('provenance',{}).get('review'),'hero':(v.get('hero') if isinstance(v.get('hero'),str) else 'curated')}
+              except:return {'origin':base,'slug':slug,'http':status,'valid':False}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:checks=list(pool.map(test,[(b,s) for b in bases for s in slugs]))
+          for base in bases:
+              matches=[x for x in checks if x['origin']==base and x['valid']]
+              response,text=get(base+'/release-identity.json')
+              release=None
+              try:
+                  ident=json.loads(text);release={k:ident.get(k) for k in ['triggerSha','builtTree','payloadDigest']}
+              except:pass
+              for page in ['/orca','/lion','/tiger','/english-oak','/sitemap.xml']:
+                  status,body=get(base+page)
+                  print('PREVIEW_HTML',base,page,status,'Orca template',('.spx-' in body),'species',('Orcinus orca' in body),'lion',('Panthera leo' in body),'title',body[0:90].replace('\n',' '))
+              print('PREVIEW_DATA',json.dumps({'origin':base,'count':len(matches),'validSlugs':[m['slug'] for m in matches],'missing':[s for s in slugs if s not in {m['slug'] for m in matches}], 'release':release},ensure_ascii=False))
+          PY

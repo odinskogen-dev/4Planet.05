@@ -1,0 +1,27 @@
+name: SPECIES Founder Policy and Immutable Origin Regression Gold
+on:
+  push:
+    branches: [release/species-restore-20261017]
+    paths: [.github/workflows/species-restore-policy-regression.yml]
+permissions: {contents: read}
+jobs:
+  QA:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - run: npm ci --no-audit --no-fund
+      - name: Existing 4SPECIES source-backed publication tests
+        run: node --test scripts/species-human-review-index-gate.test.mjs scripts/species-sitemap-safety.test.mjs
+      - name: Lock immutable origin and correct founder-override source gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'https://72494005.4planet-05.pages.dev' ops/discovery/4species-router.js
+          ! grep -Fq 'const SPECIES_V53_ORIGIN = "https://species-v53.4planet-05.pages.dev"' ops/discovery/4species-router.js
+          grep -Fq 'reviewState === "DRAFT"' ops/discovery/4species-router.js
+          grep -Fq 'page?.schema !== "4PLANET_SPECIES_PAGE_01"' ops/discovery/4species-router.js
+          echo SPECIES_FOUNDERS_OVERRIDE_IMMUTABLE_GOLD_TEST_PASS

@@ -1,0 +1,31 @@
+name: SPECIES Restore 28 — Submit IndexNow and Audit AI Discovery
+on:
+  push:
+    branches: [release/species-restore-20261017]
+    paths: [.github/workflows/species-28-discovery-submit.yml]
+permissions: {contents: read}
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Confirm every canonical is live/indexable, then submit 28 to IndexNow
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 25 https://4species.com/sitemap.xml -o /tmp/species-sitemap.xml
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
+            grep -Fq "<loc>https://4species.com/$slug</loc>" /tmp/species-sitemap.xml
+          done
+          curl -fsSL --max-time 25 https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt -o /tmp/species-indexnow-key.txt
+          grep -Fxq '8f4c2d91a7b64e3fa1c9d0b6e5274a83' /tmp/species-indexnow-key.txt
+          python3 - <<'PY'
+          import json
+          slugs="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx".split()
+          doc={"host":"4species.com","key":"8f4c2d91a7b64e3fa1c9d0b6e5274a83","keyLocation":"https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt","urlList":["https://4species.com/"+x for x in slugs]}
+          assert len(doc["urlList"])==28
+          open("/tmp/species-indexnow.json","w").write(json.dumps(doc))
+          PY
+          code=$(curl --max-time 25 -sS -o /tmp/indexnow-response -w '%{http_code}' -X POST 'https://api.indexnow.org/indexnow' -H 'content-type: application/json; charset=utf-8' --data-binary @/tmp/species-indexnow.json)
+          echo "SPECIES_28_INDEXNOW_STATUS $code"
+          test "$code" = 200 -o "$code" = 202
