@@ -6,9 +6,9 @@ const assertNoHorizontalOverflow = async (page: import("@playwright/test").Page)
 };
 
 test.describe("SPECIES first-read hierarchy", () => {
-  test("Orca keeps the animal dominant and provenance out of compact hero", async ({ page }) => {
+  test("Orca keeps the animal dominant and provenance out of the first-read hero", async ({ page }) => {
     await page.goto("/species/orca");
-    const hero = page.locator(".sp-hero__media");
+    const hero = page.locator('[data-species-section="hero"]');
     const animal = hero.locator("img");
 
     await expect(hero).toBeVisible();
