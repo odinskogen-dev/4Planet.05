@@ -1,0 +1,38 @@
+name: SPECIES Public Post-Restore SEO and Premium Evidence
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-public-post-restore-seo.yml]
+permissions: {contents: read}
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - run: npm install --prefix /tmp/sps playwright@1.56.0
+      - run: /tmp/sps/node_modules/.bin/playwright install --with-deps chromium
+      - name: 28 actual live species index status, references, media and premium template
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from '/tmp/sps/node_modules/playwright/index.mjs';
+          const slugs=["orca","african-savanna-elephant","asian-elephant","bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan","cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe","gray-wolf","great-white-shark","green-sea-turtle","hippopotamus","jaguar","lion","monarch-butterfly","polar-bear","tiger","english-oak","western-honey-bee","fly-agaric","common-octopus","atlantic-puffin","sei-whale","eurasian-lynx"], base='https://4species.com';
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const map=await fetch(base+'/sitemap.xml').catch(()=>null);
+          const mtext=map?await map.text():'';
+          const records=[],defects=[];
+          for(const slug of slugs){
+            const response=await fetch(base+'/'+slug);const h=await response.text();
+            const j=await(await fetch(base+'/species-data/v1/'+slug+'.json')).json().catch(()=>({}));
+            const ctx=await browser.newContext({viewport:{width:390,height:844}});const p=await ctx.newPage();
+            await p.goto(base+'/'+slug,{waitUntil:'domcontentloaded',timeout:21000});await p.waitForTimeout(600);
+            const client=await p.evaluate(()=>({premium:!!document.querySelector('.spx'),refs:document.querySelectorAll('.spx-ref').length,sources:document.querySelectorAll('.spx-source-list').length,robots:document.querySelector('meta[name=robots]')?.content,canonical:document.querySelector('link[rel=canonical]')?.href,h1:document.querySelector('h1')?.innerText?.slice(0,80),imgBroken:[...document.querySelectorAll('img')].filter(e=>e.complete&&!e.naturalWidth).length}));
+            await ctx.close();
+            const row={slug,review:j.provenance?.review,htmlStatus:response.status,jsonOK:j.slug===slug,headerRobot:response.headers.get('x-robots-tag'),client,listed:mtext.includes('<loc>'+base+'/'+slug+'</loc>')};
+            if(!row.jsonOK||!client.premium||!client.refs||!client.sources||client.canonical!==base+'/'+slug) defects.push(slug);
+            records.push(row);console.log('SPECIES_RESTORED_LIVE_SEO '+JSON.stringify(row));
+          }
+          await browser.close();
+          console.log('SPECIES_RESTORED_LIVE_SUMMARY '+JSON.stringify({checked:records.length,brokenProfiles:defects,noindexHeaders:records.filter(x=>x.headerRobot?.includes('noindex')).map(x=>x.slug),noindexJS:records.filter(x=>x.client.robots?.includes('noindex')).map(x=>x.slug),sitemapHttp:map?.status,sitemapListed:records.filter(x=>x.listed).length,brokenPhotoCounts:records.filter(x=>x.client.imgBroken).map(x=>({slug:x.slug,count:x.client.imgBroken}))}));
+          if(defects.length)process.exitCode=1;
+          NODE
