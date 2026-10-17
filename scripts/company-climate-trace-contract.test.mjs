@@ -28,6 +28,30 @@ test("shared Climate TRACE source proxy supports ownerIds and emits canonical fa
  assert.match(source,/EMPTY_OR_CONTRACT_MISMATCH/);
 });
 
+test("shared Climate TRACE proxy keeps missing values unknown without erasing real zeroes",async()=>{
+ const m=await load("../functions/api/climate-trace.ts");
+ const originalFetch=globalThis.fetch;
+ globalThis.fetch=async()=>new Response(JSON.stringify([
+  {id:"missing-coordinate",name:"Missing coordinate",latitude:null,longitude:"",emissionsQuantity:900},
+  {id:"missing-emissions-null",name:"Missing emissions null",latitude:"0",longitude:"10",emissionsQuantity:null},
+  {id:"missing-emissions-blank",name:"Missing emissions blank",latitude:"1",longitude:"11",emissionsQuantity:""},
+  {id:"real-zero",name:"Real zero",latitude:2,longitude:12,emissionsQuantity:0},
+  {id:"numeric-string",name:"Numeric string",latitude:"3",longitude:"13",emissionsQuantity:"42.5"},
+ ]),{status:200,headers:{"content-type":"application/json"}});
+
+ try{
+  const response=await m.onRequestGet({request:new Request("https://test.4planet.org/api/climate-trace?countries=NOR&sectors=power"),env:{CLIMATE_TRACE_BASE:"https://example.test/v7"}});
+  assert.equal(response.status,200);
+  const body=await response.json();
+  assert.equal(body.ok,true);
+  assert.deepEqual(body.assets.map((asset)=>asset.id),["missing-emissions-null","missing-emissions-blank","real-zero","numeric-string"]);
+  assert.deepEqual(body.assets.map((asset)=>asset.co2e),[null,null,0,42.5]);
+  assert.equal(body.assets[0].lat,0,"a real equator coordinate remains valid");
+ }finally{
+  globalThis.fetch=originalFetch;
+ }
+});
+
 test("4BRANDS requires user review before fetching owner facilities",async()=>{
  const ui=await readFile(new URL("../src/pages/partners/FourBrand.tsx",import.meta.url),"utf8");
  assert.match(ui,/Find owner candidates/);

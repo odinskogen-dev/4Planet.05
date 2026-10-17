@@ -41,6 +41,8 @@ const cleanList = (v: string | null, re: RegExp) =>
 
 const finite = (...values: unknown[]) => {
   for (const value of values) {
+    if (value === null || value === undefined) continue;
+    if (typeof value === "string" && value.trim() === "") continue;
     const n = Number(value);
     if (Number.isFinite(n)) return n;
   }
