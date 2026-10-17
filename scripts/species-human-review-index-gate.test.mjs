@@ -9,13 +9,23 @@ import {
 
 const router = readFileSync(new URL("../ops/discovery/4species-router.js", import.meta.url), "utf8");
 
-test("profile indexability is gated on explicit human review", async () => {
-  assert.match(router, /page\?\.provenance\?\.review/);
-  assert.equal(await profileReviewState("/orca", async () => Response.json({ provenance: { review: "REVIEWED" } })), "REVIEWED");
+const sourcedProfile = (slug, review = "DRAFT") => ({
+  schema: "4PLANET_SPECIES_PAGE_01", slug,
+  identity: { commonName: "Orca", scientificName: "Orcinus orca" },
+  hook: { text: "The largest dolphin species.", source: { label: "NOAA Fisheries", url: "https://www.fisheries.noaa.gov/species/killer-whale" } },
+  provenance: { review, writtenBy: "GPT draft for 4PLANET" }
+});
+
+test("founder 17 Oct: DRAFT is publicly discoverable ONLY when original Claude profile has taxon identity and a real source", async () => {
+  assert.equal(await profileReviewState("/orca", async () => Response.json(sourcedProfile("orca","DRAFT"))), "DRAFT");
+  assert.equal(await profileReviewState("/orca", async () => Response.json(sourcedProfile("orca","REVIEWED"))), "REVIEWED");
   assert.equal(permitsSpeciesIndexing("REVIEWED"), true);
-  assert.equal(permitsSpeciesIndexing("DRAFT"), false);
+  assert.equal(permitsSpeciesIndexing("DRAFT"), true);
+  assert.equal(permitsSpeciesIndexing("UNREVIEWED"), false);
+  assert.equal(permitsSpeciesIndexing("INVALID"), false);
   assert.match(router, /x-robots-tag", "noindex, nofollow, noarchive"/);
   assert.match(router, /meta name="googlebot" content="noindex,nofollow,noarchive"/);
+  assert.match(router, /72494005\.4planet-05\.pages\.dev/);
 });
 
 test("profile review lookup fails closed for unavailable or invalid evidence", async () => {
@@ -61,9 +71,9 @@ test("arbitrary nested and non-canonical profile paths fail closed", async () =>
   }
 });
 
-test("the public species sitemap retains only universe routes and reviewed profiles", () => {
+test("the public species sitemap retains only non-profile routes and complete source-backed profiles", () => {
   assert.match(router, /incoming\.pathname === "\/species-sitemap\.xml"/);
   assert.match(router, /permitsSpeciesIndexing\(review\)/);
   assert.doesNotMatch(router, /review === null \|\| review === "REVIEWED"/);
-  assert.match(router, /x-4species-index-gate": "human-review-v1"/);
+  assert.match(router, /x-4species-index-gate": "source-backed-public-v2"/);
 });
