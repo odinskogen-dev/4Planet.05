@@ -46,7 +46,8 @@
     "test:4sapien-finance-calendar": "node products/4sapien/qa/test_finance_calendar_dates.cjs",
     "test:impact-lan": "node --test scripts/impact-lan-gold-contract.test.mjs",
     "test:resource-compounding": "node --test scripts/resource-compounding-contract.test.mjs",
-    "test:place-intelligence": "node --test scripts/place-intelligence-contract.test.mjs"
+    "test:place-intelligence": "node --test scripts/place-intelligence-contract.test.mjs",
+    "test:nature-sensor-ingress": "node --test scripts/nature-sensor-ingress-contract.test.mjs"
   },
   "dependencies": {
     "maplibre-gl": "6.10.0",

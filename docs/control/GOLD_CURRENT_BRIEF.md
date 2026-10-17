@@ -1261,3 +1261,20 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **ROLLBACK:** parent HEIR `c73fb2487f659cdc2c026b38a46978d746967b80`.
 
 **MAKER ≠ JUDGE:** deterministic contracts/build/preview establish candidate quality only. LIVE remains Founder-gated.
+
+
+# NATURE SENSOR 01 — SENSOR-AGNOSTIC NATUREBRAIN INGRESS — 17 OCT 2026
+
+**STATUS:** SOURCE-GROUNDED DATA CAPABILITY / SOFTWARE-ONLY PROOF PASSED / NO HARDWARE OR LICENCE COMMITMENT.
+
+**USER VALUE:** future environmental sensors can enter one governed NATUREBRAIN evidence path rather than creating device-specific silos.
+
+**CONTRACT:** provider/device event → source record → sensor entity → unreviewed observation → numeric measurement → evidence. Product publication remains false until review/rights/evidence gates are satisfied.
+
+**PROOF:** synthetic TEST_RECORD `TEST-20261017-OSLOFJORD-TOC-01` staged end-to-end, read back at POINT(10.55 59.45), preserved RESTRICTED_INTERNAL rights, UNKNOWN calibration, TEST_ONLY quality and `measurement_only` interpretation, then was deleted. No synthetic Oslofjord environmental measurement remains.
+
+**NASA ROUTE:** MiniTOCA/STELLA/other sensor technologies may later feed this same protocol. Hardware selection, licence, freedom-to-operate and procurement fit remain separate decisions.
+
+**TRUTH BOUNDARY:** measurement ≠ ecological condition; point ≠ area; missing observation ≠ absence; sensor identity ≠ ownership/manufacturer identity; unreviewed ≠ publication-ready.
+
+**MAKER ≠ JUDGE:** database readback proves protocol behaviour only. It does not prove hardware performance, environmental validity, user demand or LIVE product presentation.
