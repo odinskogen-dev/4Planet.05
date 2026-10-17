@@ -1,0 +1,42 @@
+name: SPECIES Immutable Versions Before Restoring Gold Value
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-immutable-restore-preflight.yml]
+permissions: {contents: read}
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - run: npm install --prefix /tmp/species-restore-preflight playwright@1.56.0
+      - run: /tmp/species-restore-preflight/node_modules/.bin/playwright install --with-deps chromium
+      - name: Inspect four preserved immutable Claude versions without changing live
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/species-restore-preflight/node_modules/playwright/index.mjs';
+          const bases=['https://72494005.4planet-05.pages.dev','https://f84eedf2.4planet-05.pages.dev','https://c1926bb6.4planet-05.pages.dev','https://species-v53.4planet-05.pages.dev'];
+          const slugs=["orca","african-savanna-elephant","asian-elephant","bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan","cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe","gray-wolf","great-white-shark","green-sea-turtle","hippopotamus","jaguar","lion","monarch-butterfly","polar-bear","tiger","english-oak","western-honey-bee","fly-agaric","common-octopus","atlantic-puffin","sei-whale","eurasian-lynx","humpback-whale","sperm-whale","harbour-porpoise","bottlenose-dolphin","atlantic-cod","blue-mussel","whale-shark","leopard","eastern-gorilla","acropora-palmata","hyacinth-macaw"];
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          for(const base of bases){
+           const rows=[];
+           for(const slug of slugs){
+            const [resp,dat]=await Promise.all([fetch(base+'/'+slug,{redirect:'follow'}).catch(()=>null),fetch(base+'/species-data/v1/'+slug+'.json',{redirect:'follow'}).catch(()=>null)]);
+            let d=null;try{d=await dat.json()}catch{}
+            let html='';try{html=await resp.text()}catch{}
+            const canonical=(html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i)||[])[1]||'';
+            rows.push({slug,http:resp?.status||0,dataHttp:dat?.status||0,correct:d?.slug===slug,review:d?.provenance?.review||null,hero:typeof d?.hero==='object'?{source:d.hero.sourcePage,license:d.hero.licence}:d?.hero||null,canonical,body:html.includes(d?.identity?.scientificName||'~NODATA~')});
+           }
+           const page=await browser.newPage({viewport:{width:390,height:844}});
+           for(const slug of ['orca','lion','tiger','gray-wolf','english-oak']){
+            await page.goto(base+'/'+slug,{waitUntil:'domcontentloaded',timeout:22000}).catch(()=>null);await page.waitForTimeout(550);
+            const t=await page.evaluate(()=>({slug:location.pathname,h1:document.querySelector('h1')?.innerText||'',premium:!!document.querySelector('.spx'),body:document.body.innerText.slice(0,90),meta:document.querySelector('meta[name=robots]')?.content||''}));
+            console.log('RESTORE_RENDER '+JSON.stringify({base,slug,...t}));
+           }
+           await page.close();
+           const correct=rows.filter(r=>r.correct).map(r=>r.slug);
+           console.log('RESTORE_IMMUTABLE_ORIGIN '+JSON.stringify({base,correctCount:correct.length,correct,missing:rows.filter(r=>!r.correct).map(r=>r.slug),badCanon:rows.filter(r=>r.correct&&!r.canonical.includes('/'+r.slug)).map(r=>r.slug),draftCount:rows.filter(r=>r.review==='DRAFT').length,photoAutoCount:rows.filter(r=>r.hero==='auto').length}));
+          }
+          await browser.close();
+          NODE
