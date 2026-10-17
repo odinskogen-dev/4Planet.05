@@ -1,0 +1,64 @@
+name: SPECIES Free Google Native Search Console Probe
+on:
+  push:
+    branches: [work/species-free-search-measurement-20261014]
+    paths: [.github/workflows/species-free-gsc-probe.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --quiet google-auth requests
+      - name: Verify free Google Search Console property, clicks, impressions and Orca index state
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from urllib.parse import quote
+          from datetime import date,timedelta
+          def say(s):
+              print(s)
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(s+'\n')
+          raw=os.environ.get('GA4_SERVICE_ACCOUNT_JSON','')
+          if not raw:
+              say('FREE_GSC: BLOCKED existing Google service-account secret absent')
+              raise SystemExit(0)
+          try:
+              from google.oauth2 import service_account
+              from google.auth.transport.requests import AuthorizedSession
+              c=service_account.Credentials.from_service_account_info(json.loads(raw),scopes=['https://www.googleapis.com/auth/webmasters.readonly'])
+              s=AuthorizedSession(c)
+              r=s.get('https://www.googleapis.com/webmasters/v3/sites',timeout=25)
+              if r.status_code!=200:
+                  say('FREE_GSC: property listing HTTP '+str(r.status_code))
+                  raise SystemExit(0)
+              names=[x.get('siteUrl','') for x in r.json().get('siteEntry',[])]
+              site=next((x for x in ('sc-domain:4species.com','https://4species.com/') if x in names),None)
+              say('FREE_GSC: number of visible properties '+str(len(names)))
+              if not site:
+                  say('FREE_GSC: 4species.com not visible to existing Google identity; owner must grant access in FREE native GSC, no paid tool required')
+                  raise SystemExit(0)
+              say('FREE_GSC: 4species.com ACCESSIBLE '+site)
+              endpoint='https://www.googleapis.com/webmasters/v3/sites/'+quote(site,safe='')+'/searchAnalytics/query'
+              start=(date.today()-timedelta(days=30)).isoformat()
+              end=(date.today()-timedelta(days=3)).isoformat()
+              q=s.post(endpoint,json={'startDate':start,'endDate':end,'dimensions':['date'],'rowLimit':40},timeout=25)
+              if q.status_code==200:
+                  rows=q.json().get('rows',[])
+                  say('FREE_GSC_SEARCH: clicks='+str(sum(a.get('clicks',0) for a in rows))+' impressions='+str(sum(a.get('impressions',0) for a in rows))+' reported_days='+str(len(rows)))
+              else: say('FREE_GSC_SEARCH: query HTTP '+str(q.status_code))
+              a=s.post('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect',json={'inspectionUrl':'https://4species.com/orca','siteUrl':site},timeout=25)
+              if a.status_code==200:
+                  z=a.json().get('inspectionResult',{}).get('indexStatusResult',{})
+                  say('FREE_GSC_ORCA: verdict='+str(z.get('verdict','UNKNOWN'))+' coverage='+str(z.get('coverageState','UNKNOWN'))+' lastCrawl='+str(z.get('lastCrawlTime','UNKNOWN')))
+              else: say('FREE_GSC_ORCA: inspection HTTP '+str(a.status_code))
+          except Exception as exc:
+              say('FREE_GSC: BLOCKED '+type(exc).__name__+'; no paid replacement needed')
+          PY
