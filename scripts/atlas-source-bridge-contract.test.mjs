@@ -443,6 +443,49 @@ test("routed ATLAS GBIF loader fails closed and exposes point evidence", () => {
   ]) assert.ok(earthLayers.includes(needle), `ATLAS GBIF detail missing ${needle}`);
 });
 
+test("OBIS measurements preserve UNKNOWN without erasing genuine zero", async () => {
+  const originalFetch = globalThis.fetch;
+  const fixtures = [
+    ["null", null, null],
+    ["blank", "  ", null],
+    ["missing", undefined, null],
+    ["invalid", "not-a-number", null],
+    ["negative", -1, null],
+    ["array", [], null],
+    ["boolean", true, null],
+    ["zero-number", 0, 0],
+    ["zero-string", "0", 0],
+    ["positive", "125", 125],
+  ];
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    results: fixtures.map(([id, measurement]) => ({
+      occurrenceID: id,
+      occurrenceStatus: "PRESENT",
+      coordinateUncertaintyInMeters: measurement,
+      minimumDepthInMeters: measurement,
+      maximumDepthInMeters: measurement,
+      license: "CC0 1.0",
+    })),
+    total: fixtures.length,
+  }), { status: 200, headers: { "content-type": "application/json" } });
+
+  try {
+    const response = await obisRuntime.onRequestGet({
+      request: new Request(`https://test.4planet.org/api/obis?scientificName=Cetacea&size=${fixtures.length}`),
+    });
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    const byId = Object.fromEntries(body.records.map((record) => [record.occurrenceId, record]));
+    for (const [id, , expected] of fixtures) {
+      assert.equal(byId[id].coordinateUncertaintyM, expected, `${id} uncertainty`);
+      assert.equal(byId[id].depthMinM, expected, `${id} minimum depth`);
+      assert.equal(byId[id].depthMaxM, expected, `${id} maximum depth`);
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("OBIS preserves composite rights, provider and sensitive-location flags", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response(JSON.stringify({
