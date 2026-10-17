@@ -1228,3 +1228,36 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **MAKER ≠ JUDGE:** Factory returns the exact SHA to independent Gold. Founder-authorised release remains separate.
 
 ---
+
+
+# PLACE CELL 01 — OSLOFJORD LIVE SOURCE COMPOSITION — 17 OCT 2026
+
+**STATUS:** FOUNDER-DIRECTED HEIR PRODUCT CANDIDATE / FIRST PLACE CELL / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE IMPLIED.
+
+**USER ARRIVES BECAUSE:** a person exploring Oslofjord needs more than a map or ecological summary; they need source-grounded context about the human and physical systems acting in the same place.
+
+**ONE THING TO UNDERSTAND:** PLACE is one canonical object. Energy infrastructure, emissions, population, buildings, Earth change, nature, species, procurement and solutions attach to the same place with separate source/rights/truth boundaries.
+
+**PRIMARY ACTION:** compose the existing GEM and Climate TRACE adapters into the existing public `/place/oslofjord` route and provide one clear continuation into the same ATLAS object.
+
+**P1 DOMINANT:** the public PLACE page gains live infrastructure/emissions context without creating a new map, database or duplicated place identity.
+
+**P2 ORIENTATION:** current proof is deliberately partial. WorldPop, building footprints and AlphaEarth are registered but remain `REGISTERED_NOT_ACTIVE` until their bounded adapters are proven.
+
+**P3 ACTION / NEXT:** open the Oslofjord extent in ATLAS with GEM infrastructure enabled; then add population/buildings/Earth-change to the same PLACE contract.
+
+**P4 DEPTH:** ecological condition, infrastructure, emissions, demographics and model signals remain different evidence classes. Missing source records never mean real-world absence.
+
+**WHAT MUST BE REUSED:** existing `/place/oslofjord`, existing AtlasEmbed, existing GEM adapter, existing Climate TRACE v7 adapter, existing canonical `place:4p:oslofjord`, sole HEIR `king/test`.
+
+**S4PIENS / 4SAPIEN BOUNDARY:** PLACE public human-system context belongs to S4PIENS. 4SAPIEN remains the private personal life-helper application.
+
+**MOBILE-FIRST RISK:** live records must remain concise and responsive; the first proof caps displayed records and never blocks the static PLACE page if a live source fails.
+
+**HUMAN SUCCESS:** a visitor can understand that Oslofjord is simultaneously a living system and a human/industrial place, inspect current source records, see uncertainty/coverage limits and continue into ATLAS.
+
+**TRUTH BOUNDARY:** bbox = navigation geometry; GEM asset ≠ emissions or responsibility; Climate TRACE source record ≠ complete emissions inventory or causal attribution; registered source ≠ active product layer.
+
+**ROLLBACK:** parent HEIR `c73fb2487f659cdc2c026b38a46978d746967b80`.
+
+**MAKER ≠ JUDGE:** deterministic contracts/build/preview establish candidate quality only. LIVE remains Founder-gated.
