@@ -1,0 +1,47 @@
+name: SPECIES Restore 28 Claude Host-Mapped Gold-Safety Preview
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-restore-28-host-proof.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - run: npm install --prefix /tmp/species-live-restore playwright@1.56.0
+      - run: /tmp/species-live-restore/node_modules/.bin/playwright install --with-deps chromium
+      - name: Route 28 species through genuine 4species.com host into immutable release
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from '/tmp/species-live-restore/node_modules/playwright/index.mjs';
+          const origin='https://72494005.4planet-05.pages.dev', slugs=["orca","african-savanna-elephant","asian-elephant","bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan","cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe","gray-wolf","great-white-shark","green-sea-turtle","hippopotamus","jaguar","lion","monarch-butterfly","polar-bear","tiger","english-oak","western-honey-bee","fly-agaric","common-octopus","atlantic-puffin","sei-whale","eurasian-lynx"];
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          let invalid=[];
+          for(const slug of slugs) {
+            const context=await browser.newContext({viewport:{width:390,height:844}});
+            await context.route('https://4species.com/**',async route=>{
+              try {
+                const target=origin+new URL(route.request().url()).pathname+new URL(route.request().url()).search;
+                const response=await route.fetch({url:target,maxRedirects:8,timeout:19000});
+                await route.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':'*'}});
+              } catch(e){await route.abort();}
+            });
+            const page=await context.newPage();
+            const err=[];page.on('pageerror',e=>err.push(e.message.slice(0,140)));
+            await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:23000}).catch(()=>{});
+            await page.waitForTimeout(850);
+            const record=await page.evaluate(()=>{
+              const h=document.querySelector('h1'),spx=document.querySelector('.spx');
+              return {h1:h?.innerText?.slice(0,120)||'',template:!!spx,canonical:document.querySelector('link[rel=canonical]')?.href||null,refs:document.querySelectorAll('.spx-ref').length,sources:document.querySelectorAll('.spx-source-list').length,robots:document.querySelector('meta[name=robots]')?.content||null,
+               hero:document.querySelector('.spx-hero img')?.src||null,body:document.body.innerText.slice(0,115)};
+            });
+            if(!record.template||record.canonical!=='https://4species.com/'+slug||!record.sources||!record.refs||/Off the map|No species page/.test(record.body)||err.length)invalid.push({slug,...record,errors:err});
+            console.log('SPECIES_HOST_RESTORE_PROOF '+JSON.stringify({slug,...record,errors:err}));
+            await context.close();
+          }
+          await browser.close();
+          console.log('SPECIES_RESTORE_28_SUMMARY '+JSON.stringify({count:slugs.length,failures:invalid}));
+          if(invalid.length)process.exit(1);
+          NODE
