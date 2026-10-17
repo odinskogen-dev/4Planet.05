@@ -11,7 +11,7 @@ test("4SPECIES serves robots.txt with canonical sitemap", async () => {
   assert.match(robots, /Disallow: \/api\//);
 });
 
-test("4SPECIES sitemap keeps only reviewed species and canonical public URLs", async (t) => {
+test("4SPECIES sitemap keeps only source-backed complete species and canonical public URLs", async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
   globalThis.fetch = async (input) => {
@@ -26,10 +26,10 @@ test("4SPECIES sitemap keeps only reviewed species and canonical public URLs", a
       );
     }
     if (url.endsWith("/orca.json")) {
-      return Response.json({ provenance: { review: "REVIEWED" } });
+      return Response.json({schema:"4PLANET_SPECIES_PAGE_01",slug:"orca",identity:{commonName:"Orca",scientificName:"Orcinus orca"},hook:{source:{label:"NOAA",url:"https://www.fisheries.noaa.gov/species/killer-whale"}},provenance:{review:"REVIEWED"}});
     }
     if (url.endsWith("/draft-species.json")) {
-      return Response.json({ provenance: { review: "DRAFT" } });
+      return Response.json({schema:"4PLANET_SPECIES_PAGE_01",slug:"draft-species",identity:{commonName:"Draft species",scientificName:"Example example"},hook:{source:{label:"Authoritative citation",url:"https://example.org/authority"}},provenance:{review:"DRAFT"}});
     }
     return new Response("Not found", { status: 404 });
   };
@@ -38,7 +38,7 @@ test("4SPECIES sitemap keeps only reviewed species and canonical public URLs", a
   const xml = await response.text();
   assert.match(xml, /https:\/\/4species\.com\/orca</);
   assert.match(xml, /https:\/\/4species\.com\/explore</);
-  assert.doesNotMatch(xml, /draft-species/);
+  assert.match(xml, /https:\/\/4species\.com\/draft-species</);
   assert.doesNotMatch(xml, /unavailable/);
   assert.doesNotMatch(xml, /pages\.dev/);
   assert.equal(response.headers.get("x-4species-index-gate"), "human-review-v1");
