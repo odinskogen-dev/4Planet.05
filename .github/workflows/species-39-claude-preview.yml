@@ -1,4 +1,4 @@
-name: SPECIES 39 — Claude Original Candidate Build and Isolated Preview
+name: SPECIES 39 — Wild Source Cleared Claude Preview
 # Founder release: build isolated before switching any live 4species routes.
 
 on:
@@ -124,6 +124,12 @@ jobs:
             assert d['provenance']['review']=='DRAFT',slug
             print('SPECIES_COHORT11_DRAFT_SOURCE_STRUCTURE_PASS',slug,len(urls))
           PY
+          # Fully inspect Wikimedia file-level authorship/license, download wild
+          # photos into Claude's existing public assets, and keep only reviewed
+          # hero (never captive/unidentified auto gallery content).
+          python3 "$GITHUB_WORKSPACE/ops/species/v53/curate_cohort11_photos.py"
+          test -f public/species-media/gold-candidates/rights-record-11.json
+          test "$(find public/species-media/gold-candidates -maxdepth 1 -name '*.jpg' | wc -l)" = 11
           python3 "$GITHUB_WORKSPACE/ops/species/v53/premium-wildlife-hotfix.py"
           # Audit Claude's EXISTING per-claim citation records; do not create a source system.
           python3 - <<'PY'
