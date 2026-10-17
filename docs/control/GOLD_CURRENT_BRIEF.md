@@ -1248,6 +1248,26 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 
 **MAKER ≠ JUDGE:** Factory returns the exact SHA to independent Gold. Founder-authorised release remains separate.
 
+## 17 OCTOBER 2026 — 4NGO ACTOR CLAIM CONTENT AUTHORITY CORRECTION
+
+**STATUS:** RETURNED QA_CORRECT IMPLEMENTED ON THE SOLE ACTOR HEIR / INDEPENDENT GOLD REQUIRED / RELEASE HOLD / NOT LIVE.
+
+**USER ARRIVES BECAUSE:** a person must see only the exact Actor statement that was reviewed, not new wording or a stronger claim distance attached to previously approved evidence.
+
+**ONE THING TO UNDERSTAND:** approved sources and evidence do not approve every assertion that can be made from them.
+
+**PRIMARY ACTION:** admit a claim only when its claim id, Actor id, revision, exact content and distance match the closed canonical claim-authority record as well as the approved source and evidence records.
+
+**WHAT CAN BE REMOVED:** caller-controlled claim wording, Actor identity, distance or revision as a substitute for claim-level approval.
+
+**WHAT MUST BE REUSED:** existing `ActorGoldProfile`, `ActorClaimBoundary`, `actorClaimCanPublish`, ACTOR-FP-01, issue #152 and sole PR #131 `king/test` HEIR.
+
+**TRUTH BOUNDARY:** the current ORCA register remains empty. This correction adds no public claim and proves only that claim meaning cannot drift after approval.
+
+**BASE / ROLLBACK:** `king/test@fe17879630c7fde69be3b871afa353722d01cec5`; revert the bounded source/test/brief commit if independent Gold finds a legitimate approved claim is wrongly suppressed.
+
+**MAKER ≠ JUDGE:** Factory implements the returned boundary; independent Gold judges the exact resulting SHA. Founder release remains separate.
+
 ---
 
 

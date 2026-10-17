@@ -77,6 +77,16 @@ interface ActorAuthoritativeEvidenceRecord extends ActorEvidenceRecord {
   approvedAt: string;
 }
 
+interface ActorAuthoritativeClaimRecord {
+  id: string;
+  actorId: string;
+  revision: string;
+  claim: string;
+  distance: ActorClaimDistance;
+  reviewState: "APPROVED";
+  approvedAt: string;
+}
+
 /**
  * Publication authority is deliberately separate from the Actor profile projection.
  * A profile cannot make its own records authoritative by copying an id, authority label
@@ -87,6 +97,7 @@ interface ActorAuthoritativeEvidenceRecord extends ActorEvidenceRecord {
 const ACTOR_PUBLICATION_AUTHORITY = Object.freeze({
   sourceRecords: [] as readonly ActorAuthoritativeSourceRecord[],
   evidenceRecords: [] as readonly ActorAuthoritativeEvidenceRecord[],
+  claimRecords: [] as readonly ActorAuthoritativeClaimRecord[],
 });
 
 const ACTOR_REVIEW_DATE_PATTERN =
@@ -127,6 +138,9 @@ function validActorReviewDate(value: string | null): number | null {
 }
 
 export interface ActorClaimBoundary {
+  id: string;
+  actorId: string;
+  revision: string;
   claim: string;
   distance: "DELIVERY" | "OUTCOME" | "IMPACT";
   state: "SUPPORTED" | "SOURCE_REQUIRED" | "PROHIBITED";
@@ -193,6 +207,9 @@ export function actorClaimCanPublish(
 
   if (claim.state !== "SUPPORTED" || claim.reviewState !== "REVIEWED") return false;
   if (
+    !claim.id.trim() ||
+    !claim.actorId.trim() ||
+    !claim.revision.trim() ||
     !claim.claim.trim() ||
     !nonBlank(claim.sourceRefs) ||
     !nonBlank(claim.evidenceRefs) ||
@@ -200,6 +217,20 @@ export function actorClaimCanPublish(
     !unique(claim.evidenceRefs)
   ) return false;
   if (!["DELIVERY", "OUTCOME", "IMPACT"].includes(claim.distance)) return false;
+
+  const authoritativeClaim = ACTOR_PUBLICATION_AUTHORITY.claimRecords.find(
+    (record) => record.id === claim.id,
+  );
+  const claimApprovedAt = validActorReviewDate(authoritativeClaim?.approvedAt ?? null);
+  if (
+    !authoritativeClaim ||
+    authoritativeClaim.reviewState !== "APPROVED" ||
+    claimApprovedAt === null ||
+    authoritativeClaim.actorId !== claim.actorId ||
+    authoritativeClaim.revision !== claim.revision ||
+    authoritativeClaim.claim !== claim.claim ||
+    authoritativeClaim.distance !== claim.distance
+  ) return false;
 
   const sources = claim.sourceRefs.map((id) => sourceRecords.find((record) => record.id === id));
   const authoritativeSources = claim.sourceRefs.map((id) =>
@@ -393,6 +424,9 @@ export const ACTOR_GOLD_PROFILES: ActorGoldProfile[] = [
     claimsAllowed: [],
     claimsProhibited: [
       {
+        id: "claim:orca:ecological-impact:v1",
+        actorId: "P17-A036",
+        revision: "1",
         claim: "The bounded action has produced verified ecological impact.",
         distance: "IMPACT",
         state: "PROHIBITED",

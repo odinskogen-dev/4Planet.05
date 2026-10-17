@@ -124,6 +124,9 @@ function claimStructureFailures(source) {
   const evidenceRecords = propertyType(sourceFile, "ActorGoldProfile", "evidenceRecords");
   const sourceRefs = propertyType(sourceFile, "ActorClaimBoundary", "sourceRefs");
   const evidenceRefs = propertyType(sourceFile, "ActorClaimBoundary", "evidenceRefs");
+  const claimId = propertyType(sourceFile, "ActorClaimBoundary", "id");
+  const actorId = propertyType(sourceFile, "ActorClaimBoundary", "actorId");
+  const revision = propertyType(sourceFile, "ActorClaimBoundary", "revision");
   const distances = unionLiterals(sourceFile, "ActorClaimBoundary", "distance");
   const states = unionLiterals(sourceFile, "ActorClaimBoundary", "state");
   const authorities = unionLiterals(sourceFile, "ActorClaimBoundary", "sourceAuthority");
@@ -150,6 +153,9 @@ function claimStructureFailures(source) {
   if (!evidenceRefs || evidenceRefs.replace(/\s+/g, "") !== "string[]") {
     failures.push("ActorClaimBoundary.evidenceRefs must be string[]");
   }
+  if (claimId !== "string") failures.push("ActorClaimBoundary.id must be string");
+  if (actorId !== "string") failures.push("ActorClaimBoundary.actorId must be string");
+  if (revision !== "string") failures.push("ActorClaimBoundary.revision must be string");
   for (const distance of ["DELIVERY", "OUTCOME", "IMPACT"]) {
     if (!distances.includes(distance)) failures.push(`missing claim distance ${distance}`);
   }
@@ -188,6 +194,13 @@ function withCanonicalAuthorityFixture(source) {
         { id: "evidence:impact:1", sourceRef: "source:independent:1", reviewedAt: "2026-10-13T00:00:00Z", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
         { id: "evidence:delivery:1", sourceRef: "provider:delivery:1", reviewedAt: "2026-10-13T00:00:00Z", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
       ] as readonly ActorAuthoritativeEvidenceRecord[],`,
+    )
+    .replace(
+      "claimRecords: [] as readonly ActorAuthoritativeClaimRecord[],",
+      `claimRecords: [
+        { id: "claim:impact:1", actorId: "actor:1", revision: "1", claim: "Verified impact", distance: "IMPACT", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
+        { id: "claim:delivery:1", actorId: "actor:1", revision: "1", claim: "Bounded work delivered", distance: "DELIVERY", reviewState: "APPROVED", approvedAt: "2026-10-13T01:00:00Z" },
+      ] as readonly ActorAuthoritativeClaimRecord[],`,
     );
 }
 
@@ -211,6 +224,9 @@ async function claimRuntimeFailures(source) {
     { id: "provider:self-evidence", sourceRef: "provider:self-claim", reviewedAt: null },
   ];
   const baseImpact = {
+    id: "claim:impact:1",
+    actorId: "actor:1",
+    revision: "1",
     claim: "Verified impact",
     distance: "IMPACT",
     state: "SUPPORTED",
@@ -230,6 +246,7 @@ async function claimRuntimeFailures(source) {
       "delivery claim without evidence passed",
       {
         ...baseImpact,
+        id: "claim:delivery:1",
         claim: "Bounded work delivered",
         distance: "DELIVERY",
         sourceRefs: ["provider:delivery:1"],
@@ -242,6 +259,7 @@ async function claimRuntimeFailures(source) {
       "first-party delivery falsely labelled independent passed",
       {
         ...baseImpact,
+        id: "claim:delivery:1",
         claim: "Bounded work delivered",
         distance: "DELIVERY",
         sourceRefs: ["provider:delivery:1"],
@@ -265,6 +283,11 @@ async function claimRuntimeFailures(source) {
       false,
     ],
     ["invalid claim distance passed", { ...baseImpact, distance: "ACTIVITY" }, false],
+    ["changed approved claim text passed", { ...baseImpact, claim: "Different impact" }, false],
+    ["changed approved claim distance passed", { ...baseImpact, distance: "OUTCOME" }, false],
+    ["changed approved claim actor passed", { ...baseImpact, actorId: "actor:2" }, false],
+    ["changed approved claim revision passed", { ...baseImpact, revision: "2" }, false],
+    ["unknown claim id passed", { ...baseImpact, id: "claim:missing" }, false],
     [
       "forged independent/reviewed tuple passed without authoritative records",
       {
@@ -305,6 +328,7 @@ async function claimRuntimeFailures(source) {
       "supported sourced delivery claim did not pass",
       {
         ...baseImpact,
+        id: "claim:delivery:1",
         claim: "Bounded work delivered",
         distance: "DELIVERY",
         sourceRefs: ["provider:delivery:1"],
@@ -341,6 +365,9 @@ interface ActorEvidenceRecord {
   reviewedAt: string | null;
 }
 interface ActorClaimBoundary {
+  id: string;
+  actorId: string;
+  revision: string;
   claim: string;
   distance: "DELIVERY" | "OUTCOME" | "IMPACT";
   state: "SUPPORTED" | "SOURCE_REQUIRED" | "PROHIBITED";
@@ -457,6 +484,9 @@ test("asserted independent review cannot replace authoritative source and eviden
     { id: "provider:self-evidence", sourceRef: "provider:self-claim", reviewedAt: null },
   ];
   const reviewedImpact = {
+    id: "claim:impact:1",
+    actorId: "actor:1",
+    revision: "1",
     claim: "Verified impact",
     distance: "IMPACT",
     state: "SUPPORTED",
@@ -474,6 +504,10 @@ test("asserted independent review cannot replace authoritative source and eviden
   assert.equal(unanchored.actorClaimCanPublish(reviewedImpact, sources, evidence), false);
   assert.equal(anchored.actorClaimCanPublish(reviewedImpact, sources, evidence), true);
   assert.equal(anchored.actorClaimCanPublish(forgedImpact, sources, evidence), false);
+  assert.equal(anchored.actorClaimCanPublish({ ...reviewedImpact, claim: "Different impact" }, sources, evidence), false);
+  assert.equal(anchored.actorClaimCanPublish({ ...reviewedImpact, distance: "OUTCOME" }, sources, evidence), false);
+  assert.equal(anchored.actorClaimCanPublish({ ...reviewedImpact, actorId: "actor:2" }, sources, evidence), false);
+  assert.equal(anchored.actorClaimCanPublish({ ...reviewedImpact, revision: "2" }, sources, evidence), false);
   assert.equal(anchored.actorClaimCanPublish(
     { ...reviewedImpact, sourceRefs: ["source:missing"], evidenceRefs: ["evidence:missing"] },
     sources,
