@@ -7,6 +7,7 @@ const source = await readFile(new URL("../src/impact/actionContract.ts", import.
 const impactHomeSource = await readFile(new URL("../src/pages/integrated/ImpactPremium.tsx", import.meta.url), "utf8");
 const impactActionProofSource = await readFile(new URL("../src/pages/integrated/ImpactActionProof.tsx", import.meta.url), "utf8");
 const impactUnitsSource = await readFile(new URL("../src/data/impactUnits.ts", import.meta.url), "utf8");
+const actorGoldSource = await readFile(new URL("../src/content/actorGold.ts", import.meta.url), "utf8");
 const transpiled = ts.transpileModule(source, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -14,6 +15,15 @@ const transpiled = ts.transpileModule(source, {
   },
 }).outputText;
 const action = await import(`data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`);
+const actorGoldTranspiled = ts.transpileModule(actorGoldSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText;
+const actorGold = await import(
+  `data:text/javascript;base64,${Buffer.from(actorGoldTranspiled).toString("base64")}`
+);
 const impactUnitsTranspiled = ts.transpileModule(impactUnitsSource, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
@@ -66,6 +76,46 @@ test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
   assert.equal(contract.programmeEvidence.annualSurveyDays.state, "KNOWN");
   assert.deepEqual(contract.programmeEvidence.annualSurveyDays.value, { min: 40, max: 48 });
   assert.match(contract.programmeEvidence.annualSurveyDays.sourceNote, /Steve Jones, 4 Sep 2026/i);
+});
+
+test("Bay action is bound to the canonical ORCA Actor identity and exact profile route", () => {
+  const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
+  const actor = actorGold.ACTOR_GOLD_PROFILES.find((profile) => profile.slug === "orca");
+
+  assert.ok(actor);
+  assert.equal(contract.actor.id, "P17-A036");
+  assert.equal(contract.actor.profilePath, "/actors/orca");
+  assert.equal(contract.actor.id, actor.id);
+  assert.equal(contract.actor.profilePath, `/actors/${actor.slug}`);
+  assert.ok(actor.actionContractIds.includes(contract.id));
+  assert.equal(
+    action.actionContractActorMatchesCanonicalIdentity(contract, "P17-A036", "/actors/orca"),
+    true,
+  );
+  assert.equal(
+    action.actionContractActorMatchesCanonicalIdentity(
+      { ...contract, actor: { ...contract.actor, id: "actor:orca" } },
+      "P17-A036",
+      "/actors/orca",
+    ),
+    false,
+  );
+  assert.equal(
+    action.actionContractActorMatchesCanonicalIdentity(contract, "actor:orca", "/actors/orca"),
+    false,
+  );
+  assert.equal(
+    action.actionContractActorMatchesCanonicalIdentity(contract, "P17-A036", "/actors/orca/"),
+    false,
+  );
+  assert.equal(
+    action.actionContractActorMatchesCanonicalIdentity(
+      { ...contract, actor: { ...contract.actor, profilePath: "/actors/another-orca" } },
+      "P17-A036",
+      "/actors/orca",
+    ),
+    false,
+  );
 });
 
 test("Bay survey action still fails closed while bounded quantity and current GBP terms are unresolved", () => {

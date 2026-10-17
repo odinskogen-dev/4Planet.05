@@ -44,6 +44,7 @@ export interface ActionContract {
   actor: {
     id: string;
     name: string;
+    profilePath: `/actors/${string}`;
     role: string;
     relationshipState: "PROJECT_CONTEXT_EXISTS_TERMS_TO_VERIFY" | "DILIGENCE_PENDING" | "DILIGENCE_COMPLETE";
   };
@@ -88,8 +89,9 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   need: "Fund bounded, inspectable cetacean monitoring effort on the existing Portsmouth → Bay of Biscay → Santander ferry survey corridor.",
   place: "Bay of Biscay · Portsmouth–Santander ferry survey corridor",
   actor: {
-    id: "actor:orca",
+    id: "P17-A036",
     name: "ORCA",
+    profilePath: "/actors/orca",
     role: "Cetacean survey expertise / delivery context",
     relationshipState: "PROJECT_CONTEXT_EXISTS_TERMS_TO_VERIFY",
   },
@@ -208,6 +210,24 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
     { label: "Actor graph", href: "/actors" },
   ],
 };
+
+/**
+ * Bind an action to a caller-supplied canonical Actor identity without
+ * guessing from a name or slug. The caller remains responsible for sourcing
+ * that identity from the reviewed Actor Master projection.
+ */
+export function actionContractActorMatchesCanonicalIdentity(
+  contract: ActionContract,
+  canonicalActorId: string,
+  canonicalProfilePath: `/actors/${string}`,
+): boolean {
+  return (
+    canonicalActorId.trim().length > 0 &&
+    /^\/actors\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(canonicalProfilePath) &&
+    contract.actor.id === canonicalActorId &&
+    contract.actor.profilePath === canonicalProfilePath
+  );
+}
 
 export function actionContractCanMatchFunding(contract: ActionContract): boolean {
   return (
