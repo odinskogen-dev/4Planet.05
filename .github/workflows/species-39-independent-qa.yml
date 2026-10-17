@@ -1,4 +1,4 @@
-name: SPECIES 39 — Independent Premium Photo Source QA
+name: SPECIES 39 — Independent Curated Wild Media GOLD QA
 on:
   push:
     branches: [build/species-39-claude-cohort-20261017]
@@ -20,7 +20,7 @@ jobs:
           node --input-type=module <<'NODE'
           import {chromium} from '/tmp/species39/node_modules/playwright/index.mjs';
           import fs from 'node:fs';
-          const base='https://d2f32eb8.4planet-05.pages.dev';
+          const base='https://ad9b9e9a.4planet-05.pages.dev';
           const all='orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw'.split(' ');
           const newSlugs=all.slice(28);
           const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -50,6 +50,10 @@ jobs:
               if(newSlugs.includes(slug)){
                 await page.screenshot({path:'/tmp/species39photos/'+slug+'.png',animations:'disabled'});
                 if(d.images.length===0)warnings.push('PHOTO_MISSING:'+slug);
+                if(!d.images[0]?.src.includes('/species-media/gold-candidates/'+slug+'.jpg')) warnings.push('WRONG_HERO_SOURCE:'+slug);
+                if(d.images[0]?.natural[0]<600) warnings.push('BROKEN_OR_SMALL_HERO:'+slug);
+                if(d.images.some(i=>/ecomare|atlant(erhav|erhavs)parken|zoo|aquarium|captiv|museum|food|r[oö]sti|torsk.bagt|fjordcenter|fish.fillet/i.test(i.src+' '+i.alt)))warnings.push('CAPTIVITY_OR_WRONG_SUBJECT:'+slug);
+                if(!d.links.some(l=>/commons.wikimedia.org/.test(l.url)))warnings.push('CREDIT_LINK_NOT_VISIBLE:'+slug);
                 for(const im of d.images){if(/zoo|aquarium|captiv|cage|atlant(erhav|erhavs)parken|marine.mammal.program|osl(o|ob).*whale.shark/i.test(im.alt+' '+im.src))warnings.push('CAPTIVITY_RISK:'+slug+':'+im.src.slice(0,130));}
               }
             }catch(e){warnings.push('BROWSER_ERROR:'+slug+':'+String(e).slice(0,200))}
@@ -57,7 +61,7 @@ jobs:
           }
           await browser.close();
           console.log('SPECIES39_QA_SUMMARY '+JSON.stringify({total:reports.length,premium:reports.filter(x=>x.spx).length,sourceLists:reports.filter(x=>x.sources>0).length,newPhotoStates:reports.filter(x=>newSlugs.includes(x.slug)).map(x=>({slug:x.slug,images:x.images.map(i=>({src:i.src.slice(0,100),alt:i.alt.slice(0,55),w:i.natural[0],h:i.natural[1]}))})),warnings}));
-          if(reports.length!==39||reports.some(x=>x.status!==200||!x.spx||x.sources===0||x.robots?.includes('noindex')))process.exitCode=1;
+          if(reports.length!==39||reports.some(x=>x.status!==200||!x.spx||x.sources===0||x.robots?.includes('noindex')))||warnings.some(x=>/PHOTO_MISSING|WRONG_HERO_SOURCE|BROKEN_OR_SMALL_HERO|CAPTIVITY_OR_WRONG_SUBJECT|CREDIT_LINK_NOT_VISIBLE/.test(x)))process.exitCode=1;
           NODE
       - uses: actions/upload-artifact@v4
         if: always()
