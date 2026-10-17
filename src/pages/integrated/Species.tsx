@@ -160,7 +160,7 @@ function SpeciesHero({
             ))}
           </div>
         </div>
-        <div className="sp-hero__actions">{actions}</div>
+        <div className="sp-hero__actions">{actions}{profile.slug === "orca" && <a href="/games/wild-orca/" data-testid="species-orca-play" style={{ display: "inline-flex", alignItems: "center", minHeight: 48, padding: "0 18px", background: "#a8f4ff", color: "#021219", fontWeight: 800, textDecoration: "none" }}>PLAY WILD: ORCA →</a>}</div>
       </div>
     </div>
   );
@@ -217,6 +217,7 @@ export function SpeciesIndex() {
               style={{ flex: "1 1 320px", minWidth: 0, border: "1px solid rgba(255,255,255,.4)", padding: "14px 16px", fontSize: 15, fontFamily: T.sans, background: "rgba(5,8,27,.35)", color: "#fff" }} />
             <a href="#species-results" style={{ ...mono, fontSize: 12, letterSpacing: ".1em", background: "#fff", color: "#000", padding: "14px 18px", textDecoration: "none" }}>SEARCH →</a>
           </div>
+           <a href="/games/wild-orca/" data-testid="species-home-orca-play" style={{ display: "inline-flex", alignItems: "center", alignSelf: "flex-start", marginTop: 18, minHeight: 48, padding: "0 18px", background: "#a8f4ff", color: "#021219", textDecoration: "none", fontSize: 12, fontWeight: 800, letterSpacing: ".08em" }}>PLAY WILD: ORCA →</a>
           <div style={{ ...mono, marginTop: 18, color: "rgba(255,255,255,.6)", letterSpacing: ".2em", fontSize: 10 }}>{SPECIES_PROFILES.length} SPECIES · SCROLL ↓</div>
         </div>
       </section>
@@ -326,6 +327,7 @@ function SpeciesEditorialProfile({
                   onClick={() => trackEvent("cross_product_navigation", { from_product: "species", to_product: "atlas", canonical_entity: profile.id })}
                   style={{ ...mono, minHeight: 50, display: "inline-flex", alignItems: "center", padding: "0 18px", background: T.blue, color: "#FFFFFF", textDecoration: "none" }}
                 >{`EXPLORE ${profile.commonName.toUpperCase()} IN ATLAS →`}</Link>
+<div style={{ display: "contents" }}>{profile.slug === "orca" && <a href="/games/wild-orca/" data-testid="species-orca-play-hero" style={{ display: "inline-flex", alignItems: "center", minHeight: 50, padding: "0 18px", background: "#a8f4ff", color: "#021219", fontWeight: 800, textDecoration: "none" }}>PLAY WILD: ORCA →</a>}</div>
                 <button type="button" onClick={onToggle} className="editorial-secondary" style={{ minHeight: 50 }}>
                   {followed ? "WATCHING LOCALLY" : "ADD TO LOCAL WATCH"}
                 </button>
