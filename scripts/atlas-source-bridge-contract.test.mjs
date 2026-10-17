@@ -67,6 +67,25 @@ const requiredRasterProfiles = [
   "noaa-coral-dhw",
 ];
 
+test("ATLAS layer palette references resolve and point fallbacks are valid colours", () => {
+  const paletteKeys = new Set(Object.keys(earthLayersRuntime.C));
+  const referencedKeys = new Set(
+    [...earthLayers.matchAll(/\bC\.([A-Za-z_$][\w$]*)/g)].map((match) => match[1]),
+  );
+  const missingKeys = [...referencedKeys].filter((key) => !paletteKeys.has(key)).sort();
+  assert.deepEqual(missingKeys, [], `undefined ATLAS palette references: ${missingKeys.join(", ")}`);
+
+  const pointLayers = earthLayersRuntime.LAYERS.filter((layer) => layer.kind === "point");
+  assert.ok(pointLayers.length > 0, "ATLAS point-layer registry must not be empty");
+  for (const layer of pointLayers) {
+    assert.match(layer.color, /^#[0-9A-F]{6}$/i, `${layer.id} requires a six-digit CSS colour fallback`);
+  }
+
+  const emissions = pointLayers.find((layer) => layer.id === "emissions");
+  assert.ok(emissions, "Climate TRACE emissions layer is missing");
+  assert.equal(emissions.color, earthLayersRuntime.C.amber);
+});
+
 test("ATLAS WMS bridge stays allowlisted and bounded", () => {
   assert.match(wms, /const PROFILES:/);
   for (const profile of requiredRasterProfiles) assert.ok(wms.includes(`\"${profile}\"`), `missing ${profile}`);

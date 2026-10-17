@@ -436,7 +436,7 @@ export const LAYERS = [
         html: `<b>M ${esc(f.properties.mag)}</b><br><span class="lat">${esc(f.properties.place || "")}</span>` }));
     } },
   { id: "emissions", dom: "S4PIENS", group: "SIGNALS", kind: "point", domain: ["PLANET", "S4PIENS", "E4RTH"],
-    label: "CLIM4TE TRACE", color: C.orange, src: "Climate TRACE", r: 4,
+    label: "CLIM4TE TRACE", color: C.amber, src: "Climate TRACE", r: 4,
     note: "Facility-level greenhouse-gas emissions from Climate TRACE \\u2014 power plants, oil & gas and other energy/industrial assets, located and sized by CO\\u2082e. These are modelled/measured source assets, not live plumes. Larger circles mean higher reported emissions.",
     legend: { ramp: "linear-gradient(90deg,#FF7D50,#FF5023,#842810)", lo: "LOWER", hi: "HIGHER CO\\u2082e", sub: "Climate TRACE asset emissions" },
     load: async () => {

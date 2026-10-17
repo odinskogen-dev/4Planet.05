@@ -1,3 +1,24 @@
+# ATLAS-10 — CLIMATE TRACE EMISSIONS COLOUR FALLBACK — 17 OCT 2026
+
+**STATUS:** SOURCE-VERIFIED P0/P1 INTERACTION DEFECT CORRECTED ON SOLE HEIR / INDEPENDENT GOLD AND BROWSER VERIFICATION REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person enables facility-level greenhouse-gas emissions to see reported source assets as visible map points.
+**ONE THING TO UNDERSTAND:** Climate TRACE assets are reported/modelled facility emissions, not live plumes, and every returned point needs a valid visible fallback colour.
+**PRIMARY ACTION:** enable the CLIM4TE TRACE layer and inspect emissions assets without the point style collapsing to an undefined palette token.
+**SECONDARY DEPTH:** source asset, sector, reported CO₂e and reporting year remain progressively available in the existing point detail.
+**P1 DOMINANT:** visible emissions points on the existing ATLAS map.
+**P2 ORIENTATION:** existing layer label, source and truth note.
+**P3 ACTION:** select or deselect the emissions layer through the existing layer console.
+**P4 DEPTH:** inspect the existing source-specific point detail; no new map, data store or colour system is introduced.
+**WHAT CAN BE REMOVED:** the undeclared `C.orange` reference and the possibility that another layer silently references an absent palette key.
+**WHAT MUST BE REUSED:** ATLAS-10, issue #244, PR #131, the existing `C.amber` token, Climate TRACE adapter and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** a visible point is a source asset record, not a live plume, causal attribution, verified reduction or ecological impact. Repository tests do not prove deployment, browser rendering, Gold or LIVE state.
+**MOBILE-FIRST RISK:** no geometry or interaction changes; independent Chromium/WebKit 390/430 and desktop evidence remains required.
+**HUMAN SUCCESS:** enabling emissions produces visible, source-bounded facility points instead of an invalid colour fallback, while every ATLAS palette reference is regression-checked.
+**BASE / ROLLBACK:** `king/test@0cab5b59df9b07dd8233390c8f015031f0eca697`; revert this bounded source/test/brief correction if independent Gold finds a valid palette, truth or map regression.
+**MAKER ≠ JUDGE:** Factory corrects and returns an exact candidate SHA. Independent Gold, exact-head browser evidence and Founder release remain separate.
+
+---
+
 # EXPO-03 — RAW HTTP PRIVATE-INDEXING CONTRACT — 17 OCT 2026
 
 **STATUS:** SOURCE-ONLY BLOCKER CORRECTED BY EXECUTABLE EDGE EVIDENCE ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
