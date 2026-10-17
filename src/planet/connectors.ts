@@ -498,7 +498,26 @@ export const taxonPhoto = async (scientificName: string): Promise<TaxonPhoto | n
   const licence = String(photo?.license_code ?? photo?.license ?? "").trim();
   const rightsState = classifyInaturalistTaxonPhotoRights(licence);
 
-  if (!url || !sourceRecordId || !attribution || rightsState !== "DISPLAYABLE") return null;
+  let hasBoundedMediaIdentity = false;
+  try {
+    const parsed = new URL(url);
+    const allowedHosts = new Set([
+      "static.inaturalist.org",
+      "inaturalist-open-data.s3.amazonaws.com",
+    ]);
+    const pathPhotoId = parsed.pathname.match(/^\/photos\/(\d+)(?:\/|$)/)?.[1];
+    hasBoundedMediaIdentity =
+      parsed.protocol === "https:" &&
+      allowedHosts.has(parsed.hostname.toLowerCase()) &&
+      /^\d+$/.test(sourceRecordId) &&
+      pathPhotoId === sourceRecordId;
+  } catch {
+    hasBoundedMediaIdentity = false;
+  }
+
+  if (!url || !sourceRecordId || !attribution || rightsState !== "DISPLAYABLE" || !hasBoundedMediaIdentity) {
+    return null;
+  }
 
   return {
     url,

@@ -1,3 +1,24 @@
+# ATLAS / LIVING SYSTEMS — TAXON PHOTO MEDIA IDENTITY BOUNDARY — 17 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opening a taxon needs the image, source link and licence evidence to describe the same authorised iNaturalist photo item.
+**ONE THING TO UNDERSTAND:** a rights-compatible licence is necessary but insufficient; the admitted image URL must also be HTTPS, use an authorised iNaturalist media host and carry the same photo ID as the source item.
+**PRIMARY ACTION:** inspect a rights-cleared taxon reference image whose visible media is bound to its canonical iNaturalist photo item.
+**SECONDARY DEPTH:** follow the existing source link and verify item identity, attribution, licence and rights-check time.
+**P1 DOMINANT:** the existing ATLAS taxon context and reference image.
+**P2 ORIENTATION:** the existing source/licence caption or explicit no-rights-cleared-photo state.
+**P3 ACTION:** open the canonical iNaturalist photo item.
+**P4 DEPTH:** independent exact-head adapter, browser and runtime verification before release.
+**WHAT CAN BE REMOVED:** trust in arbitrary, insecure, externally hosted or mismatched image URLs supplied beside an otherwise legitimate photo ID.
+**WHAT MUST BE REUSED:** issue #244, TECH-07, the existing iNaturalist connector, taxon-photo source envelope, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this validates media identity for the current iNaturalist hosts and item path; it does not prove the upstream file bytes, grant Gold, deploy, establish occurrence evidence or alter LIVE.
+**MOBILE-FIRST RISK:** no layout or interaction change; exact-head 390/430 and assistive review remain release gates.
+**HUMAN SUCCESS:** legitimate iNaturalist HTTPS photo URLs render only when their path ID matches the source item; mismatched IDs, external hosts, HTTP and non-network schemes fail closed.
+**BASE / ROLLBACK:** `king/test@e0b85c206c9055943ebe60a456f65b260937e2c7`; revert this bounded connector/test/brief correction if independent Gold finds a media, rights or source-truth regression.
+**MAKER ≠ JUDGE:** Factory closes the returned media-identity defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
+
+---
+
 # S4PIENS / COMPANY-GOLD-01 — CLIMATE TRACE FAILURE CACHE BOUNDARY — 17 OCT 2026
 
 **STATUS:** RETURNED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.

@@ -17,12 +17,18 @@ const sourceControl = read("src/earth/atlasSourceControl.ts");
 const connectors = read("src/planet/connectors.ts");
 const contextPanel = read("src/earth/Context.tsx");
 const unescoOpenData = read("src/data/unescoOpenData.ts");
+const orcaAssetFamily = read("src/data/orcaAssetFamily.ts");
 const unescoRuntimeUrl = `data:text/javascript;base64,${Buffer.from(ts.transpileModule(unescoOpenData, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+}).outputText).toString("base64")}`;
+const orcaAssetFamilyRuntimeUrl = `data:text/javascript;base64,${Buffer.from(ts.transpileModule(orcaAssetFamily, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText).toString("base64")}`;
 const earthLayersCompiled = ts.transpileModule(earthLayers, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
-}).outputText.replace(/(["'])\.\.\/data\/unescoOpenData\1/g, JSON.stringify(unescoRuntimeUrl));
+}).outputText
+  .replace(/(["'])\.\.\/data\/unescoOpenData\1/g, JSON.stringify(unescoRuntimeUrl))
+  .replace(/(["'])\.\.\/data\/orcaAssetFamily\1/g, JSON.stringify(orcaAssetFamilyRuntimeUrl));
 const earthLayersRuntime = await import(`data:text/javascript;base64,${Buffer.from(earthLayersCompiled).toString("base64")}`);
 const obisRuntime = await import(`data:text/javascript;base64,${Buffer.from(ts.transpileModule(obis, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
@@ -737,6 +743,10 @@ test("ATLAS taxon-photo adapter returns no-photo for incomplete, restricted or u
     ["missing item id", { ...valid, id: undefined }],
     ["missing attribution", { ...valid, attribution: "" }],
     ["missing image URL", { ...valid, medium_url: "" }],
+    ["photo identity mismatch", { ...valid, medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/999/medium.jpg" }],
+    ["untrusted media host", { ...valid, medium_url: "https://images.example/photos/77/medium.jpg" }],
+    ["insecure media URL", { ...valid, medium_url: "http://inaturalist-open-data.s3.amazonaws.com/photos/77/medium.jpg" }],
+    ["non-network media URL", { ...valid, medium_url: "data:image/jpeg;base64,AAAA" }],
   ];
 
   try {
@@ -775,10 +785,13 @@ test("ATLAS taxon-photo adapter requires a complete rights/source envelope", () 
     'usageScope: "PUBLIC_DISPLAY_CC0_OR_CC_BY"',
     "https://www.inaturalist.org/photos/",
     "checkedAt: now()",
+    "hasBoundedMediaIdentity",
+    "inaturalist-open-data.s3.amazonaws.com",
+    "static.inaturalist.org",
   ]) {
     assert.ok(connectors.includes(needle), `missing taxon-photo gate: ${needle}`);
   }
-  assert.match(connectors, /if \(!url \|\| !sourceRecordId \|\| !attribution \|\| rightsState !== "DISPLAYABLE"\) return null/);
+  assert.match(connectors, /rightsState !== "DISPLAYABLE" \|\| !hasBoundedMediaIdentity/);
 });
 
 test("ATLAS taxon context links photo source and explains a rights-blocked fallback", () => {
