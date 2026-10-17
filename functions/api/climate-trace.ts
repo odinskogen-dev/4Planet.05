@@ -41,9 +41,11 @@ const cleanList = (v: string | null, re: RegExp) =>
 
 const finite = (...values: unknown[]) => {
   for (const value of values) {
-    if (value === null || value === undefined) continue;
-    if (typeof value === "string" && value.trim() === "") continue;
-    const n = Number(value);
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string") continue;
+    const candidate = value.trim();
+    if (!candidate || !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(candidate)) continue;
+    const n = Number(candidate);
     if (Number.isFinite(n)) return n;
   }
   return NaN;
@@ -84,6 +86,7 @@ export const onRequestGet: (ctx: { request: Request; env: Env }) => Promise<Resp
         const lat = finite(a.latitude, a.lat, a.centroid?.latitude, a.centroid?.lat);
         const lon = finite(a.longitude, a.lon, a.lng, a.centroid?.longitude, a.centroid?.lon);
         if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
         const co2e = finite(a.emissionsQuantity, a.emissions_quantity, a.co2e, a.emissions);
         const sourceId = a.id ?? a.source_id ?? a.asset_id ?? null;
         return {

@@ -35,8 +35,16 @@ test("shared Climate TRACE proxy keeps missing values unknown without erasing re
   {id:"missing-coordinate",name:"Missing coordinate",latitude:null,longitude:"",emissionsQuantity:900},
   {id:"missing-emissions-null",name:"Missing emissions null",latitude:"0",longitude:"10",emissionsQuantity:null},
   {id:"missing-emissions-blank",name:"Missing emissions blank",latitude:"1",longitude:"11",emissionsQuantity:""},
+  {id:"malformed-emissions-boolean",name:"Malformed emissions boolean",latitude:1.5,longitude:11.5,emissionsQuantity:false},
+  {id:"malformed-emissions-array",name:"Malformed emissions array",latitude:1.6,longitude:11.6,emissionsQuantity:[]},
+  {id:"malformed-coordinate-boolean",name:"Malformed coordinate boolean",latitude:false,longitude:12,emissionsQuantity:1},
+  {id:"malformed-coordinate-array",name:"Malformed coordinate array",latitude:[],longitude:12,emissionsQuantity:1},
+  {id:"malformed-coordinate-object",name:"Malformed coordinate object",latitude:{},longitude:12,emissionsQuantity:1},
+  {id:"latitude-out-of-range",name:"Latitude out of range",latitude:90.0001,longitude:12,emissionsQuantity:1},
+  {id:"longitude-out-of-range",name:"Longitude out of range",latitude:2,longitude:-180.0001,emissionsQuantity:1},
   {id:"real-zero",name:"Real zero",latitude:2,longitude:12,emissionsQuantity:0},
   {id:"numeric-string",name:"Numeric string",latitude:"3",longitude:"13",emissionsQuantity:"42.5"},
+  {id:"boundary-coordinates",name:"Boundary coordinates",latitude:"-90",longitude:"180",emissionsQuantity:"1e2"},
  ]),{status:200,headers:{"content-type":"application/json"}});
 
  try{
@@ -44,9 +52,15 @@ test("shared Climate TRACE proxy keeps missing values unknown without erasing re
   assert.equal(response.status,200);
   const body=await response.json();
   assert.equal(body.ok,true);
-  assert.deepEqual(body.assets.map((asset)=>asset.id),["missing-emissions-null","missing-emissions-blank","real-zero","numeric-string"]);
-  assert.deepEqual(body.assets.map((asset)=>asset.co2e),[null,null,0,42.5]);
+  assert.deepEqual(body.assets.map((asset)=>asset.id),[
+   "missing-emissions-null","missing-emissions-blank","malformed-emissions-boolean",
+   "malformed-emissions-array","real-zero","numeric-string","boundary-coordinates",
+  ]);
+  assert.deepEqual(body.assets.map((asset)=>asset.co2e),[null,null,null,null,0,42.5,100]);
   assert.equal(body.assets[0].lat,0,"a real equator coordinate remains valid");
+  const boundary=body.assets.find((asset)=>asset.id==="boundary-coordinates");
+  assert.equal(boundary.lat,-90);
+  assert.equal(boundary.lon,180);
  }finally{
   globalThis.fetch=originalFetch;
  }
