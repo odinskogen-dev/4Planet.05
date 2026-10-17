@@ -95,7 +95,7 @@ before='    if (page.hero !== "auto") add({ ...page.hero, source: "4PLANET" });\
 after='''    if (page.hero !== "auto") add({ ...page.hero, source: "4PLANET" });
     // Wildlife-only editorial exceptions: never append an unverified captive
     // photograph or an unrelated Wikimedia image to the chosen wild hero.
-    if (["gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale"].includes(page.slug)) return out.slice(0,10);
+    if (["gray-wolf","polar-bear","green-sea-turtle","black-rhinoceros","blue-whale","humpback-whale","sperm-whale","harbour-porpoise","bottlenose-dolphin","atlantic-cod","blue-mussel","whale-shark","leopard","eastern-gorilla","acropora-palmata","hyacinth-macaw"].includes(page.slug)) return out.slice(0,10);
     if (leadImage)'''
 replace_once(template,before,after)
 # Editorial focus applies to every gallery image, not just the first hero.
