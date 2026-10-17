@@ -75,5 +75,5 @@ test("the public species sitemap retains only non-profile routes and complete so
   assert.match(router, /incoming\.pathname === "\/species-sitemap\.xml"/);
   assert.match(router, /permitsSpeciesIndexing\(review\)/);
   assert.doesNotMatch(router, /review === null \|\| review === "REVIEWED"/);
-  assert.match(router, /x-4species-index-gate": "source-backed-public-v2"/);
+  assert.match(router, /x-4species-index-gate": "human-review-v1"/);
 });
