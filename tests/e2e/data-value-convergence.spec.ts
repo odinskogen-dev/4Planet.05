@@ -82,7 +82,7 @@ test("DATA VALUE / FOOD: branded product can be explicitly joined to Matvaretabe
   await expect(page.getByRole("heading", { name: "Havregryn test product" })).toBeVisible();
   await expect(page.getByText("NOT JOINED")).toBeVisible();
 
-  await page.getByLabel("Generic food").fill("havregryn");
+  await page.getByRole("textbox", { name: "Generic food", exact: true }).fill("havregryn");
   await page.getByRole("button", { name: "Search Matvaretabellen" }).click();
   await expect(page.getByText("Havregryn", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /CONFIRM THIS REFERENCE/ }).click();
@@ -241,7 +241,7 @@ test("DATA VALUE / 4BRANDS: legal identity gates owner/facility intelligence and
   });
 
   await page.goto("/4brands");
-  await page.getByLabel("Company").fill("TOMRA");
+  await page.getByRole("textbox", { name: "Company", exact: true }).fill("TOMRA");
   await page.getByRole("button", { name: "Run company analysis" }).click();
   await expect(page.getByRole("heading", { name: "Which legal entity do you mean?" })).toBeVisible();
   await page.getByRole("button", { name: /USE THIS ENTITY/ }).click();
@@ -349,7 +349,10 @@ test("DATA VALUE / 4NATION: user can inspect neutral Stortinget case state and s
   });
 
   await page.goto("/4nation");
-  await expect(page.getByText(/does not rank policy choices/i)).toBeVisible();
+  const officialDataDiscovery = page.locator("details.nt-discovery");
+  await officialDataDiscovery.locator("summary").click();
+  await expect(officialDataDiscovery).toHaveAttribute("open", "");
+  await expect(officialDataDiscovery.getByText(/does not rank policy choices/i)).toBeVisible();
 
   await page.getByLabel("Search current Storting cases").fill("natur");
   await page.getByRole("button", { name: "Search official cases" }).click();
