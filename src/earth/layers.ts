@@ -16,6 +16,7 @@
 /* eslint-disable */
 // @ts-nocheck
 import { UNESCO_DATASETS, fetchUnescoDataset, normaliseUnescoAtlasRecord } from "../data/unescoOpenData";
+import { ORCA_ASSET_FAMILY, isOrcaScientificName } from "../data/orcaAssetFamily";
 
 export const MONO = "'Fragment Mono', ui-monospace, monospace";
 export const C = {
@@ -364,6 +365,9 @@ export const LAYERS = [
         const dataset = point.datasetName || "UNKNOWN";
         const citation = point.datasetCitation || "UNKNOWN";
         const provider = point.provider || "UNKNOWN";
+        const orcaAssetFamily = isOrcaScientificName(point.scientificName)
+          ? `<br><span class="lat">4PLANET ASSET FAMILY · ${esc(ORCA_ASSET_FAMILY.id)} · REPRESENTATION CONTEXT, NOT OCCURRENCE EVIDENCE</span><a class="pl" href="${esc(ORCA_ASSET_FAMILY.manifestUrl)}" target="_blank" rel="noopener">Asset manifest ↗</a>`
+          : "";
         const doiHref = /^10\.\d{4,9}\//i.test(point.datasetDoi)
           ? `https://doi.org/${encodeURIComponent(point.datasetDoi)}`
           : "";
@@ -372,7 +376,7 @@ export const LAYERS = [
         const occurrenceLink = point.sourceRecordUrl ? `<a class="pl" href="${esc(point.sourceRecordUrl)}" target="_blank" rel="noopener">Original occurrence ↗</a>` : "";
         return {
           lon: point.lon, lat: point.lat, occurrenceId: point.occurrenceId,
-          html: `<b class="nm">${esc(point.scientificName)}</b><br><span class="lat">OBIS-INDEXED OCCURRENCE · NOT A LIVE POSITION</span><div class="when">EVENT · ${esc(eventDate)}</div><br><span class="lat">COORDINATE UNCERTAINTY · ${esc(uncertainty)}</span><br><span class="lat">DATASET · ${esc(dataset)}</span><br><span class="lat">PROVIDER · ${esc(provider)}</span><br><span class="lat">CITATION · ${esc(citation)}</span><br><span class="lat">ORIGINAL RIGHTS · ${esc(point.licence || "UNKNOWN")} · ${esc(point.licenceClass)}</span><br><span class="lat">RETRIEVED · ${esc(point.retrievedAt)}</span><br><span class="lat">RIGHTS BOUNDARY · OBIS DERIVED PRODUCTS MAY BE CC0; ORIGINAL DATASET RIGHTS STILL APPLY</span><a class="pl" href="https://obis.org" target="_blank" rel="noopener">OBIS source ↗</a>${doiLink}${datasetLink}${occurrenceLink}`
+          html: `<b class="nm">${esc(point.scientificName)}</b><br><span class="lat">OBIS-INDEXED OCCURRENCE · NOT A LIVE POSITION</span><div class="when">EVENT · ${esc(eventDate)}</div><br><span class="lat">COORDINATE UNCERTAINTY · ${esc(uncertainty)}</span><br><span class="lat">DATASET · ${esc(dataset)}</span><br><span class="lat">PROVIDER · ${esc(provider)}</span><br><span class="lat">CITATION · ${esc(citation)}</span><br><span class="lat">ORIGINAL RIGHTS · ${esc(point.licence || "UNKNOWN")} · ${esc(point.licenceClass)}</span><br><span class="lat">RETRIEVED · ${esc(point.retrievedAt)}</span><br><span class="lat">RIGHTS BOUNDARY · OBIS DERIVED PRODUCTS MAY BE CC0; ORIGINAL DATASET RIGHTS STILL APPLY</span><a class="pl" href="https://obis.org" target="_blank" rel="noopener">OBIS source ↗</a>${doiLink}${datasetLink}${occurrenceLink}${orcaAssetFamily}`
         };
       });
     } },

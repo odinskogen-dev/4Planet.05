@@ -1278,3 +1278,26 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **TRUTH BOUNDARY:** measurement ≠ ecological condition; point ≠ area; missing observation ≠ absence; sensor identity ≠ ownership/manufacturer identity; unreviewed ≠ publication-ready.
 
 **MAKER ≠ JUDGE:** database readback proves protocol behaviour only. It does not prove hardware performance, environmental validity, user demand or LIVE product presentation.
+
+
+# ORCA COMPOUND ASSET — THREE-SURFACE CANONICAL BINDING — 17 OCT 2026
+
+**STATUS:** HEIR ASSET-FAMILY CONVERGENCE / SPECIES + ATLAS BOUND / WILD SOURCE PANEL UPDATE REQUIRED FOR CLOSURE / NO LIVE RELEASE IMPLIED.
+
+**OBJECTIVE:** prove that one canonical Orca asset family can serve multiple products without collapsing evidence classes.
+
+**CANONICAL ASSET FAMILY:** `4p:species:orca:asset-pack:v1` → `/assets/species/orca/ASSET-MANIFEST.json`.
+
+**SPECIES:** the Orca profile exposes the canonical asset-family ID and manifest while preserving photograph/illustration rights and representation boundaries.
+
+**ATLAS:** only `Orcinus orca` WH4LES occurrence popups expose the asset-family link. The link is labelled representation context and never becomes occurrence evidence.
+
+**WILD:** Prototype 04 already maintains a controlled asset-source panel and live/reference/candidate classes. Closure requires binding that panel to the same canonical ID/manifest without changing gameplay.
+
+**TRUTH BOUNDARY:** shared asset identity ≠ identical geometry; game mesh ≠ measured anatomy; museum specimen reference ≠ 3D whale; occurrence record ≠ asset proof; photo ≠ live position.
+
+**HUMAN SUCCESS:** a person can move from Orca in SPECIES or ATLAS to one transparent asset/provenance family, while WILD can use optimised game assets under the same family without pretending scientific equivalence.
+
+**ROLLBACK:** parent HEIR `fb2f672d1ba1c6e801e73fa11b09824a73e9e990`.
+
+**MAKER ≠ JUDGE:** contract/build/preview evidence required. LIVE and external asset redistribution remain separately gated.

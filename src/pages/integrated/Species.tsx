@@ -17,6 +17,7 @@ import { useFollows } from "@/planet/follow";
 import { contextHref } from "@/product/ProductNav";
 import { NotFound } from "@/pages/system";
 import { speciesMedia, hasShowableImage } from "@/data/speciesMedia";
+import { ORCA_ASSET_FAMILY } from "@/data/orcaAssetFamily";
 import { withReturnTo, returnHrefFromSearch } from "@/product/productContext";
 import { AtlasEmbed } from "@/earth/AtlasEmbed";
 import { trackEvent } from "@/analytics/Analytics";
@@ -358,6 +359,18 @@ function SpeciesEditorialProfile({
             </div>
           )}
         </section>
+
+        {profile.slug === "orca" && (
+          <section id="asset-family" data-species-section="asset-family" data-asset-family={ORCA_ASSET_FAMILY.id} style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(36px,6vw,72px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
+            <div style={{ ...mono, color: T.blue }}>SHARED DIGITAL ASSET FAMILY</div>
+            <h2 style={{ margin: "12px 0 0", fontFamily: T.display, fontSize: "clamp(30px,5vw,54px)", lineHeight: 1, letterSpacing: "-.04em", fontWeight: 520 }}>One orca identity. Different honest representations.</h2>
+            <p style={{ margin: "20px 0 0", maxWidth: 780, color: T.dim, fontSize: 15, lineHeight: 1.6 }}>
+              SPECIES, ATLAS and WILD: ORCA reference the same canonical 4PLANET asset family. Photographs, illustrations, audio, occurrence records and reconstructed 3D remain separate evidence/asset classes — sharing an ID never turns a reconstruction into measured anatomy.
+            </p>
+            <div style={{ ...mono, marginTop: 16, color: T.dim }}>ASSET FAMILY · {ORCA_ASSET_FAMILY.id}</div>
+            <a href={ORCA_ASSET_FAMILY.manifestUrl} target="_blank" rel="noreferrer" style={{ ...mono, display: "inline-block", marginTop: 14, color: T.blue }}>OPEN ASSET MANIFEST ↗</a>
+          </section>
+        )}
 
         {profile.habitat && (
           <section data-species-section="habitat" style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(64px,9vw,118px) clamp(20px,5vw,64px)" }}>

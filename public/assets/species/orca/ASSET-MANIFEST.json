@@ -7,10 +7,26 @@
   "status": "ACTIVE_REFERENCE_PACK",
   "truthBoundary": "This pack mixes production media, evidence/reference assets and candidate source records. A source record is not automatically a reusable image or a scientifically measured 3D model.",
   "localAssets": [
-    {"path": "/assets/species/orca/hero.jpg", "class": "production_media", "rights": "SEE_EXISTING_SOURCE_PROVENANCE"},
-    {"path": "/assets/species/orca/hero-mobile.jpg", "class": "production_media", "rights": "SEE_EXISTING_SOURCE_PROVENANCE"},
-    {"path": "/assets/species/orca/lume-orca-v1.png", "class": "illustrative", "rights": "SEE_EXISTING_SOURCE_PROVENANCE"},
-    {"path": "/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3", "class": "real_audio_evidence_reference", "rights": "NPS_SOURCE_PROVENANCE_REQUIRED"}
+    {
+      "path": "/assets/species/orca/hero.jpg",
+      "class": "production_media",
+      "rights": "SEE_EXISTING_SOURCE_PROVENANCE"
+    },
+    {
+      "path": "/assets/species/orca/hero-mobile.jpg",
+      "class": "production_media",
+      "rights": "SEE_EXISTING_SOURCE_PROVENANCE"
+    },
+    {
+      "path": "/assets/species/orca/lume-orca-v1.png",
+      "class": "illustrative",
+      "rights": "SEE_EXISTING_SOURCE_PROVENANCE"
+    },
+    {
+      "path": "/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3",
+      "class": "real_audio_evidence_reference",
+      "rights": "NPS_SOURCE_PROVENANCE_REQUIRED"
+    }
   ],
   "openReferenceAssets": [
     {
@@ -40,9 +56,52 @@
     }
   ],
   "missingAssets": [
-    {"type": "scientifically_grounded_3d_orca", "state": "NOT_FOUND_IN_SMITHSONIAN_3D_SEARCH", "next": "build reference-grounded model from measured anatomy + rights-cleared multi-view reference; label reconstruction"},
-    {"type": "underwater_habitat_world", "state": "TO_BUILD", "next": "Living World Factory proof"}
+    {
+      "type": "scientifically_grounded_3d_orca",
+      "state": "NOT_FOUND_IN_SMITHSONIAN_3D_SEARCH",
+      "next": "build reference-grounded model from measured anatomy + rights-cleared multi-view reference; label reconstruction"
+    },
+    {
+      "type": "underwater_habitat_world",
+      "state": "TO_BUILD",
+      "next": "Living World Factory proof"
+    }
   ],
-  "consumers": ["SPECIES", "ATLAS", "WILD_ORCA", "GAME_LAB", "LIVING_WORLD_FACTORY"],
-  "updatedAt": "2026-10-14"
+  "consumers": [
+    "SPECIES",
+    "ATLAS",
+    "WILD_ORCA",
+    "GAME_LAB",
+    "LIVING_WORLD_FACTORY"
+  ],
+  "updatedAt": "2026-10-17",
+  "canonicalManifestUrl": "/assets/species/orca/ASSET-MANIFEST.json",
+  "publicManifestUrl": "https://4planet.org/assets/species/orca/ASSET-MANIFEST.json",
+  "surfaceProof": {
+    "state": "THREE_SURFACE_BINDING_CANDIDATE",
+    "canonicalAssetFamilyId": "4p:species:orca:asset-pack:v1",
+    "bindings": {
+      "SPECIES": "/species/orca#asset-family",
+      "ATLAS": "WH4LES Orcinus orca occurrence context links this manifest; occurrence remains independent evidence",
+      "WILD_ORCA": "Prototype 04 SOURCE panel binds the same asset family ID and manifest URL"
+    },
+    "truthBoundary": "Surface binding proves shared asset identity/provenance only; it does not prove identical geometry, scientific equivalence or ecological observation."
+  },
+  "runtimeAssets": [
+    {
+      "provider": "3DAssets.dev",
+      "source": "https://3dassets.dev/assets/open-ocean-and-deep-sea-life-orca-983c3514",
+      "class": "reference_grounded_game_3d",
+      "state": "WILD_RUNTIME_CONFIG_LIVE",
+      "rightsState": "WILD runtime records provider claim CC0 1.0; re-check provider record before redistribution outside current game runtime",
+      "note": "WILD Prototype 04 attempts this GLB first and preserves procedural fallback. Not measured anatomy."
+    },
+    {
+      "provider": "3DAssets.dev",
+      "source": "https://3dassets.dev/assets/transport-collection-hd-fishing-trawler-9644a09d",
+      "class": "game_world_vessel",
+      "state": "WILD_RUNTIME_CONFIG_LIVE",
+      "rightsState": "WILD runtime records provider claim CC0 1.0; re-check provider record before redistribution outside current game runtime"
+    }
+  ]
 }
