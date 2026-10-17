@@ -1,0 +1,113 @@
+name: 4SPECIES Restore Immutable Claude 28 Profiles
+on:
+  push:
+    branches: [release/species-restore-20261017]
+    paths: [.github/workflows/species-restore-28-live.yml]
+permissions: {contents: read}
+concurrency:
+  group: 4species-founder-20261017-recovery
+  cancel-in-progress: false
+jobs:
+  verify-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      IMMUTABLE_PREVIEW: https://72494005.4planet-05.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify immutable Claude v53 and all twenty-eight real Claude profiles before touching live
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 20 "$IMMUTABLE_PREVIEW/release-identity.json" -o /tmp/species-identity.json
+          jq -e '.triggerSha=="b0ae197ec0dbbdaa904fd65e30cb13d9b9c122e2" and .builtTree=="191f0ace89a7a47a94ebe8f1b006ba121131cd16" and .payloadDigest=="b923336c7689a77cb95364dd699d868c90a82d14aef8e94f8f6e25b39350c8f7"' /tmp/species-identity.json >/dev/null
+          for pair in 'orca|Orcinus orca' 'lion|Panthera leo' 'tiger|Panthera tigris'; do
+            slug=$(printf '%s' "$pair" | cut -d'|' -f1)
+            scientific=$(printf '%s' "$pair" | cut -d'|' -f2)
+            curl -fsSL --max-time 25 "$IMMUTABLE_PREVIEW/$slug" -o /tmp/verified-species.html
+            grep -Fq "$scientific" /tmp/verified-species.html
+            grep -Fq "https://4species.com/$slug" /tmp/verified-species.html
+            grep -Fq 'content="index,follow,max-image-preview:large"' /tmp/verified-species.html
+          done
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
+            curl -fsS --max-time 25 "$IMMUTABLE_PREVIEW/species-data/v1/$slug.json" -o /tmp/species-$slug.json
+            jq -e --arg slug "$slug" '.schema=="4PLANET_SPECIES_PAGE_01" and .slug==$slug and .identity.scientificName!=""' /tmp/species-$slug.json >/dev/null
+            scientific=$(jq -r '.identity.scientificName' /tmp/species-$slug.json)
+            curl -fsSL --max-time 25 "$IMMUTABLE_PREVIEW/$slug" -o /tmp/species-$slug.html
+            grep -Fq "$scientific" /tmp/species-$slug.html
+            grep -Fq "https://4species.com/$slug" /tmp/species-$slug.html
+          done
+          curl -fsS "$IMMUTABLE_PREVIEW/species-sitemap.xml" -o /tmp/species-sitemap.xml
+          grep -Fq 'https://4species.com/orca' /tmp/species-sitemap.xml
+          grep -Fq 'https://4species.com/tiger' /tmp/species-sitemap.xml
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'https://72494005.4planet-05.pages.dev' ops/discovery/4species-router.js
+          echo EXACT_SPECIES_V53_ORCA_AND_20_SOURCE_PREVIEW_VERIFIED
+      - name: Capture pre-change Cloudflare Worker version for rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.128.0 deployments list --name 4species-router 2>&1 | tee /tmp/species-prior-deployments.log
+          old=$(grep -E 'Version\(s\):[[:space:]]+\(100%\)' /tmp/species-prior-deployments.log | tail -n 1 | grep -Eo '[0-9a-f]{8}-[0-9a-f-]{27,}' | head -n 1 || true)
+          if [ -z "$old" ]; then
+            echo "No verifiable rollback version; refusing live promotion"
+            exit 1
+          fi
+          echo "ROLLBACK_WORKER_VERSION=$old" >> "$GITHUB_ENV"
+          echo "Rollback version: $old"
+      - name: Restore verified 28 species profiles to production and prove routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "Public verification failed. Attempting rollback to $ROLLBACK_WORKER_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_WORKER_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-live-deploy.log
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
+            curl -fsSL --max-time 25 -D /tmp/live-header.txt "https://4species.com/$slug" -o /tmp/live-species.html
+            grep -Fq "https://4species.com/$slug" /tmp/live-species.html
+            awk '/^HTTP\\// { last="" } {last=last $0 "\\n"} END{printf "%s",last}' /tmp/live-header.txt > /tmp/live-final-headers.txt
+            if grep -Eqi '^x-robots-tag:[[:space:]]*noindex' /tmp/live-final-headers.txt; then
+              echo "PUBLIC NOINDEX persists for $slug"; cat /tmp/live-final-headers.txt; exit 1
+            fi
+            data_code=$(curl -sSL --max-time 25 -D /tmp/live-json-headers.txt -o /tmp/live-species-data.json -w '%{http_code}' "https://4species.com/species-data/v1/$slug.json")
+            echo "DATA $slug HTTP $data_code ($(wc -c </tmp/live-species-data.json) bytes)"
+            if [ "$data_code" != "200" ] || ! jq -e --arg slug "$slug" '.slug==$slug and .identity.scientificName!=""' /tmp/live-species-data.json >/dev/null 2>&1; then
+              echo "BAD JSON $slug: response headers:"
+              grep -Ei '^HTTP/|^content-type:|^location:|^cf-ray:|^server:' /tmp/live-json-headers.txt || true
+              echo "BAD JSON $slug: first 550 response bytes:"
+              head -c 550 /tmp/live-species-data.json || true
+              exit 1
+            fi
+            scientific=$(jq -r '.identity.scientificName' /tmp/live-species-data.json)
+            grep -Fq "$scientific" /tmp/live-species.html
+            echo "LIVE OK $slug -> $scientific"
+          done
+          curl -fsS https://4species.com/sitemap.xml -o /tmp/live-sitemap.xml
+          grep -Fq 'https://4species.com/tiger' /tmp/live-sitemap.xml
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
+            grep -Fq "<loc>https://4species.com/$slug</loc>" /tmp/live-sitemap.xml || { echo "Missing sitemap species: $slug"; exit 1; }
+          done
+          curl -fsS https://4species.com/robots.txt -o /tmp/live-robots.txt
+          grep -Fq 'Sitemap: https://4species.com/sitemap.xml' /tmp/live-robots.txt
+          curl -fsS https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt -o /tmp/live-indexnow-key.txt
+          grep -Fxq '8f4c2d91a7b64e3fa1c9d0b6e5274a83' /tmp/live-indexnow-key.txt
+          trap - ERR
+          echo ORCA_AND_27_OTHER_CLAUDE_SPECIES_PUBLIC_RECOVERY_PASS
+          {
+            echo "### SPECIES public release"
+            echo "- Live: https://4species.com/"
+            echo "- Orca: https://4species.com/orca"
+            echo "- Lion: https://4species.com/lion"
+            echo "- Tiger: https://4species.com/tiger"
+            echo "- Immutable verified Pages: $IMMUTABLE_PREVIEW"
+            echo "- Rollback Worker version: $ROLLBACK_WORKER_VERSION"
+            echo "- 28 real source-bearing profiles restored, DRAFT provenance retained, founder-approved exposure override; remaining 11 catalogue cards require real species articles"
+          } >> "$GITHUB_STEP_SUMMARY"
