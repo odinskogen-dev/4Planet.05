@@ -73,7 +73,7 @@ jobs:
           for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
             curl -fsSL --max-time 25 -D /tmp/live-header.txt "https://4species.com/$slug" -o /tmp/live-species.html
             grep -Fq "https://4species.com/$slug" /tmp/live-species.html
-            awk '/^HTTP\\// { last="" } {last=last $0 "\\n"} END{printf "%s",last}' /tmp/live-header.txt > /tmp/live-final-headers.txt
+            curl -fsSI --max-time 25 "https://4species.com/$slug" -o /tmp/live-final-headers.txt
             if grep -Eqi '^x-robots-tag:[[:space:]]*noindex' /tmp/live-final-headers.txt; then
               echo "PUBLIC NOINDEX persists for $slug"; cat /tmp/live-final-headers.txt; exit 1
             fi
