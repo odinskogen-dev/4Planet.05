@@ -1,3 +1,24 @@
+# EXPO-03 — RAW HTTP PRIVATE-INDEXING CONTRACT — 17 OCT 2026
+
+**STATUS:** SOURCE-ONLY BLOCKER CORRECTED BY EXECUTABLE EDGE EVIDENCE ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person or crawler must be able to distinguish public discovery from technical, preview, account and identity surfaces before any browser JavaScript runs.
+**ONE THING TO UNDERSTAND:** the existing edge middleware already enforces private-surface indexing policy on the raw HTTP response; the missing control was deterministic regression evidence, not another runtime implementation.
+**PRIMARY ACTION:** keep public product roots indexable while private hosts and private paths fail closed.
+**SECONDARY DEPTH:** inspect raw `X-Robots-Tag`, cache policy and private `robots.txt` behaviour across custom hosts, Pages previews and localhost.
+**P1 DOMINANT:** public discovery remains indexable.
+**P2 ORIENTATION:** private host/path classification occurs at the edge before application rendering.
+**P3 ACTION:** shared smoke now executes the raw-response boundary contract.
+**P4 DEPTH:** authorised deployment and external HTTP readback remain separate release evidence.
+**WHAT CAN BE REMOVED:** the source-only assumption that static `_headers` and client metadata are the complete HTTP policy.
+**WHAT MUST BE REUSED:** EXPO-03, existing `functions/_middleware.js`, PR #131, sole `king/test` HEIR and the shared smoke gate.
+**TRUTH BOUNDARY:** this pass adds no runtime/product byte and proves repository middleware behaviour only; it does not prove a deployment, live CDN configuration, canonical ownership, indexation, Gold or Founder acceptance.
+**MOBILE-FIRST RISK:** none introduced; no layout, interaction or runtime product code changes.
+**HUMAN SUCCESS:** test/labs/os/id hosts, Pages previews, localhost and private public-host paths return fail-closed crawler/cache headers; private robots disallows all; public roots keep their cache policy and receive no noindex header.
+**BASE / ROLLBACK:** `king/test@2e10b69d15eceb7bfec302a1a0a237b64523e9c9`; revert the test/package/brief-only commit if independent Gold finds an incorrect edge-policy expectation.
+**MAKER ≠ JUDGE:** Factory closes the false integration blocker with executable evidence; independent Gold judges the exact resulting SHA. Deployment and LIVE verification remain separate.
+
+---
+
 # 4SAPIEN / LIFE-OS-01 — COMPLETE 30-DAY RECURRENCE — 16 OCT 2026
 
 **STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
