@@ -1,11 +1,26 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "status": "NOT_AUTHORISED",
   "sourceBranch": "king/test",
-  "testKingSha": "c942f0a3c24cbbaebffb51e3dd925245ecba5e2a",
-  "priorLiveSha": "3ff36765d6ae0cabdb83ff47e4a747cca4bdb282",
+  "testKingSha": "4ff56ed1c9cc2d7bfdaee3641f70c42010beb210",
+  "priorLiveSha": "8746003f7fd723020f586afee6782c79545c8220",
+  "releaseControlCommit": true,
+  "targetBranch": "main",
+  "targetObservedSha": "8746003f7fd723020f586afee6782c79545c8220",
+  "pullRequest": 131,
+  "pullRequestState": "OPEN_DRAFT_NOT_MERGEABLE",
+  "boundedRelease": false,
+  "releaseKind": null,
   "founderDecisionRef": null,
-  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/33653323016",
-  "rollbackRef": "main@3ff36765d6ae0cabdb83ff47e4a747cca4bdb282",
-  "note": "Fail-closed PREPARED packet. testKingSha is the last fully audited product head before later control-only status/manifest commits. It passed Public Preview Gate 33653322531, Browser Product Proof 33653323016, ONE INTERFACE 33653322612, GOLD/WORLD CLASS 33653322530, GOLD Human Craft 33653322350 and ATLAS Zero Loss 33653322541. This manifest does NOT authorise LIVE. Freeze/re-audit the final release candidate after any product-facing change, then populate founderDecisionRef only after Odin gives explicit action-specific LIVE release authority."
+  "evidenceRef": "https://docs.google.com/spreadsheets/d/1nNrw5wQWT05XVtpp9B0jwp3AqaesR5ClkICBKVKzWJ4/edit#gid=404975884&range=A1699:AL1699",
+  "rollbackRef": "main@8746003f7fd723020f586afee6782c79545c8220",
+  "requiredGates": [
+    "EXACT_HEAD_CI",
+    "IMMUTABLE_STAGING_ARTIFACT",
+    "INDEPENDENT_GOLD",
+    "PRODUCT_SPECIFIC_AUTHENTICATED_RUNTIME_PROOF",
+    "TARGET_RECONCILIATION_WITHOUT_WHOLESALE_MERGE",
+    "ACTION_SPECIFIC_FOUNDER_LIVE_AUTHORITY"
+  ],
+  "note": "Fail-closed release-control packet refreshed after H23 Gold returned QA_CORRECT for stale promotion state. testKingSha is the exact product head immediately before this manifest-only control commit. This file does not authorise merge, deployment, release or LIVE. PR #131 remains an open draft and was observed not mergeable. Re-freeze and re-audit after any product/runtime change; populate Founder authority only after independent Gold and explicit action-specific Founder approval."
 }
