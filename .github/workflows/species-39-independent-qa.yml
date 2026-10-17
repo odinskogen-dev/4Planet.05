@@ -1,0 +1,67 @@
+name: SPECIES 39 — Independent Premium Photo Source QA
+on:
+  push:
+    branches: [build/species-39-claude-cohort-20261017]
+    paths: [.github/workflows/species-39-independent-qa.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Install Chromium
+        run: |
+          npm install --prefix /tmp/species39 playwright@1.56.0
+          /tmp/species39/node_modules/.bin/playwright install --with-deps chromium
+      - name: Audit 39 source-backed Claude pages including 11 new visual image candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import {chromium} from '/tmp/species39/node_modules/playwright/index.mjs';
+          import fs from 'node:fs';
+          const base='https://d2f32eb8.4planet-05.pages.dev';
+          const all='orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw'.split(' ');
+          const newSlugs=all.slice(28);
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const reports=[],warnings=[];
+          fs.mkdirSync('/tmp/species39photos',{recursive:true});
+          for(const [idx,slug] of all.entries()){
+            const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            await context.route('https://4species.com/**',async route=>{
+              const u=new URL(route.request().url());
+              try{const resp=await route.fetch({url:base+u.pathname+u.search,maxRedirects:8,timeout:24000});await route.fulfill({response:resp,headers:{...resp.headers(),"access-control-allow-origin":"*"}})}
+              catch(e){console.log('UPSTREAM_FAIL',slug,u.pathname,String(e).slice(0,170));await route.abort();}
+            });
+            const page=await context.newPage();
+            let error=[];page.on('pageerror',e=>error.push(e.message.slice(0,110)));
+            try{
+              const resp=await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:29000});
+              await page.waitForTimeout(newSlugs.includes(slug)?2000:650);
+              const d=await page.evaluate(()=>{
+                const visible=[...document.querySelectorAll('img')].filter(el=>el.getClientRects().length>0&&getComputedStyle(el).display!=='none').slice(0,9);
+                const images=visible.map(img=>({src:(img.currentSrc||img.src).split('?')[0],alt:img.alt,natural:[img.naturalWidth,img.naturalHeight],width:Math.round(img.getBoundingClientRect().width),height:Math.round(img.getBoundingClientRect().height),focus:getComputedStyle(img).objectPosition}));
+                const links=[...document.querySelectorAll('a[href]')].filter(a=>/source|credit|licen|photo/i.test(a.className+' '+a.innerText)).slice(0,8).map(a=>({text:a.innerText.slice(0,65),url:a.href.slice(0,150)}));
+                return {title:document.title,h1:document.querySelector('h1')?.innerText.slice(0,120),robots:document.querySelector('meta[name="robots"]')?.content,canonical:document.querySelector('link[rel="canonical"]')?.href,spx:!!document.querySelector('.spx'),sources:document.querySelectorAll('.spx-source-list li').length,refs:document.querySelectorAll('.spx-ref').length,images,links,body:document.body.innerText.slice(0,420)};
+              });
+              const obj={slug,status:resp?.status(),...d,errors:error};
+              reports.push(obj);console.log('SPECIES39_BROWSER '+JSON.stringify(obj));
+              if(resp?.status()!==200||!d.spx||d.canonical!=='https://4species.com/'+slug||d.sources===0||d.robots?.includes('noindex'))warnings.push('PAGE_FAIL:'+slug);
+              if(newSlugs.includes(slug)){
+                await page.screenshot({path:'/tmp/species39photos/'+slug+'.png',animations:'disabled'});
+                if(d.images.length===0)warnings.push('PHOTO_MISSING:'+slug);
+                for(const im of d.images){if(/zoo|aquarium|captiv|cage|atlant(erhav|erhavs)parken|marine.mammal.program|osl(o|ob).*whale.shark/i.test(im.alt+' '+im.src))warnings.push('CAPTIVITY_RISK:'+slug+':'+im.src.slice(0,130));}
+              }
+            }catch(e){warnings.push('BROWSER_ERROR:'+slug+':'+String(e).slice(0,200))}
+            await context.close();
+          }
+          await browser.close();
+          console.log('SPECIES39_QA_SUMMARY '+JSON.stringify({total:reports.length,premium:reports.filter(x=>x.spx).length,sourceLists:reports.filter(x=>x.sources>0).length,newPhotoStates:reports.filter(x=>newSlugs.includes(x.slug)).map(x=>({slug:x.slug,images:x.images.map(i=>({src:i.src.slice(0,100),alt:i.alt.slice(0,55),w:i.natural[0],h:i.natural[1]}))})),warnings}));
+          if(reports.length!==39||reports.some(x=>x.status!==200||!x.spx||x.sources===0||x.robots?.includes('noindex')))process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-39-11-new-photo-screenchecks
+          path: /tmp/species39photos/
+          retention-days: 8
