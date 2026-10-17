@@ -42,6 +42,25 @@ test("enumerated public non-profile routes remain eligible without profile JSON"
   }
 });
 
+test("arbitrary nested and non-canonical profile paths fail closed", async () => {
+  const cases = [
+    "/orca/draft",
+    "/lion/preview",
+    "/unreviewed/path",
+    "/orca//draft",
+    "/orca/../draft",
+    "/orca%2Fdraft",
+    "/Orca",
+  ];
+  for (const path of cases) {
+    const state = await profileReviewState(path, async () => {
+      throw new Error(`must not fetch non-canonical path: ${path}`);
+    });
+    assert.equal(state, "UNREVIEWED", path);
+    assert.equal(permitsSpeciesIndexing(state), false, path);
+  }
+});
+
 test("the public species sitemap retains only universe routes and reviewed profiles", () => {
   assert.match(router, /incoming\.pathname === "\/species-sitemap\.xml"/);
   assert.match(router, /permitsSpeciesIndexing\(review\)/);

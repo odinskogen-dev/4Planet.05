@@ -18,9 +18,10 @@ export function permitsSpeciesIndexing(reviewState) {
 export async function profileReviewState(pathname, fetchImpl = fetch) {
   const normalizedPath = `/${pathname.split("?")[0].split("#")[0].split("/").filter(Boolean).join("/")}`;
   if (PUBLIC_NON_PROFILE_PATHS.has(normalizedPath)) return NON_PROFILE_REVIEW_STATE;
-  const parts = pathname.split("/").filter(Boolean);
-  if (parts.length !== 1) return NON_PROFILE_REVIEW_STATE;
+  const parts = normalizedPath.split("/").filter(Boolean);
+  if (parts.length !== 1) return "UNREVIEWED";
   const slug = parts[0];
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return "UNREVIEWED";
   try {
     const response = await fetchImpl(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
       headers: { accept: "application/json" },

@@ -1,3 +1,24 @@
+# SPECIES — NESTED-PATH HUMAN-REVIEW INDEX GATE — 17 OCT 2026
+
+**STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person or crawler needs every SPECIES profile-shaped route to honour the same human-review boundary, including malformed or nested URLs.
+**ONE THING TO UNDERSTAND:** only four explicitly enumerated universe routes or one canonical profile with explicit `REVIEWED` evidence may remain indexable.
+**PRIMARY ACTION:** open a reviewed canonical species profile without arbitrary nested paths inheriting public index eligibility.
+**SECONDARY DEPTH:** sitemap, HTTP robots headers and rendered robots metadata all reuse the same fail-closed review predicate.
+**P1 DOMINANT:** the existing reviewed SPECIES profile.
+**P2 ORIENTATION:** explicit DRAFT, UNREVIEWED or non-canonical path state.
+**P3 ACTION:** continue through the existing profile and ATLAS journeys only from canonical routes.
+**P4 DEPTH:** independent exact-head crawler, browser and public-host readback before release.
+**WHAT CAN BE REMOVED:** the assumption that any path with more than one segment is a public non-profile route.
+**WHAT MUST BE REUSED:** SPEC-GS-11, issue #145, the current review-state predicate, existing router contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this closes a source-level indexing bypass on the HEIR; it does not prove a public route was indexed, grant Gold, deploy, alter LIVE or establish search-engine removal.
+**MOBILE-FIRST RISK:** no layout or interaction change; exact-head browser/mobile and raw-response review remain release gates.
+**HUMAN SUCCESS:** `/orca/draft`, other nested paths and encoded/non-canonical slugs fail closed without a profile fetch, while `/`, `/explore`, `/quiz`, `/about` and explicitly REVIEWED canonical profiles retain their intended behaviour.
+**BASE / ROLLBACK:** `king/test@de60ce23f19dbd2c9ff95da3a68740a8458313e2`; revert the bounded router/test/brief commit if independent Gold finds a canonical-route, review-state or sitemap regression.
+**MAKER ≠ JUDGE:** Factory closes the returned bypass; independent Gold judges the exact resulting SHA. Founder release and public-host verification remain separate.
+
+---
+
 # ATLAS-10 — CLIMATE TRACE EMISSIONS COLOUR FALLBACK — 17 OCT 2026
 
 **STATUS:** SOURCE-VERIFIED P0/P1 INTERACTION DEFECT CORRECTED ON SOLE HEIR / INDEPENDENT GOLD AND BROWSER VERIFICATION REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
