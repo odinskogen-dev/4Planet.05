@@ -6,6 +6,7 @@ const page = fs.readFileSync("src/pages/integrated/ImpactLivingActionNetwork.tsx
 const client = fs.readFileSync("src/impact/livingActionNetworkClient.ts", "utf8");
 const router = fs.readFileSync("src/routes/router.tsx", "utf8");
 const manifest = JSON.parse(fs.readFileSync("src/data/impactDiscovery.json", "utf8"));
+const prerender = fs.readFileSync("scripts/prerender-discovery-seo.mjs", "utf8");
 
 test("Impact runtime reads the existing NATUREBRAIN projection", () => {
   assert.match(client, /impact_lan_gold_v01/);
@@ -36,4 +37,35 @@ test("Impact keeps partnership and evidence boundaries explicit", () => {
   assert.match(page, /does not mean 4PLANET partnership/);
   assert.match(page, /Contribution, delivery, outcome and verification remain separate truth states|Different claims need different proof/);
   assert.match(page, /ISSUE-FAMILY VISUAL · NOT PROJECT EVIDENCE/);
+});
+
+const releasedForOrigin = (item, origin = "https://4planet.org") =>
+  item?.publicationState === "READY_FOR_FOUNDER_RELEASE" && item?.canonicalOrigin === origin;
+
+test("Impact object discovery fails closed without per-object publication authority", () => {
+  assert.match(manifest.publicationLaw, /Source inclusion is curation only/);
+  assert.match(manifest.publicationLaw, /Missing or conflicting authority fails closed/);
+  for (const project of manifest.projects) {
+    assert.equal(project.publicationState, "HEIR_CANDIDATE");
+    assert.equal(project.canonicalOrigin, null);
+    assert.equal(project.actor.publicationState, "HEIR_CANDIDATE");
+    assert.equal(project.actor.canonicalOrigin, null);
+    assert.equal(releasedForOrigin(project), false);
+    assert.equal(releasedForOrigin(project.actor), false);
+  }
+  const project = manifest.projects[0];
+  const actor = project.actor;
+  assert.equal(releasedForOrigin({ ...project, publicationState: "READY_FOR_FOUNDER_RELEASE", canonicalOrigin: "https://4planet.org" }), true);
+  assert.equal(releasedForOrigin({ ...project, publicationState: "READY_FOR_FOUNDER_RELEASE", canonicalOrigin: "https://example.org" }), false);
+  assert.equal(releasedForOrigin({ ...project, canonicalOrigin: "https://4planet.org" }), false);
+  assert.equal(releasedForOrigin({ ...actor, publicationState: "READY_FOR_FOUNDER_RELEASE", canonicalOrigin: "https://4planet.org" }), true);
+});
+
+test("Impact prerender gates projects and actors and does not assign third-party Organization ownership to 4PLANET profile URLs", () => {
+  assert.match(prerender, /impactObjectIsReleasedForOrigin/);
+  assert.match(prerender, /impactDiscovery\.projects \?\? \[\]\)\.filter\(impactObjectIsReleasedForOrigin\)/);
+  assert.match(prerender, /values\(\)\)\.filter\(impactObjectIsReleasedForOrigin\)/);
+  assert.match(prerender, /mainEntity: \{ "@type": "Thing", "@id": actor\.id, name: actor\.name \}/);
+  assert.match(prerender, /about: \{ "@type": "Thing", "@id": actor\.id, name: actor\.name \}/);
+  assert.doesNotMatch(prerender, /"@type": "Organization",\n\s+name: actor\.name/);
 });
