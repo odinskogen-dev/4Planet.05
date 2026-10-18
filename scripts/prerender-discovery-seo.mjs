@@ -184,7 +184,9 @@ for (const object of atlasObjects) {
 
 
 
-const impactProjects = impactDiscovery.projects ?? [];
+const impactObjectIsReleasedForOrigin = (item) =>
+  item?.publicationState === "READY_FOR_FOUNDER_RELEASE" && item?.canonicalOrigin === origin;
+const impactProjects = (impactDiscovery.projects ?? []).filter(impactObjectIsReleasedForOrigin);
 writeRoute("/impact", pageHtml({
   pathName: "/impact",
   title: "Impact — Find ecological action | 4PLANET",
@@ -232,7 +234,7 @@ for (const project of impactProjects) {
   }));
 }
 
-const impactActors = Array.from(new Map(impactProjects.map((project) => [project.actor.slug, project.actor])).values());
+const impactActors = Array.from(new Map(impactProjects.map((project) => [project.actor.slug, project.actor])).values()).filter(impactObjectIsReleasedForOrigin);
 for (const actor of impactActors) {
   const related = impactProjects.filter((project) => project.actor.slug === actor.slug);
   const citations = Array.from(new Set(related.flatMap((project) => project.citations)));
@@ -244,9 +246,11 @@ for (const actor of impactActors) {
     body: `<main><p>4PLANET IMPACT / ACTOR</p><h1>${esc(actor.name)}</h1><p>Public record. Listing does not imply 4PLANET partnership or endorsement.</p><h2>Projects in this Gold slice</h2><ul>${related.map((project) => `<li><a href="/impact/project/${esc(project.slug)}">${esc(project.name)}</a></li>`).join("")}</ul><h2>Sources</h2><ul>${citations.map((url) => `<li><a href="${esc(url)}">${esc(new URL(url).hostname.replace(/^www\\./, ""))}</a></li>`).join("")}</ul></main>`,
     jsonLd: {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      name: actor.name,
+      "@type": "WebPage",
+      name: `${actor.name} — Actor | 4PLANET Impact`,
       url: origin + pathName,
+      mainEntity: { "@type": "Thing", "@id": actor.id, name: actor.name },
+      about: { "@type": "Thing", "@id": actor.id, name: actor.name },
       subjectOf: related.map((project) => ({ "@type": "WebPage", name: project.name, url: origin + `/impact/project/${project.slug}` })),
     },
   }));
