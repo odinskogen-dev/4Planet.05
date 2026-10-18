@@ -366,7 +366,7 @@ export const ACTOR_GOLD_PROFILES: ActorGoldProfile[] = [
       {
         id: "need:orca:bay-survey-effort:v1",
         label: "Bounded cetacean monitoring effort on the Bay of Biscay survey corridor",
-        state: "KNOWN",
+        state: "TO_VERIFY",
         sourceRefs: ["source:4planet:orca-dialogue:2026-09-04"],
         limitations: [
           "A monitoring need is not evidence of an agreed delivery scope, funding requirement or ecological outcome.",
@@ -496,6 +496,24 @@ export const ACTOR_TORTURE_TEST_ARCHETYPES = [
 
 export function actorBySlug(slug?: string) {
   return ACTOR_GOLD_PROFILES.find((actor) => actor.slug === slug);
+}
+
+/**
+ * Public Actor surfaces must resolve only through explicit publication authority.
+ * Unknown or future state values fail closed; a DEVELOPMENT projection remains
+ * available to controlled source/test paths but cannot list, route or emit metadata.
+ */
+export function actorIsPublic(
+  actor: Pick<ActorGoldProfile, "publicationState"> | undefined,
+): actor is ActorGoldProfile {
+  return actor?.publicationState === "PUBLIC";
+}
+
+export const PUBLIC_ACTOR_GOLD_PROFILES = ACTOR_GOLD_PROFILES.filter(actorIsPublic);
+
+export function publicActorBySlug(slug?: string) {
+  const actor = actorBySlug(slug);
+  return actorIsPublic(actor) ? actor : undefined;
 }
 
 /**
