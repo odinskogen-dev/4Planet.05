@@ -87,9 +87,9 @@ export const publicDecisions: PublicDecision[] = [
     authority: 'Norwegian Ministry of Climate and Environment',
     stage: 'CONSULTATION',
     statusLabel: 'UNDER CONSIDERATION',
-    summary: 'The government proposal remains under consideration. The ordinary consultation closed 15 September 2026. A restricted extension to 15 October applies only to municipalities/counties processing input politically and recipients explicitly granted an extension.',
-    nextStep: '15 October 2026 · restricted extension only; ordinary consultation closed',
-    sourceAsOf: '11 October 2026',
+    summary: 'The government proposal remains under consideration. The ordinary consultation closed 15 September 2026. The restricted 15 October deadline has also passed; it applied only to municipalities/counties processing input politically and recipients explicitly granted an extension.',
+    nextStep: 'Restricted deadline passed 15 October 2026 · next official procedural step not established',
+    sourceAsOf: '18 October 2026',
     sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/',
     sourceTitle: 'Høring av regjeringens forslag til ny Oslofjordplan',
     sourceIssuer: 'Norwegian Ministry of Climate and Environment',
@@ -108,7 +108,7 @@ export const publicDecisions: PublicDecision[] = [
     journey: [
       { date: '19 Jun 2026', stage: 'PROPOSAL', label: 'Proposed 2026–2030 plan published for consultation', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
       { date: '15 Sep 2026', stage: 'CONSULTATION', label: 'Ordinary consultation deadline passed', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
-      { date: '15 Oct 2026', stage: 'PROCESS', label: 'Restricted deadline for political-processing municipalities/counties and recipients explicitly granted an extension', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
+      { date: '15 Oct 2026', stage: 'PROCESS', label: 'Restricted deadline passed for political-processing municipalities/counties and recipients explicitly granted an extension', sourceUrl: 'https://www.regjeringen.no/no/dokumenter/horing-av-regjeringens-forslag-til-ny-oslofjordplan/id3166019/' },
     ],
   },
   {
