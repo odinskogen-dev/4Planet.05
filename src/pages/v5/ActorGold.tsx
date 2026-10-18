@@ -1,10 +1,10 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Seo } from "@/components/Seo";
 import {
-  ACTOR_GOLD_PROFILES,
+  PUBLIC_ACTOR_GOLD_PROFILES,
   ACTOR_GOLD_RELEASE_RULES,
   ACTOR_GOLD_VISUAL_LADDER,
-  actorBySlug,
+  publicActorBySlug,
   actorClaimCanPublish,
   actorForActionContract,
   type ActorGoldProfile,
@@ -102,7 +102,7 @@ export function ActorsIndex() {
         <Link className="participation-index-entry" to="/get-involved">FIND YOUR WAY TO HELP →</Link>
       </header>
       <section className="actor-index-grid" aria-label="Actor Gold profiles">
-        {ACTOR_GOLD_PROFILES.map((actor) => (
+        {PUBLIC_ACTOR_GOLD_PROFILES.map((actor) => (
           <Link key={actor.id} className="actor-index-card" to={`/actors/${actor.slug}`}>
             <div className="actor-index-card-top"><span>{actor.id}</span><RelationshipMark actor={actor} /></div>
             <h2>{actor.name}</h2>
@@ -123,7 +123,7 @@ export function ActorsIndex() {
 
 export function ActorProfilePage() {
   const { slug } = useParams();
-  const actor = actorBySlug(slug);
+  const actor = publicActorBySlug(slug);
   if (!actor) return <Navigate to="/actors" replace />;
   const publishableClaims = actor.claimsAllowed.filter((claim) =>
     actorClaimCanPublish(claim, actor.sourceRecords, actor.evidenceRecords),
