@@ -269,6 +269,55 @@ test("measurement integrity isolates internal traffic and expands discovery attr
   assert.match(routeAnalytics, /isInternalOrInfrastructureReferrer/);
 });
 
+test("public URLs cannot persist or clear internal-traffic classification", () => {
+  const start = analytics.indexOf("function applyInternalAnalyticsControl(): boolean {");
+  const end = analytics.indexOf("\n}\n\nfunction isInternalAnalyticsBrowser", start);
+  assert.ok(start >= 0 && end > start, "missing internal analytics control");
+  const source = `const INTERNAL_ANALYTICS_STORAGE_KEY = "4planet.analytics.internal.v1";
+const INTERNAL_ANALYTICS_QUERY_KEY = "4p_internal";
+${analytics.slice(start, end + 2)}
+exports.applyInternalAnalyticsControl = applyInternalAnalyticsControl;`;
+  const js = ts.transpileModule(source, { compilerOptions: {
+    target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS
+  }}).outputText;
+
+  const check = (url, provisioned) => {
+    let marker = provisioned ? "1" : null;
+    let replacement = null;
+    const context = {
+      exports: {},
+      URLSearchParams,
+      window: {
+        location: new URL(url),
+        localStorage: {
+          getItem: () => marker,
+          setItem: () => assert.fail("public URL must not provision internal traffic"),
+          removeItem: () => assert.fail("public URL must not clear internal traffic"),
+        },
+        history: {
+          state: null,
+          replaceState: (_state, _title, nextUrl) => { replacement = nextUrl; },
+        },
+      },
+    };
+    vm.runInNewContext(js, context);
+    return {
+      internal: context.exports.applyInternalAnalyticsControl(),
+      replacement,
+      marker,
+    };
+  };
+
+  assert.deepEqual(
+    check("https://4planet.org/?4p_internal=1&utm_source=external", false),
+    { internal: false, replacement: "/?utm_source=external", marker: null },
+  );
+  assert.deepEqual(
+    check("https://4planet.org/?4p_internal=0&utm_source=external", true),
+    { internal: true, replacement: "/?utm_source=external", marker: "1" },
+  );
+});
+
 test("Search Console first-party probe is read-only, existing-identity scoped and fails closed", () => {
   const python = read("scripts/ga4-admin-control.py");
   const workflow = read(".github/workflows/ga4-admin-control.yml");
