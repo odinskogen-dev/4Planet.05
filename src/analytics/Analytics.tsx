@@ -200,7 +200,7 @@ function productArea(pathname: string, hostname: string): string {
   if (host === "cre4tor.com" || host === "cre4tors.com" || host === "cre4tor.4planet.org" || pathname.startsWith("/cre4tor") || pathname.startsWith("/creator/")) return "creator";
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/species")) return "species";
-  if (pathname.startsWith("/living-systems")) return "living_systems";
+  if (pathname === "/livingsystems" || pathname.startsWith("/livingsystems/") || pathname.startsWith("/living-systems")) return "living_systems";
   if (pathname.startsWith("/impact")) return "impact";
   if (pathname.startsWith("/missions")) return "missions";
   if (pathname.startsWith("/domains")) return "domains";
