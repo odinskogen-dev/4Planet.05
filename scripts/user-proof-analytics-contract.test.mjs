@@ -67,6 +67,31 @@ const requiredRoutes = [
   "/journey/orca/",
 ];
 
+function evaluateProductClassifier(sourceText, functionName, pathname, hostname = "4planet.org") {
+  const canonicalHostSource = sourceText.match(/function canonicalHost\([\s\S]*?\n}\n/);
+  const classifierSource = sourceText.match(new RegExp(`function ${functionName}\\([\\s\\S]*?\\n}\\n`));
+  assert.ok(canonicalHostSource, "canonicalHost helper must be extractable");
+  assert.ok(classifierSource, `${functionName} must be extractable`);
+  const isolated = `${canonicalHostSource[0]}\n${classifierSource[0]}\nglobalThis.__result = ${functionName}(globalThis.__path, globalThis.__host);`;
+  const js = ts.transpileModule(isolated, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
+  }).outputText;
+  const context = { __path: pathname, __host: hostname, __result: null };
+  vm.runInNewContext(js, context);
+  return context.__result;
+}
+
+test("canonical Living Systems routes resolve consistently in both analytics classifiers", () => {
+  for (const pathname of ["/livingsystems", "/livingsystems/", "/livingsystems/orca"]) {
+    assert.equal(evaluateProductClassifier(analytics, "productArea", pathname), "living_systems");
+    assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", pathname), "living_systems");
+  }
+  assert.equal(evaluateProductClassifier(analytics, "productArea", "/livingsystems-extra"), "4planet");
+  assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", "/livingsystems-extra"), "4planet");
+  assert.equal(evaluateProductClassifier(analytics, "productArea", "/living-systems"), "living_systems");
+  assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", "/living-systems"), "living_systems");
+});
+
 test("user proof funnel is broader than page views", () => {
   for (const eventName of requiredEvents) assert.ok(shared.includes(`\"${eventName}\"`), `missing ${eventName}`);
   assert.match(routeAnalytics, /trackProductEntry/);
