@@ -83,13 +83,37 @@ test("actual 4SAPIEN Food source closes the bounded measurement and decision sea
   assert.match(liveFoodPantry, /USER_DECISION/);
   assert.match(liveFoodPantry, /food_second_value_reached/);
   assert.match(liveFoodPantry, /food_context_saved/);
-  assert.match(liveFoodPantry, /food_context_returned/);
+  assert.match(liveFoodPantry, /food_context_loaded/);
   assert.match(liveFoodPantry, /SB\.functions\.invoke\("embla-core-preview"/);
   assert.match(liveFoodPantry, /measurement_event:"useful_outcome"/);
   assert.match(liveFoodPantry, /human_utility_recruitment/);
   assert.match(liveFoodPantry, /aldri ingrediensnavn, beholdning, prompts eller fritekst/i);
   assert.doesNotMatch(liveFoodPantry, /payload:\s*\{[^}]*pantry/s);
   assert.doesNotMatch(liveFoodPantry, /payload:\s*\{[^}]*entry/s);
+});
+
+
+test("async FOOD pantry state remains bound to the initiating authenticated owner", () => {
+  const guardSource = liveFoodPantry.match(/function foodOwnerCurrent\([^}]+\n\}/)?.[0];
+  assert.ok(guardSource, "owner guard helper must be present");
+  const foodOwnerCurrent = Function(`${guardSource}; return foodOwnerCurrent;`)();
+  assert.equal(foodOwnerCurrent("user-a", "user-a"), true);
+  assert.equal(foodOwnerCurrent("user-b", "user-a"), false);
+  assert.equal(foodOwnerCurrent(null, "user-a"), false);
+  assert.equal(foodOwnerCurrent("user-a", null), false);
+
+  assert.match(liveFoodPantry, /recordHumanUtility=async\(helpful,ownerId\)/);
+  assert.match(liveFoodPantry, /recordHumanUtility\(helpful,ownerId\)/);
+  assert.match(liveFoodPantry, /const ownerId=userId, currentRecord=record;/);
+  assert.match(liveFoodPantry, /startedAtRef\.current=Date\.now\(\);/);
+  assert.match(liveFoodPantry, /setSave\("UNSAVED"\);setBusy\(false\);/);
+  assert.match(liveFoodPantry, /\.eq\("user_id",ownerId\)/);
+  assert.match(liveFoodPantry, /catch\(_\)\{if\(foodOwnerCurrent\(identityRef\.current,ownerId\)\)setSave\("SAVE_FAILED_RECHECK"\);\}/);
+  assert.match(liveFoodPantry, /catch\(_\)\{if\(foodOwnerCurrent\(identityRef\.current,ownerId\)\)setSave\("REMOVE_FAILED_RECHECK"\);\}/);
+  assert.doesNotMatch(liveFoodPantry, /catch\(_\)\{setDecisionState\("ERROR"\)/);
+  assert.doesNotMatch(liveFoodPantry, /catch\(_\)\{setSave\("(?:SAVE|REMOVE)_FAILED_RECHECK"\)/);
+  const guardCount = liveFoodPantry.match(/foodOwnerCurrent\(identityRef\.current,ownerId\)/g)?.length ?? 0;
+  assert.ok(guardCount >= 12, `expected async owner guards, found ${guardCount}`);
 });
 
 
