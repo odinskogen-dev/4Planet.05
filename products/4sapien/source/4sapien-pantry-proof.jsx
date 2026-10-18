@@ -3,6 +3,9 @@ function isFoodSecondValueEligible(record,now=Date.now()) {
  const createdAt=Date.parse(record?.created_at||"");
  return Boolean(record?.id&&Number.isFinite(createdAt)&&createdAt<=now-24*60*60*1000);
 }
+function foodOwnerCurrent(currentOwnerId,ownerId) {
+ return Boolean(ownerId&&currentOwnerId===ownerId);
+}
 function FoodPantryProof({user,avoid}) {
  const [items,setItems]=useState([]);
  const [budget,setBudget]=useState("");
@@ -12,7 +15,7 @@ function FoodPantryProof({user,avoid}) {
  const [save,setSave]=useState("UNSAVED");
  const [returnCount,setReturnCount]=useState(null);
  const [busy,setBusy]=useState(false);
- const [startedAt]=useState(()=>Date.now());
+ const startedAtRef=useRef(Date.now());
  const [activationSent,setActivationSent]=useState(false);
  const [valueEventSent,setValueEventSent]=useState(false);
  const [optionsShownSent,setOptionsShownSent]=useState(false);
@@ -35,9 +38,11 @@ function FoodPantryProof({user,avoid}) {
   if(error||identityRef.current!==ownerId)throw error||new Error("STALE_FOOD_EVENT_ACK");
   return true;
  };
- const recordHumanUtility=async(helpful)=>{
+ const recordHumanUtility=async(helpful,ownerId)=>{
+  if(!foodOwnerCurrent(identityRef.current,ownerId))throw new Error("STALE_FOOD_OWNER");
   const {data,error}=await SB.functions.invoke("embla-core-preview",{body:{measurement_event:"useful_outcome",measurement_value:helpful?"yes":"not_yet"}});
   if(error||!data?.ok||data?.state!=="MEASUREMENT_RECORDED")throw error||new Error("HUMAN_UTILITY_MEASUREMENT_FAILED");
+  if(!foodOwnerCurrent(identityRef.current,ownerId))throw new Error("STALE_FOOD_OWNER_ACK");
  };
 
  const recipes=[
@@ -47,7 +52,8 @@ function FoodPantryProof({user,avoid}) {
  ];
  useEffect(()=>{
   let active=true;
-  setItems([]);setBudget("");setRecord(null);setReturnCount(null);setSave("UNSAVED");
+  setItems([]);setBudget("");setRecord(null);setReturnCount(null);setSave("UNSAVED");setBusy(false);
+  startedAtRef.current=Date.now();
   setActivationSent(false);setOptionsShownSent(false);setValueEventSent(false);setReturnValueEligible(false);
   setDecisionReceipt(null);setDecisionState("IDLE");setDecisionMessage("");setValueSignal(null);setValueSignalState("IDLE");
   if(!userId){setLoad("AUTH_REQUIRED");return()=>{active=false;};}
@@ -96,70 +102,78 @@ function FoodPantryProof({user,avoid}) {
     provenance:{source:"4SAPIEN FOOD",privacy:"private_person",evidence_class:"USER_DECISION",loop:"food_first_value_v2"},decided_at:new Date().toISOString()};
    const {data,error}=await SB.from("four_sapien_decisions").insert(row).select("id").single();
    if(error||!data?.id)throw error||new Error("FOOD_DECISION_WRITE_FAILED");
-   if(identityRef.current!==ownerId)return;
+   if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    setDecisionReceipt({id:data.id,ownerId,returningEligible});
    setDecisionState("SAVED");setDecisionMessage("Valget er lagret privat. Det betyr ikke at måltidet er laget eller at resultatet var nyttig.");
    emitFoodEvent("food_decision_saved",{stage:"decision",decision_status:option.status,missing_count:option.missing.length,unknown_count:option.unknown.length},ownerId).catch(()=>{});
-  }catch(_){setDecisionState("ERROR");setDecisionMessage("Valget kunne ikke lagres. Ingenting vises som husket.");}
+  }catch(_){if(foodOwnerCurrent(identityRef.current,ownerId)){setDecisionState("ERROR");setDecisionMessage("Valget kunne ikke lagres. Ingenting vises som husket.");}}
  };
  const recordValueSignal=async(helpful)=>{
   if(valueSignalState==="SAVING"||valueSignalState==="SAVED"||decisionState!=="SAVED"||decisionReceipt?.ownerId!==userId)return;
   const ownerId=userId, receipt=decisionReceipt;
   setValueSignal(helpful);setValueSignalState("SAVING");
   try{
-   await recordHumanUtility(helpful);
-   if(identityRef.current!==ownerId)return;
+   await recordHumanUtility(helpful,ownerId);
+   if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    if(helpful&&!valueEventSent){
     await emitFoodEvent(receipt.returningEligible?"food_second_value_reached":"food_value_reached",{
      stage:receipt.returningEligible?"second_value":"first_value",returning:receipt.returningEligible,
-     elapsed_ms:Math.max(0,Date.now()-startedAt),item_count:items.length,option_count:options.length,decision_status:"saved"
+     elapsed_ms:Math.max(0,Date.now()-startedAtRef.current),item_count:items.length,option_count:options.length,decision_status:"saved"
     },ownerId);
     setValueEventSent(true);
    }
-   setValueSignalState("SAVED");
-  }catch(_){if(identityRef.current===ownerId)setValueSignalState("ERROR");}
+   if(foodOwnerCurrent(identityRef.current,ownerId))setValueSignalState("SAVED");
+  }catch(_){if(foodOwnerCurrent(identityRef.current,ownerId))setValueSignalState("ERROR");}
  };
 
  const persist=async()=>{
   if(!userId||busy||load==="LOADING"||load==="READ_FAILED")return;
+  const ownerId=userId, currentRecord=record;
   const clean=items.filter(i=>i.name?.trim()).slice(0,40).map(i=>({name:i.name.trim().slice(0,100),amount:i.amount,unit:i.unit}));
   if(clean.some(i=>i.amount!==null&&(!Number.isFinite(i.amount)||i.amount<0))|| (budget.trim()!==""&&(!Number.isFinite(Number(budget))||Number(budget)<0))){setSave("CHECK_INPUT");return;}
   setBusy(true);setSave("SAVING");
-  const row={user_id:userId,memory_type:"durable_fact",content:"Bekreftet FOOD-beholdning",value:{
+  const row={user_id:ownerId,memory_type:"durable_fact",content:"Bekreftet FOOD-beholdning",value:{
     namespace:"food_pantry_v1",pantry:clean,budgetNok:budget.trim()===""?null:Number(budget),
     dataState:"user_confirmed",purchasedIsNotConsumed:true
    },state:"active",confirmation_state:"user_confirmed",
    provenance:{source:"4SAPIEN FOOD",privacy:"private_person",evidence_class:"USER_CONFIRMED",revision:"pantry_v1"},
-   supersedes_id:record?.id||null};
+   supersedes_id:currentRecord?.id||null};
   try {
    const {data,error}=await SB.from("four_sapien_embla_memories").insert(row).select("id,value,created_at").single();
    if(error||!data?.id)throw error||new Error("WRITE_READBACK_FAILED");
+   if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    const {data:readback,error:readError}=await SB.from("four_sapien_embla_memories")
-     .select("id,value").eq("id",data.id).eq("user_id",userId).eq("state","active").maybeSingle();
+     .select("id,value").eq("id",data.id).eq("user_id",ownerId).eq("state","active").maybeSingle();
    if(readError||readback?.value?.namespace!=="food_pantry_v1")throw readError||new Error("WRITE_READBACK_FAILED");
+   if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    setRecord(data);setSave("SAVED");setReturnCount(null);
-   emitFoodEvent("food_context_saved",{stage:"saved_context",item_count:clean.length}).catch(()=>{});
-   if(record?.id){
+   emitFoodEvent("food_context_saved",{stage:"saved_context",item_count:clean.length},ownerId).catch(()=>{});
+   if(currentRecord?.id){
     const {data:prior,error:priorError}=await SB.from("four_sapien_embla_memories")
       .update({state:"superseded",updated_at:new Date().toISOString()})
-      .eq("id",record.id).eq("user_id",userId).eq("state","active").select("id");
-    if(priorError||!prior?.length)setSave("SAVED_PREVIOUS_REVISION_REVIEW");
+      .eq("id",currentRecord.id).eq("user_id",ownerId).eq("state","active").select("id");
+    if(foodOwnerCurrent(identityRef.current,ownerId)&&(priorError||!prior?.length))setSave("SAVED_PREVIOUS_REVISION_REVIEW");
    }
-  }catch(_){setSave("SAVE_FAILED_RECHECK");}
-  finally{setBusy(false);}
+  }catch(_){if(foodOwnerCurrent(identityRef.current,ownerId))setSave("SAVE_FAILED_RECHECK");}
+  finally{if(foodOwnerCurrent(identityRef.current,ownerId))setBusy(false);}
  };
  const removeSaved=async()=>{
-  if(!record?.id||!userId||busy)return;setBusy(true);setSave("SAVING");
+  if(!record?.id||!userId||busy)return;
+  const ownerId=userId, currentRecord=record;
+  setBusy(true);setSave("SAVING");
   try{
    const {data,error}=await SB.from("four_sapien_embla_memories")
     .update({state:"deleted",deleted_at:new Date().toISOString(),updated_at:new Date().toISOString()})
-    .eq("id",record.id).eq("user_id",userId).eq("state","active").select("id");
+    .eq("id",currentRecord.id).eq("user_id",ownerId).eq("state","active").select("id");
    if(error||!data?.length)throw error||new Error("DELETE_FAILED");
+   if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    const {data:check,error:err}=await SB.from("four_sapien_embla_memories")
-    .select("id").eq("id",record.id).eq("user_id",userId).eq("state","active").maybeSingle();
+    .select("id").eq("id",currentRecord.id).eq("user_id",ownerId).eq("state","active").maybeSingle();
    if(err||check)throw err||new Error("DELETE_READBACK_FAILED");
+   if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    setRecord(null);setItems([]);setBudget("");setReturnCount(null);setSave("REMOVED");setLoad("EMPTY");
-  }catch(_){setSave("REMOVE_FAILED_RECHECK");}finally{setBusy(false);}
+  }catch(_){if(foodOwnerCurrent(identityRef.current,ownerId))setSave("REMOVE_FAILED_RECHECK");}
+  finally{if(foodOwnerCurrent(identityRef.current,ownerId))setBusy(false);}
  };
  const field={minHeight:42,padding:"9px",border:"1px solid var(--line2)",borderRadius:8,background:"var(--paper)",color:"var(--ink)"};
  return <section id="four-sapien-food-pantry" aria-label="Min mat — privat beholdning" style={{margin:"24px 0",padding:"20px",border:"1px solid var(--line2)",borderRadius:14}}>
