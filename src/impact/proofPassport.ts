@@ -229,6 +229,24 @@ function validProofTimestamp(value: string | null, now = Date.now()): number | n
   return parsed;
 }
 
+const BLOCKED_EVIDENCE_RIGHTS = new Set([
+  "BLOCKED",
+  "NOT_CLEARED",
+  "NO_PUBLIC_USE",
+  "PROHIBITED",
+  "UNAPPROVED",
+  "UNKNOWN",
+]);
+
+function isApprovedEvidenceRights(value: string): boolean {
+  const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  return Boolean(normalized) && !BLOCKED_EVIDENCE_RIGHTS.has(normalized);
+}
+
+function sameEvidenceLimitations(left: string[], right: string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
 function isBoundIndependentVerification(
   item: ProofEvidenceItem,
   identity: Pick<ProofPassportInput, "actionId" | "providerId" | "impact">,
@@ -251,6 +269,9 @@ function isBoundIndependentVerification(
     authoritativeRecord.impactId === item.impactId &&
     authoritativeRecord.verifierClass === item.verifierClass &&
     authoritativeRecord.relationship === item.relationship &&
+    authoritativeRecord.rights === item.rights &&
+    sameEvidenceLimitations(authoritativeRecord.limitations, item.limitations) &&
+    isApprovedEvidenceRights(authoritativeRecord.rights) &&
     authoritativeCapturedAt !== null &&
     authoritativeReviewedAt !== null &&
     authoritativeCapturedAt <= authoritativeReviewedAt &&
