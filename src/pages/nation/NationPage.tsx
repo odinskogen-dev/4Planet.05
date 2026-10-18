@@ -226,7 +226,7 @@ export default function NationPage() {
         <div className='nt-feature-facts' aria-label='The case at a glance'>
           <div><span>THE ISSUE</span><strong>A fjord under pressure</strong></div>
           <div><span>THE DECISION</span><strong>A proposed new plan</strong></div>
-          <div><span>WHAT IS NEXT</span><strong>15 October · restricted extension only</strong></div>
+          <div><span>WHAT IS NEXT</span><strong>Next official step · not established</strong></div>
         </div>
         <div className='nt-feature-source'>Official record · checked {nationCaseAsOf} · <Source id='KLD-2026-HEARING' label='VIEW SOURCE ↗'/></div>
       </article>
@@ -249,7 +249,7 @@ export default function NationPage() {
         <div className='nt-case-top'><SmallLabel>FEATURED PUBLIC DECISION / NORWAY</SmallLabel><span className='nt-badge'>UNDER CONSIDERATION · {nationCaseAsOf.toUpperCase()}</span></div>
         <h3>{nationDecision.title}<span> {nationDecision.period}</span></h3>
         <p className='nt-case-deck'>The official proposal is open for examination. The ministry still lists the new plan as under consideration. <Source id='KLD-2026-HEARING' label='OFFICIAL CASE ↗'/></p>
-        <div className='nt-case-meta'><span>DECIDING BODY <strong>{nationDecision.issuer}</strong></span><span>GEOGRAPHY <strong>Oslofjord catchment</strong></span><span>NEXT DATED STEP <strong>15 October 2026 · local/regional submissions</strong></span></div>
+        <div className='nt-case-meta'><span>DECIDING BODY <strong>{nationDecision.issuer}</strong></span><span>GEOGRAPHY <strong>Oslofjord catchment</strong></span><span>LATEST DATED STEP <strong>Restricted deadline passed 15 October 2026</strong></span></div>
         <div className='nt-case-note'><strong>Proposal, not an adopted plan.</strong> The ordinary consultation is closed; the ministry still lists the case under consideration. <Source id='KLD-2026-HEARING' label='CHECK OFFICIAL STATUS ↗'/></div><div className='nt-case-actions'><Source id='KLD-2026-PROPOSAL' label='READ THE ACTUAL PROPOSAL ↗'/><button type='button' onClick={shareCase}>{shareState==='copied'?'CASE LINK COPIED ✓':shareState==='error'?'COPY UNAVAILABLE — USE ADDRESS BAR':'COPY CASE LINK ↗'}</button></div>
       </article>
 
@@ -261,7 +261,7 @@ export default function NationPage() {
           {lens==='decisions' && <section className='nt-panel-body'>
             <h3>{audience==='people'?'Follow the decision.':'Examine the decision context.'}</h3>
             <p>{audience==='people'?'See what has happened, what remains open and where to verify it. No recommendations about what you should support.':'Review the objective, authority, existing plan and documented scientific scenarios. The institution, not this prototype, determines the policy.'}</p>
-            <div className='nt-facts'><div><small>CURRENT PUBLIC STATUS</small><strong>Under consideration</strong><Source id='KLD-2026-HEARING' label='OFFICIAL RECORD ↗'/></div><div><small>CONSULTATION</small><strong>Ordinary deadline passed</strong><span>15 September 2026</span></div><div><small>LOCAL / REGIONAL</small><strong>Separate deadline</strong><span>15 October 2026</span></div></div>
+            <div className='nt-facts'><div><small>CURRENT PUBLIC STATUS</small><strong>Under consideration</strong><Source id='KLD-2026-HEARING' label='OFFICIAL RECORD ↗'/></div><div><small>CONSULTATION</small><strong>Ordinary deadline passed</strong><span>15 September 2026</span></div><div><small>RESTRICTED RECIPIENTS</small><strong>Deadline passed</strong><span>15 October 2026</span></div></div>
             {audience==='institutions' && <div className='nt-institution'><SmallLabel>NON-BINDING DECISION INTELLIGENCE</SmallLabel><h4>What needs to be understood?</h4><ul><li>Legal authority and procedural status, distinct from implementation.</li><li>Impacts on residents, public services, costs, nature and long-term resilience.</li><li>Scenario A and B are scientific model assumptions, not a recorded political ballot.</li><li>Local implementation responsibilities and verified project costs: not established for this case.</li></ul><Source id='MDE-2026-MODEL' label='READ THE SCIENTIFIC SOURCE ↗'/></div>}
             <details className='nt-timeline-disclosure'>
               <summary><span>Decision timeline</span><small>{nationDecision.timeline.length} dated events · open full record</small></summary>
