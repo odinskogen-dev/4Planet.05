@@ -204,6 +204,70 @@ test("OBIS rejects inverted date ranges without silently widening the query", as
   }
 });
 
+test("OBIS rejects empty, malformed and duplicate bbox values before fetching upstream", async () => {
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    throw new Error("invalid bbox must fail before upstream fetch");
+  };
+
+  try {
+    for (const query of [
+      "bbox=",
+      "bbox=,,,",
+      "bbox=-10,,10,20",
+      "bbox=-10,0,10,",
+      "bbox=0,0,10",
+      "bbox=0,0,Infinity,10",
+      "bbox=0x0,0,10,10",
+      "bbox=0,0,1e1,10",
+      "bbox=0,0,10,10&bbox=1,1,2,2",
+    ]) {
+      const response = await obisRuntime.onRequestGet({
+        request: new Request(`https://test.4planet.org/api/obis?scientificName=Orcinus+orca&${query}`),
+      });
+      assert.equal(response.status, 400, query);
+      assert.deepEqual(await response.json(), { ok: false, error: "INVALID_OR_UNBOUNDED_BBOX" }, query);
+    }
+    assert.equal(fetchCalls, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("OBIS bbox preserves legitimate zero and negative coordinates", async () => {
+  const originalFetch = globalThis.fetch;
+  const requestedUrls = [];
+  globalThis.fetch = async (url) => {
+    requestedUrls.push(String(url));
+    return new Response(JSON.stringify({ results: [], total: 0 }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+
+  try {
+    const fixtures = [
+      ["-10,0,10,20", "POLYGON ((-10 0, -10 20, 10 20, 10 0, -10 0))"],
+      ["0,-20,10,0", "POLYGON ((0 -20, 0 0, 10 0, 10 -20, 0 -20))"],
+    ];
+    for (const [bbox, expectedGeometry] of fixtures) {
+      const response = await obisRuntime.onRequestGet({
+        request: new Request(`https://test.4planet.org/api/obis?scientificName=Orcinus+orca&bbox=${bbox}`),
+      });
+      assert.equal(response.status, 200, bbox);
+      const body = await response.json();
+      assert.equal(body.query.bbox, bbox);
+      const upstream = new URL(requestedUrls.at(-1));
+      assert.equal(upstream.searchParams.get("geometry"), expectedGeometry);
+    }
+    assert.equal(requestedUrls.length, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("OBIS accepts a real leap day and forwards both bounded dates", async () => {
   const originalFetch = globalThis.fetch;
   let requestedUrl = "";
