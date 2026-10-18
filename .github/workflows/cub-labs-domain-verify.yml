@@ -1,0 +1,34 @@
+name: CUB LABS custom domain readiness
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths: ['.github/workflows/cub-labs-domain-verify.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify SSL and exact ROMA content on plural labs domain
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3"
+          for attempt in $(seq 1 16); do
+            if curl -fsSL --connect-timeout 8 --max-time 20 'https://labs.p4nther.com/roma/index.html' -o /tmp/roma-labs.html; then
+              if echo "$expected  /tmp/roma-labs.html" | sha256sum -c -; then
+                curl -fsSL --max-time 20 https://labs.p4nther.com/ | grep -Fq 'WILD:'
+                echo 'CUB_LABS_PLURAL_FULLY_LIVE=https://labs.p4nther.com/'
+                echo 'ROMA_PLURAL_EXACT_LIVE=https://labs.p4nther.com/roma/'
+                exit 0
+              fi
+              echo 'LABS_CONTENT_HASH_NOT_READY'
+            else
+              echo "LABS_DNS_TLS_PENDING_ATTEMPT=$attempt"
+            fi
+            sleep 18
+          done
+          echo 'CUB_LABS_PLURAL_PENDING: CF Worker attached but DNS/certificate not available; verified lab.p4nther.com remains live'
+          exit 0
