@@ -291,15 +291,18 @@ test("OAuth credential-bearing URLs never start measurement", () => {
   assert.match(analytics, /export function isSensitiveAnalyticsNavigation\(\): boolean/);
   assert.match(analytics, /isSensitiveAnalyticsNavigation\(\) \|\| document\.getElementById/);
   assert.match(analytics, /consent !== "granted" \|\| isSensitiveAnalyticsNavigation\(\)/);
-  assert.match(analytics, /readConsent\(\) !== "granted"[^\n]*isSensitiveAnalyticsNavigation\(\)/);
-  assert.match(analytics, /page_location:.*window\.location\.origin.*window\.location\.pathname/);
-  const source = analytics.match(/export function isSensitiveAnalyticsNavigation\(\): boolean \{[\s\S]*?\n\}/)?.[0];
-  assert.ok(source, "missing OAuth navigation guard");
-  const js = ts.transpileModule(source, { compilerOptions: {
+  assert.match(analytics, /readConsent\(\) !== "granted"[\s\S]{0,300}isSensitiveAnalyticsNavigation\(\)/);
+  assert.match(analytics, /const safeConfig = privacySafeEventParameters\(\{ page_path: window\.location\.pathname \}\)/);
+  assert.match(analytics, /page_location:.*window\.location\.origin.*safePath/);
+  const decodeSource = analytics.match(/function decodeForAnalyticsInspection\([\s\S]*?\n}\n/)?.[0];
+  const sensitiveSource = analytics.match(/function containsSensitiveAnalyticsMaterial\([\s\S]*?\n}\n/)?.[0];
+  const navigationSource = analytics.match(/export function isSensitiveAnalyticsNavigation\(\): boolean \{[\s\S]*?\n\}/)?.[0];
+  assert.ok(decodeSource && sensitiveSource && navigationSource, "missing encoded OAuth navigation guard");
+  const js = ts.transpileModule(`${decodeSource}\n${sensitiveSource}\n${navigationSource}`, { compilerOptions: {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS
   }}).outputText;
   const check = (url) => {
-    const context = { exports: {}, window: { location: new URL(url) } };
+    const context = { exports: {}, window: { location: new URL(url) }, decodeURIComponent };
     vm.runInNewContext(js, context);
     return context.exports.isSensitiveAnalyticsNavigation();
   };
@@ -310,7 +313,10 @@ test("OAuth credential-bearing URLs never start measurement", () => {
     "https://id.4planet.org/oauth/consent?authorization_id=TEST",
     "https://4planet.org/?code=TEST",
     "https://4planet.org/?state=TEST",
-    "https://4planet.org/#refresh_token=TEST"
+    "https://4planet.org/#refresh_token=TEST",
+    "https://4planet.org/%61uth/callback",
+    "https://4planet.org/livingsystems?%61ccess_token=TEST",
+    "https://4planet.org/livingsystems#%2561ccess_token%253DTEST"
   ]) assert.equal(check(url), true);
   for (const url of [
     "https://4planet.org/oslofjord",
@@ -318,7 +324,6 @@ test("OAuth credential-bearing URLs never start measurement", () => {
     "https://4planetmagazine.com/magazine"
   ]) assert.equal(check(url), false);
 });
-
 test("GA4 admin push never silently modifies the property", () => {
   const yaml = read(".github/workflows/ga4-admin-control.yml");
   assert.match(yaml, /default: audit/);
