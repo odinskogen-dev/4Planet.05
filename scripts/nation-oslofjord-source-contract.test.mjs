@@ -7,14 +7,34 @@ const publicDecisions = readFileSync(new URL('../src/planet/nationPublicDecision
 const nationPage = readFileSync(new URL('../src/pages/nation/NationPage.tsx', import.meta.url), 'utf8');
 const placeExplorer = readFileSync(new URL('../src/pages/nation/NationPlaceExplorer.tsx', import.meta.url), 'utf8');
 
+const loadDeadlinePhase = () => {
+  const source = decisionCase.match(/export const consultationDeadlinePhase = [\s\S]*?\n};/);
+  assert.ok(source, 'deadline phase classifier must remain exported');
+  const executable = source[0]
+    .replace('export const', 'const')
+    .replace(/: string/g, '')
+    .replace(/ as const/g, '');
+  return Function(`${executable}; return consultationDeadlinePhase;`)();
+};
+
+test('deadline phase is deterministic before, on and after the restricted date', () => {
+  const deadlinePhase = loadDeadlinePhase();
+  assert.equal(deadlinePhase('2026-10-15', '2026-10-14'), 'UPCOMING');
+  assert.equal(deadlinePhase('2026-10-15', '2026-10-15'), 'ENDS_TODAY');
+  assert.equal(deadlinePhase('2026-10-15', '2026-10-16'), 'PASSED');
+  assert.equal(deadlinePhase('15-10-2026', '2026-10-16'), 'UNKNOWN');
+});
+
 test('Oslofjord consultation copy keeps ordinary and restricted deadlines distinct', () => {
   for (const source of [decisionCase, publicDecisions]) {
     assert.match(source, /ordinary consultation closed 15 September 2026/i);
     assert.match(source, /recipients explicitly granted an extension/i);
   }
-  assert.match(publicDecisions, /restricted extension only; ordinary consultation closed/i);
-  assert.match(nationPage, /15 October · restricted extension only/);
-  assert.doesNotMatch(nationPage, /15 October · local and regional deadline/);
+  assert.match(publicDecisions, /restricted deadline passed 15 October 2026/i);
+  assert.match(nationPage, /Next official step · not established/);
+  assert.match(nationPage, /Restricted deadline passed 15 October 2026/);
+  assert.doesNotMatch(nationPage, /15 October · restricted extension only/);
+  assert.doesNotMatch(nationPage, /UPCOMING AS OF SNAPSHOT/);
 });
 
 test('the related 2021 plan is a separate source-bound policy, not part of the 2026 case journey', () => {
@@ -27,8 +47,8 @@ test('the related 2021 plan is a separate source-bound policy, not part of the 2
 });
 
 test('the dated snapshot and official sources remain explicit', () => {
-  assert.match(decisionCase, /nationCaseAsOf = '11 October 2026'/);
-  assert.match(publicDecisions, /sourceAsOf: '11 October 2026'/);
+  assert.match(decisionCase, /nationCaseAsOf = '18 October 2026'/);
+  assert.match(publicDecisions, /sourceAsOf: '18 October 2026'/);
   assert.match(decisionCase, /id3166019/);
   assert.match(decisionCase, /id3167967/);
 });
