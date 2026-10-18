@@ -48,10 +48,19 @@ const boundedInt = (value: string | null, fallback: number, max: number) => {
   return Number.isInteger(n) && n >= 0 ? Math.min(n, max) : fallback;
 };
 
+const STRICT_BBOX_DECIMAL = /^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)$/;
+
 function bboxToWkt(value: string | null) {
-  const parts = (value || "").split(",").map(Number);
-  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return null;
-  const [west, south, east, north] = parts;
+  const rawParts = String(value ?? "").split(",");
+  if (rawParts.length !== 4) return null;
+  const parsed = rawParts.map((part) => {
+    const normalized = part.trim();
+    if (!normalized || !STRICT_BBOX_DECIMAL.test(normalized)) return null;
+    const number = Number(normalized);
+    return Number.isFinite(number) ? number : null;
+  });
+  if (parsed.some((number) => number === null)) return null;
+  const [west, south, east, north] = parsed as number[];
   if (west < -180 || east > 180 || south < -90 || north > 90 || west >= east || south >= north) return null;
   if (east - west > MAX_BBOX_SPAN_DEG || north - south > MAX_BBOX_SPAN_DEG) return null;
   return `POLYGON ((${west} ${south}, ${west} ${north}, ${east} ${north}, ${east} ${south}, ${west} ${south}))`;
@@ -143,9 +152,15 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
   const scientificName = cleanScientificName(incoming.searchParams.get("scientificName"));
   if (!scientificName) return json({ ok: false, error: "INVALID_SCIENTIFIC_NAME" }, 400, 60);
 
-  const bbox = incoming.searchParams.get("bbox");
-  const geometry = bbox ? bboxToWkt(bbox) : null;
-  if (bbox && !geometry) return json({ ok: false, error: "INVALID_OR_UNBOUNDED_BBOX" }, 400, 60);
+  const bboxValues = incoming.searchParams.getAll("bbox");
+  if (bboxValues.length > 1) {
+    return json({ ok: false, error: "INVALID_OR_UNBOUNDED_BBOX" }, 400, 60);
+  }
+  const bbox = bboxValues[0] ?? null;
+  const geometry = bbox === null ? null : bboxToWkt(bbox);
+  if (bbox !== null && !geometry) {
+    return json({ ok: false, error: "INVALID_OR_UNBOUNDED_BBOX" }, 400, 60);
+  }
 
   const size = Math.max(1, boundedInt(incoming.searchParams.get("size"), 50, MAX_SIZE));
   const offset = boundedInt(incoming.searchParams.get("offset"), 0, MAX_OFFSET);
