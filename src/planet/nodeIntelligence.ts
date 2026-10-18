@@ -26,6 +26,7 @@ import {
   NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY,
   natureBrainEvidenceFrame,
   natureBrainLsiEdges,
+  natureBrainProductIdentifiers,
   natureBrainProductLinks,
   type NatureBrainEntityContext,
 } from "./naturebrainContext";
@@ -47,6 +48,8 @@ export interface NodeIntel {
   claimCount: number;
   cascade: ReturnType<typeof failureCascade>;
   decisionContext?: ReturnType<typeof decisionContextForAnchor>;
+  /** Source-qualified identifiers remain references; no cross-authority equivalence is inferred. */
+  externalIdentifiers: ReturnType<typeof natureBrainProductIdentifiers>;
   /** Canonical source-to-claim evidence projection. No claim is synthesized here. */
   evidenceFrame: ReturnType<typeof natureBrainEvidenceFrame>;
   /** Canonical LSI projection over the supplied NATUREBRAIN context. No second graph. */
@@ -131,6 +134,7 @@ export function nodeIntelligence(id: string, natureBrainContext?: NatureBrainEnt
   }).map((m) => link(m.id, "ACCELERATES"));
 
   const natureLinks = currentNatureContext ? natureBrainProductLinks(currentNatureContext) : [];
+  const externalIdentifiers = currentNatureContext ? natureBrainProductIdentifiers(currentNatureContext) : [];
   const evidenceFrame = currentNatureContext ? natureBrainEvidenceFrame(currentNatureContext) : [];
   const lsiEdges = currentNatureContext ? natureBrainLsiEdges(currentNatureContext) : [];
   const natureOutbound = natureLinks
@@ -162,6 +166,7 @@ export function nodeIntelligence(id: string, natureBrainContext?: NatureBrainEnt
     claimCount: currentNatureContext ? currentNatureContext.claims.length : claimsForCurrentEntity(id).length,
     cascade: failureCascade(id),
     decisionContext,
+    externalIdentifiers,
     evidenceFrame,
     lsiEdges,
     truthBoundary: currentNatureContext
