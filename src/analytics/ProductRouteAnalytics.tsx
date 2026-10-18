@@ -17,7 +17,7 @@ function classifyProduct(pathname: string, hostname: string): ProductArea {
   if (pathname.startsWith("/magazine")) return "magazine";
   if (pathname.startsWith("/atlas")) return "atlas";
   if (pathname.startsWith("/species")) return "species";
-  if (pathname.startsWith("/living-systems") || pathname.startsWith("/ecosystem")) return "living_systems";
+  if (pathname === "/livingsystems" || pathname.startsWith("/livingsystems/") || pathname.startsWith("/living-systems") || pathname.startsWith("/ecosystem")) return "living_systems";
   if (pathname.startsWith("/impact")) return "impact";
   if (pathname.startsWith("/missions") || pathname.startsWith("/mission/")) return "missions";
   if (pathname.startsWith("/domains") || pathname.startsWith("/domain/")) return "domains";
