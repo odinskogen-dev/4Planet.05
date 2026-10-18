@@ -8,7 +8,17 @@ import { PLACES } from './places';
  * Project Home: https://docs.google.com/document/d/1IAB_myJZ3pT0rx58QNBJmuCutxhGlWBKBuOjO__NuBo/edit
  * Re-check these sources before any later change of legal/procedural status.
  */
-export const nationCaseAsOf = '11 October 2026';
+export const nationCaseAsOf = '18 October 2026';
+export const nationCaseAsOfIso = '2026-10-18';
+
+export const consultationDeadlinePhase = (deadlineIso: string, asOfIso: string) => {
+  const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (!isoDatePattern.test(deadlineIso) || !isoDatePattern.test(asOfIso)) return 'UNKNOWN' as const;
+  if (asOfIso < deadlineIso) return 'UPCOMING' as const;
+  if (asOfIso === deadlineIso) return 'ENDS_TODAY' as const;
+  return 'PASSED' as const;
+};
+
 export const nationPlace = PLACES.find((place) => place.id === placeId('oslofjord'));
 
 export const nationSources = [
@@ -28,7 +38,9 @@ export const nationDecision = {
   jurisdiction: 'National proposal · regional and local relevance',
   status: 'UNDER CONSIDERATION',
   consulted: 'Ordinary consultation closed 15 September 2026',
-  localDeadline: 'Restricted extension to 15 October 2026: municipalities/counties processing input politically, plus recipients explicitly granted an extension',
+  localDeadline: 'Restricted deadline passed 15 October 2026: it applied only to municipalities/counties processing input politically, plus recipients explicitly granted an extension',
+  localDeadlineDate: '2026-10-15',
+  localDeadlinePhase: consultationDeadlinePhase('2026-10-15', nationCaseAsOfIso),
   location: 'Oslofjord catchment, Norway',
   synopsis: 'The Norwegian government published a proposed new action plan for the Oslofjord. Its official consultation remains under consideration; a proposal must not be presented as final adopted policy.',
   sourceIds: ['KLD-2026-HEARING', 'KLD-2026-PROPOSAL', 'KLD-2026-DEADLINE'],
@@ -38,7 +50,7 @@ export const nationDecision = {
     { date: '19 Jun 2026', label: 'Proposed 2026–2030 plan published for consultation', state: 'PROPOSAL', sourceId: 'KLD-2026-HEARING' },
     { date: '29 Jun 2026', label: 'Ordinary deadline extended to 15 September; restricted extension set to 15 October', state: 'CHANGE', sourceId: 'KLD-2026-DEADLINE' },
     { date: '15 Sep 2026', label: 'Ordinary consultation deadline passed', state: 'DEADLINE', sourceId: 'KLD-2026-HEARING' },
-    { date: '15 Oct 2026', label: 'Restricted deadline for political-processing municipalities/counties and recipients explicitly granted an extension', state: 'UPCOMING AS OF SNAPSHOT', sourceId: 'KLD-2026-DEADLINE' },
+    { date: '15 Oct 2026', label: 'Restricted deadline passed for political-processing municipalities/counties and recipients explicitly granted an extension', state: 'DEADLINE PASSED', sourceId: 'KLD-2026-DEADLINE' },
   ],
 } as const;
 
