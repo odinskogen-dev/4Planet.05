@@ -14,13 +14,16 @@ async function settle(page: import("@playwright/test").Page) {
   await page.waitForTimeout(1200);
 }
 
-async function waitForMap(page: import("@playwright/test").Page) {
+async function waitForEvidenceMap(page: import("@playwright/test").Page) {
   await expect(page.locator(".maplibregl-canvas")).toBeVisible({ timeout: 20_000 });
   await page.waitForFunction(() => {
     const canvas = document.querySelector<HTMLCanvasElement>(".maplibregl-canvas");
     return Boolean(canvas && canvas.width > 100 && canvas.height > 100);
   });
-  await expect(page.getByText("MAP · READY", { exact: true })).toBeVisible({ timeout: 20_000 });
+
+  const status = page.getByRole("status");
+  await expect(status).toHaveText("MAP · EVIDENCE READY", { timeout: 20_000 });
+  await expect(status).not.toHaveText(/MAP · (?:LOADING|BASE READY · EVIDENCE LOADING|EVIDENCE DEGRADED|UNAVAILABLE)/);
 }
 
 async function verifyHumanReadingContract(page: import("@playwright/test").Page) {
@@ -36,7 +39,7 @@ test("Oslofjord desktop is a source-backed human-first Planet proof", async ({ p
 
   await expect(page).toHaveURL(/\/living-systems\/oslofjord$/);
   await expect(page.getByRole("heading", { name: "Oslofjorden", exact: true })).toBeVisible();
-  await waitForMap(page);
+  await waitForEvidenceMap(page);
   await verifyHumanReadingContract(page);
 
   for (const layer of ["SEABED / DEPTH", "ECOLOGICAL STATUS", "PHYSICAL INTERVENTIONS"]) {
@@ -57,7 +60,7 @@ test("Oslofjord mobile remains readable, interactive and source-inspectable", as
   await page.goto(`${BASE}/living-systems/oslofjord`, { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "Oslofjorden", exact: true })).toBeVisible();
-  await waitForMap(page);
+  await waitForEvidenceMap(page);
   await verifyHumanReadingContract(page);
 
   const layout = await page.evaluate(() => ({
@@ -68,7 +71,7 @@ test("Oslofjord mobile remains readable, interactive and source-inspectable", as
 
   const statusButton = page.getByRole("button", { name: /ECOLOGICAL STATUS/i });
   await statusButton.click();
-  await expect(page.getByText("MAP · READY", { exact: true })).toBeVisible();
+  await waitForEvidenceMap(page);
 
   await settle(page);
   await page.screenshot({ path: `${OUTPUT}/04-oslofjord-mobile-first-screen.png` });
