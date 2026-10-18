@@ -12,12 +12,16 @@
       "actor": {
         "id": "actor:4p:northern-mozambique-restoration-network",
         "slug": "northern-mozambique-restoration-network",
-        "name": "Northern Mozambique Channel restoration network"
+        "name": "Northern Mozambique Channel restoration network",
+        "publicationState": "HEIR_CANDIDATE",
+        "canonicalOrigin": null
       },
       "place": "Northern Mozambique Channel",
       "citations": [
         "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region"
-      ]
+      ],
+      "publicationState": "HEIR_CANDIDATE",
+      "canonicalOrigin": null
     },
     {
       "id": "project:4p:impact:african-forest-gardens",
@@ -28,12 +32,16 @@
       "actor": {
         "id": "actor:4p:trees-for-the-future",
         "slug": "trees-for-the-future",
-        "name": "Trees for the Future"
+        "name": "Trees for the Future",
+        "publicationState": "HEIR_CANDIDATE",
+        "canonicalOrigin": null
       },
       "place": "Mali, Senegal, Tanzania, Uganda and Kenya",
       "citations": [
         "https://www.decadeonrestoration.org/african-farmers-transforming-food-systems"
-      ]
+      ],
+      "publicationState": "HEIR_CANDIDATE",
+      "canonicalOrigin": null
     },
     {
       "id": "project:4p:impact:florida-coral-restoration",
@@ -44,13 +52,17 @@
       "actor": {
         "id": "actor:4p:coral-restoration-foundation",
         "slug": "coral-restoration-foundation",
-        "name": "Coral Restoration Foundation"
+        "name": "Coral Restoration Foundation",
+        "publicationState": "HEIR_CANDIDATE",
+        "canonicalOrigin": null
       },
       "place": "Florida Keys",
       "citations": [
         "https://coralrestoration.org/tourism-funding-helps-rebuild-florida-keys-reefs/",
         "https://coralrestoration.org/wp-content/uploads/2026/04/CRF-2025-Annual-Report_DIGITAL.pdf"
-      ]
+      ],
+      "publicationState": "HEIR_CANDIDATE",
+      "canonicalOrigin": null
     },
     {
       "id": "project:4p:impact:great-pacific-garbage-patch",
@@ -61,13 +73,18 @@
       "actor": {
         "id": "actor:4p:the-ocean-cleanup",
         "slug": "the-ocean-cleanup",
-        "name": "The Ocean Cleanup"
+        "name": "The Ocean Cleanup",
+        "publicationState": "HEIR_CANDIDATE",
+        "canonicalOrigin": null
       },
       "place": "North Pacific Ocean",
       "citations": [
         "https://theoceancleanup.com/updates/integrating-new-technologies-to-tackle-the-great-pacific-garbage-patch/",
         "https://theoceancleanup.com/faq/is-the-cleanup-system-already-installed-and-cleaning-up-the-ocean/"
-      ]
+      ],
+      "publicationState": "HEIR_CANDIDATE",
+      "canonicalOrigin": null
     }
-  ]
+  ],
+  "publicationLaw": "Source inclusion is curation only. Public object pages and structured data require per-object READY_FOR_FOUNDER_RELEASE plus exact canonicalOrigin. Missing or conflicting authority fails closed."
 }
