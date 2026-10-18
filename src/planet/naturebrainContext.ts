@@ -67,6 +67,30 @@ export type NatureBrainMeasurement = {
   provenance?: Record<string, unknown>;
 };
 
+export type NatureBrainExternalIdentifier = {
+  namespace?: unknown;
+  external_id?: unknown;
+  canonical_uri?: unknown;
+  provenance?: Record<string, unknown> | null;
+};
+
+export type NatureBrainProductIdentifier = {
+  namespace: string;
+  externalId: string;
+  namespaceQualifiedId: string;
+  canonicalUri: string;
+  state: "SOURCE_QUALIFIED_REFERENCE";
+  equivalence: "NOT_ASSERTED";
+  sourceAuthority?: string;
+  authorityVersion?: string;
+  scientificName?: string;
+  rank?: string;
+  taxonomicStanding?: string;
+  reviewedAt?: string;
+  citation?: string;
+  rightsBoundary?: string;
+};
+
 export interface NatureBrainEntityContext {
   canonical_id: string;
   entity_type: string;
@@ -76,7 +100,7 @@ export interface NatureBrainEntityContext {
   taxon?: Record<string, unknown> | null;
   observation_count: number;
   signal_count: number;
-  external_identifiers: Array<Record<string, unknown>>;
+  external_identifiers: NatureBrainExternalIdentifier[];
   outbound_relationships: NatureBrainRelationship[];
   inbound_relationships: NatureBrainRelationship[];
   claims: NatureBrainClaim[];
@@ -118,6 +142,91 @@ const categoryForPredicate = (predicate: string): NatureBrainLsiEdge["category"]
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
+
+const optionalString = (value: unknown): string | undefined =>
+  isNonEmptyString(value) ? value.trim() : undefined;
+
+const exactHttpsUrl = (value: unknown): string | undefined => {
+  if (!isNonEmptyString(value)) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * Preserve external identifiers as namespace-qualified source references.
+ *
+ * No identifier creates identity equivalence. ITIS TSNs have an additional
+ * fail-closed admission contract because a TSN identifies an ITIS name record,
+ * not a universal taxon. The ITIS assertion must carry the reviewed source
+ * version, accepted name/rank/standing, citation and rights boundary.
+ */
+export function natureBrainProductIdentifiers(
+  context: NatureBrainEntityContext,
+): NatureBrainProductIdentifier[] {
+  return context.external_identifiers.flatMap((identifier) => {
+    const namespace = optionalString(identifier.namespace)?.toUpperCase();
+    const externalId = optionalString(identifier.external_id);
+    const canonicalUri = exactHttpsUrl(identifier.canonical_uri);
+    if (!namespace || !externalId || !canonicalUri) return [];
+
+    const base: NatureBrainProductIdentifier = {
+      namespace,
+      externalId,
+      namespaceQualifiedId: `${namespace}:${externalId}`,
+      canonicalUri,
+      state: "SOURCE_QUALIFIED_REFERENCE",
+      equivalence: "NOT_ASSERTED",
+    };
+    if (namespace !== "ITIS_TSN") return [base];
+
+    const provenance = identifier.provenance ?? {};
+    const sourceAuthority = optionalString(provenance.source_authority);
+    const authorityVersion = optionalString(provenance.authority_version);
+    const scientificName = optionalString(provenance.scientific_name);
+    const rank = optionalString(provenance.rank)?.toUpperCase();
+    const taxonomicStanding = optionalString(provenance.taxonomic_standing)?.toUpperCase();
+    const reviewedAt = optionalString(provenance.reviewed_at);
+    const citation = exactHttpsUrl(provenance.citation);
+    const rightsBoundary = optionalString(provenance.rights_boundary);
+    const entityName = optionalString(context.taxon?.scientific_name);
+    const entityRank = optionalString(context.taxon?.rank)?.toUpperCase();
+    let itisUri: URL;
+    try {
+      itisUri = new URL(canonicalUri);
+    } catch {
+      return [];
+    }
+
+    const qualifies = sourceAuthority === "ITIS"
+      && Boolean(authorityVersion)
+      && scientificName === entityName
+      && rank === entityRank
+      && ["ACCEPTED", "VALID"].includes(taxonomicStanding ?? "")
+      && Boolean(reviewedAt && Number.isFinite(Date.parse(reviewedAt)))
+      && Boolean(citation)
+      && Boolean(rightsBoundary)
+      && provenance.ambiguous !== true
+      && (itisUri.hostname === "itis.gov" || itisUri.hostname.endsWith(".itis.gov"))
+      && itisUri.searchParams.get("search_value") === externalId;
+    if (!qualifies) return [];
+
+    return [{
+      ...base,
+      sourceAuthority,
+      authorityVersion,
+      scientificName,
+      rank,
+      taxonomicStanding,
+      reviewedAt,
+      citation,
+      rightsBoundary,
+    }];
+  });
+}
 
 /**
  * Product projections are publication surfaces, not raw graph inspection.
