@@ -94,6 +94,26 @@ test("Actor scale strategy is torture-test-first not x100 generation", () => {
 });
 
 
+
+test("Actor public routes fail closed without explicit PUBLIC authority", () => {
+  assert.match(engine, /export function actorIsPublic/);
+  assert.match(engine, /actor\?\.publicationState === "PUBLIC"/);
+  assert.match(engine, /PUBLIC_ACTOR_GOLD_PROFILES = ACTOR_GOLD_PROFILES\.filter\(actorIsPublic\)/);
+  assert.match(engine, /return actorIsPublic\(actor\) \? actor : undefined/);
+  assert.match(engine, /publicationState: "DEVELOPMENT"/);
+  assert.match(engine, /id: "need:orca:bay-survey-effort:v1"[\s\S]*?state: "TO_VERIFY"/);
+  assert.match(page, /PUBLIC_ACTOR_GOLD_PROFILES\.map/);
+  assert.match(page, /const actor = publicActorBySlug\(slug\)/);
+  assert.doesNotMatch(page, /ACTOR_GOLD_PROFILES\.map/);
+  assert.doesNotMatch(page, /const actor = actorBySlug\(slug\)/);
+
+  const publicGate = (state) => state === "PUBLIC";
+  assert.equal(publicGate("PUBLIC"), true);
+  for (const state of ["DEVELOPMENT", "UNKNOWN", "", undefined, null]) {
+    assert.equal(publicGate(state), false);
+  }
+});
+
 test("Actor Gold links only the reviewed canonical Actor-owned IMPACT action", () => {
   assert.match(page, /BAY_OF_BISCAY_SURVEY_ACTION/);
   assert.match(page, /actorForActionContract\(canonicalAction\)\?\.id === actor\.id/);
