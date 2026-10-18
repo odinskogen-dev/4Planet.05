@@ -2,18 +2,18 @@
   "schemaVersion": 2,
   "status": "NOT_AUTHORISED",
   "sourceBranch": "king/test",
-  "testKingSha": "4ff56ed1c9cc2d7bfdaee3641f70c42010beb210",
-  "priorLiveSha": "8746003f7fd723020f586afee6782c79545c8220",
+  "testKingSha": "f782534f20a0a0c2f78327198f2582ce8e8dca70",
+  "priorLiveSha": "3f7934c4617291c4a9b70912104f6b5f46158283",
   "releaseControlCommit": true,
   "targetBranch": "main",
-  "targetObservedSha": "8746003f7fd723020f586afee6782c79545c8220",
+  "targetObservedSha": "3f7934c4617291c4a9b70912104f6b5f46158283",
   "pullRequest": 131,
   "pullRequestState": "OPEN_DRAFT_NOT_MERGEABLE",
   "boundedRelease": false,
   "releaseKind": null,
   "founderDecisionRef": null,
-  "evidenceRef": "https://docs.google.com/spreadsheets/d/1nNrw5wQWT05XVtpp9B0jwp3AqaesR5ClkICBKVKzWJ4/edit#gid=404975884&range=A1699:AL1699",
-  "rollbackRef": "main@8746003f7fd723020f586afee6782c79545c8220",
+  "evidenceRef": "https://docs.google.com/spreadsheets/d/1nNrw5wQWT05XVtpp9B0jwp3AqaesR5ClkICBKVKzWJ4/edit#gid=404975884&range=A1743:AL1743",
+  "rollbackRef": "main@3f7934c4617291c4a9b70912104f6b5f46158283",
   "requiredGates": [
     "EXACT_HEAD_CI",
     "IMMUTABLE_STAGING_ARTIFACT",
@@ -22,5 +22,5 @@
     "TARGET_RECONCILIATION_WITHOUT_WHOLESALE_MERGE",
     "ACTION_SPECIFIC_FOUNDER_LIVE_AUTHORITY"
   ],
-  "note": "Fail-closed release-control packet refreshed after H23 Gold returned QA_CORRECT for stale promotion state. testKingSha is the exact product head immediately before this manifest-only control commit. This file does not authorise merge, deployment, release or LIVE. PR #131 remains an open draft and was observed not mergeable. Re-freeze and re-audit after any product/runtime change; populate Founder authority only after independent Gold and explicit action-specific Founder approval."
+  "note": "Fail-closed release-control packet refreshed after H07 Gold returned QA_CORRECT for release-head drift. testKingSha is the exact product head immediately before this manifest-only control commit. targetObservedSha, priorLiveSha and rollbackRef are bound to the freshly observed main head; this does not prove the deployed LIVE SHA. This file does not authorise merge, deployment, release or LIVE. PR #131 remains an open draft and was observed not mergeable. Re-freeze and re-audit after any product/runtime or target change; populate Founder authority only after independent Gold and explicit action-specific Founder approval."
 }
