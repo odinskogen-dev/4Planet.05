@@ -1,4 +1,8 @@
 /* Existing 4SAPIEN FOOD: bounded, consent-gated Person memory, never public PLANETBRAIN. */
+function isFoodSecondValueEligible(record,now=Date.now()) {
+ const createdAt=Date.parse(record?.created_at||"");
+ return Boolean(record?.id&&Number.isFinite(createdAt)&&createdAt<=now-24*60*60*1000);
+}
 function FoodPantryProof({user,avoid}) {
  const [items,setItems]=useState([]);
  const [budget,setBudget]=useState("");
@@ -11,19 +15,25 @@ function FoodPantryProof({user,avoid}) {
  const [startedAt]=useState(()=>Date.now());
  const [activationSent,setActivationSent]=useState(false);
  const [valueEventSent,setValueEventSent]=useState(false);
+ const [optionsShownSent,setOptionsShownSent]=useState(false);
+ const [returnValueEligible,setReturnValueEligible]=useState(false);
+ const [decisionReceipt,setDecisionReceipt]=useState(null);
  const [decisionState,setDecisionState]=useState("IDLE");
  const [decisionMessage,setDecisionMessage]=useState("");
  const [valueSignal,setValueSignal]=useState(null);
  const [valueSignalState,setValueSignalState]=useState("IDLE");
  const [acquisitionSource]=useState(()=>new URLSearchParams(window.location.search).get("src")==="human_utility"?"human_utility_recruitment":"direct_or_unknown");
  const userId=user?.id||null;
- const emitFoodEvent=async(eventType,payload={})=>{
-  if(!userId)return;
+ const identityRef=useRef(userId);identityRef.current=userId;
+ const emitFoodEvent=async(eventType,payload={},ownerId=userId)=>{
+  if(!ownerId||identityRef.current!==ownerId)return false;
   const safe={loop:"food_first_value_v2",source_state:acquisitionSource};
   for(const key of ["stage","returning","elapsed_ms","item_count","option_count","missing_count","unknown_count","decision_status"]){
    const value=payload[key]; if(value===null||["string","number","boolean"].includes(typeof value))safe[key]=value;
   }
-  await SB.from("four_sapien_embla_events").insert({user_id:userId,event_type:eventType,world:"food",source:"4sapien_food_value_loop_v2",payload:safe});
+  const {error}=await SB.from("four_sapien_embla_events").insert({user_id:ownerId,event_type:eventType,world:"food",source:"4sapien_food_value_loop_v2",payload:safe});
+  if(error||identityRef.current!==ownerId)throw error||new Error("STALE_FOOD_EVENT_ACK");
+  return true;
  };
  const recordHumanUtility=async(helpful)=>{
   const {data,error}=await SB.functions.invoke("embla-core-preview",{body:{measurement_event:"useful_outcome",measurement_value:helpful?"yes":"not_yet"}});
@@ -38,6 +48,8 @@ function FoodPantryProof({user,avoid}) {
  useEffect(()=>{
   let active=true;
   setItems([]);setBudget("");setRecord(null);setReturnCount(null);setSave("UNSAVED");
+  setActivationSent(false);setOptionsShownSent(false);setValueEventSent(false);setReturnValueEligible(false);
+  setDecisionReceipt(null);setDecisionState("IDLE");setDecisionMessage("");setValueSignal(null);setValueSignalState("IDLE");
   if(!userId){setLoad("AUTH_REQUIRED");return()=>{active=false;};}
   setLoad("LOADING");
   emitFoodEvent("food_identity_ready",{stage:"identity"}).catch(()=>{});
@@ -53,9 +65,9 @@ function FoodPantryProof({user,avoid}) {
    const validated=Array.isArray(v.pantry)?v.pantry.filter(i=>i&&typeof i.name==="string"&&i.name.trim()&&
     (i.amount===null||(typeof i.amount==="number"&&Number.isFinite(i.amount)&&i.amount>=0))&&["g","ml","stk"].includes(i.unit)).slice(0,40):[];
    setItems(validated);setBudget(typeof v.budgetNok==="number"&&Number.isFinite(v.budgetNok)&&v.budgetNok>=0?String(v.budgetNok):"");
-   setRecord(row);setReturnCount(row?validated.length:null);
+   setRecord(row);setReturnCount(row?validated.length:null);setReturnValueEligible(isFoodSecondValueEligible(row));
    setLoad(row?"RETURNED":"EMPTY");setSave(row?"SAVED":"UNSAVED");
-   if(row)emitFoodEvent("food_context_returned",{stage:"return",returning:true,item_count:validated.length}).catch(()=>{});
+   if(row)emitFoodEvent("food_context_loaded",{stage:"return_context",returning:true,item_count:validated.length},userId).catch(()=>{});
   })().catch(()=>{if(active)setLoad("READ_FAILED");});
   return()=>{active=false;};
  },[userId]);
@@ -65,19 +77,17 @@ function FoodPantryProof({user,avoid}) {
   avoid:Array.isArray(avoid)?avoid.filter(x=>typeof x==="string"):[]
  });
  useEffect(()=>{
-  if(!userId||!items.length||!options.length||valueEventSent)return;
-  const returning=load==="RETURNED";
-  setValueEventSent(true);
-  emitFoodEvent(returning?"food_second_value_reached":"food_value_reached",{
-   stage:returning?"second_value":"first_value",returning,elapsed_ms:Math.max(0,Date.now()-startedAt),item_count:items.length,option_count:options.length
-  }).catch(()=>{});
- },[userId,items.length,options.length,load,valueEventSent,startedAt]);
+  if(!userId||!items.length||!options.length||optionsShownSent)return;
+  setOptionsShownSent(true);
+  emitFoodEvent("food_options_shown",{stage:"options",returning:load==="RETURNED",item_count:items.length,option_count:options.length},userId).catch(()=>{});
+ },[userId,items.length,options.length,load,optionsShownSent]);
  const recordActivation=(stage)=>{
   if(activationSent)return;setActivationSent(true);
   emitFoodEvent("food_activation",{stage}).catch(()=>{});
  };
  const chooseOption=async(option)=>{
   if(!userId||busy||option.status==="CONSTRAINT_CONFLICT"||option.status==="UNKNOWN")return;
+  const ownerId=userId, returningEligible=returnValueEligible;
   setDecisionState("SAVING");setDecisionMessage("");
   try{
    const row={user_id:userId,world:"food",title:"FOOD meal choice",question:"What can I make with what I have?",
@@ -86,17 +96,28 @@ function FoodPantryProof({user,avoid}) {
     provenance:{source:"4SAPIEN FOOD",privacy:"private_person",evidence_class:"USER_DECISION",loop:"food_first_value_v2"},decided_at:new Date().toISOString()};
    const {data,error}=await SB.from("four_sapien_decisions").insert(row).select("id").single();
    if(error||!data?.id)throw error||new Error("FOOD_DECISION_WRITE_FAILED");
+   if(identityRef.current!==ownerId)return;
+   setDecisionReceipt({id:data.id,ownerId,returningEligible});
    setDecisionState("SAVED");setDecisionMessage("Valget er lagret privat. Det betyr ikke at måltidet er laget eller at resultatet var nyttig.");
-   emitFoodEvent("food_decision_saved",{stage:"decision",decision_status:option.status,missing_count:option.missing.length,unknown_count:option.unknown.length}).catch(()=>{});
+   emitFoodEvent("food_decision_saved",{stage:"decision",decision_status:option.status,missing_count:option.missing.length,unknown_count:option.unknown.length},ownerId).catch(()=>{});
   }catch(_){setDecisionState("ERROR");setDecisionMessage("Valget kunne ikke lagres. Ingenting vises som husket.");}
  };
  const recordValueSignal=async(helpful)=>{
-  if(valueSignalState==="SAVING"||valueSignalState==="SAVED")return;
-  setValueSignal(helpful);
-  if(!userId)return;
-  setValueSignalState("SAVING");
-  try{await recordHumanUtility(helpful);setValueSignalState("SAVED");}
-  catch(_){setValueSignalState("ERROR");}
+  if(valueSignalState==="SAVING"||valueSignalState==="SAVED"||decisionState!=="SAVED"||decisionReceipt?.ownerId!==userId)return;
+  const ownerId=userId, receipt=decisionReceipt;
+  setValueSignal(helpful);setValueSignalState("SAVING");
+  try{
+   await recordHumanUtility(helpful);
+   if(identityRef.current!==ownerId)return;
+   if(helpful&&!valueEventSent){
+    await emitFoodEvent(receipt.returningEligible?"food_second_value_reached":"food_value_reached",{
+     stage:receipt.returningEligible?"second_value":"first_value",returning:receipt.returningEligible,
+     elapsed_ms:Math.max(0,Date.now()-startedAt),item_count:items.length,option_count:options.length,decision_status:"saved"
+    },ownerId);
+    setValueEventSent(true);
+   }
+   setValueSignalState("SAVED");
+  }catch(_){if(identityRef.current===ownerId)setValueSignalState("ERROR");}
  };
 
  const persist=async()=>{
@@ -180,7 +201,7 @@ function FoodPantryProof({user,avoid}) {
     {record&&<button type="button" disabled={busy} onClick={removeSaved} style={{...field,marginLeft:7}}>Fjern min lagrede beholdning</button>}
     <p role="status">Lagring: {save}. Endringer er ikke lagret før du bekrefter. Privat Person-minne, ikke felles PLANETBRAIN.</p>
     {decisionState!=="IDLE"&&<p role="status">{decisionState==="SAVING"?"Lagrer privat valg…":decisionMessage}</p>}
-    {items.length>0&&options.length>0&&<div style={{marginTop:18,paddingTop:14,borderTop:"1px solid var(--line2)"}}>
+    {items.length>0&&options.length>0&&decisionState==="SAVED"&&<div style={{marginTop:18,paddingTop:14,borderTop:"1px solid var(--line2)"}}>
       <p>Var denne sammenligningen nyttig for denne oppgaven?</p>
       <button type="button" disabled={valueSignalState==="SAVING"||valueSignalState==="SAVED"} aria-pressed={valueSignal===true} onClick={()=>recordValueSignal(true)} style={field}>Ja</button>
       <button type="button" disabled={valueSignalState==="SAVING"||valueSignalState==="SAVED"} aria-pressed={valueSignal===false} onClick={()=>recordValueSignal(false)} style={{...field,marginLeft:7}}>Ikke ennå</button>
