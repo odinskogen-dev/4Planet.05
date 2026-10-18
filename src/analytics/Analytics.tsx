@@ -171,9 +171,9 @@ function readConsent(): ConsentState {
 
 function applyInternalAnalyticsControl(): boolean {
   const params = new URLSearchParams(window.location.search);
-  const raw = (params.get(INTERNAL_ANALYTICS_QUERY_KEY) || "").trim().toLowerCase();
-  if (["1", "true", "on"].includes(raw)) window.localStorage.setItem(INTERNAL_ANALYTICS_STORAGE_KEY, "1");
-  if (["0", "false", "off"].includes(raw)) window.localStorage.removeItem(INTERNAL_ANALYTICS_STORAGE_KEY);
+  // A public acquisition URL is not authority to classify a browser as internal.
+  // Keep scrubbing the legacy control parameter, but only an out-of-band,
+  // explicitly provisioned browser marker may suppress measurement.
   if (params.has(INTERNAL_ANALYTICS_QUERY_KEY)) {
     params.delete(INTERNAL_ANALYTICS_QUERY_KEY);
     const query = params.toString();
