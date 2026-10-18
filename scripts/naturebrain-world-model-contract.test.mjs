@@ -160,7 +160,7 @@ test("Node Intelligence consumes the source-reference projection without creatin
   assert.match(nodeSource, /natureBrainProductIdentifiers/);
   assert.match(nodeSource, /externalIdentifiers: ReturnType<typeof natureBrainProductIdentifiers>/);
   assert.match(nodeSource, /externalIdentifiers,/);
-  assert.doesNotMatch(nodeSource, /externalIdentifiers.*natureLinks/s);
+  assert.match(nodeSource, /const externalIdentifiers = currentNatureContext \? natureBrainProductIdentifiers\(currentNatureContext\) : \[\]/);
 });
 
 test("NATUREBRAIN adapter projects only product-ready relationships into product and LSI views", () => {
