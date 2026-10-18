@@ -21,9 +21,17 @@ const sha = (value) => typeof value === 'string' && /^[0-9a-f]{40}$/i.test(value
 
 if (authority?.authority_model?.test_heir?.branch !== 'king/test') fail('king/test is not the sole configured HEIR');
 if (authority?.promotion_contract?.live_promotion !== 'FOUNDER_AUTHORITY_REQUIRED_EXACT_TESTED_ARTIFACT') fail('Founder exact-artifact law missing');
-if (manifest.status !== 'FOUNDER_AUTHORISED') fail(`manifest status is ${manifest.status || 'MISSING'}, not FOUNDER_AUTHORISED`);
 if (manifest.sourceBranch !== 'king/test') fail(`sourceBranch must be king/test, got ${manifest.sourceBranch || 'MISSING'}`);
+if (manifest.targetBranch !== 'main') fail(`targetBranch must be main, got ${manifest.targetBranch || 'MISSING'}`);
+if (!sha(manifest.targetObservedSha)) fail('manifest targetObservedSha invalid');
+const targetHead = git(['rev-parse', `refs/remotes/origin/${manifest.targetBranch}`]) || git(['rev-parse', manifest.targetBranch]);
+if (!sha(targetHead)) fail(`cannot resolve target branch ${manifest.targetBranch}`);
+if (targetHead !== manifest.targetObservedSha) {
+  fail(`target branch drift: observed ${targetHead}, manifest records ${manifest.targetObservedSha}`);
+}
+if (manifest.status !== 'FOUNDER_AUTHORISED') fail(`manifest status is ${manifest.status || 'MISSING'}, not FOUNDER_AUTHORISED`);
 if (!sha(manifest.testKingSha)) fail('manifest testKingSha invalid');
+if (manifest.liveRollbackState !== 'VERIFIED') fail(`LIVE rollback state is ${manifest.liveRollbackState || 'MISSING'}, not VERIFIED`);
 if (!sha(manifest.priorLiveSha)) fail('manifest priorLiveSha invalid');
 if (!manifest.founderDecisionRef || !String(manifest.founderDecisionRef).trim()) fail('founderDecisionRef missing');
 if (!manifest.rollbackRef || !String(manifest.rollbackRef).includes(manifest.priorLiveSha)) fail('rollbackRef does not bind priorLiveSha');
@@ -32,10 +40,6 @@ if (!head) fail('cannot resolve exact checked-out SHA');
 if (branch && branch !== 'main' && process.env.ALLOW_PREPROMOTION_CHECK !== '1') fail(`LIVE guard may only authorise main; observed ${branch}`);
 
 if (head !== manifest.testKingSha) {
-  // A release needs to record its own tested SHA and Founder decision, which
-  // necessarily changes the manifest after the tested commit exists. Permit
-  // exactly one control-only child commit; runtime/product bytes remain those
-  // of the exact tested parent. No other file may differ.
   if (manifest.schemaVersion !== 2 || manifest.releaseControlCommit !== true) {
     fail(`checked-out SHA ${head} is not authorised exact artifact ${manifest.testKingSha}`);
   }
@@ -54,6 +58,9 @@ console.log(JSON.stringify({
   releaseHead: head,
   exactTestedArtifact: manifest.testKingSha,
   runtimeDelta: head === manifest.testKingSha ? 'NONE' : 'MANIFEST_ONLY',
+  targetBranch: manifest.targetBranch,
+  targetObservedSha: manifest.targetObservedSha,
+  liveRollbackState: manifest.liveRollbackState,
   priorLiveSha: manifest.priorLiveSha,
   founderDecisionRef: manifest.founderDecisionRef,
   evidenceRef: manifest.evidenceRef,
