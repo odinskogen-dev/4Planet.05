@@ -81,6 +81,22 @@ function evaluateProductClassifier(sourceText, functionName, pathname, hostname 
   return context.__result;
 }
 
+function evaluatePrivacyParameters(parameters) {
+  const decodeSource = analytics.match(/function decodeForAnalyticsInspection\([\s\S]*?\n}\n/);
+  const sensitiveSource = analytics.match(/function containsSensitiveAnalyticsMaterial\([\s\S]*?\n}\n/);
+  const privacySource = analytics.match(/export function privacySafeEventParameters\([\s\S]*?\n}\n/);
+  assert.ok(decodeSource, "decodeForAnalyticsInspection must be extractable");
+  assert.ok(sensitiveSource, "containsSensitiveAnalyticsMaterial must be extractable");
+  assert.ok(privacySource, "privacySafeEventParameters must be extractable");
+  const isolated = `${decodeSource[0]}\n${sensitiveSource[0]}\n${privacySource[0].replace("export function", "function")}\nglobalThis.__result = privacySafeEventParameters(globalThis.__parameters);`;
+  const js = ts.transpileModule(isolated, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
+  }).outputText;
+  const context = { __parameters: parameters, __result: null };
+  vm.runInNewContext(js, context);
+  return JSON.parse(JSON.stringify(context.__result));
+}
+
 test("canonical Living Systems routes resolve consistently in both analytics classifiers", () => {
   for (const pathname of ["/livingsystems", "/livingsystems/", "/livingsystems/orca"]) {
     assert.equal(evaluateProductClassifier(analytics, "productArea", pathname), "living_systems");
@@ -90,6 +106,36 @@ test("canonical Living Systems routes resolve consistently in both analytics cla
   assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", "/livingsystems-extra"), "4planet");
   assert.equal(evaluateProductClassifier(analytics, "productArea", "/living-systems"), "living_systems");
   assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", "/living-systems"), "living_systems");
+});
+
+test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {
+  assert.deepEqual(evaluatePrivacyParameters({
+    page_path: "/livingsystems/orca",
+    site_host: "www.4planet.org",
+    content_group: "living_systems",
+    item_count: 2,
+  }), {
+    page_path: "/livingsystems/orca",
+    site_host: "4planet.org",
+    content_group: "living_systems",
+    item_count: 2,
+  });
+
+  for (const page_path of [
+    "/reset/alice%40example.com",
+    "/%61ccess_token%3Dsecret",
+    "/%2561ccess_token%253Dsecret",
+    "/livingsystems/orca?code=secret",
+  ]) {
+    assert.equal(evaluatePrivacyParameters({ page_path }).page_path, undefined, page_path);
+  }
+  assert.deepEqual(evaluatePrivacyParameters({
+    free_text: "private answer",
+    email: "alice@example.com",
+    page_title: "Alice private dashboard",
+  }), {});
+  assert.match(analytics, /\^\[a-z\]\[a-z0-9_\]\{0,39\}\$/);
+  assert.match(analytics, /isInternalAnalyticsBrowser\(\)/);
 });
 
 test("user proof funnel is broader than page views", () => {
@@ -117,14 +163,16 @@ test("GA4 remains gated by explicit consent and a real measurement id", () => {
 test("analytics page telemetry strips query strings and fragments", () => {
   assert.doesNotMatch(analytics, /page_location:\s*window\.location\.href/);
   assert.doesNotMatch(analytics, /page_path:\s*`\$\{location\.pathname\}\$\{location\.search\}`/);
-  assert.match(analytics, /safePageLocation = `\$\{window\.location\.origin\}\$\{location\.pathname\}`/);
-  assert.match(analytics, /page_location:\s*safePageLocation/);
+  assert.match(analytics, /const safeConfig = privacySafeEventParameters\(\{ page_path: window\.location\.pathname \}\)/);
+  assert.match(analytics, /page_location:\s*`\$\{window\.location\.origin\}\$\{safePath\}`/);
+  assert.match(analytics, /const sharedPageProperties = privacySafeEventParameters\(\{/);
   assert.match(analytics, /page_path:\s*location\.pathname/);
+  assert.match(analytics, /window\.gtag\?\.\("event", "page_view", sharedPageProperties\)/);
 });
 
 test("PostHog reuses the same consented event spine and fails closed without configuration", () => {
   assert.match(analytics, /capturePostHog\(name, shared\)/);
-  assert.match(analytics, /capturePostHog\(\"\$pageview\", pageProperties\)/);
+  assert.match(analytics, /capturePostHog\(\"\$pageview\", sharedPageProperties\)/);
   assert.match(posthog, /VITE_POSTHOG_PROJECT_KEY/);
   assert.match(posthog, /VITE_POSTHOG_HOST/);
   assert.match(posthog, /if \(!apiKey/);
