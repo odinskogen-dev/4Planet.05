@@ -48,7 +48,7 @@ const boundedInt = (value: string | null, fallback: number, max: number) => {
   return Number.isInteger(n) && n >= 0 ? Math.min(n, max) : fallback;
 };
 
-const STRICT_BBOX_DECIMAL = /^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)$/;
+const STRICT_BBOX_DECIMAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 
 function bboxToWkt(value: string | null) {
   const rawParts = String(value ?? "").split(",");
