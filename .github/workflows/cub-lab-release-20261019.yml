@@ -1,0 +1,131 @@
+name: CUB LAB — Exact ROMA Release 2026-10-19
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths:
+      - 'site/roma/index.html'
+      - 'site/index.html'
+      - '.github/workflows/cub-lab-release-20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cub-lab-exact-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check original game bytes before deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          test "$(wc -c < site/roma/index.html)" -eq 2171887
+          test -s site/roma/versions/challenger-01-20261018.html
+          test -s site/index.html
+          echo 'ROMA_ORIGINAL_NO_REBUILD_VALIDATED'
+      - name: Resolve authorised Cloudflare account
+        shell: bash
+        env:
+          TOKEN1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN2: ${{ secrets.CF_TOKEN }}
+          TOKEN3: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          token=""
+          for t in "$TOKEN1" "$TOKEN2" "$TOKEN3"; do if [ -n "$t" ]; then token="$t"; break; fi; done
+          test -n "$token" || { echo 'BLOCKED_CLOUDFLARE_TOKEN_MISSING'; exit 2; }
+          token=$(printf '%s' "$token" | tr -d '\r\n' | sed 's/^Bearer //')
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          zone=$(curl -fsS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/zones?name=p4nther.com")
+          account=$(jq -r '.result[0].account.id // empty' <<< "$zone")
+          zoneid=$(jq -r '.result[0].id // empty' <<< "$zone")
+          test -n "$account" && test -n "$zoneid" || { echo 'P4NTHER_CLOUDFLARE_ZONE_NOT_AUTHORISED'; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "P4NTHER_ZONE_ID=$zoneid" >> "$GITHUB_ENV"
+      - name: Deploy exact static files to existing isolated CUB worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --name cub-lab-p4nther --assets ./site --compatibility-date 2026-10-18
+      - name: Verify direct ROMA and studio hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://cub-lab-p4nther.odin-skogen.workers.dev" "https://lab.p4nther.com"; do
+            good=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 30 "$host/roma/index.html" -o /tmp/live-roma.html && echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/live-roma.html' | sha256sum -c - >/dev/null; then good=1; break; fi
+              sleep 4
+            done
+            test "$good" -eq 1 || { echo "ROMA_LIVE_BYTE_VERIFICATION_FAILED=$host"; exit 4; }
+            curl -fsSL "$host/" -o /tmp/live-hub.html
+            grep -Fq 'ROMA:' /tmp/live-hub.html
+            grep -Fq 'WILD:' /tmp/live-hub.html
+            echo "ROMA_LIVE_EXACT_PASS=$host/roma/"
+            echo "CUB_HUB_PASS=$host/"
+          done
+      - name: Safely add labs.p4nther.com alongside lab.p4nther.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          base="https://api.cloudflare.com/client/v4"
+          hostname="labs.p4nther.com"
+          domains=$(curl -fsS -H "$auth" "$base/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/domains")
+          owner=$(jq -r --arg h "$hostname" '[.result[] | select(.hostname==$h) | .service][0] // empty' <<< "$domains")
+          if [ "$owner" = "cub-lab-p4nther" ]; then echo 'LABS_DOMAIN_ALREADY_ATTACHED'; exit 0; fi
+          if [ -n "$owner" ]; then echo "LABS_DOMAIN_OCCUPIED_BY_WORKER=$owner"; exit 0; fi
+          records=$(curl -fsS -H "$auth" "$base/zones/$P4NTHER_ZONE_ID/dns_records?name=$hostname")
+          count=$(jq '.result|length' <<< "$records")
+          if [ "$count" -gt 0 ]; then echo 'LABS_DOMAIN_EXISTING_DNS_PRESERVED'; exit 0; fi
+          body=$(jq -nc --arg zone "$P4NTHER_ZONE_ID" --arg host "$hostname" '{hostname:$host,service:"cub-lab-p4nther",environment:"production",zone_id:$zone}')
+          reply=$(curl -fsS -X PUT -H "$auth" -H 'Content-Type: application/json' --data "$body" "$base/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/domains")
+          if jq -e '.success==true' <<< "$reply" >/dev/null; then echo 'LABS_DOMAIN_ATTACHED'; else echo 'LABS_DOMAIN_NOT_ATTACHED'; jq '{errors,messages}' <<< "$reply"; fi
+      - name: Verify labs alias if available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if curl -fsSL --max-time 25 "https://labs.p4nther.com/roma/index.html" -o /tmp/labs-roma.html; then
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/labs-roma.html' | sha256sum -c -
+            curl -fsSL "https://labs.p4nther.com/" | grep -Fq 'WILD:'
+            echo 'LABS_P4NTHER_EXACT_PASS=https://labs.p4nther.com/roma/'
+          else
+            echo 'LABS_P4NTHER_DNS_PENDING; lab.p4nther.com remains verified'
+          fi
+      - name: Mobile browser smoke test of exact new release
+        shell: bash
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
+            const page=await context.newPage();
+            const errors=[];page.on('pageerror',e=>errors.push(e.message));
+            const response=await page.goto('https://lab.p4nther.com/roma/',{waitUntil:'domcontentloaded',timeout:65000});
+            await page.waitForTimeout(8500);
+            const canvas=await page.locator('canvas').count();
+            const body=await page.locator('body').innerText().catch(()=>'');
+            console.log('ROMA_MOBILE_BROWSER_HTTP',response.status(),'TITLE',await page.title(),'CANVAS',canvas,'BODY_LENGTH',body.length,'PAGE_ERRORS',JSON.stringify(errors));
+            await page.screenshot({path:'roma-mobile-390.png',fullPage:true});
+            if(response.status()!==200||canvas<1||errors.length>0)throw Error('Mobile browser smoke QA failed');
+            console.log('ROMA_MOBILE_BROWSER_SMOKE_PASS');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-lab-roma-mobile-screenshot-20261019
+          path: roma-mobile-390.png
+          if-no-files-found: ignore
+          retention-days: 30
