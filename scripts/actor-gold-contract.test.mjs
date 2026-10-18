@@ -92,3 +92,16 @@ test("Actor scale strategy is torture-test-first not x100 generation", () => {
   assert.match(page, /ORCA is Gold 01/);
   assert.match(page, /One exceptional system\. Ten unlike actors\. Then scale\./i);
 });
+
+
+test("Actor Gold links only the reviewed canonical Actor-owned IMPACT action", () => {
+  assert.match(page, /BAY_OF_BISCAY_SURVEY_ACTION/);
+  assert.match(page, /actorForActionContract\(canonicalAction\)\?\.id === actor\.id/);
+  assert.match(page, /actor\.actionContractIds\.includes\(canonicalAction\.id\)/);
+  assert.match(page, /to="\/impact\/actions\/bay-of-biscay-survey"/);
+  assert.match(page, /OPEN ACTION STATUS \/ PROOF/);
+  assert.match(page, /not an open funding route, delivery claim, outcome claim or impact claim/i);
+  assert.match(page, /ACTION LINK UNRESOLVED/);
+  assert.match(page, /not owned by this canonical Actor or has no reviewed route/i);
+  assert.doesNotMatch(page, /to=\{.*actionContractIds/i);
+});
