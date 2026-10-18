@@ -93,8 +93,8 @@ const independentVerification = {
   impactId: "impact:test:1",
   verifierClass: "THIRD_PARTY",
   relationship: "IMPACT_LINKED",
-  rights: "INTERNAL_TEST",
-  limitations: [],
+  rights: "CITATION_ONLY",
+  limitations: ["Source-limited evidence; no unrestricted reuse."],
 };
 
 const authoritativeIndependentVerification = {
@@ -317,6 +317,14 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
       ...base,
       authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, sourceRef: "source:independent:other" }],
     }],
+    ["altered authoritative rights", {
+      ...base,
+      authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, rights: "UNRESTRICTED" }],
+    }],
+    ["dropped authoritative limitations", {
+      ...base,
+      authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, limitations: [] }],
+    }],
     ["unreviewed authoritative evidence", {
       ...base,
       authoritativeEvidenceItems: [{ ...authoritativeIndependentVerification, reviewedAt: "not-a-date" }],
@@ -325,6 +333,51 @@ test("D4 claim eligibility requires Passport VERIFIED + third-party verification
   for (const [label, recordsWithProvenanceGap] of provenanceFailures) {
     assert.equal(proof.proofPassportCanClaimImpact(passport, recordsWithProvenanceGap), false, label);
   }
+
+  const alteredRightsPassport = {
+    ...passport,
+    evidenceItems: [
+      providerEvidence,
+      { ...independentVerification, rights: "UNRESTRICTED" },
+    ],
+  };
+  assert.equal(
+    proof.proofPassportCanClaimImpact(alteredRightsPassport, canonicalRecords),
+    false,
+    "a projection cannot replace citation-only rights with unrestricted rights",
+  );
+
+  const droppedLimitationsPassport = {
+    ...passport,
+    evidenceItems: [
+      providerEvidence,
+      { ...independentVerification, limitations: [] },
+    ],
+  };
+  assert.equal(
+    proof.proofPassportCanClaimImpact(droppedLimitationsPassport, canonicalRecords),
+    false,
+    "a projection cannot drop source limitations",
+  );
+
+  const blockedVerification = { ...independentVerification, rights: "BLOCKED" };
+  const blockedPassport = {
+    ...passport,
+    evidenceItems: [providerEvidence, blockedVerification],
+  };
+  const blockedRecords = {
+    ...base,
+    authoritativeEvidenceItems: [{
+      ...blockedVerification,
+      authority: "INDEPENDENT_EVIDENCE_REGISTER",
+      reviewedAt: "2026-09-08T00:00:00Z",
+    }],
+  };
+  assert.equal(
+    proof.proofPassportCanClaimImpact(blockedPassport, blockedRecords),
+    false,
+    "blocked rights fail closed even when projection and register agree",
+  );
 });
 
 test("VVL maturity is sequential and cannot skip missing earlier value gates", () => {
