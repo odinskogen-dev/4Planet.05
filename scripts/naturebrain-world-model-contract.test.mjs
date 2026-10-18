@@ -14,7 +14,7 @@ const compiled = ts.transpileModule(adapterSource, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText;
 const runtime = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
-const { natureBrainProductLinks, natureBrainLsiEdges, natureBrainEvidenceFrame, natureBrainRelationshipIsProductReady, NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY } = runtime;
+const { natureBrainProductIdentifiers, natureBrainProductLinks, natureBrainLsiEdges, natureBrainEvidenceFrame, natureBrainRelationshipIsProductReady, NATUREBRAIN_PRODUCT_TRUTH_BOUNDARY } = runtime;
 
 const orca = {
   canonical_id: "taxon:gbif:2440483",
@@ -22,7 +22,25 @@ const orca = {
   name: "Orca",
   observation_count: 2056,
   signal_count: 0,
-  external_identifiers: [],
+  taxon: { scientific_name: "Orcinus orca", rank: "species", taxonomic_status: "accepted" },
+  external_identifiers: [
+    {
+      namespace: "GBIF_TAXON",
+      external_id: "2440483",
+      canonical_uri: "https://www.gbif.org/species/2440483",
+    },
+    {
+      namespace: "WORMS_APHIA",
+      external_id: "137102",
+      canonical_uri: "https://www.marinespecies.org/aphia.php?p=taxdetails&id=137102",
+    },
+    {
+      namespace: "ITIS_TSN",
+      external_id: "180469",
+      canonical_uri: "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=180469",
+      provenance: { source_authority: "ITIS" },
+    },
+  ],
   outbound_relationships: [
     {
       relationship_id: "relationship:naturebrain:orca:consumes:nssh",
@@ -91,6 +109,59 @@ const orca = {
   ],
   measurements: [],
 };
+
+test("namespace-qualified GBIF and WoRMS references survive without asserting equivalence", () => {
+  const identifiers = natureBrainProductIdentifiers(orca);
+  assert.deepEqual(
+    identifiers.map((identifier) => identifier.namespaceQualifiedId),
+    ["GBIF_TAXON:2440483", "WORMS_APHIA:137102"],
+  );
+  assert.ok(identifiers.every((identifier) => identifier.state === "SOURCE_QUALIFIED_REFERENCE"));
+  assert.ok(identifiers.every((identifier) => identifier.equivalence === "NOT_ASSERTED"));
+  assert.equal(identifiers.some((identifier) => identifier.namespace === "ITIS_TSN"), false);
+});
+
+test("ITIS TSN admission requires reviewed version, matching name/rank, valid standing, citation and rights", () => {
+  const reviewed = structuredClone(orca);
+  reviewed.external_identifiers[2].provenance = {
+    source_authority: "ITIS",
+    authority_version: "2026-09-22",
+    scientific_name: "Orcinus orca",
+    rank: "species",
+    taxonomic_standing: "valid",
+    reviewed_at: "2026-10-17T16:00:00Z",
+    citation: "https://doi.org/10.5066/F7KH0KBK",
+    rights_boundary: "ITIS-produced taxonomy facts are CC0; third-party media excluded",
+  };
+
+  const identifiers = natureBrainProductIdentifiers(reviewed);
+  const itis = identifiers.find((identifier) => identifier.namespace === "ITIS_TSN");
+  assert.equal(itis?.namespaceQualifiedId, "ITIS_TSN:180469");
+  assert.equal(itis?.authorityVersion, "2026-09-22");
+  assert.equal(itis?.taxonomicStanding, "VALID");
+  assert.equal(itis?.equivalence, "NOT_ASSERTED");
+
+  for (const field of ["authority_version", "scientific_name", "rank", "taxonomic_standing", "reviewed_at", "citation", "rights_boundary"]) {
+    const incomplete = structuredClone(reviewed);
+    delete incomplete.external_identifiers[2].provenance[field];
+    assert.equal(
+      natureBrainProductIdentifiers(incomplete).some((identifier) => identifier.namespace === "ITIS_TSN"),
+      false,
+      `ITIS must fail closed without ${field}`,
+    );
+  }
+
+  const conflict = structuredClone(reviewed);
+  conflict.external_identifiers[2].provenance.rank = "subspecies";
+  assert.equal(natureBrainProductIdentifiers(conflict).some((identifier) => identifier.namespace === "ITIS_TSN"), false);
+});
+
+test("Node Intelligence consumes the source-reference projection without creating relationships", () => {
+  assert.match(nodeSource, /natureBrainProductIdentifiers/);
+  assert.match(nodeSource, /externalIdentifiers: ReturnType<typeof natureBrainProductIdentifiers>/);
+  assert.match(nodeSource, /externalIdentifiers,/);
+  assert.doesNotMatch(nodeSource, /externalIdentifiers.*natureLinks/s);
+});
 
 test("NATUREBRAIN adapter projects only product-ready relationships into product and LSI views", () => {
   const links = natureBrainProductLinks(orca);
