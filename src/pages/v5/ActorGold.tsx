@@ -6,9 +6,11 @@ import {
   ACTOR_GOLD_VISUAL_LADDER,
   actorBySlug,
   actorClaimCanPublish,
+  actorForActionContract,
   type ActorGoldProfile,
 } from "@/content/actorGold";
 import { GetInvolvedSection } from "@/pages/v5/Participation";
+import { BAY_OF_BISCAY_SURVEY_ACTION } from "@/impact/actionContract";
 import "@/styles/actor-gold.css";
 
 function RelationshipMark({ actor }: { actor: ActorGoldProfile }) {
@@ -126,6 +128,10 @@ export function ActorProfilePage() {
   const publishableClaims = actor.claimsAllowed.filter((claim) =>
     actorClaimCanPublish(claim, actor.sourceRecords, actor.evidenceRecords),
   );
+  const canonicalAction = BAY_OF_BISCAY_SURVEY_ACTION;
+  const actionBelongsToActor =
+    actor.actionContractIds.includes(canonicalAction.id) &&
+    actorForActionContract(canonicalAction)?.id === actor.id;
 
   return (
     <main className="actor-gold">
@@ -249,8 +255,22 @@ export function ActorProfilePage() {
           ))}
           <article>
             <span>UNIVERSAL IMPACT LINK</span>
-            <h3>{actor.actionContractIds.length ? "Canonical action connected" : "NO ACTION CONNECTED"}</h3>
-            <p>{actor.actionContractIds.length ? actor.actionContractIds.join(", ") : "No Action Contract ID is attached."}</p>
+            {actionBelongsToActor ? (
+              <>
+                <h3>Canonical action connected</h3>
+                <p>{canonicalAction.id}</p>
+                <p>Context and proof status only. This is not an open funding route, delivery claim, outcome claim or impact claim.</p>
+                <Link to="/impact/actions/bay-of-biscay-survey">OPEN ACTION STATUS / PROOF →</Link>
+              </>
+            ) : (
+              <>
+                <h3>{actor.actionContractIds.length ? "ACTION LINK UNRESOLVED" : "NO ACTION CONNECTED"}</h3>
+                <p>{actor.actionContractIds.length ? actor.actionContractIds.join(", ") : "No Action Contract ID is attached."}</p>
+                <p>{actor.actionContractIds.length
+                  ? "The listed Action Contract ID is not owned by this canonical Actor or has no reviewed route. Funding, delivery, outcome and impact claims remain closed."
+                  : "No reviewed Action Contract route is available for this Actor."}</p>
+              </>
+            )}
           </article>
           <article>
             <span>DELIVERY EVIDENCE</span>
