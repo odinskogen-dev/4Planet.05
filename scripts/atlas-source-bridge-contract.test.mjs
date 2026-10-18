@@ -908,3 +908,24 @@ test("ATLAS taxon context links photo source and explains a rights-blocked fallb
   assert.match(contextPanel, /No rights-cleared reference photo is available/);
   assert.match(contextPanel, /Observation records and taxon identity are unchanged/);
 });
+
+
+test("NASA GIBS dated layers do not overstate request dates as live observations", () => {
+  const firesBlock = earthLayers.match(/\{ id: "fires"[\s\S]*?attr: "NASA GIBS \/ MODIS" \}/)?.[0] || "";
+  const precipBlock = earthLayers.match(/\{ id: "precip"[\s\S]*?attr: "NASA GIBS \/ GPM IMERG" \}/)?.[0] || "";
+
+  assert.match(firesBlock, /THERMAL ANOMALIES/);
+  assert.match(firesBlock, /REQUESTED DATE/);
+  assert.match(firesBlock, /requested UTC date/);
+  assert.match(firesBlock, /observation time are not independently verified/);
+  assert.match(firesBlock, /not proof of wildfire/);
+  assert.match(firesBlock, /daysAgo\(1\)/);
+  assert.doesNotMatch(firesBlock, /ACTIVE FIRES|last 24h/i);
+
+  assert.match(precipBlock, /PRECIPITATION/);
+  assert.match(precipBlock, /REQUESTED DATE/);
+  assert.match(precipBlock, /previous UTC day/);
+  assert.match(precipBlock, /not a live ground measurement/);
+  assert.match(precipBlock, /daysAgo\(1\)/);
+  assert.doesNotMatch(precipBlock, /falling right now|water cycle, live/i);
+});
