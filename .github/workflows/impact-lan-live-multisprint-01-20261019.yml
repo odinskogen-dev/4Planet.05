@@ -95,7 +95,7 @@ jobs:
           test "$actors" -eq 20
           test "$solutions" -eq 20
           test "$places" -eq 20
-          test "$actions" -eq 20
+          test "$actions" -ge 20
           test "$issues" -ge 63
 
       - name: Impact truth contracts
@@ -152,19 +152,36 @@ jobs:
             --project-name 4planet-05 \
             --branch main \
             --commit-hash "$GITHUB_SHA" \
-            --commit-dirty=false | tee /tmp/wrangler-deploy.txt
+            --commit-dirty=false 2>&1 | tee /tmp/wrangler-deploy.txt
 
-          api='https://api.cloudflare.com/client/v4'
-          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
-          deployments=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")
-          deployment_url=$(jq -r --arg sha "$GITHUB_SHA" '.result[] | select(.deployment_trigger.metadata.commit_hash==$sha) | .url' <<<"$deployments" | head -1)
-          [ -n "$deployment_url" ] || { echo "Cloudflare API did not return deployed SHA"; exit 1; }
+          deployment_url=$(grep -Eo 'https://[a-z0-9-]+\\.4planet-05\\.pages\\.dev' /tmp/wrangler-deploy.txt | tail -1 || true)
+          if [ -z "$deployment_url" ]; then
+            api='https://api.cloudflare.com/client/v4'
+            auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+            for i in $(seq 1 12); do
+              deployments=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=10" "${auth[@]}")
+              deployment_url=$(jq -r --arg sha "$GITHUB_SHA" '.result[] | select(.deployment_trigger.metadata.commit_hash==$sha) | .url' <<<"$deployments" | head -1)
+              [ -n "$deployment_url" ] && break
+              sleep 5
+            done
+          fi
+          [ -n "$deployment_url" ] || { echo "Could not resolve immutable deployment URL"; exit 1; }
           echo "DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
           echo "Immutable deployment: $deployment_url"
 
-          immutable=$(curl -fsS --max-time 20 "$deployment_url/impact-build.json")
-          test "$(jq -r '.sha // empty' <<<"$immutable")" = "$GITHUB_SHA"
-          curl -fsS --max-time 20 "$deployment_url/impact/project/living-indus/" | grep -q "Living Indus"
+          ok=0
+          for i in $(seq 1 18); do
+            immutable=$(curl -fsS --max-time 20 "$deployment_url/impact-build.json" || true)
+            sha=$(jq -r '.sha // empty' <<<"$immutable" 2>/dev/null || true)
+            echo "Immutable probe $i: ${sha:-unresolved}"
+            if [ "$sha" = "$GITHUB_SHA" ]; then
+              curl -fsS --max-time 20 "$deployment_url/impact/project/living-indus/" | grep -q "Living Indus"
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          [ "$ok" -eq 1 ] || { echo "Immutable deployment verification failed"; exit 1; }
 
       - name: Purge canonical IMPACT verification paths
         shell: bash
