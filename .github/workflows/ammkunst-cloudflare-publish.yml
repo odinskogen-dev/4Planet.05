@@ -1,0 +1,115 @@
+name: AMM Kunst — Publish on Cloudflare
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ammkunst-cloudflare-publish.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ammkunst-only-cloudflare
+  cancel-in-progress: false
+jobs:
+  publish-amm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Fetch exact AMM gallery source from its own repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git /tmp/amm-code
+          cd /tmp/amm-code
+          test "$(git rev-parse HEAD)" = "b6863ac29b1023aa968c49da2ce6cf6cef61623d"
+          test -s ammkunst/site/art/n0388.webp
+          test -s ammkunst/site/art/n0387.webp
+          test -s ammkunst/site/art/n0397.webp
+          test -s ammkunst/site/index.html
+          test -d ammkunst/functions
+          echo "AMM_SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Isolated AMM files and real web art verified."
+      - name: Resolve existing Cloudflare access (never print credentials)
+        shell: bash
+        env:
+          TOKEN_A: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_B: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_C: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_D: ${{ secrets.CF_TOKEN }}
+          ACCOUNT_A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ACCOUNT_B: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          token=""
+          for candidate in "$TOKEN_A" "$TOKEN_B" "$TOKEN_C" "$TOKEN_D"; do
+            if [[ -n "$candidate" ]]; then
+              token="$(printf '%s' "$candidate" | tr -d '\r\n')"
+              break
+            fi
+          done
+          test -n "$token" || { echo "::error::No general Cloudflare token in this established repository"; exit 2; }
+          token="${token#Bearer }"
+          token="${token#bearer }"
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          zone="$(curl -fsS --max-time 20 -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=ammkunst.no' || true)"
+          zid="$(jq -r '.result[0].id // empty' <<<"$zone" 2>/dev/null || true)"
+          account="$(jq -r '.result[0].account.id // empty' <<<"$zone" 2>/dev/null || true)"
+          if [[ -z "$account" ]]; then
+            account="${ACCOUNT_A:-$ACCOUNT_B}"
+          fi
+          if [[ -z "$account" ]]; then
+            existing="$(curl -fsS --max-time 20 -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org' || true)"
+            account="$(jq -r '.result[0].account.id // empty' <<<"$existing" 2>/dev/null || true)"
+          fi
+          test -n "$account" || { echo "::error::Cannot derive Cloudflare account ID with existing token"; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "AMM_ZONE_ID=$zid" >> "$GITHUB_ENV"
+          echo "Cloudflare account resolved; AMM zone accessible: $([[ -n "$zid" ]] && echo yes || echo no)"
+      - name: Publish isolated AMM gallery to Cloudflare Pages
+        shell: bash
+        working-directory: /tmp/amm-code/ammkunst
+        run: |
+          set -euo pipefail
+          export CI=true
+          npx --yes wrangler@4.48.0 pages project create ammkunst --production-branch main > /tmp/amm-create.log 2>&1 || {
+            echo "Pages project creation returned non-success; checking whether project already exists."
+            curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/ammkunst" | jq -e '.success == true' >/dev/null
+          }
+          npx --yes wrangler@4.48.0 pages deploy site --project-name ammkunst --branch main --commit-hash "$AMM_SOURCE_SHA"
+          echo "PAGES_DEPLOY_COMPLETED=true" >> "$GITHUB_ENV"
+      - name: Attach ammkunst.no only if zone is accessible and current DNS is safe
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${AMM_ZONE_ID:-}" ]]; then
+            echo "::warning::AMM Cloudflare Pages preview deployed, but ammkunst.no is not a zone accessible by this token."
+            exit 0
+          fi
+          existing="$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/zones/$AMM_ZONE_ID/dns_records?name=ammkunst.no")"
+          conflict="$(jq -r '[.result[]? | select(.type=="A" or .type=="AAAA" or .type=="CNAME") | select((.content // "") | contains("ammkunst.pages.dev") | not)] | length' <<<"$existing")"
+          if [[ "$conflict" != "0" ]]; then
+            echo "::warning::Existing apex DNS differs from AMM Pages; will not overwrite it."
+            exit 0
+          fi
+          payload='{"name":"ammkunst.no"}'
+          result="$(curl -sS --max-time 30 -X POST "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/ammkunst/domains" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" --data "$payload")"
+          jq -r '"Domain attach accepted: " + (.success | tostring), (.errors[]?.message // empty)' <<<"$result"
+      - name: Verify published Pages artwork and custom domain without false positives
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent --show-error --max-time 20 "https://ammkunst.pages.dev/" -o /tmp/amm-home.html && curl --fail --silent --show-error --max-time 20 "https://ammkunst.pages.dev/art/n0388.webp" -o /tmp/amm-peacock.webp; then
+              break
+            fi
+            sleep 5
+          done
+          grep -q 'AMM' /tmp/amm-home.html
+          file /tmp/amm-peacock.webp | grep -qi 'webp'
+          test "$(wc -c < /tmp/amm-peacock.webp)" -gt 50000
+          echo "PAGES_PREVIEW_VERIFIED=https://ammkunst.pages.dev/"
+          if curl --fail --silent --show-error --max-time 20 "https://ammkunst.no/" -o /tmp/amm-domain.html && grep -q 'AMM' /tmp/amm-domain.html && curl --fail --silent --show-error --max-time 20 "https://ammkunst.no/art/n0388.webp" -o /tmp/amm-live.webp && file /tmp/amm-live.webp | grep -qi webp; then
+            echo "AMM_LIVE_VERIFIED=https://ammkunst.no/"
+          else
+            echo "::warning::Pages preview is live, but custom-domain verification is pending or blocked."
+          fi
