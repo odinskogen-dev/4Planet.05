@@ -420,8 +420,12 @@ jobs:
         run: |
           set -euo pipefail
           key='4planet-indexnow-2026-9f7b3c1d5e8a'
-          sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
-          printf '%s' "$sitemap" | grep -o 'https://4planetmagazine.com[^<]*' > "$RUNNER_TEMP/indexnow-urls.txt"
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/indexnow-urls.txt"
+          import { readStories } from './scripts/magazine-content.mjs';
+          console.log('https://4planetmagazine.com/magazine/');
+          for (const story of readStories()) console.log('https://4planetmagazine.com/magazine/' + story.slug + '/');
+          NODE
+          [ "$(wc -l < "$RUNNER_TEMP/indexnow-urls.txt")" -eq 14 ] || { echo 'Expected Magazine home + 13 changed stories'; exit 25; }
           node --input-type=module <<'NODE' > "$RUNNER_TEMP/indexnow.json"
           import fs from 'node:fs';
           const urls = fs.readFileSync(process.env.RUNNER_TEMP + '/indexnow-urls.txt','utf8').trim().split('\n').filter(Boolean);
@@ -430,4 +434,5 @@ jobs:
           NODE
           code=$(curl -sS -o "$RUNNER_TEMP/indexnow-response.txt" -w '%{http_code}' -H 'Content-Type: application/json; charset=utf-8' --data-binary @"$RUNNER_TEMP/indexnow.json" 'https://api.indexnow.org/indexnow' || true)
           echo "INDEXNOW HTTP $code"
+          echo "IndexNow response: HTTP $code for Magazine home + 13 story URLs" >> "$GITHUB_STEP_SUMMARY"
           case "$code" in 200|202) exit 0 ;; *) cat "$RUNNER_TEMP/indexnow-response.txt"; exit 1 ;; esac
