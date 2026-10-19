@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           git merge-base --is-ancestor "$PRIOR_LIVE_SHA" HEAD
           mapfile -t changed < <(git diff --name-only "$PRIOR_LIVE_SHA"...HEAD)
-          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|src/components/Seo\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
+          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|src/components/Seo\\.tsx|src/content/stories\\.ts|src/content/magazineFeaturesReported\\.ts|src/pages/v5/Magazine\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
           for file in "${changed[@]}"; do
             if ! grep -Eq "$allowed" <<<"$file"; then
               echo "UNEXPECTED RELEASE FILE: $file"
@@ -84,9 +84,13 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import path from 'node:path';
-          import { readStories, readImages } from './scripts/magazine-content.mjs';
+          import { readStories, readImages, readFeatures } from './scripts/magazine-content.mjs';
           const stories = readStories();
           const images = readImages();
+          const features = readFeatures();
+          const editorialOrder = ['amazonia-more-than-a-forest','ai-coral-photomosaics','ocean-watch-1-8-million-kilometres','air-filter-biodiversity-time-machine','why-4planet-exists','wh4les-migratory-intelligence','mine-that-became-wetland','sea-pen-instead-of-tank','five-am-bay-of-biscay','roads-that-warn-cars-about-moose','credible-tree-pathway','the-four-domains','making-impact-easy'];
+          if (stories.map(s => s.slug).join('|') !== editorialOrder.join('|')) throw new Error('Magazine editorial order drift');
+          if (!fs.readFileSync('src/pages/v5/Magazine.tsx','utf8').includes('const HOME_STORY_LIMIT = 13;')) throw new Error('13-story front-page limit missing');
           const sitemap = fs.readFileSync('public/magazine-sitemap.xml', 'utf8');
           const required = new Set(['ocean-watch-1-8-million-kilometres','five-am-bay-of-biscay','air-filter-biodiversity-time-machine','mine-that-became-wetland','ai-coral-photomosaics','roads-that-warn-cars-about-moose','sea-pen-instead-of-tank','why-4planet-exists','the-four-domains','wh4les-migratory-intelligence','credible-tree-pathway','amazonia-more-than-a-forest','making-impact-easy']);
           const seen = new Set();
@@ -94,6 +98,12 @@ jobs:
             if (seen.has(story.slug)) throw new Error('Duplicate Magazine slug: ' + story.slug);
             seen.add(story.slug);
             if (!images[story.image]) throw new Error('Missing Magazine image key: ' + story.slug + ': ' + story.image);
+            const imageKey = features[story.slug]?.hero || story.image;
+            const image = images[imageKey];
+            if (!image) throw new Error('Invalid editorial hero key: ' + story.slug + ': ' + imageKey);
+            if (!image.src.startsWith('/assets/')) throw new Error('Unapproved remote hero: ' + story.slug);
+            if (!fs.existsSync(path.join('public',image.src.slice(1)))) throw new Error('Hero asset missing from build source: ' + story.slug + ': ' + image.src);
+            if (story.editorialType === 'SOURCE_REPORTED_EDITORIAL' && (!Array.isArray(story.sourceLinks) || story.sourceLinks.length === 0)) throw new Error('Reported story has no primary sources: ' + story.slug);
             const url = 'https://4planetmagazine.com/magazine/' + story.slug + '/';
             const file = path.join('dist','magazine', story.slug, 'index.html');
             if (!fs.existsSync(file)) throw new Error('Missing prerendered article: ' + file);
