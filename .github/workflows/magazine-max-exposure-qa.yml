@@ -18,6 +18,7 @@ on:
       - 'playwright.magazine.config.ts'
       - 'docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010.md'
       - '.github/workflows/magazine-max-exposure-qa.yml'
+      - '.github/workflows/magazine-films-live-founder-override.yml'
 
 permissions:
   contents: read
