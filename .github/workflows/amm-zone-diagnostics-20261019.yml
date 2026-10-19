@@ -1,0 +1,45 @@
+name: AMM zone and account diagnostics
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-zone-diagnostics-20261019.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only DNS and two existing Cloudflare token contexts
+        env:
+          STANDARD: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== PUBLIC DNS ==='
+          for kind in NS SOA A AAAA; do
+            echo "DNS_$kind=$(dig +short $kind ammkunst.no | tr '\n' ',' | cut -c 1-240)"
+          done
+          for kind in NS A; do
+            echo "DNS_WWW_$kind=$(dig +short $kind www.ammkunst.no | tr '\n' ',' | cut -c 1-180)"
+          done
+          echo '=== CLOUDFLARE ACCOUNTS ==='
+          for variant in STANDARD FACTORY; do
+            value="${!variant}"
+            if [[ -z "$value" ]]; then
+              echo "$variant=not-configured"
+              continue
+            fi
+            value="${value#Bearer }"
+            echo "::add-mask::$value"
+            result="$(curl -sS -H "Authorization: Bearer $value" "https://api.cloudflare.com/client/v4/zones?name=ammkunst.no&per_page=50" || true)"
+            echo "$variant AMM_lookup=$(jq -c '{ok:.success,count:(.result | length),errors:[.errors[]? | .code]}' <<<"$result" 2>/dev/null || echo unavailable)"
+            zones="$(curl -sS -H "Authorization: Bearer $value" "https://api.cloudflare.com/client/v4/zones?per_page=100" || true)"
+            echo "$variant zones_count=$(jq -r '.result | length' <<<"$zones" 2>/dev/null || echo unknown)"
+            echo "$variant zones_names=$(jq -r '[.result[]?.name] | join(",")' <<<"$zones" 2>/dev/null | cut -c 1-600 || true)"
+            accounts="$(curl -sS -H "Authorization: Bearer $value" "https://api.cloudflare.com/client/v4/accounts?per_page=100" || true)"
+            echo "$variant accounts_result=$(jq -c '{ok:.success,count:(.result|length),errors:[.errors[]? | .code]}' <<<"$accounts" 2>/dev/null || echo unavailable)"
+          done
+          echo 'No Cloudflare mutation performed.'
