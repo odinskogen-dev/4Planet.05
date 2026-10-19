@@ -1510,3 +1510,19 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **HUMAN SUCCESS:** every ready ranking visibly names its year, gas, page limit/offset, mapped/upstream/excluded counts and non-dataset-total boundary; missing or inconsistent coverage metadata fails closed as unavailable.
 **BASE / ROLLBACK:** `king/test@6729cf24a11719c59dea92bb5eaf7cf40ae688ff`; revert this bounded proxy/UI/contract/brief correction if independent Gold finds source-grain, layout or availability regression.
 **MAKER ≠ JUDGE:** Factory corrects the integration debt; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
+
+
+---
+
+# S4PIENS / COMPANY-GOLD-01 — COUNTRY-RANKING HEADER SCOPE — 19 OCT 2026
+
+**STATUS:** RETURNED GOLD QA_CORRECT CLOSED BY MAKER ON SOLE HEIR / INDEPENDENT REGOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person choosing a country needs the section introduction itself to state what the ranking covers before interpreting the list.
+**ONE THING TO UNDERSTAND:** this is a top-eight ranking from one bounded Climate TRACE response page, not the largest sources across a country or the full dataset.
+**PRIMARY ACTION:** choose a country and inspect the page-scoped ranking with its exact coverage disclosure.
+**WHAT CAN BE REMOVED:** “biggest physical sources” and “largest ... for one country” language that outruns the bounded query.
+**WHAT MUST BE REUSED:** the existing Climate TRACE proxy coverage envelope, S4PIENS country journey, source drawer, COMPANY-GOLD-01, issue #148 and sole PR #131 HEIR.
+**TRUTH BOUNDARY:** the header and detailed disclosure describe one fetched response page. They do not establish national completeness, company responsibility, live emissions or dataset-wide ranking.
+**HUMAN SUCCESS:** before reading a result, a user sees that the view ranks no more than eight mappable sources from one response page and is not the full dataset.
+**BASE / ROLLBACK:** `king/test@7dcd77c300c45922dc4060c66f3077c81126f2cf`; revert this three-file copy/contract/brief correction if independent Gold finds comprehension or layout regression.
+**MAKER ≠ JUDGE:** Factory closes the returned wording defect; independent Gold judges the exact resulting SHA. Release and runtime verification remain separate.

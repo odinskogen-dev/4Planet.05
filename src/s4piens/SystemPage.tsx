@@ -264,7 +264,7 @@ function System({ sys }: { sys: HumanSystem; theme: string }) {
           <header className="n-chapter__head">
             <span className="n-mono">IN A COUNTRY</span>
             <h2>{country ? `${sys.name} in ${country.short}` : "Follow it into a country"}</h2>
-            <p>Value chains cross borders, but their biggest physical sources sit in specific places. These are the largest estimated emitting sources in this system for one country.</p>
+            <p>Value chains cross borders, and physical sources sit in specific places. After you choose a country, this view ranks up to eight mappable estimated emitting sources from one bounded Climate TRACE response page—not the full dataset.</p>
           </header>
           <div className="n-chapter__body">
             <CountryPicker country={country} setCountry={setCountry} />

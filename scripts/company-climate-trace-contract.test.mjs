@@ -133,4 +133,6 @@ test("S4PIENS fails closed without page coverage and discloses source grain",asy
  assert.match(ui,/Not a dataset-wide total/);
  assert.match(ui,/trace\.year/);
  assert.match(ui,/trace\.gas/);
+ assert.match(ui,/After you choose a country, this view ranks up to eight mappable estimated emitting sources from one bounded Climate TRACE response page—not the full dataset\./);
+ assert.doesNotMatch(ui,/biggest physical sources|largest estimated emitting sources in this system for one country/);
 });
