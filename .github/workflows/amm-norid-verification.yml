@@ -1,0 +1,21 @@
+name: AMM Norid exact-registration comparison
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-norid-verification.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare Norid domain status against registered controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          for domain in norid.no 4planet.no ammkunst.no; do
+            result="$(curl -sS --max-time 15 -H 'Accept: application/rdap+json' -o /tmp/rdap-response -w '%{http_code}' "https://rdap.norid.no/domain/$domain" || true)"
+            status="$(dig +time=3 +tries=1 @i.nic.no "$domain" NS +noall +comments | grep -o 'status: [A-Z]*' | head -1 || true)"
+            echo "DOMAIN=$domain RDAP_HTTP=$result DNS_AUTH_STATUS=$status"
+          done
