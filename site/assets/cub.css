@@ -63,3 +63,13 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-off
  .navlinks a,.nav-items a{font-size:12px}
  .smallcaps,.worldtop,.hero-kicker{font-size:11px}
 }
+
+/* Authentic mobile-width development captures, distinct from concept art */
+.gameplay-evidence{display:grid;grid-template-columns:minmax(265px,390px) 1fr;gap:clamp(36px,7vw,115px);align-items:center;padding:105px 0;border-top:1px solid #ffffff32}
+.gameplay-shot{margin:0;max-width:405px;padding:12px 12px 15px;border:1px solid #ffffff35;border-radius:25px;background:#121212;box-shadow:0 30px 90px rgba(0,0,0,.5)}
+.gameplay-shot img{width:100%;height:auto;aspect-ratio:390 / 844;object-fit:cover;border-radius:15px;background:#080808}
+.gameplay-shot figcaption{font-size:12px;color:#b7b7b3;line-height:1.6;padding:17px 7px 1px}
+.gameplay-story h2{font-size:clamp(43px,6vw,89px);font-weight:580;letter-spacing:-.075em;line-height:1.02;margin:16px 0 24px}
+.gameplay-story>p{max-width:500px;color:#c4c4c0;font-size:17px;line-height:1.75;margin-bottom:25px}
+.gameplay-story .eyebrow{color:var(--accent)}
+@media(max-width:790px){.gameplay-evidence{grid-template-columns:1fr;padding:75px 0}.gameplay-shot{width:min(100%,410px);margin-inline:auto}.gameplay-story{order:-1}}
