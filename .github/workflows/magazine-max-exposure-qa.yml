@@ -6,6 +6,7 @@ on:
     branches:
       - work/magazine-max-exposure-zero-loss-20261010
       - work/magazine-exposure-followup-20261011
+      - fix/magazine-http-https-20261019
     paths:
       - 'scripts/**'
       - 'src/**'
@@ -17,6 +18,7 @@ on:
       - 'playwright.magazine.config.ts'
       - 'docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010.md'
       - '.github/workflows/magazine-max-exposure-qa.yml'
+      - '.github/workflows/magazine-films-live-founder-override.yml'
 
 permissions:
   contents: read
@@ -32,6 +34,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Security audit — fail on high and critical vulnerabilities
+        run: npm audit --audit-level=high
       - name: Typecheck
         run: npm run typecheck
       - name: Magazine contracts

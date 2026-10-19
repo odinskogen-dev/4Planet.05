@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           git merge-base --is-ancestor "$PRIOR_LIVE_SHA" HEAD
           mapfile -t changed < <(git diff --name-only "$PRIOR_LIVE_SHA"...HEAD)
-          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|src/components/Seo\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
+          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|scripts/magazine-world-class-contract\\.test\\.mjs|package\\.json|package-lock\\.json|src/earth/World\\.tsx|src/components/Seo\\.tsx|src/content/stories\\.ts|src/content/imageRegistry\\.ts|src/content/magazineFeaturesReported\\.ts|src/pages/v5/Magazine\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
           for file in "${changed[@]}"; do
             if ! grep -Eq "$allowed" <<<"$file"; then
               echo "UNEXPECTED RELEASE FILE: $file"
@@ -67,6 +67,9 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Security audit — reject high and critical vulnerabilities
+        run: npm audit --audit-level=high
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -78,6 +81,44 @@ jobs:
           VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
         run: npm run build
 
+      - name: Verify every source-ready Magazine article and search surface BEFORE deployment
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { readStories, readImages, readFeatures } from './scripts/magazine-content.mjs';
+          const stories = readStories();
+          const images = readImages();
+          const features = readFeatures();
+          const editorialOrder = ['amazonia-more-than-a-forest','ai-coral-photomosaics','ocean-watch-1-8-million-kilometres','air-filter-biodiversity-time-machine','why-4planet-exists','wh4les-migratory-intelligence','mine-that-became-wetland','sea-pen-instead-of-tank','five-am-bay-of-biscay','roads-that-warn-cars-about-moose','credible-tree-pathway','the-four-domains','making-impact-easy'];
+          if (stories.map(s => s.slug).join('|') !== editorialOrder.join('|')) throw new Error('Magazine editorial order drift');
+          if (!fs.readFileSync('src/pages/v5/Magazine.tsx','utf8').includes('const HOME_STORY_LIMIT = 13;')) throw new Error('13-story front-page limit missing');
+          const sitemap = fs.readFileSync('public/magazine-sitemap.xml', 'utf8');
+          const required = new Set(['ocean-watch-1-8-million-kilometres','five-am-bay-of-biscay','air-filter-biodiversity-time-machine','mine-that-became-wetland','ai-coral-photomosaics','roads-that-warn-cars-about-moose','sea-pen-instead-of-tank','why-4planet-exists','the-four-domains','wh4les-migratory-intelligence','credible-tree-pathway','amazonia-more-than-a-forest','making-impact-easy']);
+          const seen = new Set();
+          for (const story of stories) {
+            if (seen.has(story.slug)) throw new Error('Duplicate Magazine slug: ' + story.slug);
+            seen.add(story.slug);
+            if (!images[story.image]) throw new Error('Missing Magazine image key: ' + story.slug + ': ' + story.image);
+            const imageKey = features[story.slug]?.hero || story.image;
+            const image = images[imageKey];
+            if (!image) throw new Error('Invalid editorial hero key: ' + story.slug + ': ' + imageKey);
+            if (!image.src.startsWith('/assets/')) throw new Error('Unapproved remote hero: ' + story.slug);
+            if (!fs.existsSync(path.join('public',image.src.slice(1)))) throw new Error('Hero asset missing from build source: ' + story.slug + ': ' + image.src);
+            if (story.editorialType === 'SOURCE_REPORTED_EDITORIAL' && (!Array.isArray(story.sourceLinks) || story.sourceLinks.length === 0)) throw new Error('Reported story has no primary sources: ' + story.slug);
+            const url = 'https://4planetmagazine.com/magazine/' + story.slug + '/';
+            const file = path.join('dist','magazine', story.slug, 'index.html');
+            if (!fs.existsSync(file)) throw new Error('Missing prerendered article: ' + file);
+            const html = fs.readFileSync(file, 'utf8');
+            if (!html.includes('data-4planet-static-prerender="magazine-story"')) throw new Error('Missing search-visible HTML: ' + story.slug);
+            if (!html.includes('<link rel="canonical" href="' + url + '">')) throw new Error('Canonical URL mismatch: ' + story.slug);
+            if (!sitemap.includes('<loc>' + url + '</loc>')) throw new Error('Magazine sitemap missing article: ' + story.slug);
+            if (!story.title || !Array.isArray(story.blocks) || story.blocks.length < 3) throw new Error('Incomplete Magazine article: ' + story.slug);
+          }
+          for (const slug of required) if (!seen.has(slug)) throw new Error('Missing required Magazine article: ' + slug);
+          console.log('MAGAZINE PUBLICATION GATE PASS: ' + stories.length + ' distinct articles; all 13 required routes + prerender + canonical + sitemap + image key');
+          NODE
       - name: Install Chromium + WebKit for independent Human Gold QA
         run: npx playwright install --with-deps chromium webkit
 
@@ -190,6 +231,7 @@ jobs:
           const blocked = () => new Response("Not Found", {status:404, headers:{"content-type":"text/plain; charset=utf-8","x-robots-tag":"noindex, nofollow","x-4planet-surface":"magazine-only-live"}});
           export default { async fetch(request) {
             const incoming = new URL(request.url);
+            if (incoming.protocol === "http:") { incoming.protocol = "https:"; return Response.redirect(incoming.toString(), 308); }
             if (incoming.hostname === "www.4planetmagazine.com") { incoming.hostname = APEX; return Response.redirect(incoming.toString(), 308); }
             if (incoming.pathname === "/" || incoming.pathname === "") { incoming.pathname = "/magazine/"; return Response.redirect(incoming.toString(), 308); }
             const atlasEmbed = incoming.pathname === "/atlas" && incoming.searchParams.get("embed") === "mag";
@@ -263,9 +305,27 @@ jobs:
           process.stdout.write(`${slugs.join('\n')}\n`);
           NODE
 
+          http_status=$(curl -sS -D "$RUNNER_TEMP/magazine-http-headers" -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 30 'http://4planetmagazine.com/' || true)
+          case "$http_status" in 301|302|307|308) : ;; *) echo "FAIL HTTP upgrade status=$http_status"; exit 20 ;; esac
+          http_location=$(tr -d '\r' < "$RUNNER_TEMP/magazine-http-headers" | awk -F': ' 'tolower($1)=="location"{print $2}' | tail -1)
+          case "$http_location" in https://4planetmagazine.com/*) echo "PASS HTTP->HTTPS redirect" ;; *) echo "FAIL insecure redirect location=$http_location"; exit 21 ;; esac
+
           verify_live 'https://4planetmagazine.com/magazine/'
           verify_live 'https://4planetmagazine.com/magazine/why-4planet-exists/'
           verify_live 'https://4planetmagazine.com/magazine/about/'
+
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/magazine-story-slugs.txt"
+          import { readStories } from './scripts/magazine-content.mjs';
+          for (const story of readStories()) console.log(story.slug);
+          NODE
+          count=0
+          while IFS= read -r slug || [ -n "$slug" ]; do
+            [ -z "$slug" ] && continue
+            verify_live "https://4planetmagazine.com/magazine/$slug/"
+            count=$((count + 1))
+          done < "$RUNNER_TEMP/magazine-story-slugs.txt"
+          [ "$count" -ge 13 ] || { echo "Expected >=13 verified Magazine article URLs, got $count"; exit 22; }
+
           verify_live 'https://4planetmagazine.com/films/'
 
           story_html=$(curl -fsS 'https://4planetmagazine.com/magazine/why-4planet-exists/')
@@ -363,8 +423,12 @@ jobs:
         run: |
           set -euo pipefail
           key='4planet-indexnow-2026-9f7b3c1d5e8a'
-          sitemap=$(curl -fsS 'https://4planetmagazine.com/magazine-sitemap.xml')
-          printf '%s' "$sitemap" | grep -o 'https://4planetmagazine.com[^<]*' > "$RUNNER_TEMP/indexnow-urls.txt"
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/indexnow-urls.txt"
+          import { readStories } from './scripts/magazine-content.mjs';
+          console.log('https://4planetmagazine.com/magazine/');
+          for (const story of readStories()) console.log('https://4planetmagazine.com/magazine/' + story.slug + '/');
+          NODE
+          [ "$(wc -l < "$RUNNER_TEMP/indexnow-urls.txt")" -eq 14 ] || { echo 'Expected Magazine home + 13 changed stories'; exit 25; }
           node --input-type=module <<'NODE' > "$RUNNER_TEMP/indexnow.json"
           import fs from 'node:fs';
           const urls = fs.readFileSync(process.env.RUNNER_TEMP + '/indexnow-urls.txt','utf8').trim().split('\n').filter(Boolean);
@@ -373,4 +437,5 @@ jobs:
           NODE
           code=$(curl -sS -o "$RUNNER_TEMP/indexnow-response.txt" -w '%{http_code}' -H 'Content-Type: application/json; charset=utf-8' --data-binary @"$RUNNER_TEMP/indexnow.json" 'https://api.indexnow.org/indexnow' || true)
           echo "INDEXNOW HTTP $code"
+          echo "IndexNow response: HTTP $code for Magazine home + 13 story URLs" >> "$GITHUB_STEP_SUMMARY"
           case "$code" in 200|202) exit 0 ;; *) cat "$RUNNER_TEMP/indexnow-response.txt"; exit 1 ;; esac

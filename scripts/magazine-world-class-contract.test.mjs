@@ -52,7 +52,7 @@ test("World-class home is curated, source-dense and long enough to feel editoria
   assert.ok(stories.length >= 10, "at least ten substantial stories are required");
   assert.ok(signals.length >= 10, "at least ten fast source-bounded signals are required");
   assert.ok(stories.length + signals.length >= 24, "launch density must reach at least 24 real editorial objects");
-  assert.match(home, /HOME_STORY_LIMIT = 12/);
+  assert.match(home, /HOME_STORY_LIMIT = 13/);
   assert.match(home, /HOME_SIGNAL_LIMIT = 4/);
   assert.match(home, /PLANET SIGNAL/);
   assert.match(home, /RECURRING EDITORIAL/);

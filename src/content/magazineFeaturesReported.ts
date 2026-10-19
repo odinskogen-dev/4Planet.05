@@ -28,7 +28,7 @@ export const MAGAZINE_REPORTED_FEATURES: Record<string, MagazineFeature> = {
   },
 
   "five-am-bay-of-biscay": {
-    hero: "participationField2",
+    hero: "whaleSurveyStoryHero",
     secondary: "pl4sticHero",
     secondaryKicker: "BAY OF BISCAY / A WORKING TRANSECT",
     secondaryCaption: "At sea, a line on a map becomes hours of attention, changing conditions and a sequence of recorded encounters.",
@@ -78,7 +78,7 @@ export const MAGAZINE_REPORTED_FEATURES: Record<string, MagazineFeature> = {
   },
 
   "mine-that-became-wetland": {
-    hero: "e4rthDomainHero",
+    hero: "rewildHero",
     secondaryMission: "rewild-land",
     secondaryKicker: "PAUL DE TOIRÕES / PORTUGAL",
     secondaryCaption: "Restoration can begin by changing the conditions and allowing living processes to do more of the work.",
@@ -132,7 +132,7 @@ export const MAGAZINE_REPORTED_FEATURES: Record<string, MagazineFeature> = {
   },
 
   "roads-that-warn-cars-about-moose": {
-    hero: "circularCityHero",
+    hero: "speciesHero",
     secondary: "s4piensDomainHero",
     secondaryKicker: "TRANSPORT / A LANDSCAPE THAT MOVES",
     secondaryCaption: "The collision problem is created where transport infrastructure cuts across animal movement.",
