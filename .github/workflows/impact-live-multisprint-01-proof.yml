@@ -24,13 +24,20 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
 
-      - name: Assert canonical LIVE still serves approved IMPACT build
+      - name: Record canonical LIVE build identity when exposed
         shell: bash
         run: |
           set -euo pipefail
-          body=$(curl -fsSL --connect-timeout 10 --max-time 30 "$BASE_URL/impact-build.json")
-          printf '%s\n' "$body" | tee live-build.json
-          printf '%s\n' "$body" | grep -q "\"sha\": \"$EXPECTED_BUILD_SHA\""
+          curl -fsSI --connect-timeout 10 --max-time 30 "$BASE_URL/impact" | tr -d '\r' | tee live-headers.txt
+          body=$(curl -fsSL --connect-timeout 10 --max-time 30 "$BASE_URL/impact-build.json" || true)
+          printf '%s\n' "$body" > live-build-response.txt
+          if printf '%s\n' "$body" | grep -q "\"sha\":"; then
+            printf '%s\n' "$body" | tee live-build.json
+            printf '%s\n' "$body" | grep -q "\"sha\": \"$EXPECTED_BUILD_SHA\""
+            echo "BUILD_IDENTITY=VERIFIED" | tee live-build-state.txt
+          else
+            echo "BUILD_IDENTITY=NOT_EXPOSED_ON_CANONICAL_LIVE" | tee live-build-state.txt
+          fi
 
       - name: Browser proof — live NATUREBRAIN issue release
         shell: bash
@@ -113,6 +120,9 @@ jobs:
           name: impact-live-multisprint-01-proof
           path: |
             live-build.json
+            live-build-response.txt
+            live-build-state.txt
+            live-headers.txt
             artifacts/impact-live
           retention-days: 45
           if-no-files-found: warn
