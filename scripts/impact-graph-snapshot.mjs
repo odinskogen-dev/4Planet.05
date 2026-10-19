@@ -65,7 +65,17 @@ export function normalise(payload) {
       for (const row of list(payload[key])) {
         if (!isRow(row) || !text(row.id) || !text(row.name)) continue;
         const profile = isRow(row.profile) ? row.profile : {};
-        const base = { id: text(row.id), slug: slugOf(text(row.id), profile), name: text(row.name), description: text(row.description) || null, publication: text(profile.publication) === "public" ? "public" : "related", claims: claimsOf(row.evidence) };
+        const base = {
+          id: text(row.id),
+          slug: slugOf(text(row.id), profile),
+          name: text(row.name),
+          description: text(row.description) || null,
+          publication: text(profile.publication) === "public" ? "public" : "related",
+          claims: claimsOf(row.evidence),
+          whyItMatters: text(profile.why_it_matters) || null,
+          unknowns: list(profile.unknowns).map(text).filter(Boolean),
+          lastReviewed: text(profile.last_reviewed) || null,
+        };
         if (kind === "actor") actors.set(base.id, { ...base, type: text(row.actor_type) || null, website: https(profile.website) });
         if (kind === "issue") issues.set(base.id, { ...base, domain: text(profile.domain) || null });
         if (kind === "solution") solutions.set(base.id, { ...base, type: text(row.solution_type) || null, maturity: text(profile.maturity) || null });
@@ -146,6 +156,10 @@ export function normalise(payload) {
   }));
   const outIssues = Array.from(issues.values()).filter((i) => projectsFor("issues", i.id).length || i.publication === "public").sort(byName).map((i) => ({
     id: i.id, slug: i.slug, name: i.name, description: i.description, domain: i.domain,
+    whyItMatters: i.whyItMatters || null,
+    unknowns: i.unknowns || [],
+    lastReviewed: i.lastReviewed || null,
+    claims: i.claims || [],
     projects: projectsFor("issues", i.id),
     citations: citationsOf(i.claims),
   }));
