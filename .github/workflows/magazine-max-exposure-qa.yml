@@ -34,6 +34,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Security audit — fail on high and critical vulnerabilities
+        run: npm audit --audit-level=high
       - name: Typecheck
         run: npm run typecheck
       - name: Magazine contracts
