@@ -1,0 +1,118 @@
+name: IMPACT LIVE Data Proof — Multisprint 01
+
+on:
+  push:
+    branches:
+      - qa/impact-live-multisprint-01-20261019
+
+permissions:
+  contents: read
+
+jobs:
+  prove-live-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: https://4planet.org
+      EXPECTED_BUILD_SHA: 63526e3557caeb1dffe7ebdba175f4863e8ae2e6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Assert canonical LIVE still serves approved IMPACT build
+        shell: bash
+        run: |
+          set -euo pipefail
+          body=$(curl -fsSL --connect-timeout 10 --max-time 30 "$BASE_URL/impact-build.json")
+          printf '%s\n' "$body" | tee live-build.json
+          printf '%s\n' "$body" | grep -q "\"sha\": \"$EXPECTED_BUILD_SHA\""
+
+      - name: Browser proof — live NATUREBRAIN issue release
+        shell: bash
+        run: |
+          mkdir -p artifacts/impact-live
+          cat > impact-live-proof.mjs <<'JS'
+          import { chromium } from "playwright";
+          import fs from "node:fs";
+          const base = process.env.BASE_URL;
+          const issues = [
+            ["biodiversity-loss","Biodiversity loss"],
+            ["deforestation","Deforestation"],
+            ["overfishing","Overfishing"],
+            ["coral-bleaching-and-mortality","Coral bleaching and mortality"],
+            ["fossil-carbon-dioxide-emissions","Fossil carbon dioxide emissions"],
+            ["methane-emissions","Methane emissions"],
+            ["water-scarcity","Water scarcity"],
+            ["food-waste","Food waste"],
+            ["high-resource-extraction","High resource extraction"],
+            ["short-lived-electronics-and-e-waste","Short-lived electronics and e-waste"],
+            ["air-pollution","Air pollution"],
+            ["plastic-and-microplastic-pollution","Plastic and microplastic pollution"],
+            ["finance-for-nature-negative-activity","Finance for nature-negative activity"],
+            ["poor-cross-system-coordination","Poor cross-system coordination"]
+          ];
+          const browser = await chromium.launch();
+          const results = [];
+          for (const [width,height] of [[390,844],[1440,900]]) {
+            const page = await browser.newPage({viewport:{width,height},isMobile:width<500,hasTouch:width<500});
+            await page.goto(base+"/impact",{waitUntil:"networkidle",timeout:60000});
+            await page.waitForTimeout(1200);
+            const home = await page.evaluate(() => ({
+              h1: document.querySelector("h1")?.textContent?.trim(),
+              text: document.body.innerText,
+              projectTiles: document.querySelectorAll(".iu-section--index .iu-tile").length,
+              overflow: document.documentElement.scrollWidth-window.innerWidth
+            }));
+            if (home.h1 !== "Find people bringing life back.") throw new Error("LIVE home h1 mismatch: "+home.h1);
+            if (home.projectTiles !== 4) throw new Error("Expected four existing project tiles, got "+home.projectTiles);
+            if (!home.text.includes("17 issues")) throw new Error("Expected LIVE home to report 17 issues after ENV63 wave");
+            if (home.overflow > 0) throw new Error("Home horizontal overflow "+home.overflow+" at "+width);
+            await page.screenshot({path:`artifacts/impact-live/home-${width}.png`,fullPage:true});
+            results.push({width,route:"/impact",...home});
+            for (const [slug,name] of issues) {
+              const route="/impact/issue/"+slug;
+              await page.goto(base+route,{waitUntil:"networkidle",timeout:60000});
+              await page.waitForTimeout(700);
+              const info=await page.evaluate(() => ({
+                h1: document.querySelector("h1")?.textContent?.trim(),
+                claims: document.querySelectorAll(".iu-claim").length,
+                sourceLinks: [...document.querySelectorAll('a[href^="http"]')].filter(a => /ipbes|fao|noaa|ipcc|unep|itu|who/i.test(a.href)).length,
+                unavailable: document.body.innerText.includes("temporarily unavailable"),
+                overflow: document.documentElement.scrollWidth-window.innerWidth
+              }));
+              if (info.h1 !== name) throw new Error(route+" h1 mismatch: "+info.h1);
+              if (info.claims < 1) throw new Error(route+" has no rendered source-grounded claim");
+              if (info.sourceLinks < 1) throw new Error(route+" has no authoritative external source link");
+              if (info.unavailable) throw new Error(route+" rendered source unavailable");
+              if (info.overflow > 0) throw new Error(route+" horizontal overflow "+info.overflow+" at "+width);
+              results.push({width,route,...info});
+              if ((slug==="biodiversity-loss" || slug==="finance-for-nature-negative-activity") && width===390) {
+                await page.screenshot({path:`artifacts/impact-live/${slug}-mobile.png`,fullPage:true});
+              }
+            }
+            await page.close();
+          }
+          await browser.close();
+          fs.writeFileSync("artifacts/impact-live/results.json",JSON.stringify(results,null,2));
+          console.log(`PASS: ${results.length} live route/viewport checks`);
+          JS
+          node impact-live-proof.mjs
+
+      - name: Record verdict
+        run: |
+          printf 'IMPACT LIVE MULTISPRINT 01 DATA PROOF PASS\nBUILD_SHA=%s\nLIVE=%s/impact\nENV63_PUBLIC_WAVE=14\nEXPECTED_TOTAL_LIVE_ISSUES=17\n' "$EXPECTED_BUILD_SHA" "$BASE_URL" | tee artifacts/impact-live/verdict.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: impact-live-multisprint-01-proof
+          path: |
+            live-build.json
+            artifacts/impact-live
+          retention-days: 45
+          if-no-files-found: warn
