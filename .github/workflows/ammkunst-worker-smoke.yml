@@ -1,0 +1,27 @@
+name: AMM deployed Worker diagnostics
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ammkunst-worker-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check published AMM Worker routes and HTTP response
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://ammkunst-gallery.odin-skogen.workers.dev'
+          for path in / /index.html /art/n0388.webp /assets/app.js /works/ /about/; do
+            code="$(curl -L -sS --connect-timeout 6 --max-time 25 -o /tmp/amm-response -w '%{http_code}' "$base$path" || true)"
+            bytes="$(wc -c </tmp/amm-response 2>/dev/null || echo 0)"
+            echo "AMM_DIAGNOSTIC $path HTTP=$code BYTES=$bytes"
+            if [ "$path" = / ] && [ "$code" != 200 ]; then
+              head -c 600 /tmp/amm-response | tr '\r\n' ' ' || true
+              echo
+            fi
+          done
+          echo "Base URL: $base"
