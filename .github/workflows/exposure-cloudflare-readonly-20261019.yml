@@ -1,0 +1,53 @@
+name: Exposure Cloudflare Readonly 19 October
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/exposure-cloudflare-readonly-20261019.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  edge-traffic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Query per-zone Cloudflare daily HTTP requests; never print credentials
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const domains = ["4planet.org","4planetatlas.com","4species.com","s4piens.com","4sapien.com","4brands.org","4nation.org","4planetmagazine.com","4planetmarket.com","cre4tors.com"];
+          const secret = (process.env.CF_TOKEN||"").trim().replace(/^Bearer /,"");
+          if(!secret) { console.log("CLOUDFLARE_BLOCKED: token missing"); process.exitCode=1; }
+          else {
+            const headers={Authorization:"Bearer "+secret,"Content-Type":"application/json"};
+            const api="https://api.cloudflare.com/client/v4";
+            const periods=[
+              ["last28","2026-09-21","2026-10-18"],
+              ["prev28","2026-08-24","2026-09-20"]
+            ];
+            for(const domain of domains){
+              try {
+                const z=await (await fetch(api+"/zones?name="+encodeURIComponent(domain),{headers})).json();
+                const zone=z.result?.find(x=>x.name===domain);
+                if(!zone){console.log(JSON.stringify({domain,status:"ZONE_NOT_ACCESSIBLE"}));continue;}
+                for(const [period,from,to] of periods){
+                  const gql=`query {viewer{zones(filter:{zoneTag:"${zone.id}"}){httpRequests1dGroups(limit:40,filter:{date_geq:"${from}",date_leq:"${to}"}){dimensions{date}sum{requests pageViews}}}}}`;
+                  const answer=await (await fetch(api+"/graphql",{method:"POST",headers,body:JSON.stringify({query:gql})})).json();
+                  const rows=answer.data?.viewer?.zones?.[0]?.httpRequests1dGroups;
+                  if(!Array.isArray(rows)){
+                    console.log(JSON.stringify({domain,period,status:"UNAVAILABLE",messages:(answer.errors||[]).map(x=>String(x.message).slice(0,220)).slice(0,2)}));
+                    continue;
+                  }
+                  const start7="2026-10-12", prev7="2026-10-05";
+                  const sums=a=>a.reduce((s,x)=>({requests:s.requests+Number(x.sum?.requests||0),pageViews:s.pageViews+Number(x.sum?.pageViews||0)}),{requests:0,pageViews:0});
+                  const body={domain,period,status:"OK",firstDay:rows.map(x=>x.dimensions.date).sort()[0]||null,lastDay:rows.map(x=>x.dimensions.date).sort().at(-1)||null,days:rows.length,totals:sums(rows)};
+                  if(period==="last28")body.last7=sums(rows.filter(x=>x.dimensions.date>=start7));
+                  if(period==="prev28")body.prev7=sums(rows.filter(x=>x.dimensions.date>=prev7));
+                  console.log("CLOUDFLARE_EDGE "+JSON.stringify(body));
+                }
+              } catch(e) {console.log(JSON.stringify({domain,status:"NETWORK_ERROR",detail:String(e.name||"Error").slice(0,100)}));}
+            }
+          }
+          NODE
