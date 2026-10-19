@@ -10,7 +10,7 @@
       "identity": {
         "commonName": "Humpback whale",
         "scientificName": "Megaptera novaeangliae",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "(Borowski, 1781)",
         "group": "Marine mammal · Baleen whale"
       },
       "hook": {
@@ -295,7 +295,7 @@
       "identity": {
         "commonName": "Sperm whale",
         "scientificName": "Physeter macrocephalus",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "Linnaeus, 1758",
         "group": "Marine mammal · Toothed whale"
       },
       "hook": {
@@ -580,7 +580,7 @@
       "identity": {
         "commonName": "Harbour porpoise",
         "scientificName": "Phocoena phocoena",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "(Linnaeus, 1758)",
         "group": "Marine mammal · Porpoise"
       },
       "hook": {
@@ -865,7 +865,7 @@
       "identity": {
         "commonName": "Common bottlenose dolphin",
         "scientificName": "Tursiops truncatus",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "(Montagu, 1821)",
         "group": "Marine mammal · Dolphin"
       },
       "hook": {
@@ -1150,7 +1150,7 @@
       "identity": {
         "commonName": "Atlantic cod",
         "scientificName": "Gadus morhua",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "Linnaeus, 1758",
         "group": "Fish · Atlantic cod"
       },
       "hook": {
@@ -1436,7 +1436,7 @@
       "identity": {
         "commonName": "Blue mussel",
         "scientificName": "Mytilus edulis",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "Linnaeus, 1758",
         "group": "Mollusc · Bivalve"
       },
       "hook": {
@@ -1721,7 +1721,7 @@
       "identity": {
         "commonName": "Whale shark",
         "scientificName": "Rhincodon typus",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "Smith, 1828",
         "group": "Fish · Shark"
       },
       "hook": {
@@ -2006,7 +2006,7 @@
       "identity": {
         "commonName": "Leopard",
         "scientificName": "Panthera pardus",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "(Linnaeus, 1758)",
         "group": "Mammal · Big cat"
       },
       "hook": {
@@ -2291,7 +2291,7 @@
       "identity": {
         "commonName": "Eastern gorilla",
         "scientificName": "Gorilla beringei",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "Matschie, 1903",
         "group": "Mammal · Great ape"
       },
       "hook": {
@@ -2576,7 +2576,7 @@
       "identity": {
         "commonName": "Elkhorn coral",
         "scientificName": "Acropora palmata",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "(Lamarck, 1816)",
         "group": "Cnidarian · Reef coral"
       },
       "hook": {
@@ -2861,7 +2861,7 @@
       "identity": {
         "commonName": "Hyacinth macaw",
         "scientificName": "Anodorhynchus hyacinthinus",
-        "authorship": "Taxonomic authority under editorial review",
+        "authorship": "(Latham, 1790)",
         "group": "Bird · Parrot"
       },
       "hook": {
