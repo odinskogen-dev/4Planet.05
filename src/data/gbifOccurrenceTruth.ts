@@ -46,7 +46,9 @@ function classifyGbifLicence(licence: unknown): GbifLicenceClass {
 
 function hasGbifAttributionPath(row: any): boolean {
   const hasAttributionIdentity = Boolean(
-    text(row?.publisher ?? row?.publishingOrganizationTitle ?? row?.institutionCode ?? row?.rightsHolder),
+    text(row?.publisher) ||
+      text(row?.publishingOrganizationTitle) ||
+      text(row?.rightsHolder),
   );
   const hasDatasetIdentity = Boolean(text(row?.datasetKey));
   const hasCitationIdentity = Boolean(
@@ -100,7 +102,12 @@ export function gbifOccurrenceProvenance(row: any, retrievedAt: string) {
     licenceUrl,
     datasetKey: text(row?.datasetKey),
     datasetTitle: text(row?.datasetTitle ?? row?.datasetName),
-    publisher: text(row?.publisher ?? row?.publishingOrganizationTitle ?? row?.institutionCode),
+    publisher: text(row?.publisher ?? row?.publishingOrganizationTitle),
+    rightsHolder: text(row?.rightsHolder),
+    institutionCode: text(row?.institutionCode),
+    attributionIdentity: text(
+      row?.publisher ?? row?.publishingOrganizationTitle ?? row?.rightsHolder,
+    ),
     publishingOrgKey: text(row?.publishingOrgKey),
     datasetCitation: text(row?.bibliographicCitation),
     datasetDoi: text(row?.datasetDOI ?? row?.datasetDoi),
