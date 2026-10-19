@@ -7,6 +7,7 @@ import { normalizeGtin } from "../src/food/core.js";
 const source = await readFile(new URL("../src/choice/embla.ts", import.meta.url), "utf8");
 const foodUiSource = await readFile(new URL("../src/food/FoodIntelligence.tsx", import.meta.url), "utf8");
 const choiceUiSource = await readFile(new URL("../src/pages/sapien/EmblaFoodChoice.tsx", import.meta.url), "utf8");
+const choiceUiCss = await readFile(new URL("../src/pages/sapien/embla-choice.css", import.meta.url), "utf8");
 const humanProofSource = await readFile(new URL("../src/food/FoodUserTest.tsx", import.meta.url), "utf8");
 const fourSapienSource = await readFile(new URL("../src/pages/sapien/FourSapien.tsx", import.meta.url), "utf8");
 const storageSource = await readFile(new URL("../src/choice/emblaStorage.ts", import.meta.url), "utf8");
@@ -177,4 +178,16 @@ test("Embla removes a malformed receipt without breaking the session", () => {
 
   assert.deepEqual(storage.restoreEmblaShoppingList(malformedStorage), { value: null, unavailable: false });
   assert.equal(removed, true);
+});
+
+
+test("Embla choice radios expose complete keyboard selection and a compact mobile target", () => {
+  for (const key of ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"]) {
+    assert.ok(choiceUiSource.includes(`event.key === "${key}"`), `missing ${key} radio navigation`);
+  }
+  assert.match(choiceUiSource, /tabIndex=\{priority === item\.id \? 0 : -1\}/);
+  assert.match(choiceUiSource, /priorityRefs\.current\[index\]\?\.focus\(\)/);
+  assert.match(choiceUiSource, /event\.preventDefault\(\)/);
+  assert.match(choiceUiCss, /button:focus-visible\{outline:3px solid #000/);
+  assert.match(choiceUiCss, /@media\(max-width:560px\)[\s\S]*button\{min-height:96px;padding:16px 18px\}/);
 });

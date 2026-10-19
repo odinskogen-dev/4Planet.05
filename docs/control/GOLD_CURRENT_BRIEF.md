@@ -1,3 +1,24 @@
+# 4SAPIEN FOOD — KEYBOARD + MOBILE PRIORITY CHOICE — 19 OCT 2026
+
+**STATUS:** DOCUMENTED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD + REAL 390/430 BROWSER PROOF REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs to choose the concern that matters most before Embla exposes an evidence path.
+**ONE THING TO UNDERSTAND:** HEALTH, WALLET and PLANET stay separate; the selected concern controls the next evidence path without inventing a universal score.
+**PRIMARY ACTION:** choose one priority by touch, pointer or standard radio-group keyboard controls.
+**SECONDARY DEPTH:** continue to controlled comparison or product evidence only where that path is ready.
+**P1 DOMINANT:** “What matters most today?”
+**P2 ORIENTATION:** seven bounded priority choices with explicit readiness.
+**P3 ACTION:** one selected priority with Arrow/Home/End movement and an obvious next step.
+**P4 DEPTH:** comparison or scan evidence with UNKNOWN and category/SKU boundaries preserved.
+**WHAT CAN BE REMOVED:** seven 170px mobile cards, extra keyboard tab stops and click-only radio behaviour.
+**WHAT MUST BE REUSED:** FOOD-CHOICE-01, issue #342, existing priority data and evidence engines, current Embla visual grammar, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** accessibility and compact geometry improve access to the existing choice; they do not prove comprehension, utility, purchase, outcome, Gold, deployment or LIVE state.
+**MOBILE-FIRST RISK:** compact cards must retain a >=44px target, readable evidence boundary, visible focus and no horizontal overflow at 390/430.
+**HUMAN SUCCESS:** a keyboard user can enter the group once, change selection with Arrow keys, jump with Home/End, see focus and continue from the newly selected priority; a mobile user reaches the response with materially less scroll.
+**BASE / ROLLBACK:** `king/test@20c24fc1af9c07ef7823d994d803671c73967fec`; revert the bounded UI/CSS/contract/brief commit if independent Gold finds focus, touch, hierarchy, truth or browser regression.
+**MAKER ≠ JUDGE:** Factory implements and returns an exact candidate SHA. Independent Gold, rendered Chromium/WebKit 390/430 evidence and Founder release remain separate.
+
+---
+
 # IMPACT / ACTOR — CANONICAL IDENTITY BINDING — 17 OCT 2026
 
 **STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.

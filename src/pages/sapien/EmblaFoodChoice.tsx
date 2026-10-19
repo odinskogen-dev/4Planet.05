@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import FoodIntelligence from "@/food/FoodIntelligence";
 import PickPrototype from "@/food/PickPrototype";
@@ -21,7 +21,28 @@ export default function EmblaFoodChoice() {
   const researchMode = searchParams.get("research") === "1";
   const [priority, setPriority] = useState<Priority>("BALANCED");
   const [mode, setMode] = useState<"START" | "COMPARE" | "SCAN">("START");
+  const priorityRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const selected = useMemo(() => PRIORITIES.find((item) => item.id === priority)!, [priority]);
+
+  const choosePriority = (index: number, moveFocus = false) => {
+    const next = PRIORITIES[index];
+    if (!next) return;
+    setPriority(next.id);
+    setMode("START");
+    if (moveFocus) priorityRefs.current[index]?.focus();
+  };
+
+  const handlePriorityKeyDown = (index: number, event: KeyboardEvent<HTMLButtonElement>) => {
+    const last = PRIORITIES.length - 1;
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (index + 1) % PRIORITIES.length;
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = (index - 1 + PRIORITIES.length) % PRIORITIES.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = last;
+    if (nextIndex === null) return;
+    event.preventDefault();
+    choosePriority(nextIndex, true);
+  };
 
   const proceed = () => {
     if (selected.readiness === "COMPARE") setMode("COMPARE");
@@ -44,8 +65,18 @@ export default function EmblaFoodChoice() {
       <section className="embla-choice__priorities" aria-labelledby="embla-priority-title">
         <div className="embla-choice__section-head"><span>01</span><h2 id="embla-priority-title">Choose the decision.</h2></div>
         <div className="embla-choice__priority-grid" role="radiogroup" aria-label="What matters most in this food choice?">
-          {PRIORITIES.map((item) => (
-            <button key={item.id} type="button" role="radio" aria-checked={priority === item.id} className={priority === item.id ? "is-active" : ""} onClick={() => { setPriority(item.id); setMode("START"); }}>
+          {PRIORITIES.map((item, index) => (
+            <button
+              key={item.id}
+              ref={(node) => { priorityRefs.current[index] = node; }}
+              type="button"
+              role="radio"
+              aria-checked={priority === item.id}
+              tabIndex={priority === item.id ? 0 : -1}
+              className={priority === item.id ? "is-active" : ""}
+              onClick={() => choosePriority(index)}
+              onKeyDown={(event) => handlePriorityKeyDown(index, event)}
+            >
               <strong>{item.label}</strong><span>{item.short}</span><b>{item.readiness === "COMPARE" ? "COMPARISON READY" : item.readiness === "SCAN" ? "PRODUCT EVIDENCE" : "NEEDS PRIORITY"}</b>
             </button>
           ))}
