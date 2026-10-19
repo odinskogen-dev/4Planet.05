@@ -24,7 +24,10 @@ jobs:
       - name: Install current lockfile
         run: npm ci
       - name: Repair known audited vulnerabilities in candidate only
-        run: npm audit fix --force
+        run: |
+          npm audit fix --force || true
+          npm ls --depth=0
+          npm audit --audit-level=high
       - name: Block any remaining high and critical dependencies
         run: npm audit --audit-level=high
       - name: Compile full app
