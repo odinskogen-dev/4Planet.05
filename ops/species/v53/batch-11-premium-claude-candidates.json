@@ -334,7 +334,7 @@
       ],
       "highlights": [
         {
-          "value": "Large block-shaped head",
+          "value": "Block-shaped head",
           "text": "The sperm whale is the largest toothed whale, with an enormous square-looking head and a deep-diving way of life.",
           "state": "KNOWN",
           "source": {
@@ -343,7 +343,7 @@
           }
         },
         {
-          "value": "Squid and deep-water prey",
+          "value": "Deep-water squid",
           "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
           "state": "KNOWN",
           "source": {
@@ -619,7 +619,7 @@
       ],
       "highlights": [
         {
-          "value": "Small triangular dorsal fin",
+          "value": "Triangular dorsal fin",
           "text": "The harbour porpoise is a small, often elusive toothed whale with a rounded face and a short, triangular dorsal fin.",
           "state": "KNOWN",
           "source": {
@@ -904,7 +904,7 @@
       ],
       "highlights": [
         {
-          "value": "Rounded beak and curved fin",
+          "value": "Short, rounded beak",
           "text": "Bottlenose dolphins are social toothed whales with a short, thick beak and a curved dorsal fin.",
           "state": "KNOWN",
           "source": {
@@ -913,7 +913,7 @@
           }
         },
         {
-          "value": "Fish, squid and crustaceans",
+          "value": "Fish and squid",
           "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
           "state": "KNOWN",
           "source": {
@@ -1189,7 +1189,7 @@
       ],
       "highlights": [
         {
-          "value": "Three dorsal fins and chin barbel",
+          "value": "Three dorsal fins",
           "text": "Atlantic cod is a cold-water fish recognisable by its three dorsal fins, speckled flanks and a whisker-like barbel under the chin.",
           "state": "KNOWN",
           "source": {
@@ -1475,7 +1475,7 @@
       ],
       "highlights": [
         {
-          "value": "Blue-black two-part shell",
+          "value": "Blue-black shell",
           "text": "Blue mussels are filter-feeding bivalves with blue-black shells that grow attached to rocks, ropes and other firm surfaces.",
           "state": "KNOWN",
           "source": {
@@ -1484,7 +1484,7 @@
           }
         },
         {
-          "value": "Plankton filtered from water",
+          "value": "Filtered plankton",
           "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
           "state": "KNOWN",
           "source": {
@@ -1493,7 +1493,7 @@
           }
         },
         {
-          "value": "Intertidal and coastal seabeds",
+          "value": "Coastal seafloor",
           "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
           "state": "KNOWN",
           "source": {
@@ -1760,7 +1760,7 @@
       ],
       "highlights": [
         {
-          "value": "Spotted body and broad head",
+          "value": "Spotted broad body",
           "text": "The whale shark is the world's largest living fish, carrying a distinctive pattern of pale spots across its broad body.",
           "state": "KNOWN",
           "source": {
@@ -1769,7 +1769,7 @@
           }
         },
         {
-          "value": "Plankton and small marine life",
+          "value": "Filtered plankton",
           "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
           "state": "KNOWN",
           "source": {
@@ -1778,7 +1778,7 @@
           }
         },
         {
-          "value": "Warm and tropical oceans",
+          "value": "Tropical oceans",
           "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
           "state": "KNOWN",
           "source": {
@@ -2054,7 +2054,7 @@
           }
         },
         {
-          "value": "Medium-sized mammals and other prey",
+          "value": "Mammals and other prey",
           "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
           "state": "KNOWN",
           "source": {
@@ -2063,7 +2063,7 @@
           }
         },
         {
-          "value": "African and Asian habitats",
+          "value": "Africa and Asia",
           "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
           "state": "KNOWN",
           "source": {
@@ -2330,7 +2330,7 @@
       ],
       "highlights": [
         {
-          "value": "Heavy body and silverback males",
+          "value": "Silverback adult males",
           "text": "Eastern gorillas are large, mainly plant-eating great apes living in parts of the eastern Congo Basin and nearby mountain forests.",
           "state": "KNOWN",
           "source": {
@@ -2615,7 +2615,7 @@
       ],
       "highlights": [
         {
-          "value": "Broad antler-like branches",
+          "value": "Antler-like branches",
           "text": "Elkhorn coral forms broad, branching structures in shallow Caribbean reefs that resemble the antlers of an elk.",
           "state": "KNOWN",
           "source": {
@@ -2624,7 +2624,7 @@
           }
         },
         {
-          "value": "Algal energy and captured plankton",
+          "value": "Algae and plankton",
           "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
           "state": "KNOWN",
           "source": {
@@ -2918,7 +2918,7 @@
           }
         },
         {
-          "value": "South American palm landscapes",
+          "value": "South American palms",
           "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
           "state": "KNOWN",
           "source": {
