@@ -291,6 +291,15 @@ async function main(){
  const classified=prepareClassifiedRecords(records);
  if(classified.usableContent<2)throw Error("CANONICAL_SOURCE_READ_TOO_SPARSE_AFTER_CLASSIFICATION");
  const ordered=classified.records.sort((a,b)=>a.source_id.localeCompare(b.source_id));
+ // SUCCESS of an inventory projection is NOT coverage of every source body.
+ // This lightweight receipt prevents a matching record-count from being
+ // mistaken for a complete organisational knowledge/GraphRAG sync.
+ const hydrated=ordered.filter(x=>["CONTENT","SHEET_ROWS"].includes(x.metadata?.readDepth)).length;
+ const redacted=ordered.filter(x=>String(x.metadata?.readDepth||"").includes("_REDACTED")).length;
+ const inventoryOnly=ordered.filter(x=>x.metadata?.readDepth==="INVENTORY_ONLY").length;
+ const quarantined=ordered.filter(x=>x.metadata?.readDepth==="QUARANTINED").length;
+ const truncated=ordered.filter(x=>x.metadata?.truncated===true).length;
+ console.log("SOURCE_COVERAGE_RECEIPT "+JSON.stringify({totalRecords:ordered.length,hydrated,redacted,inventoryOnly,quarantined,truncated,contentBudget:opts.maxContentDocs,fullCorpusClaim:false}));
  const manifest=sha(ordered.map(x=>[x.source_id,x.source_hash,x.object_type].join(":")).join("\n"));
  console.log("Content safety verified; classifier="+CONTENT_SAFETY_VERSION+
   " redacted="+classified.redacted+" quarantined="+classified.quarantined+
@@ -309,7 +318,7 @@ async function main(){
      readback.expectedCount!==ordered.length || readback.observedCount!==ordered.length ||
      readback.inventoryHash!==manifest || readback.isLatestSuccess!==true || !readback.completedAt)
     throw Error("SOURCE_TO_PRIVATE_BRAIN_READBACK_MISMATCH");
-  console.log("SYNC_COMMITTED_AND_READBACK_VERIFIED count="+accepted+" inventory_sha256="+manifest+
+  console.log("SOURCE_PROJECTION_COMMITTED_AND_READBACK_VERIFIED count="+accepted+" inventory_sha256="+manifest+
    " last_success="+readback.completedAt+" source_sha="+sourceRevision);
  }catch(e){
   try{await ingest("fail",{code:safeError(e).replace(/[^A-Z0-9_]/gi,"_")});}catch{}
