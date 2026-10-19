@@ -130,7 +130,7 @@ jobs:
           const h=env.find(i=>i.slug==='habitat-destruction');
           if(!h || !h.citations?.length || !h.claims?.length || !h.unknowns?.length) throw new Error('habitat destruction discovery evidence incomplete');
           const indus=d.projects.find(p=>p.slug==='living-indus');
-          if(!indus || !indus.claims?.length || !indus.actors?.length || !indus.solutions?.length || !indus.actions?.length) throw new Error('Living Indus graph incomplete');
+          if(!indus || !indus.claims?.length || !indus.actors?.length || !indus.solutions?.length || !indus.issues?.length) throw new Error('Living Indus discovery graph incomplete');
           console.log(`Snapshot PASS: ${d.projects.length} projects / ${d.actors.length} actors / ${d.solutions.length} solutions / ${d.issues.length} issues / ${env.length} ENV63`);
           NODE
 
