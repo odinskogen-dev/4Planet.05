@@ -1,0 +1,78 @@
+name: AMM Gallery 2 — mobile browser QA
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-gallery-v2-browser-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install browser test runtime
+        run: |
+          mkdir -p /tmp/amm-qa
+          cd /tmp/amm-qa
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+      - name: Verify responsive gallery, images, menu, shop and enquiry bag
+        working-directory: /tmp/amm-qa
+        run: |
+          cat > test.cjs <<'JS'
+          const {chromium}=require("playwright");
+          (async()=>{
+            const browser=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});
+            const errors=[];
+            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+            mobile.on("pageerror",e=>errors.push("MOBILE "+e.message));
+            const root=await mobile.goto("https://ammkunst.com/",{waitUntil:"domcontentloaded",timeout:30000});
+            if(root.status()!==200)throw Error("Mobile home HTTP "+root.status());
+            await mobile.waitForFunction(()=>{let image=document.querySelector(".hero-primary img");return image&&image.complete&&image.naturalWidth>0},null,{timeout:25000});
+            const home=await mobile.evaluate(()=>({
+              title:document.title,
+              mainCharacters:document.querySelector("main")?.innerText?.length||0,
+              heroImages:document.querySelectorAll(".hero img").length,
+              galleryCards:document.querySelectorAll(".artcard").length,
+              background:getComputedStyle(document.body).backgroundColor,
+              overflow:document.documentElement.scrollWidth-window.innerWidth
+            }));
+            if(home.mainCharacters<150||home.heroImages!==2||home.galleryCards<9||home.background!=="rgb(255, 255, 255)"||home.overflow>3)throw Error("Mobile layout fail "+JSON.stringify(home));
+            await mobile.screenshot({path:"mobile-home.png",fullPage:true});
+            await mobile.locator("button[data-open-menu]").click();
+            if(!await mobile.locator("#site-menu").evaluate(el=>el.open))throw Error("Mobile menu not open");
+            await mobile.locator('#site-menu a[href="/shop/"]').click();
+            await mobile.waitForURL("**/shop/");
+            if(await mobile.locator(".artcard").count()!==20)throw Error("Shop missing 20 real works");
+            await mobile.screenshot({path:"mobile-shop.png",fullPage:true});
+            await mobile.locator(".artcard").first().click();
+            if(!await mobile.locator(".detail-img img").count())throw Error("Missing product detail artwork");
+            await mobile.locator("button[data-add-enquiry]").click();
+            await mobile.goto("https://ammkunst.com/bag/",{waitUntil:"domcontentloaded"});
+            await mobile.waitForFunction(()=>document.querySelectorAll(".bagitem").length>0,null,{timeout:5000});
+            console.log("MOBILE_PASS="+JSON.stringify(home));
+            const desktop=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
+            desktop.on("pageerror",e=>errors.push("DESKTOP "+e.message));
+            await desktop.goto("https://ammkunst.com/",{waitUntil:"domcontentloaded"});
+            await desktop.waitForFunction(()=>document.querySelector(".hero-primary img")?.naturalWidth>0,null,{timeout:20000});
+            await desktop.screenshot({path:"desktop-home.png",fullPage:true});
+            const dh=await desktop.evaluate(()=>({gallery:document.querySelectorAll(".artcard").length,width:document.documentElement.scrollWidth,vw:innerWidth}));
+            if(dh.gallery<9||dh.width>dh.vw+3)throw Error("Desktop layout fail "+JSON.stringify(dh));
+            if(errors.length)throw Error("Browser JavaScript exceptions: "+errors.join("; "));
+            console.log("DESKTOP_PASS="+JSON.stringify(dh));
+            console.log("AMM_GALLERY_BROWSER_GOLD=https://ammkunst.com/");
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          JS
+          node test.cjs
+      - name: Save responsive review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amm-gallery-2-mobile-and-desktop
+          path: |
+            /tmp/amm-qa/mobile-home.png
+            /tmp/amm-qa/mobile-shop.png
+            /tmp/amm-qa/desktop-home.png
+          if-no-files-found: ignore
