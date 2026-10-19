@@ -1,0 +1,151 @@
+name: IMPACT LAN — LIVE multisprint 01 release 2026-10-19
+
+on:
+  push:
+    branches:
+      - release/impact-lan-live-multisprint-01-20261019
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+    steps:
+      - name: Resolve Cloudflare token and rollback origin
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo "missing Cloudflare token"; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account_id" ] || { echo "no Cloudflare account id"; exit 1; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          prior=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=1" "${auth[@]}")
+          echo "Rollback reference:"
+          jq -r '.result[0] | {id,url,created_on,commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}' <<<"$prior"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard isolated product delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=63526e3557caeb1dffe7ebdba175f4863e8ae2e6
+          git diff --name-only "$BASE"...HEAD | tee /tmp/changed.txt
+          while IFS= read -r f; do
+            case "$f" in
+              scripts/impact-graph-snapshot.mjs|scripts/prerender-impact-seo.mjs|.github/workflows/impact-lan-live-multisprint-01-20261019.yml) ;;
+              *) echo "Unrelated file in release delta: $f" >&2; exit 1 ;;
+            esac
+          done < /tmp/changed.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify live NATUREBRAIN publication gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload=$(curl -fsS --max-time 20 \
+            -X POST "${SUPABASE_URL}/rest/v1/rpc/impact_lan_v02" \
+            -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+            -H "Content-Type: application/json" -d '{}')
+          env63=$(jq '[.issues[] | select(.id | startswith("problem:4p:env63:"))] | length' <<<"$payload")
+          total=$(jq '.issues | length' <<<"$payload")
+          echo "NATUREBRAIN: $env63 ENV63 / $total total issues"
+          test "$env63" -eq 63
+          test "$total" -ge 63
+
+      - name: Impact contracts
+        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs scripts/impact-proof-chain-integrity-contract.test.mjs
+
+      - name: Build with live IMPACT snapshot
+        env:
+          CF_PAGES: "1"
+          CF_PAGES_COMMIT_SHA: ${{ github.sha }}
+          CF_PAGES_BRANCH: release/impact-lan-live-multisprint-01-20261019
+          GITHUB_SHA: ${{ github.sha }}
+        run: npm run build
+
+      - name: Search and AI discovery gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
+          const env=d.issues.filter(i=>i.id.startsWith('problem:4p:env63:'));
+          if(env.length!==63) throw new Error(`expected 63 ENV63 issues, got ${env.length}`);
+          const h=env.find(i=>i.slug==='habitat-destruction');
+          if(!h || !h.citations?.length || !h.claims?.length || !h.unknowns?.length) throw new Error('habitat destruction discovery evidence incomplete');
+          console.log(`Snapshot PASS: ${d.projects.length} projects / ${d.actors.length} actors / ${d.issues.length} issues / ${env.length} ENV63`);
+          NODE
+          test -f dist/impact/issue/habitat-destruction/index.html
+          grep -q "Habitat destruction" dist/impact/issue/habitat-destruction/index.html
+          grep -q "What the sources establish" dist/impact/issue/habitat-destruction/index.html
+          grep -q "Known and not established" dist/impact/issue/habitat-destruction/index.html
+          grep -q "ipbes.net" dist/impact/issue/habitat-destruction/index.html
+          grep -q "/impact/issue/habitat-destruction" dist/sitemap.xml
+
+      - name: Deploy isolated IMPACT release to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist \
+            --project-name 4planet-05 \
+            --branch main \
+            --commit-hash "$GITHUB_SHA" \
+            --commit-dirty=false
+
+      - name: Verify canonical LIVE
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 18); do
+            body=$(curl -fsS --max-time 20 https://4planet.org/impact-build.json || true)
+            sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
+            echo "LIVE probe $i: ${sha:-unresolved}"
+            if [ "$sha" = "$GITHUB_SHA" ]; then
+              home=$(curl -fsS --max-time 20 https://4planet.org/impact)
+              issue=$(curl -fsS --max-time 20 https://4planet.org/impact/issue/habitat-destruction/)
+              grep -q "Find people bringing life back" <<<"$home"
+              grep -q "Habitat destruction" <<<"$issue"
+              grep -q "What the sources establish" <<<"$issue"
+              grep -q "ipbes.net" <<<"$issue"
+              echo "Canonical LIVE verified."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Canonical LIVE verification failed" >&2
+          exit 1
