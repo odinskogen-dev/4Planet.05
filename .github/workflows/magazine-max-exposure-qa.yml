@@ -6,6 +6,7 @@ on:
     branches:
       - work/magazine-max-exposure-zero-loss-20261010
       - work/magazine-exposure-followup-20261011
+      - fix/magazine-http-https-20261019
     paths:
       - 'scripts/**'
       - 'src/**'
