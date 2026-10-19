@@ -104,7 +104,16 @@ test("Actor public routes fail closed without explicit PUBLIC authority", () => 
   assert.match(engine, /id: "need:orca:bay-survey-effort:v1"[\s\S]*?state: "TO_VERIFY"/);
   assert.match(page, /PUBLIC_ACTOR_GOLD_PROFILES\.map/);
   assert.match(page, /const actor = publicActorBySlug\(slug\)/);
-  assert.doesNotMatch(page, /ACTOR_GOLD_PROFILES\.map/);
+  const rawActorProfileMap = /(^|[^A-Z0-9_])ACTOR_GOLD_PROFILES\.map/m;
+  assert.doesNotMatch(page, rawActorProfileMap);
+  assert.doesNotMatch(
+    "PUBLIC_ACTOR_GOLD_PROFILES.map((actor) => actor.id)",
+    rawActorProfileMap,
+  );
+  assert.match(
+    "ACTOR_GOLD_PROFILES.map((actor) => actor.id)",
+    rawActorProfileMap,
+  );
   assert.doesNotMatch(page, /const actor = actorBySlug\(slug\)/);
 
   const publicGate = (state) => state === "PUBLIC";
