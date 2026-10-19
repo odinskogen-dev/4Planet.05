@@ -44,14 +44,19 @@ test("Oslofjord preserves its sourced reading without WebGL2", async ({ page }) 
       },
     });
   });
-  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE}/living-systems/oslofjord`, { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "Oslofjorden", exact: true })).toBeVisible();
   await expect(page.getByRole("status")).toHaveText("MAP · UNAVAILABLE");
   await expect(page.getByText(/interactive map is unavailable in this browser/i)).toBeVisible();
   await expect(page.locator(".maplibregl-canvas")).toHaveCount(0);
+  await expect(page.locator(".proof-map-canvas")).toHaveCount(0);
   await verifyHumanReadingContract(page);
+
+  const viewport = page.viewportSize();
+  const fallbackBox = await page.locator("section[aria-label='Explore the fjord map']").boundingBox();
+  const maximumFallbackHeight = (viewport?.width ?? 1440) <= 760 ? 760 : 600;
+  expect(fallbackBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThan(maximumFallbackHeight);
 
   for (const layer of ["SEABED / DEPTH", "ECOLOGICAL STATUS", "PHYSICAL INTERVENTIONS"]) {
     await expect(page.getByRole("button", { name: new RegExp(layer.replace("/", "\\/"), "i") })).toBeDisabled();

@@ -182,7 +182,7 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
           ? <p className="editorial-note" style={{ marginTop: 10 }}>The interactive map is unavailable in this browser. The sourced Living Systems reading remains available below.</p>
           : degraded && <p className="editorial-note" style={{ marginTop: 10 }}>Some map layers are temporarily unavailable.</p>}
       </div>
-      <div ref={box} className="proof-map-canvas" />
+      {!mapUnavailable && <div ref={box} className="proof-map-canvas" />}
       <div role="status" aria-live="polite" className="editorial-note" style={{ margin: "10px 0 0" }}>
         {mapStatus}
       </div>
