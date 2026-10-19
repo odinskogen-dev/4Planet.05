@@ -1,0 +1,33 @@
+name: MAX EXPOSURE Species Editorial Release Audit
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/max-exposure-species-review-inventory-20261019.yml
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  species-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Audit indexed source provenance and nonexistent URL behavior
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const base="https://4species.com";
+          const xml=await (await fetch(base+"/sitemap.xml")).text();
+          const paths=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>new URL(x[1]).pathname);
+          const profiles=paths.filter(p=>!["/","/explore","/about","/quiz"].includes(p));
+          const results=[];let cursor=0;
+          await Promise.all(Array.from({length:6},async()=>{while(cursor<profiles.length){const p=profiles[cursor++];try{const r=await fetch(base+"/species-data/v1/"+p.slice(1)+".json");const v=r.ok?await r.json():{};const review=v.provenance?.review||"MISSING";const sourceUrls=JSON.stringify(v).match(/https:\/\/[a-zA-Z0-9_.-]+\/[^" ]*/g)?.length||0;results.push({path:p,review,sourceUrls,fetchStatus:r.status,schema:v.schema||null})}catch(e){results.push({path:p,review:"ERROR",error:String(e.name||e)})}}}));
+          results.sort((a,b)=>a.path.localeCompare(b.path));
+          const totals={};for(const p of results)totals[p.review]=(totals[p.review]||0)+1;
+          console.log("SPECIES_EDITORIAL_SUMMARY "+JSON.stringify({profileCount:results.length,allSitemapUrls:paths.length,reviewTotals:totals}));
+          for(const p of results)console.log("SPECIES_EDITORIAL "+JSON.stringify(p));
+          const unknown=await fetch(base+"/__unreviewed-species-audit-canary-no-such-animal");
+          const html=await unknown.text();
+          const robots=(html.match(/<meta[^>]*name=["']robots["'][^>]*content=["']([^"']+)/i)||[])[1]||"";
+          const canonical=(html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)/i)||[])[1]||"";
+          console.log("SPECIES_UNKNOWN_ROUTE "+JSON.stringify({status:unknown.status,xRobots:unknown.headers.get("x-robots-tag"),robots,canonical,contentLength:html.length}));
+          NODE
