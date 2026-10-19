@@ -1,6 +1,8 @@
 name: 4SPECIES Founder-Approved 39 Claude Premium Live Cutover
 on:
-  workflow_dispatch:
+  push:
+    branches: [release/species-39-20261019]
+    paths: [.github/workflows/species-39-live.yml]
 permissions: {contents: read}
 concurrency:
   group: 4species-immutable-39-20261019
