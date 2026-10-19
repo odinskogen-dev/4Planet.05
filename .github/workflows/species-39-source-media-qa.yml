@@ -1,0 +1,68 @@
+name: SPECIES 39 — Source and Wild Photo Release Audit
+on:
+  push:
+    branches: [release/species-39-profiles-20261019]
+    paths: [.github/workflows/species-39-source-media-qa.yml]
+permissions: {contents: read}
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install --quiet requests Pillow
+      - name: Check 11 Claude profiles source URLs + file licences + actual image pixels
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,requests,re,io
+          from PIL import Image
+          from urllib.parse import urlparse,unquote
+          p=json.load(open('ops/species/v53/batch-11-premium-claude-candidates.json'))
+          session=requests.Session()
+          session.headers.update({'User-Agent':'4PLANET-SPECIES-GOLD-Media-Audit/1.0 (https://4species.com; provenance audit only)'})
+          results=[]
+          for file, page in p['pages'].items():
+              sources=set();claimed=[]
+              def walk(x):
+                  if isinstance(x,dict):
+                      if isinstance(x.get('source'),dict) and x['source'].get('url'):sources.add(x['source']['url']);claimed.append(x['text'] if 'text' in x else (x.get('value') or ''))
+                      for v in x.values():walk(v)
+                  elif isinstance(x,list):
+                      for v in x:walk(v)
+              walk(page)
+              hero=page['hero']
+              result={'slug':page['slug'],'sourceUrls':len(sources),'sourceProbe':{},'media':{'source':hero['sourcePage'],'licenceAsserted':hero['licence'],'credit':hero['credit']}}
+              for url in sorted(sources):
+                  try:
+                      r=session.get(url,timeout=14,allow_redirects=True,headers={'Range':'bytes=0-3000'})
+                      result['sourceProbe'][url]={'status':r.status_code,'final':r.url[:160]}
+                  except Exception as e:result['sourceProbe'][url]={'error':str(type(e).__name__)}
+              try:
+                  r=session.get(hero['sourcePage'],timeout=18)
+                  result['media']['commonsPageHttp']=r.status_code
+                  result['media']['licenceMentioned']=bool(hero['licence'].split('(')[0].lower().replace(' ','') in r.text.lower().replace(' ',''))
+                  low=re.sub(r'<[^>]+>',' ',r.text).lower()
+                  result['media']['captivityKeywords']=[k for k in ['in captivity','at the zoo','aquarium','safari park','enclosure','on display','at a wildlife park','captured'] if k in low[:40000]]
+              except Exception as e:result['media']['commonsPageError']=type(e).__name__
+              try:
+                  r=session.get(hero['url'].split('?utm_')[0],timeout=30)
+                  result['media']['imageHttp']=r.status_code
+                  result['media']['bytes']=len(r.content)
+                  if r.status_code==200:
+                      im=Image.open(io.BytesIO(r.content))
+                      result['media']['width'],result['media']['height']=im.size
+                      result['media']['format']=im.format
+                      result['media']['premiumResolution']=im.width>=1200 and im.height>=750
+              except Exception as e:result['media']['imageError']=str(e)[:180]
+              result['claims']=len(claimed)
+              result['editorialStatus']='DRAFT_NEEDS_CLAIM_AND_WILD_SCENE_REVIEW'
+              print('SPECIES_11_SOURCE_MEDIA_CHECK '+json.dumps(result,ensure_ascii=False)[:1900])
+              results.append(result)
+          errors=[r['slug'] for r in results if r['media'].get('imageHttp')!=200 or not r['media'].get('premiumResolution') or len(r['sourceProbe'])<2]
+          print('SPECIES_11_MEDIA_AND_SOURCE_SUMMARY '+json.dumps({'checked':len(results),'imageOrSourceTechnicalFailures':errors,'sourceWebBlockers':[r['slug'] for r in results if any(x.get('status',0)>=400 for x in r['sourceProbe'].values())]},ensure_ascii=False))
+          # This read-only audit is not a Gold approval: it cannot know whether
+          # a photo has the correct subject, is truly wild, or has good crops.
+          PY
