@@ -78,6 +78,34 @@ jobs:
           VITE_MAGAZINE_SITE_ORIGIN: https://4planetmagazine.com
         run: npm run build
 
+      - name: Verify every source-ready Magazine article and search surface BEFORE deployment
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { readStories, readImages } from './scripts/magazine-content.mjs';
+          const stories = readStories();
+          const images = readImages();
+          const sitemap = fs.readFileSync('public/magazine-sitemap.xml', 'utf8');
+          const required = new Set(['ocean-watch-1-8-million-kilometres','five-am-bay-of-biscay','air-filter-biodiversity-time-machine','mine-that-became-wetland','ai-coral-photomosaics','roads-that-warn-cars-about-moose','sea-pen-instead-of-tank','why-4planet-exists','the-four-domains','wh4les-migratory-intelligence','credible-tree-pathway','amazonia-more-than-a-forest','making-impact-easy']);
+          const seen = new Set();
+          for (const story of stories) {
+            if (seen.has(story.slug)) throw new Error('Duplicate Magazine slug: ' + story.slug);
+            seen.add(story.slug);
+            if (!images[story.image]) throw new Error('Missing Magazine image key: ' + story.slug + ': ' + story.image);
+            const url = 'https://4planetmagazine.com/magazine/' + story.slug + '/';
+            const file = path.join('dist','magazine', story.slug, 'index.html');
+            if (!fs.existsSync(file)) throw new Error('Missing prerendered article: ' + file);
+            const html = fs.readFileSync(file, 'utf8');
+            if (!html.includes('data-4planet-static-prerender="magazine-story"')) throw new Error('Missing search-visible HTML: ' + story.slug);
+            if (!html.includes('<link rel="canonical" href="' + url + '">')) throw new Error('Canonical URL mismatch: ' + story.slug);
+            if (!sitemap.includes('<loc>' + url + '</loc>')) throw new Error('Magazine sitemap missing article: ' + story.slug);
+            if (!story.title || !Array.isArray(story.blocks) || story.blocks.length < 3) throw new Error('Incomplete Magazine article: ' + story.slug);
+          }
+          for (const slug of required) if (!seen.has(slug)) throw new Error('Missing required Magazine article: ' + slug);
+          console.log('MAGAZINE PUBLICATION GATE PASS: ' + stories.length + ' distinct articles; all 13 required routes + prerender + canonical + sitemap + image key');
+          NODE
       - name: Install Chromium + WebKit for independent Human Gold QA
         run: npx playwright install --with-deps chromium webkit
 
@@ -272,6 +300,19 @@ jobs:
           verify_live 'https://4planetmagazine.com/magazine/'
           verify_live 'https://4planetmagazine.com/magazine/why-4planet-exists/'
           verify_live 'https://4planetmagazine.com/magazine/about/'
+
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/magazine-story-slugs.txt"
+          import { readStories } from './scripts/magazine-content.mjs';
+          for (const story of readStories()) console.log(story.slug);
+          NODE
+          count=0
+          while IFS= read -r slug || [ -n "$slug" ]; do
+            [ -z "$slug" ] && continue
+            verify_live "https://4planetmagazine.com/magazine/$slug/"
+            count=$((count + 1))
+          done < "$RUNNER_TEMP/magazine-story-slugs.txt"
+          [ "$count" -ge 13 ] || { echo "Expected >=13 verified Magazine article URLs, got $count"; exit 22; }
+
           verify_live 'https://4planetmagazine.com/films/'
 
           story_html=$(curl -fsS 'https://4planetmagazine.com/magazine/why-4planet-exists/')
