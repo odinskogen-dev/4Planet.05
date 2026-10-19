@@ -121,6 +121,26 @@ export function ImpactLivingActionNetwork() {
     });
   }, [payload, issue, query]);
 
+  const actorEntries = useMemo(() => {
+    const byId = new Map<string, {
+      actor: NonNullable<ImpactLanProject["actor"]>;
+      projects: ImpactLanProject[];
+    }>();
+    for (const project of payload?.projects ?? []) {
+      if (!project.actor) continue;
+      const current = byId.get(project.actor.id);
+      if (current) current.projects.push(project);
+      else byId.set(project.actor.id, { actor: project.actor, projects: [project] });
+    }
+    return Array.from(byId.values()).map(({ actor, projects }) => ({
+      actor,
+      projectCount: projects.length,
+      contexts: Array.from(new Set(projects
+        .map((project) => project.coverage_note || project.place?.name || "")
+        .filter(Boolean))),
+    }));
+  }, [payload]);
+
   const setIssue = (next: string) => {
     const copy = new URLSearchParams(params);
     if (next === "ALL_") copy.delete("issue");
@@ -194,9 +214,9 @@ export function ImpactLivingActionNetwork() {
             <section className="ilan-actors">
               <div className="ilan-section-head"><span>ACTORS_</span><h2>Who is doing the work?</h2><p>Public actor profiles connect organisations to projects, places and evidence without turning a listing into an endorsement.</p></div>
               <div className="ilan-actor-list">
-                {payload.projects.filter((project) => project.actor).map((project) => (
-                  <Link key={project.actor!.id} to={"/impact/actors/" + impactActorSlug(project.actor!.id)} onClick={() => trackEvent("impact_actor_open", { actor_id: project.actor!.id, surface: "collection" })}>
-                    <span>{project.actor!.actor_type || "ACTOR"}</span><strong>{project.actor!.name}</strong><small>{project.place?.name || project.coverage_note || "Project context"}</small><b>→</b>
+                {actorEntries.map(({ actor, projectCount, contexts }) => (
+                  <Link key={actor.id} to={"/impact/actors/" + impactActorSlug(actor.id)} onClick={() => trackEvent("impact_actor_open", { actor_id: actor.id, surface: "collection" })}>
+                    <span>{actor.actor_type || "ACTOR"}</span><strong>{actor.name}</strong><small>{projectCount} {projectCount === 1 ? "project" : "projects"} · {contexts.slice(0, 2).join(" · ") || "Project context"}</small><b>→</b>
                   </Link>
                 ))}
               </div>
