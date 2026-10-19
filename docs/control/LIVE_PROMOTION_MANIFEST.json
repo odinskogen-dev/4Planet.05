@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "status": "NOT_AUTHORISED",
   "sourceBranch": "king/test",
-  "testKingSha": "0bed5e65b0bec7faeabea19db4121118a859862e",
+  "testKingSha": "f653d71101d309a602aa306f9a26152aadea75ca",
   "priorLiveSha": null,
   "liveRollbackState": "UNVERIFIED",
   "releaseControlCommit": true,
@@ -13,7 +13,7 @@
   "boundedRelease": false,
   "releaseKind": null,
   "founderDecisionRef": null,
-  "evidenceRef": "https://docs.google.com/spreadsheets/d/1nNrw5wQWT05XVtpp9B0jwp3AqaesR5ClkICBKVKzWJ4/edit#gid=404975884&range=A1743:AL1743",
+  "evidenceRef": "https://github.com/odinskogen-dev/4Planet.05/issues/132#issuecomment-6269694916",
   "rollbackRef": null,
   "requiredGates": [
     "EXACT_HEAD_CI",
@@ -24,5 +24,5 @@
     "TARGET_RECONCILIATION_WITHOUT_WHOLESALE_MERGE",
     "ACTION_SPECIFIC_FOUNDER_LIVE_AUTHORITY"
   ],
-  "note": "Fail-closed release-control packet corrected after H07 Gold returned release-head drift. testKingSha is the exact tested control/product head immediately before this manifest-only child. targetObservedSha is the freshly observed main branch head and is not treated as the deployed LIVE SHA. Deployed LIVE and its rollback anchor remain explicitly UNVERIFIED. The promotion guard now rejects target drift and any Founder-authorised packet without an independently verified LIVE rollback; executable negative regressions cover both boundaries. This file does not authorise merge, deployment, release or LIVE. PR #131 remains an open draft and was observed not mergeable. Re-freeze and re-audit after any product/runtime or target change; populate LIVE rollback and Founder authority only from exact independent evidence."
+  "note": "Fail-closed release-control packet re-frozen on 19 October 2026 after the lawful TEST KING receiver advanced through product corrections. testKingSha is the exact pre-control product head immediately before this manifest-only child. targetObservedSha is the freshly observed main branch head and is not treated as the deployed LIVE SHA. PR #131 remains open/draft and diverged from main (+763/-198); exact-head CI/status contexts, immutable staging, deployed LIVE/rollback proof, authenticated runtime proof, independent Gold and action-specific Founder authority remain absent or open. This file does not authorise merge, deployment, release or LIVE. Re-freeze and re-audit after any product/runtime or target change."
 }
