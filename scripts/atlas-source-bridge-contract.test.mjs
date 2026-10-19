@@ -418,7 +418,7 @@ test("Truth Spine can retain precision/generalisation/citation state from source
 });
 
 
-test("routed ATLAS GBIF points preserve presence, zero coordinates and evidence boundaries", () => {
+test("routed ATLAS GBIF points preserve presence, zero coordinates and issued-licence boundaries", () => {
   const retrievedAt = "2026-10-11T07:27:41.000Z";
   const baseRecord = {
     decimalLatitude: 0,
@@ -455,19 +455,31 @@ test("routed ATLAS GBIF points preserve presence, zero coordinates and evidence 
     { ...baseRecord, decimalLongitude: 181 },
     { ...baseRecord, hasGeospatialIssues: true },
     { ...baseRecord, issues: ["ZERO_COORDINATE"] },
-    { ...baseRecord, license: "CC BY-NC 4.0" },
-    { ...baseRecord, license: "CC BY-SA 4.0" },
     { ...baseRecord, license: undefined },
   ]) {
     assert.equal(earthLayersRuntime.gbifOccurrencePoint(rejected, retrievedAt), null);
   }
   assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, license: "CC0 1.0" }, retrievedAt));
+  for (const version of ["1.0", "2.0", "2.5", "3.0", "4.0"]) {
+    const licence = `CC BY ${version}`;
+    assert.equal(earthLayersRuntime.gbifLicenceClass(licence), "OPEN_ATTRIBUTION");
+    assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, license: licence }, retrievedAt));
+  }
   assert.equal(earthLayersRuntime.gbifLicenceClass("CC BY 4.0"), "OPEN_ATTRIBUTION");
   assert.equal(earthLayersRuntime.gbifLicenceClass("CC0 1.0"), "OPEN_CC0");
-  assert.equal(earthLayersRuntime.gbifLicenceClass("PUBLIC DOMAIN"), "OPEN_CC0");
   assert.equal(earthLayersRuntime.gbifLicenceClass("https://creativecommons.org/licenses/by/4.0/legalcode"), "OPEN_ATTRIBUTION");
   assert.equal(earthLayersRuntime.gbifLicenceClass("https://www.creativecommons.org/publicdomain/zero/1.0/legalcode"), "OPEN_CC0");
   for (const rejectedLicence of [
+    "PUBLIC DOMAIN",
+    "CC0",
+    "CC BY",
+    "CC0 9.9",
+    "CC BY 9.9",
+    "CC BY-NC 4.0",
+    "CC BY-SA 4.0",
+    "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "https://creativecommons.org/publicdomain/zero/9.9/legalcode",
+    "https://creativecommons.org/licenses/by/9.9/legalcode",
     "Not public domain",
     "NOT CC0",
     "CC BY-NC-SA 4.0",
@@ -480,6 +492,14 @@ test("routed ATLAS GBIF points preserve presence, zero coordinates and evidence 
   ]) assert.equal(earthLayersRuntime.gbifLicenceClass(rejectedLicence), "REVIEW_REQUIRED");
 
   for (const rejectedLicence of [
+    "PUBLIC DOMAIN",
+    "CC0",
+    "CC BY",
+    "CC0 9.9",
+    "CC BY 9.9",
+    "http://creativecommons.org/licenses/by/4.0/legalcode",
+    "https://creativecommons.org/publicdomain/zero/9.9/legalcode",
+    "https://creativecommons.org/licenses/by/9.9/legalcode",
     "Not public domain",
     "NOT CC0",
     "https://creativecommons.org.evil.example/licenses/by/4.0/legalcode",

@@ -31,26 +31,31 @@ export const titleCase = (s) => String(s ?? "").replace(/\w\S*/g, (t) => t.charA
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const stamp = () => new Date().toISOString().slice(11, 16) + "Z";
 
+const ISSUED_CC_BY_VERSIONS = new Set(["1.0", "2.0", "2.5", "3.0", "4.0"]);
+const ISSUED_CC0_VERSION = "1.0";
+
 export const gbifLicenceClass = (value) => {
   const licence = String(value ?? "").trim();
   if (!licence) return "REVIEW_REQUIRED";
-
   try {
     const url = new URL(licence);
     const officialHost = url.hostname === "creativecommons.org" || url.hostname === "www.creativecommons.org";
     const path = url.pathname.toLowerCase().replace(/\/+$/, "");
-    if (!officialHost || !["https:", "http:"].includes(url.protocol)) return "REVIEW_REQUIRED";
-    if (/^\/publicdomain\/zero\/\d+(?:\.\d+)?(?:\/legalcode)?$/.test(path)) return "OPEN_CC0";
-    if (/^\/licenses\/by\/\d+(?:\.\d+)?(?:\/legalcode)?$/.test(path)) return "OPEN_ATTRIBUTION";
+    if (!officialHost || url.protocol !== "https:") return "REVIEW_REQUIRED";
+    const cc0Url = path.match(/^\/publicdomain\/zero\/([0-9]+(?:\.[0-9]+)?)(?:\/legalcode)?$/);
+    if (cc0Url?.[1] === ISSUED_CC0_VERSION) return "OPEN_CC0";
+    const ccByUrl = path.match(/^\/licenses\/by\/([0-9]+(?:\.[0-9]+)?)(?:\/legalcode)?$/);
+    if (ccByUrl && ISSUED_CC_BY_VERSIONS.has(ccByUrl[1])) return "OPEN_ATTRIBUTION";
     return "REVIEW_REQUIRED";
   } catch {
-    // Non-URL values must match a small explicit token allow-list below.
+    // Token licences are accepted only when they include an issued version.
   }
-
   const normalised = licence.toUpperCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
   if (/\b(?:NOT|NO|NON)\b/.test(normalised)) return "REVIEW_REQUIRED";
-  if (/^(?:CC0|CC ZERO)(?: \d+(?:\.\d+)?)?$/.test(normalised) || normalised === "PUBLIC DOMAIN") return "OPEN_CC0";
-  if (/^CC BY(?: \d+(?:\.\d+)?)?$/.test(normalised)) return "OPEN_ATTRIBUTION";
+  const cc0Token = normalised.match(/^(?:CC0|CC ZERO) ([0-9]+(?:\.[0-9]+)?)$/);
+  if (cc0Token?.[1] === ISSUED_CC0_VERSION) return "OPEN_CC0";
+  const ccByToken = normalised.match(/^CC BY ([0-9]+(?:\.[0-9]+)?)$/);
+  if (ccByToken && ISSUED_CC_BY_VERSIONS.has(ccByToken[1])) return "OPEN_ATTRIBUTION";
   return "REVIEW_REQUIRED";
 };
 

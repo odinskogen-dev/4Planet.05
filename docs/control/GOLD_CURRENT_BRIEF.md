@@ -1,3 +1,39 @@
+# ATLAS — GBIF ISSUED-LICENCE ADMISSION — 20 OCT 2026
+
+**STATUS:** SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** they want to explore species occurrences without mistaking unverifiable source terms for reusable open data.
+
+**ONE THING TO UNDERSTAND:** an ATLAS GBIF point is admitted only when its record declares a recognised, issued CC BY or CC0 licence version.
+
+**PRIMARY ACTION:** explore mapped occurrence evidence.
+
+**SECONDARY DEPTH:** inspect the original GBIF record, dataset, licence and retrieval evidence.
+
+**P1 DOMINANT:** the existing ATLAS map remains the dominant surface.
+
+**P2 ORIENTATION:** existing presence, uncertainty and dataset context remain unchanged.
+
+**P3 ACTION:** open the original record or dataset source.
+
+**P4 DEPTH:** inspect the exact original licence and retrieval timestamp before reuse.
+
+**WHAT CAN BE REMOVED:** admission of versionless, invented, non-issued, insecure or ambiguous licence labels.
+
+**WHAT MUST BE REUSED:** issue #244, ATLAS-03, the existing `gbifOccurrencePoint` source boundary and the sole `king/test` receiver.
+
+**TRUTH BOUNDARY:** licence admission proves only that a record declares an issued open licence. It does not prove identity, accuracy, abundance, coverage, timeliness or endorsement.
+
+**MOBILE-FIRST RISK:** no layout or interaction change; the change only removes points that fail the source contract.
+
+**HUMAN SUCCESS:** every visible GBIF point declares CC BY 1.0/2.0/2.5/3.0/4.0 or CC0 1.0, expressed as an exact token or official HTTPS Creative Commons URL.
+
+**BASE / ROLLBACK:** `king/test@7bb4640489c2a585d6f03c9ab5e59205fe95c742`; revert the bounded commit to restore the previous classifier.
+
+**MAKER ≠ JUDGE:** Factory has produced a candidate correction only. Independent QA/GOLD remains required.
+
+---
+
 # SPECIES — TAXON IDENTITY / CITATION SEPARATION — 19 OCT 2026
 
 **STATUS:** FRESH SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
