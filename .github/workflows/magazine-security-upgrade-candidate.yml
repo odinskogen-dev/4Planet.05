@@ -5,6 +5,7 @@ on:
       - fix/magazine-http-https-20261019
     paths:
       - '.github/workflows/magazine-security-upgrade-candidate.yml'
+      - 'src/earth/World.tsx'
 
 permissions:
   contents: write
