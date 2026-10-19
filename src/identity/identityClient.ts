@@ -173,7 +173,7 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       // return_to appears inside a server-visible URL. Never pass OAuth codes,
       // session credentials, personal contact details or token-bearing values.
       // Preserve non-sensitive ATLAS deep-link state and campaign parameters.
-      const decodeForReturnInspection = (input) => {
+      const decodeForReturnInspection = (input: string) => {
         let decoded = input;
         for (let pass = 0; pass < 2; pass += 1) {
           try {

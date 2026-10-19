@@ -59,10 +59,11 @@ test("return_to never forwards OAuth secrets or contact details to the identity 
   const match = client.match(/export function safeReturnTo\([^\n]+\) \{([\s\S]*?)\n\}\n\nexport function identityLoginUrl/);
   assert.ok(match, "safeReturnTo implementation should be testable");
   // Evaluate this bounded helper only, with a known, fixed site origin.
+  const executableBody = match[1].replace("(input: string)", "(input)");
   const safeReturnTo = new Function(
     "window",
     "TRUSTED_RETURN_ORIGINS",
-    'return function safeReturnTo(value, fallback = "https://4planet.org/") {' + match[1] + '}',
+    'return function safeReturnTo(value, fallback = "https://4planet.org/") {' + executableBody + '}',
   )(
     { location: { origin: "https://4planet.org" } },
     new Set(["https://4planet.org", "https://4planetatlas.com"]),
