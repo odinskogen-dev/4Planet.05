@@ -62,3 +62,14 @@ test("Seo uses the shared owned-graph cleanup before install and on route cleanu
   assert.ok((seo.match(/removeOwnedJsonLd\(\)/g) || []).length >= 2);
   assert.match(seo, /script\.id = "4planet-page-jsonld"/);
 });
+
+test("SPECIES keeps evidence links as citations without asserting taxon identity equivalence", () => {
+  const source = read("scripts/prerender-discovery-seo.mjs");
+  assert.match(source, /citation: sourceUrls,/);
+  assert.match(source, /const sourcesHtml = sourceUrls\.length/);
+  assert.doesNotMatch(
+    source,
+    /sameAs:\s*sourceUrls/,
+    "citation URLs are not automatically unambiguous Taxon identity URLs",
+  );
+});

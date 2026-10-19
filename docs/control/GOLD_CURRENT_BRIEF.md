@@ -1,3 +1,24 @@
+# SPECIES — TAXON IDENTITY / CITATION SEPARATION — 19 OCT 2026
+
+**STATUS:** FRESH SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person or crawler needs a species profile whose evidence links do not overstate identity equivalence.
+**ONE THING TO UNDERSTAND:** a source may support the page without being an unambiguous identity URL for the taxon.
+**PRIMARY ACTION:** inspect the existing species profile and follow its visible source links.
+**SECONDARY DEPTH:** consume the same links as `WebPage.citation` while Taxon identity remains limited to reviewed names and rank.
+**P1 DOMINANT:** the existing species profile.
+**P2 ORIENTATION:** common name, scientific name, limitations and source list.
+**P3 ACTION:** follow the existing source links or continue into ATLAS.
+**P4 DEPTH:** independent exact-head generated-HTML and structured-data validation before release.
+**WHAT CAN BE REMOVED:** automatic promotion of every `sourceUrls` entry into `Taxon.sameAs`.
+**WHAT MUST BE REUSED:** EXPO-04, SPEC-GS-11, issue #132, SPECIES #145, the existing discovery prerenderer, JSON-LD ownership contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this separates page evidence from taxon identity equivalence; it does not judge any individual source false, invent an identity URL, grant Gold, deploy, alter LIVE or prove search-engine interpretation.
+**MOBILE-FIRST RISK:** no layout or interaction change; visible source links and existing route content remain unchanged.
+**HUMAN SUCCESS:** every existing source remains visible and emitted as a page citation, while no source is asserted as Taxon identity without a separate reviewed identity contract.
+**BASE / ROLLBACK:** `king/test@c5bfa7fceee67c6c0845844a4b44f163741eafec`; revert the bounded generator/test/brief commit if independent Gold finds a citation, identity, generated-HTML or route regression.
+**MAKER ≠ JUDGE:** Factory implements and returns an exact candidate SHA. Independent Gold judges the exact generated artifact; Founder release and runtime verification remain separate.
+
+---
+
 # 4SAPIEN FOOD — KEYBOARD + MOBILE PRIORITY CHOICE — 19 OCT 2026
 
 **STATUS:** DOCUMENTED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD + REAL 390/430 BROWSER PROOF REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.

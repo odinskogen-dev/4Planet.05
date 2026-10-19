@@ -128,7 +128,6 @@ for (const item of species) {
         alternateName: item.scientificName,
         scientificName: item.scientificName,
         taxonRank: "species",
-        sameAs: sourceUrls,
       },
       subjectOf: item.atlasHref ? { "@type": "WebPage", url: origin + item.atlasHref, name: `${item.commonName} in 4PLANET ATLAS` } : undefined,
       disambiguatingDescription: limitations.length ? limitations.join(" ") : undefined,
