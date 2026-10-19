@@ -28,7 +28,7 @@ export const MAGAZINE_REPORTED_FEATURES: Record<string, MagazineFeature> = {
   },
 
   "five-am-bay-of-biscay": {
-    hero: "wh4lesHero",
+    hero: "whaleSurveyStoryHero",
     secondary: "pl4sticHero",
     secondaryKicker: "BAY OF BISCAY / A WORKING TRANSECT",
     secondaryCaption: "At sea, a line on a map becomes hours of attention, changing conditions and a sequence of recorded encounters.",
