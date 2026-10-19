@@ -25,6 +25,17 @@ export function evidenceSourcesReady(
     && sourceIds.every((id) => Boolean(getSource(id)) && isSourceLoaded(id));
 }
 
+export function supportsWebGl2(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("webgl2");
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
+    return Boolean(context);
+  } catch {
+    return false;
+  }
+}
+
 function EvidenceMap({ proof }: { proof: PlanetProof }) {
   const box = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -45,6 +56,11 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     setMapUnavailable(false);
     setBaseReady(false);
     setEvidenceReady(false);
+    if (!supportsWebGl2()) {
+      setMapUnavailable(true);
+      map.current = null;
+      return;
+    }
     maplibregl.setWorkerUrl(maplibreWorkerUrl);
     let m: maplibregl.Map;
     try {
@@ -107,6 +123,12 @@ function EvidenceMap({ proof }: { proof: PlanetProof }) {
     m.on("idle", refreshEvidenceReady);
     m.on("error", (event) => {
       const message = String(event.error?.message ?? "");
+      if (/webgl2|gpuinitializationerror/i.test(message)) {
+        setMapUnavailable(true);
+        setBaseReady(false);
+        setEvidenceReady(false);
+        return;
+      }
       if (message && !message.includes("glyph")) {
         setDegraded(true);
         setEvidenceReady(false);

@@ -33,6 +33,31 @@ async function verifyHumanReadingContract(page: import("@playwright/test").Page)
   await expect(page.getByText(/does not mean the whole Oslofjord ecosystem has been restored/i)).toBeVisible();
 }
 
+test("Oslofjord preserves its sourced reading without WebGL2", async ({ page }) => {
+  await page.addInitScript(() => {
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+      configurable: true,
+      value(this: HTMLCanvasElement, contextId: string, ...args: unknown[]) {
+        if (contextId === "webgl2") return null;
+        return Reflect.apply(originalGetContext, this, [contextId, ...args]);
+      },
+    });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${BASE}/living-systems/oslofjord`, { waitUntil: "domcontentloaded" });
+
+  await expect(page.getByRole("heading", { name: "Oslofjorden", exact: true })).toBeVisible();
+  await expect(page.getByRole("status")).toHaveText("MAP · UNAVAILABLE");
+  await expect(page.getByText(/interactive map is unavailable in this browser/i)).toBeVisible();
+  await expect(page.locator(".maplibregl-canvas")).toHaveCount(0);
+  await verifyHumanReadingContract(page);
+
+  for (const layer of ["SEABED / DEPTH", "ECOLOGICAL STATUS", "PHYSICAL INTERVENTIONS"]) {
+    await expect(page.getByRole("button", { name: new RegExp(layer.replace("/", "\\/"), "i") })).toBeDisabled();
+  }
+});
+
 test("Oslofjord desktop is a source-backed human-first Planet proof", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${BASE}/living-systems/oslofjord`, { waitUntil: "domcontentloaded" });
