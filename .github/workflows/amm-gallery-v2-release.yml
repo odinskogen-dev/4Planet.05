@@ -15,7 +15,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git amm-src
-          test "$(git -C amm-src rev-parse HEAD)" = "de0d2b6c65303a4d0784b654c41fc2fced57d0e2"
+          test "$(git -C amm-src rev-parse HEAD)" = "fca9658667f1d280fce04ca161a21df14d692f32"
           test -s amm-src/ammkunst/site/art/n0388.webp
           test -s amm-src/ammkunst/site/art/n0387.webp
           test -s amm-src/ammkunst/site/art/n0397.webp
@@ -59,7 +59,7 @@ jobs:
             picture="$(curl -sSL --max-time 15 -o /tmp/amm-art -w '%{http_code}' https://ammkunst.com/art/n0388.webp || true)"
             stylesheet="$(curl -sSL --max-time 15 -o /tmp/amm-css -w '%{http_code}' https://ammkunst.com/assets/gallery-v2.css || true)"
             shop="$(curl -sSL --max-time 15 -o /tmp/amm-shop -w '%{http_code}' https://ammkunst.com/shop/ || true)"
-            if [[ "$code" = 200 && "$picture" = 200 && "$stylesheet" = 200 && "$shop" = 200 ]] && grep -q 'class="hero"' /tmp/amm-main && grep -q 'class="gallery"' /tmp/amm-shop && grep -q -- '--white:#FFFFFF' /tmp/amm-css && file /tmp/amm-art | grep -qi WebP; then
+            if [[ "$code" = 200 && "$picture" = 200 && "$stylesheet" = 200 && "$shop" = 200 ]] && grep -q 'class="hero"' /tmp/amm-main && grep -q 'class="gallery"' /tmp/amm-shop && grep -q -- '--white:#FFFFFF' /tmp/amm-css && file /tmp/amm-art | grep -qi 'Web/P'; then
               echo 'AMM_GALLERY_V2_VERIFIED=https://ammkunst.com/'
               exit 0
             fi
