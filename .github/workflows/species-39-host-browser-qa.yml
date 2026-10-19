@@ -1,0 +1,81 @@
+name: SPECIES 39 — Premium Mapped-Host Browser QA
+on:
+  push:
+    branches: [release/species-39-profiles-20261019]
+    paths: [.github/workflows/species-39-host-browser-qa.yml]
+permissions: {contents: read}
+jobs:
+  real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - run: |
+          npm install --prefix /tmp/species39 playwright@1.56.0
+          /tmp/species39/node_modules/.bin/playwright install --with-deps chromium
+      - name: Test 39 original Claude full profiles on 4species.com mapped to immutable new candidate
+        shell: bash
+        run: |
+          set -eu
+          mkdir -p /tmp/species39-screens
+          node --input-type=module <<'NODE'
+          import {chromium} from '/tmp/species39/node_modules/playwright/index.mjs';
+          import fs from 'node:fs';
+          const PREVIEW="https://bb0c99eb.4planet-05.pages.dev";
+          const slugs="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split(' ');
+          let errors=[];const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const results=[];
+          for(const slug of slugs){
+            const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1});
+            await context.route('https://4species.com/**',async route=>{
+              let path=new URL(route.request().url());
+              try{const response=await route.fetch({url:PREVIEW+path.pathname+path.search,maxRedirects:6,timeout:25000});
+                await route.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':'*'}});}
+              catch(e){console.log('MAPPED_ERROR '+slug+' '+path.pathname+' '+String(e).slice(0,130));await route.abort();}
+            });
+            const p=await context.newPage();const pageErrors=[];p.on('pageerror',e=>pageErrors.push(e.message.slice(0,120)));
+            try{
+              const response=await p.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:25000});
+              await p.waitForTimeout(1050);
+              const data=await p.evaluate(()=>{
+                const img=document.querySelector('.spx-hero img,.spx-hero-img,.spx-hero-slide img');
+                return {h1:document.querySelector('h1')?.innerText.slice(0,125),premium:!!document.querySelector('.spx'),
+                  sources:document.querySelectorAll('.spx-source-list').length,refs:document.querySelectorAll('.spx-ref').length,
+                  canonical:document.querySelector('link[rel="canonical"]')?.href,
+                  robots:document.querySelector('meta[name="robots"]')?.content,
+                  hero:img?{src:img.currentSrc||img.src,loaded:img.naturalWidth>0,width:img.naturalWidth,height:img.naturalHeight,focus:getComputedStyle(img).objectPosition}:null,
+                  images:[...document.querySelectorAll('img')].filter(x=>x.getClientRects().length>0).slice(0,3).map(x=>({src:(x.currentSrc||x.src).slice(0,140),loaded:!!x.naturalWidth})),
+                  links:document.querySelectorAll('a[href]').length};
+              });
+              const row={slug,http:response?.status(),...data,errors:pageErrors};
+              results.push(row);
+              if(response?.status()!==200 || !data.premium||!data.sources||data.refs<3||data.canonical!=='https://4species.com/'+slug||data.robots?.includes('noindex')){
+                errors.push('PROFILE_FAIL '+slug+':'+JSON.stringify(row).slice(0,430));
+              }
+              if(['orca','lion','atlantic-cod','humpback-whale','leopard','hyacinth-macaw','english-oak'].includes(slug)){
+                await p.screenshot({path:'/tmp/species39-screens/'+slug+'-phone.png',animations:'disabled'});
+              }
+              console.log('CLAUDE_39_BROWSER '+JSON.stringify(row).slice(0,800));
+            }catch(e){errors.push(slug+':'+String(e).slice(0,300))}
+            await context.close();
+          }
+          // Founding homepage and Explore must remain unchanged in candidate.
+          const ctx=await browser.newContext({viewport:{width:390,height:844}});
+          await ctx.route('https://4species.com/**',async route=>{
+            const u=new URL(route.request().url());try{const response=await route.fetch({url:PREVIEW+u.pathname+u.search,maxRedirects:6,timeout:25000});await route.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':'*'}})}catch(e){await route.abort()}
+          });
+          const page=await ctx.newPage();await page.goto('https://4species.com/',{waitUntil:'domcontentloaded',timeout:25000});await page.waitForTimeout(850);
+          const home=await page.evaluate(()=>({hero:document.querySelector('.spx-u-hero')?.getBoundingClientRect().height,
+            input:document.querySelector('.spx-u-hero [role=search]')?.getBoundingClientRect().bottom,
+            viewport:innerHeight}));
+          console.log('CLAUDE_HOME_MOBILE '+JSON.stringify(home));
+          if(!home.hero||!home.input||Math.abs(home.hero-home.viewport)>5||home.viewport-home.input>52)errors.push('MOBILE_HERO_SEARCH_REGRESSION');
+          await browser.close();
+          console.log('CLAUDE_39_BROWSER_SUMMARY '+JSON.stringify({count:results.length,valid:results.filter(x=>x.premium&&x.sources>0&&!x.robots?.includes('noindex')&&x.canonical==='https://4species.com/'+x.slug).length,brokenHero:results.filter(x=>x.hero&&!x.hero.loaded).map(x=>x.slug),errors}));
+          if(results.length!==39||errors.length)process.exit(1);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species-39-premium-mobile-visual-qa
+          path: /tmp/species39-screens/
+          retention-days: 7
