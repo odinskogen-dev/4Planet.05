@@ -44,6 +44,17 @@ jobs:
                 const btn=page.getByRole('button',{name:/^(play|start|begin|enter|continue)$/i}).first();
                 if(await btn.isVisible().catch(()=>false)){await btn.click();await page.waitForTimeout(6000);}
               }
+              const enterButton=t.slug==='roma'
+                ? page.getByRole('button',{name:/new campaign/i}).first()
+                : page.getByRole('button',{name:/start a new life/i}).first();
+              let entered=false;
+              if(await enterButton.isVisible().catch(()=>false)){
+                await enterButton.click({timeout:12000});
+                entered=true;
+                await page.waitForTimeout(6500);
+              }
+              console.log('CUB_GAME_ENTERED',JSON.stringify({slug:t.slug,entered}));
+              if(!entered)throw Error('Could not start actual playable game; screenshot must not be marketed as gameplay: '+t.slug);
               const canvases=await page.locator('canvas').count();
               const name='site/assets/gameplay-'+t.slug+'.jpg';
               await page.screenshot({path:name,type:'jpeg',quality:84,timeout:50000,animations:'disabled'});
