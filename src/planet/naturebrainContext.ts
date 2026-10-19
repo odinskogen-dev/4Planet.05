@@ -231,8 +231,9 @@ export function natureBrainProductIdentifiers(
 /**
  * Product projections are publication surfaces, not raw graph inspection.
  * A reviewed claim and citation do not promote an unreviewed relationship.
- * The relationship, referenced claim, reviewed evidence and evidence rights
- * boundary must all be present before an edge can enter SPECIES/ATLAS/LSI.
+ * The relationship, referenced claim, exact relationship-id + predicate support,
+ * reviewed evidence and evidence rights boundary must all be present before an
+ * edge can enter SPECIES/ATLAS/LSI.
  */
 export function natureBrainRelationshipIsProductReady(
   context: NatureBrainEntityContext,
@@ -242,6 +243,16 @@ export function natureBrainRelationshipIsProductReady(
 
   const claim = context.claims.find((candidate) => candidate.claim_id === relationship.claim_id);
   if (!claim || claim.review_status !== "reviewed") return false;
+
+  const supportedRelationships = claim.provenance?.supported_relationships;
+  if (!Array.isArray(supportedRelationships)) return false;
+  const hasExactSemanticSupport = supportedRelationships.some((candidate) => {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return false;
+    const support = candidate as Record<string, unknown>;
+    return support.relationship_id === relationship.relationship_id
+      && support.predicate === relationship.predicate;
+  });
+  if (!hasExactSemanticSupport) return false;
 
   return claim.evidence.some((evidence) => {
     const rightsBoundary = evidence.provenance?.rights_boundary;

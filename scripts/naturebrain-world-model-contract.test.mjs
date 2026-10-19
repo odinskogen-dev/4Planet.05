@@ -76,6 +76,12 @@ const orca = {
       review_status: "reviewed",
       evidence_strength: "primary_institutional_source",
       interpretation_status: "source_paraphrase",
+      provenance: {
+        supported_relationships: [{
+          relationship_id: "relationship:naturebrain:orca:consumes:nssh",
+          predicate: "consumes",
+        }],
+      },
       evidence: [{
         evidence_id: "evidence:naturebrain:orca:imr-killer-whale",
         relation: "supports",
@@ -94,6 +100,18 @@ const orca = {
       review_status: "reviewed",
       evidence_strength: "primary_institutional_report",
       interpretation_status: "source_paraphrase",
+      provenance: {
+        supported_relationships: [
+          {
+            relationship_id: "relationship:naturebrain:orca:interacts-with:nssh-fishery",
+            predicate: "interacts_with_human_system",
+          },
+          {
+            relationship_id: "relationship:naturebrain:pressure:affects:orca",
+            predicate: "affects",
+          },
+        ],
+      },
       evidence: [{
         evidence_id: "evidence:naturebrain:orca:imr-fishery-interaction",
         relation: "supports",
@@ -208,6 +226,64 @@ test("held ecological interpretations remain negative fixtures even with reviewe
   assert.equal(natureBrainRelationshipIsProductReady(orca, orca.outbound_relationships[0]), false);
   assert.equal(natureBrainProductLinks(herring).length, 0);
   assert.equal(natureBrainLsiEdges(herring).length, 0);
+});
+
+test("reviewed stock-to-taxon edges fail closed without exact claim support for relationship id and predicate", () => {
+  const misaligned = structuredClone(orca);
+  const stockTaxon = {
+    relationship_id: "relationship:naturebrain:nssh:taxon:herring",
+    predicate: "has_taxon",
+    object: { canonical_id: "taxon:aphia:126417", entity_type: "taxon", name: "Atlantic herring" },
+    claim_id: "claim:naturebrain:nssh:pelagic-feeding-context",
+    review_status: "reviewed",
+    evidence_strength: "primary_institutional_source",
+  };
+  misaligned.canonical_id = "population:imr:nssh";
+  misaligned.outbound_relationships = [stockTaxon];
+  misaligned.inbound_relationships = [];
+  misaligned.claims = [{
+    claim_id: "claim:naturebrain:nssh:pelagic-feeding-context",
+    statement: "Herring is an important prey species in the pelagic food web.",
+    review_status: "reviewed",
+    evidence_strength: "primary_institutional_source",
+    provenance: {
+      supported_relationships: [{
+        relationship_id: "relationship:naturebrain:nssh:consumes:plankton",
+        predicate: "consumes",
+      }],
+    },
+    evidence: [{
+      evidence_id: "evidence:naturebrain:nssh:imr-herring",
+      source_id: "source:imr_no",
+      dataset_id: "dataset:imr:nssh-herring-topic",
+      source_record_id: "source_record:imr:nssh-herring-topic:2025-08-19",
+      citation: "https://www.hi.no/en/hi/temasider/species/herring",
+      reviewed_at: "2026-10-04T18:05:50Z",
+      provenance: { rights_boundary: "citation_and_structured_paraphrase_only" },
+    }],
+  }];
+
+  assert.equal(natureBrainRelationshipIsProductReady(misaligned, stockTaxon), false);
+  assert.equal(natureBrainProductLinks(misaligned).length, 0);
+  assert.equal(natureBrainLsiEdges(misaligned).length, 0);
+
+  for (const malformedSupport of [
+    undefined,
+    [],
+    [{ relationship_id: stockTaxon.relationship_id }],
+    [{ predicate: stockTaxon.predicate }],
+    [{ relationship_id: stockTaxon.relationship_id, predicate: "consumes" }],
+  ]) {
+    const candidate = structuredClone(misaligned);
+    candidate.claims[0].provenance = malformedSupport === undefined
+      ? {}
+      : { supported_relationships: malformedSupport };
+    assert.equal(
+      natureBrainRelationshipIsProductReady(candidate, candidate.outbound_relationships[0]),
+      false,
+      "semantic support must match both relationship id and predicate",
+    );
+  }
 });
 
 test("reviewed edges require reviewed claim, reviewed source evidence and an explicit rights boundary", () => {
