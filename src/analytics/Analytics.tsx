@@ -305,10 +305,16 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     "product_area", "product_key", "public_slug", "result_count", "share_method",
     "site_host", "source_count", "source_host", "source_id", "source_kind",
     "species_slug", "target_host", "to_product", "unsupported_items", "use_kind",
-    "value_kind", "variant_id",
+    "value_kind", "variant_id", "actor_type", "lifecycle_stage", "evidence_state",
+    "returning",
   ]);
   const pathKeys = new Set(["entry_path", "landing_path", "page_path"]);
   const hostKeys = new Set(["site_host", "source_host", "target_host"]);
+  const lifecycleEnumValues: Record<string, ReadonlySet<string>> = {
+    actor_type: new Set(["PERSON", "COMPANY"]),
+    lifecycle_stage: new Set(["STATE", "DECISION", "ACTION", "OUTCOME", "PROOF", "RETURN"]),
+    evidence_state: new Set(["SOURCE_REFERENCED", "USER_CONFIRMED", "DEMO_FIXTURE_NOT_VERIFIED", "UNKNOWN"]),
+  };
   const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
   const tokenValue = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
   const pathValue = /^\/[A-Za-z0-9._~!$'()*+,;=:@%/-]{0,219}$/;
@@ -319,6 +325,15 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     if (!allowedKeys.has(key)
       || blockedKeys.test(key)
       || /(?:accesstoken|refreshtoken|idtoken|tokenhash|authorizationcode|authorizationid|clientsecret|emailaddress|phonenumber|password|apikey|sessiontoken|jwt|onetimesecret)/.test(flatKey)) continue;
+    const lifecycleValues = lifecycleEnumValues[key];
+    if (lifecycleValues) {
+      if (typeof value === "string" && lifecycleValues.has(value)) safe[key] = value;
+      continue;
+    }
+    if (key === "returning") {
+      if (typeof value === "boolean") safe[key] = value;
+      continue;
+    }
     if (typeof value === "number") {
       if (Number.isFinite(value) && Math.abs(value) <= 1_000_000_000) safe[key] = value;
       continue;

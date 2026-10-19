@@ -121,6 +121,24 @@ test("analytics privacy boundary rejects encoded credentials and unknown propert
     item_count: 2,
   });
 
+  assert.deepEqual(evaluatePrivacyParameters({
+    actor_type: "PERSON",
+    lifecycle_stage: "PROOF",
+    evidence_state: "SOURCE_REFERENCED",
+    returning: true,
+  }), {
+    actor_type: "PERSON",
+    lifecycle_stage: "PROOF",
+    evidence_state: "SOURCE_REFERENCED",
+    returning: true,
+  });
+  assert.deepEqual(evaluatePrivacyParameters({
+    actor_type: "ADMIN",
+    lifecycle_stage: "PURCHASE",
+    evidence_state: "VERIFIED",
+    returning: "true",
+  }), {});
+
   for (const page_path of [
     "/reset/alice%40example.com",
     "/%61ccess_token%3Dsecret",
@@ -139,7 +157,7 @@ test("analytics privacy boundary rejects encoded credentials and unknown propert
 });
 
 function evaluateAnalyticsDispatch({ ga4Installed, posthogAccepted }) {
-  const dispatchSource = analytics.match(/function dispatchAnalyticsEvent\\([\\s\\S]*?\\n}\\n/);
+  const dispatchSource = analytics.match(/function dispatchAnalyticsEvent\([\s\S]*?\n}\n/);
   assert.ok(dispatchSource, "dispatchAnalyticsEvent must be extractable");
   const js = ts.transpileModule(`${dispatchSource[0]}\nexports.dispatchAnalyticsEvent = dispatchAnalyticsEvent;`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
@@ -170,10 +188,10 @@ test("delivery acknowledgement reflects actual configured transports", () => {
   assert.deepEqual(evaluateAnalyticsDispatch({ ga4Installed: true, posthogAccepted: true }), {
     delivered: true, ga4Calls: 1, posthogCalls: 1,
   });
-  assert.match(routeAnalytics, /if \\(entryDelivered\\) window\\.sessionStorage\\.setItem\\(routeKey, "1"\\)/);
-  assert.match(routeAnalytics, /if \\(sessionDelivered\\) \\{/);
+  assert.match(routeAnalytics, /if \(entryDelivered\) window\.sessionStorage\.setItem\(routeKey, "1"\)/);
+  assert.match(routeAnalytics, /if \(sessionDelivered\) \{/);
   assert.match(routeAnalytics, /const delivered = trackMeaningfulUse/);
-  assert.match(routeAnalytics, /if \\(!delivered\\) return;/);
+  assert.match(routeAnalytics, /if \(!delivered\) return;/);
 });
 
 test("user proof funnel is broader than page views", () => {
