@@ -1,0 +1,28 @@
+name: MAX EXPOSURE — Full Public URL Evidence Audit
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - scripts/max-exposure-live-evidence-20261019.mjs
+      - .github/workflows/max-exposure-live-evidence-20261019.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Inspect robots, every sitemap URL, canonical, noindex and content HTML
+        run: node scripts/max-exposure-live-evidence-20261019.mjs
+      - name: Save exact URL evidence for reporting
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: max-exposure-exact-url-evidence-20261019
+          path: artifacts/max-exposure-public-urls-20261019.json
+          if-no-files-found: ignore
