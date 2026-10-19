@@ -69,13 +69,20 @@ test("Bay Proof Ladder keeps desktop comparison and stacks without mobile overfl
   assert.match(impactActionProofSource, /DOES NOT PROVE/);
 });
 
-test("Bay programme evidence carries ORCA-confirmed 2026 survey scale", () => {
+test("Bay programme evidence fails closed until source-specific publication clearance exists", () => {
   const contract = action.BAY_OF_BISCAY_SURVEY_ACTION;
-  assert.equal(contract.programmeEvidence.annualSurveys.state, "KNOWN");
-  assert.deepEqual(contract.programmeEvidence.annualSurveys.value, { min: 10, max: 12 });
-  assert.equal(contract.programmeEvidence.annualSurveyDays.state, "KNOWN");
-  assert.deepEqual(contract.programmeEvidence.annualSurveyDays.value, { min: 40, max: 48 });
-  assert.match(contract.programmeEvidence.annualSurveyDays.sourceNote, /Steve Jones, 4 Sep 2026/i);
+  assert.equal(contract.programmeEvidence.annualSurveys.state, "TO_VERIFY");
+  assert.equal(contract.programmeEvidence.annualSurveys.value, null);
+  assert.equal(contract.programmeEvidence.annualSurveys.publicationState, "CLEARANCE_REQUIRED");
+  assert.equal(contract.programmeEvidence.annualSurveyDays.state, "TO_VERIFY");
+  assert.equal(contract.programmeEvidence.annualSurveyDays.value, null);
+  assert.equal(contract.programmeEvidence.annualSurveyDays.publicationState, "CLEARANCE_REQUIRED");
+  assert.deepEqual(action.actionContractPublicProgrammeEvidence(contract), {
+    annualSurveys: null,
+    annualSurveyDays: null,
+  });
+  assert.doesNotMatch(impactActionProofSource, /Steve Jones|4 Sep 2026|10–12|40–48|PARTNER CORRESPONDENCE/i);
+  assert.match(impactActionProofSource, /SOURCE CLEARANCE PENDING/);
 });
 
 test("Bay action is bound to the canonical ORCA Actor identity and exact profile route", () => {
@@ -201,8 +208,8 @@ test("action contract reuses existing Planet, Impact and Actor proof surfaces", 
 test("truth summary exposes confirmed programme scale but no fabricated funding amount", () => {
   const summary = action.actionContractTruthSummary(action.BAY_OF_BISCAY_SURVEY_ACTION);
   assert.equal(summary.canMatchFunding, false);
-  assert.deepEqual(summary.confirmedAnnualSurveys, { min: 10, max: 12 });
-  assert.deepEqual(summary.confirmedAnnualSurveyDays, { min: 40, max: 48 });
+  assert.equal(summary.confirmedAnnualSurveys, null);
+  assert.equal(summary.confirmedAnnualSurveyDays, null);
   assert.equal(summary.knownFundingAmount, null);
   assert.equal(summary.knownQuantity, null);
   assert.ok(summary.blockers.length >= 3);

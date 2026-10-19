@@ -1,4 +1,4 @@
-export type OrcaCellSourceState = "PUBLIC_AUTHORITATIVE" | "PARTNER_CORRESPONDENCE";
+export type OrcaCellSourceState = "PUBLIC_AUTHORITATIVE";
 
 export interface OrcaCellSource {
   id: string;
@@ -41,12 +41,12 @@ export interface OrcaPartnerCell {
     rules: string[];
   };
   programme2026: {
-    surveysMin: number;
-    surveysMax: number;
-    surveyDaysMin: number;
-    surveyDaysMax: number;
-    state: "PARTNER_CONFIRMED_RANGE";
-    sourceId: string;
+    surveysMin: number | null;
+    surveysMax: number | null;
+    surveyDaysMin: number | null;
+    surveyDaysMax: number | null;
+    state: "SOURCE_CLEARANCE_REQUIRED";
+    sourceId: null;
   };
   publicEvidence: Array<{
     headline: string;
@@ -122,12 +122,12 @@ export const ORCA_BAY_PARTNER_CELL: OrcaPartnerCell = {
     ],
   },
   programme2026: {
-    surveysMin: 10,
-    surveysMax: 12,
-    surveyDaysMin: 40,
-    surveyDaysMax: 48,
-    state: "PARTNER_CONFIRMED_RANGE",
-    sourceId: "orca-steve-2026-09-04",
+    surveysMin: null,
+    surveysMax: null,
+    surveyDaysMin: null,
+    surveyDaysMax: null,
+    state: "SOURCE_CLEARANCE_REQUIRED",
+    sourceId: null,
   },
   publicEvidence: [
     {
@@ -173,16 +173,6 @@ export const ORCA_BAY_PARTNER_CELL: OrcaPartnerCell = {
     { state: "OUTCOME / IMPACT", proves: "Only the bounded outcome supported by an explicit method and evidence package.", doesNotProve: "Anything beyond that claim scope; verified impact requires independent verification where claimed." },
   ],
   sources: [
-    {
-      id: "orca-steve-2026-09-04",
-      label: "ORCA programme correspondence — Steve Jones, 4 Sep 2026",
-      authority: "ORCA partner correspondence",
-      url: null,
-      accessed: "2026-09-07",
-      state: "PARTNER_CORRESPONDENCE",
-      supports: "Current partner-confirmed 2026 Portsmouth–Santander scale: either 10 or 12 surveys; four-day return crossing; approximately 40–48 survey days.",
-      limitations: ["Internal partner correspondence, not a public source.", "Current sponsorship price/unit terms remain unresolved.", "Earlier example prices were explicitly placeholders and are not current funding truth."],
-    },
     {
       id: "orca-portsmouth-santander-2026",
       label: "Survey Highlights — Portsmouth-Santander 22/06/2026",

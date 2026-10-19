@@ -30,15 +30,16 @@ test("route and observation semantics fail closed against migration/population i
   ]) assert.ok(cell.monitoringSemantics.rules.includes(rule), `missing truth rule: ${rule}`);
 });
 
-test("2026 programme range is attributable to partner correspondence, not promoted to public source", () => {
+test("uncleared programme correspondence is absent from the public Partner Cell", () => {
   assert.deepEqual(
     [cell.programme2026.surveysMin, cell.programme2026.surveysMax, cell.programme2026.surveyDaysMin, cell.programme2026.surveyDaysMax],
-    [10, 12, 40, 48],
+    [null, null, null, null],
   );
-  const sourceRecord = cell.sources.find((item) => item.id === cell.programme2026.sourceId);
-  assert.equal(sourceRecord?.state, "PARTNER_CORRESPONDENCE");
-  assert.equal(sourceRecord?.url, null);
-  assert.ok(sourceRecord?.limitations.some((item) => /placeholder/i.test(item)));
+  assert.equal(cell.programme2026.state, "SOURCE_CLEARANCE_REQUIRED");
+  assert.equal(cell.programme2026.sourceId, null);
+  assert.equal(cell.sources.every((item) => item.state === "PUBLIC_AUTHORITATIVE"), true);
+  assert.doesNotMatch(source, /Steve Jones|4 Sep 2026|10 or 12 surveys|40–48 survey days|PARTNER_CORRESPONDENCE/i);
+  assert.doesNotMatch(page, /Steve Jones|4 Sep 2026|10–12|40–48|PARTNER CORRESPONDENCE/i);
 });
 
 test("current public ORCA evidence is source-bound and programme totals are not misattributed", () => {

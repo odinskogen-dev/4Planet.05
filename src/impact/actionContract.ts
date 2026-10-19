@@ -10,11 +10,13 @@ export type ActionContractReadiness =
   | "OUTCOME_ASSESSMENT";
 
 export type EvidenceState = "KNOWN" | "UNKNOWN" | "TO_VERIFY";
+export type EvidencePublicationState = "PUBLIC" | "INTERNAL_ONLY" | "CLEARANCE_REQUIRED";
 
 export interface ActionContractEvidenceField<T> {
   state: EvidenceState;
   value: T | null;
   sourceNote: string;
+  publicationState?: EvidencePublicationState;
 }
 
 export interface IndependentEvidenceSource {
@@ -75,12 +77,10 @@ export interface ActionContract {
  *
  * It deliberately reuses the existing ORCA / Bay monitoring proof rather than
  * creating a new project narrative. Route geometry, hours and distance are the
- * delivery proof dimensions already locked by the Bay contract. ORCA's COO
- * confirmed the current Portsmouth–Santander programme scale on 4 Sep 2026:
- * 10 or 12 surveys, with a four-day return crossing, equating to 40–48 survey
- * days. The sponsorship prices previously shared by ORCA were explicitly
- * described as placeholders, so current GBP amount and the bounded quantity to
- * fund remain unresolved and this contract MUST stay closed to funding match.
+ * delivery proof dimensions already locked by the Bay contract. Programme scale
+ * from private correspondence is deliberately withheld until source-specific
+ * publication clearance is recorded. Current GBP amount and the bounded quantity
+ * to fund remain unresolved, so this contract MUST stay closed to funding match.
  */
 export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   id: "action:4p:orca:bay-of-biscay:survey-effort:v1",
@@ -99,14 +99,16 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
   deliveryUnit: "confirmed survey effort",
   programmeEvidence: {
     annualSurveys: {
-      state: "KNOWN",
-      value: { min: 10, max: 12 },
-      sourceNote: "ORCA COO Steve Jones, 4 Sep 2026: Portsmouth–Santander will have either 10 or 12 surveys this year, pending two date confirmations.",
+      state: "TO_VERIFY",
+      value: null,
+      sourceNote: "Programme range withheld pending source-specific publication clearance.",
+      publicationState: "CLEARANCE_REQUIRED",
     },
     annualSurveyDays: {
-      state: "KNOWN",
-      value: { min: 40, max: 48 },
-      sourceNote: "ORCA COO Steve Jones, 4 Sep 2026: the return crossing is four days, producing 40–48 days of survey time from 10–12 surveys.",
+      state: "TO_VERIFY",
+      value: null,
+      sourceNote: "Survey-day range withheld pending source-specific publication clearance.",
+      publicationState: "CLEARANCE_REQUIRED",
     },
   },
   fundingNeed: {
@@ -119,7 +121,7 @@ export const BAY_OF_BISCAY_SURVEY_ACTION: ActionContract = {
     quantity: {
       state: "UNKNOWN",
       value: null,
-      sourceNote: "The programme is 40–48 survey days in 2026, but the bounded quantity this specific action contract would fund has not yet been selected or agreed.",
+      sourceNote: "The programme range is withheld pending source-specific publication clearance, and the bounded quantity this action contract would fund has not yet been selected or agreed.",
     },
     quantityLabel: "survey days funded",
   },
@@ -224,6 +226,16 @@ export function actionContractCanMatchFunding(contract: ActionContract): boolean
     contract.fundingNeed.quantity.value > 0 &&
     contract.blockers.length === 0
   );
+}
+
+export function actionContractPublicProgrammeEvidence(contract: ActionContract) {
+  const publicValue = <T>(field: ActionContractEvidenceField<T>) =>
+    field.state === "KNOWN" && field.publicationState === "PUBLIC" ? field.value : null;
+
+  return {
+    annualSurveys: publicValue(contract.programmeEvidence.annualSurveys),
+    annualSurveyDays: publicValue(contract.programmeEvidence.annualSurveyDays),
+  };
 }
 
 export function actionContractTruthSummary(contract: ActionContract) {

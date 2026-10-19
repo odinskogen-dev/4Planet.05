@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section } from "@/components/ui";
 import { T } from "@/styles/tokens";
-import { BAY_OF_BISCAY_SURVEY_ACTION, actionContractTruthSummary } from "@/impact/actionContract";
+import { BAY_OF_BISCAY_SURVEY_ACTION, actionContractPublicProgrammeEvidence, actionContractTruthSummary } from "@/impact/actionContract";
 import { actorForActionContract, actorIsPublic } from "@/content/actorGold";
 import { ORCA_BAY_PARTNER_CELL, publicOrcaCellSources } from "@/partners/orcaPartnerCell";
 
@@ -21,8 +21,9 @@ export function BayActionProof() {
   const canonicalActor = actorForActionContract(action);
   const cell = ORCA_BAY_PARTNER_CELL;
   const truth = actionContractTruthSummary(action);
-  const surveys = truth.confirmedAnnualSurveys;
-  const surveyDays = truth.confirmedAnnualSurveyDays;
+  const publicProgramme = actionContractPublicProgrammeEvidence(action);
+  const surveys = publicProgramme.annualSurveys;
+  const surveyDays = publicProgramme.annualSurveyDays;
   const publicSources = publicOrcaCellSources(cell);
 
   if (!canonicalActor) {
@@ -86,7 +87,7 @@ export function BayActionProof() {
         <p style={{ marginTop: 18, ...body }}>{cell.place.boundary}</p>
         <div style={{ marginTop: 26, ...grid }}>
           <div style={panel}><div style={{ ...mono, color: T.blue }}>ACTOR</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>{canonicalActor.name}</h3><p style={body}>{cell.actor.role}</p><div style={{ marginTop: 12, ...mono }}>{cell.actor.relationshipState.replaceAll("_", " ")}</div>{publicActorProfilePath ? <Link to={publicActorProfilePath} style={{ display: "inline-block", marginTop: 12, ...mono, color: T.blue }}>OPEN CANONICAL ACTOR PROFILE →</Link> : <div style={{ marginTop: 12, ...mono, color: T.red }}>PUBLIC ACTOR PROFILE NOT AVAILABLE</div>}</div>
-          <div style={panel}><div style={{ ...mono, color: T.blue }}>2026 · PARTNER-CONFIRMED RANGE</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>{surveys ? `${surveys.min}–${surveys.max} surveys` : "—"}</h3><p style={body}>{surveyDays ? `${surveyDays.min}–${surveyDays.max} survey days across four-day return crossings.` : "Survey-day range unresolved."}</p><div style={{ marginTop: 12, ...mono }}>STEVE JONES · ORCA · 4 SEP 2026 · INTERNAL SOURCE</div></div>
+          <div style={panel}><div style={{ ...mono, color: T.blue }}>PROGRAMME RANGE</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>{surveys ? `${surveys.min}–${surveys.max} surveys` : "SOURCE CLEARANCE PENDING"}</h3><p style={body}>{surveyDays ? `${surveyDays.min}–${surveyDays.max} survey days.` : "No private-correspondence range is projected publicly without explicit source clearance."}</p><div style={{ marginTop: 12, ...mono }}>FAIL CLOSED · PUBLIC SOURCES ONLY</div></div>
           <div style={panel}><div style={{ ...mono, color: T.blue }}>PUBLIC CURRENT PROOF</div><h3 style={{ margin: "12px 0 6px", fontSize: 24 }}>22 JUN 2026</h3><p style={body}>ORCA publicly documents a Portsmouth–Santander survey through the English Channel and Bay of Biscay in June 2026.</p></div>
         </div>
       </Section>
@@ -163,7 +164,7 @@ export function BayActionProof() {
 
       <Section>
         <div style={{ ...mono, color: T.blue }}>06 · SOURCES / PROVENANCE</div>
-        <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(34px,4.5vw,62px)", lineHeight: 1 }}>Public evidence stays public. Partner evidence stays attributable.</h2>
+        <h2 style={{ margin: "14px 0 0", fontFamily: T.display, fontSize: "clamp(34px,4.5vw,62px)", lineHeight: 1 }}>Public evidence stays public. Uncleared correspondence stays private.</h2>
         <div style={{ marginTop: 26, ...grid }}>
           {publicSources.map((source) => (
             <a key={source.id} href={source.url ?? undefined} target="_blank" rel="noreferrer" style={{ ...panel, color: T.ink, textDecoration: "none", display: "block" }}>
@@ -174,9 +175,9 @@ export function BayActionProof() {
             </a>
           ))}
           <div style={{ ...panel, borderStyle: "dashed" }}>
-            <div style={{ ...mono, color: "#8A6500" }}>PARTNER CORRESPONDENCE</div>
-            <h3 style={{ margin: "12px 0 8px", fontSize: 20, lineHeight: 1.3 }}>Steve Jones · ORCA · 4 Sep 2026</h3>
-            <p style={body}>Supports the current 10–12 survey / 40–48 survey-day planning range. It does not establish current sponsorship price, funded unit or public impact claim.</p>
+            <div style={{ ...mono, color: "#8A6500" }}>SOURCE CLEARANCE REQUIRED</div>
+            <h3 style={{ margin: "12px 0 8px", fontSize: 20, lineHeight: 1.3 }}>Private programme facts are not public evidence.</h3>
+            <p style={body}>Programme ranges derived from private correspondence stay out of this public projection until explicit source-specific clearance is recorded.</p>
           </div>
         </div>
       </Section>
