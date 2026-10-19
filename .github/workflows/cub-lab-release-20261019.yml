@@ -5,6 +5,10 @@ on:
     paths:
       - 'site/roma/index.html'
       - 'site/index.html'
+      - 'site/games/**'
+      - 'site/assets/**'
+      - 'site/sitemap.xml'
+      - 'site/robots.txt'
       - '.github/workflows/cub-lab-release-20261019.yml'
   workflow_dispatch:
 permissions:
