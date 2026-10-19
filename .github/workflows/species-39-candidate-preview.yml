@@ -1,5 +1,5 @@
 name: SPECIES 39 Claude Premium Candidate Preview
-# Founder release: build isolated before switching any live 4species routes.
+# Founder release: isolated only; Claude schema max-24 highlights corrected, 39 identities required.
 
 on:
   push:
