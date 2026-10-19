@@ -30,12 +30,24 @@ jobs:
             test -s /tmp/cubpage.html
             echo "CUB_HTTP_OK $page"
           done
-          curl -fsSL https://lab.p4nther.com/assets/cub.css | grep -q '#000'
-          curl -fsSL https://lab.p4nther.com/assets/roma-art.svg | grep -q '<svg'
-          curl -fsSL https://lab.p4nther.com/assets/orca-art.svg | grep -q '<svg'
-          curl -fsSL https://lab.p4nther.com/games/roma/ | grep -q 'The Republic'
-          curl -fsSL https://lab.p4nther.com/games/wild-orca/ | grep -q 'The ocean'
-          curl -fsSL https://lab.p4nther.com/ | grep -q 'Independent game lab'
+          curl -fsSL https://lab.p4nther.com/assets/cub.css -o /tmp/cub.css
+          grep -Fq '#000' /tmp/cub.css
+          echo 'CSS_PASS'
+          curl -fsSL https://lab.p4nther.com/assets/roma-art.svg -o /tmp/roma-art.svg
+          grep -Fq '<svg' /tmp/roma-art.svg
+          echo 'ROMA_ART_PASS'
+          curl -fsSL https://lab.p4nther.com/assets/orca-art.svg -o /tmp/orca-art.svg
+          grep -Fq '<svg' /tmp/orca-art.svg
+          echo 'ORCA_ART_PASS'
+          curl -fsSL https://lab.p4nther.com/games/roma/ -o /tmp/roma-product.html
+          grep -Fq 'The Republic' /tmp/roma-product.html
+          echo 'ROMA_PRODUCT_PASS'
+          curl -fsSL https://lab.p4nther.com/games/wild-orca/ -o /tmp/orca-product.html
+          grep -Fiq 'ocean' /tmp/orca-product.html
+          echo 'ORCA_PRODUCT_PASS'
+          curl -fsSL https://lab.p4nther.com/ -o /tmp/cub-home.html
+          grep -Fiq 'Independent game lab' /tmp/cub-home.html
+          echo 'CUB_HOME_PASS'
           echo 'CUB_PUBLIC_PREMIUM_CONTENT_PASS'
       - name: Mobile and desktop visual / navigation smoke QA
         run: |
