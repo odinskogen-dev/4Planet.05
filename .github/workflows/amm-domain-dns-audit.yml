@@ -1,0 +1,34 @@
+name: AMM domain DNS and zone verification
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/amm-domain-dns-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Check public DNS and current Cloudflare account without modifications
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '--- Public domain evidence ---'
+          for type in NS SOA A CNAME; do
+            echo "DNS_$type=$(dig +short "$type" ammkunst.no | head -8 | tr '\n' ' ')"
+          done
+          echo '--- Cloudflare zone metadata ---'
+          response=$(curl -sS --max-time 20 -H "Authorization: Bearer $CF_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=ammkunst.no')
+          printf '%s' "$response" | jq -c '{success, total_count:(.result_info.total_count // (.result|length)), entries:[.result[]?|{name,status}],errors:[.errors[]?|{code,message}]}'
+          echo '--- Nearby domain metadata ---'
+          cfzone=$(curl -sS --max-time 20 -H "Authorization: Bearer $CF_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')
+          printf '%s' "$cfzone" | jq -c '{success, entries:[.result[]?|{name,status}],errors:[.errors[]?|{code,message}]}'
+          echo '--- Current public website ---'
+          curl -L -sS --max-time 15 -o /tmp/amm-live-body -w 'AMM_HTTP=%{http_code}\n' https://ammkunst.no/ || true
+          echo "AMM_BYTES=$(wc -c </tmp/amm-live-body 2>/dev/null || echo 0)"
+          echo 'Read-only audit complete.'
