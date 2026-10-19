@@ -5,7 +5,7 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
-const SPECIES_V53_ORIGIN = "https://72494005.4planet-05.pages.dev";
+const SPECIES_V53_ORIGIN = "https://bb0c99eb.4planet-05.pages.dev";
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
@@ -103,7 +103,7 @@ async function proxySpeciesV53(request) {
   out.delete("set-cookie");
   out.delete("content-length");
   out.delete("content-encoding");
-  out.set("x-4species-release", "species-v53-immutable-72494005-restore-20261017");
+  out.set("x-4species-release", "species-v53-immutable-bb0c99eb-39-20261019");
   // Pages preview emits preview-only noindex; never forward it to a completed
   // public Claude profile, while still enforcing noindex for missing profiles.
   if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");
