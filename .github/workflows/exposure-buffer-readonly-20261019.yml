@@ -1,0 +1,51 @@
+name: Exposure Buffer Readonly 19 October
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/exposure-buffer-readonly-20261019.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      TOKEN_A: ${{ secrets.BUFFER_API_TOKEN }}
+      TOKEN_B: ${{ secrets.BUFFER_ACCESS_TOKEN }}
+      TOKEN_C: ${{ secrets.BUFFER_TOKEN }}
+      TOKEN_D: ${{ secrets.BUFFER_API_KEY }}
+      TOKEN_E: ${{ secrets.BUFFER_KEY }}
+    steps:
+      - name: Read Buffer organisation and social channel status (NO mutations)
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const apiKey=[process.env.TOKEN_A,process.env.TOKEN_B,process.env.TOKEN_C,process.env.TOKEN_D,process.env.TOKEN_E].find(s=>s?.trim())?.trim();
+          if(!apiKey){console.log("BUFFER_NOT_CONNECTED: no known token key available through GitHub Secrets"); process.exit(0);}
+          const api="https://api.buffer.com";
+          const gql=async(query)=>{
+            const resp=await fetch(api,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+apiKey},body:JSON.stringify({query})});
+            const data=await resp.json().catch(()=>({}));
+            if(!resp.ok||data.errors?.length)throw Error("Buffer GraphQL http="+resp.status+"; "+String(data.errors?.[0]?.message||"API error").slice(0,120));
+            return data.data;
+          };
+          try {
+            const data=await gql("query { account { organizations { id name } } }");
+            const orgs=data?.account?.organizations||[];
+            console.log("BUFFER_ORGANISATION_COUNT="+orgs.length);
+            for(const org of orgs.slice(0,8)){
+              console.log("BUFFER_ORGANISATION "+JSON.stringify({name:org.name}));
+              const safeId=JSON.stringify(org.id);
+              const ch=(await gql("query { channels(input:{organizationId:"+safeId+"}){ id name service isQueuePaused } }")).channels||[];
+              const publicChannels=ch.filter(z=>/4planet|nature|planet/i.test(z.name||""));
+              console.log("BUFFER_CHANNELS "+JSON.stringify((publicChannels.length?publicChannels:ch).map(x=>({name:x.name,service:x.service,paused:x.isQueuePaused})).slice(0,25)));
+              const res=await gql("query { posts(first:100,input:{organizationId:"+safeId+",filter:{status:[sent]}}) { edges{node{id dueAt channelId}} pageInfo{hasNextPage}} }");
+              const posts=res?.posts?.edges?.map(e=>e.node)||[];
+              const cutoff="2026-09-21",end="2026-10-19";
+              const byChannel=Object.fromEntries(ch.map(c=>[c.id,c.name]));
+              const relevant=posts.filter(p=>p.dueAt?.slice(0,10)>=cutoff && p.dueAt?.slice(0,10)<end);
+              const counts={};for(const p of relevant){let name=byChannel[p.channelId]||"unknown";counts[name]=(counts[name]||0)+1;}
+              console.log("BUFFER_SENT_LAST28 "+JSON.stringify({counts,total:relevant.length,pageSize:posts.length,morePages:res?.posts?.pageInfo?.hasNextPage||false,notFullHistory:true}));
+            }
+          } catch(e){console.log("BUFFER_UNAVAILABLE "+String(e.message).slice(0,220));}
+          NODE
