@@ -20,7 +20,7 @@ import "@/styles/magazine-films-premium-03.css";
 
 const MOSAIC_SIZES = ["lead", "portrait", "small", "wide", "compact", "small", "feature", "portrait", "small", "wide", "compact", "feature"] as const;
 const MOSAIC_COLORS = ["", "ink", "", "", "blue", "", "", "", "", "", "", ""] as const;
-const HOME_STORY_LIMIT = 12;
+const HOME_STORY_LIMIT = 13;
 const HOME_SIGNAL_LIMIT = 4;
 
 const HOME_STORY_IMAGE_OVERRIDES: Partial<Record<string, ImageKey>> = {
