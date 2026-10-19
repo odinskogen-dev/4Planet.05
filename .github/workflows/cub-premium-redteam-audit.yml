@@ -1,0 +1,74 @@
+name: CUB LAB — Premium Red Team Audit
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths:
+      - '.github/workflows/cub-premium-redteam-audit.yml'
+      - 'site/games/**'
+      - 'site/index.html'
+      - 'site/assets/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser quality, accessibility, responsive and metadata checks
+        shell: bash
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1 axe-core@4.10.3
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          const fs=require('fs');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+            const pages=[['/','home'],['/games/roma/','roma'],['/games/wild-orca/','orca']];
+            let failed=false;
+            for(const viewport of [{width:320,height:740},{width:390,height:844},{width:820,height:1180},{width:1365,height:900}]){
+              const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:viewport.width<600,hasTouch:viewport.width<600});
+              for(const [path,slug] of pages){
+                const p=await context.newPage(),errors=[];
+                p.on('pageerror',e=>errors.push(e.message));
+                const response=await p.goto('https://lab.p4nther.com'+path,{waitUntil:'networkidle',timeout:50000});
+                await p.locator('img[loading="lazy"]').evaluateAll(imgs=>imgs.forEach(img=>img.loading='eager'));
+                await p.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0),null,{timeout:15000});
+                await p.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
+                const data=await p.evaluate(async()=>{
+                  const result=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}});
+                  const og=document.querySelector('meta[property="og:image"]')?.content;
+                  const canonical=document.querySelector('link[rel="canonical"]')?.href;
+                  const main=document.querySelector('main');
+                  const css=getComputedStyle(document.body).backgroundColor;
+                  const links=[...document.querySelectorAll('a[href]')].filter(x=>x.getAttribute('href')==='#').length;
+                  const scripts=[...document.querySelectorAll('script[type="application/ld+json"]')].map(x=>{try{return JSON.parse(x.textContent)}catch{return null}});
+                  return {viewport:innerWidth,scroll:document.documentElement.scrollWidth,og,canonical,hasMain:!!main,hasSkip:!!document.querySelector('.skip-to-content'),bg:css,blankLinks:links,structured:scripts.some(Boolean),violations:result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length,description:v.description}))};
+                });
+                let imageOk=false;
+                if(data.og){const im=await p.request.get(data.og);imageOk=im.status()===200&&((im.headers()['content-type']||'').includes('image/png'));}
+                const severe=data.violations.filter(v=>v.impact==='serious'||v.impact==='critical');
+                const broken=response.status()!==200||data.scroll>viewport.width+2||!data.hasMain||!data.hasSkip||data.blankLinks>0||!data.structured||!imageOk||errors.length>0||severe.length>0;
+                console.log('CUB_REDTEAM_AUDIT',JSON.stringify({slug,screen:viewport.width,status:response.status(),imageOk,errors,broken,...data}));
+                if(broken)failed=true;
+                if(viewport.width===390||viewport.width===1365)await p.screenshot({path:'redteam-'+slug+'-'+viewport.width+'.png',fullPage:true});
+                await p.close();
+              }
+              await context.close();
+            }
+            await browser.close();
+            if(failed)throw Error('At least one premium red-team check failed');
+            console.log('CUB_REDTEAM_AUDIT_PASS');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-premium-redteam-screens
+          path: redteam-*.png
+          if-no-files-found: ignore
+          retention-days: 14
