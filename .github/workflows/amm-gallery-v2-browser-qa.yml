@@ -49,7 +49,11 @@ jobs:
             await mobile.locator(".artcard").first().click();
             if(!await mobile.locator(".detail-img img").count())throw Error("Missing product detail artwork");
             await mobile.locator("button[data-add-enquiry]").click();
+            console.log("AFTER_ADD="+JSON.stringify(await mobile.evaluate(()=>({stored:localStorage.getItem("amm-enquiries"),button:document.querySelector("[data-add-enquiry]")?.innerText,exceptions:window.onerror||null}))));
             await mobile.goto("https://ammkunst.com/bag/",{waitUntil:"domcontentloaded"});
+            await mobile.waitForTimeout(2500);
+            console.log("BAG_DIAG="+JSON.stringify(await mobile.evaluate(()=>({stored:localStorage.getItem("amm-enquiries"),title:document.title,bagCount:document.querySelectorAll(".bagitem").length,scriptTags:Array.from(document.querySelectorAll("script")).map(x=>x.src),content:document.getElementById("bag-list")?.innerHTML.slice(0,400)}))));
+            console.log("BROWSER_ERRORS="+errors.join(" | "));
             await mobile.waitForFunction(()=>document.querySelectorAll(".bagitem").length>0,null,{timeout:5000});
             console.log("MOBILE_PASS="+JSON.stringify(home));
             const desktop=await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
