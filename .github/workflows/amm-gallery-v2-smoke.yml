@@ -1,0 +1,33 @@
+name: AMM Gallery 2 — production smoke
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-gallery-v2-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Test live AMM HTML artwork and gallery resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          root='https://ammkunst.com'
+          for path in / /shop/ /works/ /about/ /assets/gallery-v2.css /assets/gallery-v2.js /assets/data-v2.js /art/n0388.webp; do
+            file="/tmp/amm-$(echo "$path" | tr '/' '_')"
+            result="$(curl -sSL --max-time 20 --compressed -o "$file" -w '%{http_code} %{content_type} %{size_download}' "$root$path" || true)"
+            echo "CHECK path=$path result=$result"
+            case "$path" in
+              /) for term in 'class="hero"' 'class="gallery"' 'art/n0388.webp'; do
+                    grep -q "$term" "$file" && echo "HOME_OK=$term" || echo "HOME_MISSING=$term"
+                 done ;;
+              /shop/) for term in 'class="gallery"' 'Shop'; do
+                    grep -q "$term" "$file" && echo "SHOP_OK=$term" || echo "SHOP_MISSING=$term"
+                 done ;;
+              /assets/gallery-v2.css) grep -q -- '--white:#FFFFFF' "$file" && echo 'WHITE=YES' || echo 'WHITE=NO' ;;
+              /art/n0388.webp) file "$file" ;;
+            esac
+          done
