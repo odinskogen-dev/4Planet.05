@@ -83,12 +83,14 @@ function evaluateProductClassifier(sourceText, functionName, pathname, hostname 
 
 function evaluatePrivacyParameters(parameters) {
   const decodeSource = analytics.match(/function decodeForAnalyticsInspection\([\s\S]*?\n}\n/);
+  const nestedSource = analytics.match(/function hasUnsupportedNestedAnalyticsEncoding\([\s\S]*?\n}\n/);
   const sensitiveSource = analytics.match(/function containsSensitiveAnalyticsMaterial\([\s\S]*?\n}\n/);
   const privacySource = analytics.match(/export function privacySafeEventParameters\([\s\S]*?\n}\n/);
   assert.ok(decodeSource, "decodeForAnalyticsInspection must be extractable");
+  assert.ok(nestedSource, "hasUnsupportedNestedAnalyticsEncoding must be extractable");
   assert.ok(sensitiveSource, "containsSensitiveAnalyticsMaterial must be extractable");
   assert.ok(privacySource, "privacySafeEventParameters must be extractable");
-  const isolated = `${decodeSource[0]}\n${sensitiveSource[0]}\n${privacySource[0].replace("export function", "function")}\nglobalThis.__result = privacySafeEventParameters(globalThis.__parameters);`;
+  const isolated = `${decodeSource[0]}\n${nestedSource[0]}\n${sensitiveSource[0]}\n${privacySource[0].replace("export function", "function")}\nglobalThis.__result = privacySafeEventParameters(globalThis.__parameters);`;
   const js = ts.transpileModule(isolated, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
   }).outputText;
@@ -143,6 +145,9 @@ test("analytics privacy boundary rejects encoded credentials and unknown propert
     "/reset/alice%40example.com",
     "/%61ccess_token%3Dsecret",
     "/%2561ccess_token%253Dsecret",
+    "/%252561ccess_token%25253Dsecret",
+    "/reset/alice%252540example.com",
+    "/livingsystems/orca%25253Fcode%25253Dsecret",
     "/livingsystems/orca?code=secret",
   ]) {
     assert.equal(evaluatePrivacyParameters({ page_path }).page_path, undefined, page_path);
@@ -351,10 +356,11 @@ test("OAuth credential-bearing URLs never start measurement", () => {
   assert.match(analytics, /const safeConfig = privacySafeEventParameters\(\{ page_path: window\.location\.pathname \}\)/);
   assert.match(analytics, /page_location:.*window\.location\.origin.*safePath/);
   const decodeSource = analytics.match(/function decodeForAnalyticsInspection\([\s\S]*?\n}\n/)?.[0];
+  const nestedSource = analytics.match(/function hasUnsupportedNestedAnalyticsEncoding\([\s\S]*?\n}\n/)?.[0];
   const sensitiveSource = analytics.match(/function containsSensitiveAnalyticsMaterial\([\s\S]*?\n}\n/)?.[0];
   const navigationSource = analytics.match(/export function isSensitiveAnalyticsNavigation\(\): boolean \{[\s\S]*?\n\}/)?.[0];
-  assert.ok(decodeSource && sensitiveSource && navigationSource, "missing encoded OAuth navigation guard");
-  const js = ts.transpileModule(`${decodeSource}\n${sensitiveSource}\n${navigationSource}`, { compilerOptions: {
+  assert.ok(decodeSource && nestedSource && sensitiveSource && navigationSource, "missing encoded OAuth navigation guard");
+  const js = ts.transpileModule(`${decodeSource}\n${nestedSource}\n${sensitiveSource}\n${navigationSource}`, { compilerOptions: {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS
   }}).outputText;
   const check = (url) => {
@@ -372,7 +378,10 @@ test("OAuth credential-bearing URLs never start measurement", () => {
     "https://4planet.org/#refresh_token=TEST",
     "https://4planet.org/%61uth/callback",
     "https://4planet.org/livingsystems?%61ccess_token=TEST",
-    "https://4planet.org/livingsystems#%2561ccess_token%253DTEST"
+    "https://4planet.org/livingsystems#%2561ccess_token%253DTEST",
+    "https://4planet.org/%252561uth%25252Fcallback",
+    "https://4planet.org/livingsystems?%252561ccess_token%25253DTEST",
+    "https://4planet.org/livingsystems#%252561ccess_token%25253DTEST"
   ]) assert.equal(check(url), true);
   for (const url of [
     "https://4planet.org/oslofjord",

@@ -163,7 +163,17 @@ function decodeForAnalyticsInspection(value: string): string {
   return decoded;
 }
 
+function hasUnsupportedNestedAnalyticsEncoding(value: string): boolean {
+  const inspected = decodeForAnalyticsInspection(value);
+  try {
+    return decodeURIComponent(inspected.replace(/\+/g, "%20")) !== inspected;
+  } catch {
+    return true;
+  }
+}
+
 function containsSensitiveAnalyticsMaterial(value: string): boolean {
+  if (hasUnsupportedNestedAnalyticsEncoding(value)) return true;
   const inspected = decodeForAnalyticsInspection(value);
   return /(?:^|[/?#&])(?:access_token|refresh_token|id_token|token_hash|authorization_code|authorization_id|code|state|client_secret|session_token|auth_return)=/i.test(inspected)
     || /\b[^\s/@]+@[^\s/@]+\.[a-z]{2,}\b/i.test(inspected)
