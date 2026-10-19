@@ -1,0 +1,3143 @@
+{
+  "authority": "Claude v53 / 4PLANET_SPECIES_PAGE_01",
+  "state": "CANDIDATE_PENDING_EDITORIAL_PHOTO_RIGHTS_QA",
+  "count": 11,
+  "pages": {
+    "humpback-whale.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "humpback-whale",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Humpback whale",
+        "scientificName": "Megaptera novaeangliae",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Marine mammal · Baleen whale"
+      },
+      "hook": {
+        "text": "A whale whose tail can reveal an individual life.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Humpback whale",
+          "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+        }
+      },
+      "intro": [
+        {
+          "text": "Humpback whales carry exceptionally long pectoral flippers and distinctive tail patterns that scientists can recognise in photographs.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        },
+        {
+          "text": "They use baleen to filter krill and small schooling fish, sometimes feeding together in coordinated groups.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        },
+        {
+          "text": "Populations migrate between feeding areas and breeding grounds, but routes and protection status vary by population.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Long pectoral flippers",
+          "text": "Humpback whales carry exceptionally long pectoral flippers and distinctive tail patterns that scientists can recognise in photographs.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        },
+        {
+          "value": "Krill and small fish",
+          "text": "They use baleen to filter krill and small schooling fish, sometimes feeding together in coordinated groups.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        },
+        {
+          "value": "Oceans worldwide",
+          "text": "Populations migrate between feeding areas and breeding grounds, but routes and protection status vary by population.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Megaptera novaeangliae",
+            "url": "https://animaldiversity.org/accounts/Megaptera_novaeangliae/"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Humpback_whales_in_singing_position.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Humpback_whales_in_singing_position.jpg",
+        "credit": "Dr. Louis M. Herman.",
+        "licence": "Public domain",
+        "alt": "Humpback whale in its environment — Humpback whales in the singing position. Humpback Whale NMS.",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Long pectoral flippers",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Krill and small fish",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Oceans worldwide",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Megaptera novaeangliae",
+            "url": "https://animaldiversity.org/accounts/Megaptera_novaeangliae/"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Entanglement and ships",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Humpback whale",
+            "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Humpback whales carry exceptionally long pectoral flippers and distinctive tail patterns that scientists can recognise in photographs.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Humpback whale",
+                "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+              }
+            },
+            {
+              "text": "They use baleen to filter krill and small schooling fish, sometimes feeding together in coordinated groups.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Humpback whale",
+                "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "They use baleen to filter krill and small schooling fish, sometimes feeding together in coordinated groups.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Humpback whale",
+                "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+              }
+            },
+            {
+              "text": "Populations migrate between feeding areas and breeding grounds, but routes and protection status vary by population.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Megaptera novaeangliae",
+                "url": "https://animaldiversity.org/accounts/Megaptera_novaeangliae/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Populations migrate between feeding areas and breeding grounds, but routes and protection status vary by population.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Megaptera novaeangliae",
+                "url": "https://animaldiversity.org/accounts/Megaptera_novaeangliae/"
+              }
+            },
+            {
+              "text": "Humpback whales carry exceptionally long pectoral flippers and distinctive tail patterns that scientists can recognise in photographs.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Humpback whale",
+                "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Fishing-gear entanglement, ship strikes and ocean noise can threaten whales along their migrations.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Humpback whale",
+                "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+              }
+            },
+            {
+              "text": "Populations migrate between feeding areas and breeding grounds, but routes and protection status vary by population.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Megaptera novaeangliae",
+                "url": "https://animaldiversity.org/accounts/Megaptera_novaeangliae/"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Humpback whales carry exceptionally long pectoral flippers and distinctive tail patterns that scientists can recognise in photographs.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Humpback whale",
+              "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "They use baleen to filter krill and small schooling fish, sometimes feeding together in coordinated groups.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Humpback whale",
+              "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "They use baleen to filter krill and small schooling fish, sometimes feeding together in coordinated groups.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Humpback whale",
+              "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Populations migrate between feeding areas and breeding grounds, but routes and protection status vary by population.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Megaptera novaeangliae",
+              "url": "https://animaldiversity.org/accounts/Megaptera_novaeangliae/"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Fishing-gear entanglement, ship strikes and ocean noise can threaten whales along their migrations.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Humpback whale",
+              "url": "https://www.fisheries.noaa.gov/species/humpback-whale"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "sperm-whale.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "sperm-whale",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Sperm whale",
+        "scientificName": "Physeter macrocephalus",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Marine mammal · Toothed whale"
+      },
+      "hook": {
+        "text": "A deep-ocean navigator that finds its way through sound.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Sperm whale",
+          "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+        }
+      },
+      "intro": [
+        {
+          "text": "The sperm whale is the largest toothed whale, with an enormous square-looking head and a deep-diving way of life.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        },
+        {
+          "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        },
+        {
+          "text": "Groups of females and young maintain social bonds, while adult males may travel more widely.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Large block-shaped head",
+          "text": "The sperm whale is the largest toothed whale, with an enormous square-looking head and a deep-diving way of life.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        },
+        {
+          "value": "Squid and deep-water prey",
+          "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        },
+        {
+          "value": "Deep ocean basins",
+          "text": "Groups of females and young maintain social bonds, while adult males may travel more widely.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Physeter macrocephalus",
+            "url": "https://animaldiversity.org/accounts/Physeter_macrocephalus/"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Mother_and_baby_sperm_whale.jpg/1920px-Mother_and_baby_sperm_whale.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Mother_and_baby_sperm_whale.jpg",
+        "credit": "Gabriel Barathieu",
+        "licence": "CC BY-SA 2.0",
+        "alt": "Sperm whale in its environment — A mother sperm whale and her calf off the coast of Mauritius.  The calf has remoras attached to its body.",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Large block-shaped head",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Squid and deep-water prey",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Deep ocean basins",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Physeter macrocephalus",
+            "url": "https://animaldiversity.org/accounts/Physeter_macrocephalus/"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Noise and fishing gear",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Sperm whale",
+            "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "The sperm whale is the largest toothed whale, with an enormous square-looking head and a deep-diving way of life.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Sperm whale",
+                "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+              }
+            },
+            {
+              "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Sperm whale",
+                "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Sperm whale",
+                "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+              }
+            },
+            {
+              "text": "Groups of females and young maintain social bonds, while adult males may travel more widely.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Physeter macrocephalus",
+                "url": "https://animaldiversity.org/accounts/Physeter_macrocephalus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Groups of females and young maintain social bonds, while adult males may travel more widely.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Physeter macrocephalus",
+                "url": "https://animaldiversity.org/accounts/Physeter_macrocephalus/"
+              }
+            },
+            {
+              "text": "The sperm whale is the largest toothed whale, with an enormous square-looking head and a deep-diving way of life.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Sperm whale",
+                "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Historical commercial whaling caused severe losses; today entanglement, vessel collisions and underwater noise remain concerns.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Sperm whale",
+                "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+              }
+            },
+            {
+              "text": "Groups of females and young maintain social bonds, while adult males may travel more widely.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Physeter macrocephalus",
+                "url": "https://animaldiversity.org/accounts/Physeter_macrocephalus/"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "The sperm whale is the largest toothed whale, with an enormous square-looking head and a deep-diving way of life.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Sperm whale",
+              "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Sperm whale",
+              "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "It uses powerful underwater clicks to navigate and find prey, including squid, deep below the surface.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Sperm whale",
+              "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Groups of females and young maintain social bonds, while adult males may travel more widely.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Physeter macrocephalus",
+              "url": "https://animaldiversity.org/accounts/Physeter_macrocephalus/"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Historical commercial whaling caused severe losses; today entanglement, vessel collisions and underwater noise remain concerns.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Sperm whale",
+              "url": "https://www.fisheries.noaa.gov/species/sperm-whale"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "harbour-porpoise.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "harbour-porpoise",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Harbour porpoise",
+        "scientificName": "Phocoena phocoena",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Marine mammal · Porpoise"
+      },
+      "hook": {
+        "text": "A quiet neighbour of coastal seas, glimpsed for a moment at the surface.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Harbor porpoise",
+          "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+        }
+      },
+      "intro": [
+        {
+          "text": "The harbour porpoise is a small, often elusive toothed whale with a rounded face and a short, triangular dorsal fin.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        },
+        {
+          "text": "It hunts fish in coastal waters, using echolocation clicks to detect prey in difficult underwater conditions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        },
+        {
+          "text": "This species occurs in temperate and cold waters of the Northern Hemisphere; local populations must be assessed separately.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Small triangular dorsal fin",
+          "text": "The harbour porpoise is a small, often elusive toothed whale with a rounded face and a short, triangular dorsal fin.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        },
+        {
+          "value": "Fish and squid",
+          "text": "It hunts fish in coastal waters, using echolocation clicks to detect prey in difficult underwater conditions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        },
+        {
+          "value": "Northern coastal seas",
+          "text": "This species occurs in temperate and cold waters of the Northern Hemisphere; local populations must be assessed separately.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Phocoena phocoena",
+            "url": "https://animaldiversity.org/accounts/Phocoena_phocoena/"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Phocoena_phocoena_ssp._vomerina.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Phocoena_phocoena_ssp._vomerina.jpg",
+        "credit": "Ben P (iNaturalist: deboas)",
+        "licence": "CC BY 4.0",
+        "alt": "Wild harbour porpoise photographed during a Pacific coastal nature observation",
+        "focus": "50% 47%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Small triangular dorsal fin",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Fish and squid",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Northern coastal seas",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Phocoena phocoena",
+            "url": "https://animaldiversity.org/accounts/Phocoena_phocoena/"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Fishing-net bycatch",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Harbor porpoise",
+            "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "The harbour porpoise is a small, often elusive toothed whale with a rounded face and a short, triangular dorsal fin.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Harbor porpoise",
+                "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+              }
+            },
+            {
+              "text": "It hunts fish in coastal waters, using echolocation clicks to detect prey in difficult underwater conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Harbor porpoise",
+                "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "It hunts fish in coastal waters, using echolocation clicks to detect prey in difficult underwater conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Harbor porpoise",
+                "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+              }
+            },
+            {
+              "text": "This species occurs in temperate and cold waters of the Northern Hemisphere; local populations must be assessed separately.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Phocoena phocoena",
+                "url": "https://animaldiversity.org/accounts/Phocoena_phocoena/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "This species occurs in temperate and cold waters of the Northern Hemisphere; local populations must be assessed separately.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Phocoena phocoena",
+                "url": "https://animaldiversity.org/accounts/Phocoena_phocoena/"
+              }
+            },
+            {
+              "text": "The harbour porpoise is a small, often elusive toothed whale with a rounded face and a short, triangular dorsal fin.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Harbor porpoise",
+                "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Accidental capture in fishing nets, especially gillnets, is an important documented threat.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Harbor porpoise",
+                "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+              }
+            },
+            {
+              "text": "This species occurs in temperate and cold waters of the Northern Hemisphere; local populations must be assessed separately.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Phocoena phocoena",
+                "url": "https://animaldiversity.org/accounts/Phocoena_phocoena/"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "The harbour porpoise is a small, often elusive toothed whale with a rounded face and a short, triangular dorsal fin.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Harbor porpoise",
+              "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "It hunts fish in coastal waters, using echolocation clicks to detect prey in difficult underwater conditions.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Harbor porpoise",
+              "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "It hunts fish in coastal waters, using echolocation clicks to detect prey in difficult underwater conditions.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Harbor porpoise",
+              "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "This species occurs in temperate and cold waters of the Northern Hemisphere; local populations must be assessed separately.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Phocoena phocoena",
+              "url": "https://animaldiversity.org/accounts/Phocoena_phocoena/"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Accidental capture in fishing nets, especially gillnets, is an important documented threat.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Harbor porpoise",
+              "url": "https://www.fisheries.noaa.gov/species/harbor-porpoise"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "bottlenose-dolphin.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "bottlenose-dolphin",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Common bottlenose dolphin",
+        "scientificName": "Tursiops truncatus",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Marine mammal · Dolphin"
+      },
+      "hook": {
+        "text": "A marine hunter whose world is shaped by sound and social learning.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Common bottlenose dolphin",
+          "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+        }
+      },
+      "intro": [
+        {
+          "text": "Bottlenose dolphins are social toothed whales with a short, thick beak and a curved dorsal fin.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        },
+        {
+          "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        },
+        {
+          "text": "Dolphins occupy coastal and offshore waters, but some Atlantic coastal forms are now recognised separately from Tursiops truncatus.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Rounded beak and curved fin",
+          "text": "Bottlenose dolphins are social toothed whales with a short, thick beak and a curved dorsal fin.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        },
+        {
+          "value": "Fish, squid and crustaceans",
+          "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        },
+        {
+          "value": "Coastal and open water",
+          "text": "Dolphins occupy coastal and offshore waters, but some Atlantic coastal forms are now recognised separately from Tursiops truncatus.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Tursiops truncatus",
+            "url": "https://animaldiversity.org/accounts/Tursiops_truncatus/"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tursiops_truncatus_01.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Tursiops_truncatus_01.jpg",
+        "credit": "NASA / Kennedy Space Center",
+        "licence": "Public domain (US Government)",
+        "alt": "Wild bottlenose dolphin surfacing in the wake of a vessel in Florida",
+        "focus": "50% 50%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Rounded beak and curved fin",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Fish, squid and crustaceans",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Coastal and open water",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Tursiops truncatus",
+            "url": "https://animaldiversity.org/accounts/Tursiops_truncatus/"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Bycatch and disturbance",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Common bottlenose dolphin",
+            "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Bottlenose dolphins are social toothed whales with a short, thick beak and a curved dorsal fin.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Common bottlenose dolphin",
+                "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+              }
+            },
+            {
+              "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Common bottlenose dolphin",
+                "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Common bottlenose dolphin",
+                "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+              }
+            },
+            {
+              "text": "Dolphins occupy coastal and offshore waters, but some Atlantic coastal forms are now recognised separately from Tursiops truncatus.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Tursiops truncatus",
+                "url": "https://animaldiversity.org/accounts/Tursiops_truncatus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Dolphins occupy coastal and offshore waters, but some Atlantic coastal forms are now recognised separately from Tursiops truncatus.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Tursiops truncatus",
+                "url": "https://animaldiversity.org/accounts/Tursiops_truncatus/"
+              }
+            },
+            {
+              "text": "Bottlenose dolphins are social toothed whales with a short, thick beak and a curved dorsal fin.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Common bottlenose dolphin",
+                "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Fishing gear, collisions, noise and disturbance from feeding or approaching wild dolphins threaten some local populations.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Common bottlenose dolphin",
+                "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+              }
+            },
+            {
+              "text": "Dolphins occupy coastal and offshore waters, but some Atlantic coastal forms are now recognised separately from Tursiops truncatus.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Tursiops truncatus",
+                "url": "https://animaldiversity.org/accounts/Tursiops_truncatus/"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Bottlenose dolphins are social toothed whales with a short, thick beak and a curved dorsal fin.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Common bottlenose dolphin",
+              "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Common bottlenose dolphin",
+              "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "They use clicks for echolocation and different hunting methods, from solitary chasing to cooperating around schools of fish.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Common bottlenose dolphin",
+              "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Dolphins occupy coastal and offshore waters, but some Atlantic coastal forms are now recognised separately from Tursiops truncatus.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Tursiops truncatus",
+              "url": "https://animaldiversity.org/accounts/Tursiops_truncatus/"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Fishing gear, collisions, noise and disturbance from feeding or approaching wild dolphins threaten some local populations.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Common bottlenose dolphin",
+              "url": "https://www.fisheries.noaa.gov/species/common-bottlenose-dolphin"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "atlantic-cod.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "atlantic-cod",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Atlantic cod",
+        "scientificName": "Gadus morhua",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Fish · Atlantic cod"
+      },
+      "hook": {
+        "text": "A North Atlantic fish that changed coastal communities and fishing history.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Atlantic cod",
+          "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+        }
+      },
+      "intro": [
+        {
+          "text": "Atlantic cod is a cold-water fish recognisable by its three dorsal fins, speckled flanks and a whisker-like barbel under the chin.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        },
+        {
+          "text": "It lives near the seafloor and feeds on fish and invertebrates, including crustaceans, across its North Atlantic habitat.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        },
+        {
+          "text": "Cod populations are distributed among different regional stocks; the history of one stock must not be presented as the condition of the whole species.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Three dorsal fins and chin barbel",
+          "text": "Atlantic cod is a cold-water fish recognisable by its three dorsal fins, speckled flanks and a whisker-like barbel under the chin.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        },
+        {
+          "value": "Fish and invertebrates",
+          "text": "It lives near the seafloor and feeds on fish and invertebrates, including crustaceans, across its North Atlantic habitat.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        },
+        {
+          "value": "North Atlantic seas",
+          "text": "Cod populations are distributed among different regional stocks; the history of one stock must not be presented as the condition of the whole species.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Store norske leksikon — Torsk",
+            "url": "https://snl.no/torsk"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Torsk._Cod.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Torsk._Cod.jpg",
+        "credit": "Per Harald Olsen / NTNU Faculty of Natural Sciences",
+        "licence": "CC BY 2.0",
+        "alt": "Atlantic cod photographed by Per Harald Olsen, showing its body and diagnostic fins",
+        "focus": "50% 50%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Three dorsal fins and chin barbel",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Fish and invertebrates",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "North Atlantic seas",
+          "state": "KNOWN",
+          "source": {
+            "label": "Store norske leksikon — Torsk",
+            "url": "https://snl.no/torsk"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Stock-specific overfishing",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Atlantic cod",
+            "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Atlantic cod is a cold-water fish recognisable by its three dorsal fins, speckled flanks and a whisker-like barbel under the chin.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Atlantic cod",
+                "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+              }
+            },
+            {
+              "text": "It lives near the seafloor and feeds on fish and invertebrates, including crustaceans, across its North Atlantic habitat.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Atlantic cod",
+                "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "It lives near the seafloor and feeds on fish and invertebrates, including crustaceans, across its North Atlantic habitat.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Atlantic cod",
+                "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+              }
+            },
+            {
+              "text": "Cod populations are distributed among different regional stocks; the history of one stock must not be presented as the condition of the whole species.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Store norske leksikon — Torsk",
+                "url": "https://snl.no/torsk"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Cod populations are distributed among different regional stocks; the history of one stock must not be presented as the condition of the whole species.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Store norske leksikon — Torsk",
+                "url": "https://snl.no/torsk"
+              }
+            },
+            {
+              "text": "Atlantic cod is a cold-water fish recognisable by its three dorsal fins, speckled flanks and a whisker-like barbel under the chin.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Atlantic cod",
+                "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Historic overfishing led to severe declines in some Atlantic cod stocks, and fishing limits remain part of rebuilding efforts.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Atlantic cod",
+                "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+              }
+            },
+            {
+              "text": "Cod populations are distributed among different regional stocks; the history of one stock must not be presented as the condition of the whole species.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Store norske leksikon — Torsk",
+                "url": "https://snl.no/torsk"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Atlantic cod is a cold-water fish recognisable by its three dorsal fins, speckled flanks and a whisker-like barbel under the chin.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Atlantic cod",
+              "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "It lives near the seafloor and feeds on fish and invertebrates, including crustaceans, across its North Atlantic habitat.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Atlantic cod",
+              "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "It lives near the seafloor and feeds on fish and invertebrates, including crustaceans, across its North Atlantic habitat.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Atlantic cod",
+              "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Cod populations are distributed among different regional stocks; the history of one stock must not be presented as the condition of the whole species.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Store norske leksikon — Torsk",
+              "url": "https://snl.no/torsk"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Historic overfishing led to severe declines in some Atlantic cod stocks, and fishing limits remain part of rebuilding efforts.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Atlantic cod",
+              "url": "https://www.fisheries.noaa.gov/species/atlantic-cod"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review.",
+        "The habitat of the selected photograph has not been verified as wild; hold this page from production until replaced or independently cleared."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "blue-mussel.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "blue-mussel",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Blue mussel",
+        "scientificName": "Mytilus edulis",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Mollusc · Bivalve"
+      },
+      "hook": {
+        "text": "A small shellfish with an outsized role in coastal ecosystems.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Blue mussel",
+          "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+        }
+      },
+      "intro": [
+        {
+          "text": "Blue mussels are filter-feeding bivalves with blue-black shells that grow attached to rocks, ropes and other firm surfaces.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        },
+        {
+          "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        },
+        {
+          "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Blue-black two-part shell",
+          "text": "Blue mussels are filter-feeding bivalves with blue-black shells that grow attached to rocks, ropes and other firm surfaces.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        },
+        {
+          "value": "Plankton filtered from water",
+          "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        },
+        {
+          "value": "Intertidal and coastal seabeds",
+          "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Climate Vulnerability — Blue Mussel",
+            "url": "https://www.st.nmfs.noaa.gov/Assets/ecosystems/climate/images/species-results/pdfs/Blue_Mussel.pdf"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Moules_%28Mytilus_edulis%29_%28Ifremer_00562-67403_-_23060%29.jpg/1920px-Moules_%28Mytilus_edulis%29_%28Ifremer_00562-67403_-_23060%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Moules_(Mytilus_edulis)_(Ifremer_00562-67403_-_23060).jpg",
+        "credit": "Olivier Dugornay",
+        "licence": "CC BY 4.0",
+        "alt": "Blue mussel in its environment — The common mussel (  Mytilus edulis  ) is a bivalve mollusc that lives on hard surfaces in the intertidal zone, mainly in the North Atlantic, in ",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Blue-black two-part shell",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Plankton filtered from water",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Intertidal and coastal seabeds",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Climate Vulnerability — Blue Mussel",
+            "url": "https://www.st.nmfs.noaa.gov/Assets/ecosystems/climate/images/species-results/pdfs/Blue_Mussel.pdf"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Warming and local pollution",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Blue mussel",
+            "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Blue mussels are filter-feeding bivalves with blue-black shells that grow attached to rocks, ropes and other firm surfaces.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Blue mussel",
+                "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+              }
+            },
+            {
+              "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Blue mussel",
+                "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Blue mussel",
+                "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+              }
+            },
+            {
+              "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Climate Vulnerability — Blue Mussel",
+                "url": "https://www.st.nmfs.noaa.gov/Assets/ecosystems/climate/images/species-results/pdfs/Blue_Mussel.pdf"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Climate Vulnerability — Blue Mussel",
+                "url": "https://www.st.nmfs.noaa.gov/Assets/ecosystems/climate/images/species-results/pdfs/Blue_Mussel.pdf"
+              }
+            },
+            {
+              "text": "Blue mussels are filter-feeding bivalves with blue-black shells that grow attached to rocks, ropes and other firm surfaces.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Blue mussel",
+                "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Temperature change, pollution and acidification can affect mussels, but vulnerability depends strongly on region and life stage.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Blue mussel",
+                "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+              }
+            },
+            {
+              "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Climate Vulnerability — Blue Mussel",
+                "url": "https://www.st.nmfs.noaa.gov/Assets/ecosystems/climate/images/species-results/pdfs/Blue_Mussel.pdf"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Blue mussels are filter-feeding bivalves with blue-black shells that grow attached to rocks, ropes and other firm surfaces.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Blue mussel",
+              "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Blue mussel",
+              "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "They draw water over their gills to capture particles, linking microscopic plankton to larger coastal food webs.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Blue mussel",
+              "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Dense mussel beds create living habitat for other animals and can influence water quality and shoreline conditions.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Climate Vulnerability — Blue Mussel",
+              "url": "https://www.st.nmfs.noaa.gov/Assets/ecosystems/climate/images/species-results/pdfs/Blue_Mussel.pdf"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Temperature change, pollution and acidification can affect mussels, but vulnerability depends strongly on region and life stage.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Blue mussel",
+              "url": "https://www.fisheries.noaa.gov/species/blue-mussel"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "whale-shark.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "whale-shark",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Whale shark",
+        "scientificName": "Rhincodon typus",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Fish · Shark"
+      },
+      "hook": {
+        "text": "The largest living fish feeds on some of the sea's smallest animals.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Animal Diversity Web — Rhincodon typus",
+          "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+        }
+      },
+      "intro": [
+        {
+          "text": "The whale shark is the world's largest living fish, carrying a distinctive pattern of pale spots across its broad body.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        },
+        {
+          "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        },
+        {
+          "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Spotted body and broad head",
+          "text": "The whale shark is the world's largest living fish, carrying a distinctive pattern of pale spots across its broad body.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        },
+        {
+          "value": "Plankton and small marine life",
+          "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        },
+        {
+          "value": "Warm and tropical oceans",
+          "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Whale shark",
+            "url": "https://www.worldwildlife.org/species/whale-shark/"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Whale_Shark_AdF.jpg/1920px-Whale_Shark_AdF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Whale_Shark_AdF.jpg",
+        "credit": "Arturo de Frias Marques",
+        "licence": "CC BY-SA 4.0",
+        "alt": "Whale shark in its environment — Whale Shark ( Rhincodon typus ). Face portrait of an 8-meter individual filter-feeding plankton at night. His eye is clearly visible. His upper l",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Spotted body and broad head",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Plankton and small marine life",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Warm and tropical oceans",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Whale shark",
+            "url": "https://www.worldwildlife.org/species/whale-shark/"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Vessels and fisheries",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Rhincodon typus",
+            "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "The whale shark is the world's largest living fish, carrying a distinctive pattern of pale spots across its broad body.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Rhincodon typus",
+                "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+              }
+            },
+            {
+              "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Rhincodon typus",
+                "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Rhincodon typus",
+                "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+              }
+            },
+            {
+              "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Whale shark",
+                "url": "https://www.worldwildlife.org/species/whale-shark/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Whale shark",
+                "url": "https://www.worldwildlife.org/species/whale-shark/"
+              }
+            },
+            {
+              "text": "The whale shark is the world's largest living fish, carrying a distinctive pattern of pale spots across its broad body.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Rhincodon typus",
+                "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Vessel strikes, fisheries interactions and poorly managed wildlife tourism may harm individuals or populations.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Rhincodon typus",
+                "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+              }
+            },
+            {
+              "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Whale shark",
+                "url": "https://www.worldwildlife.org/species/whale-shark/"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "The whale shark is the world's largest living fish, carrying a distinctive pattern of pale spots across its broad body.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Rhincodon typus",
+              "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Rhincodon typus",
+              "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "Despite its immense size, it feeds by filtering plankton and small animals from the water rather than hunting large prey.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Rhincodon typus",
+              "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "It travels through warm and tropical seas, with movements and seasonal aggregations shaped by food and ocean conditions.",
+            "state": "KNOWN",
+            "source": {
+              "label": "WWF — Whale shark",
+              "url": "https://www.worldwildlife.org/species/whale-shark/"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Vessel strikes, fisheries interactions and poorly managed wildlife tourism may harm individuals or populations.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Rhincodon typus",
+              "url": "https://animaldiversity.org/accounts/Rhincodon_typus/"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "leopard.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "leopard",
+      "domain": "E4RTH",
+      "identity": {
+        "commonName": "Leopard",
+        "scientificName": "Panthera pardus",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Mammal · Big cat"
+      },
+      "hook": {
+        "text": "A rosette-coated hunter that moves between forest, grassland and night.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Animal Diversity Web — Panthera pardus",
+          "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+        }
+      },
+      "intro": [
+        {
+          "text": "Leopards are adaptable cats with a coat of dark rosettes; individual patterns and colouring vary across their range.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        },
+        {
+          "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        },
+        {
+          "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Dark rosettes on coat",
+          "text": "Leopards are adaptable cats with a coat of dark rosettes; individual patterns and colouring vary across their range.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        },
+        {
+          "value": "Medium-sized mammals and other prey",
+          "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        },
+        {
+          "value": "African and Asian habitats",
+          "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
+          "state": "KNOWN",
+          "source": {
+            "label": "IUCN Cat Specialist Group — Leopard",
+            "url": "https://www.catsg.org/living-species-leopard"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/76/Leopard_Tree_AdF.jpg/1920px-Leopard_Tree_AdF.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Leopard_Tree_AdF.jpg",
+        "credit": "Arturo de Frias Marques",
+        "licence": "CC BY-SA 4.0",
+        "alt": "Leopard in its environment — Leopard (Panthera pardus) Female leopard descending from its favourite tree, where it spent the warmest hours of the day. Londolozi, Sabi Sand, S",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Dark rosettes on coat",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Medium-sized mammals and other prey",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "African and Asian habitats",
+          "state": "KNOWN",
+          "source": {
+            "label": "IUCN Cat Specialist Group — Leopard",
+            "url": "https://www.catsg.org/living-species-leopard"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Habitat loss and conflict",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Panthera pardus",
+            "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Leopards are adaptable cats with a coat of dark rosettes; individual patterns and colouring vary across their range.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Panthera pardus",
+                "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+              }
+            },
+            {
+              "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Panthera pardus",
+                "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Panthera pardus",
+                "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+              }
+            },
+            {
+              "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
+              "state": "KNOWN",
+              "source": {
+                "label": "IUCN Cat Specialist Group — Leopard",
+                "url": "https://www.catsg.org/living-species-leopard"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
+              "state": "KNOWN",
+              "source": {
+                "label": "IUCN Cat Specialist Group — Leopard",
+                "url": "https://www.catsg.org/living-species-leopard"
+              }
+            },
+            {
+              "text": "Leopards are adaptable cats with a coat of dark rosettes; individual patterns and colouring vary across their range.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Panthera pardus",
+                "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Habitat loss, declining prey and conflict with people threaten leopards in many regions; conservation needs vary between populations.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Panthera pardus",
+                "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+              }
+            },
+            {
+              "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
+              "state": "KNOWN",
+              "source": {
+                "label": "IUCN Cat Specialist Group — Leopard",
+                "url": "https://www.catsg.org/living-species-leopard"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Leopards are adaptable cats with a coat of dark rosettes; individual patterns and colouring vary across their range.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Panthera pardus",
+              "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Panthera pardus",
+              "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "They are powerful ambush predators, able to climb trees and carry prey away from scavengers.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Panthera pardus",
+              "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Leopards occupy landscapes ranging from forest to savanna and mountain habitat across parts of Africa and Asia.",
+            "state": "KNOWN",
+            "source": {
+              "label": "IUCN Cat Specialist Group — Leopard",
+              "url": "https://www.catsg.org/living-species-leopard"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Habitat loss, declining prey and conflict with people threaten leopards in many regions; conservation needs vary between populations.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Panthera pardus",
+              "url": "https://animaldiversity.org/accounts/Panthera_pardus/"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "eastern-gorilla.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "eastern-gorilla",
+      "domain": "E4RTH",
+      "identity": {
+        "commonName": "Eastern gorilla",
+        "scientificName": "Gorilla beringei",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Mammal · Great ape"
+      },
+      "hook": {
+        "text": "Among the world's largest apes, family life is central to survival.",
+        "state": "KNOWN",
+        "source": {
+          "label": "WWF — Gorillas",
+          "url": "https://www.worldwildlife.org/species/gorilla/"
+        }
+      },
+      "intro": [
+        {
+          "text": "Eastern gorillas are large, mainly plant-eating great apes living in parts of the eastern Congo Basin and nearby mountain forests.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        },
+        {
+          "text": "Their social groups are often led by a mature silverback and include young animals that depend on prolonged care.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        },
+        {
+          "text": "The species includes mountain gorillas and Grauer's gorillas; their habitats, numbers and protection stories must not be conflated.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Heavy body and silverback males",
+          "text": "Eastern gorillas are large, mainly plant-eating great apes living in parts of the eastern Congo Basin and nearby mountain forests.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        },
+        {
+          "value": "Leaves, stems and fruits",
+          "text": "Their social groups are often led by a mature silverback and include young animals that depend on prolonged care.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        },
+        {
+          "value": "Central African forests",
+          "text": "The species includes mountain gorillas and Grauer's gorillas; their habitats, numbers and protection stories must not be conflated.",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Eastern lowland gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/eastern-lowland-gorilla/"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Mountain_gorilla_in_Rwanda.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Mountain_gorilla_in_Rwanda.jpg",
+        "credit": "TKnoxB  from Chemainus, BC, Canada",
+        "licence": "CC BY 2.0",
+        "alt": "Eastern gorilla in its environment — Mountain gorilla, Rwanda Walking boss",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Heavy body and silverback males",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Leaves, stems and fruits",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Central African forests",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Eastern lowland gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/eastern-lowland-gorilla/"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Habitat loss and hunting",
+          "state": "KNOWN",
+          "source": {
+            "label": "WWF — Gorillas",
+            "url": "https://www.worldwildlife.org/species/gorilla/"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Eastern gorillas are large, mainly plant-eating great apes living in parts of the eastern Congo Basin and nearby mountain forests.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/"
+              }
+            },
+            {
+              "text": "Their social groups are often led by a mature silverback and include young animals that depend on prolonged care.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "Their social groups are often led by a mature silverback and include young animals that depend on prolonged care.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/"
+              }
+            },
+            {
+              "text": "The species includes mountain gorillas and Grauer's gorillas; their habitats, numbers and protection stories must not be conflated.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Eastern lowland gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/eastern-lowland-gorilla/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "The species includes mountain gorillas and Grauer's gorillas; their habitats, numbers and protection stories must not be conflated.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Eastern lowland gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/eastern-lowland-gorilla/"
+              }
+            },
+            {
+              "text": "Eastern gorillas are large, mainly plant-eating great apes living in parts of the eastern Congo Basin and nearby mountain forests.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Habitat loss, hunting and disease pose serious threats, though conservation outcomes differ between populations.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/"
+              }
+            },
+            {
+              "text": "The species includes mountain gorillas and Grauer's gorillas; their habitats, numbers and protection stories must not be conflated.",
+              "state": "KNOWN",
+              "source": {
+                "label": "WWF — Eastern lowland gorillas",
+                "url": "https://www.worldwildlife.org/species/gorilla/eastern-lowland-gorilla/"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Eastern gorillas are large, mainly plant-eating great apes living in parts of the eastern Congo Basin and nearby mountain forests.",
+            "state": "KNOWN",
+            "source": {
+              "label": "WWF — Gorillas",
+              "url": "https://www.worldwildlife.org/species/gorilla/"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "Their social groups are often led by a mature silverback and include young animals that depend on prolonged care.",
+            "state": "KNOWN",
+            "source": {
+              "label": "WWF — Gorillas",
+              "url": "https://www.worldwildlife.org/species/gorilla/"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "Their social groups are often led by a mature silverback and include young animals that depend on prolonged care.",
+            "state": "KNOWN",
+            "source": {
+              "label": "WWF — Gorillas",
+              "url": "https://www.worldwildlife.org/species/gorilla/"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "The species includes mountain gorillas and Grauer's gorillas; their habitats, numbers and protection stories must not be conflated.",
+            "state": "KNOWN",
+            "source": {
+              "label": "WWF — Eastern lowland gorillas",
+              "url": "https://www.worldwildlife.org/species/gorilla/eastern-lowland-gorilla/"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Habitat loss, hunting and disease pose serious threats, though conservation outcomes differ between populations.",
+            "state": "KNOWN",
+            "source": {
+              "label": "WWF — Gorillas",
+              "url": "https://www.worldwildlife.org/species/gorilla/"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "acropora-palmata.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "acropora-palmata",
+      "domain": "OCE4N",
+      "identity": {
+        "commonName": "Elkhorn coral",
+        "scientificName": "Acropora palmata",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Cnidarian · Reef coral"
+      },
+      "hook": {
+        "text": "A reef-builder whose living branches can shape coastlines.",
+        "state": "KNOWN",
+        "source": {
+          "label": "NOAA Fisheries — Elkhorn coral",
+          "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+        }
+      },
+      "intro": [
+        {
+          "text": "Elkhorn coral forms broad, branching structures in shallow Caribbean reefs that resemble the antlers of an elk.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        },
+        {
+          "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        },
+        {
+          "text": "Interlocking colonies can shelter reef animals and help weaken waves before they strike the shore.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Broad antler-like branches",
+          "text": "Elkhorn coral forms broad, branching structures in shallow Caribbean reefs that resemble the antlers of an elk.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        },
+        {
+          "value": "Algal energy and captured plankton",
+          "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        },
+        {
+          "value": "Shallow Caribbean reefs",
+          "text": "Interlocking colonies can shelter reef animals and help weaken waves before they strike the shore.",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral science",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral/science"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Laika_ac_Playa_Kalki_%2811880476046%29.jpg/1920px-Laika_ac_Playa_Kalki_%2811880476046%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Laika_ac_Playa_Kalki_(11880476046).jpg",
+        "credit": "Laika ac  from USA",
+        "licence": "CC BY-SA 2.0",
+        "alt": "Elkhorn coral in its environment — Elkhorn coral ( Acropora palmata ), Playa Kalki",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Broad antler-like branches",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Algal energy and captured plankton",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "Shallow Caribbean reefs",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral science",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral/science"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Heat, disease and pollution",
+          "state": "KNOWN",
+          "source": {
+            "label": "NOAA Fisheries — Elkhorn coral",
+            "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "Elkhorn coral forms broad, branching structures in shallow Caribbean reefs that resemble the antlers of an elk.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+              }
+            },
+            {
+              "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+              }
+            },
+            {
+              "text": "Interlocking colonies can shelter reef animals and help weaken waves before they strike the shore.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral science",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral/science"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Interlocking colonies can shelter reef animals and help weaken waves before they strike the shore.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral science",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral/science"
+              }
+            },
+            {
+              "text": "Elkhorn coral forms broad, branching structures in shallow Caribbean reefs that resemble the antlers of an elk.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Disease, marine heatwaves, coral bleaching and pollution have caused profound losses in parts of the Caribbean.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+              }
+            },
+            {
+              "text": "Interlocking colonies can shelter reef animals and help weaken waves before they strike the shore.",
+              "state": "KNOWN",
+              "source": {
+                "label": "NOAA Fisheries — Elkhorn coral science",
+                "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral/science"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "Elkhorn coral forms broad, branching structures in shallow Caribbean reefs that resemble the antlers of an elk.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Elkhorn coral",
+              "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Elkhorn coral",
+              "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "Living polyps build connected colonies and host symbiotic algae that supply energy through photosynthesis.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Elkhorn coral",
+              "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Interlocking colonies can shelter reef animals and help weaken waves before they strike the shore.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Elkhorn coral science",
+              "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral/science"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Disease, marine heatwaves, coral bleaching and pollution have caused profound losses in parts of the Caribbean.",
+            "state": "KNOWN",
+            "source": {
+              "label": "NOAA Fisheries — Elkhorn coral",
+              "url": "https://www.fisheries.noaa.gov/species/elkhorn-coral"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    },
+    "hyacinth-macaw.json": {
+      "schema": "4PLANET_SPECIES_PAGE_01",
+      "slug": "hyacinth-macaw",
+      "domain": "E4RTH",
+      "identity": {
+        "commonName": "Hyacinth macaw",
+        "scientificName": "Anodorhynchus hyacinthinus",
+        "authorship": "Taxonomic authority under editorial review",
+        "group": "Bird · Parrot"
+      },
+      "hook": {
+        "text": "A blue giant among parrots with a bill built for palm nuts.",
+        "state": "KNOWN",
+        "source": {
+          "label": "Animal Diversity Web — Hyacinth macaw",
+          "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+        }
+      },
+      "intro": [
+        {
+          "text": "The hyacinth macaw is a large cobalt-blue parrot with yellow bare skin around its eyes and beak.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        },
+        {
+          "text": "Its remarkably strong, curved bill is adapted for cracking hard palm nuts.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        },
+        {
+          "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "value": "Cobalt-blue plumage",
+          "text": "The hyacinth macaw is a large cobalt-blue parrot with yellow bare skin around its eyes and beak.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        },
+        {
+          "value": "Hard palm nuts and seeds",
+          "text": "Its remarkably strong, curved bill is adapted for cracking hard palm nuts.",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        },
+        {
+          "value": "South American palm landscapes",
+          "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
+          "state": "KNOWN",
+          "source": {
+            "label": "BirdLife species factsheet — Hyacinth macaw",
+            "url": "https://datazone.birdlife.org/species/factsheet/hyacinth-macaw-anodorhynchus-hyacinthinus"
+          }
+        }
+      ],
+      "hero": {
+        "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Hyacinth_macaw_%28Anodorhynchus_hyacinthinus%29_in_flight.JPG/1920px-Hyacinth_macaw_%28Anodorhynchus_hyacinthinus%29_in_flight.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Hyacinth_macaw_(Anodorhynchus_hyacinthinus)_in_flight.JPG",
+        "credit": "Charles J. Sharp",
+        "licence": "CC BY-SA 4.0",
+        "alt": "Hyacinth macaw in its environment — Hyacinth macaw ( Anodorhynchus hyacinthinus ) in flight, the Pantanal, Brazil",
+        "focus": "50% 43%"
+      },
+      "glance": [
+        {
+          "label": "Field mark",
+          "value": "Cobalt-blue plumage",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        },
+        {
+          "label": "Diet",
+          "value": "Hard palm nuts and seeds",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        },
+        {
+          "label": "Habitat",
+          "value": "South American palm landscapes",
+          "state": "KNOWN",
+          "source": {
+            "label": "BirdLife species factsheet — Hyacinth macaw",
+            "url": "https://datazone.birdlife.org/species/factsheet/hyacinth-macaw-anodorhynchus-hyacinthinus"
+          }
+        },
+        {
+          "label": "Key pressure",
+          "value": "Habitat loss and capture",
+          "state": "KNOWN",
+          "source": {
+            "label": "Animal Diversity Web — Hyacinth macaw",
+            "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+          }
+        }
+      ],
+      "story": [
+        {
+          "kind": "life",
+          "eyebrow": "Living identity",
+          "title": "Recognising this species",
+          "claims": [
+            {
+              "text": "The hyacinth macaw is a large cobalt-blue parrot with yellow bare skin around its eyes and beak.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Hyacinth macaw",
+                "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+              }
+            },
+            {
+              "text": "Its remarkably strong, curved bill is adapted for cracking hard palm nuts.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Hyacinth macaw",
+                "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "need",
+          "eyebrow": "Living relationships",
+          "title": "How it finds food",
+          "claims": [
+            {
+              "text": "Its remarkably strong, curved bill is adapted for cracking hard palm nuts.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Hyacinth macaw",
+                "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+              }
+            },
+            {
+              "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "BirdLife species factsheet — Hyacinth macaw",
+                "url": "https://datazone.birdlife.org/species/factsheet/hyacinth-macaw-anodorhynchus-hyacinthinus"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "place",
+          "eyebrow": "Its world",
+          "title": "Where it belongs",
+          "claims": [
+            {
+              "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "BirdLife species factsheet — Hyacinth macaw",
+                "url": "https://datazone.birdlife.org/species/factsheet/hyacinth-macaw-anodorhynchus-hyacinthinus"
+              }
+            },
+            {
+              "text": "The hyacinth macaw is a large cobalt-blue parrot with yellow bare skin around its eyes and beak.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Hyacinth macaw",
+                "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "pressure",
+          "eyebrow": "A changing planet",
+          "title": "What threatens its future",
+          "claims": [
+            {
+              "text": "Habitat loss and capture for the bird trade have affected the species; accurate status claims need dated regional evidence.",
+              "state": "KNOWN",
+              "source": {
+                "label": "Animal Diversity Web — Hyacinth macaw",
+                "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+              }
+            },
+            {
+              "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
+              "state": "KNOWN",
+              "source": {
+                "label": "BirdLife species factsheet — Hyacinth macaw",
+                "url": "https://datazone.birdlife.org/species/factsheet/hyacinth-macaw-anodorhynchus-hyacinthinus"
+              }
+            }
+          ]
+        }
+      ],
+      "gallery": [],
+      "facts": {
+        "appearance": [
+          {
+            "label": "Recognition",
+            "text": "The hyacinth macaw is a large cobalt-blue parrot with yellow bare skin around its eyes and beak.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Hyacinth macaw",
+              "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+            }
+          },
+          {
+            "label": "Adaptation",
+            "text": "Its remarkably strong, curved bill is adapted for cracking hard palm nuts.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Hyacinth macaw",
+              "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+            }
+          }
+        ],
+        "physical": [],
+        "ecology": [
+          {
+            "label": "Life and food",
+            "text": "Its remarkably strong, curved bill is adapted for cracking hard palm nuts.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Hyacinth macaw",
+              "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+            }
+          },
+          {
+            "label": "Range and habitat",
+            "text": "Hyacinth macaws inhabit parts of South America, especially palm-rich landscapes in the Pantanal and adjacent regions.",
+            "state": "KNOWN",
+            "source": {
+              "label": "BirdLife species factsheet — Hyacinth macaw",
+              "url": "https://datazone.birdlife.org/species/factsheet/hyacinth-macaw-anodorhynchus-hyacinthinus"
+            }
+          }
+        ],
+        "conservation": [
+          {
+            "label": "Documented pressures",
+            "text": "Habitat loss and capture for the bird trade have affected the species; accurate status claims need dated regional evidence.",
+            "state": "KNOWN",
+            "source": {
+              "label": "Animal Diversity Web — Hyacinth macaw",
+              "url": "https://animaldiversity.org/accounts/Anodorhynchus_hyacinthinus/"
+            }
+          }
+        ]
+      },
+      "limits": [
+        "Taxonomic boundaries and distribution records can change with new scientific evidence; this editorial draft is not a replacement for dated specialist assessments.",
+        "Species-wide observations are not live population counts and regional trends must not be presented as universal.",
+        "Image provenance, wild origin, licensing and mobile/desktop crop require individual publication-gate review."
+      ],
+      "atlas": {
+        "layers": [
+          "bluemarble",
+          "biodiv"
+        ]
+      },
+      "provenance": {
+        "review": "DRAFT",
+        "writtenBy": "AXE / GPT authored within original Claude 4PLANET_SPECIES_PAGE_01 template",
+        "checkedAt": "2026-10-19"
+      }
+    }
+  }
+}
