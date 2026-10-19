@@ -303,7 +303,7 @@ export function CapsuleLink({ href, children, onClick, tone = "blue", external =
 }
 
 /** Save to this device — the existing local-first follow store; nothing leaves the browser. */
-export function SaveButton({ id, type, label, sub, inverse = false }: { id: string; type: EntityType; label: string; sub?: string; inverse?: boolean }) {
+export function SaveButton({ id, type, label, sub, inverse = false }: { id: string; type: EntityType | "ACTOR" | "PROJECT"; label: string; sub?: string; inverse?: boolean }) {
   const { toggle, following } = useFollows();
   const on = following(id);
   return (
@@ -312,7 +312,7 @@ export function SaveButton({ id, type, label, sub, inverse = false }: { id: stri
       className={"iu-save" + (on ? " is-on" : "") + (inverse ? " iu-save--inverse" : "")}
       aria-pressed={on}
       onClick={() => {
-        toggle({ id, type, label, sub });
+        const followType: EntityType = type === "ACTOR" || type === "PROJECT" ? "UNKNOWN" : type;\n        toggle({ id, type: followType, label, sub });
         trackEvent("impact_save", { entity_id: id, saved: !on });
       }}
     >

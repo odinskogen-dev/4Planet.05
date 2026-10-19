@@ -28,8 +28,9 @@ export function impactAtlasView(input: {
     return { kind: "IMPACT", title: input.title, description: input.description, placeId: registered, entityId: input.entityId, limitation };
   }
   if (pointPlace?.referencePoint) {
-    const { lng, lat, zoom } = pointPlace.referencePoint;
-    return { kind: "IMPACT", title: input.title, description: input.description, camera: { lng, lat, zoom }, entityId: input.entityId, limitation };
+    // Shared ATLAS owns camera authority. Keep the canonical NATUREBRAIN entity context
+    // rather than creating a parallel coordinate authority inside IMPACT.
+    return { kind: "IMPACT", title: input.title, description: input.description, entityId: input.entityId, limitation };
   }
   return null;
 }

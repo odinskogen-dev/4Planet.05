@@ -238,7 +238,7 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
             lead={<>IMPACT uses the same 4PLANET ATLAS as every other product — no second map. Places named here: {graph.places.map((place) => place.name).join(", ")}.</>}
           />
           <div className="iu-atlas" onClickCapture={(event) => { if ((event.target as HTMLElement).closest("a")) trackEvent("impact_atlas_open", { surface: "home" }); }}>
-            <AtlasEmbed view={{ kind: "IMPACT", title: "Where published projects work", description: "Open the shared ATLAS to explore places, species and living systems around this work.", camera: { lng: 20, lat: 8, zoom: 1.3 }, limitation: "World navigation view. Project places are context labels, not boundaries." }} />
+            <AtlasEmbed view={{ kind: "IMPACT", title: "Where published projects work", description: "Open the shared ATLAS to explore places, species and living systems around this work.", entityId: graph.projects[0]?.id, limitation: "World navigation view. Project places are context labels, not boundaries." }} />
           </div>
         </div>
       </section>
