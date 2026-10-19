@@ -11,7 +11,7 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     env:
       SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
       SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
@@ -41,11 +41,13 @@ jobs:
           auth=(-H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json')
           root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
           account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
-          [ -n "$account_id" ] || { echo "no Cloudflare account id"; exit 1; }
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$root")
+          [ -n "$account_id" ] && [ -n "$zone_id" ] || { echo "no Cloudflare account/zone id"; exit 1; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ZONE_ID=$zone_id" >> "$GITHUB_ENV"
           prior=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=1" "${auth[@]}")
           echo "Rollback reference:"
-          jq -r '.result[0] | {id,url,created_on,commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}' <<<"$prior"
+          jq -r '.result[0] | {id,url,created_on,environment,commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}' <<<"$prior"
 
       - uses: actions/checkout@v4
         with:
@@ -71,7 +73,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Verify live NATUREBRAIN publication gate
+      - name: Verify live NATUREBRAIN Gold20 + ENV63 gate
         shell: bash
         run: |
           set -euo pipefail
@@ -81,12 +83,22 @@ jobs:
             -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
             -H "Content-Type: application/json" -d '{}')
           env63=$(jq '[.issues[] | select(.id | startswith("problem:4p:env63:"))] | length' <<<"$payload")
-          total=$(jq '.issues | length' <<<"$payload")
-          echo "NATUREBRAIN: $env63 ENV63 / $total total issues"
+          issues=$(jq '.issues | length' <<<"$payload")
+          projects=$(jq '.projects | length' <<<"$payload")
+          actors=$(jq '.actors | length' <<<"$payload")
+          solutions=$(jq '.solutions | length' <<<"$payload")
+          places=$(jq '.places | length' <<<"$payload")
+          actions=$(jq '.actions | length' <<<"$payload")
+          echo "NATUREBRAIN: $projects projects / $actors actors / $solutions solutions / $places places / $actions actions / $issues issues / $env63 ENV63"
           test "$env63" -eq 63
-          test "$total" -ge 63
+          test "$projects" -eq 20
+          test "$actors" -eq 20
+          test "$solutions" -eq 20
+          test "$places" -eq 20
+          test "$actions" -eq 20
+          test "$issues" -ge 63
 
-      - name: Impact contracts
+      - name: Impact truth contracts
         run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs scripts/impact-proof-chain-integrity-contract.test.mjs
 
       - name: Build with live IMPACT snapshot
@@ -95,26 +107,41 @@ jobs:
           CF_PAGES_COMMIT_SHA: ${{ github.sha }}
           CF_PAGES_BRANCH: release/impact-lan-live-multisprint-01-20261019
           GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: release/impact-lan-live-multisprint-01-20261019
         run: npm run build
 
-      - name: Search and AI discovery gate
+      - name: Build identity + Search/AI discovery gate
         shell: bash
         run: |
           set -euo pipefail
+          test -f dist/impact-build.json
+          cat dist/impact-build.json
+          built=$(jq -r '.sha // empty' dist/impact-build.json)
+          test "$built" = "$GITHUB_SHA"
+
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
           const env=d.issues.filter(i=>i.id.startsWith('problem:4p:env63:'));
           if(env.length!==63) throw new Error(`expected 63 ENV63 issues, got ${env.length}`);
+          if(d.projects.length!==20) throw new Error(`expected Gold20, got ${d.projects.length}`);
+          if(d.actors.length!==20) throw new Error(`expected 20 actors, got ${d.actors.length}`);
+          if(d.solutions.length!==20) throw new Error(`expected 20 solutions, got ${d.solutions.length}`);
           const h=env.find(i=>i.slug==='habitat-destruction');
           if(!h || !h.citations?.length || !h.claims?.length || !h.unknowns?.length) throw new Error('habitat destruction discovery evidence incomplete');
-          console.log(`Snapshot PASS: ${d.projects.length} projects / ${d.actors.length} actors / ${d.issues.length} issues / ${env.length} ENV63`);
+          const indus=d.projects.find(p=>p.slug==='living-indus');
+          if(!indus || !indus.claims?.length || !indus.actors?.length || !indus.solutions?.length || !indus.actions?.length) throw new Error('Living Indus graph incomplete');
+          console.log(`Snapshot PASS: ${d.projects.length} projects / ${d.actors.length} actors / ${d.solutions.length} solutions / ${d.issues.length} issues / ${env.length} ENV63`);
           NODE
+
           test -f dist/impact/issue/habitat-destruction/index.html
+          test -f dist/impact/project/living-indus/index.html
           grep -q "Habitat destruction" dist/impact/issue/habitat-destruction/index.html
           grep -q "What the sources establish" dist/impact/issue/habitat-destruction/index.html
           grep -q "Known and not established" dist/impact/issue/habitat-destruction/index.html
           grep -q "ipbes.net" dist/impact/issue/habitat-destruction/index.html
+          grep -q "Living Indus" dist/impact/project/living-indus/index.html
+          grep -q "/impact/project/living-indus" dist/sitemap.xml
           grep -q "/impact/issue/habitat-destruction" dist/sitemap.xml
 
       - name: Deploy isolated IMPACT release to production
@@ -125,27 +152,78 @@ jobs:
             --project-name 4planet-05 \
             --branch main \
             --commit-hash "$GITHUB_SHA" \
-            --commit-dirty=false
+            --commit-dirty=false | tee /tmp/wrangler-deploy.txt
+
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          deployments=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=5" "${auth[@]}")
+          deployment_url=$(jq -r --arg sha "$GITHUB_SHA" '.result[] | select(.deployment_trigger.metadata.commit_hash==$sha) | .url' <<<"$deployments" | head -1)
+          [ -n "$deployment_url" ] || { echo "Cloudflare API did not return deployed SHA"; exit 1; }
+          echo "DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
+          echo "Immutable deployment: $deployment_url"
+
+          immutable=$(curl -fsS --max-time 20 "$deployment_url/impact-build.json")
+          test "$(jq -r '.sha // empty' <<<"$immutable")" = "$GITHUB_SHA"
+          curl -fsS --max-time 20 "$deployment_url/impact/project/living-indus/" | grep -q "Living Indus"
+
+      - name: Purge canonical IMPACT verification paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          payload='{"files":["https://4planet.org/impact-build.json","https://4planet.org/impact","https://4planet.org/impact/project/living-indus/","https://4planet.org/impact/issue/habitat-destruction/","https://4planet.org/sitemap.xml"]}'
+          purge=$(curl -fsS -X POST "${api}/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" "${auth[@]}" --data "$payload")
+          jq -e '.success == true' <<<"$purge" >/dev/null
 
       - name: Verify canonical LIVE
         shell: bash
         run: |
           set -euo pipefail
-          for i in $(seq 1 18); do
-            body=$(curl -fsS --max-time 20 https://4planet.org/impact-build.json || true)
+          for i in $(seq 1 24); do
+            body=$(curl -fsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact-build.json?v=$GITHUB_SHA" || true)
             sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
             echo "LIVE probe $i: ${sha:-unresolved}"
             if [ "$sha" = "$GITHUB_SHA" ]; then
-              home=$(curl -fsS --max-time 20 https://4planet.org/impact)
-              issue=$(curl -fsS --max-time 20 https://4planet.org/impact/issue/habitat-destruction/)
+              home=$(curl -fsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact?v=$GITHUB_SHA")
+              project=$(curl -fsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact/project/living-indus/?v=$GITHUB_SHA")
+              issue=$(curl -fsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact/issue/habitat-destruction/?v=$GITHUB_SHA")
               grep -q "Find people bringing life back" <<<"$home"
-              grep -q "Habitat destruction" <<<"$issue"
+              grep -q "Living Indus" <<<"$project"
               grep -q "What the sources establish" <<<"$issue"
               grep -q "ipbes.net" <<<"$issue"
-              echo "Canonical LIVE verified."
+              echo "Canonical LIVE verified: https://4planet.org/impact"
               exit 0
             fi
-            sleep 10
+            sleep 5
           done
           echo "Canonical LIVE verification failed" >&2
+          echo "Immutable deployment remains verified at $DEPLOYMENT_URL" >&2
           exit 1
+
+      - name: Browser proof — desktop + mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          BASE_URL=https://4planet.org node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser=await chromium.launch();
+          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+            const page=await browser.newPage({viewport});
+            await page.goto('https://4planet.org/impact',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:/Find people bringing life back/i}).waitFor();
+            const tiles=page.locator('.iu-section--index .iu-tile');
+            if(await tiles.count()!==20) throw new Error(`expected 20 LIVE project tiles at ${viewport.width}px; got ${await tiles.count()}`);
+            if(!(await page.getByRole('link',{name:'Living Indus Initiative',exact:true}).first().isVisible())) throw new Error('Living Indus tile not visible');
+            const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+            if(overflow>0) throw new Error(`horizontal overflow ${overflow}px at ${viewport.width}px`);
+            await page.goto('https://4planet.org/impact/project/living-indus',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:'Living Indus Initiative',exact:true}).waitFor();
+            await page.getByRole('heading',{name:'What the sources establish'}).waitFor();
+            await page.getByText(/not independently verified ecological outcomes/i).first().waitFor();
+            await page.close();
+          }
+          await browser.close();
+          console.log('LIVE browser proof PASS: desktop 1440 + mobile 390');
+          NODE
