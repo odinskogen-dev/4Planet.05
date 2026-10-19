@@ -335,7 +335,7 @@ export const STORIES: Story[] = [
     franchise: "FROM_THE_FIELD",
     editorialType: "SOURCE_REPORTED_EDITORIAL",
     byline: "4PLANET Magazine",
-    image: "wh4lesHero",
+    image: "whaleSurveyStoryHero",
     imageRole: "CONTEXT",
     imageContextNote: "4PLANET field context image — not the ORCA survey vessel or survey team.",
     readMins: 5,
