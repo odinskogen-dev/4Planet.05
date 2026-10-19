@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           git merge-base --is-ancestor "$PRIOR_LIVE_SHA" HEAD
           mapfile -t changed < <(git diff --name-only "$PRIOR_LIVE_SHA"...HEAD)
-          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|src/components/Seo\\.tsx|src/content/stories\\.ts|src/content/imageRegistry\\.ts|src/content/magazineFeaturesReported\\.ts|src/pages/v5/Magazine\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
+          allowed="^(scripts/generate-sitemap\\.mjs|scripts/prerender-magazine-seo\\.mjs|scripts/magazine-seo-contract\\.test\\.mjs|scripts/magazine-world-class-contract\\.test\\.mjs|src/components/Seo\\.tsx|src/content/stories\\.ts|src/content/imageRegistry\\.ts|src/content/magazineFeaturesReported\\.ts|src/pages/v5/Magazine\\.tsx|docs/control/MAGAZINE_FOR_A_LIVING_PLANET_LIVE_RELEASE_20261010\\.md|\\.github/workflows/magazine-max-exposure-qa\\.yml|\\.github/workflows/magazine-films-live-founder-override\\.yml)$"
           for file in "${changed[@]}"; do
             if ! grep -Eq "$allowed" <<<"$file"; then
               echo "UNEXPECTED RELEASE FILE: $file"
