@@ -1,4 +1,4 @@
-name: SPECIES 39 — Premium Mapped-Host Browser QA
+name: SPECIES 39 — Premium Mapped-Host Browser QA Stable Hydration
 on:
   push:
     branches: [release/species-39-profiles-20261019]
@@ -35,7 +35,7 @@ jobs:
             const p=await context.newPage();const pageErrors=[];p.on('pageerror',e=>pageErrors.push(e.message.slice(0,120)));
             try{
               const response=await p.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:25000});
-              await p.waitForTimeout(1050);
+              await p.waitForTimeout(3200);
               const data=await p.evaluate(()=>{
                 const img=document.querySelector('.spx-hero img,.spx-hero-img,.spx-hero-slide img');
                 return {h1:document.querySelector('h1')?.innerText.slice(0,125),premium:!!document.querySelector('.spx'),
