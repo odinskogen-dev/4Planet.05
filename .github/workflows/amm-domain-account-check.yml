@@ -1,0 +1,34 @@
+name: AMM zone account verification
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-domain-account-check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TOKEN_STANDARD: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+    steps:
+      - name: Compare existing token coverage without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in TOKEN_STANDARD TOKEN_FACTORY; do
+            candidate="${!name}"
+            if [ -z "$candidate" ]; then echo "$name NOT_CONFIGURED"; continue; fi
+            response=$(curl -sS --max-time 20 -H "Authorization: Bearer $candidate" 'https://api.cloudflare.com/client/v4/zones?name=ammkunst.no')
+            ok=$(jq -r '.success // false' <<< "$response")
+            zones=$(jq -r '.result|length' <<< "$response")
+            echo "$name API_SUCCESS=$ok AMM_ZONES=$zones"
+          done
+          echo 'AUTHORITATIVE_NO_RESPONSE:'
+          dig +time=3 +tries=1 @i.nic.no ammkunst.no NS +noall +comments +answer +authority | head -20
+          echo 'RDAP_STATUS:'
+          curl -sS --max-time 15 -o /tmp/norid-rdap -w 'HTTP=%{http_code}\n' -H 'Accept: application/rdap+json' https://rdap.norid.no/domain/ammkunst.no || true
+          head -c 180 /tmp/norid-rdap 2>/dev/null | tr '\n' ' ' || true
+          echo
