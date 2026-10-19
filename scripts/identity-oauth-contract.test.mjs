@@ -78,5 +78,9 @@ test("return_to never forwards OAuth secrets or contact details to the identity 
   assert.equal(safeReturnTo("https://4planet.org/?q=person%40example.org&year=2026"), "https://4planet.org/?year=2026");
   assert.equal(safeReturnTo("https://4planet.org/?note=access_token%3Dsecret&year=2026"), "https://4planet.org/?year=2026");
   assert.equal(safeReturnTo("https://4planet.org/auth/4planet/callback?code=secret"), "https://4planet.org/");
+  assert.equal(safeReturnTo("https://4planet.org/%61uth/4planet/callback?next=atlas"), "https://4planet.org/");
+  assert.equal(safeReturnTo("https://4planet.org/%253Faccess_token%253Dsecret"), "https://4planet.org/");
+  assert.equal(safeReturnTo("https://4planet.org/share/person%2540example.org"), "https://4planet.org/");
+  assert.equal(safeReturnTo("https://4planet.org/atlas?next=access_token%253Dsecret&m=PLANET"), "https://4planet.org/atlas?m=PLANET");
   assert.equal(safeReturnTo("https://malicious.example/?next=https://4planet.org/"), "https://4planet.org/");
 });
