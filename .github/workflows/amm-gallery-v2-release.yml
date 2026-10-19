@@ -1,0 +1,68 @@
+name: AMM Gallery 2 — premium release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-gallery-v2-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Read and verify independent AMM source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git amm-src
+          test "$(git -C amm-src rev-parse HEAD)" = "5e734ad837671d898d97a769b05515df26b1b385"
+          test -s amm-src/ammkunst/site/art/n0388.webp
+          test -s amm-src/ammkunst/site/art/n0387.webp
+          test -s amm-src/ammkunst/site/art/n0397.webp
+          test -s amm-src/ammkunst/site/shop/index.html
+          test -s amm-src/ammkunst/site/assets/gallery-v2.css
+          test -s amm-src/ammkunst/site/assets/gallery-v2.js
+          grep -q 'hero-primary' amm-src/ammkunst/site/index.html
+          grep -q '#FFFFFF' amm-src/ammkunst/site/assets/gallery-v2.css
+          node --check amm-src/ammkunst/site/assets/gallery-v2.js
+          node --check amm-src/ammkunst/site/assets/data-v2.js
+      - name: Resolve existing Cloudflare credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CF_TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$CF_TOKEN" >> "$GITHUB_ENV"
+          zones="$(curl -fsS -H "Authorization: Bearer $CF_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')"
+          account="$(jq -r '.result[0].account.id // empty' <<< "$zones")"
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Deploy AMM website as independent Worker
+        working-directory: amm-src/ammkunst
+        run: |
+          set -euo pipefail
+          cat > wrangler.jsonc <<'JSON'
+          {
+            "name":"ammkunst-gallery",
+            "compatibility_date":"2026-10-19",
+            "workers_dev":true,
+            "assets":{"directory":"./site","not_found_handling":"single-page-application"}
+          }
+          JSON
+          rm -f site/_redirects
+          npx --yes wrangler@4.151.2 deploy
+      - name: Verify canonical website in production
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            code="$(curl -sSL --max-time 15 -o /tmp/amm-main -w '%{http_code}' https://ammkunst.com/ || true)"
+            picture="$(curl -sSL --max-time 15 -o /tmp/amm-art -w '%{http_code}' https://ammkunst.com/art/n0388.webp || true)"
+            stylesheet="$(curl -sSL --max-time 15 -o /tmp/amm-css -w '%{http_code}' https://ammkunst.com/assets/gallery-v2.css || true)"
+            shop="$(curl -sSL --max-time 15 -o /tmp/amm-shop -w '%{http_code}' https://ammkunst.com/shop/ || true)"
+            if [[ "$code" = 200 && "$picture" = 200 && "$stylesheet" = 200 && "$shop" = 200 ]] && grep -q 'class="hero"' /tmp/amm-main && grep -q 'class="gallery"' /tmp/amm-shop && grep -q -- '--white:#FFFFFF' /tmp/amm-css && file /tmp/amm-art | grep -qi WebP; then
+              echo 'AMM_GALLERY_V2_VERIFIED=https://ammkunst.com/'
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 7
