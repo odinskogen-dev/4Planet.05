@@ -69,3 +69,14 @@ test("Impact prerender gates projects and actors and does not assign third-party
   assert.match(prerender, /about: \{ "@type": "Thing", "@id": actor\.id, name: actor\.name \}/);
   assert.doesNotMatch(prerender, /"@type": "Organization",\n\s+name: actor\.name/);
 });
+
+
+test("Impact actor discovery groups shared actors into one identity entry", () => {
+  assert.match(page, /const actorEntries = useMemo/);
+  assert.match(page, /new Map<string, \{/);
+  assert.match(page, /byId\.get\(project\.actor\.id\)/);
+  assert.match(page, /current\.projects\.push\(project\)/);
+  assert.match(page, /key=\{actor\.id\}/);
+  assert.match(page, /projectCount === 1 \? "project" : "projects"/);
+  assert.doesNotMatch(page, /payload\.projects\.filter\(\(project\) => project\.actor\)\.map/);
+});
