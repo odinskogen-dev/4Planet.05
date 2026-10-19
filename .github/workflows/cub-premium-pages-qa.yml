@@ -63,6 +63,8 @@ jobs:
                 const errs=[];
                 page.on('pageerror',e=>errs.push(e.message));
                 const response=await page.goto('https://lab.p4nther.com'+path,{waitUntil:'networkidle',timeout:50000});
+                await page.locator('img[loading="lazy"]').evaluateAll(imgs=>imgs.forEach(i=>i.loading='eager'));
+                await page.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0),null,{timeout:15000});
                 const metrics=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,inner:window.innerWidth,heading:!!document.querySelector('h1'),images:[...document.images].filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.src)}));
                 const result={slug,viewport,code:response.status(),...metrics,errors:errs};
                 console.log('CUB_VISUAL_QA',JSON.stringify(result));
