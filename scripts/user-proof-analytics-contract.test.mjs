@@ -227,7 +227,7 @@ test("analytics page telemetry strips query strings and fragments", () => {
 });
 
 test("PostHog reuses the same consented event spine and fails closed without configuration", () => {
-  assert.match(analytics, /capturePostHog\(name, shared\)/);
+  assert.match(analytics, /capturePostHog\(name, properties\)/);
   assert.match(analytics, /capturePostHog\(\"\$pageview\", sharedPageProperties\)/);
   assert.match(posthog, /VITE_POSTHOG_PROJECT_KEY/);
   assert.match(posthog, /VITE_POSTHOG_HOST/);
