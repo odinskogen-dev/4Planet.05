@@ -1,0 +1,38 @@
+name: AMM dot com safe route preflight
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-com-preflight-20261019.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect ammkunst.com DNS and Worker domain binding read-only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          zone="$(curl -fsS "${auth[@]}" "$api/zones?name=ammkunst.com")"
+          jq -c '{success,zone:[.result[]? | {name,status,account_id:.account.id}]}' <<< "$zone"
+          zid="$(jq -r '.result[0].id // empty' <<< "$zone")"
+          account="$(jq -r '.result[0].account.id // empty' <<< "$zone")"
+          test -n "$zid"
+          test -n "$account"
+          dns="$(curl -fsS "${auth[@]}" "$api/zones/$zid/dns_records?per_page=100")"
+          echo 'AMM_DNS_RECORDS_BEGIN'
+          jq -r '.result[]? | select(.name=="ammkunst.com" or .name=="www.ammkunst.com") | [.type,.name,.content, (.proxied|tostring)] | @tsv' <<< "$dns" 
+          echo 'AMM_DNS_RECORDS_END'
+          customs="$(curl -fsS "${auth[@]}" "$api/accounts/$account/workers/domains")"
+          echo 'AMM_CUSTOM_WORKER_DOMAINS_BEGIN'
+          jq -r '.result[]? | select(.hostname=="ammkunst.com" or .hostname=="www.ammkunst.com") | [.hostname,.service,(.enabled|tostring)] | @tsv' <<<"$customs"
+          echo 'AMM_CUSTOM_WORKER_DOMAINS_END'
+          routes="$(curl -fsS "${auth[@]}" "$api/zones/$zid/workers/routes")"
+          echo 'AMM_WORKER_ROUTES_BEGIN'
+          jq -r '.result[]? | [.pattern,(.script // "")] | @tsv' <<<"$routes"
+          echo 'AMM_WORKER_ROUTES_END'
+          echo "HTTPS_PUBLIC=$(curl -L --max-time 10 -s -o /dev/null -w '%{http_code}' https://ammkunst.com/ || true)"
