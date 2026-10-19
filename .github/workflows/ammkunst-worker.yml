@@ -1,0 +1,57 @@
+name: AMM gallery Worker release
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ammkunst-worker.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Read and verify independent AMM source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git amm-src
+          test "$(git -C amm-src rev-parse HEAD)" = "b6863ac29b1023aa968c49da2ce6cf6cef61623d"
+          test -s amm-src/ammkunst/site/art/n0388.webp
+          test -s amm-src/ammkunst/site/art/n0387.webp
+          test -s amm-src/ammkunst/site/art/n0397.webp
+      - name: Resolve existing Cloudflare credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CF_TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$CF_TOKEN" >> "$GITHUB_ENV"
+          zones="$(curl -fsS -H "Authorization: Bearer $CF_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')"
+          account="$(jq -r '.result[0].account.id // empty' <<< "$zones")"
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Deploy AMM website as independent Worker
+        working-directory: amm-src/ammkunst
+        run: |
+          set -euo pipefail
+          cat > wrangler.jsonc <<'JSON'
+          {
+            "name":"ammkunst-gallery",
+            "compatibility_date":"2026-10-19",
+            "workers_dev":true,
+            "assets":{"directory":"./site","not_found_handling":"single-page-application"}
+          }
+          JSON
+          npx --yes wrangler@4.151.2 deploy
+      - name: Verify Worker artwork
+        run: |
+          set -euo pipefail
+          subdomain_json="$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain")"
+          subdomain="$(jq -r '.result.subdomain // empty' <<< "$subdomain_json")"
+          test -n "$subdomain"
+          url="https://ammkunst-gallery.$subdomain.workers.dev"
+          curl -fLsS --retry 6 --retry-delay 5 "$url/" -o /tmp/amm-home.html
+          curl -fLsS --retry 6 --retry-delay 5 "$url/art/n0388.webp" -o /tmp/amm-peacock.webp
+          grep -q AMM /tmp/amm-home.html
+          file /tmp/amm-peacock.webp | grep -qi WEBP
+          echo "AMM_WORKER_LIVE=$url/"
