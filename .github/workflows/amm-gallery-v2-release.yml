@@ -15,10 +15,18 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git amm-src
-          test "$(git -C amm-src rev-parse HEAD)" = "fca9658667f1d280fce04ca161a21df14d692f32"
+          test "$(git -C amm-src rev-parse HEAD)" = "6e897f0d799edee36e0004a59faae0f7805caf80"
           test -s amm-src/ammkunst/site/art/n0388.webp
           test -s amm-src/ammkunst/site/art/n0387.webp
           test -s amm-src/ammkunst/site/art/n0397.webp
+          for n in 0390 0389 0395 0392; do test -s "amm-src/ammkunst/site/art/n$n.webp"; done
+          test ! -f amm-src/ammkunst/site/art/a01.jpg
+          test ! -f amm-src/ammkunst/site/art/a03.jpg
+          test ! -f amm-src/ammkunst/site/art/a07.jpg
+          grep -q 'n0390.webp' amm-src/ammkunst/site/index.html
+          grep -q 'n0389.webp' amm-src/ammkunst/site/index.html
+          grep -q 'n0395.webp' amm-src/ammkunst/site/index.html
+          grep -q 'n0392.webp' amm-src/ammkunst/site/index.html
           test -s amm-src/ammkunst/site/shop/index.html
           test -s amm-src/ammkunst/site/assets/gallery-v2.css
           test -s amm-src/ammkunst/site/assets/gallery-v2.js
@@ -56,11 +64,14 @@ jobs:
           set -euo pipefail
           for attempt in $(seq 1 12); do
             code="$(curl -sSL --max-time 15 -o /tmp/amm-main -w '%{http_code}' https://ammkunst.com/ || true)"
-            picture="$(curl -sSL --max-time 15 -o /tmp/amm-art -w '%{http_code}' https://ammkunst.com/art/n0388.webp || true)"
+            picture="$(curl -sSL --max-time 15 -o /tmp/amm-art -w '%{http_code}' https://ammkunst.com/art/n0390.webp || true)"
+            gecko="$(curl -sSL --max-time 15 -o /tmp/amm-gecko -w '%{http_code}' https://ammkunst.com/art/n0389.webp || true)"
+            squirrel="$(curl -sSL --max-time 15 -o /tmp/amm-squirrel -w '%{http_code}' https://ammkunst.com/art/n0395.webp || true)"
+            flowers="$(curl -sSL --max-time 15 -o /tmp/amm-flowers -w '%{http_code}' https://ammkunst.com/art/n0392.webp || true)"
             stylesheet="$(curl -sSL --max-time 15 -o /tmp/amm-css -w '%{http_code}' https://ammkunst.com/assets/gallery-v2.css || true)"
             shop="$(curl -sSL --max-time 15 -o /tmp/amm-shop -w '%{http_code}' https://ammkunst.com/shop/ || true)"
-            if [[ "$code" = 200 && "$picture" = 200 && "$stylesheet" = 200 && "$shop" = 200 ]] && grep -q 'class="hero"' /tmp/amm-main && grep -q 'class="gallery"' /tmp/amm-shop && grep -q -- '--white:#FFFFFF' /tmp/amm-css && file /tmp/amm-art | grep -qi 'Web/P'; then
-              echo 'AMM_GALLERY_V2_VERIFIED=https://ammkunst.com/'
+            if [[ "$code" = 200 && "$picture" = 200 && "$gecko" = 200 && "$squirrel" = 200 && "$flowers" = 200 && "$stylesheet" = 200 && "$shop" = 200 ]] && grep -q 'class="hero"' /tmp/amm-main && grep -q 'class="gallery"' /tmp/amm-shop && grep -q -- '--white:#FFFFFF' /tmp/amm-css && grep -q '21 distinct works' /tmp/amm-shop && file /tmp/amm-art | grep -qi 'Web/P'; then
+              echo 'AMM_GALLERY_21_WORKS_4_NEW_IMAGES_VERIFIED=https://ammkunst.com/'
               exit 0
             fi
             sleep 5
