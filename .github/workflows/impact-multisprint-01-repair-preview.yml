@@ -1,0 +1,148 @@
+name: IMPACT Multisprint 01 Repair Preview
+
+on:
+  push:
+    branches:
+      - release/impact-live-multisprint-01-repair-20261019
+
+permissions:
+  contents: read
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        env:
+          CF_PAGES: "1"
+          CF_PAGES_COMMIT_SHA: ${{ github.sha }}
+          CF_PAGES_BRANCH: impact-live-multisprint-01-repair
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: impact-live-multisprint-01-repair
+        run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for c in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$c" ] && { TOKEN="$c"; break; }; done
+          [ -n "$TOKEN" ]
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+      - name: Deploy isolated preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist --project-name 4planet-05 --branch impact-live-multisprint-01-repair --commit-hash "${GITHUB_SHA}" --commit-dirty=false
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account" ]
+          url=""
+          for i in $(seq 1 30); do
+            deps=$(curl -fsS "${api}/accounts/${account}/pages/projects/4planet-05/deployments?page=1&per_page=50" "${auth[@]}")
+            row=$(jq -c --arg sha "${GITHUB_SHA}" '[.result[] | select(.deployment_trigger.metadata.commit_hash==$sha and .environment=="preview" and .latest_stage.status=="success")][0] // empty' <<<"$deps")
+            if [ -n "$row" ]; then
+              url=$(jq -r '.url' <<<"$row")
+              echo "PREVIEW_URL=$url" | tee -a "$GITHUB_ENV" preview.env
+              echo "$row" > preview-deployment.json
+              break
+            fi
+            sleep 5
+          done
+          [ -n "$url" ]
+      - name: Browser QA exact preview against live NATUREBRAIN
+        shell: bash
+        run: |
+          mkdir -p artifacts/impact-repair
+          cat > /tmp/proof.mjs <<'JS'
+          import { chromium } from "playwright";
+          import fs from "node:fs";
+          const base=process.env.PREVIEW_URL;
+          const issues=[
+            ["biodiversity-loss","Biodiversity loss"],
+            ["deforestation","Deforestation"],
+            ["overfishing","Overfishing"],
+            ["coral-bleaching-and-mortality","Coral bleaching and mortality"],
+            ["fossil-carbon-dioxide-emissions","Fossil carbon dioxide emissions"],
+            ["methane-emissions","Methane emissions"],
+            ["water-scarcity","Water scarcity"],
+            ["food-waste","Food waste"],
+            ["high-resource-extraction","High resource extraction"],
+            ["short-lived-electronics-and-e-waste","Short-lived electronics and e-waste"],
+            ["air-pollution","Air pollution"],
+            ["plastic-and-microplastic-pollution","Plastic and microplastic pollution"],
+            ["finance-for-nature-negative-activity","Finance for nature-negative activity"],
+            ["poor-cross-system-coordination","Poor cross-system coordination"]
+          ];
+          const browser=await chromium.launch();
+          const results=[];
+          for(const [w,h] of [[390,844],[1440,900]]){
+            const page=await browser.newPage({viewport:{width:w,height:h},isMobile:w<500,hasTouch:w<500});
+            await page.goto(base+"/impact",{waitUntil:"networkidle",timeout:60000});
+            await page.waitForTimeout(800);
+            const home=await page.evaluate(()=>({
+              h1:document.querySelector("h1")?.textContent?.trim(),
+              text:document.body.innerText,
+              tiles:document.querySelectorAll(".iu-section--index .iu-tile").length,
+              overflow:document.documentElement.scrollWidth-window.innerWidth
+            }));
+            if(home.h1!=="Find people bringing life back.") throw new Error("wrong impact home: "+home.h1);
+            if(home.tiles!==4) throw new Error("expected 4 public projects before Gold20 gate, got "+home.tiles);
+            if(!home.text.includes("17 issues")) throw new Error("expected 17 issues");
+            if(home.overflow>0) throw new Error("home overflow "+home.overflow);
+            results.push({w,route:"/impact",...home});
+            await page.screenshot({path:`artifacts/impact-repair/home-${w}.png`,fullPage:true});
+            for(const [slug,name] of issues){
+              await page.goto(base+"/impact/issue/"+slug,{waitUntil:"networkidle",timeout:60000});
+              await page.waitForTimeout(350);
+              const x=await page.evaluate(()=>({
+                h1:document.querySelector("h1")?.textContent?.trim(),
+                claims:document.querySelectorAll(".iu-claim").length,
+                overflow:document.documentElement.scrollWidth-window.innerWidth
+              }));
+              if(x.h1!==name||x.claims<1||x.overflow>0) throw new Error(slug+" "+JSON.stringify(x));
+              results.push({w,route:"/impact/issue/"+slug,...x});
+            }
+            await page.goto(base+"/impact/project/florida-coral-restoration",{waitUntil:"networkidle",timeout:60000});
+            if((await page.locator("h1").textContent())?.trim()!=="Florida Keys Coral Restoration") throw new Error("existing project regression");
+            await page.close();
+          }
+          await browser.close();
+          fs.writeFileSync("artifacts/impact-repair/results.json",JSON.stringify(results,null,2));
+          console.log("IMPACT_REPAIR_PREVIEW_PASS",base,results.length);
+          JS
+          node /tmp/proof.mjs
+      - name: Verdict
+        run: |
+          printf 'IMPACT MULTISPRINT 01 REPAIR PREVIEW PASS\nSHA=%s\nPREVIEW=%s/impact\nPROJECTS=4\nISSUES=17\n' "${GITHUB_SHA}" "${PREVIEW_URL}" | tee artifacts/impact-repair/verdict.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: impact-multisprint-01-repair-preview
+          path: |
+            preview.env
+            preview-deployment.json
+            artifacts/impact-repair
+          retention-days: 45
+          if-no-files-found: warn
