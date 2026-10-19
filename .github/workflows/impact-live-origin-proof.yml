@@ -1,0 +1,56 @@
+name: IMPACT LIVE Origin Read-Only Proof
+
+on:
+  push:
+    branches:
+      - qa/impact-live-multisprint-01-20261019
+    paths:
+      - .github/workflows/impact-live-origin-proof.yml
+
+permissions:
+  contents: read
+
+jobs:
+  origin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Resolve Cloudflare token
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for c in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$c" ] && { TOKEN="$c"; break; }
+          done
+          [ -n "$TOKEN" ]
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+      - name: Read current 4planet-05 production deployments
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          [ -n "$account" ]
+          deps=$(curl -fsS "${api}/accounts/${account}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=10" "${auth[@]}")
+          jq -e '.success==true' <<<"$deps" >/dev/null
+          jq '[.result[] | {id,url,created_on,environment,branch:(.deployment_trigger.metadata.branch//""),commit:(.deployment_trigger.metadata.commit_hash//""),status:(.latest_stage.status//"")}]' <<<"$deps" | tee deployments.json
+          echo "LATEST:"
+          jq -r '.result[0] | {id,url,created_on,environment,branch:(.deployment_trigger.metadata.branch//""),commit:(.deployment_trigger.metadata.commit_hash//""),status:(.latest_stage.status//"")}' <<<"$deps"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impact-live-origin-proof
+          path: deployments.json
+          retention-days: 45
