@@ -1,0 +1,59 @@
+name: AMM gallery canonical dot com redeploy
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-worker-canonical-redeploy.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Read and verify independent AMM source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git amm-src
+          test "$(git -C amm-src rev-parse HEAD)" = "48a3cad245c904c87f8a78f7b5499f1d2c2b12ce"
+          test -s amm-src/ammkunst/site/art/n0388.webp
+          test -s amm-src/ammkunst/site/art/n0387.webp
+          test -s amm-src/ammkunst/site/art/n0397.webp
+      - name: Resolve existing Cloudflare credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CF_TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$CF_TOKEN" >> "$GITHUB_ENV"
+          zones="$(curl -fsS -H "Authorization: Bearer $CF_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org')"
+          account="$(jq -r '.result[0].account.id // empty' <<< "$zones")"
+          test -n "$account"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Deploy AMM website as independent Worker
+        working-directory: amm-src/ammkunst
+        run: |
+          set -euo pipefail
+          cat > wrangler.jsonc <<'JSON'
+          {
+            "name":"ammkunst-gallery",
+            "compatibility_date":"2026-10-19",
+            "workers_dev":true,
+            "assets":{"directory":"./site","not_found_handling":"single-page-application"}
+          }
+          JSON
+          rm -f site/_redirects
+          npx --yes wrangler@4.151.2 deploy
+      - name: Verify canonical website in production
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            code="$(curl -sSL --max-time 15 -o /tmp/amm-main -w '%{http_code}' https://ammkunst.com/ || true)"
+            picture="$(curl -sSL --max-time 15 -o /tmp/amm-art -w '%{http_code}' https://ammkunst.com/art/n0388.webp || true)"
+            if [[ "$code" = 200 && "$picture" = 200 ]] && grep -q 'ammkunst.com' /tmp/amm-main && file /tmp/amm-art | grep -qi WebP; then
+              echo 'AMM_LIVE=https://ammkunst.com/'
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 7
