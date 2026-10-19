@@ -3,6 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 const page = fs.readFileSync("src/pages/integrated/ImpactLivingActionNetwork.tsx", "utf8");
+const actionProof = fs.readFileSync("src/pages/integrated/ImpactActionProof.tsx", "utf8");
 const client = fs.readFileSync("src/impact/livingActionNetworkClient.ts", "utf8");
 const router = fs.readFileSync("src/routes/router.tsx", "utf8");
 const manifest = JSON.parse(fs.readFileSync("src/data/impactDiscovery.json", "utf8"));
@@ -79,4 +80,14 @@ test("Impact actor discovery groups shared actors into one identity entry", () =
   assert.match(page, /key=\{actor\.id\}/);
   assert.match(page, /projectCount === 1 \? "project" : "projects"/);
   assert.doesNotMatch(page, /payload\.projects\.filter\(\(project\) => project\.actor\)\.map/);
+});
+
+
+test("Impact action exposes an Actor profile only through explicit public authority", () => {
+  assert.match(actionProof, /actorForActionContract/);
+  assert.match(actionProof, /actorIsPublic/);
+  assert.match(actionProof, /const publicActorProfilePath = actorIsPublic\(canonicalActor\)/);
+  assert.match(actionProof, /publicActorProfilePath \? <Link to=\{publicActorProfilePath\}/);
+  assert.match(actionProof, /PUBLIC ACTOR PROFILE NOT AVAILABLE/);
+  assert.doesNotMatch(actionProof, /<Link to=\{\`\/actors\/\$\{canonicalActor\.slug\}\`\}/);
 });
