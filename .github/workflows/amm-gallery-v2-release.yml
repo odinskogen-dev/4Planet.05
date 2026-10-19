@@ -15,7 +15,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 --branch amm/gallery-production https://github.com/odinskogen-dev/odinoddekalv.git amm-src
-          test "$(git -C amm-src rev-parse HEAD)" = "5e734ad837671d898d97a769b05515df26b1b385"
+          test "$(git -C amm-src rev-parse HEAD)" = "de0d2b6c65303a4d0784b654c41fc2fced57d0e2"
           test -s amm-src/ammkunst/site/art/n0388.webp
           test -s amm-src/ammkunst/site/art/n0387.webp
           test -s amm-src/ammkunst/site/art/n0397.webp
