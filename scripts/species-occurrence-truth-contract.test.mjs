@@ -83,8 +83,31 @@ test("GBIF public-use readiness rejects spoofed rights and incomplete CC BY attr
     publisher: "Publisher 101",
     bibliographicCitation: "Publisher 101 (2026). Dataset 101.",
   };
+  const institutionCodeOnly = {
+    key: 104,
+    license: "CC BY 4.0",
+    datasetKey: "dataset-104",
+    institutionCode: "INST-104",
+    bibliographicCitation: "Institution 104 (2026). Dataset 104.",
+  };
+  const rightsHolderOnly = {
+    key: 105,
+    license: "CC BY 4.0",
+    datasetKey: "dataset-105",
+    rightsHolder: "Rights Holder 105",
+    institutionCode: "INST-105",
+    bibliographicCitation: "Rights Holder 105 (2026). Dataset 105.",
+  };
 
   assert.equal(truth.gbifOccurrenceRightsReviewState("CC BY 4.0", attributedBy), "PUBLIC_USE_READY");
+  assert.equal(
+    truth.gbifOccurrenceRightsReviewState("CC BY 4.0", institutionCodeOnly),
+    "REVIEW_REQUIRED",
+  );
+  assert.equal(
+    truth.gbifOccurrenceRightsReviewState("CC BY 4.0", rightsHolderOnly),
+    "PUBLIC_USE_READY",
+  );
   assert.equal(truth.gbifOccurrenceRightsReviewState("CC BY 4.0", { key: 102 }), "REVIEW_REQUIRED");
   assert.equal(truth.gbifOccurrenceRightsReviewState("CC0", { key: 103 }), "PUBLIC_USE_READY");
   assert.equal(truth.gbifOccurrenceRightsReviewState("NOT CC0", attributedBy), "REVIEW_REQUIRED");
@@ -108,7 +131,21 @@ test("GBIF public-use readiness rejects spoofed rights and incomplete CC BY attr
   assert.equal(provenance.checkedAt, checkedAt);
   assert.equal(provenance.datasetKey, "dataset-101");
   assert.equal(provenance.publisher, "Publisher 101");
+  assert.equal(provenance.attributionIdentity, "Publisher 101");
   assert.equal(provenance.datasetCitation, "Publisher 101 (2026). Dataset 101.");
+
+  const institutionOnlyProvenance = truth.gbifOccurrenceProvenance(institutionCodeOnly, checkedAt);
+  assert.equal(institutionOnlyProvenance.rightsReviewState, "REVIEW_REQUIRED");
+  assert.equal(institutionOnlyProvenance.publisher, undefined);
+  assert.equal(institutionOnlyProvenance.institutionCode, "INST-104");
+  assert.equal(institutionOnlyProvenance.attributionIdentity, undefined);
+
+  const rightsHolderProvenance = truth.gbifOccurrenceProvenance(rightsHolderOnly, checkedAt);
+  assert.equal(rightsHolderProvenance.rightsReviewState, "PUBLIC_USE_READY");
+  assert.equal(rightsHolderProvenance.publisher, undefined);
+  assert.equal(rightsHolderProvenance.rightsHolder, "Rights Holder 105");
+  assert.equal(rightsHolderProvenance.institutionCode, "INST-105");
+  assert.equal(rightsHolderProvenance.attributionIdentity, "Rights Holder 105");
 });
 
 test("Universal GBIF path preserves occurrence evidence and explicit count semantics", async () => {
