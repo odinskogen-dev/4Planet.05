@@ -54,6 +54,43 @@ jobs:
           test -n "$account" && test -n "$zoneid" || { echo 'P4NTHER_CLOUDFLARE_ZONE_NOT_AUTHORISED'; exit 3; }
           echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
           echo "P4NTHER_ZONE_ID=$zoneid" >> "$GITHUB_ENV"
+      - name: Create compressed premium poster images and Open Graph cards
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/assets/poster-roma.png
+          test -s site/assets/poster-orca.png
+          npm install --no-save --no-audit --no-fund sharp@0.33.5
+          node <<'NODE'
+          const sharp=require('sharp'), fs=require('fs');
+          const inputs=[
+            {name:'roma',poster:'site/assets/poster-roma.png',title:'ROMA',subtitle:'The Republic',label:'Historical strategy'},
+            {name:'orca',poster:'site/assets/poster-orca.png',title:'WILD: ORCA',subtitle:'Enter another life',label:'Wildlife adventure'}
+          ];
+          async function exportCard(name,title,subtitle,label,path){
+            const source=fs.readFileSync(path);
+            const img=await sharp(source).resize(502,630,{fit:'cover',position:'attention'}).png().toBuffer();
+            const safe=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect x="0" y="0" width="1200" height="630" fill="#000000"/><rect x="70" y="84" width="48" height="3" fill="#d7ff64"/><text x="70" y="130" font-family="Arial,Helvetica,sans-serif" font-size="23" fill="#d7ff64" letter-spacing="4">CUB LAB</text><text x="70" y="275" font-family="Arial,Helvetica,sans-serif" font-size="64" fill="#ffffff" font-weight="bold">'+safe(title)+'</text><text x="70" y="333" font-family="Arial,Helvetica,sans-serif" font-size="35" fill="#e6e6e4">'+safe(subtitle)+'</text><path d="M70 465 H615" stroke="#ffffff" stroke-opacity=".3"/><text x="70" y="512" font-family="Arial,Helvetica,sans-serif" font-size="20" fill="#c9cac7">'+safe(label)+'</text><text x="70" y="550" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="#b2b5af">PLAYABLE DEVELOPMENT GAME</text></svg>';
+            await sharp(Buffer.from(svg)).composite([{input:img,top:0,left:698}]).png({compressionLevel:9}).toFile('site/assets/og-'+name+'.png');
+          }
+          (async()=>{
+            for(const x of inputs){
+              await sharp(x.poster).resize({width:1000,withoutEnlargement:true}).webp({quality:80,effort:6}).toFile('site/assets/poster-'+x.name+'.webp');
+              await exportCard(x.name,x.title,x.subtitle,x.label,x.poster);
+              const s=fs.statSync('site/assets/poster-'+x.name+'.webp').size;
+              if(s>450000)throw Error('Poster too heavy: '+x.name+' '+s);
+              console.log('CUB_PREMIUM_POSTER_OPTIMISED',x.name,s);
+            }
+            const r=await sharp(inputs[0].poster).resize(260,630,{fit:'cover'}).png().toBuffer();
+            const o=await sharp(inputs[1].poster).resize(260,630,{fit:'cover'}).png().toBuffer();
+            const label='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#000"/><rect x="65" y="83" width="60" height="3" fill="#d7ff64"/><text x="65" y="136" font-family="Arial" font-size="24" letter-spacing="5" fill="#d7ff64">CUB LAB</text><text x="65" y="314" font-family="Arial" font-weight="bold" font-size="58" fill="#fff">WORLDS WORTH</text><text x="65" y="385" font-family="Arial" font-weight="bold" font-size="60" fill="#fff">PLAYING.</text><text x="65" y="520" font-family="Arial" font-size="19" fill="#b8b8b8">INDEPENDENT GAMES IN DEVELOPMENT</text></svg>';
+            await sharp(Buffer.from(label)).composite([{input:r,left:680,top:0},{input:o,left:940,top:0}]).png({compressionLevel:9}).toFile('site/assets/og-home.png');
+            fs.unlinkSync('site/assets/poster-roma.png');
+            fs.unlinkSync('site/assets/poster-orca.png');
+            console.log('CUB_POSTER_MEDIA_BUILD_PASS');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
