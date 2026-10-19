@@ -1,0 +1,48 @@
+name: SPECIES 39 — Four Suspicious Hydration Trace
+on:
+  push:
+    branches: [release/species-39-profiles-20261019]
+    paths: [.github/workflows/species-39-hydration-trace.yml]
+permissions: {contents: read}
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - run: |
+          npm install --prefix /tmp/s39 playwright@1.56.0
+          /tmp/s39/node_modules/.bin/playwright install --with-deps chromium
+      - run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/s39/node_modules/playwright/index.mjs';
+          const PREVIEW="https://bb0c99eb.4planet-05.pages.dev";
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          for(const slug of ['cheetah','monarch-butterfly','sperm-whale','atlantic-cod','orca','lion']){
+            for(const mode of ['direct','mapped']){
+              const ctx=await browser.newContext({viewport:{width:390,height:844}});
+              if(mode==='mapped')await ctx.route('https://4species.com/**',async route=>{
+                const u=new URL(route.request().url());
+                try{const response=await route.fetch({url:PREVIEW+u.pathname+u.search,maxRedirects:8,timeout:30000});
+                  await route.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':'*'}});}
+                catch(e){console.log('PROXY_FAIL '+slug+' '+u.pathname+' '+String(e).slice(0,190));await route.abort();}
+              });
+              const p=await ctx.newPage();let errs=[],reqfails=[];
+              p.on('pageerror',e=>errs.push(e.message.slice(0,300)));
+              p.on('requestfailed',r=>reqfails.push({url:r.url().slice(0,170),error:r.failure()?.errorText}));
+              try{
+                const r=await p.goto((mode==='direct'?PREVIEW:'https://4species.com')+'/'+slug,{waitUntil:'domcontentloaded',timeout:30000});
+                await p.waitForTimeout(3800);
+                const info=await p.evaluate(()=>{
+                  let meta=document.querySelector('meta[name="robots"]');
+                  return {url:location.href,title:document.title,spx:!!document.querySelector('.spx'),h1:document.querySelector('h1')?.innerText||null,
+                    robots:meta?.content,canonical:document.querySelector('link[rel="canonical"]')?.href,
+                    body:document.body.innerText.slice(0,700),loadedData:(window.__speciesPage||null)?.slug||null,
+                    scripts:[...document.scripts].filter(x=>x.src).slice(0,6).map(x=>x.src)};
+                });
+                console.log('HYDRATION_TRACE '+JSON.stringify({slug,mode,http:r.status(),info,errors:errs,failedRequests:reqfails.slice(0,10)}).slice(0,2100));
+              }catch(e){console.log('TRACE_FATAL '+slug+' '+mode+' '+String(e).slice(0,250))}
+              await ctx.close();
+            }
+          }
+          await browser.close();
+          NODE
