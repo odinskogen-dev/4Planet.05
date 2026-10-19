@@ -1,0 +1,53 @@
+name: AMM gallery real browser smoke
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-gallery-browser-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install headless Chromium
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/amm-browser
+          npm --prefix /tmp/amm-browser install --silent --no-audit --no-fund playwright@1.56.1
+          /tmp/amm-browser/node_modules/.bin/playwright install chromium --with-deps >/tmp/amm-playwright-install.log 2>&1
+      - name: Test real live mobile and desktop gallery, images and menu
+        run: |
+          set -euo pipefail
+          cat > /tmp/amm-browser/test.js <<'JS'
+          const { chromium } = require("playwright");
+          (async()=>{
+            const browser=await chromium.launch({headless:true});
+            for (const device of [{name:"mobile",viewport:{width:390,height:844},isMobile:true,hasTouch:true},{name:"desktop",viewport:{width:1440,height:900}}]){
+              const page=await browser.newPage(device);
+              const errors=[];
+              page.on("pageerror",error=>errors.push(error.message));
+              await page.goto("https://ammkunst.com/",{waitUntil:"networkidle",timeout:45000});
+              await page.locator("main h1").waitFor({timeout:15000});
+              if(!(await page.locator("main").innerText()).includes("Art, drawn by hand"))throw Error(device.name+": blank homepage");
+              const hero=page.locator(".hero-art img").first();
+              await hero.waitFor({timeout:10000});
+              const ok=await hero.evaluate(x=>x.complete&&x.naturalWidth>100);
+              if(!ok)throw Error(device.name+": hero image failed");
+              await page.goto("https://ammkunst.com/works/",{waitUntil:"networkidle",timeout:45000});
+              const count=await page.locator(".works-grid img").count();
+              if(count<14)throw Error(device.name+": gallery has only "+count+" images");
+              await page.locator("#open-menu").click();
+              if(!(await page.locator("#overlay").isVisible()))throw Error(device.name+": hamburger menu did not open");
+              await page.locator("#overlay nav a[href='/about/']").click();
+              await page.waitForURL("**/about/**");
+              if(!(await page.locator("main").innerText()).includes("Amalie Myrtvedt"))throw Error(device.name+": about missing");
+              if(errors.length)throw Error(device.name+": page errors "+errors.join(" | "));
+              console.log("AMM_BROWSER_PASS "+device.name+" hero=loaded works="+count+" menu=ok about=ok");
+              await page.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error("AMM_BROWSER_FAIL "+e.stack);process.exit(1)});
+          JS
+          node /tmp/amm-browser/test.js
