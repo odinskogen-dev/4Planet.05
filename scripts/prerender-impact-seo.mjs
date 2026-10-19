@@ -94,19 +94,30 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
   for (const i of issues) {
     const path = issueHref(i.slug);
     const related = (i.projects ?? []).map((slug) => projectMap.get(slug)).filter(Boolean);
+    const issueClaims = i.claims ?? [];
+    const issueUnknowns = i.unknowns ?? [];
+    const issueSources = i.citations ?? [];
+    const issueEvidenceHtml = issueClaims.length
+      ? `<h2>What the sources establish</h2><ul>${issueClaims.map((claim) => `<li><p>${esc(claim.statement)}</p>${claim.url ? `<p><small>Source: <a href="${esc(claim.url)}" rel="nofollow">${esc(claim.source || host(claim.url))}</a></small></p>` : ""}</li>`).join("")}</ul>`
+      : "";
+    const issueUnknownHtml = issueUnknowns.length
+      ? `<h2>Known and not established</h2><ul>${issueUnknowns.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>`
+      : "";
     writeRoute(path, pageHtml({
       pathName: path,
       title: `${i.name} — projects and organisations | 4PLANET Impact`,
       description: `${i.description ? i.description.replace(/\.\s*$/, "") + "." : i.name + "."} Who is working on it, with which methods and where — with sources.`,
       image: related.find((p) => p.image)?.image || undefined,
-      body: `<main><p>4PLANET IMPACT / ISSUE</p><h1>${esc(i.name)}</h1>${i.description ? `<p>${esc(i.description)}</p>` : ""}<h2>Projects working on it</h2><ul>${related.map(projectLi).join("")}</ul><h2>Organisations</h2><ul>${Array.from(new Map(related.flatMap((p) => p.actors ?? []).map((a) => [a.slug, a])).values()).map((a) => `<li><a href="${actorHref(esc(a.slug))}">${esc(a.name)}</a></li>`).join("")}</ul>${boundary}</main>`,
+      body: `<main><p>4PLANET IMPACT / ISSUE</p><h1>${esc(i.name)}</h1>${i.description ? `<p>${esc(i.description)}</p>` : ""}${i.whyItMatters ? `<h2>Why it matters</h2><p>${esc(i.whyItMatters)}</p>` : ""}${issueEvidenceHtml}<h2>Projects working on it</h2><ul>${related.map(projectLi).join("")}</ul><h2>Organisations</h2><ul>${Array.from(new Map(related.flatMap((p) => p.actors ?? []).map((a) => [a.slug, a])).values()).map((a) => `<li><a href="${actorHref(esc(a.slug))}">${esc(a.name)}</a></li>`).join("")}</ul>${issueUnknownHtml}${sourcesList(issueSources)}${boundary}</main>`,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         name: i.name,
         description: i.description || undefined,
         url: url(path),
-        about: { "@type": "Thing", name: i.name, identifier: i.id },
+        dateModified: i.lastReviewed || undefined,
+        citation: issueSources,
+        about: { "@type": "Thing", name: i.name, identifier: i.id, description: i.description || undefined },
         mainEntity: { "@type": "ItemList", itemListElement: related.map((p, n) => ({ "@type": "ListItem", position: n + 1, name: p.name, url: url(projectHref(p.slug)) })) },
       },
     }));
