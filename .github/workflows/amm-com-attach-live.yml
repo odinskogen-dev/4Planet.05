@@ -1,0 +1,80 @@
+name: AMM public domain — bind and verify
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/amm-com-attach-live.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: amm-com-domain-attach
+  cancel-in-progress: false
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check and attach exclusively ammkunst.com to existing AMM Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          zone="$(curl -fsS "${auth[@]}" "$api/zones?name=ammkunst.com")"
+          zid="$(jq -r '.result[0].id // empty' <<<"$zone")"
+          account="$(jq -r '.result[0].account.id // empty' <<<"$zone")"
+          status="$(jq -r '.result[0].status // empty' <<<"$zone")"
+          test "$status" = "active"
+          test -n "$zid"
+          test -n "$account"
+          echo "Verified active AMM-only Cloudflare zone."
+          dns="$(curl -fsS "${auth[@]}" "$api/zones/$zid/dns_records?name=ammkunst.com")"
+          count="$(jq '[.result[]? | select(.name=="ammkunst.com" and (.type=="A" or .type=="AAAA" or .type=="CNAME"))] | length' <<<"$dns")"
+          if [[ "$count" -gt 0 ]]; then
+            echo "::error::Existing apex DNS record found. Refusing unreviewed overwrite."
+            exit 2
+          fi
+          current="$(curl -fsS "${auth[@]}" "$api/accounts/$account/workers/domains")"
+          current_service="$(jq -r '[.result[]? | select(.hostname=="ammkunst.com")][0].service // empty' <<<"$current")"
+          if [[ -n "$current_service" && "$current_service" != "ammkunst-gallery" ]]; then
+            echo "::error::A different Worker owns this hostname. Refusing overwrite."
+            exit 3
+          fi
+          script="$(curl -sS -w '\n%{http_code}' "${auth[@]}" "$api/accounts/$account/workers/scripts/ammkunst-gallery")"
+          script_code="${script##*$'\n'}"
+          test "$script_code" = "200" || { echo "::error::AMM gallery Worker missing"; exit 4; }
+          if [[ "$current_service" = "ammkunst-gallery" ]]; then
+            echo "The required AMM Worker custom domain is already configured."
+          else
+            request="$(jq -nc --arg host 'ammkunst.com' --arg worker 'ammkunst-gallery' --arg zone "$zid" '{hostname:$host,service:$worker,zone_id:$zone}')"
+            result="$(curl -sS --max-time 40 -X PUT "${auth[@]}" "$api/accounts/$account/workers/domains" -d "$request")"
+            echo "$result" | jq -c '{success,errors:[.errors[]? | {code,message}],result:{hostname:.result.hostname,service:.result.service,enabled:.result.enabled}}'
+            jq -e '.success == true' <<<"$result" >/dev/null
+          fi
+          readback="$(curl -fsS "${auth[@]}" "$api/accounts/$account/workers/domains")"
+          jq -e '[.result[]? | select(.hostname=="ammkunst.com" and .service=="ammkunst-gallery")] | length == 1' <<<"$readback" >/dev/null
+          echo 'AMM_CUSTOM_DOMAIN_ATTACHED=https://ammkunst.com/'
+      - name: Verify custom domain HTML, art, archive and TLS
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for try in $(seq 1 24); do
+            home="$(curl -L -sS --max-time 15 -o /tmp/amm-live-home.html -w '%{http_code}' https://ammkunst.com/ || true)"
+            image="$(curl -L -sS --max-time 15 -o /tmp/amm-live-image.webp -w '%{http_code}' https://ammkunst.com/art/n0388.webp || true)"
+            work="$(curl -L -sS --max-time 15 -o /tmp/amm-live-works.html -w '%{http_code}' https://ammkunst.com/works/ || true)"
+            if [[ "$home" = 200 && "$image" = 200 && "$work" = 200 ]] && grep -q 'AMM' /tmp/amm-live-home.html && file /tmp/amm-live-image.webp | grep -qi 'WebP' && test "$(wc -c < /tmp/amm-live-image.webp)" -gt 100000; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          echo "AMM_HTTP_HOME=$home ART=$image WORKS=$work"
+          if [[ "$ok" = 1 ]]; then
+            echo 'AMM_LIVE_VERIFIED=https://ammkunst.com/'
+          else
+            echo "::warning::Custom domain attached in Cloudflare, but external HTTPS verification has not yet passed."
+            exit 5
+          fi
