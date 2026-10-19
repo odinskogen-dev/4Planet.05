@@ -44,7 +44,10 @@ jobs:
             if(!await mobile.locator("#site-menu").evaluate(el=>el.open))throw Error("Mobile menu not open");
             await mobile.locator('#site-menu a[href="/shop/"]').click();
             await mobile.waitForURL("**/shop/");
-            if(await mobile.locator(".artcard").count()!==20)throw Error("Shop missing 20 real works");
+            if(await mobile.locator(".artcard").count()!==21)throw Error("Shop must show 21 distinct works");
+            const listed=await mobile.locator(".artcard").evaluateAll(cards=>cards.map(card=>card.getAttribute("href")));
+            for(const id of ["n0390","n0389","n0395","n0392"]){if(!listed.includes("/works/"+id+"/"))throw Error("Missing new artwork "+id)}
+            for(const id of ["a01","a03","a07"]){if(listed.includes("/works/"+id+"/"))throw Error("Old duplicate photo still shown "+id)}
             await mobile.screenshot({path:"mobile-shop.png",fullPage:true});
             await mobile.locator(".artcard").first().click();
             if(!await mobile.locator(".detail-img img").count())throw Error("Missing product detail artwork");
