@@ -49,19 +49,23 @@ export function ProductRouteAnalytics() {
     if (typeof window === "undefined") return;
     const product = classifyProduct(pathname, window.location.hostname);
     const routeKey = `4p:entry:${pathname}`;
-    if (!window.sessionStorage.getItem(routeKey)) {
-      trackProductEntry(product, pathname, entryKind());
-      window.sessionStorage.setItem(routeKey, "1");
+    let entryDelivered = Boolean(window.sessionStorage.getItem(routeKey));
+    if (!entryDelivered) {
+      entryDelivered = trackProductEntry(product, pathname, entryKind());
+      if (entryDelivered) window.sessionStorage.setItem(routeKey, "1");
     }
 
     const sessionKey = `4p:session:${product}`;
     const historyKey = `4p:seen:${product}`;
     if (!window.sessionStorage.getItem(sessionKey)) {
-      if (window.localStorage.getItem(historyKey)) {
-        trackEvent("return_visit", { product_area: product });
+      const seenBefore = Boolean(window.localStorage.getItem(historyKey));
+      const sessionDelivered = seenBefore
+        ? trackEvent("return_visit", { product_area: product })
+        : entryDelivered;
+      if (sessionDelivered) {
+        window.sessionStorage.setItem(sessionKey, "1");
+        window.localStorage.setItem(historyKey, "1");
       }
-      window.sessionStorage.setItem(sessionKey, "1");
-      window.localStorage.setItem(historyKey, "1");
     }
 
     const engagedKey = `4p:engaged:${pathname}`;
@@ -81,7 +85,8 @@ export function ProductRouteAnalytics() {
       if (window.sessionStorage.getItem(engagedKey)) return;
       const currentVisibleMs = visibleSince === null ? 0 : performance.now() - visibleSince;
       if (accumulatedMs + currentVisibleMs < thresholdMs) return;
-      trackMeaningfulUse(product, "engaged_time", "route");
+      const delivered = trackMeaningfulUse(product, "engaged_time", "route");
+      if (!delivered) return;
       window.sessionStorage.setItem(engagedKey, "1");
       clearTimer();
     };

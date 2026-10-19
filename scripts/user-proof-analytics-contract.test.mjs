@@ -138,6 +138,44 @@ test("analytics privacy boundary rejects encoded credentials and unknown propert
   assert.match(analytics, /isInternalAnalyticsBrowser\(\)/);
 });
 
+function evaluateAnalyticsDispatch({ ga4Installed, posthogAccepted }) {
+  const dispatchSource = analytics.match(/function dispatchAnalyticsEvent\\([\\s\\S]*?\\n}\\n/);
+  assert.ok(dispatchSource, "dispatchAnalyticsEvent must be extractable");
+  const js = ts.transpileModule(`${dispatchSource[0]}\nexports.dispatchAnalyticsEvent = dispatchAnalyticsEvent;`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+  }).outputText;
+  let ga4Calls = 0;
+  let posthogCalls = 0;
+  const context = {
+    exports: {},
+    window: { gtag: ga4Installed ? () => { ga4Calls += 1; } : undefined },
+    document: { getElementById: () => ga4Installed ? {} : null },
+    capturePostHog: () => { posthogCalls += 1; return posthogAccepted; },
+  };
+  vm.runInNewContext(js, context);
+  const delivered = context.exports.dispatchAnalyticsEvent("value_action", { product_area: "4planet" });
+  return { delivered, ga4Calls, posthogCalls };
+}
+
+test("delivery acknowledgement reflects actual configured transports", () => {
+  assert.deepEqual(evaluateAnalyticsDispatch({ ga4Installed: false, posthogAccepted: false }), {
+    delivered: false, ga4Calls: 0, posthogCalls: 1,
+  });
+  assert.deepEqual(evaluateAnalyticsDispatch({ ga4Installed: true, posthogAccepted: false }), {
+    delivered: true, ga4Calls: 1, posthogCalls: 1,
+  });
+  assert.deepEqual(evaluateAnalyticsDispatch({ ga4Installed: false, posthogAccepted: true }), {
+    delivered: true, ga4Calls: 0, posthogCalls: 1,
+  });
+  assert.deepEqual(evaluateAnalyticsDispatch({ ga4Installed: true, posthogAccepted: true }), {
+    delivered: true, ga4Calls: 1, posthogCalls: 1,
+  });
+  assert.match(routeAnalytics, /if \\(entryDelivered\\) window\\.sessionStorage\\.setItem\\(routeKey, "1"\\)/);
+  assert.match(routeAnalytics, /if \\(sessionDelivered\\) \\{/);
+  assert.match(routeAnalytics, /const delivered = trackMeaningfulUse/);
+  assert.match(routeAnalytics, /if \\(!delivered\\) return;/);
+});
+
 test("user proof funnel is broader than page views", () => {
   for (const eventName of requiredEvents) assert.ok(shared.includes(`\"${eventName}\"`), `missing ${eventName}`);
   assert.match(routeAnalytics, /trackProductEntry/);

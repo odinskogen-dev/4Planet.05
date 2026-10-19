@@ -356,9 +356,22 @@ export function trackEvent(name: string, parameters: Record<string, string | num
     site_host: canonicalHost(window.location.hostname),
   });
 
-  window.gtag?.("event", name, shared);
-  capturePostHog(name, shared);
-  return true;
+  return dispatchAnalyticsEvent(name, shared);
+}
+
+function dispatchAnalyticsEvent(
+  name: string,
+  properties: Record<string, string | number | boolean>,
+): boolean {
+  let delivered = false;
+  const ga4Installed = typeof window.gtag === "function"
+    && Boolean(document.getElementById("4planet-ga4"));
+  if (ga4Installed) {
+    window.gtag?.("event", name, properties);
+    delivered = true;
+  }
+  if (capturePostHog(name, properties)) delivered = true;
+  return delivered;
 }
 
 export function resetAnalyticsConsent() {

@@ -24,7 +24,7 @@ function safeToken(value: string | undefined, max = 160): string {
  * has been granted by Analytics.tsx.
  */
 export function trackProductEntry(product: ProductArea, entryPath: string, entryKind: "direct" | "internal" | "editorial" | "shared_link" = "direct") {
-  trackEvent("product_entry", {
+  return trackEvent("product_entry", {
     product_area: product,
     entry_path: safeToken(entryPath, 220),
     entry_kind: entryKind,
@@ -32,7 +32,7 @@ export function trackProductEntry(product: ProductArea, entryPath: string, entry
 }
 
 export function trackMeaningfulUse(product: ProductArea, kind: MeaningfulUseKind, objectType?: string) {
-  trackEvent("meaningful_use", {
+  return trackEvent("meaningful_use", {
     product_area: product,
     use_kind: kind,
     object_type: safeToken(objectType),
@@ -40,7 +40,7 @@ export function trackMeaningfulUse(product: ProductArea, kind: MeaningfulUseKind
 }
 
 export function trackCompletion(product: ProductArea, completionType: "article" | "journey" | "task", objectId?: string) {
-  trackEvent("product_completion", {
+  return trackEvent("product_completion", {
     product_area: product,
     completion_type: completionType,
     object_id: safeToken(objectId),
@@ -48,7 +48,7 @@ export function trackCompletion(product: ProductArea, completionType: "article" 
 }
 
 export function trackDeeperExploration(product: ProductArea, destinationProduct: ProductArea, destinationType: string) {
-  trackEvent("deeper_exploration", {
+  return trackEvent("deeper_exploration", {
     product_area: product,
     destination_product: destinationProduct,
     destination_type: safeToken(destinationType),
@@ -56,14 +56,14 @@ export function trackDeeperExploration(product: ProductArea, destinationProduct:
 }
 
 export function trackShareReferral(product: ProductArea, method: "native" | "copy" | "link") {
-  trackEvent("share_referral", {
+  return trackEvent("share_referral", {
     product_area: product,
     share_method: method,
   });
 }
 
 export function trackJoinInterest(product: ProductArea, surface: "join" | "follow" | "watch" | "partner" | "fund") {
-  trackEvent("join_interest", {
+  return trackEvent("join_interest", {
     product_area: product,
     interest_surface: surface,
   });
@@ -76,7 +76,7 @@ export function trackCoreLifecycle(
   evidenceState: "SOURCE_REFERENCED" | "USER_CONFIRMED" | "DEMO_FIXTURE_NOT_VERIFIED" | "UNKNOWN",
   returning = false,
 ) {
-  trackEvent("core_lifecycle", {
+  return trackEvent("core_lifecycle", {
     product_area: product,
     actor_type: actorType,
     lifecycle_stage: stage,
