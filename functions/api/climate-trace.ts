@@ -117,6 +117,14 @@ export const onRequestGet: (ctx: { request: Request; env: Env }) => Promise<Resp
       source: "climatetrace",
       apiVersion: "v7",
       query: { sectors, countries: countries || null, ownerIds: ownerIds || null, year, gas, limit, offset },
+      coverage: {
+        upstreamRecords: rows.length,
+        mappedRecords: assets.length,
+        excludedUnmappable: rows.length - assets.length,
+        pageLimit: limit,
+        offset,
+        pageScope: "THIS_RESPONSE_PAGE_ONLY_NOT_DATASET_TOTAL",
+      },
       sourceMeta: {
         publisher: "Climate TRACE",
         apiVersion: "v7 beta",

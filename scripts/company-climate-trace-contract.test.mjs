@@ -57,6 +57,14 @@ test("shared Climate TRACE proxy keeps missing values unknown without erasing re
    "malformed-emissions-array","real-zero","numeric-string","boundary-coordinates",
   ]);
   assert.deepEqual(body.assets.map((asset)=>asset.co2e),[null,null,null,null,0,42.5,100]);
+  assert.deepEqual(body.coverage,{
+   upstreamRecords:13,
+   mappedRecords:7,
+   excludedUnmappable:6,
+   pageLimit:500,
+   offset:0,
+   pageScope:"THIS_RESPONSE_PAGE_ONLY_NOT_DATASET_TOTAL",
+  });
   assert.equal(body.assets[0].lat,0,"a real equator coordinate remains valid");
   const boundary=body.assets.find((asset)=>asset.id==="boundary-coordinates");
   assert.equal(boundary.lat,-90);
@@ -111,4 +119,18 @@ test("ATLAS reuses the same climate-trace endpoint and exposes source identity",
  const layers=await readFile(new URL("../src/earth/layers.ts",import.meta.url),"utf8");
  assert.match(layers,/fetch\(\x60\/api\/climate-trace\?/);
  assert.match(layers,/CLIMATE TRACE SOURCE/);
+});
+
+
+test("S4PIENS fails closed without page coverage and discloses source grain",async()=>{
+ const ui=await readFile(new URL("../src/s4piens/SystemPage.tsx",import.meta.url),"utf8");
+ assert.match(ui,/TRACE_COVERAGE_UNAVAILABLE/);
+ assert.match(ui,/coverage\.upstreamRecords !== coverage\.mappedRecords \+ coverage\.excludedUnmappable/);
+ assert.match(ui,/coverage\.mappedRecords !== d\.assets\.length/);
+ assert.match(ui,/Coverage for this response page:/);
+ assert.match(ui,/excluded because coordinates were missing or invalid/);
+ assert.match(ui,/Page limit/);
+ assert.match(ui,/Not a dataset-wide total/);
+ assert.match(ui,/trace\.year/);
+ assert.match(ui,/trace\.gas/);
 });

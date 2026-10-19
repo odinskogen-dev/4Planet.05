@@ -27,8 +27,17 @@ const CONTEXT_NOTE = "4PLANET CONTEXT — an explanation of how the system works
 
 /* ── Climate TRACE: largest sources in one country, bounded ─────────────── */
 type TraceRow = { id: string; name: string; subsector: string | null; co2e: number | null; year: string | number | null };
-type TraceLoad = { status: "idle" | "loading" } | { status: "ready"; rows: TraceRow[]; retrievedAt: string } | { status: "error" };
-const traceCache = new Map<string, Promise<{ rows: TraceRow[]; retrievedAt: string }>>();
+type TraceCoverage = {
+  upstreamRecords: number;
+  mappedRecords: number;
+  excludedUnmappable: number;
+  pageLimit: number;
+  offset: number;
+  pageScope: "THIS_RESPONSE_PAGE_ONLY_NOT_DATASET_TOTAL";
+};
+type TraceReady = { status: "ready"; rows: TraceRow[]; retrievedAt: string; coverage: TraceCoverage; year: string; gas: string };
+type TraceLoad = { status: "idle" | "loading" } | TraceReady | { status: "error" };
+const traceCache = new Map<string, Promise<Omit<TraceReady, "status">>>();
 function useTrace(iso3: string | null, sectors: string | null): TraceLoad {
   const [s, set] = useState<TraceLoad>({ status: "idle" });
   useEffect(() => {
@@ -41,9 +50,20 @@ function useTrace(iso3: string | null, sectors: string | null): TraceLoad {
         .then((r) => r.json())
         .then((d) => {
           if (!d || d.ok !== true || !Array.isArray(d.assets)) throw new Error("TRACE_UNAVAILABLE");
+          const coverage = d.coverage as TraceCoverage | undefined;
+          if (!coverage
+            || coverage.pageScope !== "THIS_RESPONSE_PAGE_ONLY_NOT_DATASET_TOTAL"
+            || ![coverage.upstreamRecords, coverage.mappedRecords, coverage.excludedUnmappable, coverage.pageLimit, coverage.offset]
+              .every((value) => Number.isInteger(value) && value >= 0)
+            || coverage.upstreamRecords !== coverage.mappedRecords + coverage.excludedUnmappable
+            || coverage.mappedRecords !== d.assets.length
+            || typeof d.query?.year !== "string"
+            || typeof d.query?.gas !== "string") {
+            throw new Error("TRACE_COVERAGE_UNAVAILABLE");
+          }
           const rows = (d.assets as TraceRow[]).filter((a) => a && (a.co2e === null || Number.isFinite(a.co2e)))
             .sort((a, b) => (b.co2e ?? -1) - (a.co2e ?? -1)).slice(0, 8);
-          return { rows, retrievedAt: new Date().toISOString() };
+          return { rows, retrievedAt: new Date().toISOString(), coverage, year: d.query.year, gas: d.query.gas };
         })
         .catch((e) => { traceCache.delete(key); throw e; }));
     }
@@ -275,7 +295,10 @@ function System({ sys }: { sys: HumanSystem; theme: string }) {
                     </ol>
                   ))}
                   {trace.status === "ready" && (
-                    <button className="n-source" onClick={() => open({ title: `${sys.traceSectors![sector].label} sources in ${country.short}`, source: TRACE, period: String(trace.rows[0]?.year ?? ""), retrievedAt: trace.retrievedAt, note: "Ranked by estimated CO₂e (100-year), largest first. Up to eight sources shown." })}>
+                    <p className="n-fine">Coverage for this response page: {trace.coverage.mappedRecords} mappable of {trace.coverage.upstreamRecords} upstream records; {trace.coverage.excludedUnmappable} excluded because coordinates were missing or invalid. Showing {trace.rows.length} highest estimated sources from this page. Query: {trace.year}, {trace.gas}. Page limit {trace.coverage.pageLimit}, offset {trace.coverage.offset}. Not a dataset-wide total.</p>
+                  )}
+                  {trace.status === "ready" && (
+                    <button className="n-source" onClick={() => open({ title: `${sys.traceSectors![sector].label} sources in ${country.short}`, source: TRACE, period: trace.year, retrievedAt: trace.retrievedAt, note: `Ranked by estimated CO₂e (100-year), largest first. Showing ${trace.rows.length} from this response page: ${trace.coverage.mappedRecords} mappable of ${trace.coverage.upstreamRecords} upstream records; ${trace.coverage.excludedUnmappable} excluded for missing or invalid coordinates. Query gas ${trace.gas}; page limit ${trace.coverage.pageLimit}, offset ${trace.coverage.offset}. Not a dataset-wide total.` })}>
                       <span>{trace.rows[0]?.year ?? ""}</span><span>Climate TRACE</span><i aria-hidden>↗</i>
                     </button>
                   )}

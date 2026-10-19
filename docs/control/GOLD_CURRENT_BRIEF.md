@@ -1488,3 +1488,25 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **BASE / ROLLBACK:** `king/test@c05da699dacd39009d32a38932f88a6e84d3f0d6`; revert this bounded router/test/brief commit if independent Gold identifies a legitimate canonical path that is suppressed.
 
 **MAKER ≠ JUDGE:** Factory consumes the returned QA correction; independent Gold judges the exact resulting SHA. Founder/release authority remains separate.
+
+
+---
+
+# S4PIENS / COMPANY-GOLD-01 — CLIMATE TRACE PAGE-COVERAGE DISCLOSURE — 19 OCT 2026
+
+**STATUS:** SOURCE-GRAIN INTEGRATION DEBT CORRECTED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person comparing physical emitting sources in a human system needs to know what the ranked list covers and what was excluded.
+**ONE THING TO UNDERSTAND:** the visible eight are ranked only from one bounded Climate TRACE response page, not from the full dataset.
+**PRIMARY ACTION:** inspect the page-scoped source ranking with its year, gas, upstream, mappable and excluded counts.
+**SECONDARY DEPTH:** open the existing Climate TRACE source drawer for source identity, rights and limitations.
+**P1 DOMINANT:** the existing country-and-system source ranking.
+**P2 ORIENTATION:** page scope, query year/gas, page limit/offset and exact upstream/mapped/dropped counts.
+**P3 ACTION:** continue through the existing country and source paths without treating the sample as a dataset total.
+**P4 DEPTH:** independent exact-head contract and browser verification before release.
+**WHAT CAN BE REMOVED:** the ambiguous “up to eight sources shown” disclosure that hid response-page grain and coordinate exclusions.
+**WHAT MUST BE REUSED:** COMPANY-GOLD-01, issue #148, the shared Climate TRACE proxy, S4PIENS SystemPage, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** counts describe this proxy response page only. They do not prove full Climate TRACE dataset coverage, legal-company ownership, responsibility, live emissions or national totals.
+**MOBILE-FIRST RISK:** the added disclosure must remain readable without horizontal overflow; independent 390/430 browser evidence remains a release gate.
+**HUMAN SUCCESS:** every ready ranking visibly names its year, gas, page limit/offset, mapped/upstream/excluded counts and non-dataset-total boundary; missing or inconsistent coverage metadata fails closed as unavailable.
+**BASE / ROLLBACK:** `king/test@6729cf24a11719c59dea92bb5eaf7cf40ae688ff`; revert this bounded proxy/UI/contract/brief correction if independent Gold finds source-grain, layout or availability regression.
+**MAKER ≠ JUDGE:** Factory corrects the integration debt; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
