@@ -40,3 +40,41 @@ jobs:
             fi
           done
           echo SPECIES_CF_READ_ONLY_COMPLETE
+
+      - name: Inspect broken image URLs in 39 real live species pages only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/species-image-audit playwright@1.56.0 --no-audit --no-fund
+          /tmp/species-image-audit/node_modules/.bin/playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/species-image-audit/node_modules/playwright/index.mjs';
+          const slugs="orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split(" ");
+          const b=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const context=await b.newContext({viewport:{width:390,height:844}});
+          const all=[];let failedImages=0;let failPages=[];
+          for(const slug of slugs){
+            const p=await context.newPage();
+            let status=0;
+            try{
+              const r=await p.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:20000});
+              status=r?.status()??0;await p.waitForTimeout(550);
+              const x=await p.evaluate(()=>{
+                const imgs=[...document.querySelectorAll('img')];
+                return {premium:!!document.querySelector('.spx'),broken:imgs.filter(i=>i.complete&&!i.naturalWidth).map(i=>({src:i.currentSrc||i.src,alt:i.alt?.slice(0,100)})),count:imgs.length};
+              });
+              const row={slug,http:status,...x};
+              if(status!==200||!x.premium)failPages.push(slug);
+              failedImages+=x.broken.length;
+              all.push(row);
+              if(x.broken.length)console.log('SPECIES_IMAGE_BROKEN '+JSON.stringify(row));
+            }catch(err){
+              failPages.push(slug);
+              console.log('SPECIES_IMAGE_PAGE_ERROR '+JSON.stringify({slug,error:String(err).slice(0,140)}));
+            }
+            await p.close();
+          }
+          await b.close();
+          console.log('SPECIES_IMAGE_AUDIT_SUMMARY '+JSON.stringify({count:all.length,failedImages,affectedSpecies:all.filter(x=>x.broken.length).map(x=>({slug:x.slug,count:x.broken.length})),failPages}));
+          if(failPages.length)process.exitCode=1;
+          NODE
