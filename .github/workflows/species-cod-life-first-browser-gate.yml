@@ -62,7 +62,7 @@ jobs:
                   assert.equal(data.storyImages,0,'no unreviewed or dead cod photograph in story panels');
                   assert.equal(data.galleryImages,0,'no unreviewed or cooked cod photograph in strip');
                   assert.match(data.heroSrc||'',/Torsk|Cod/i,'cod original curated source');
-                  assert.match(data.photos||'',/1 photograph/i,'gallery photo count');
+                  assert.equal(data.gallerySources.length,1,'one curated cod image across the full species page');
                   await p.screenshot({path:'/tmp/species-cod-qa/shots/'+engineName+'-'+viewport+'-cod.png',animations:'disabled'});
                 }
                 assert.equal(errors.length,0,engineName+' '+viewport+' '+path+' JS errors '+errors.join(';'));
