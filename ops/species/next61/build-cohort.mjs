@@ -84,7 +84,7 @@ function profile(seed,id,pics){
  const taxonSource={label:"GBIF — "+sci+" accepted taxon",url:id.source};
  const claim=(text,src=source,state="INTERPRETED")=>({text,state,source:src});
  const info=(label,text,src=source)=>({label,text,state:"INTERPRETED",source:src});
- const media=pics.map(p=>({url:"https://4species.com"+p.local,credit:p.artist,licence:p.license,sourcePage:p.sourcePage,
+ const media=pics.map(p=>({url:(process.env.SPECIES_MEDIA_BASE_URL||"https://4species.com")+p.local,credit:p.artist,licence:p.license,sourcePage:p.sourcePage,
   licenseUrl:p.licenceUrl,alt:name+" ("+sci+"); photo identity and composition pending human visual QA",focus:"50% 50%"}));
  return {schema:"4PLANET_SPECIES_PAGE_01",slug,domain:"E4RTH",
   identity:{commonName:name,scientificName:sci,authorship:"Pending authority citation",group},
