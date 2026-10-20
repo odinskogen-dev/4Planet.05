@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V7_UNLABELLED_IDENTIFIERS_FAIL_CLOSED"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V8_MULTILINE_CONTINUATIONS_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -453,6 +453,36 @@ test("reviewed source authority never overrides unlabelled identifier rules",()=
     assert.match(record.content,/Ecological restoration research remains current\./,line);
     assert.ok(!String(record.content).includes(identifier),line);
   }
+});
+
+test("reviewed source label/value continuations fail closed across Docs and flattened Sheets",()=>{
+  const base={
+    mime_type:"application/vnd.google-apps.document",
+    source_url:"https://docs.google.com/document/d/TEST",
+    parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY",
+    source_modified_at:"2026-10-20T00:00:00Z",
+    source_hash:"test",
+    object_type:"source_document",
+    metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}
+  };
+  const cases=[
+    ["Ecological restoration research remains current.\nDate of birth:\n1990-01-02\nNext: independent Gold.","1990-01-02","PERSON"],
+    ["1: Task | READY\n2: Bank account:\n3: 8601 11 17947\n4: Next | Gold","8601 11 17947","FINANCE"],
+    ["Public project update.\nAuthorization:\nBasic dXNlcjpwYXNzd29yZA==\nNext public action.","dXNlcjpwYXNzd29yZA==","SECRET"]
+  ];
+  for(const [content,value,category] of cases){
+    const record=prepareClassifiedRecords([{...base,source_id:"reviewed",content}],["reviewed"]).records[0];
+    assert.equal(record.metadata.contentSafety.state,"REDACTED",content);
+    assert.ok(record.metadata.contentSafety.categories.includes(category),content);
+    assert.equal(record.metadata.classification,"PENDING_REVIEW",content);
+    assert.ok(!String(record.content).includes(value),content);
+  }
+  const sameLine=classifyContentForIngest("DOB: 1990-01-02",{allowReviewedProse:true});
+  assert.equal(sameLine.state,"QUARANTINED");
+  assert.equal(sameLine.content,null);
+  const benign=classifyContentForIngest("Project status:\nREADY",{allowReviewedProse:true});
+  assert.equal(benign.state,"SAFE");
+  assert.equal(benign.content,"Project status:\nREADY");
 });
 
 test("reviewed source authority never overrides sensitive-content rules",()=>{

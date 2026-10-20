@@ -33,7 +33,7 @@ const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
 const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
-const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V7_UNLABELLED_IDENTIFIERS_FAIL_CLOSED";
+const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V8_MULTILINE_CONTINUATIONS_FAIL_CLOSED";
 const CONTENT_RULES=Object.freeze([
  {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\b(?:authorization\s*:\s*)?(?:Basic|Bearer)\s+[A-Za-z0-9._~+\/=\/-]{8,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
  {category:"TENANT",pattern:/\btenant(?:_id)?\s*[:=]\s*(?!null\b|none\b|unknown\b)[A-Za-z0-9_-]+|\b(?:private_context|private_profile|personal_brain_record|tenant_private_data)\s*[:=]/i},
@@ -47,6 +47,26 @@ const CONTENT_RULES=Object.freeze([
  {category:"LEGAL",pattern:/\b(?:personal legal|legal case|court case|lawsuit|case number)\s*[:=]/i}
  ,{category:"AMBIGUOUS_PRIVATE",pattern:/\b(?:confidential|strictly private|sensitive personal|personally identifiable information|pii)\s*[:=]/i}
 ]);
+
+// Sensitive field labels may be exported on one line/cell and their values on
+// the next. Carry a bounded category to the next non-empty line so reviewed
+// canonical prose cannot turn a label/value split into an approval bypass.
+const CONTINUATION_RULES=Object.freeze([
+ {category:"SECRET",pattern:/^(?:client[ _-]?secret|api[ _-]?key|password|access[ _-]?token|refresh[ _-]?token|authorization)$/i},
+ {category:"TENANT",pattern:/^(?:tenant(?:_id)?|private_context|private_profile|personal_brain_record|tenant_private_data)$/i},
+ {category:"PERSON",pattern:/^(?:social security number|national identity number|f[øo]dselsnummer|date of birth|birth date|f[øo]dselsdato|dob|private address|private e-?mail|personal e-?mail|private contact|personal contact|contact details?|email address)$/i},
+ {category:"HEALTH",pattern:/^(?:diagnosis|medical record|health record|health|medical|helse(?:opplysninger|journal)?|medication|medisin(?:er)?|patient|pasient|chronic condition|kronisk tilstand)$/i},
+ {category:"FINANCE",pattern:/^(?:personal debt|private finance|bank account|account number|bankkonto|kontonummer|iban|swift|bic|routing number|tax debt|private investment account|pin|passcode|account pin|konto[ -]?pin)$/i},
+ {category:"LEGAL",pattern:/^(?:personal legal|legal case|court case|lawsuit|case number)$/i},
+ {category:"AMBIGUOUS_PRIVATE",pattern:/^(?:confidential|strictly private|sensitive personal|personally identifiable information|pii)$/i}
+]);
+function continuationCategories(line){
+ const body=String(line).replace(/^\s*\d+:\s*/,"").trim();
+ if(!body)return [];
+ const tail=(body.split("|").at(-1)||"").trim()
+  .replace(/^[\s#>*_\x60-]+|[\s:*_=\x60-]+$/g,"").trim();
+ return CONTINUATION_RULES.filter(rule=>rule.pattern.test(tail)).map(rule=>rule.category);
+}
 // Content is never approved merely because it contains an organisational keyword.
 // Free text is fail-closed; only this bounded control vocabulary plus exact
 // identifiers/SHAs/allowlisted URLs can pass the automatic classifier.
@@ -87,12 +107,19 @@ function explicitlySafeOrganisationalLine(line){
 }
 export function classifyContentForIngest(input,{allowReviewedProse=false}={}){
  const original=String(input??"");
- const categories=new Set();let redactedLines=0;
+ const categories=new Set();let redactedLines=0,pendingCategories=[];
  const content=original.split(/\r?\n/).map(line=>{
-  const found=sensitiveCategories(line);
-  if(!found.length && !allowReviewedProse && !explicitlySafeOrganisationalLine(line))found.push("UNREVIEWED");
-  if(!found.length)return line;
-  found.forEach(category=>categories.add(category));redactedLines++;
+  if(!line.trim())return line;
+  const found=[
+   ...sensitiveCategories(line),
+   ...pendingCategories
+  ];
+  pendingCategories=continuationCategories(line);
+  const unique=[...new Set(found)];
+  if(!unique.length && !allowReviewedProse && !explicitlySafeOrganisationalLine(line))
+   unique.push("UNREVIEWED");
+  if(!unique.length)return line;
+  unique.forEach(category=>categories.add(category));redactedLines++;
   const rowPrefix=line.match(/^\s*\d+:\s*/)?.[0]||"";
   return rowPrefix+"[REDACTED:SENSITIVE]";
  }).join("\n");
