@@ -40,7 +40,16 @@ jobs:
               s=AuthorizedSession(c)
               r=s.get('https://www.googleapis.com/webmasters/v3/sites',timeout=25)
               if r.status_code!=200:
-                  say('FREE_GSC: property listing HTTP '+str(r.status_code)+'; grant the service account listed above access to 4species.com in Search Console')
+                  try:
+                      failure=r.json().get('error',{})
+                      reason=(failure.get('errors') or [{}])[0].get('reason','')
+                      status=failure.get('status','')
+                      message=failure.get('message','')
+                  except Exception:
+                      reason=status=message='unreadable'
+                  # Do not log authentication tokens or response headers. Google error texts normally contain no secrets.
+                  safe_message=message[:450].replace('\\n',' ')
+                  say('FREE_GSC: property listing HTTP '+str(r.status_code)+'; error_status='+status+'; reason='+reason+'; diagnostic='+safe_message)
                   raise SystemExit(0)
               names=[x.get('siteUrl','') for x in r.json().get('siteEntry',[])]
               site=next((x for x in ('sc-domain:4species.com','https://4species.com/') if x in names),None)
