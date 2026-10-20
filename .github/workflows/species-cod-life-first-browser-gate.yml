@@ -86,7 +86,7 @@ jobs:
           import xml.etree.ElementTree as E
           root=E.parse('/tmp/species-cod-sitemap.xml').getroot()
           urls=[x.text for x in root.iter() if x.tag.endswith('loc') and x.text and x.text.startswith('https://4species.com/')]
-          species=[x for x in urls if x.replace('https://4species.com','') not in ('/','/explore','/quiz','/about')]
+          species=[x for x in urls if x.replace('https://4species.com','') not in ('/','/explore','/quiz','/about') and '/group/' not in x and '/collection/' not in x]
           assert len(species)==39,(len(species),species)
           assert 'https://4species.com/atlantic-cod' in species
           print('SPECIES_39_CANONICAL_SITEMAP_PRESERVED')
