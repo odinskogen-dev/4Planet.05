@@ -362,3 +362,41 @@ test("GraphRAG approval classification is explicit and fails closed for redacted
   assert.equal(incomplete.metadata.classification,"PENDING_REVIEW");
   assert.equal(incomplete.metadata.contentSafety.state,"SAFE");
 });
+
+
+test("organisational keywords cannot approve unknown free text",()=>{
+  const cases=[
+    "Project update: employee salary is 900000",
+    "Status: meeting with Jane Doe at home",
+    "Task: publish partner contract terms",
+    "Decision: approve unverified free text"
+  ];
+  for(const line of cases){
+    const result=classifyContentForIngest(line);
+    assert.equal(result.state,"QUARANTINED",line);
+    assert.equal(result.content,null,line);
+    assert.deepEqual(result.categories,["UNREVIEWED"],line);
+  }
+});
+
+test("GraphRAG approval requires explicit reviewed source authority",()=>{
+  const base={
+    mime_type:"application/vnd.google-apps.document",
+    source_url:"https://docs.google.com/document/d/TEST",
+    parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY",
+    source_modified_at:"2026-10-20T00:00:00Z",
+    source_hash:"test",
+    object_type:"source_document",
+    content:"Task: current owner and source.\nNext: independent Gold.",
+    metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}
+  };
+  const prepared=prepareClassifiedRecords([
+    {...base,source_id:"reviewed"},
+    {...base,source_id:"unreviewed"}
+  ],["reviewed"]).records;
+  assert.equal(prepared[0].metadata.classification,"INTERNAL_APPROVED");
+  assert.equal(prepared[0].metadata.sourceAuthority,"CANONICAL_MUST_READ");
+  assert.equal(prepared[1].metadata.contentSafety.state,"SAFE");
+  assert.equal(prepared[1].metadata.classification,"PENDING_REVIEW");
+  assert.equal(prepared[1].metadata.sourceAuthority,"UNREVIEWED_SOURCE");
+});
