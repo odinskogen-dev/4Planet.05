@@ -42,6 +42,38 @@ async function taxon(sci){
  return {good,rank:j.rank,confidence:j.confidence,matched:j.canonicalName,usageKey:j.usageKey,
   source:j.usageKey?"https://www.gbif.org/species/"+j.usageKey:null};
 }
+async function wikiLeadPhoto(scientific){
+ // Wikipedia's lead file belongs to a taxon-specific article, rather than
+ // to an unverified Commons keyword-search result. Independent visual QA still applies.
+ const p=new URLSearchParams({action:"query",format:"json",formatversion:"2",
+   prop:"pageimages",piprop:"name",pilicense:"free",redirects:"1",
+   titles:scientific});
+ const j=await load("https://en.wikipedia.org/w/api.php?"+p.toString());
+ const article=j.query?.pages?.find(x=>x.pageimage&&!x.missing);
+ if(!article||!article.pageimage)return null;
+ const file=article.pageimage.replace(/^File:/,"");
+ if(/map|range|diagram|illustration|sketch|drawing|symbol|logo|specimen|skeleton|skull/i.test(file))return null;
+ const details=new URLSearchParams({action:"query",format:"json",formatversion:"2",
+   titles:"File:"+file,prop:"imageinfo",iiprop:"url|size|mime|sha1|extmetadata",iiurlwidth:"1400"});
+ const meta=await load("https://commons.wikimedia.org/w/api.php?"+details.toString());
+ const page=meta.query?.pages?.find(x=>!x.missing&&x.imageinfo?.length);
+ const info=page?.imageinfo?.[0];const m=info?.extmetadata||{};
+ const license=clean(m.LicenseShortName?.value);
+ const valid=/^CC BY(?:-SA)? (?:2\.0|2\.5|3\.0|4\.0)$/i.test(license)||
+   /^(CC0|Public domain|PD-)/i.test(license);
+ const artist=clean(m.Artist?.value||"");
+ const licenceUrl=clean(m.LicenseUrl?.value);
+ if(!info||!valid||!artist||!licenceUrl||!info.descriptionurl||
+    !["image/jpeg","image/png","image/webp"].includes(info.mime)||
+    info.width<1000||info.height<600)return null;
+ return {name:"WIKIPEDIA_LEAD_FILE: "+file,sourcePage:info.descriptionurl,
+   original:info.url,thumbnail:info.thumburl||info.url,artist,license,
+   licenceUrl,width:info.width,height:info.height,sha1:info.sha1,
+   photoLeadArticle:article.title,
+   photoLeadPage:"https://en.wikipedia.org/wiki/"+encodeURIComponent(article.title.replaceAll(" ","_")),
+   provenance:"Encyclopaedia taxon-article free-licence lead photograph; photo-specific Commons source and metadata; HUMAN VISUAL REVIEW OPEN"};
+}
+
 async function inatImages(scientific){
  const params=new URLSearchParams({
    taxon_name:scientific,quality_grade:"research",captive:"false",photos:"true",
@@ -167,13 +199,14 @@ for(let i=0;i<seeds.length;i++){
  catch(e){row.errors.push("GBIF "+e.message);}
  let img=[];
  try{
+  let wiki=null;
+  try{wiki=await wikiLeadPhoto(s[2]);}catch(e){row.errors.push("WIKIPEDIA_LEAD "+e.message);}
   img=await inatImages(s[2]);
-  if(img.length < 2){
-    row.errors.push("RESEARCH_GRADE_WILD_PHOTOS_FEWER_THAN_TWO");
-    // Keep a strict provenance distinction. Avoid restoring the weak filename-only
-    // Commons ranking as a supposedly species-verified or wild photograph.
-  }
-  if(!img.length)row.errors.push("NO_WILD_RESEARCH_GRADE_LICENSED_PHOTOS");
+  // Prefer taxon-article lead for species identity and composition. Keep
+  // field observation candidates separate and legally source-traced.
+  if(wiki)img=[wiki,...img.filter(p=>p.original!==wiki.original)];
+  if(img.length<2)row.errors.push("LESS_THAN_TWO_VERIFIABLE_IMAGE_CANDIDATES");
+  if(!img.length)row.errors.push("NO_PHOTOS_MATCHING_SOURCE_AND_RIGHTS_GATES");
  }
  catch(e){row.errors.push("COMMONS "+e.message);}
  if(build){
