@@ -69,6 +69,17 @@ jobs:
           cat /tmp/4planet-preview.log || true
           exit 1
 
+      # Issue #157 evidence must run before unrelated product suites so a
+      # later failure cannot suppress the bounded Oslofjord browser receipt.
+      - name: Run Oslofjord Planet Proof on Chromium desktop + mobile
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: >-
+          npm run test:e2e --
+          tests/e2e/oslofjord-planet-proof.spec.ts
+          --project=desktop-1440
+          --project=mobile-390
+
       - name: Run IMPACT Living Action Network Gold proof
         env:
           BASE_URL: http://127.0.0.1:4173
@@ -139,15 +150,6 @@ jobs:
           --project=desktop-1440
           --project=mobile-390
           --grep "For a Living Planet is a premium mission front door"
-
-      - name: Run Oslofjord Planet Proof on Chromium desktop + mobile
-        env:
-          BASE_URL: http://127.0.0.1:4173
-        run: >-
-          npm run test:e2e --
-          tests/e2e/oslofjord-planet-proof.spec.ts
-          --project=desktop-1440
-          --project=mobile-390
 
       # Other product proofs run after the current Founder-priority Planet proof.
       # Failure in an unrelated legacy journey must not suppress Oslofjord evidence.
