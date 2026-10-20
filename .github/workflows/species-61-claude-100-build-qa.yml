@@ -275,6 +275,7 @@ jobs:
           node "$GITHUB_WORKSPACE/ops/species/next61/review-sheet.mjs"
           test -f dist/_review-next61/index.html
           test -f dist/_headers
+          node "$GITHUB_WORKSPACE/ops/species/next61/seo-audit.mjs"
           echo SPECIES_100_CLAUDE_BUILD_CANDIDATE_PASS
       - name: Deploy candidate to ISOLATED Cloudflare Pages branch (NOT 4species.com)
         shell: bash
