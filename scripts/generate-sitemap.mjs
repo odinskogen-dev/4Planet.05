@@ -14,6 +14,17 @@ const placeIsReleasedForOrigin = (item) => item.indexable === true
   && item.publicationState === "READY_FOR_FOUNDER_RELEASE"
   && item.canonicalOrigin === origin;
 
+// IMPACT release eligibility must match the prerender gate. A curated source
+// record or HEIR_CANDIDATE is not permission to publish an indexable URL.
+const impactObjectIsReleasedForOrigin = (item) =>
+  item?.publicationState === "READY_FOR_FOUNDER_RELEASE"
+  && item?.canonicalOrigin === origin;
+const releasedImpactProjects = (impactDiscovery.projects ?? []).filter(impactObjectIsReleasedForOrigin);
+const releasedImpactActors = [...new Map(releasedImpactProjects
+  .filter((item) => item.actor)
+  .map((item) => [item.actor.slug, item.actor])).values()]
+  .filter(impactObjectIsReleasedForOrigin);
+
 const staticRoutes = [
   "/",
   "/domains",
@@ -57,8 +68,8 @@ const discoveryRoutes = [
   ...(discoveryInventory.species ?? []).filter((item) => item.indexable === true).map((item) => `/species/${item.slug}`),
   ...(atlasDiscovery.objects ?? []).filter((item) => item.indexable === true).map((item) => `/atlas/${item.slug}`),
   ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),
-  ...(impactDiscovery.projects ?? []).map((item) => `/impact/project/${item.slug}`),
-  ...Array.from(new Set((impactDiscovery.projects ?? []).map((item) => item.actor?.slug).filter(Boolean))).map((slug) => `/impact/actors/${slug}`),
+  ...releasedImpactProjects.map((item) => `/impact/project/${item.slug}`),
+  ...releasedImpactActors.map((item) => `/impact/actors/${item.slug}`),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
