@@ -1,3 +1,33 @@
+# 4SAPIEN — AUTHORITATIVE NOTE-WRITE RECEIPT — 20 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a signed-in person needs a private note to be truly persisted before the product reports success or value.
+
+**ONE THING TO UNDERSTAND:** an HTTP-successful PostgREST write attempt is not an authoritative saved-note receipt.
+
+**PRIMARY ACTION:** create or edit a note only when the owner-scoped API returns exactly one active row with the expected canonical id and content.
+
+**SECONDARY DEPTH:** failed, empty, duplicate, stale, deleted or mismatched representations remain unconfirmed and retain the existing retry/error path.
+
+**P1 / P2 / P3 / P4:** personal note / explicit saved state / continue using it / owner-RLS and second-session Gold evidence.
+
+**WHAT CAN BE REMOVED:** delivery and completed-value telemetry based only on `return=minimal` HTTP success.
+
+**WHAT MUST BE REUSED:** existing 4SAPIEN note UI, owner RLS, #317, PR #131, `king/test`, notes pagination and existing event sink.
+
+**TRUTH BOUNDARY:** a matching returned row proves server acknowledgement for this write only. It does not prove a later session, another device, cross-owner isolation, deployment, LIVE state or user value.
+
+**MOBILE-FIRST RISK:** none introduced; no layout or interaction geometry changes.
+
+**HUMAN SUCCESS:** note create/update success and its value event occur only after an exact active-row receipt; zero-row, mismatched and duplicate responses fail closed.
+
+**BASE / ROLLBACK:** `king/test@9e39603c5a7be299180812799a5f7d3b16e33333`; revert this bounded source/test/brief commit.
+
+**MAKER ≠ JUDGE:** Factory implements the receipt boundary. Independent Gold must verify exact-SHA contract, authenticated owner-RLS and second-session runtime before any release claim.
+
+---
+
 # IMPACT — ACTION IDENTITY / LABEL-COLLISION BOUNDARY — 20 OCT 2026
 
 **STATUS:** FRESH NATUREBRAIN SOURCE QA CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
