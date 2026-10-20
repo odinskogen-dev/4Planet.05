@@ -86,8 +86,11 @@ jobs:
             const o=await sharp(inputs[1].poster).resize(260,630,{fit:'cover'}).png().toBuffer();
             const label='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#000"/><rect x="65" y="83" width="60" height="3" fill="#d7ff64"/><text x="65" y="136" font-family="Arial" font-size="24" letter-spacing="5" fill="#d7ff64">CUB LAB</text><text x="65" y="314" font-family="Arial" font-weight="bold" font-size="58" fill="#fff">WORLDS WORTH</text><text x="65" y="385" font-family="Arial" font-weight="bold" font-size="60" fill="#fff">PLAYING.</text><text x="65" y="520" font-family="Arial" font-size="19" fill="#b8b8b8">INDEPENDENT GAMES IN DEVELOPMENT</text></svg>';
             await sharp(Buffer.from(label)).composite([{input:r,left:680,top:0},{input:o,left:940,top:0}]).png({compressionLevel:9}).toFile('site/assets/og-home.png');
-            fs.unlinkSync('site/assets/poster-roma.png');
-            fs.unlinkSync('site/assets/poster-orca.png');
+            // Keep original PNG poster assets as backwards-compatible fallbacks for cached HTML.
+            // Newly published pages use the smaller .webp files.
+            for(const image of ['site/assets/poster-roma.png','site/assets/poster-orca.png']){
+              if(!fs.existsSync(image))throw Error('Original poster absent: '+image);
+            }
             console.log('CUB_POSTER_MEDIA_BUILD_PASS');
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
@@ -107,6 +110,15 @@ jobs:
               sleep 4
             done
             test "$good" -eq 1 || { echo "ROMA_LIVE_BYTE_VERIFICATION_FAILED=$host"; exit 4; }
+            curl -fsSL "$host/assets/poster-roma.webp" -o /tmp/live-roma-poster.webp
+            curl -fsSL "$host/assets/poster-orca.webp" -o /tmp/live-orca-poster.webp
+            curl -fsSL "$host/assets/poster-roma.png" -o /tmp/live-roma-poster.png
+            curl -fsSL "$host/assets/poster-orca.png" -o /tmp/live-orca-poster.png
+            test "$(wc -c < /tmp/live-roma-poster.webp)" -gt 10000
+            test "$(wc -c < /tmp/live-orca-poster.webp)" -gt 10000
+            test "$(wc -c < /tmp/live-roma-poster.png)" -gt 10000
+            test "$(wc -c < /tmp/live-orca-poster.png)" -gt 10000
+            echo 'CUB_POSTER_ALL_FORMATS_VERIFIED'
             curl -fsSL "$host/" -o /tmp/live-hub.html
             grep -Fq 'ROMA:' /tmp/live-hub.html
             grep -Fq 'WILD:' /tmp/live-hub.html
