@@ -1,0 +1,39 @@
+name: SPECIES Cloudflare Current Worker Readback (read-only)
+on:
+  push:
+    branches: [audit/species-cloudflare-current-20261021]
+    paths: [.github/workflows/species-cloudflare-current-readonly-20261021.yml]
+permissions: { contents: read }
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Verify LIVE Worker version and immutable Pages origin without changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo SPECIES_CF_READ_TOKEN_MISSING; exit 1; fi
+          api=https://api.cloudflare.com/client/v4
+          h=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          curl -fsS --max-time 25 "${h[@]}" "$api/zones?name=4species.com" > /tmp/species-zones.json
+          zone=$(jq -r '.result[0].id // empty' /tmp/species-zones.json)
+          account=$(jq -r '.result[0].account.id // empty' /tmp/species-zones.json)
+          test -n "$zone" && test -n "$account"
+          echo SPECIES_CF_ZONE_TOKEN_OK
+          curl -fsS --max-time 25 "${h[@]}" "$api/accounts/$account/workers/scripts/4species-router/deployments" > /tmp/species-worker.json
+          jq -ec '.result | (if type=="array" then . else .deployments end) | .[0] | {deploymentId:.id,createdOn:.created_on,versions:[.versions[]|{versionId:.version_id,percentage:.percentage}],source:.source}' /tmp/species-worker.json | sed 's/^/SPECIES_CURRENT_WORKER /'
+          curl -fsS --max-time 25 "${h[@]}" "$api/accounts/$account/pages/projects/4planet-05/deployments?per_page=25" > /tmp/species-pages.json
+          jq -ec '.result | .[:25] | map({id,created_on,url,aliases,environment,branch:(.deployment_trigger.metadata.branch // null),commit:(.deployment_trigger.metadata.commit_hash // null)})' /tmp/species-pages.json | sed 's/^/SPECIES_RECENT_PAGES /'
+          for path in / /orca /lion /tiger /giant-panda /polar-bear /sitemap.xml /robots.txt /species-data/v1/orca.json; do
+            name=$(echo "$path" | tr '/' '_')
+            http=$(curl -sSL --max-time 20 -D "/tmp/h$name" -o "/tmp/b$name" -w '%{http_code}' "https://4species.com$path" || true)
+            echo "SPECIES_CURRENT_HTTP $path $http"
+            grep -Ei '^(x-4species-release:|x-robots-tag:|x-4species-index-gate:|location:)' "/tmp/h$name" | sed 's/\r$//' || true
+            if [ "$path" = /sitemap.xml ] && [ "$http" = 200 ]; then
+              echo "SPECIES_SITEMAP_ENTRY_COUNT $(grep -o '<loc>' "/tmp/b$name" | wc -l)"
+            fi
+          done
+          echo SPECIES_CF_READ_ONLY_COMPLETE
