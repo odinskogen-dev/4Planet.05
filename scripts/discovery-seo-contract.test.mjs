@@ -197,3 +197,20 @@ test("IndexNow canonical sitemap source",()=>{const indexNow=read("scripts/submi
 
 
 test("about trailing slash canonical",()=>{const redirects=read("public/_redirects");assert.ok(redirects.includes("/about/  /about  301"));});
+
+
+// EX-01: public IMPACT sitemap authority must match prerender publication law.
+test("IMPACT sitemap filters unreleased project and actor discovery records", () => {
+  const source = read("scripts/generate-sitemap.mjs");
+  const prerender = read("scripts/prerender-discovery-seo.mjs");
+  const impact = JSON.parse(read("src/data/impactDiscovery.json"));
+  assert.match(source, /const impactObjectIsReleasedForOrigin/);
+  assert.match(source, /releasedImpactProjects\.map/);
+  assert.match(source, /releasedImpactActors\.map/);
+  assert.match(prerender, /filter\(impactObjectIsReleasedForOrigin\)/);
+  assert.ok((impact.projects || []).some((project) =>
+    project.publicationState === "HEIR_CANDIDATE" && project.canonicalOrigin === null));
+  assert.ok((impact.projects || []).every((project) =>
+    project.publicationState === "READY_FOR_FOUNDER_RELEASE" && project.canonicalOrigin === "https://4planet.org"
+    || !source.includes(`(impactDiscovery.projects ?? []).map`)));
+});
