@@ -303,7 +303,7 @@ function installGoogleTag(id: string, domains: string[]) {
 export function privacySafeEventParameters(parameters: Record<string, string | number | boolean>) {
   const safe: Record<string, string | number | boolean> = {};
   const allowedKeys = new Set([
-    "action_id", "action_kind", "activation_kind", "analysis_status", "attempts", "auth_method",
+    "action_id", "action_kind", "activation_kind", "actor_id", "analysis_status", "attempts", "auth_method",
     "campaign_id", "canonical_entity", "claim_kind", "completion_type", "confirmation_state",
     "content_group", "country_scope", "creation_kind", "decision_kind", "decision_state",
     "decision_states", "destination", "destination_product", "destination_type",
@@ -312,7 +312,7 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     "internal", "item_count", "landing_path", "landing_product", "legal_identity",
     "memory_kind", "object_id", "object_kind", "object_slug", "object_type",
     "opportunity_count", "opportunity_id", "option_count", "page_path", "placement",
-    "product_area", "product_key", "public_slug", "result_count", "share_method",
+    "product_area", "product_key", "project_id", "public_slug", "result_count", "share_method",
     "site_host", "source_count", "source_host", "source_id", "source_kind",
     "species_slug", "target_host", "to_product", "unsupported_items", "use_kind",
     "value_kind", "variant_id", "actor_type", "lifecycle_stage", "evidence_state",
@@ -324,6 +324,10 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     actor_type: new Set(["PERSON", "COMPANY"]),
     lifecycle_stage: new Set(["STATE", "DECISION", "ACTION", "OUTCOME", "PROOF", "RETURN"]),
     evidence_state: new Set(["SOURCE_REFERENCED", "USER_CONFIRMED", "DEMO_FIXTURE_NOT_VERIFIED", "UNKNOWN"]),
+  };
+  const publicCanonicalContextIdPatterns: Record<string, RegExp> = {
+    actor_id: /^(?:actor:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}|P17-A[0-9]{3,})$/,
+    project_id: /^project:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}$/,
   };
   const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
   const tokenValue = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
@@ -342,6 +346,14 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     }
     if (key === "returning") {
       if (typeof value === "boolean") safe[key] = value;
+      continue;
+    }
+    const canonicalContextIdPattern = publicCanonicalContextIdPatterns[key];
+    if (canonicalContextIdPattern) {
+      if (typeof value === "string") {
+        const bounded = value.trim();
+        if (canonicalContextIdPattern.test(bounded)) safe[key] = bounded;
+      }
       continue;
     }
     if (typeof value === "number") {
