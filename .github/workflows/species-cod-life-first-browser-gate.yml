@@ -1,0 +1,96 @@
+name: SPECIES Atlantic Cod Life-First Browser Gate
+on:
+  push:
+    branches: [fix/species-cod-life-first-preview-20261021]
+    paths: [.github/workflows/species-cod-life-first-browser-gate.yml]
+permissions: {contents: read}
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Install isolated browsers
+        run: |
+          npm install --prefix /tmp/species-cod-qa playwright@1.56.0
+          /tmp/species-cod-qa/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Verify immutable preview with the real public host
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-cod-qa/shots
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {chromium,webkit,devices} from '/tmp/species-cod-qa/node_modules/playwright/index.mjs';
+          const PREVIEW='https://e17e1392.4planet-05.pages.dev';
+          const host='https://4species.com';
+          const checks=[['/atlantic-cod', 'Atlantic cod'], ['/orca','Orca'], ['/lion','Lion'], ['/humpback-whale','Humpback whale'], ['/polar-bear','Polar bear']];
+          for(const [engineName,engine] of [['Chrome',chromium],['Safari',webkit]]) {
+            const browser=await engine.launch({headless:true});
+            for (const viewport of ['mobile','desktop']) {
+              const context=await browser.newContext(viewport==='mobile'?{...devices['iPhone 13'],locale:'en-GB'}:{viewport:{width:1440,height:900},locale:'en-GB'});
+              await context.route('https://4species.com/**',async route=>{
+                const u=new URL(route.request().url());
+                try{const resp=await route.fetch({url:PREVIEW+u.pathname+u.search,maxRedirects:6,timeout:30000});
+                await route.fulfill({response:resp,headers:{...resp.headers(),'access-control-allow-origin':'*'}})}
+                catch(e){await route.abort('failed')}
+              });
+              const p=await context.newPage();
+              for(const [path,expected] of checks) {
+                const errors=[]; p.on('pageerror',e=>errors.push(e.message));
+                const response=await p.goto(host+path,{waitUntil:'domcontentloaded',timeout:40000});
+                assert.equal(response?.status(),200,engineName+' '+viewport+' '+path+' http');
+                await p.locator('h1').first().waitFor({timeout:30000});
+                await p.waitForTimeout(1700);
+                const data=await p.evaluate(()=>({
+                  h1:document.querySelector('h1')?.textContent,
+                  canonical:document.querySelector('link[rel=canonical]')?.href,
+                  robots:document.querySelector('meta[name=robots]')?.content,
+                  photos:document.querySelector('.spx-entry-summary')?.textContent,
+                  heroSlides:document.querySelectorAll('.spx-hero-slide img').length,
+                  heroSrc:document.querySelector('.spx-hero-slide img')?.getAttribute('src'),
+                  heroLoaded:!!document.querySelector('.spx-hero-slide img')?.naturalWidth,
+                  storyImages:document.querySelectorAll('.spx-story .spx-figure img').length,
+                  galleryImages:document.querySelectorAll('.spx-strip img').length,
+                  gallerySources:[...document.querySelectorAll('.spx-story img,.spx-strip img,.spx-hero-slide img')].map(i=>i.getAttribute('src')).slice(0,12)
+                }));
+                console.log('LIFE_FIRST_BROWSER '+JSON.stringify({engineName,viewport,path,...data,errors}));
+                assert.match(data.h1||'',new RegExp(expected,'i'),'species identity '+path);
+                assert.equal(data.canonical,host+path,'canonical '+path);
+                assert.ok(!data.robots?.includes('noindex'),'noindex '+path);
+                if(path==='/atlantic-cod'){
+                  assert.equal(data.heroSlides,1,'cod hero must contain precisely one curated living-species photo');
+                  assert.equal(data.storyImages,0,'no unreviewed or dead cod photograph in story panels');
+                  assert.equal(data.galleryImages,0,'no unreviewed or cooked cod photograph in strip');
+                  assert.match(data.heroSrc||'',/Torsk|Cod/i,'cod original curated source');
+                  assert.match(data.photos||'',/1 photograph/i,'gallery photo count');
+                  await p.screenshot({path:'/tmp/species-cod-qa/shots/'+engineName+'-'+viewport+'-cod.png',animations:'disabled'});
+                }
+                assert.equal(errors.length,0,engineName+' '+viewport+' '+path+' JS errors '+errors.join(';'));
+              }
+              await context.close();
+            }
+            await browser.close();
+          }
+          console.log('SPECIES_COD_LIFE_FIRST_BROWSER_QA_PASS');
+          NODE
+      - name: Check all 39 published species and sitemap remain available
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin=https://e17e1392.4planet-05.pages.dev
+          curl -fsSL --max-time 30 "$origin/species-sitemap.xml" -o /tmp/species-cod-sitemap.xml
+          python3 - <<'PY'
+          import xml.etree.ElementTree as E
+          root=E.parse('/tmp/species-cod-sitemap.xml').getroot()
+          urls=[x.text for x in root.iter() if x.tag.endswith('loc') and x.text and x.text.startswith('https://4species.com/')]
+          species=[x for x in urls if x.replace('https://4species.com','') not in ('/','/explore','/quiz','/about')]
+          assert len(species)==39,(len(species),species)
+          assert 'https://4species.com/atlantic-cod' in species
+          print('SPECIES_39_CANONICAL_SITEMAP_PRESERVED')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cod-life-first-before-after-browser
+          path: /tmp/species-cod-qa/shots/
+          retention-days: 14
