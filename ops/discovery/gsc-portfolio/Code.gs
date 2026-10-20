@@ -1,8 +1,9 @@
 /**
  * 4PLANET - First-party Google Search Console portfolio bridge.
- * Bound to the 4PLANET GSC Portfolio Telemetry Google Sheet.
+ * Supports an ordinary standalone Apps Script (including iPhone setup),
+ * linked by the private GSC4P_SHEET_ID Script Property.
  *
- * Run setup4PlanetGSC() ONCE from Extensions > Apps Script.
+ * Run setup4PlanetGSC() ONCE after configuring that property.
  * It requests the current Google user's GSC read-only scope, tests all
  * available Search Console properties, and creates one daily trigger.
  * Google OAuth tokens stay inside Apps Script and are never written to Sheets.
@@ -41,8 +42,10 @@ function setup4PlanetGSC() {
 }
 
 function sync4PlanetGSC() {
-  const workbook = SpreadsheetApp.getActiveSpreadsheet();
-  if (!workbook) throw new Error("Open this Google Sheet and use Extensions > Apps Script (bound project).");
+  const boundWorkbook = SpreadsheetApp.getActiveSpreadsheet();
+  const spreadsheetId = boundWorkbook ? null : PropertiesService.getScriptProperties().getProperty("GSC4P_SHEET_ID");
+  if (!boundWorkbook && !spreadsheetId) throw new Error("Missing Script Property GSC4P_SHEET_ID: set the ID of your private 4PLANET GSC readback Sheet in Apps Script Project Settings.");
+  const workbook = boundWorkbook || SpreadsheetApp.openById(spreadsheetId);
   const output = {};
   Object.keys(GSC4P_TAB_HEADERS).forEach(function(name) {
     const tab = workbook.getSheetByName(name);
