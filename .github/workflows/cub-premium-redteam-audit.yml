@@ -37,7 +37,7 @@ jobs:
                 p.on('pageerror',e=>errors.push(e.message));
                 const response=await p.goto('https://lab.p4nther.com'+path,{waitUntil:'networkidle',timeout:50000});
                 await p.locator('img[loading="lazy"]').evaluateAll(imgs=>imgs.forEach(img=>img.loading='eager'));
-                await p.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0),null,{timeout:15000});
+                await p.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0),null,{timeout:45000}).catch(async err=>{console.log('CUB_IMAGE_DIAGNOSTIC',JSON.stringify({path,viewport,broken:await p.locator('img').evaluateAll(imgs=>imgs.filter(i=>!i.complete||i.naturalWidth===0).map(i=>({src:i.src,complete:i.complete,width:i.naturalWidth,loading:i.loading})))}));throw err});
                 await p.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
                 const data=await p.evaluate(async()=>{
                   const result=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}});

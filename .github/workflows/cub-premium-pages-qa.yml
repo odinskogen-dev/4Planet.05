@@ -46,7 +46,7 @@ jobs:
           grep -Fiq 'ocean' /tmp/orca-product.html
           echo 'ORCA_PRODUCT_PASS'
           curl -fsSL https://lab.p4nther.com/ -o /tmp/cub-home.html
-          grep -Fiq 'Independent game lab' /tmp/cub-home.html
+          grep -Fiq 'Different worlds' /tmp/cub-home.html
           echo 'CUB_HOME_PASS'
           echo 'CUB_PUBLIC_PREMIUM_CONTENT_PASS'
       - name: Mobile and desktop visual / navigation smoke QA
