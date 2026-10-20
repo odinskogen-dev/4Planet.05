@@ -310,3 +310,33 @@ test("classified projection preserves mandatory safe truth and fail-closes befor
    {...base,source_id:"tasks",title:"Operations table",content:"Current task: safe"}
   ],["lead","tasks"]),/MANDATORY_CANONICAL_SOURCE_UNREADABLE_AFTER_CLASSIFICATION/);
 });
+
+test("GraphRAG approval classification is explicit and fails closed for redacted, quarantined and inventory-only",()=>{
+  const base={
+    mime_type:"application/vnd.google-apps.document",
+    source_url:"https://docs.google.com/document/d/TEST/d/TEST",
+    parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY",
+    source_modified_at:"2026-10-20T00:00:00Z",
+    source_hash:"test",
+    object_type:"source_document",
+    metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}
+  };
+  const records=[
+    {...base,source_id:"lead",title:"Safe source",content:"Task: current owner and source.\nNext: independent Gold."},
+    {...base,source_id:"redacted",title:"Partially redacted",content:"Task: internal review.\npassword=redacted"},
+    {...base,source_id:"quarantine",title:"Secret only",content:"client_secret=must-not-travel"},
+    {...base,source_id:"inventory",title:"Metadata only",content:null,
+      metadata:{...base.metadata,readDepth:"INVENTORY_ONLY"}}
+  ];
+  const prepared=prepareClassifiedRecords(records,["lead"]).records;
+  assert.equal(prepared[0].metadata.classification,"INTERNAL_APPROVED");
+  assert.equal(prepared[0].metadata.readDepth,"CONTENT");
+  assert.equal(prepared[0].metadata.contentSafety.state,"SAFE");
+  assert.equal(prepared[1].metadata.classification,"PENDING_REVIEW");
+  assert.equal(prepared[1].metadata.readDepth,"CONTENT_REDACTED");
+  assert.equal(prepared[2].metadata.classification,"PENDING_REVIEW");
+  assert.equal(prepared[2].metadata.readDepth,"QUARANTINED");
+  assert.equal(prepared[2].content,null);
+  assert.equal(prepared[3].metadata.classification,undefined);
+  assert.equal(prepared[3].metadata.readDepth,"INVENTORY_ONLY");
+});
