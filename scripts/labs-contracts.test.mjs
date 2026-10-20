@@ -339,4 +339,11 @@ test("GraphRAG approval classification is explicit and fails closed for redacted
   assert.equal(prepared[2].content,null);
   assert.equal(prepared[3].metadata.classification,undefined);
   assert.equal(prepared[3].metadata.readDepth,"INVENTORY_ONLY");
+  const incomplete=prepareClassifiedRecords([
+    {...base,source_id:"partial",title:"Truncated corpus source",
+      content:"Task: source contains only first 80000 of original.",
+      metadata:{...base.metadata,truncated:true}}
+  ],["partial"]).records[0];
+  assert.equal(incomplete.metadata.classification,"PENDING_REVIEW");
+  assert.equal(incomplete.metadata.contentSafety.state,"SAFE");
 });
