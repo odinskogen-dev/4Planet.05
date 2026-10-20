@@ -96,6 +96,7 @@ export function prepareClassifiedRecords(records,mustRead=MUST_READ){
   const eligibleForGraph=result.state==="SAFE" &&
     ["CONTENT","SHEET_ROWS"].includes(record.metadata?.readDepth) &&
     record.metadata?.domain==="4planet" && record.metadata?.tenant===null &&
+    record.metadata?.truncated!==true &&
     typeof result.content==="string" && result.content.trim().length>0;
   return {...record,content:result.content,
    source_hash:result.content===null?record.source_hash:sha(result.content),
