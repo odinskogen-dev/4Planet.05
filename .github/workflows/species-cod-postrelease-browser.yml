@@ -1,0 +1,64 @@
+name: 4SPECIES Cod Postrelease Live Browser Proof
+on:
+  push:
+    branches: [fix/species-cod-production-release-20261021]
+    paths: [.github/workflows/species-cod-postrelease-browser.yml]
+permissions: {contents: read}
+jobs:
+  verified-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install Chromium and WebKit
+        run: |
+          npm install --prefix /tmp/species-cod-live playwright@1.56.0
+          /tmp/species-cod-live/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Check LIVE 4species.com with real browsers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/live-proof
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {chromium,webkit,devices} from '/tmp/species-cod-live/node_modules/playwright/index.mjs';
+          for(const [name,engine] of [['Chrome',chromium],['Safari',webkit]]) {
+            const browser=await engine.launch({headless:true});
+            for(const size of ['mobile','desktop']){
+              const context=await browser.newContext(size==='mobile'?{...devices['iPhone 13'],locale:'en-GB'}:{viewport:{width:1440,height:900}});
+              const page=await context.newPage();
+              const response=await page.goto('https://4species.com/atlantic-cod',{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(response?.status(),200);
+              assert.equal(response.headers()['x-4species-release'],'species-v53-immutable-e17e1392-cod-life-first-20261021');
+              await page.locator('h1').first().waitFor({timeout:25000});
+              await page.waitForTimeout(1700);
+              const data=await page.evaluate(()=>({
+                heading:document.querySelector('h1')?.textContent,
+                canonical:document.querySelector('link[rel=canonical]')?.href,
+                robots:document.querySelector('meta[name=robots]')?.content,
+                gallery:document.querySelectorAll('.spx-strip img').length,
+                story:document.querySelectorAll('.spx-story .spx-figure img').length,
+                hero:[...document.querySelectorAll('.spx-hero-slide img')].map(i=>({src:i.currentSrc||i.src,loaded:i.naturalWidth>0})),
+                ldjson:document.querySelectorAll('script[type="application/ld+json"]').length
+              }));
+              assert.match(data.heading||'',/Atlantic cod/i);
+              assert.equal(data.canonical,'https://4species.com/atlantic-cod');
+              assert.ok(!data.robots?.includes('noindex'));
+              assert.equal(data.gallery,0);
+              assert.equal(data.story,0);
+              assert.equal(data.hero.length,1);
+              assert.match(data.hero[0].src,/Torsk._Cod.jpg/);
+              assert.equal(data.hero[0].loaded,true);
+              console.log('COD_LIVE_BROWSER_VERIFIED '+JSON.stringify({name,size,...data}));
+              await page.screenshot({path:'/tmp/live-proof/'+name+'-'+size+'.png',animations:'disabled'});
+              await context.close();
+            }
+            await browser.close();
+          }
+          console.log('ALL_REAL_LIVE_BROWSERS_PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cod-production-real-browser-proof
+          path: /tmp/live-proof/
+          retention-days: 14
