@@ -98,6 +98,10 @@ test("routes, sitemap and prerender all consume the same canonical discovery reg
 test("every discovery page uses the shared ATLAS embed seam and public shell", () => {
   assert.match(page, /<PublicShell>/);
   assert.match(page, /<iframe/);
+  assert.match(page, /aria-label="ATLAS embed fallback"/);
+  assert.match(page, /If the embedded map is unavailable/);
+  assert.match(page, /OPEN THE SAME VIEW IN FULL ATLAS/);
+  assert.match(page, /href=\{href\}/);
   assert.match(page, /params\.set\("embed", embedKind\.toLowerCase\(\)\)/);
   assert.match(page, /What the sources establish/);
   assert.match(page, /What they do not establish/);
