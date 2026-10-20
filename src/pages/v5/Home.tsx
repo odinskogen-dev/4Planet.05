@@ -11,7 +11,7 @@ import "@/styles/home-brand-reset.css";
 
 const PRODUCTS = [
   ["01", "Atlas", "Explore places, observations and planetary context.", "/atlas"],
-  ["02", "Species", "Understand species, habitats and the evidence around them.", "/species"],
+  ["02", "Species", "Understand species, habitats and the evidence around them.", "https://4species.com"],
   ["03", "Living Systems", "See how living and human systems connect, change and come under pressure.", "/livingsystems/"],
   ["04", "Impact", "Find action pathways and follow what happens next.", "/impact"],
 ] as const;
