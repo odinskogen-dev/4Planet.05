@@ -36,6 +36,24 @@ async function load(url,binary=false){
 }
 const clean=s=>String(s||"").replace(/<[^>]*>/g," ").replace(/&amp;/g,"&").replace(/\s+/g," ").trim().slice(0,200);
 const normal=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+async function biographicalSource(scientific){
+ // Academic museum educational account; check HTTP and taxon-specific text.
+ // Existence is NOT a claim-level scientific audit.
+ const article="https://animaldiversity.org/accounts/"+scientific.replaceAll(" ","_")+"/";
+ try{
+  const r=await fetch(article,{headers:{"User-Agent":userAgent},signal:AbortSignal.timeout(14000)});
+  if(!r.ok)throw Error("ADW HTTP "+r.status);
+  const html=await r.text();
+  if(!html.toLowerCase().includes(scientific.toLowerCase()))throw Error("ADW target taxon not confirmed");
+  return {label:"University of Michigan Museum of Zoology — Animal Diversity Web, "+scientific,
+    url:article,status:"URL_AND_TAXON_VERIFIED_NOT_CLAIM_AUDITED",category:"MuseumEducationalAccount"};
+ }catch(e){
+  return {label:"Wikipedia species-account reference, not independently claim-verified — "+scientific,
+    url:"https://en.wikipedia.org/wiki/"+encodeURIComponent(scientific.replaceAll(" ","_")),
+    status:"SECONDARY_DISCOVERY_ONLY",category:"EncyclopaediaReference",error:String(e).slice(0,125)};
+ }
+}
+
 async function taxon(sci){
  const j=await load("https://api.gbif.org/v1/species/match?strict=true&name="+encodeURIComponent(sci));
  const good=normal(j.canonicalName||j.scientificName)===normal(sci)&&j.rank==="SPECIES"&&(j.confidence||0)>=90;
@@ -152,10 +170,9 @@ async function storePhoto(photo,slug,slot){
  fs.writeFileSync(path.join(mediaDir,file),b);
  return {...photo,local:"/assets/species/next61/"+file,sha256:crypto.createHash("sha256").update(b).digest("hex"),bytes:b.length};
 }
-function profile(seed,id,pics){
+function profile(seed,id,pics,contentSource){
  const [slug,name,sci,group,hook,life,web,habitat,threat,action,searchAngle]=seed;
- const source={label:"Editorial research reference — "+sci+" (primary review pending)",
-  url:"https://en.wikipedia.org/wiki/"+encodeURIComponent(sci.replaceAll(" ","_"))};
+ const source={label:contentSource.label,url:contentSource.url};
  const taxonSource={label:"GBIF — "+sci+" accepted taxon",url:id.source};
  const claim=(text,src=source,state="INTERPRETED")=>({text,state,source:src});
  const info=(label,text,src=source)=>({label,text,state:"INTERPRETED",source:src});
@@ -193,10 +210,12 @@ function profile(seed,id,pics){
 }
 for(let i=0;i<seeds.length;i++){
  const s=seeds[i],slug=s[0];
- const row={slug,scientific:s[2],editorialOrder:i+1,taxon:null,pictures:[],errors:[],ready:false,jsonCreated:false,
+ const row={slug,scientific:s[2],editorialOrder:i+1,taxon:null,editorialSource:null,pictures:[],errors:[],ready:false,jsonCreated:false,
   quality:{taxon:false,photosLocal:false,licenceMetadata:false,scientificGold:false,mediaVisualGold:false}};
  try{row.taxon=await taxon(s[2]);row.quality.taxon=row.taxon.good;if(!row.taxon.good)row.errors.push("GBIF_MATCH_REVIEW");}
  catch(e){row.errors.push("GBIF "+e.message);}
+ row.editorialSource=await biographicalSource(s[2]);
+ if(row.editorialSource.status!=="URL_AND_TAXON_VERIFIED_NOT_CLAIM_AUDITED")row.errors.push("INDEPENDENT_SPECIES_BIOGRAPHY_SOURCE_NOT_FOUND");
  let img=[];
  try{
   let wiki=null;
@@ -217,7 +236,7 @@ for(let i=0;i<seeds.length;i++){
   row.quality.photosLocal=row.pictures.length>0;
   row.quality.licenceMetadata=row.pictures.length>0&&row.pictures.every(p=>p.artist&&p.license&&p.sourcePage&&p.sha256);
   if(row.taxon?.source){
-   fs.writeFileSync(path.join(jsonDir,slug+".json"),JSON.stringify(profile(s,row.taxon,row.pictures),null,2));
+   fs.writeFileSync(path.join(jsonDir,slug+".json"),JSON.stringify(profile(s,row.taxon,row.pictures,row.editorialSource),null,2));
    row.jsonCreated=true;
   }
  }else{row.pictures=img;row.quality.licenceMetadata=img.length>0;}
