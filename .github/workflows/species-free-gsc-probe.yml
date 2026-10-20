@@ -3,6 +3,9 @@ on:
   push:
     branches: [work/species-free-search-measurement-20261014]
     paths: [.github/workflows/species-free-gsc-probe.yml]
+  pull_request:
+    branches: [king/test]
+    paths: [.github/workflows/species-free-gsc-probe.yml]
   workflow_dispatch:
 permissions: {contents: read}
 jobs:
