@@ -53,6 +53,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === '/health') return new Response('AXE clock canary ready', { status: 200 });
     if (url.pathname !== '/canary') return new Response('Not found', { status: 404 });
-    // Public GET /canary is health-only. Never relay unauthenticated HTTP input to Slack.\n    return Response.json({ ok: true, mode: 'health_only', wake_sent: false });
+    // Public GET /canary is health-only. Never relay unauthenticated HTTP input to Slack.
+    return Response.json({ ok: true, mode: 'health_only', wake_sent: false });
   },
 };
