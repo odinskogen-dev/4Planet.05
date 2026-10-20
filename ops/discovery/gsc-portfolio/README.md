@@ -34,6 +34,9 @@ If Google returns \`HTTP 403\` mentioning **API has not been used/enabled in pro
 - [x] Google-owned private readback Sheet and five export tabs created.
 - [x] Source in canonical GitHub repo, isolated branch.
 - [x] Automated contract tests for all-property discovery, read-only scopes, trigger deduplication, fail-closed behaviour, per-property error isolation, formula injection protection.
-- [ ] Founder runs the bound script with existing verified Google account and grants OAuth consent.
-- [ ] Real Google response demonstrates all domain properties in **Properties**.
-- [ ] AXE independently reads/compares sheet and verifies periodic sync receipt.
+- [x] Founder ran **standalone** Apps Script under the existing Search Console owner account and authorised Google OAuth (2026-10-20).
+- [x] Google Search Console API enabled in the existing 4Planet Google Cloud project; standalone Apps Script project linked (project number `826846756755`).
+- [x] Real Google response on 2026-10-20T17:37:17Z returned 20 properties / 20 readable, all `siteOwner`; first snapshot has 20 performance rows, 26 sitemaps, 60 query rows.
+- [x] Daily `sync4PlanetGSC` trigger installed; Apps Script log explicitly reports installation.
+- [x] AXE independently read all five export tabs via connected Google Drive and verified 20 distinct properties, 20 OK performance responses, no diagnostic failures.
+- [ ] Observe next-day scheduled run and verify snapshot freshness; trigger installed but subsequent execution not yet observed.
