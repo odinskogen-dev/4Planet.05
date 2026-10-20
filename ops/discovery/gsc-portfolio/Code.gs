@@ -17,11 +17,57 @@ const GSC4P_TAB_HEADERS = Object.freeze({
   Performance: ["Property URL", "Period start", "Period end", "Google clicks", "Google impressions", "CTR", "Average position", "Status", "Snapshot UTC"],
   Sitemaps: ["Property URL", "Sitemap URL", "Submitted UTC", "Last downloaded UTC", "Warnings", "Errors", "Status", "Snapshot UTC"],
   Queries: ["Property URL", "Search query", "Clicks", "Impressions", "CTR", "Average position", "Period start", "Period end", "Snapshot UTC"],
+  Pages: ["Property URL", "Page URL", "Google clicks", "Google impressions", "CTR", "Average position", "Period start", "Period end", "Snapshot UTC"],
+  PageQueries: ["Property URL", "Page URL", "Search query", "Google clicks", "Google impressions", "CTR", "Average position", "Period start", "Period end", "Snapshot UTC"],
+  URLInspections: ["Property URL", "Inspected URL", "Verdict", "Coverage state", "Google last crawl UTC", "Google canonical", "Declared canonical", "Fetch state", "Robots state", "Indexing state", "Status", "Snapshot UTC"],
   Diagnostics: ["UTC timestamp", "Property URL", "Stage", "Status", "Detail"]
 });
 
 const GSC4P_API = "https://www.googleapis.com";
 const GSC4P_QUERY_MAX = 10;
+const GSC4P_PAGE_MAX = 150;
+const GSC4P_PAGE_QUERY_MAX = 150;
+const GSC4P_INSPECTION_MAX = 3;
+
+// Organisation-only allowlist: the owner's Google account also has unrelated
+// personal/art domains. They MUST NOT be copied into the shared 4PLANET readback.
+const GSC4P_ORG_DOMAINS = Object.freeze([
+  "4brain.app", "4brands.org", "4nation.org", "4planet.org",
+  "4planetatlas.com", "4planetmagazine.com", "4planetmarket.com",
+  "4sapien.com", "4species.com", "cre4tors.com", "n4turetech.com",
+  "oce4n.com", "p4nther.com", "p4nther.org", "pl4net.org",
+  "s4piens.com", "supersapien.org"
+]);
+
+function gsc4pSiteHost_(url) {
+  const value = String(url || "").trim().toLowerCase();
+  if (value.indexOf("sc-domain:") === 0) return value.slice(10).replace(/^www\./, "");
+  const match = /^https?:\/\/(?:www\.)?([^\/:?#]+)/.exec(value);
+  return match ? match[1] : "";
+}
+
+function gsc4pOrgProperty_(url) {
+  return GSC4P_ORG_DOMAINS.indexOf(gsc4pSiteHost_(url)) !== -1;
+}
+
+// Do not persist parameterised or fragment-bearing URLs, personal landing
+// links, authentication paths, or subdomain traffic to the shared readback.
+function gsc4pPublicPage_(raw, property) {
+  const text = String(raw || "").trim();
+  const m = /^https:\/\/(?:www\.)?([^\/?#]+)(\/[^?#]*)?/i.exec(text);
+  if (!m || !gsc4pOrgProperty_("sc-domain:" + m[1])) return "";
+  if (m[1].toLowerCase().replace(/^www\./, "") !== gsc4pSiteHost_(property)) return "";
+  const path = m[2] || "/";
+  if (path.length > 240 || /[<>"'@\\]/.test(path) ||
+      /^\/(?:api|auth|oauth|admin|account|id|os|labs|test|private|checkout|login|saved)(?:\/|$)/i.test(path)) return "";
+  return "https://" + m[1].toLowerCase() + path;
+}
+
+function gsc4pSafeQuery_(raw) {
+  const value = String(raw || "").trim();
+  if (!value || value.length > 160 || /@|eyJ[A-Za-z0-9_-]{10,}\.|(?:access_token|refresh_token|id_token|client_secret)/i.test(value)) return "";
+  return value;
+}
 const GSC4P_QUERY_WINDOW_DAYS = 28;
 const GSC4P_REPORT_LAG_DAYS = 3;
 
@@ -65,10 +111,13 @@ function sync4PlanetGSC() {
   const start = gsc4pDate_(GSC4P_REPORT_LAG_DAYS + GSC4P_QUERY_WINDOW_DAYS - 1);
   const diagnostics = [];
   let readableCount = 0;
-  const entries = sites.siteEntry
-    .filter(function(v) { return v && typeof v.siteUrl === "string"; })
-    .sort(function(a, b) { return a.siteUrl.localeCompare(b.siteUrl); });
-  if (!entries.length) throw new Error("No valid Search Console properties. Kept previous snapshot.");
+  const allEntries = sites.siteEntry.filter(function(v) {
+    return v && typeof v.siteUrl === "string";
+  });
+  const entries = allEntries.filter(function(v) {
+    return gsc4pOrgProperty_(v.siteUrl);
+  }).sort(function(a, b) { return a.siteUrl.localeCompare(b.siteUrl); });
+  if (!entries.length) throw new Error("No approved 4PLANET organisational Search Console properties. Kept previous snapshot.");
 
   entries.forEach(function(site) {
     const url = site.siteUrl; // Preserve GSC's exact sc-domain: or URL-prefix representation.
@@ -114,7 +163,8 @@ function sync4PlanetGSC() {
       feeds.forEach(function(feed) {
         output.Sitemaps.push([
           url, feed.path || "", feed.lastSubmitted || "", feed.lastDownloaded || "",
-          feed.warnings ?? 0, feed.errors ?? 0, feed.isPending ? "PENDING" : "OK", stamp
+          feed.warnings ?? 0, feed.errors ?? 0,
+          Number(feed.errors || 0) > 0 ? "ERRORS" : Number(feed.warnings || 0) > 0 ? "WARNINGS" : feed.isPending ? "PENDING" : "OK", stamp
         ]);
       });
     } catch (error) {
@@ -135,7 +185,66 @@ function sync4PlanetGSC() {
     }
   });
 
-  diagnostics.unshift([stamp, "*", "portfolio-discovery", "OK", "Discovered " + entries.length + " GSC properties; readable " + readableCount + "; time window " + start + ".." + end]);
+  // Fetch two independent Google search views. Page-level metrics are not
+  // derived by summing query rows (Google anonymises rare search queries).
+  entries.filter(function(v) { return v.permissionLevel !== "siteUnverifiedUser"; })
+    .forEach(function(site) {
+      const siteUrl = site.siteUrl;
+      const queryEndpoint = "/webmasters/v3/sites/" + encodeURIComponent(siteUrl) + "/searchAnalytics/query";
+      try {
+        const data = gsc4pFetch_(queryEndpoint, "post", {
+          startDate: start, endDate: end, dimensions: ["page"],
+          searchType: "web", rowLimit: GSC4P_PAGE_MAX, dataState: "final"
+        });
+        const inspectTargets = [];
+        (data.rows || []).forEach(function(row) {
+          const page = gsc4pPublicPage_((row.keys || [])[0], siteUrl);
+          if (!page) return;
+          output.Pages.push([siteUrl, page, row.clicks || 0, row.impressions || 0,
+            row.ctr || 0, row.position || 0, start, end, stamp]);
+          if (inspectTargets.length < GSC4P_INSPECTION_MAX && inspectTargets.indexOf(page) < 0) inspectTargets.push(page);
+        });
+        inspectTargets.forEach(function(page) {
+          try {
+            const inspect = gsc4pFetch_("/v1/urlInspection/index:inspect", "post", {
+              inspectionUrl: page, siteUrl: siteUrl, languageCode: "en-US"
+            });
+            const status = (inspect.inspectionResult || {}).indexStatusResult || {};
+            output.URLInspections.push([siteUrl, page, status.verdict || "UNKNOWN",
+              status.coverageState || "", status.lastCrawlTime || "",
+              gsc4pPublicPage_(status.googleCanonical, siteUrl),
+              gsc4pPublicPage_(status.userCanonical, siteUrl),
+              status.pageFetchState || "", status.robotsTxtState || "",
+              status.indexingState || "", "OK", stamp]);
+          } catch (error) {
+            output.URLInspections.push([siteUrl, page, "", "", "", "", "", "", "", "", "ERROR", stamp]);
+            diagnostics.push([stamp, siteUrl, "url-inspection", "ERROR", gsc4pSafeError_(error)]);
+          }
+        });
+      } catch (error) {
+        diagnostics.push([stamp, siteUrl, "pages", "ERROR", gsc4pSafeError_(error)]);
+      }
+      try {
+        const data = gsc4pFetch_(queryEndpoint, "post", {
+          startDate: start, endDate: end, dimensions: ["page", "query"],
+          searchType: "web", rowLimit: GSC4P_PAGE_QUERY_MAX, dataState: "final"
+        });
+        (data.rows || []).forEach(function(row) {
+          const page = gsc4pPublicPage_((row.keys || [])[0], siteUrl);
+          const query = gsc4pSafeQuery_((row.keys || [])[1]);
+          if (!page || !query) return;
+          output.PageQueries.push([siteUrl, page, query, row.clicks || 0,
+            row.impressions || 0, row.ctr || 0, row.position || 0, start, end, stamp]);
+        });
+      } catch (error) {
+        diagnostics.push([stamp, siteUrl, "page-queries", "ERROR", gsc4pSafeError_(error)]);
+      }
+    });
+
+  diagnostics.unshift([stamp, "*", "portfolio-discovery", "OK",
+    "Google properties discovered " + allEntries.length + "; organisation-only " + entries.length +
+    "; excluded " + (allEntries.length - entries.length) +
+    "; readable " + readableCount + "; window " + start + ".." + end]);
   output.Diagnostics = diagnostics;
 
   // Each owned tab is an export-only readback surface. Preserve format, headers
@@ -144,7 +253,7 @@ function sync4PlanetGSC() {
     gsc4pWriteRows_(workbook.getSheetByName(name), GSC4P_TAB_HEADERS[name], output[name]);
   });
   SpreadsheetApp.flush();
-  const report = { properties: entries.length, readable: readableCount, performanceRows: output.Performance.length, sitemapRows: output.Sitemaps.length, queryRows: output.Queries.length, lastSync: stamp };
+  const report = { discovered: allEntries.length, properties: entries.length, excluded: allEntries.length - entries.length, readable: readableCount, performanceRows: output.Performance.length, sitemapRows: output.Sitemaps.length, queryRows: output.Queries.length, pageRows: output.Pages.length, pageQueryRows: output.PageQueries.length, inspectionRows: output.URLInspections.length, lastSync: stamp };
   Logger.log(JSON.stringify(report));
   return report;
 }
@@ -186,8 +295,8 @@ function gsc4pSafeError_(error) {
 function gsc4pWriteRows_(tab, headers, rows) {
   if (tab.getLastColumn() < headers.length) throw new Error("Insufficient columns: " + tab.getName());
   const existingRows = tab.getMaxRows();
-  if (existingRows > 1) tab.getRange(2, 1, existingRows - 1, headers.length).clearContent();
   if (rows.length > existingRows - 1) tab.insertRowsAfter(existingRows, rows.length - (existingRows - 1));
+  if (existingRows > 1) tab.getRange(2, 1, existingRows - 1, headers.length).clearContent();
   if (rows.length) tab.getRange(2, 1, rows.length, headers.length).setValues(rows.map(function(row) {
     return row.map(function(value) {
       // Search query strings and site names must remain literal cell values:
