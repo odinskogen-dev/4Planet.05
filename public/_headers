@@ -28,3 +28,11 @@
 
 /games/wild-orca/index.html
   Cache-Control: no-store
+
+# P7 exposure candidate: a STATIC text-only public share card, without login,
+# scripts, forms or personal state. All normal pages retain SAMEORIGIN protection.
+/embeds/species/orca.html
+  ! X-Frame-Options
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; frame-ancestors https:; base-uri 'none'; form-action 'none'; object-src 'none'; upgrade-insecure-requests
+  Cache-Control: public, max-age=3600
