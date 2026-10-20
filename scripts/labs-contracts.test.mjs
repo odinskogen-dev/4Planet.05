@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V4_MIXED_PII_FAIL_CLOSED"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V5_AUTHORITY_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
