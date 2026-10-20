@@ -187,7 +187,7 @@ jobs:
           print("SEO_KNOWN_SPECIES_INDEXABLE_LIVE_ONLY_NOINDEX_PASS")
           PY
           # Add only the independent 61 working data objects; never touch Claude's 39.
-          node "$GITHUB_WORKSPACE/ops/species/next61/build-cohort.mjs" --build
+          SPECIES_MEDIA_BASE_URL=https://species-61-review.4planet-05.pages.dev node "$GITHUB_WORKSPACE/ops/species/next61/build-cohort.mjs" --build
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const r=JSON.parse(fs.readFileSync('reports/species-next61/research-report.json'));
@@ -269,16 +269,56 @@ jobs:
             > dist/release-identity.json
           echo "V53_BUILT_TREE=$built_tree" >> "$GITHUB_ENV"
           echo "V53_PAYLOAD_DIGEST=$payload_digest" >> "$GITHUB_ENV"
+          # Noindex is mandatory for every static review origin, never allow
+          # this preview to compete with the 39 original public URLs.
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' > dist/_headers
+          node "$GITHUB_WORKSPACE/ops/species/next61/review-sheet.mjs"
+          test -f dist/_review-next61/index.html
+          test -f dist/_headers
           echo SPECIES_100_CLAUDE_BUILD_CANDIDATE_PASS
+      - name: Deploy candidate to ISOLATED Cloudflare Pages branch (NOT 4species.com)
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          cd ../species-v53-build
+          # Branch preview only. Never deploy or change 4species-router.
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species-61-review --commit-hash "$GITHUB_SHA" --commit-message "SPECIES 61 EDITORIAL PREVIEW ONLY" 2>&1 | tee /tmp/species61-preview.log
+          url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species61-preview.log | head -n 1)
+          test -n "$url"
+          echo "SPECIES61_PREVIEW_URL=$url" >> "$GITHUB_ENV"
+          echo "SPECIES61_ISOLATED_PREVIEW_DEPLOY $url"
+      - name: Browser-neutral preview checks and noindex headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="$SPECIES61_PREVIEW_URL"
+          for slug in red-panda snow-leopard axolotl giant-manta-ray orchid-mantis venus-flytrap dragon-blood-tree; do
+            curl -fsSL --retry 5 --retry-delay 2 --max-time 45 "$origin/$slug" -o /tmp/preview.html
+            grep -Fq "https://4species.com/$slug" /tmp/preview.html
+            curl -fsSL --max-time 30 "$origin/species-data/v1/$slug.json" -o /tmp/profile.json
+            jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01"' /tmp/profile.json >/dev/null
+            image=$(jq -r '.hero.url' /tmp/profile.json)
+            case "$image" in https://species-61-review.4planet-05.pages.dev/assets/species/next61/*) ;; *) echo "Candidate photo not first-party preview $slug"; exit 1;; esac
+            curl -fsSL --max-time 35 "$image" -o /tmp/species-photo.bin
+            test "$(wc -c </tmp/species-photo.bin)" -gt 12000
+            echo "SPECIES61_PREVIEW_PROFILE_IMAGE_OK $slug"
+          done
+          curl -fsSL "$origin/_review-next61/" | grep -q '61 species / original Claude V53'
+          headers=$(curl -fsSI "$origin/_review-next61/" | tr -d '\r')
+          echo "$headers" | grep -qi 'x-robots-tag: noindex'
+          echo SPECIES61_PREVIEW_NO_INDEX_AND_SEVEN_MEDIA_SAMPLES_PASS
       - name: Collect full draft source/preview QA artifacts inside checkout
         if: always()
         shell: bash
         run: |
-          mkdir -p .species-next61-qa
+          mkdir -p species-next61-qa
           for f in reports/species-next61 public/assets/species/next61 public/species-data/v1 dist; do
             src="../species-v53-build/$f"
             if [ -e "$src" ]; then
-              dst=".species-next61-qa/$f"
+              dst="species-next61-qa/$f"
               mkdir -p "$(dirname "$dst")"
               cp -a "$src" "$dst"
             fi
@@ -290,6 +330,6 @@ jobs:
         with:
           name: species-61-claude-v53-draft-100-static-preview
           path: |
-            .species-next61-qa
+            species-next61-qa
           retention-days: 14
           if-no-files-found: warn
