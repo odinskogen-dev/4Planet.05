@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V3_FAIL_CLOSED"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V4_MIXED_PII_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -272,6 +272,21 @@ test("Drive content classifier fails closed on unlabelled sensitive and unknown 
     assert.equal(result.redactedLines,1,line);
     assert.ok(result.categories.includes(category),line);
     assert.ok(!result.content.includes(line),line);
+  }
+});
+
+test("Drive content classifier rejects Gold-returned mixed personal content despite organisational keywords",()=>{
+  const cases=[
+    ["Project update: home address: 14 Oak Street","PERSON"],
+    ["Task: call +47 912 34 567","PERSON"],
+    ["Status: private account PIN: 4821","FINANCE"],
+    ["2: Task | home address: 14 Oak Street | READY","PERSON"]
+  ];
+  for(const [line,category] of cases){
+    const result=classifyContentForIngest(line);
+    assert.equal(result.state,"QUARANTINED",line);
+    assert.equal(result.content,null,line);
+    assert.ok(result.categories.includes(category),line);
   }
 });
 
