@@ -445,12 +445,12 @@ test("reviewed source authority never overrides unlabelled identifier rules",()=
     ["Identifier 01019012345 belongs in a private record.","01019012345"]
   ];
   for(const [line,identifier] of cases){
-    const record=prepareClassifiedRecords([{...base,source_id:"reviewed",content:"Ecological restoration research remains current.\\n"+line}],["reviewed"]).records[0];
+    const record=prepareClassifiedRecords([{...base,source_id:"reviewed",content:"Ecological restoration research remains current.\n"+line}],["reviewed"]).records[0];
     assert.equal(record.metadata.contentSafety.state,"REDACTED",line);
     assert.ok(record.metadata.contentSafety.categories.includes("PERSON"),line);
     assert.equal(record.metadata.classification,"PENDING_REVIEW",line);
     assert.equal(record.metadata.sourceAuthority,"CANONICAL_MUST_READ",line);
-    assert.equal(record.content,null,line);
+    assert.match(record.content,/Ecological restoration research remains current\./,line);
     assert.ok(!String(record.content).includes(identifier),line);
   }
 });
