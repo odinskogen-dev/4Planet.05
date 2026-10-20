@@ -93,10 +93,19 @@ export function prepareClassifiedRecords(records,mustRead=MUST_READ){
   if(result.state==="QUARANTINED")quarantined++;
   const readDepth=result.state==="SAFE"?record.metadata?.readDepth:
    result.state==="REDACTED"?record.metadata?.readDepth+"_REDACTED":"QUARANTINED";
+  const eligibleForGraph=result.state==="SAFE" &&
+    ["CONTENT","SHEET_ROWS"].includes(record.metadata?.readDepth) &&
+    record.metadata?.domain==="4planet" && record.metadata?.tenant===null &&
+    typeof result.content==="string" && result.content.trim().length>0;
   return {...record,content:result.content,
    source_hash:result.content===null?record.source_hash:sha(result.content),
    object_type:result.content===null?"source_inventory":record.object_type,
-   metadata:{...record.metadata,readDepth,contentSafety:{
+   metadata:{...record.metadata,readDepth,
+   // GraphRAG's reviewed-source reader accepts an EXPLICIT classification,
+    // not just a safe path. Fail closed for inventory-only, partially
+    // redacted and quarantined records; never approve unknown source bodies.
+    classification:eligibleForGraph ? "INTERNAL_APPROVED" : "PENDING_REVIEW",
+   contentSafety:{
     version:CONTENT_SAFETY_VERSION,state:result.state,categories:result.categories,
     redactedLines:result.redactedLines,originalHash:result.originalHash
    }}
