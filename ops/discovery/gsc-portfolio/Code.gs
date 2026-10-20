@@ -198,6 +198,10 @@ function sync4PlanetGSC() {
           searchType: "web", rowLimit: GSC4P_PAGE_MAX, dataState: "final"
         });
         const inspectTargets = [];
+        if ((data.rows || []).length >= GSC4P_PAGE_MAX) {
+          diagnostics.push([stamp, siteUrl, "pages-cap", "WARNING",
+            "Top " + GSC4P_PAGE_MAX + " pages returned: may be partial; increase/paginate after runtime quota QA"]);
+        }
         (data.rows || []).forEach(function(row) {
           const page = gsc4pPublicPage_((row.keys || [])[0], siteUrl);
           if (!page) return;
@@ -230,6 +234,10 @@ function sync4PlanetGSC() {
           startDate: start, endDate: end, dimensions: ["page", "query"],
           searchType: "web", rowLimit: GSC4P_PAGE_QUERY_MAX, dataState: "final"
         });
+        if ((data.rows || []).length >= GSC4P_PAGE_QUERY_MAX) {
+          diagnostics.push([stamp, siteUrl, "page-queries-cap", "WARNING",
+            "Top " + GSC4P_PAGE_QUERY_MAX + " page/query pairs returned: Google data may be partial"]);
+        }
         (data.rows || []).forEach(function(row) {
           const page = gsc4pPublicPage_((row.keys || [])[0], siteUrl);
           const query = gsc4pSafeQuery_((row.keys || [])[1]);
