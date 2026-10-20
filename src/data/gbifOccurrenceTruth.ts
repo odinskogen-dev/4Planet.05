@@ -102,12 +102,13 @@ export function gbifOccurrenceProvenance(row: any, retrievedAt: string) {
     licenceUrl,
     datasetKey: text(row?.datasetKey),
     datasetTitle: text(row?.datasetTitle ?? row?.datasetName),
-    publisher: text(row?.publisher ?? row?.publishingOrganizationTitle),
+    publisher: text(row?.publisher) || text(row?.publishingOrganizationTitle),
     rightsHolder: text(row?.rightsHolder),
     institutionCode: text(row?.institutionCode),
-    attributionIdentity: text(
-      row?.publisher ?? row?.publishingOrganizationTitle ?? row?.rightsHolder,
-    ),
+    attributionIdentity:
+      text(row?.publisher) ||
+      text(row?.publishingOrganizationTitle) ||
+      text(row?.rightsHolder),
     publishingOrgKey: text(row?.publishingOrgKey),
     datasetCitation: text(row?.bibliographicCitation),
     datasetDoi: text(row?.datasetDOI ?? row?.datasetDoi),
