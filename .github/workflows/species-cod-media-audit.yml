@@ -1,0 +1,81 @@
+name: 4SPECIES COD MEDIA SOURCE AUDIT (NO DEPLOY)
+on:
+  push:
+    branches: [fix/species-life-first-media-20261021]
+    paths: [.github/workflows/species-cod-media-audit.yml]
+permissions:
+  contents: read
+jobs:
+  audit-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore exact V53 source without writing or deploying
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species/v53/patch/chunk-*.txt | base64 -d | gzip -d > /tmp/species-v53.patch
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/species-v53.patch' | sha256sum -c -
+          git worktree add --detach ../source 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd ../source
+          git apply --check /tmp/species-v53.patch
+          git apply /tmp/species-v53.patch
+          git add -A
+          test "$(git write-tree)" = 818b4ff766d4423cafc1709bda38d164da2b9731
+      - name: List V53 species files and torsk gallery metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../source
+          python3 - <<'PY'
+          import json, pathlib, re
+          d=pathlib.Path('public/species-data/v1')
+          files=sorted(d.glob('*.json'))
+          print('V53_SPECIES_JSON_COUNT',len(files),flush=True)
+          print('V53_SPECIES_SLUGS',';'.join(p.stem for p in files),flush=True)
+          p=d/'atlantic-cod.json'
+          print('V53_COD_EXISTS',p.exists(),flush=True)
+          if p.exists():
+              j=json.loads(p.read_text())
+              for key in ['slug','schema','identity','provenance','hero','gallery','images','photos']:
+                  if key in j: print('V53_COD_'+key.upper(),str(j[key])[:11000],flush=True)
+          for p in pathlib.Path('src').rglob('*'):
+              if not p.is_file() or p.suffix not in {'.ts','.tsx','.js','.mjs'}:continue
+              try:s=p.read_text()
+              except:continue
+              if 'cyclonebill' in s.lower() or 'Tregde' in s:print('BAD_SOURCE_PATH',p,flush=True)
+              if p.name in {'SpeciesTemplate.tsx','SpeciesHome.tsx'}:
+                  print('SOURCE_COMPONENT',p,flush=True)
+                  for i,line in enumerate(s.splitlines()):
+                      if re.search('gallery|hero|photo|media|\.map\(',line,re.I):
+                          print(f'{i+1}: {line[:240]}',flush=True)
+          PY
+      - name: Check public sitemap and cod source read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 35 https://4species.com/sitemap.xml -o /tmp/spec-sitemap.xml
+          python3 - <<'PY'
+          from xml.etree import ElementTree as E
+          root=E.parse('/tmp/spec-sitemap.xml').getroot()
+          urls=[e.text for e in root.iter() if e.tag.endswith('loc') and e.text]
+          print('LIVE_SITEMAP_URLS',len(urls))
+          print('LIVE_SITEMAP_ENTRIES',';'.join(urls))
+          print('LIVE_PROFILE_URLS',sum(x.replace('https://4species.com','') not in {'/','/explore','/quiz','/about'} for x in urls))
+          PY
+          curl -sSL --max-time 30 -D /tmp/cod-head -o /tmp/cod-page https://4species.com/atlantic-cod
+          grep -Ei '^(HTTP|x-robots-tag|x-4species-release|content-type)' /tmp/cod-head || true
+          grep -oEi '<link[^>]+canonical[^>]*>|<meta[^>]+(robots|description)[^>]*>' /tmp/cod-page | head -n 15 || true
+          curl -sSL --max-time 30 -D /tmp/cod-json-head -o /tmp/cod-json https://4species.com/species-data/v1/atlantic-cod.json
+          python3 - <<'PY'
+          import json
+          try:
+              j=json.load(open('/tmp/cod-json'))
+              for k in ['slug','identity','hero','gallery','provenance']:
+                  if k in j:print('LIVE_COD_'+k.upper(),str(j[k])[:11000])
+          except Exception as e:print('LIVE_COD_JSON_UNAVAILABLE',str(e)[:300])
+          PY
+          echo SPECIES_COD_AUDIT_ONLY_COMPLETED
