@@ -28,3 +28,19 @@ test("rights and user-trust boundaries stay explicit", () => {
   assert.doesNotMatch(html, /verified impact|scientifically reviewed|partner|endorsed|approved by/i);
   assert.match(html, /source-linked context/);
 });
+
+
+test("only the inert Orca embed is externally frameable; default site stays protected", () => {
+  const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
+  const global = headers.split("\n/games/wild-orca/*")[0];
+  assert.match(global, /X-Frame-Options: SAMEORIGIN/);
+  assert.match(global, /frame-ancestors 'self'/);
+  const rule = headers.split("/embeds/species/orca.html\n")[1];
+  assert.ok(rule, "specific Orca share-card header rule must exist");
+  assert.match(rule, /! X-Frame-Options/);
+  assert.match(rule, /! Content-Security-Policy/);
+  assert.match(rule, /default-src 'none'/);
+  assert.match(rule, /frame-ancestors https:/);
+  assert.match(rule, /form-action 'none'/);
+  assert.doesNotMatch(rule, /script-src|unsafe-eval|connect-src|frame-src/);
+});
