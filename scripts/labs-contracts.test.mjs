@@ -241,6 +241,18 @@ test("Drive content classifier redacts sensitive body and sheet-cell content des
   assert.deepEqual(mixed.categories,["HEALTH","SECRET"]);
 });
 
+test("organisational BRAIN health wording is not automatically private medical information",()=>{
+  const system=classifyContentForIngest("4PLANET BRAIN health check passed.",{allowReviewedProse:true});
+  assert.equal(system.state,"SAFE");
+  assert.deepEqual(system.categories,[]);
+  const medical=classifyContentForIngest("health: chronic condition",{allowReviewedProse:true});
+  assert.equal(medical.state,"QUARANTINED");
+  assert.ok(medical.categories.includes("HEALTH"));
+  const norwegian=classifyContentForIngest("helse: privat opplysning",{allowReviewedProse:true});
+  assert.equal(norwegian.state,"QUARANTINED");
+  assert.ok(norwegian.categories.includes("HEALTH"));
+});
+
 test("Drive content classifier fail-closes common Gold-returned sensitive variants",()=>{
   const cases=[
     ["health: chronic condition","HEALTH"],
