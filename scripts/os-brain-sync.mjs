@@ -33,11 +33,14 @@ const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
 const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
-const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V6_REVIEWED_RETENTION_FAIL_CLOSED";
+const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V7_UNLABELLED_IDENTIFIERS_FAIL_CLOSED";
 const CONTENT_RULES=Object.freeze([
  {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\b(?:authorization\s*:\s*)?(?:Basic|Bearer)\s+[A-Za-z0-9._~+\/=\/-]{8,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
  {category:"TENANT",pattern:/\btenant(?:_id)?\s*[:=]\s*(?!null\b|none\b|unknown\b)[A-Za-z0-9_-]+|\b(?:private_context|private_profile|personal_brain_record|tenant_private_data)\s*[:=]/i},
  {category:"PERSON",pattern:/\b(?:social security number|national identity number|f[øo]dselsnummer|date of birth|birth date|f[øo]dselsdato|dob|private address|private e-?mail|personal e-?mail|private contact|personal contact|contact details?|email address)\s*[:=]/i},
+ {category:"PERSON",pattern:/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b/i},
+ {category:"PERSON",pattern:/(?<!\d)(?:\+47[\s.-]?)?[49]\d{2}[\s.-]?\d{2}[\s.-]?\d{3}(?!\d)/},
+ {category:"PERSON",pattern:/(?<!\d)(?:0[1-9]|[12]\d|3[01])(?:0[1-9]|1[0-2])\d{7}(?!\d)/},
  {category:"PERSON",pattern:/\b(?:phone|telephone|mobile|telefon|mobilnummer)\b[^\r\n]{0,24}\+?\d[\d\s().-]{6,}\d|\+\d{1,3}(?:[\s().-]*\d){7,14}\b|\b(?:private|personal|home|postal|street)?\s*(?:address|adresse)\s*[:=]|\b\d{1,5}\s+(?:[A-Za-zÆØÅæøå0-9.'-]+\s+){1,5}(?:street|st\.?|road|rd\.?|avenue|ave\.?|lane|ln\.?|boulevard|blvd\.?|drive|dr\.?|way|gate|gata|vei|veien)\b|\b(?:[A-Za-zÆØÅæøå0-9.'-]+\s+){1,5}(?:gate|gata|vei|veien)\s+\d{1,5}\b/i},
  {category:"HEALTH",pattern:/\b(?:diagnosis|diagnose|medical record|health record|health|medical|helse(?:opplysninger|journal)?|medication|medisin(?:er)?|patient(?:en)?|pasient(?:en)?|chronic condition|kronisk tilstand|har diagnosen|uses? medication|bruker medisin(?:er)?)\b/i},
  {category:"FINANCE",pattern:/\b(?:personal debt|private finance|bank account|account number|bankkonto|kontonummer|iban|swift|bic|routing number|tax debt|private investment account)\s*[:=]|\b(?:pin|passcode|account pin|konto[- ]?pin)\s*[:=]?\s*\d{4,8}\b|\b[A-Z]{2}\d{2}(?:[\s-]?[A-Z0-9]){11,30}\b/i},

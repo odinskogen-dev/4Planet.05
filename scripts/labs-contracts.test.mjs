@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V6_REVIEWED_RETENTION_FAIL_CLOSED"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V7_UNLABELLED_IDENTIFIERS_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -427,6 +427,32 @@ test("reviewed canonical authority retains benign prose without weakening unrevi
   assert.equal(prepared[1].metadata.sourceAuthority,"UNREVIEWED_SOURCE");
   assert.equal(prepared[1].content,null);
   assert.equal(classifyContentForIngest(base.content).state,"QUARANTINED");
+});
+
+test("reviewed source authority never overrides unlabelled identifier rules",()=>{
+  const base={
+    mime_type:"application/vnd.google-apps.document",
+    source_url:"https://docs.google.com/document/d/TEST",
+    parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY",
+    source_modified_at:"2026-10-20T00:00:00Z",
+    source_hash:"test",
+    object_type:"source_document",
+    metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}
+  };
+  const cases=[
+    ["Reach the programme team through analyst@example.org.","analyst@example.org"],
+    ["Call 91234567 after the review.","91234567"],
+    ["Identifier 01019012345 belongs in a private record.","01019012345"]
+  ];
+  for(const [line,identifier] of cases){
+    const record=prepareClassifiedRecords([{...base,source_id:"reviewed",content:line}],["reviewed"]).records[0];
+    assert.equal(record.metadata.contentSafety.state,"QUARANTINED",line);
+    assert.ok(record.metadata.contentSafety.categories.includes("PERSON"),line);
+    assert.equal(record.metadata.classification,"PENDING_REVIEW",line);
+    assert.equal(record.metadata.sourceAuthority,"CANONICAL_MUST_READ",line);
+    assert.equal(record.content,null,line);
+    assert.ok(!String(record.content).includes(identifier),line);
+  }
 });
 
 test("reviewed source authority never overrides sensitive-content rules",()=>{
