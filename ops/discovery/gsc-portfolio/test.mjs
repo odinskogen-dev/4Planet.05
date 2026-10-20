@@ -36,7 +36,7 @@ function setup({ failList = false, failPerformance = "" } = {}) {
     getContentText: () => JSON.stringify(body)
   });
   const mock = {
-    SpreadsheetApp: { getActiveSpreadsheet: () => workbook, flush() {} },
+    SpreadsheetApp: { getActiveSpreadsheet: () => null, openById(id) { assert.equal(id, "private-existing-bridge-sheet-id"); return workbook; }, flush() {} },
     ScriptApp: {
       getOAuthToken: () => "secret-access-token",
       getProjectTriggers: () => triggers,
@@ -74,6 +74,7 @@ function setup({ failList = false, failPerformance = "" } = {}) {
         throw new Error("Unexpected URL " + url);
       }
     },
+    PropertiesService: { getScriptProperties() { return { getProperty(key) { assert.equal(key,"GSC4P_SHEET_ID"); return "private-existing-bridge-sheet-id"; } }; } },
     Logger: { log() {} },
     Date, JSON, Error, String, Object, Array, Math
   };
@@ -85,7 +86,8 @@ function setup({ failList = false, failPerformance = "" } = {}) {
 test("Apps Script manifest requests read-only GSC, not write access", () => {
   assert.ok(manifest.oauthScopes.includes("https://www.googleapis.com/auth/webmasters.readonly"));
   assert.ok(!manifest.oauthScopes.includes("https://www.googleapis.com/auth/webmasters"));
-  assert.ok(manifest.oauthScopes.includes("https://www.googleapis.com/auth/spreadsheets.currentonly"));
+  assert.ok(manifest.oauthScopes.includes("https://www.googleapis.com/auth/spreadsheets"));
+  assert.ok(!manifest.oauthScopes.includes("https://www.googleapis.com/auth/drive"));
 });
 
 test("one owner auth discovers all sites dynamically and installs one trigger", () => {
