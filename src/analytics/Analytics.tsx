@@ -303,7 +303,7 @@ function installGoogleTag(id: string, domains: string[]) {
 export function privacySafeEventParameters(parameters: Record<string, string | number | boolean>) {
   const safe: Record<string, string | number | boolean> = {};
   const allowedKeys = new Set([
-    "action_kind", "activation_kind", "analysis_status", "attempts", "auth_method",
+    "action_id", "action_kind", "activation_kind", "analysis_status", "attempts", "auth_method",
     "campaign_id", "canonical_entity", "claim_kind", "completion_type", "confirmation_state",
     "content_group", "country_scope", "creation_kind", "decision_kind", "decision_state",
     "decision_states", "destination", "destination_product", "destination_type",
