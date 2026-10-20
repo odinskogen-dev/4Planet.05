@@ -3,7 +3,7 @@ name: SPECIES 39 Claude Premium Candidate Preview 03
 
 on:
   push:
-    branches: [release/species-39-profiles-20261019]
+    branches: [fix/species-cod-life-first-preview-20261021]
     paths: [.github/workflows/species-39-candidate-preview.yml]
 
 permissions:
@@ -124,6 +124,10 @@ jobs:
           print("SPECIES_PREVIEW_11_CLAUDE_PAGES_STAGED",len(batch["pages"]))
           PY
           python3 "$GITHUB_WORKSPACE/ops/species/v53/premium-wildlife-hotfix.py"
+          # Make the actual life-first cod fix an explicit gate, not a claim.
+          grep -Fq '"atlantic-cod","gray-wolf"' src/pages/integrated/SpeciesTemplate.tsx
+          node --check scripts/species-page-validate.mjs
+          echo SPECIES_COD_CURATED_ONLY_STATIC_PASS
           # Audit Claude's EXISTING per-claim citation records; do not create a source system.
           python3 - <<'PY'
           import json, re
