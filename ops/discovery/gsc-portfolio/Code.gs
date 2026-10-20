@@ -57,7 +57,7 @@ function gsc4pPublicPage_(raw, property) {
   if (/[?#]/.test(text)) return ""; // Parameterised URLs are not safe canonical objects.
   const m = /^https:\/\/(?:www\.)?([^\/?#]+)(\/[^?#]*)?/i.exec(text);
   if (!m || !gsc4pOrgProperty_("sc-domain:" + m[1])) return "";
-  if (m[1].toLowerCase().replace(/^www\./, "") !== gsc4pSiteHost_(property)) return "";
+  if (property && m[1].toLowerCase().replace(/^www\./, "") !== gsc4pSiteHost_(property)) return "";
   const path = m[2] || "/";
   if (path.length > 240 || /[<>"'@\\]/.test(path) ||
       /^\/(?:api|auth|oauth|admin|account|id|os|labs|test|private|checkout|login|saved)(?:\/|$)/i.test(path)) return "";
@@ -213,8 +213,8 @@ function sync4PlanetGSC() {
             const status = (inspect.inspectionResult || {}).indexStatusResult || {};
             output.URLInspections.push([siteUrl, page, status.verdict || "UNKNOWN",
               status.coverageState || "", status.lastCrawlTime || "",
-              gsc4pPublicPage_(status.googleCanonical, siteUrl),
-              gsc4pPublicPage_(status.userCanonical, siteUrl),
+              gsc4pPublicPage_(status.googleCanonical, null),
+              gsc4pPublicPage_(status.userCanonical, null),
               status.pageFetchState || "", status.robotsTxtState || "",
               status.indexingState || "", "OK", stamp]);
           } catch (error) {
