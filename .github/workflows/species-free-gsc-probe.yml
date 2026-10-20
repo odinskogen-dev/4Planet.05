@@ -33,17 +33,20 @@ jobs:
           try:
               from google.oauth2 import service_account
               from google.auth.transport.requests import AuthorizedSession
-              c=service_account.Credentials.from_service_account_info(json.loads(raw),scopes=['https://www.googleapis.com/auth/webmasters.readonly'])
+              identity=json.loads(raw)
+              service_email=identity.get('client_email','UNKNOWN')
+              say('FREE_GSC_SERVICE_ACCOUNT_EMAIL: '+service_email)
+              c=service_account.Credentials.from_service_account_info(identity,scopes=['https://www.googleapis.com/auth/webmasters.readonly'])
               s=AuthorizedSession(c)
               r=s.get('https://www.googleapis.com/webmasters/v3/sites',timeout=25)
               if r.status_code!=200:
-                  say('FREE_GSC: property listing HTTP '+str(r.status_code))
+                  say('FREE_GSC: property listing HTTP '+str(r.status_code)+'; grant the service account listed above access to 4species.com in Search Console')
                   raise SystemExit(0)
               names=[x.get('siteUrl','') for x in r.json().get('siteEntry',[])]
               site=next((x for x in ('sc-domain:4species.com','https://4species.com/') if x in names),None)
               say('FREE_GSC: number of visible properties '+str(len(names)))
               if not site:
-                  say('FREE_GSC: 4species.com not visible to existing Google identity; owner must grant access in FREE native GSC, no paid tool required')
+                  say('FREE_GSC: 4species.com not visible; verify domain property as owner then grant the service-account email above access (Settings > Users and permissions)')
                   raise SystemExit(0)
               say('FREE_GSC: 4species.com ACCESSIBLE '+site)
               endpoint='https://www.googleapis.com/webmasters/v3/sites/'+quote(site,safe='')+'/searchAnalytics/query'
@@ -62,3 +65,34 @@ jobs:
           except Exception as exc:
               say('FREE_GSC: BLOCKED '+type(exc).__name__+'; no paid replacement needed')
           PY
+
+      - name: Verify real 4SPECIES crawl access for Google, Bing and AI search
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from "node:fs";
+          const BASE="https://4species.com";
+          const report=s=>{console.log(s);appendFileSync(process.env.GITHUB_STEP_SUMMARY,s+"\n")};
+          const get=async (pathname,agent)=>fetch(BASE+pathname,{headers:agent?{"user-agent":agent}: {},signal:AbortSignal.timeout(25000)});
+          const robots=await get("/robots.txt");
+          const rules=await robots.text();
+          if(!robots.ok||!rules.includes("Sitemap: https://4species.com/sitemap.xml")||!rules.includes("Allow: /")) throw Error("Crawl policy or sitemap link not healthy");
+          const mapResponse=await get("/sitemap.xml");
+          const xml=await mapResponse.text();
+          if(!mapResponse.ok||!xml.includes("<urlset"))throw Error("Live sitemap not healthy");
+          const urls=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+          if(urls.length<28)throw Error("Species sitemap regression: fewer than 28 released pages");
+          if(urls.some(u=>!u.startsWith(BASE+"/")||u.startsWith(BASE+"/species/")))throw Error("Sitemap contains noncanonical species URLs");
+          report("CRAWL_SITEMAP: HTTP "+mapResponse.status+"; canonical pages="+urls.length);
+          const bots=["Googlebot","Bingbot","OAI-SearchBot","PerplexityBot","Claude-SearchBot","ChatGPT-User"];
+          for(const bot of bots){
+            const agent="Mozilla/5.0 (compatible; "+bot+"/1.0; +https://example.com/crawl-readiness)";
+            const res=await get("/orca",agent);
+            const html=await res.text();
+            const hasCanonical=/<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/4species\.com\/orca["']/i.test(html);
+            const hasNoindex=/<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html)||/noindex/i.test(res.headers.get("x-robots-tag")||"");
+            report("CRAWLER_USER_AGENT: "+bot+" HTTP "+res.status+"; canonical="+hasCanonical+"; noindex="+hasNoindex);
+            if(res.status!==200||!hasCanonical||hasNoindex)throw Error("Crawler readiness regression: "+bot);
+          }
+          report("CRAWL_PROBE_PASS: user-agent test only; does not verify actual crawler IP allowlisting or Google indexing");
+          NODE
