@@ -1,0 +1,58 @@
+name: SPECIES 61 — GBIF + Commons Media Source Audit (NO DEPLOY)
+on:
+  push:
+    branches: [build/species-61-claude-v53-20261021]
+    paths: [.github/workflows/species-61-source-image-audit.yml]
+  pull_request:
+    branches: [release/species-39-20261019]
+    paths:
+      - "ops/species/next61/**"
+      - ".github/workflows/species-61-source-image-audit.yml"
+permissions: { contents: read }
+concurrency: { group: species61-research-only, cancel-in-progress: false }
+jobs:
+  research-and-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Syntax check all six original SPECIES editorial sources
+        run: |
+          set -euo pipefail
+          for f in ops/species/next61/*.mjs; do node --check "$f"; done
+          echo SPECIES61_SOURCE_SYNTAX_OK
+      - name: GBIF species verification + Commons licence and local photograph acquisition
+        run: |
+          set -euo pipefail
+          node ops/species/next61/build-cohort.mjs --build | tee /tmp/species61.log
+          grep -q 'SPECIES61_SUMMARY' /tmp/species61.log
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('reports/species-next61/research-report.json'));
+          if(r.records.length!==61||new Set(r.records.map(x=>x.slug)).size!==61)throw Error('61 unique draft objects expected');
+          if(r.summary.overlapsWithLive!==0)throw Error('Live collision');
+          console.log('SPECIES61_VERIFIED_RESEARCH_COUNTS',JSON.stringify(r.summary));
+          for(const s of r.records){
+            if(!s.jsonCreated||!s.quality.taxon||!s.quality.photosLocal||!s.quality.licenceMetadata)
+              console.log('SPECIES61_BLOCKED',s.slug,JSON.stringify(s.errors));
+          }
+          console.log('SPECIES61_PUBLICATION_LOCKED',r.summary.READY_TO_PUBLISH===0?'YES':'UNKNOWN');
+          NODE
+      - name: Keep rights source manifest and unapproved files as private build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: species61-research-report-and-local-media
+          path: |
+            reports/species-next61
+            public/assets/species/next61
+            public/species-data/v1/*.json
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Enforce no LIVE publish from research branch
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only | grep -E '^ops/discovery/4species-router.js$' | wc -l)" -eq 0
+          echo SPECIES61_NO_CLOUDFLARE_DEPLOY_NO_ROUTER_EDIT
