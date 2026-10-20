@@ -26,7 +26,7 @@ const TOP: { key: PanelKey; to: string }[] = [
 
 const LENSES = [
   ["ATLAS", "SEE THE PLANET", "/atlas"],
-  ["SPECIES", "MEET LIFE", "/species"],
+  ["SPECIES", "MEET LIFE", "https://4species.com"],
   ["LIVING SYSTEMS", "UNDERSTAND CONNECTIONS", "/living-systems"],
   ["IMPACT", "FIND A WAY TO HELP", "/impact"],
 ] as const;
@@ -407,7 +407,7 @@ function Footer() {
           </div>
           <nav style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
             <Link to="/atlas" style={{ ...mono, color: T.ink, textDecoration: "none" }}>ATLAS</Link>
-            <Link to="/species" style={{ ...mono, color: T.ink, textDecoration: "none" }}>SPECIES</Link>
+            <Link to="https://4species.com" style={{ ...mono, color: T.ink, textDecoration: "none" }}>SPECIES</Link>
             <Link to="/about" style={{ ...mono, color: T.ink, textDecoration: "none" }}>ABOUT</Link>
             <Link to="/privacy" style={{ ...mono, color: T.ink, textDecoration: "none" }}>PRIVACY</Link>
           </nav>
