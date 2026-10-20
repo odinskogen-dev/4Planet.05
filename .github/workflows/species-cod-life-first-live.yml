@@ -1,0 +1,101 @@
+name: 4SPECIES Cod Life-First Safe Live Release
+on:
+  push:
+    branches: [fix/species-cod-production-release-20261021]
+    paths: [.github/workflows/species-cod-life-first-live.yml]
+permissions:
+  contents: read
+concurrency:
+  group: 4species-cod-life-first-20261021
+  cancel-in-progress: false
+jobs:
+  controlled-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      NEXT: https://e17e1392.4planet-05.pages.dev
+      OLD_MARKER: species-v53-immutable-bb0c99eb-39-20261019
+      NEW_MARKER: species-v53-immutable-e17e1392-cod-life-first-20261021
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Verify independent four-browser Gold media test and exact new Pages identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          node --check ops/discovery/4species-router.js
+          grep -Fq 'https://e17e1392.4planet-05.pages.dev' ops/discovery/4species-router.js
+          grep -Fq "$NEW_MARKER" ops/discovery/4species-router.js
+          qa=$(curl -fsS --retry 3 --max-time 25 -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/39510998914")
+          jq -e '.conclusion=="success" and .name=="SPECIES Atlantic Cod Life-First Browser Gate" and .head_branch=="fix/species-cod-life-first-preview-20261021"' <<<"$qa" >/dev/null
+          echo INDEPENDENT_CHROME_SAFARI_DESKTOP_MOBILE_QA_SUCCESS
+          curl -fsSL --max-time 25 "$NEXT/release-identity.json" -o /tmp/species-cod-release.json
+          jq -e '.triggerSha=="d4c49f908ad92842dde48f80e8c944e3b0b1446d" and (.builtTree|length)==40 and (.payloadDigest|length)==64 and .expectedBaseTree=="818b4ff766d4423cafc1709bda38d164da2b9731"' /tmp/species-cod-release.json >/dev/null
+          curl -fsSL --max-time 25 "$NEXT/species-data/v1/atlantic-cod.json" |
+            jq -e '.schema=="4PLANET_SPECIES_PAGE_01" and .identity.scientificName=="Gadus morhua" and (.hero.url|contains("Torsk._Cod.jpg")) and (.gallery|length)==0' >/dev/null
+          curl -fsSL --max-time 25 "$NEXT/atlantic-cod" | grep -Fq 'https://4species.com/atlantic-cod'
+          curl -fsSL --max-time 25 "$NEXT/species-sitemap.xml" | grep -Fq '<loc>https://4species.com/atlantic-cod</loc>'
+          curl -fsSL --max-time 25 -D /tmp/prelivehdr -o /dev/null https://4species.com/atlantic-cod
+          grep -Fiq "x-4species-release: $OLD_MARKER" /tmp/prelivehdr || { echo 'LIVE_CHANGED_SINCE_PREFLIGHT_STOP'; exit 1; }
+          echo EXACT_PAGES_CANDIDATE_AND_CURRENT_LIVE_GATE_PASS
+      - name: Read and preserve current Cloudflare Worker rollback version
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          curl -fsS --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" -o /tmp/species-zone.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/species-zone.json)
+          test -n "$account"
+          curl -fsS --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" -o /tmp/species-versions.json
+          old=$(jq -r '.result | (if type=="array" then . else .deployments end) | .[0].versions[] | select(.percentage==100) | .version_id' /tmp/species-versions.json | head -n 1)
+          test -n "$old"
+          echo "ROLLBACK_VERSION=$old" >> "$GITHUB_ENV"
+          echo "SPECIES_OLD_WORKER_VERSION $old"
+      - name: Deploy exact existing 39-species Worker with one changed Pages origin and rollback on failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "COD_LIVE_RELEASE_FAILED_REVERTING_WORKER_TO $ROLLBACK_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+          ready=0
+          for attempt in $(seq 1 15); do
+            code=$(curl -sSL --max-time 25 -D /tmp/live-header -o /tmp/live-cod -w '%{http_code}' https://4species.com/atlantic-cod || true)
+            if [ "$code" = 200 ] && grep -Fiq "x-4species-release: $NEW_MARKER" /tmp/live-header; then ready=1;break;fi
+            sleep 3
+          done
+          test "$ready" = 1
+          grep -Fq 'https://4species.com/atlantic-cod' /tmp/live-cod
+          grep -Fq 'Gadus morhua' /tmp/live-cod
+          if grep -Eiq '^x-robots-tag:[[:space:]]*noindex' /tmp/live-header;then echo WRONG_NOINDEX;exit 1;fi
+          test "$(curl -sS -L -o /dev/null -w '%{http_code}' https://4species.com/species-data/v1/atlantic-cod.json)" = 200
+          curl -fsSL --max-time 25 https://4species.com/species-data/v1/atlantic-cod.json | jq -e '.identity.scientificName=="Gadus morhua" and (.gallery|length)==0' >/dev/null
+          for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw; do
+            curl -fsSL --retry 3 --retry-delay 1 --max-time 30 -D /tmp/hdr "https://4species.com/$slug" -o /tmp/profile.html
+            grep -Fq "https://4species.com/$slug" /tmp/profile.html
+            grep -Fiq "x-4species-release: $NEW_MARKER" /tmp/hdr
+            if grep -Eqi '^x-robots-tag:[[:space:]]*noindex' /tmp/hdr; then echo "NOINDEX_REGRESSION $slug"; exit 1; fi
+            echo "LIVE_PROFILE_OK $slug"
+          done
+          curl -fsSL --max-time 30 https://4species.com/sitemap.xml -o /tmp/live-species-sitemap.xml
+          for slug in orca lion tiger atlantic-cod blue-mussel humpback-whale jaguar; do grep -Fq "<loc>https://4species.com/$slug</loc>" /tmp/live-species-sitemap.xml; done
+          curl -fsSL --max-time 20 https://4species.com/robots.txt | grep -Fq 'Sitemap: https://4species.com/sitemap.xml'
+          trap - ERR
+          echo COD_LIFE_FIRST_AND_ALL_39_PUBLIC_SPECIES_LIVE_PASS
+          {
+            echo "### 4SPECIES cod corrective release"
+            echo "- Production URL: https://4species.com/atlantic-cod"
+            echo "- Preview immutably verified: $NEXT"
+            echo "- New release: $NEW_MARKER"
+            echo "- Rollback worker version: $ROLLBACK_VERSION"
+            echo "- Independent browser QA: https://github.com/odinskogen-dev/4Planet.05/actions/runs/39510998914"
+            echo "- Preservation: all original 39 premium species and canonical sitemap entries"
+          } >> "$GITHUB_STEP_SUMMARY"
