@@ -33,6 +33,17 @@ export async function probe(fetcher,url,type,timeoutMs=14000){
  }catch(err){outcome.state=type==='sitemap'?'WARN':'FAIL';outcome.issues.push('FETCH_ERROR_'+(err.name||'Error'));}
  return outcome;
 }
+/** Machine signal only. Not an AXE or Founder work order. @oppie is the existing COO route word already used by this alert. */
+export const ALERT_HEADER='[GITHUB / PUBLIC-SURFACE-WATCH]\nSIGNAL ONLY — not an AXE work order';
+export function buildAlertText(repository=process.env.GITHUB_REPOSITORY,runId=process.env.GITHUB_RUN_ID){
+ return [
+  ALERT_HEADER,
+  'kind: PUBLIC_SURFACE_MONITOR_FAIL',
+  `event_id: github:${repository}:seo-watch:${runId}`,
+  `source_url: https://github.com/${repository}/actions/runs/${runId}`,
+  '@oppie → existing Monnie/SEO: investigate verified failures on canonical project/lease. No spending, merging or LIVE without authority. Return evidence and NEXT.',
+ ].join('\n');
+}
 export async function check(fetcher=globalThis.fetch){
  const results=[];
  for(const page of pages)results.push(await probe(fetcher,page.url,'page'));
@@ -41,10 +52,14 @@ export async function check(fetcher=globalThis.fetch){
  return {checked_at:new Date().toISOString(),state:failed.length?'FAIL':warnings.length?'WARN':'PASS',failures:failed.length,warnings:warnings.length,results};
 }
 if(process.argv[1]&&import.meta.url===new URL('file://'+process.argv[1]).href){
+ if(process.argv.includes('--alert-text')){
+  console.log(buildAlertText());
+ }else{
  const outcome=await check();console.log(JSON.stringify(outcome,null,2));
  if(process.env.GITHUB_STEP_SUMMARY){
   const fs=await import('node:fs');
   fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,`# 4PLANET public-surface monitor\n\nState: ${outcome.state}; failed ${outcome.failures}, warnings ${outcome.warnings}.\n\n`+outcome.results.map(r=>`- ${r.url}: ${r.state} (${r.code??'network'}) — ${r.issues.join(', ')||'OK'}\n`).join(''));
  }
  if(outcome.failures>0)process.exitCode=1;
+ }
 }

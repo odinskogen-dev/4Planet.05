@@ -41,6 +41,6 @@ jobs:
         run: |
           set -euo pipefail
           test -n "${SLACK_AXE_WEBHOOK_URL:-}"
-          TEXT="$(printf '%s\n' '[AXE / ChatGPT] AXE-JOB-01' 'kind: PUBLIC_SURFACE_MONITOR_FAIL' "event_id: github:${GITHUB_REPOSITORY}:seo-watch:${GITHUB_RUN_ID}" "source_url: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" '@oppie → existing Monnie/SEO: investigate verified failures on canonical project/lease. No spending, merging or LIVE without authority. Return evidence and NEXT.')"
+          TEXT="$(node scripts/axe-public-surface-watch.mjs --alert-text)"
           jq -n --arg text "$TEXT" '{text:$text}' > /tmp/axe-alert.json
           curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error --max-time 20 -H 'Content-Type: application/json' --data-binary @/tmp/axe-alert.json "$SLACK_AXE_WEBHOOK_URL"
