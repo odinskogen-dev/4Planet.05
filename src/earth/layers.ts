@@ -50,7 +50,7 @@ export const gbifLicenceClass = (value) => {
   } catch {
     // Token licences are accepted only when they include an issued version.
   }
-  const normalised = licence.toUpperCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  const normalised = licence.toUpperCase().replace(/\s+/g, " ").trim();
   if (/\b(?:NOT|NO|NON)\b/.test(normalised)) return "REVIEW_REQUIRED";
   const cc0Token = normalised.match(/^(?:CC0|CC ZERO) ([0-9]+(?:\.[0-9]+)?)$/);
   if (cc0Token?.[1] === ISSUED_CC0_VERSION) return "OPEN_CC0";
@@ -126,6 +126,14 @@ export const gbifOccurrencePoint = (record, retrievedAt = new Date().toISOString
   const licenceClass = gbifLicenceClass(record?.license ?? record?.licence);
   if (!["OPEN_CC0", "OPEN_ATTRIBUTION"].includes(licenceClass)) return null;
 
+  const publisher = String(record?.publisher ?? "").trim();
+  const publishingOrganizationTitle = String(record?.publishingOrganizationTitle ?? "").trim();
+  const rightsHolder = String(record?.rightsHolder ?? "").trim();
+  const institutionCode = String(record?.institutionCode ?? "").trim();
+  const datasetCitation = String(record?.datasetCitation ?? "").trim();
+  const attributionIdentity = publisher || publishingOrganizationTitle || rightsHolder;
+  if (licenceClass === "OPEN_ATTRIBUTION" && !attributionIdentity) return null;
+
   const rawUncertainty = record?.coordinateUncertaintyInMeters;
   const parsedUncertainty = rawUncertainty === null || rawUncertainty === undefined || rawUncertainty === ""
     ? null : Number(rawUncertainty);
@@ -141,6 +149,12 @@ export const gbifOccurrencePoint = (record, retrievedAt = new Date().toISOString
     retrievedAt,
     licence: String(record?.license ?? record?.licence ?? "").trim(),
     licenceClass,
+    publisher,
+    publishingOrganizationTitle,
+    rightsHolder,
+    institutionCode,
+    datasetCitation,
+    attributionIdentity,
     datasetTitle: String(record?.datasetTitle ?? record?.datasetName ?? "").trim(),
     datasetIdentifier,
     datasetDoi,
@@ -411,9 +425,11 @@ export const LAYERS = [
         const eventDate = point.eventDate || "UNKNOWN";
         const dataset = point.datasetTitle || point.datasetIdentifier || "UNKNOWN";
         const doi = point.datasetDoi || "UNKNOWN";
+        const attribution = point.attributionIdentity || "UNKNOWN";
+        const citation = point.datasetCitation || "UNKNOWN";
         return {
           lon: point.lon, lat: point.lat, sppKey: point.speciesKey,
-          html: `<b class="nm">${esc(point.scientificName)}</b><br><span class="lat">REPORTED PRESENT · CHORDATA</span><div class="when">EVENT · ${esc(eventDate)}</div><br><span class="lat">COORDINATE UNCERTAINTY · ${esc(uncertainty)} · ${esc(point.geospatialState)}</span><br><span class="lat">DATASET · ${esc(dataset)}</span><br><span class="lat">DOI · ${esc(doi)}</span><br><span class="lat">LICENCE · ${esc(point.licence || "UNKNOWN")} · ${esc(point.licenceClass)}</span><br><span class="lat">RETRIEVED · ${esc(point.retrievedAt)}</span>${occurrenceLink}${datasetLink}`
+          html: `<b class="nm">${esc(point.scientificName)}</b><br><span class="lat">REPORTED PRESENT · CHORDATA</span><div class="when">EVENT · ${esc(eventDate)}</div><br><span class="lat">COORDINATE UNCERTAINTY · ${esc(uncertainty)} · ${esc(point.geospatialState)}</span><br><span class="lat">DATASET · ${esc(dataset)}</span><br><span class="lat">DOI · ${esc(doi)}</span><br><span class="lat">ATTRIBUTION · ${esc(attribution)}</span><br><span class="lat">CITATION · ${esc(citation)}</span><br><span class="lat">LICENCE · ${esc(point.licence || "UNKNOWN")} · ${esc(point.licenceClass)}</span><br><span class="lat">RETRIEVED · ${esc(point.retrievedAt)}</span>${occurrenceLink}${datasetLink}`
         };
       });
     } },

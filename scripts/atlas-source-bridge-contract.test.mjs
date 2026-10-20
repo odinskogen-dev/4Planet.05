@@ -430,6 +430,8 @@ test("routed ATLAS GBIF points preserve presence, zero coordinates and issued-li
     eventDate: "2026-09-30",
     coordinateUncertaintyInMeters: 125,
     datasetTitle: "Verified chordate observations",
+    publisher: "Global Biodiversity Information Facility",
+    datasetCitation: "GBIF occurrence dataset citation",
     datasetKey: "dataset-1",
     datasetID: "10.1234/gbif.dataset",
     occurrenceID: "occurrence-1",
@@ -443,7 +445,24 @@ test("routed ATLAS GBIF points preserve presence, zero coordinates and issued-li
   assert.equal(point.occurrenceStatus, "PRESENT");
   assert.equal(point.coordinateUncertaintyM, 125);
   assert.equal(point.datasetDoi, "10.1234/gbif.dataset");
+  assert.equal(point.publisher, "Global Biodiversity Information Facility");
+  assert.equal(point.datasetCitation, "GBIF occurrence dataset citation");
+  assert.equal(point.attributionIdentity, "Global Biodiversity Information Facility");
   assert.equal(point.retrievedAt, retrievedAt);
+  assert.equal(earthLayersRuntime.gbifOccurrencePoint({
+    ...baseRecord,
+    publisher: undefined,
+    publishingOrganizationTitle: undefined,
+    rightsHolder: undefined,
+  }, retrievedAt), null);
+  const rightsHolderPoint = earthLayersRuntime.gbifOccurrencePoint({
+    ...baseRecord,
+    publisher: undefined,
+    rightsHolder: "Natural History Museum",
+  }, retrievedAt);
+  assert.equal(rightsHolderPoint.publisher, "");
+  assert.equal(rightsHolderPoint.rightsHolder, "Natural History Museum");
+  assert.equal(rightsHolderPoint.attributionIdentity, "Natural History Museum");
 
   assert.ok(earthLayersRuntime.gbifOccurrencePoint({ ...baseRecord, decimalLatitude: 10, decimalLongitude: 0 }, retrievedAt));
   for (const rejected of [
@@ -477,6 +496,9 @@ test("routed ATLAS GBIF points preserve presence, zero coordinates and issued-li
     "CC BY 9.9",
     "CC BY-NC 4.0",
     "CC BY-SA 4.0",
+    "CC-BY 4.0",
+    "CC_BY 4.0",
+    "CC ZERO_1.0",
     "http://creativecommons.org/licenses/by/4.0/legalcode",
     "https://creativecommons.org/publicdomain/zero/9.9/legalcode",
     "https://creativecommons.org/licenses/by/9.9/legalcode",
@@ -520,6 +542,8 @@ test("routed ATLAS GBIF loader fails closed and exposes point evidence", () => {
     "GEOSPATIAL QUALITY UNKNOWN",
     "DATASET ·",
     "DOI ·",
+    "ATTRIBUTION ·",
+    "CITATION ·",
     "LICENCE ·",
     "RETRIEVED ·",
     "Open GBIF record",

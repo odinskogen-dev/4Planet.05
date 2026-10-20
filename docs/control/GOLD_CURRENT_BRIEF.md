@@ -1,3 +1,23 @@
+# ATLAS — GBIF ATTRIBUTION-PROVENANCE BOUNDARY — 20 OCT 2026
+
+**STATUS:** FRESH INDEPENDENT GOLD QA_CORRECT CONSUMED ON SOLE HEIR / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**RETURNED DEFECT:** an issued CC BY token could admit a point without a responsible attribution identity; publisher, publishing-organisation title, rights holder, institution code and dataset citation were then dropped from the projected point and map detail. Token normalisation also widened hyphen/underscore aliases into canonical terms.
+
+**HUMAN VALUE:** a person inspecting an ATLAS occurrence must be able to see who is responsible for attribution and retain the source citation before reusing the record.
+
+**TRUTH BOUNDARY:** an issued licence family/version is necessary but not sufficient for CC BY map admission. The record must also name an explicit publisher, publishing organisation or rights holder. Institution code alone is not treated as a responsible rights identity. CC0 remains a distinct permission state.
+
+**PRESERVATION:** publisher, publishingOrganizationTitle, rightsHolder, institutionCode and datasetCitation remain independent provenance fields. `attributionIdentity` selects the first explicit responsible identity for display without relabelling a rights holder as publisher.
+
+**TOKEN BOUNDARY:** exact whitespace-normalised `CC BY <issued-version>`, `CC0 1.0` or `CC ZERO 1.0` tokens are recognised case-insensitively. Hyphen/underscore aliases remain REVIEW_REQUIRED.
+
+**BASE / ROLLBACK:** `king/test@37e3a0a20f3a459ddaf18d4d47892cfa230f27be`; revert the bounded correction commit to restore the prior candidate.
+
+**MAKER ≠ JUDGE:** Factory corrected the returned defect only. Independent Gold must judge the new exact SHA and actual runtime/source behaviour.
+
+---
+
 # ATLAS — GBIF ISSUED-LICENCE ADMISSION — 20 OCT 2026
 
 **STATUS:** SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
