@@ -68,6 +68,20 @@ function AtlasEmbed({
           referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
+      <div
+        className="editorial-wrap discovery-atlas__fallback"
+        role="note"
+        aria-label="ATLAS embed fallback"
+      >
+        <strong>ATLAS EMBED FALLBACK</strong>
+        <span>If the embedded map is unavailable, open the same governed view in full ATLAS.</span>
+        <a
+          href={href}
+          onClick={() => trackEvent("discovery_atlas_fallback_open", { product_area: "discovery", atlas_title: title })}
+        >
+          OPEN THE SAME VIEW IN FULL ATLAS →
+        </a>
+      </div>
     </section>
   );
 }
