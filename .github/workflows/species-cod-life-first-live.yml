@@ -36,10 +36,12 @@ jobs:
           echo INDEPENDENT_CHROME_SAFARI_DESKTOP_MOBILE_QA_SUCCESS
           curl -fsSL --max-time 25 "$NEXT/release-identity.json" -o /tmp/species-cod-release.json
           jq -e '.triggerSha=="d4c49f908ad92842dde48f80e8c944e3b0b1446d" and (.builtTree|length)==40 and (.payloadDigest|length)==64 and .expectedBaseTree=="818b4ff766d4423cafc1709bda38d164da2b9731"' /tmp/species-cod-release.json >/dev/null
-          curl -fsSL --max-time 25 "$NEXT/species-data/v1/atlantic-cod.json" |
-            jq -e '.schema=="4PLANET_SPECIES_PAGE_01" and .identity.scientificName=="Gadus morhua" and (.hero.url|contains("Torsk._Cod.jpg")) and (.gallery|length)==0' >/dev/null
-          curl -fsSL --max-time 25 "$NEXT/atlantic-cod" | grep -Fq 'https://4species.com/atlantic-cod'
-          curl -fsSL --max-time 25 "$NEXT/species-sitemap.xml" | grep -Fq '<loc>https://4species.com/atlantic-cod</loc>'
+          curl -fsSL --max-time 25 "$NEXT/species-data/v1/atlantic-cod.json" -o /tmp/newcod.json
+          jq -e '.schema=="4PLANET_SPECIES_PAGE_01" and .identity.scientificName=="Gadus morhua" and (.hero.url|contains("Torsk._Cod.jpg")) and (.gallery|length)==0' /tmp/newcod.json >/dev/null
+          curl -fsSL --max-time 25 "$NEXT/atlantic-cod" -o /tmp/newcod.html
+          grep -Fq 'https://4species.com/atlantic-cod' /tmp/newcod.html
+          curl -fsSL --max-time 25 "$NEXT/species-sitemap.xml" -o /tmp/newmap.xml
+          grep -Fq '<loc>https://4species.com/atlantic-cod</loc>' /tmp/newmap.xml
           curl -fsSL --max-time 25 -D /tmp/prelivehdr -o /dev/null https://4species.com/atlantic-cod
           grep -Fiq "x-4species-release: $OLD_MARKER" /tmp/prelivehdr || { echo 'LIVE_CHANGED_SINCE_PREFLIGHT_STOP'; exit 1; }
           echo EXACT_PAGES_CANDIDATE_AND_CURRENT_LIVE_GATE_PASS
@@ -77,7 +79,8 @@ jobs:
           grep -Fq 'Gadus morhua' /tmp/live-cod
           if grep -Eiq '^x-robots-tag:[[:space:]]*noindex' /tmp/live-header;then echo WRONG_NOINDEX;exit 1;fi
           test "$(curl -sS -L -o /dev/null -w '%{http_code}' https://4species.com/species-data/v1/atlantic-cod.json)" = 200
-          curl -fsSL --max-time 25 https://4species.com/species-data/v1/atlantic-cod.json | jq -e '.identity.scientificName=="Gadus morhua" and (.gallery|length)==0' >/dev/null
+          curl -fsSL --max-time 25 https://4species.com/species-data/v1/atlantic-cod.json -o /tmp/livecod.json
+          jq -e '.identity.scientificName=="Gadus morhua" and (.gallery|length)==0' /tmp/livecod.json >/dev/null
           for slug in orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw; do
             curl -fsSL --retry 3 --retry-delay 1 --max-time 30 -D /tmp/hdr "https://4species.com/$slug" -o /tmp/profile.html
             grep -Fq "https://4species.com/$slug" /tmp/profile.html
@@ -87,7 +90,8 @@ jobs:
           done
           curl -fsSL --max-time 30 https://4species.com/sitemap.xml -o /tmp/live-species-sitemap.xml
           for slug in orca lion tiger atlantic-cod blue-mussel humpback-whale jaguar; do grep -Fq "<loc>https://4species.com/$slug</loc>" /tmp/live-species-sitemap.xml; done
-          curl -fsSL --max-time 20 https://4species.com/robots.txt | grep -Fq 'Sitemap: https://4species.com/sitemap.xml'
+          curl -fsSL --max-time 20 https://4species.com/robots.txt -o /tmp/liverobots.txt
+          grep -Fq 'Sitemap: https://4species.com/sitemap.xml' /tmp/liverobots.txt
           trap - ERR
           echo COD_LIFE_FIRST_AND_ALL_39_PUBLIC_SPECIES_LIVE_PASS
           {
