@@ -2,7 +2,7 @@
 
 **Goal:** one free Google-account authorisation (the already-verified GSC owner) -> dynamically list **all** Search Console properties -> daily read-only snapshot into the single Google Sheet that AXE can read using the existing Google Drive connector.
 
-**Destination:** [4PLANET GSC Portfolio Telemetry](https://docs.google.com/spreadsheets/d/1KlA2sDXaZEKNYTAV7UK7bLYD7Ls6-MK1WNbnmDkzKTg/edit). This is a transport/readback surface, **not** another canonical BRAIN or standalone SEO registry. Google Search Console remains the data authority. Keep Google Analytics (GA4) untouched.
+**Destination:** the private Google-owned GSC portfolio readback spreadsheet created for the founder (URL provided privately in ChatGPT; do not publish its file ID in this public repository). This is a transport/readback surface, **not** another canonical BRAIN or standalone SEO registry. Google Search Console remains the data authority. Keep Google Analytics (GA4) untouched.
 
 ## Founder: one-time authorisation (prefer desktop browser)
 
