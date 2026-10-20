@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V5_AUTHORITY_FAIL_CLOSED"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V6_REVIEWED_RETENTION_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -399,4 +399,51 @@ test("GraphRAG approval requires explicit reviewed source authority",()=>{
   assert.equal(prepared[1].metadata.contentSafety.state,"SAFE");
   assert.equal(prepared[1].metadata.classification,"PENDING_REVIEW");
   assert.equal(prepared[1].metadata.sourceAuthority,"UNREVIEWED_SOURCE");
+});
+
+
+test("reviewed canonical authority retains benign prose without weakening unreviewed fail-closed",()=>{
+  const base={
+    mime_type:"application/vnd.google-apps.document",
+    source_url:"https://docs.google.com/document/d/TEST",
+    parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY",
+    source_modified_at:"2026-10-20T00:00:00Z",
+    source_hash:"test",
+    object_type:"source_document",
+    content:"Ecological restoration research will continue across the shared programme.",
+    metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}
+  };
+  const prepared=prepareClassifiedRecords([
+    {...base,source_id:"reviewed"},
+    {...base,source_id:"unreviewed"}
+  ],["reviewed"]).records;
+  assert.equal(prepared[0].metadata.contentSafety.state,"SAFE");
+  assert.equal(prepared[0].metadata.classification,"INTERNAL_APPROVED");
+  assert.equal(prepared[0].metadata.sourceAuthority,"CANONICAL_MUST_READ");
+  assert.equal(prepared[0].content,base.content);
+  assert.equal(prepared[1].metadata.contentSafety.state,"QUARANTINED");
+  assert.deepEqual(prepared[1].metadata.contentSafety.categories,["UNREVIEWED"]);
+  assert.equal(prepared[1].metadata.classification,"PENDING_REVIEW");
+  assert.equal(prepared[1].metadata.sourceAuthority,"UNREVIEWED_SOURCE");
+  assert.equal(prepared[1].content,null);
+  assert.equal(classifyContentForIngest(base.content).state,"QUARANTINED");
+});
+
+test("reviewed source authority never overrides sensitive-content rules",()=>{
+  const base={
+    mime_type:"application/vnd.google-apps.document",
+    source_url:"https://docs.google.com/document/d/TEST",
+    parent_path:"01_ 4PLANET KNOWLEDGE OS/00_ PROJECT LEAD + LLM ENTRY",
+    source_modified_at:"2026-10-20T00:00:00Z",
+    source_hash:"test",
+    object_type:"source_document",
+    content:"Ecological restoration research remains current.\nprivate email: person@example.org",
+    metadata:{readDepth:"CONTENT",domain:"4planet",tenant:null}
+  };
+  const record=prepareClassifiedRecords([{...base,source_id:"reviewed"}],["reviewed"]).records[0];
+  assert.equal(record.metadata.contentSafety.state,"REDACTED");
+  assert.ok(record.metadata.contentSafety.categories.includes("PERSON"));
+  assert.equal(record.metadata.classification,"PENDING_REVIEW");
+  assert.equal(record.metadata.sourceAuthority,"CANONICAL_MUST_READ");
+  assert.doesNotMatch(record.content,/person@example\.org/);
 });
