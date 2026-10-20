@@ -2,7 +2,9 @@ name: SPECIES 61 — GBIF + Commons Media Source Audit (NO DEPLOY)
 on:
   push:
     branches: [build/species-61-claude-v53-20261021]
-    paths: [.github/workflows/species-61-source-image-audit.yml]
+    paths:
+      - "ops/species/next61/**"
+      - ".github/workflows/species-61-source-image-audit.yml"
   pull_request:
     branches: [release/species-39-20261019]
     paths:
