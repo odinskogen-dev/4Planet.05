@@ -3,6 +3,9 @@ on:
   push:
     branches: [audit/species-cloudflare-current-20261021]
     paths: [.github/workflows/species-cloudflare-current-readonly-20261021.yml]
+  pull_request:
+    branches: [king/test]
+    paths: [.github/workflows/species-cloudflare-current-readonly-20261021.yml]
 permissions: { contents: read }
 jobs:
   inspect:
