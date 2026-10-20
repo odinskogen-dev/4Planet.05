@@ -19,23 +19,50 @@ test("keeps useful anonymous product events", () => {
   assert.deepEqual(privacySafeEventParameters(row), row);
 });
 
-test("retains bounded canonical action identity while dropping unsafe action metadata", () => {
+test("retains bounded public IMPACT action, project and actor identity while dropping unsafe metadata", () => {
   const first = privacySafeEventParameters({
     action_id: "action:4p:impact:shared-label:a",
     action_url: "https://example.org/action/a?recipient=person@example.org",
     action_type: "external",
-    project_id: "project:4p:impact:a",
+    project_id: "project:4p:impact:florida-coral-restoration",
+    actor_id: "actor:4p:impact:coral-restoration-foundation",
   });
   const second = privacySafeEventParameters({
     action_id: "action:4p:impact:shared-label:b",
     action_url: "https://example.org/action/b",
     action_type: "external",
-    project_id: "project:4p:impact:b",
+    project_id: "project:4p:impact:bay-of-biscay",
+    actor_id: "P17-A036",
   });
 
-  assert.deepEqual(first, { action_id: "action:4p:impact:shared-label:a" });
-  assert.deepEqual(second, { action_id: "action:4p:impact:shared-label:b" });
+  assert.deepEqual(first, {
+    action_id: "action:4p:impact:shared-label:a",
+    project_id: "project:4p:impact:florida-coral-restoration",
+    actor_id: "actor:4p:impact:coral-restoration-foundation",
+  });
+  assert.deepEqual(second, {
+    action_id: "action:4p:impact:shared-label:b",
+    project_id: "project:4p:impact:bay-of-biscay",
+    actor_id: "P17-A036",
+  });
   assert.notEqual(first.action_id, second.action_id);
+  assert.notEqual(first.project_id, second.project_id);
+  assert.notEqual(first.actor_id, second.actor_id);
+});
+
+test("drops private, tenant and malformed context identifiers", () => {
+  assert.deepEqual(privacySafeEventParameters({
+    actor_id: "person@example.org",
+    project_id: "project:customer:private:123",
+  }), {});
+  assert.deepEqual(privacySafeEventParameters({
+    actor_id: "tenant:private:actor:123",
+    project_id: "project:4p:impact:contains email@example.org",
+  }), {});
+  assert.deepEqual(privacySafeEventParameters({
+    actor_id: 42,
+    project_id: true,
+  }), {});
 });
 
 test("drops credentials, personal values and long free text before GA4/PostHog", () => {
