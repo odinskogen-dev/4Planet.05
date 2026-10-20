@@ -53,6 +53,18 @@ jobs:
           git add -A
           test "$(git write-tree)" = 818b4ff766d4423cafc1709bda38d164da2b9731
           echo CLAUDE_V53_EXACT_BASE_PASS
+      - name: Recover EXACT original 39-profile donor files from pinned successful build
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE=af8c714233dcd002f28f4e1079cdb477ab0a9049
+          git cat-file -e "$SOURCE^{commit}"
+          for f in ops/species/v53/batch-20-original-json.gz.b64 ops/species/v53/batch-11-premium-claude-candidates.json ops/species/v53/premium-wildlife-hotfix.py; do
+            mkdir -p "$(dirname "$f")"
+            git show "$SOURCE:$f" > "$f"
+            test -s "$f"
+          done
+          echo SPECIES_39_PINNED_SOURCE_RECOVERED
       - name: Reconcile AXE proof species and founder-approved wording
         shell: bash
         run: |
@@ -258,15 +270,26 @@ jobs:
           echo "V53_BUILT_TREE=$built_tree" >> "$GITHUB_ENV"
           echo "V53_PAYLOAD_DIGEST=$payload_digest" >> "$GITHUB_ENV"
           echo SPECIES_100_CLAUDE_BUILD_CANDIDATE_PASS
+      - name: Collect full draft source/preview QA artifacts inside checkout
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p .species-next61-qa
+          for f in reports/species-next61 public/assets/species/next61 public/species-data/v1 dist; do
+            src="../species-v53-build/$f"
+            if [ -e "$src" ]; then
+              dst=".species-next61-qa/$f"
+              mkdir -p "$(dirname "$dst")"
+              cp -a "$src" "$dst"
+            fi
+          done
+          echo SPECIES61_ARTIFACT_COPY_COMPLETE
       - name: Preserve full draft build and provenance artifacts (no Cloudflare operation)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: species-61-claude-v53-draft-100-static-preview
           path: |
-            ../species-v53-build/reports/species-next61
-            ../species-v53-build/public/assets/species/next61
-            ../species-v53-build/public/species-data/v1
-            ../species-v53-build/dist
+            .species-next61-qa
           retention-days: 14
           if-no-files-found: warn
