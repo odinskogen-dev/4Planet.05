@@ -312,7 +312,7 @@ function gsc4pWriteRows_(tab, headers, rows) {
     return row.map(function(value) {
       // Search query strings and site names must remain literal cell values:
       // never allow search terms returned by an API to become spreadsheet formulas.
-      return typeof value === "string" && /^[=+@]/.test(value) ? "'" + value : value;
+      return typeof value === "string" && /^[=+@-]/.test(value) ? "'" + value : value;
     });
   }));
 }
