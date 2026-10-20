@@ -44,12 +44,25 @@ const CONTENT_RULES=Object.freeze([
  {category:"LEGAL",pattern:/\b(?:personal legal|legal case|court case|lawsuit|case number)\s*[:=]/i}
  ,{category:"AMBIGUOUS_PRIVATE",pattern:/\b(?:confidential|strictly private|sensitive personal|personally identifiable information|pii)\s*[:=]/i}
 ]);
-const SAFE_ORG_CONTENT=Object.freeze([
- /\b(?:4planet|naturebrain|brain|atlas|species|s4piens|impact|labs)\b/i,
- /\b(?:project|programme|program|portfolio|task|wbs|owner|status|state|goal|scope|authority|receiver|branch|commit|sha|pull request|pr\s*#|issue|workflow|runtime|source|dataset|actor|rights?)\b/i,
- /\b(?:release|deploy|build|test|evidence|proof|gold|judge|maker|next|action|decision|result|learning|risk|dependency|gate|qa|ci|candidate|review|correction|canonical|control|public)\b/i,
- /\b(?:blocked|hold|pending|pass(?:ed)?|fail(?:ed)?|success|ready|done|active|current|verified|accepted|rejected|unknown|not live)\b/i
+// Content is never approved merely because it contains an organisational keyword.
+// Free text is fail-closed; only this bounded control vocabulary plus exact
+// identifiers/SHAs/allowlisted URLs can pass the automatic classifier.
+const SAFE_ORG_WORDS=new Set([
+ "4planet","naturebrain","brain","atlas","species","s4piens","impact","labs",
+ "project","programme","program","portfolio","task","wbs","owner","status","state",
+ "goal","scope","authority","receiver","branch","commit","sha","pull","request",
+ "pr","issue","workflow","runtime","source","dataset","actor","right","rights",
+ "release","deploy","build","test","evidence","proof","gold","judge","maker","next",
+ "action","decision","result","learning","risk","dependency","gate","qa","ci",
+ "candidate","review","correction","canonical","control","public","blocked","hold",
+ "pending","pass","passed","fail","failed","success","ready","done","active",
+ "current","verified","accepted","rejected","unknown","not","live","prepare",
+ "preserve","existing","explicit","exact","reviewed","shared","organisational",
+ "organizational","internal","independent","safe","record","records","content",
+ "the","a","an","and","or","of","to","for","in","on","with","without","by","from",
+ "is","are","was","were","be","been","as","at"
 ]);
+
 const opts={minDelay:80,maxItems:25000,maxContentDocs:110,maxTabs:22};
 function sha(s){return createHash("sha256").update(s).digest("hex");}
 function safeError(e){return e instanceof Error?e.message.replace(/Bearer\s+[^\s]+/g,"[REDACTED]").slice(0,180):"UNKNOWN";}
@@ -61,7 +74,8 @@ function explicitlySafeOrganisationalLine(line){
  if(!body || /^[-=_*#|:\s]+$/.test(body))return true;
  const cells=body.split("|").map(cell=>cell.trim()).filter(Boolean);
  return cells.length>0 && cells.every(cell=>{
-  if(SAFE_ORG_CONTENT.some(pattern=>pattern.test(cell)))return true;
+  const words=cell.toLowerCase().match(/[a-z0-9æøå]+/g)||[];
+  if(words.length>0 && words.every(word=>/^\d+$/.test(word)||SAFE_ORG_WORDS.has(word)))return true;
   if(/^(?:[A-Z][A-Z0-9_]{1,20}(?:-[A-Z0-9_]{1,20})+|[a-f0-9]{40}|(?:QA|CI|PR|SHA|WBS|P0|P1|P2|P3))$/i.test(cell))return true;
   if(/^https:\/\/(?:github\.com|docs\.google\.com|drive\.google\.com|(?:[a-z0-9-]+\.)?4planet(?:atlas)?\.(?:org|com))(?:\/[^?#\s]*)?$/i.test(cell))return true;
   return false;
@@ -94,7 +108,8 @@ export function prepareClassifiedRecords(records,mustRead=MUST_READ){
   if(result.state==="QUARANTINED")quarantined++;
   const readDepth=result.state==="SAFE"?record.metadata?.readDepth:
    result.state==="REDACTED"?record.metadata?.readDepth+"_REDACTED":"QUARANTINED";
-  const eligibleForGraph=result.state==="SAFE" &&
+  const reviewedSource=mustRead.includes(record.source_id);
+  const eligibleForGraph=reviewedSource && result.state==="SAFE" &&
     ["CONTENT","SHEET_ROWS"].includes(record.metadata?.readDepth) &&
     record.metadata?.domain==="4planet" && record.metadata?.tenant===null &&
     record.metadata?.truncated!==true &&
@@ -107,6 +122,7 @@ export function prepareClassifiedRecords(records,mustRead=MUST_READ){
     // not just a safe path. Fail closed for inventory-only, partially
     // redacted and quarantined records; never approve unknown source bodies.
     classification:eligibleForGraph ? "INTERNAL_APPROVED" : "PENDING_REVIEW",
+    sourceAuthority:reviewedSource ? "CANONICAL_MUST_READ" : "UNREVIEWED_SOURCE",
    contentSafety:{
     version:CONTENT_SAFETY_VERSION,state:result.state,categories:result.categories,
     redactedLines:result.redactedLines,originalHash:result.originalHash
