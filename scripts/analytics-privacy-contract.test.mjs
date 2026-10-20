@@ -19,6 +19,25 @@ test("keeps useful anonymous product events", () => {
   assert.deepEqual(privacySafeEventParameters(row), row);
 });
 
+test("retains bounded canonical action identity while dropping unsafe action metadata", () => {
+  const first = privacySafeEventParameters({
+    action_id: "action:4p:impact:shared-label:a",
+    action_url: "https://example.org/action/a?recipient=person@example.org",
+    action_type: "external",
+    project_id: "project:4p:impact:a",
+  });
+  const second = privacySafeEventParameters({
+    action_id: "action:4p:impact:shared-label:b",
+    action_url: "https://example.org/action/b",
+    action_type: "external",
+    project_id: "project:4p:impact:b",
+  });
+
+  assert.deepEqual(first, { action_id: "action:4p:impact:shared-label:a" });
+  assert.deepEqual(second, { action_id: "action:4p:impact:shared-label:b" });
+  assert.notEqual(first.action_id, second.action_id);
+});
+
 test("drops credentials, personal values and long free text before GA4/PostHog", () => {
   const clean = privacySafeEventParameters({
     access_token: "token", refreshToken: "token", idToken: "token",
