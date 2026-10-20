@@ -254,15 +254,31 @@ function sync4PlanetGSC() {
     "Google properties discovered " + allEntries.length + "; organisation-only " + entries.length +
     "; excluded " + (allEntries.length - entries.length) +
     "; readable " + readableCount + "; window " + start + ".." + end]);
+  // Preserve the last known good snapshot of each tab when even one property's
+  // API read for that tab fails. Diagnostics is still refreshed to expose debt.
+  const stageToTab = {
+    performance: "Performance", sitemaps: "Sitemaps", queries: "Queries",
+    pages: "Pages", "page-queries": "PageQueries", "url-inspection": "URLInspections"
+  };
+  const staleTabs = [];
+  diagnostics.forEach(function(row) {
+    const tabName = stageToTab[row[2]];
+    if (row[3] === "ERROR" && tabName && staleTabs.indexOf(tabName) < 0) staleTabs.push(tabName);
+  });
+  staleTabs.forEach(function(name) {
+    diagnostics.push([stamp, "*", "snapshot-write", "HELD",
+      "Preserved prior " + name + " tab because one or more Google API calls failed"]);
+  });
   output.Diagnostics = diagnostics;
 
   // Each owned tab is an export-only readback surface. Preserve format, headers
   // and all other tabs (including START HERE and any existing user content).
   Object.keys(output).forEach(function(name) {
+    if (staleTabs.indexOf(name) >= 0) return;
     gsc4pWriteRows_(workbook.getSheetByName(name), GSC4P_TAB_HEADERS[name], output[name]);
   });
   SpreadsheetApp.flush();
-  const report = { discovered: allEntries.length, properties: entries.length, excluded: allEntries.length - entries.length, readable: readableCount, performanceRows: output.Performance.length, sitemapRows: output.Sitemaps.length, queryRows: output.Queries.length, pageRows: output.Pages.length, pageQueryRows: output.PageQueries.length, inspectionRows: output.URLInspections.length, lastSync: stamp };
+  const report = { discovered: allEntries.length, properties: entries.length, excluded: allEntries.length - entries.length, readable: readableCount, performanceRows: output.Performance.length, sitemapRows: output.Sitemaps.length, queryRows: output.Queries.length, pageRows: output.Pages.length, pageQueryRows: output.PageQueries.length, inspectionRows: output.URLInspections.length, staleTabs: staleTabs, lastSync: stamp };
   Logger.log(JSON.stringify(report));
   return report;
 }
