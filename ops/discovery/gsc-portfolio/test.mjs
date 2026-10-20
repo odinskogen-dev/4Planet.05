@@ -143,13 +143,19 @@ test("failed property listing does not erase previous Sheets snapshot or create 
   assert.equal(o.triggers.length,0);
 });
 
-test("one property failing does not break other properties or export OAuth token", () => {
+test("one property failing preserves the previous complete tab snapshot and exposes diagnostic debt", () => {
   const o=setup({failPerformance:"sc-domain:4planet.org"});
+  const prior=["sc-domain:4planet.org","yesterday","yesterday",5,80,0.0625,8.5,"OK","yesterday"];
+  o.tabs.get("Performance").data.push(prior);
   const report=o.mock.sync4PlanetGSC();
   assert.equal(report.properties,2);
-  assert.ok(o.tabs.get("Performance").data.some(r=>r[0]==="sc-domain:4planet.org"&&r[7]==="ERROR"));
-  assert.ok(o.tabs.get("Performance").data.some(r=>r[0]==="sc-domain:4species.com"&&r[7]==="OK"));
+  assert.ok(report.staleTabs.includes("Performance"));
+  assert.ok(report.staleTabs.includes("Pages"));
+  assert.ok(report.staleTabs.includes("PageQueries"));
+  assert.deepEqual(o.tabs.get("Performance").data[0], prior);
+  assert.ok(o.tabs.get("Sitemaps").data.some(r=>r[0]==="sc-domain:4species.com"&&r[6]==="WARNINGS"));
   assert.ok(o.tabs.get("Diagnostics").data.some(r=>r[1]==="sc-domain:4planet.org"&&r[3]==="ERROR"));
+  assert.ok(o.tabs.get("Diagnostics").data.some(r=>r[2]==="snapshot-write"&&r[3]==="HELD"));
   assert.ok(!JSON.stringify([...o.tabs.values()].map(x=>x.data)).includes("secret-access-token"));
 });
 
