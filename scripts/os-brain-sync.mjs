@@ -33,7 +33,7 @@ const sourceRevision=process.env.OS_SOURCE_SHA||
  execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();
 // Enforce explicit subtree exclusions even INSIDE approved organisation folders.
 const PRIVATE=/odin brain|odin oddekalv|odin private|private root|personal brain|personlig|tenant brain|private person|secrets|credentials|(?:^|[\\/ _-])vault(?:$|[\\/ _-])|code vault|backup|archive|history|recovery|api.?key|password/i;
-const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V5_AUTHORITY_FAIL_CLOSED";
+const CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V6_REVIEWED_RETENTION_FAIL_CLOSED";
 const CONTENT_RULES=Object.freeze([
  {category:"SECRET",pattern:/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:client[_ -]?secret|api[_ -]?key|password|access[_ -]?token|refresh[_ -]?token)\s*[:=]\s*\S+|\b(?:authorization\s*:\s*)?(?:Basic|Bearer)\s+[A-Za-z0-9._~+\/=\/-]{8,}|\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{12,}/i},
  {category:"TENANT",pattern:/\btenant(?:_id)?\s*[:=]\s*(?!null\b|none\b|unknown\b)[A-Za-z0-9_-]+|\b(?:private_context|private_profile|personal_brain_record|tenant_private_data)\s*[:=]/i},
@@ -82,12 +82,12 @@ function explicitlySafeOrganisationalLine(line){
   return false;
  });
 }
-export function classifyContentForIngest(input){
+export function classifyContentForIngest(input,{allowReviewedProse=false}={}){
  const original=String(input??"");
  const categories=new Set();let redactedLines=0;
  const content=original.split(/\r?\n/).map(line=>{
   const found=sensitiveCategories(line);
-  if(!found.length && !explicitlySafeOrganisationalLine(line))found.push("UNREVIEWED");
+  if(!found.length && !allowReviewedProse && !explicitlySafeOrganisationalLine(line))found.push("UNREVIEWED");
   if(!found.length)return line;
   found.forEach(category=>categories.add(category));redactedLines++;
   const rowPrefix=line.match(/^\s*\d+:\s*/)?.[0]||"";
@@ -104,12 +104,12 @@ export function prepareClassifiedRecords(records,mustRead=MUST_READ){
  let redacted=0,quarantined=0;
  const prepared=records.map(record=>{
   if(typeof record.content!=="string")return record;
-  const result=classifyContentForIngest(record.content);
+  const reviewedSource=mustRead.includes(record.source_id);
+  const result=classifyContentForIngest(record.content,{allowReviewedProse:reviewedSource});
   if(result.state==="REDACTED")redacted++;
   if(result.state==="QUARANTINED")quarantined++;
   const readDepth=result.state==="SAFE"?record.metadata?.readDepth:
    result.state==="REDACTED"?record.metadata?.readDepth+"_REDACTED":"QUARANTINED";
-  const reviewedSource=mustRead.includes(record.source_id);
   const eligibleForGraph=reviewedSource && result.state==="SAFE" &&
     ["CONTENT","SHEET_ROWS"].includes(record.metadata?.readDepth) &&
     record.metadata?.domain==="4planet" && record.metadata?.tenant===null &&
