@@ -1,3 +1,21 @@
+# IMPACT — ACTION IDENTITY / LABEL-COLLISION BOUNDARY — 20 OCT 2026
+
+**STATUS:** FRESH NATUREBRAIN SOURCE QA CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**SOURCE FINDING:** sixteen action records currently share one display label while retaining sixteen distinct canonical IDs, source URLs and source-checked action edges. A label is presentation, never identity.
+
+**HUMAN VALUE:** a person following an IMPACT action must reach the exact source-backed route for that action, even when many actions use the same generic call-to-action wording.
+
+**IDENTITY BOUNDARY:** the public CTA carries the canonical action ID, preserves its exact URL and records both in telemetry. No label-keyed deduplication, URL substitution or label-derived identity is permitted.
+
+**TRUTH BOUNDARY:** preserving identity and route does not prove the action is current, delivered, funded, effective or endorsed. Source dates, external live status, evidence and outcome remain separate gates.
+
+**BASE / ROLLBACK:** `king/test@dbe16d4e797345db848a26d61ac5dc97bf5f524b`; revert this bounded page/test/brief commit to restore the prior candidate.
+
+**MAKER ≠ JUDGE:** Factory consumes the source QA only. Independent Gold must judge the exact resulting SHA and runtime/source behaviour.
+
+---
+
 # ATLAS — GBIF ATTRIBUTION-PROVENANCE BOUNDARY — 20 OCT 2026
 
 **STATUS:** FRESH INDEPENDENT GOLD QA_CORRECT CONSUMED ON SOLE HEIR / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

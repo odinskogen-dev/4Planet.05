@@ -91,3 +91,22 @@ test("Impact action exposes an Actor profile only through explicit public author
   assert.match(actionProof, /PUBLIC ACTOR PROFILE NOT AVAILABLE/);
   assert.doesNotMatch(actionProof, /<Link to=\{\`\/actors\/\$\{canonicalActor\.slug\}\`\}/);
 });
+
+
+test("Impact actions retain canonical identity when display labels collide", () => {
+  assert.match(client, /const actionBase = entity\(row\.action\)/);
+  assert.match(client, /action: actionBase \?/);
+  assert.match(page, /data-action-id=\{project\.action\.id\}/);
+  assert.match(page, /href=\{project\.action\.url\}/);
+  assert.match(page, /action_id: project\.action\?\.id/);
+  assert.match(page, /action_url: project\.action\?\.url/);
+  assert.doesNotMatch(page, /new Map<[^>]*>\(.*action.*name/is);
+
+  const sameLabel = [
+    { id: "action:un:restore:001", name: "Learn more", url: "https://example.org/actions/001" },
+    { id: "action:un:restore:002", name: "Learn more", url: "https://example.org/actions/002" },
+  ];
+  const projected = new Map(sameLabel.map((action) => [action.id, action.url]));
+  assert.equal(projected.size, 2);
+  assert.deepEqual([...projected.values()], sameLabel.map((action) => action.url));
+});

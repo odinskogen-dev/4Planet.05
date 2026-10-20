@@ -289,7 +289,7 @@ function ProjectPageBody({ project, payload }: { project: ImpactLanProject; payl
 
           {atlasView && <section className="ilan-profile__section"><span>PLACE / ATLAS_</span><AtlasEmbed view={atlasView} /></section>}
 
-          <section className="ilan-profile__section"><span>ACTION_</span>{project.action?.url ? <a className="ilan-primary-action" href={project.action.url} target="_blank" rel="noreferrer" onClick={() => trackEvent("impact_external_action", { project_id: project.id, action_type: project.action?.action_type || "external" })}>{project.action.name} ↗</a> : <p>No public action route is published in this Gold record.</p>}<p className="ilan-boundary">External actions happen on the organisation’s own site. 4PLANET does not process, receive or claim credit for them in this Gold slice.</p></section>
+          <section className="ilan-profile__section"><span>ACTION_</span>{project.action?.url ? <a className="ilan-primary-action" data-action-id={project.action.id} href={project.action.url} target="_blank" rel="noreferrer" onClick={() => trackEvent("impact_external_action", { project_id: project.id, action_id: project.action?.id || "", action_url: project.action?.url || "", action_type: project.action?.action_type || "external" })}>{project.action.name} ↗</a> : <p>No public action route is published in this Gold record.</p>}<p className="ilan-boundary">External actions happen on the organisation’s own site. 4PLANET does not process, receive or claim credit for them in this Gold slice.</p></section>
 
           <TruthRail payload={payload} />
         </div>
