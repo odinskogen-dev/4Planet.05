@@ -84,7 +84,7 @@ function profile(seed,id,pics){
  const taxonSource={label:"GBIF — "+sci+" accepted taxon",url:id.source};
  const claim=(text,src=source,state="INTERPRETED")=>({text,state,source:src});
  const info=(label,text,src=source)=>({label,text,state:"INTERPRETED",source:src});
- const media=pics.map(p=>({url:p.local,credit:p.artist,licence:p.license,sourcePage:p.sourcePage,
+ const media=pics.map(p=>({url:"https://4species.com"+p.local,credit:p.artist,licence:p.license,sourcePage:p.sourcePage,
   licenseUrl:p.licenceUrl,alt:name+" ("+sci+"); photo identity and composition pending human visual QA",focus:"50% 50%"}));
  return {schema:"4PLANET_SPECIES_PAGE_01",slug,domain:"E4RTH",
   identity:{commonName:name,scientificName:sci,authorship:"Pending authority citation",group},
@@ -96,7 +96,7 @@ function profile(seed,id,pics){
   hero:media[0]||{url:"",credit:"",licence:"UNRESOLVED",sourcePage:"",alt:"Image pending review",focus:"50% 50%"},
   glance:[{label:"Scientific name",value:sci,state:id.good?"KNOWN":"INTERPRETED",source:taxonSource},
     {label:"Life group",value:group,state:"INTERPRETED",source},
-    {label:"Where it lives",value:habitat,state:"INTERPRETED",source}],
+    {label:"Where it lives",value:(habitat.length<=60?habitat:habitat.slice(0,57).replace(/\s+\S*$/,"")+"…"),state:"INTERPRETED",source}],
   story:[
     {kind:"life",eyebrow:"A remarkable life",title:"How it survives",claims:[claim(life),claim(hook)]},
     {kind:"need",eyebrow:"The living web",title:"Why relationships matter",claims:[claim(web)]},
