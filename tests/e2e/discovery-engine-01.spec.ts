@@ -45,3 +45,31 @@ for (const item of CASES) {
     expect(errors).toEqual([]);
   });
 }
+
+test("Discovery Engine 01 keeps the governed ATLAS fallback usable when the embed is blocked", async ({ page }) => {
+  let blockedEmbedRequests = 0;
+  await page.route("https://4planetatlas.com/**", async (route) => {
+    blockedEmbedRequests += 1;
+    await route.abort("blockedbyclient");
+  });
+
+  const response = await page.goto("/now", { waitUntil: "domcontentloaded" });
+  expect(response?.ok()).toBeTruthy();
+  await expect.poll(() => blockedEmbedRequests).toBeGreaterThan(0);
+
+  const fallback = page.getByRole("note", { name: "ATLAS embed fallback" });
+  await expect(fallback).toBeVisible();
+  await expect(fallback).toContainText("If the embedded map is unavailable");
+
+  const fallbackLink = fallback.getByRole("link", { name: /OPEN THE SAME VIEW IN FULL ATLAS/ });
+  await expect(fallbackLink).toBeVisible();
+  const fallbackHref = await fallbackLink.getAttribute("href");
+  expect(fallbackHref).toContain("/atlas?");
+
+  const iframeSrc = await page.locator('iframe[title^="4PLANET ATLAS"]').first().getAttribute("src");
+  const embeddedUrl = new URL(iframeSrc!);
+  const fallbackUrl = new URL(fallbackHref!, page.url());
+  for (const parameter of ["m", "l", "z", "c"]) {
+    expect(embeddedUrl.searchParams.get(parameter)).toBe(fallbackUrl.searchParams.get(parameter));
+  }
+});
