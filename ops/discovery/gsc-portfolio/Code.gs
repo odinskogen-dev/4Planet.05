@@ -54,6 +54,7 @@ function gsc4pOrgProperty_(url) {
 // links, authentication paths, or subdomain traffic to the shared readback.
 function gsc4pPublicPage_(raw, property) {
   const text = String(raw || "").trim();
+  if (/[?#]/.test(text)) return ""; // Parameterised URLs are not safe canonical objects.
   const m = /^https:\/\/(?:www\.)?([^\/?#]+)(\/[^?#]*)?/i.exec(text);
   if (!m || !gsc4pOrgProperty_("sc-domain:" + m[1])) return "";
   if (m[1].toLowerCase().replace(/^www\./, "") !== gsc4pSiteHost_(property)) return "";
@@ -270,7 +271,9 @@ function gsc4pFetch_(resourcePath, method, payload) {
     opts.contentType = "application/json";
     opts.payload = JSON.stringify(payload);
   }
-  const response = UrlFetchApp.fetch(GSC4P_API + resourcePath, opts);
+  const apiOrigin = resourcePath.indexOf("/v1/urlInspection/") === 0
+    ? "https://searchconsole.googleapis.com" : GSC4P_API;
+  const response = UrlFetchApp.fetch(apiOrigin + resourcePath, opts);
   const code = response.getResponseCode();
   const raw = response.getContentText();
   let result = {};
