@@ -10,7 +10,8 @@ import { sciencePacks as stage1SciencePacks } from "./science-claims-stage1.mjs"
 import { scienceStage2 } from "./science-claims-stage2.mjs";
 import { scienceStage3 } from "./science-claims-stage3.mjs";
 import { scienceStage4 } from "./science-claims-stage4.mjs";
-const sciencePacks={...stage1SciencePacks,...scienceStage2,...scienceStage3,...scienceStage4};
+import { scienceStage5 } from "./science-claims-stage5.mjs";
+const sciencePacks={...stage1SciencePacks,...scienceStage2,...scienceStage3,...scienceStage4,...scienceStage5};
 import { wildCommonsCandidates } from "./wild-commons-fallback.mjs";
 
 // Strictly non-live, non-Gold Claude V53 source-data donor. Never alter the 39.
