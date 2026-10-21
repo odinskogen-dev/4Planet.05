@@ -1,0 +1,37 @@
+import fs from "node:fs";
+import path from "node:path";
+import { sciencePacks } from "./science-claims-stage1.mjs";
+
+const dataDir=process.env.SPECIES_DATA_DIR||path.join(process.cwd(),"public/species-data/v1");
+const reportDir=process.env.SPECIES_REPORT_DIR||path.join(process.cwd(),"reports/species-next61");
+const statuses=[];
+for(const [slug,pack] of Object.entries(sciencePacks)){
+ const p=JSON.parse(fs.readFileSync(path.join(dataDir,slug+".json"),"utf8"));
+ const facts=Object.values(p.facts).flat();
+ const sources=pack.claims.map(c=>c.source.url);
+ const issu=[];
+ if(p.slug!==slug||p.provenance.review!=="DRAFT")issu.push("CANDIDATE_STATUS_OR_SLUG");
+ if(pack.claims.length<8||new Set(pack.claims.map(c=>c.text)).size!==pack.claims.length)issu.push("THIN_OR_DUPLICATE_SCIENCE");
+ if(new Set(sources).size<3)issu.push("LESS_THAN_THREE_LINKED_SOURCE_DOCUMENTS");
+ if(new Set(pack.claims.map(c=>c.source.publisher)).size<2)issu.push("INSTITUTIONAL_DIVERSITY_MISSING");
+ for(const c of pack.claims){
+   if(!/^https:\/\//.test(c.source.url))issu.push("NON_CANONICAL_SOURCE_URL_"+c.id);
+   const matches=facts.filter(f=>f.text===c.text&&f.source?.url===c.source.url);
+   if(matches.length!==1)issu.push("SOURCE_CLAIM_NOT_LINKED_EXACTLY_ONCE_"+c.id);
+   if(c.text.length<55)issu.push("THIN_UNDER_55_CHAR_"+c.id);
+ }
+ if(p.provenance.sourceReview==="DONE"||p.provenance.review==="GOLD")issu.push("SELF_ATTESTED_GOLD");
+ statuses.push({slug,factCount:pack.claims.length,sourceDocuments:new Set(sources).size,
+  publishers:new Set(pack.claims.map(c=>c.source.publisher)).size,
+  distinctClaims:new Set(pack.claims.map(c=>c.text)).size,
+  release:"SCIENTIFIC_REVIEW_PENDING",errors:issu});
+ console.log("SPECIES61_SCIENCE_STAGE1 "+JSON.stringify(statuses.at(-1)));
+}
+const summary={checked:statuses.length,scientificStage1Claims:statuses.reduce((x,r)=>x+r.factCount,0),
+ sourceLinks:statuses.reduce((x,r)=>x+r.sourceDocuments,0),
+ scientificallyGold:0,
+ allStage1Valid:statuses.every(r=>!r.errors.length)};
+fs.mkdirSync(reportDir,{recursive:true});
+fs.writeFileSync(path.join(reportDir,"science-stage1-qa.json"),JSON.stringify({summary,statuses},null,2));
+console.log("SPECIES61_SCIENCE_STAGE1_SUMMARY "+JSON.stringify(summary));
+if(!summary.allStage1Valid)process.exitCode=1;
