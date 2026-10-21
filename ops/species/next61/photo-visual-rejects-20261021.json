@@ -318,9 +318,225 @@
       "photoId": 103304895,
       "reason": "Tree too distant, visually bland panorama; fails premium image quality",
       "reviewType": "manual_contact_sheet_red_team_2026-10-21"
+    },
+    {
+      "slug": "fennec-fox",
+      "photoId": 478559237,
+      "reason": "Tiny nocturnal subject lost in dark image; neither species identification nor premium hero meets threshold",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "meerkat",
+      "photoId": 54469010,
+      "reason": "Animal portrait contains automated trail-camera stamp / low quality and visible human intervention uncertainty",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "chinese-pangolin",
+      "photoId": 727620320,
+      "reason": "Human shoe and dark vegetation; live pangolin is not visible",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "sea-otter",
+      "photoId": 216290204,
+      "reason": "A dead otter skull/bone specimen, explicit founder prohibition",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "narwhal",
+      "photoId": 310166353,
+      "reason": "Tiny unidentifiable back of cetacean without visible diagnostic species features",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "beluga-whale",
+      "photoId": 566892169,
+      "reason": "Blurred distant cetacean body in muddy water; cannot reliably identify species visually",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "west-indian-manatee",
+      "photoId": 61186220,
+      "reason": "Stranded large marine mammal with carcass/death appearance; may not be a living free-swimming animal",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "platypus",
+      "photoId": 159363971,
+      "reason": "Unidentifiable submerged shape; not a premium identifiable platypus portrait",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "snowy-owl",
+      "photoId": 177248630,
+      "reason": "City building and decorative bell; no snowy owl visible",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "greater-flamingo",
+      "photoId": 278480100,
+      "reason": "Landscape and sky, no individually discernible greater flamingos",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "axolotl",
+      "photoId": 254456915,
+      "reason": "Humans boating; live axolotl not visible; wrong subject",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "reticulated-python",
+      "photoId": 329649049,
+      "reason": "Image prominently shows dead prey bird in snake coils; no dead animals rule, unsuitable hero",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "saltwater-crocodile",
+      "photoId": 629307582,
+      "reason": "Wading birds are dominant subject, crocodile poorly identifiable in water",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "long-snouted-seahorse",
+      "photoId": 83211001,
+      "reason": "Small seahorse physically held on a person's palm",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "giant-pacific-octopus",
+      "photoId": 78439890,
+      "reason": "Octopus photographed within a container/tank-like enclosure; captivity not excluded",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "coconut-crab",
+      "photoId": 50101419,
+      "reason": "Carcass-looking crab claws/body presented cut/handled; cannot establish a live freely moving animal",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "orchid-mantis",
+      "photoId": 168345086,
+      "reason": "Only a pink blossom is recognisable, not an orchid mantis",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "quokka",
+      "photoId": 32082082,
+      "reason": "Quokkas under built tourist pavilion/picnic table; unnatural context, possible habituation/feeding",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "clouded-leopard",
+      "photoId": 25636346,
+      "reason": "Dead animal skin/pelt or artificial mounted display; cannot be live wild clouded leopard",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "red-fox",
+      "photoId": 339629692,
+      "reason": "Landscape and rocks without visually recognisable red fox",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "fennec-fox",
+      "photoId": 46783558,
+      "reason": "Dark hole/wall with no visible fennec fox",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "chinese-pangolin",
+      "photoId": 34117214,
+      "reason": "Footprints and earth rather than a live pangolin",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "sea-otter",
+      "photoId": 622143772,
+      "reason": "Snow footprints only; no living sea otter in picture",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "west-indian-manatee",
+      "photoId": 460377028,
+      "reason": "Manatee in enclosed/marked water with buoys; cannot prove free-living natural setting",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "common-wombat",
+      "photoId": 473255123,
+      "reason": "Bare burrow with no visually identifiable live wombat",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "tasmanian-devil",
+      "photoId": 114229625,
+      "reason": "Dark animal body in unnatural bare ground, alive/dead not demonstrable; reject conservatively",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "toco-toucan",
+      "photoId": 145999537,
+      "reason": "Tiny birds distant in branches; fails premium recognisable toucan visual",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "greater-flamingo",
+      "photoId": 565766833,
+      "reason": "Flamingos are too distant; insufficient identifiable subject for a premium gallery",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "axolotl",
+      "photoId": 254457389,
+      "reason": "Aquarium/terrarium enclosure with decorative stones; explicit no captive animals",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "saltwater-crocodile",
+      "photoId": 22073105,
+      "reason": "Crocodile body lying apparently immobile on a bank; condition cannot be established from image",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "long-snouted-seahorse",
+      "photoId": 727999458,
+      "reason": "Seahorse photographed in unnatural near-monochrome container-like setting; free-living origin not demonstrated",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "zebrafish",
+      "photoId": 54765392,
+      "reason": "Small fish on artificial mesh/screen; captive/dead context cannot be excluded",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "coconut-crab",
+      "photoId": 354309842,
+      "reason": "Crab beside bowls of captive food in artificial enclosure",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "atlas-moth",
+      "photoId": 139156344,
+      "reason": "Moth wings artificially arranged against a black background; dead or mounted specimen likely",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "orchid-mantis",
+      "photoId": 154459867,
+      "reason": "Only orchid flower visible; mantis absent",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "peacock-spider",
+      "photoId": 588932613,
+      "reason": "Tiny unidentifiable arthropod in foliage, inadequate premium subject clarity",
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
     }
   ],
   "unresolved": "All remaining images still require visual and legal signoff. This list does not mean any other photo is approved.",
-  "visualReviewScope": "112 images inspected for obvious disqualifiers in contact sheets. Surviving candidates still need individual original-resolution inspection, source authenticity, rights, context and independent Gold.",
+  "visualReviewScope": "Second batch all 58 hero + 57 gallery images inspected in six labelled contact sheets. Excluded humans, dead or ambiguity of aliveness, captured/held/enclosed animals, plants/landscapes instead of target animals, too small and low quality visuals. Every surviving image still needs independent original-resolution visual and rights Gold.",
   "lastUpdated": "2026-10-21"
 }
