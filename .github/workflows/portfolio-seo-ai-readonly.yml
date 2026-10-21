@@ -1,0 +1,76 @@
+name: 4PLANET SEO and AI Crawl Portfolio Read-Only Audit
+on:
+  push:
+    branches: [audit/portfolio-seo-ai-20261021]
+    paths: [.github/workflows/portfolio-seo-ai-readonly.yml]
+permissions: {contents: read}
+jobs:
+  live-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - name: Probe live 4PLANET, Living Systems, ATLAS, and connected public surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import concurrent.futures,urllib.request,urllib.error,re,html,json,xml.etree.ElementTree as ET
+          from html.parser import HTMLParser
+          from urllib.parse import urlparse
+          urls=[
+            "https://4planet.org/","https://4planet.org/robots.txt","https://4planet.org/sitemap.xml","https://4planet.org/rss.xml",
+            "https://4planet.org/livingsystems","https://4planet.org/livingsystems/","https://4planet.org/livingsystems/start/","https://4planet.org/livingsystems/ecosystems/",
+            "https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/","https://4planet.org/livingsystems/species/","https://4planet.org/livingsystems/species/western-honey-bee/",
+            "https://4planet.org/livingsystems/dependencies/","https://4planet.org/livingsystems/solutions/","https://4planet.org/livingsystems/decisions/",
+            "https://4planet.org/livingsystems/sources/","https://4planet.org/livingsystems/trust/","https://4planet.org/livingsystems/learning/",
+            "https://4planet.org/atlas","https://4planet.org/atlas/","https://4planet.org/atlas/earth","https://4planet.org/atlas/fires","https://4planet.org/atlas/whales",
+            "https://4planet.org/places","https://4planet.org/place/oslo","https://4planet.org/now","https://4planet.org/impact",
+            "https://4planet.org/domains","https://4planet.org/magazine","https://4planet.org/about","https://4planet.org/404-nonexistent-seo-probe-20261021",
+            "https://4planetatlas.com/","https://4planetatlas.com/robots.txt","https://4planetatlas.com/sitemap.xml","https://4planetatlas.com/place/oslo",
+            "https://4planetatlas.com/place/kenya","https://4planetatlas.com/place/berlin","https://4planetatlas.com/atlas","https://4planetatlas.com/404-nonexistent-seo-probe-20261021",
+            "https://4planetmagazine.com/","https://4planetmagazine.com/robots.txt","https://4planetmagazine.com/sitemap.xml",
+            "https://4nation.org/","https://4nation.org/robots.txt","https://4nation.org/sitemap.xml"
+          ]
+          class H(HTMLParser):
+            def __init__(self):super().__init__();self.title='';self.h1=[];self.canonicals=[];self.metas={};self.links=[];self.jsonld=0;self.t=False;self.h=False
+            def handle_starttag(self,t,attrs):
+              a=dict(attrs)
+              if t=='title':self.t=True
+              if t=='h1':self.h=True
+              if t=='link' and 'canonical' in a.get('rel','').lower():self.canonicals.append(a.get('href'))
+              if t=='meta':
+                k=a.get('name') or a.get('property')
+                if k:self.metas[k.lower()]=a.get('content','')
+              if t=='a' and a.get('href'):self.links.append(a['href'])
+              if t=='script' and a.get('type')=='application/ld+json':self.jsonld+=1
+            def handle_endtag(self,t):
+              if t=='title':self.t=False
+              if t=='h1':self.h=False
+            def handle_data(self,d):
+              if self.t:self.title+=d
+              if self.h:self.h1.append(d)
+          def get(url):
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'4PLANET-ReadOnly-SEO-Audit/1.0 (+https://4planet.org/)'})
+              with urllib.request.urlopen(req,timeout=24) as r:
+                raw=r.read(1400000);kind=r.headers.get('Content-Type','');final=r.url;status=r.status;hdr=dict(r.headers.items())
+              s=raw.decode('utf-8','replace')
+              result={'url':url,'status':status,'final':final,'mime':kind.split(';')[0],'bytes':len(raw),'xrobots':hdr.get('X-Robots-Tag'),'cache':hdr.get('Cache-Control'),'release':hdr.get('X-4species-release')}
+              if 'xml' in kind or url.endswith('sitemap.xml'):
+                try:
+                  tree=ET.fromstring(s)
+                  locs=[n.text for n in tree.iter() if n.tag.endswith('loc') and n.text]
+                  result.update(xmlURLs=len(locs),sample=locs[:12],offhost=len([u for u in locs if urlparse(u).hostname!=urlparse(url).hostname]),unwanted=sum('labs' in u or 'test.' in u for u in locs))
+                except Exception as e:result['xmlError']=str(e)[:90]
+              elif 'text/plain' in kind or url.endswith('robots.txt'):result['body']=s[:1250]
+              elif 'html' in kind:
+                p=H()
+                try:p.feed(s)
+                except:pass
+                result.update(title=p.title[:130],h1=' '.join(p.h1)[:140],canonical=p.canonicals[:3],robots=p.metas.get('robots'),description=p.metas.get('description','')[:160],ogurl=p.metas.get('og:url'),ldjson=p.jsonld,linkCount=len(p.links),internalLinks=len([a for a in p.links if a.startswith('/')]),visibleChars=len(re.sub(r'<[^>]+>',' ',re.sub(r'<script[\s\S]*?</script>','',s,flags=re.I))),shell=('id="root"></div>' in s))
+              return result
+            except Exception as e:return {'url':url,'error':str(e)[:230]}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+            for r in pool.map(get,urls):print('LIVE_SEO_AUDIT '+json.dumps(r,ensure_ascii=False),flush=True)
+          print('LIVE_PORTFOLIO_AUDIT_READ_ONLY_DONE')
+          PY
