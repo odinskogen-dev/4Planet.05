@@ -33,7 +33,7 @@ jobs:
           npm run build
           test -f dist/now/index.html
           test -f dist/livingsystems/index.html
-          test -f dist/atlas/index.html
+          # ATLAS is owned by 4planetatlas.com; 4planet.org/atlas redirects there.
           grep -Fq 'Disallow: /os$' dist/robots.txt
           ! grep -Fxq 'Disallow: /os' dist/robots.txt
           grep -Fq 'https://4planet.org/livingsystems/species/western-honey-bee/' dist/sitemap.xml
@@ -72,7 +72,7 @@ jobs:
             test "$code" = 200
             printf 'EXISTING_LIVE %s sha256=%s bytes=%s\n' "$path" "$(sha256sum "/tmp/live$key"|cut -d' ' -f1)" "$(wc -c < "/tmp/live$key")"
           done
-          for path in now/index.html livingsystems/index.html atlas/index.html; do
+          for path in now/index.html livingsystems/index.html; do
             printf 'CANDIDATE_HTML %s sha256=%s bytes=%s\n' "$path" "$(sha256sum "dist/$path"|cut -d' ' -f1)" "$(wc -c < "dist/$path")"
           done
           if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
