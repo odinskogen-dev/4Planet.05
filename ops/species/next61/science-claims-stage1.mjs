@@ -1,4 +1,4 @@
-// Original source-linked editorial facts. Question headings reflect actual sourced species facts, not fake FAQ rich results.
+// Source-linked original science; physical narrative correctly categorised as appearance. No IUCN restricted dataset reproduced.
 export const sciencePacks = {
   "koala": {
     "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
@@ -31,7 +31,7 @@ export const sciencePacks = {
       },
       {
         "id": "koala-sci-03",
-        "category": "physical",
+        "category": "appearance",
         "label": "A tree-dwelling marsupial",
         "text": "The Australian Government reports adult koalas weighing approximately four to fifteen kilograms, varying substantially between northern and southern populations.",
         "source": {
@@ -140,7 +140,7 @@ export const sciencePacks = {
       },
       {
         "id": "peregrine-falcon-sci-03",
-        "category": "physical",
+        "category": "appearance",
         "label": "How fast is a peregrine falcon?",
         "text": "A peregrine can achieve exceptional speed in a hunting stoop, but an individual dive speed is not a universal cruising speed.",
         "source": {
@@ -179,7 +179,7 @@ export const sciencePacks = {
       },
       {
         "id": "peregrine-falcon-sci-06",
-        "category": "physical",
+        "category": "appearance",
         "label": "Strong visual identification",
         "text": "Adult peregrines typically show long, pointed wings and a dark facial pattern; age and geographical variation matter.",
         "source": {
@@ -249,7 +249,7 @@ export const sciencePacks = {
       },
       {
         "id": "venus-flytrap-sci-03",
-        "category": "physical",
+        "category": "appearance",
         "label": "How does a Venus flytrap close?",
         "text": "Experiments show electrical and mechanical signalling contribute to the closing response when sensitive hairs on a trap are stimulated.",
         "source": {
@@ -262,7 +262,7 @@ export const sciencePacks = {
       },
       {
         "id": "venus-flytrap-sci-04",
-        "category": "physical",
+        "category": "appearance",
         "label": "Fast but not instantaneous thought",
         "text": "The flytrap's rapid movement reflects stored mechanical energy and tissue processes, not a nervous system like that of an animal.",
         "source": {
@@ -332,7 +332,7 @@ export const sciencePacks = {
     "claims": [
       {
         "id": "giant-manta-ray-sci-01",
-        "category": "physical",
+        "category": "appearance",
         "label": "How big can giant manta rays get?",
         "text": "The giant oceanic manta ray can reach around seven metres in disc width; maximum size observations vary by source and are not typical adult size.",
         "source": {
@@ -385,12 +385,12 @@ export const sciencePacks = {
       {
         "id": "giant-manta-ray-sci-05",
         "category": "ecology",
-        "label": "Slow reproduction increases vulnerability",
-        "text": "Giant manta rays have very low reproductive output, so recovery from heavy fishing pressure can be slow.",
+        "label": "Slow reproduction raises risk",
+        "text": "Giant manta rays have a low rate of reproduction, increasing their vulnerability to sustained fishing mortality.",
         "source": {
-          "label": "IUCN Red List assessment — Slow reproduction increases vulnerability",
-          "url": "https://doi.org/10.2305/IUCN.UK.2022-1.RLTS.T198921A214397182.en",
-          "publisher": "IUCN Red List assessment",
+          "label": "NOAA Fisheries — Species biology",
+          "publisher": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/giant-manta-ray",
           "verifiedOn": "2026-10-21"
         },
         "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
@@ -398,12 +398,12 @@ export const sciencePacks = {
       {
         "id": "giant-manta-ray-sci-06",
         "category": "conservation",
-        "label": "Are giant manta rays endangered?",
-        "text": "The IUCN's global assessment lists Mobula birostris as Endangered; NOAA's separate U.S. Endangered Species Act listing is Threatened.",
+        "label": "US protection and global status",
+        "text": "The U.S. Endangered Species Act lists the giant manta ray as Threatened. This national legal listing must not be confused with global conservation assessments.",
         "source": {
-          "label": "IUCN Red List assessment — Are giant manta rays endangered?",
-          "url": "https://doi.org/10.2305/IUCN.UK.2022-1.RLTS.T198921A214397182.en",
-          "publisher": "IUCN Red List assessment",
+          "label": "NOAA Fisheries — Giant manta ray ESA listing",
+          "publisher": "NOAA Fisheries",
+          "url": "https://www.fisheries.noaa.gov/species/giant-manta-ray",
           "verifiedOn": "2026-10-21"
         },
         "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
@@ -877,7 +877,7 @@ export const sciencePacks = {
     "claims": [
       {
         "id": "giant-sequoia-sci-01",
-        "category": "physical",
+        "category": "appearance",
         "label": "How big can giant sequoias get?",
         "text": "Giant sequoias are among the world's largest organisms by wood volume and can live for thousands of years.",
         "source": {
