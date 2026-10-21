@@ -7,6 +7,7 @@ import { reptiles } from "./reptiles.mjs";
 import { fishes } from "./fishes.mjs";
 import { invertebratesPlants } from "./invertebrates-plants.mjs";
 import { sciencePacks } from "./science-claims-stage1.mjs";
+import { wildCommonsCandidates } from "./wild-commons-fallback.mjs";
 
 // Strictly non-live, non-Gold Claude V53 source-data donor. Never alter the 39.
 const seeds=[...mammals,...birds,...reptiles,...fishes,...invertebratesPlants];
@@ -255,13 +256,18 @@ for(let i=0;i<seeds.length;i++){
   // A Wikipedia lead image with unknown captivity status is NOT an animal hero.
   const animal=s[3]!=="Plants";
   img=await inatImages(s[2]);
+  if(animal&&img.length<2){
+    try{const fallback=await wildCommonsCandidates(slug,load);
+      img=[...fallback,...img].slice(0,8);
+    }catch(e){row.errors.push("SOURCE_CURATED_COMMONS "+e.message);}
+  }
   if(!animal) {
     try {
       const wiki=await wikiLeadPhoto(s[2]);
       if(wiki)img=[wiki,...img.filter(p=>p.original!==wiki.original)];
     }catch(e){row.errors.push("PLANT_WIKIPEDIA_LEAD "+e.message);}
   }
-  if(animal&&img.some(p=>p.captive!==false||p.observationQuality!=="RESEARCH_GRADE"))
+  if(animal&&img.some(p=>p.captive!==false||!["RESEARCH_GRADE","AUTHOR_WILD_CONTEXT_ATTESTED"].includes(p.observationQuality)))
     throw Error("LIVE_WILD_ANIMAL_PROVENANCE_FAIL: "+slug);
   if(img.length<2)row.errors.push("LESS_THAN_TWO_VERIFIABLE_IMAGE_CANDIDATES");
   if(!img.length)row.errors.push("NO_PHOTOS_MATCHING_SOURCE_AND_RIGHTS_GATES");
