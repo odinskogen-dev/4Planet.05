@@ -97,46 +97,65 @@ async function wikiLeadPhoto(scientific){
 }
 
 async function inatImages(scientific){
- const params=new URLSearchParams({
-   taxon_name:scientific,quality_grade:"research",captive:"false",photos:"true",
-   photo_license:"cc0,cc-by,cc-by-sa",per_page:"100",order:"desc",order_by:"votes"
- });
- const response=await load("https://api.inaturalist.org/v1/observations?"+params.toString());
- const accepted=[];
- const licenceUrls={"cc0":"https://creativecommons.org/publicdomain/zero/1.0/",
-  "cc-by":"https://creativecommons.org/licenses/by/4.0/",
-  "cc-by-sa":"https://creativecommons.org/licenses/by-sa/4.0/"};
- const seen=new Set();
- for(const observation of response.results||[]){
-  const name=observation.taxon?.name;
-  // NEVER use images of genus-only or a different species or even a parent species aggregate.
-  if(normal(name)!==normal(scientific)||
-     observation.quality_grade!=="research"||
-     observation.captive===true||
-     observation.taxon?.rank!=="species")continue;
-  for(const photo of observation.photos||[]){
-   const license=String(photo.license_code||"").toLowerCase();
-   if(!licenceUrls[license]||!photo.id||!photo.url||seen.has(photo.id)||rejectedPhotoIds.has(Number(photo.id)))continue;
-   seen.add(photo.id);
-   const credit=clean(photo.attribution || observation.user?.name || observation.user?.login);
-   if(!credit)continue;
-   const sourcePage="https://www.inaturalist.org/photos/"+photo.id;
-   const observationPage="https://www.inaturalist.org/observations/"+observation.id;
-   const photoUrl=photo.url.replace(/\/(?:square|thumb|small|medium|large|original)\./,
-     "/original.");
-   if(!/^https:\/\//.test(photoUrl))continue;
-   // These are correctly identified research-grade wild observation photos,
-   // but automated QA does NOT confirm visual composition, fidelity or current copyright ownership.
-   accepted.push({name:"Research-grade wild observation: "+scientific+" (#"+observation.id+")",
-    sourcePage,observationPage,original:photoUrl,thumbnail:photoUrl,artist:credit,
-    license:license==="cc0"?"CC0 1.0":license==="cc-by"?"CC BY 4.0":"CC BY-SA 4.0",
-    licenceUrl:licenceUrls[license],photoId:photo.id,observationId:observation.id,
-    observedTaxon:scientific,observationQuality:"RESEARCH_GRADE",captive:false,
-    provenance:"iNaturalist specimen-identified research-grade observation and separately licensed photo"});
-   if(accepted.length>=8)return accepted;
+  const accepted=[];
+  const licenceUrls={"cc0":"https://creativecommons.org/publicdomain/zero/1.0/",
+   "cc-by":"https://creativecommons.org/licenses/by/4.0/",
+   "cc-by-sa":"https://creativecommons.org/licenses/by-sa/4.0/"};
+  const seenPhotos=new Set();
+  const seenObservations=new Set();
+  // Search multiple pages only when the first cannot supply sufficient
+  // independently observed animals. Never recycle the same observation as
+  // separate scientific/media evidence.
+  for(let page=1;page<=5&&accepted.length<6;page++){
+    const params=new URLSearchParams({
+      taxon_name:scientific,quality_grade:"research",captive:"false",
+      photos:"true",photo_license:"cc0,cc-by,cc-by-sa",
+      per_page:"100",page:String(page),order:"desc",
+      order_by:page===1?"votes":"created_at"
+    });
+    let response;
+    try {response=await load("https://api.inaturalist.org/v1/observations?"+params.toString());}
+    catch(err){ if(page===1)throw err;break; }
+    if(!response.results?.length)break;
+    for(const observation of response.results){
+      const name=observation.taxon?.name;
+      if(normal(name)!==normal(scientific)||
+        observation.quality_grade!=="research"||
+        observation.captive!==false||
+        observation.taxon?.rank!=="species"||
+        seenObservations.has(observation.id))continue;
+      // Ignore observation photos when the observation shows a preserved,
+      // dead, collected or captive organism in its metadata.
+      const text=(observation.description||"")+" "+
+        (observation.annotations||[]).map(x=>JSON.stringify(x)).join(" ");
+      if(/taxiderm|museum specimen|preserved specimen|dead animal|dead specimen|found dead|roadkill|stranded dead|carcass|remains of/i.test(text))continue;
+      const photo=(observation.photos||[]).find(p=>
+        p.id&&p.url&&licenceUrls[String(p.license_code||"").toLowerCase()]&&
+        !seenPhotos.has(p.id)&&!rejectedPhotoIds.has(Number(p.id)));
+      if(!photo)continue;
+      const license=String(photo.license_code).toLowerCase();
+      const credit=clean(photo.attribution || observation.user?.name || observation.user?.login);
+      if(!credit)continue;
+      const photoUrl=photo.url.replace(/\/(?:square|thumb|small|medium|large|original)\./,"/original.");
+      if(!/^https:\/\//.test(photoUrl))continue;
+      seenPhotos.add(photo.id);
+      seenObservations.add(observation.id);
+      accepted.push({
+        name:"Wild, research-grade field observation of "+scientific,
+        sourcePage:"https://www.inaturalist.org/photos/"+photo.id,
+        observationPage:"https://www.inaturalist.org/observations/"+observation.id,
+        original:photoUrl,thumbnail:photoUrl,artist:credit,
+        license:license==="cc0"?"CC0 1.0":license==="cc-by"?"CC BY 4.0":"CC BY-SA 4.0",
+        licenceUrl:licenceUrls[license],photoId:photo.id,
+        observationId:observation.id,observedTaxon:scientific,
+        observationQuality:"RESEARCH_GRADE",captive:false,
+        review:"HUMAN_WILD_ALIVE_AND_VISUAL_GOLD_PENDING",
+        provenance:"Independent wild field observation, separate photograph licence"
+      });
+      if(accepted.length>=6)break;
+    }
   }
- }
- return accepted;
+  return accepted;
 }
 
 async function images(scientific,common){
