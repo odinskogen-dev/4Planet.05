@@ -8,6 +8,7 @@ const client = fs.readFileSync("src/impact/livingActionNetworkClient.ts", "utf8"
 const router = fs.readFileSync("src/routes/router.tsx", "utf8");
 const manifest = JSON.parse(fs.readFileSync("src/data/impactDiscovery.json", "utf8"));
 const prerender = fs.readFileSync("scripts/prerender-discovery-seo.mjs", "utf8");
+const analytics = fs.readFileSync("src/analytics/Analytics.tsx", "utf8");
 
 test("Impact runtime reads the existing NATUREBRAIN projection", () => {
   assert.match(client, /impact_lan_gold_v01/);
@@ -109,6 +110,18 @@ test("Impact actions retain canonical identity when display labels collide", () 
   const projected = new Map(sameLabel.map((action) => [action.id, action.url]));
   assert.equal(projected.size, 2);
   assert.deepEqual([...projected.values()], sameLabel.map((action) => action.url));
+});
+
+test("Impact action telemetry keeps canonical identity and rejects raw destination URLs", () => {
+  const allowlist = analytics.match(/const allowedKeys = new Set\(\[([\s\S]*?)\]\);/);
+  assert.ok(allowlist, "analytics allowlist must remain explicit");
+
+  assert.match(page, /action_id: project\.action\?\.id/);
+  assert.match(page, /action_url: project\.action\?\.url/);
+  assert.match(allowlist[1], /"action_id"/);
+  assert.doesNotMatch(allowlist[1], /"action_url"/);
+  assert.match(analytics, /if \(!allowedKeys\.has\(key\)/);
+  assert.match(analytics, /privacySafeEventParameters\(\{/);
 });
 
 test("Impact information routes fail closed outside action telemetry", () => {
