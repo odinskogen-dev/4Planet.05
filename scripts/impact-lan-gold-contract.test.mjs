@@ -110,3 +110,16 @@ test("Impact actions retain canonical identity when display labels collide", () 
   assert.equal(projected.size, 2);
   assert.deepEqual([...projected.values()], sameLabel.map((action) => action.url));
 });
+
+test("Impact information routes fail closed outside action telemetry", () => {
+  assert.match(page, /project\.action\?\.action_type === "external_support"/);
+  assert.match(page, /actionSectionLabel = actionIsSupport \? "ACTION_" : "SOURCE \/ LEARN_"/);
+  assert.match(page, /actionEventName = actionIsSupport \? "impact_external_action" : "impact_external_information"/);
+  assert.match(page, /data-route-kind=\{actionIsSupport \? "support" : "information"\}/);
+  assert.match(page, /It is not a participation, support, contribution, delivery, outcome or impact route/);
+
+  const classify = (actionType) => actionType === "external_support" ? "ACTION" : "INFORMATION";
+  assert.equal(classify("external_support"), "ACTION");
+  assert.equal(classify("external_information"), "INFORMATION");
+  assert.equal(classify("unexpected_future_type"), "INFORMATION");
+});

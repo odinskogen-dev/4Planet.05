@@ -238,6 +238,12 @@ export function ImpactLivingActionNetwork() {
 function ProjectPageBody({ project, payload }: { project: ImpactLanProject; payload: ImpactLanPayload }) {
   const actorSlug = project.actor ? impactActorSlug(project.actor.id) : "";
   const citations = project.evidence.map((item) => item.source_url).filter((url): url is string => Boolean(url));
+  const actionIsSupport = project.action?.action_type === "external_support";
+  const actionSectionLabel = actionIsSupport ? "ACTION_" : "SOURCE / LEARN_";
+  const actionEventName = actionIsSupport ? "impact_external_action" : "impact_external_information";
+  const actionBoundary = actionIsSupport
+    ? "External support happens on the organisation’s own site. 4PLANET does not process, receive or claim credit for it in this Gold slice."
+    : "This link opens official source context. It is not a participation, support, contribution, delivery, outcome or impact route.";
   const atlasView = project.atlas_place_id ? {
     kind: "IMPACT" as const,
     title: project.place?.name || project.name,
@@ -289,7 +295,7 @@ function ProjectPageBody({ project, payload }: { project: ImpactLanProject; payl
 
           {atlasView && <section className="ilan-profile__section"><span>PLACE / ATLAS_</span><AtlasEmbed view={atlasView} /></section>}
 
-          <section className="ilan-profile__section"><span>ACTION_</span>{project.action?.url ? <a className="ilan-primary-action" data-action-id={project.action.id} href={project.action.url} target="_blank" rel="noreferrer" onClick={() => trackEvent("impact_external_action", { project_id: project.id, action_id: project.action?.id || "", action_url: project.action?.url || "", action_type: project.action?.action_type || "external" })}>{project.action.name} ↗</a> : <p>No public action route is published in this Gold record.</p>}<p className="ilan-boundary">External actions happen on the organisation’s own site. 4PLANET does not process, receive or claim credit for them in this Gold slice.</p></section>
+          <section className="ilan-profile__section"><span>{actionSectionLabel}</span>{project.action?.url ? <a className="ilan-primary-action" data-action-id={project.action.id} data-route-kind={actionIsSupport ? "support" : "information"} href={project.action.url} target="_blank" rel="noreferrer" onClick={() => trackEvent(actionEventName, { project_id: project.id, action_id: project.action?.id || "", action_url: project.action?.url || "", action_type: project.action?.action_type || "unknown" })}>{project.action.name} ↗</a> : <p>No public support or source route is published in this Gold record.</p>}<p className="ilan-boundary">{actionBoundary}</p></section>
 
           <TruthRail payload={payload} />
         </div>

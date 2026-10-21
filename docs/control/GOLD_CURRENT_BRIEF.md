@@ -1659,3 +1659,24 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **BASE / ROLLBACK:** `king/test@83b71dc8ccefb550ce6e7c196ccf1c30271225ea`; revert the bounded Worker/test/brief commit if independent Gold finds a routing, metadata or public-profile regression.
 
 **MAKER ≠ JUDGE:** Factory implements the bounded correction. Independent Gold must judge the exact resulting SHA, then authorised release control must bind any deployment to that SHA before Search Console follow-up.
+
+# IMPACT — INFORMATION ROUTE TRUTH CLASSIFICATION — 21 OCTOBER 2026
+
+STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD AND AUTHORISED RUNTIME VERIFICATION REMAIN OPEN.
+
+- USER ARRIVES BECAUSE: they need to distinguish ways to support ecological work from official source context.
+- ONE THING TO UNDERSTAND: not every outbound project link is an action.
+- PRIMARY ACTION: external_support remains labelled ACTION_ and uses the established action telemetry.
+- SECONDARY DEPTH: external_information is labelled SOURCE / LEARN_ and uses distinct information telemetry.
+- P1: keep organisation-owned support routes useful without claiming delivery, outcome or impact.
+- P2: keep official information routes visibly informational.
+- P3: unknown future action types fail closed as information.
+- P4: preserve NATUREBRAIN identifiers, citations and review-state boundaries.
+- WHAT CAN BE REMOVED: the blanket assumption that every non-empty action URL is an action route.
+- WHAT MUST BE REUSED: the existing IMPACT HEIR, NATUREBRAIN projection, action IDs, route structure and analytics adapter.
+- TRUTH BOUNDARY: external_support is an organisation-owned support route, not proof; external_information and unknown types fail closed as information and never emit action telemetry.
+- MOBILE-FIRST RISK: the longer information label must remain legible without obscuring the outbound link.
+- HUMAN SUCCESS: a visitor can tell whether a link supports work or only opens official context before leaving 4PLANET.
+- BASE / ROLLBACK: king/test@70ae08b5b5594c3f967f77b35cead9a3bb2871f4.
+- MAKER ≠ JUDGE: this correction does not supply Gold, merge, release or LIVE authority.
+
