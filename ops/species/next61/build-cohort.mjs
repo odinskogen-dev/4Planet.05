@@ -6,6 +6,7 @@ import { birds } from "./birds.mjs";
 import { reptiles } from "./reptiles.mjs";
 import { fishes } from "./fishes.mjs";
 import { invertebratesPlants } from "./invertebrates-plants.mjs";
+import { sciencePacks } from "./science-claims-stage1.mjs";
 
 // Strictly non-live, non-Gold Claude V53 source-data donor. Never alter the 39.
 const seeds=[...mammals,...birds,...reptiles,...fishes,...invertebratesPlants];
@@ -199,6 +200,12 @@ function profile(seed,id,pics,contentSource){
  const taxonSource={label:"GBIF — "+sci+" accepted taxon",url:id.source};
  const claim=(text,src=source,state="INTERPRETED")=>({text,state,source:src});
  const info=(label,text,src=source)=>({label,text,state:"INTERPRETED",source:src});
+ const pack=sciencePacks[slug];
+ const factsFor=(category)=>pack?.claims.filter(x=>x.category===category).map(x=>({
+   label:x.label,text:x.text,state:"INTERPRETED",
+   source:{label:x.source.label,url:x.source.url}
+ }))||[];
+
  const media=pics.map(p=>({url:(process.env.SPECIES_MEDIA_BASE_URL||"https://4species.com")+p.local,credit:p.artist,licence:p.license,sourcePage:p.sourcePage,
   licenseUrl:p.licenceUrl,alt:name+" ("+sci+"); photo identity and composition pending human visual QA",focus:"50% 50%"}));
  return {schema:"4PLANET_SPECIES_PAGE_01",slug,domain:"E4RTH",
@@ -218,8 +225,8 @@ function profile(seed,id,pics,contentSource){
     {kind:"place",eyebrow:"A place to belong",title:"Where it lives",claims:[claim(habitat)]},
     {kind:"pressure",eyebrow:"What is changing",title:"Pressures and responses",claims:[claim(threat),claim(action)]}],
   gallery:media.slice(1),
-  facts:{appearance:[info("Life adaptations",life)],physical:[],ecology:[info("Living system",web),info("Habitat",habitat)],
-    conservation:[info("Possible pressures",threat),info("Possible responses",action)]},
+  facts:{appearance:[info("Life adaptations",life),...factsFor("appearance")],physical:[...factsFor("physical")],ecology:[info("Living system",web),info("Habitat",habitat),...factsFor("ecology")],
+    conservation:[info("Possible pressures",threat),info("Possible responses",action),...factsFor("conservation")]},
   limits:["All species-specific ecological claims are working interpretations until individual primary-source review.",
     "A Wikipedia account is a discovery reference, not claim-level independent scientific verification.",
     "No species-level IUCN conservation code, population estimate or live location is asserted.",
@@ -228,7 +235,8 @@ function profile(seed,id,pics,contentSource){
   atlas:{layers:["bluemarble","biodiv"]},
   provenance:{review:"DRAFT",writtenBy:"4PLANET SPECIES / original editorial candidate",
     checkedAt:new Date().toISOString().slice(0,10),sourceReview:"PENDING",photoVisualReview:"PENDING",
-    photographyReview:"PENDING",searchIntent:searchAngle,published:false,canonical:"https://4species.com/"+slug}
+    photographyReview:"PENDING",searchIntent:searchAngle,published:false,canonical:"https://4species.com/"+slug,
+     sourcePackStage1:pack?{claims:pack.claims.length,distinctPublisherCount:new Set(pack.claims.map(x=>x.source.publisher)).size,manualIndependentGold:"PENDING"}:null}
  };
 }
 for(let i=0;i<seeds.length;i++){
