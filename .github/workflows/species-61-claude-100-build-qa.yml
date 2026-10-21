@@ -1,4 +1,4 @@
-name: SPECIES 61 — All-100 Claude V53 Preview QA (NO LIVE DEPLOY)
+name: SPECIES 61 — Claude V53 Gold-Gated Cohort Preview (NO LIVE DEPLOY)
 on:
   push:
     branches: [build/species-61-claude-v53-20261021]
@@ -311,7 +311,7 @@ jobs:
         run: |
           set -euo pipefail
           origin="$SPECIES61_PREVIEW_URL"
-          for slug in red-panda snow-leopard axolotl giant-manta-ray orchid-mantis venus-flytrap dragon-blood-tree; do
+          for slug in quokka snow-leopard axolotl giant-manta-ray orchid-mantis venus-flytrap dragon-blood-tree; do
             curl -fsSL --retry 5 --retry-delay 2 --max-time 45 "$origin/$slug" -o /tmp/preview.html
             grep -Fq "https://4species.com/$slug" /tmp/preview.html
             curl -fsSL --max-time 30 "$origin/species-data/v1/$slug.json" -o /tmp/profile.json
