@@ -109,7 +109,7 @@ test("every discovery page uses the shared ATLAS embed seam and public shell", (
 });
 
 test("discovery embeds the first-party ATLAS renderer instead of a blocked cross-origin frame", () => {
-  assert.match(page, /return `\/atlas\?/);
+  assert.match(page, /return `\/embed\/atlas\?/);
   const middleware = read("functions/_middleware.js");
   assert.match(middleware, /pathname === "\/atlas" && \["news", "species", "place"/);
   assert.match(middleware, /exactRedirects.has\(pathname\) && !atlasEmbed/);

@@ -57,7 +57,7 @@ export default function PublicWorld() {
     const proofHost = host === "127.0.0.1" || host === "localhost" || host.endsWith(".pages.dev");
     return proofHost && new URLSearchParams(window.location.search).get("atlasCiWebgl") === "1";
   }, []);
-  const homepageEmbed = location.pathname.startsWith("/embed/atlas");
+  const homepageEmbed = location.pathname.startsWith("/embed/atlas") && new URLSearchParams(location.search).get("surface") !== "discovery";
   const [homepageLayersOpen, setHomepageLayersOpen] = useState(false);
 
   // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,

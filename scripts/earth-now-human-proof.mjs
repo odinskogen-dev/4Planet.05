@@ -23,6 +23,11 @@ try {
     console.log('MAP_DEBUG',await frame.evaluate(()=>({url:location.href,body:document.body.innerText.slice(0,800),map:!!window.__4planet_map,sources:Object.keys(window.__4planet_map?.getStyle()?.sources||{})})));
     await page.screenshot({path:`${out}/map-failure-${width}.png`,fullPage:true});throw e;
   }
+  if(process.env.EARTH_ENGINE!=='webkit') {
+    await frame.waitForFunction(()=>!window.__4planet_map?.isMoving(),null,{timeout:15000});
+    const camera=await frame.evaluate(()=>({c:window.__4planet_map.getCenter(),z:window.__4planet_map.getZoom()}));
+    assert.ok(Math.abs(camera.c.lng-5)<.02 && Math.abs(camera.c.lat-18)<.02 && Math.abs(camera.z-1.65)<.02,'settled camera drift '+JSON.stringify(camera));
+  }
   console.log('MAP_READY',width,await frame.evaluate(()=>({url:location.href,loaded:window.__4planet_map?.loaded(),style:window.__4planet_map?.getStyle()?.name,sources:Object.keys(window.__4planet_map?.getStyle()?.sources||{})})));
   await page.screenshot({path:`${out}/now-${width}.png`,fullPage:true});
   const metrics=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,font:getComputedStyle(document.querySelector('.discovery-page')).fontFamily,background:getComputedStyle(document.querySelector('.discovery-page')).backgroundColor,h1:parseFloat(getComputedStyle(document.querySelector('h1')).fontSize),stray:[...document.body.childNodes].filter(n=>n.nodeType===3&&/\\n/.test(n.textContent)).map(n=>n.textContent)}));
@@ -31,7 +36,7 @@ try {
    await page.getByRole('button',{name:label,exact:true}).click();
    await page.getByRole('heading',{name:title,exact:true}).waitFor();
    assert.equal(await page.getByRole('button',{name:label,exact:true}).getAttribute('aria-pressed'),'true');
-   const frame=page.locator('.earth-now-map iframe');const src=await frame.getAttribute('src');assert.ok(src.startsWith('/atlas?'));assert.equal(new URL(src,base).searchParams.get('embed'),'news');
+   const frame=page.locator('.earth-now-map iframe');const src=await frame.getAttribute('src');assert.ok(src.startsWith('/embed/atlas?'));assert.equal(new URL(src,base).searchParams.get('embed'),'news');
    assert.equal(new URL(page.url()).searchParams.get('view'),id==='events'?null:id);
   }
   await page.getByRole('button',{name:'Ocean',exact:true}).click();await page.reload();await page.getByRole('button',{name:'Ocean',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Ocean',exact:true}).getAttribute('aria-pressed'),'true');

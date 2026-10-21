@@ -25,7 +25,8 @@ function atlasEmbedHref(atlasHref: string, embedKind: string) {
   const [, raw = ""] = atlasHref.split("?");
   const params = new URLSearchParams(raw);
   params.set("embed", embedKind.toLowerCase());
-  return `/atlas?${params.toString()}`;
+  params.set("surface", "discovery");
+  return `/embed/atlas?${params.toString()}`;
 }
 
 function AtlasEmbed({
