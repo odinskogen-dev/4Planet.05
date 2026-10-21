@@ -13,6 +13,7 @@ const input = { value: '' };
 const state = { textContent: '' };
 const eventUsers = [];
 const memoryUsers = [];
+const deleteMutationUrls = [];
 let heldMutation = null;
 let releaseMutation = null;
 let deleteReceiptOverride;
@@ -46,6 +47,7 @@ const context = {
       const content = body.content;
       const id = options.method === 'POST' ? 'note-created' : 'note-existing';
       if (body.state === 'deleted') {
+        deleteMutationUrls.push(url);
         const expectedUser = decodeURIComponent((url.match(/[?&]user_id=eq\.([^&]+)/) || [])[1] || '');
         const receipt = deleteReceiptOverride === undefined
           ? [{ id, user_id: expectedUser, state: 'deleted', deleted_at: body.deleted_at }]
@@ -126,6 +128,19 @@ const waitForMutation = async () => {
   await removeNote('note-existing');
   assert.deepEqual(eventUsers, ['user-c'], 'same-epoch delete must emit for the initiating user');
   assert.equal(state.textContent, 'Huskelappen ble fjernet.', 'same-epoch confirmed delete may announce success');
+  assert.match(deleteMutationUrls.at(-1), /[?&]state=eq\.active(?:&|$)/, 'delete PATCH must require an active row');
+  assert.match(deleteMutationUrls.at(-1), /[?&]deleted_at=is\.null(?:&|$)/, 'delete PATCH must require a not-yet-deleted row');
+
+  eventUsers.length = 0;
+  state.textContent = '';
+  deleteReceiptOverride = [];
+  await removeNote('note-existing');
+  assert.deepEqual(eventUsers, [], 'repeated delete of an already-deleted note must not emit note_deleted');
+  assert.equal(
+    state.textContent,
+    'Kunne ikke fjerne huskelappen. Den kan fortsatt være lagret. Prøv igjen.',
+    'repeated delete must retain the fail-closed retry state rather than repaint success',
+  );
 
   for (const [label, receipt] of [
     ['zero-row/nonexistent', []],
