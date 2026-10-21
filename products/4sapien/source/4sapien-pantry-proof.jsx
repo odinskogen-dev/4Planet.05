@@ -6,6 +6,20 @@ function isFoodSecondValueEligible(record,now=Date.now()) {
 function foodOwnerCurrent(currentOwnerId,ownerId) {
  return Boolean(ownerId&&currentOwnerId===ownerId);
 }
+function pantryWriteReadbackMatches(readback,expectedId,expectedValue) {
+ const actual=readback?.value;
+ const expectedItems=expectedValue?.pantry;
+ const actualItems=actual?.pantry;
+ return Boolean(
+  readback?.id===expectedId&&readback?.state==="active"&&readback?.confirmation_state==="user_confirmed"&&
+  actual?.namespace==="food_pantry_v1"&&actual?.dataState==="user_confirmed"&&actual?.purchasedIsNotConsumed===true&&
+  actual?.budgetNok===expectedValue?.budgetNok&&Array.isArray(actualItems)&&Array.isArray(expectedItems)&&
+  actualItems.length===expectedItems.length&&actualItems.every((item,index)=>{
+   const expected=expectedItems[index];
+   return item?.name===expected?.name&&item?.amount===expected?.amount&&item?.unit===expected?.unit;
+  })
+ );
+}
 function FoodPantryProof({user,avoid}) {
  const [items,setItems]=useState([]);
  const [budget,setBudget]=useState("");
@@ -143,8 +157,8 @@ function FoodPantryProof({user,avoid}) {
    if(error||!data?.id)throw error||new Error("WRITE_READBACK_FAILED");
    if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    const {data:readback,error:readError}=await SB.from("four_sapien_embla_memories")
-     .select("id,value").eq("id",data.id).eq("user_id",ownerId).eq("state","active").maybeSingle();
-   if(readError||readback?.value?.namespace!=="food_pantry_v1")throw readError||new Error("WRITE_READBACK_FAILED");
+     .select("id,value,state,confirmation_state").eq("id",data.id).eq("user_id",ownerId).eq("state","active").maybeSingle();
+   if(readError||!pantryWriteReadbackMatches(readback,data.id,row.value))throw readError||new Error("WRITE_READBACK_FAILED");
    if(!foodOwnerCurrent(identityRef.current,ownerId))return;
    setRecord(data);setSave("SAVED");setReturnCount(null);
    emitFoodEvent("food_context_saved",{stage:"saved_context",item_count:clean.length},ownerId).catch(()=>{});

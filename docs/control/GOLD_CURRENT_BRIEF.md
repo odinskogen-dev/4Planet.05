@@ -1,3 +1,33 @@
+# 4SAPIEN FOOD — AUTHORITATIVE PANTRY-WRITE READBACK — 21 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a signed-in person needs the private pantry shown as saved to match exactly what they just confirmed.
+
+**ONE THING TO UNDERSTAND:** an owner-scoped row with the right namespace is not an authoritative receipt when its id, pantry items, budget or confirmation state differs from the attempted write.
+
+**PRIMARY ACTION:** save the private pantry only after an active, user-confirmed row readback matches the canonical id and exact pantry/budget payload.
+
+**SECONDARY DEPTH:** missing, stale, inferred, reordered or mismatched readbacks retain the existing fail-closed recheck state.
+
+**P1 / P2 / P3 / P4:** private pantry / explicit saved state / continue to meal comparison / owner-RLS and later-session Gold evidence.
+
+**WHAT CAN BE REMOVED:** treating `food_pantry_v1` namespace equality as sufficient proof of the write.
+
+**WHAT MUST BE REUSED:** existing FOOD pantry UI, owner RLS, exact write/readback flow, issue #317, PR #131 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** an exact matching row proves server readback for this write only. It does not prove later-session persistence, cross-owner isolation, deployment, LIVE state, meal completion or user value.
+
+**MOBILE-FIRST RISK:** none introduced; no layout, copy or interaction geometry changes.
+
+**HUMAN SUCCESS:** SAVED appears only when id, active state, user confirmation, pantry item order/content, budget and consumption boundary all match the attempted write.
+
+**BASE / ROLLBACK:** `king/test@c6c56372b2f4ae346bd6bb417b750ef00f4f0317`; revert this bounded source/test/brief commit.
+
+**MAKER ≠ JUDGE:** Factory implements the readback boundary. Independent Gold must verify the exact SHA and authenticated owner-RLS/later-session runtime before any release claim.
+
+---
+
 # 4SAPIEN — AUTHORITATIVE NOTE-WRITE RECEIPT — 20 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
