@@ -47,7 +47,7 @@ function webglAvailable() {
 export default function PublicWorld() {
   const location = useLocation();
   const supported = useMemo(webglAvailable, []);
-  const homepageEmbed = location.pathname.startsWith("/embed/atlas");
+  const homepageEmbed = location.pathname.startsWith("/embed/atlas") && new URLSearchParams(location.search).get("surface") !== "discovery";
   const [homepageLayersOpen, setHomepageLayersOpen] = useState(false);
 
   // Camera reconstruction has exactly one authority: AtlasReturnCameraAuthority,
