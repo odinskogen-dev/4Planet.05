@@ -12,7 +12,11 @@ const dataDir=process.env.SPECIES_DATA_DIR||path.join(process.cwd(),"public/spec
 const reportDir=process.env.SPECIES_REPORT_DIR||path.join(process.cwd(),"reports/species-next61");
 const statuses=[];
 for(const [slug,pack] of Object.entries(sciencePacks)){
- const p=JSON.parse(fs.readFileSync(path.join(dataDir,slug+".json"),"utf8"));
+ const active=path.join(dataDir,slug+".json");
+ const quarantined=path.join(reportDir,"quarantined",slug+".json");
+ const input=fs.existsSync(active)?active:quarantined;
+ if(!fs.existsSync(input))throw Error("Missing reviewed or quarantined science draft "+slug);
+ const p=JSON.parse(fs.readFileSync(input,"utf8"));
  const facts=Object.values(p.facts).flat();
  const sources=pack.claims.map(c=>c.source.url);
  const issu=[];
@@ -40,4 +44,4 @@ const summary={checked:statuses.length,scientificCandidateClaims:statuses.reduce
 fs.mkdirSync(reportDir,{recursive:true});
 fs.writeFileSync(path.join(reportDir,"science-all-packs-qa.json"),JSON.stringify({summary,statuses},null,2));
 console.log("SPECIES61_SCIENCE_ALL_PACKS_SUMMARY "+JSON.stringify(summary));
-if(!summary.allStage1Valid)process.exitCode=1;
+if(!summary.allCandidatePacksValid)process.exitCode=1;
