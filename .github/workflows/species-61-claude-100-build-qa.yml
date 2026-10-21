@@ -190,6 +190,7 @@ jobs:
           PY
           # Add only the independent 61 working data objects; never touch Claude's 39.
           SPECIES_MEDIA_BASE_URL=https://species-61-review.4planet-05.pages.dev node "$GITHUB_WORKSPACE/ops/species/next61/build-cohort.mjs" --build
+          node "$GITHUB_WORKSPACE/ops/species/next61/science-stage1-qa.mjs"
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           const r=JSON.parse(fs.readFileSync('reports/species-next61/research-report.json'));
