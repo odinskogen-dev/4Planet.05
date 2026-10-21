@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
       - uses: actions/setup-node@v4
-        with: {node-version: 22, cache: npm}
+        with: {node-version: 24, cache: npm}
       - name: Fail-closed original-source and SEO quality gates
         run: |
           set -euo pipefail
@@ -72,6 +72,16 @@ jobs:
             test "$code" = 200
             printf 'EXISTING_LIVE %s sha256=%s bytes=%s\n' "$path" "$(sha256sum "/tmp/live$key"|cut -d' ' -f1)" "$(wc -c < "/tmp/live$key")"
           done
+          # Earth Now must be byte-identical to live output (not merely visually similar).
+          cmp -s /tmp/live_now_ dist/now/index.html || {
+            echo EARTH_NOW_HASH_PARITY_FAILED_NO_PRODUCTION_DEPLOY
+            echo "Current live:"
+            grep -oE 'src="/assets/index-[^"]+\.js"' /tmp/live_now_ || true
+            echo "Candidate:"
+            grep -oE 'src="/assets/index-[^"]+\.js"' dist/now/index.html || true
+            exit 1
+          }
+          echo EARTH_NOW_EXACT_HTML_BYTES_MATCH_LIVE
           for path in now/index.html livingsystems/index.html; do
             printf 'CANDIDATE_HTML %s sha256=%s bytes=%s\n' "$path" "$(sha256sum "dist/$path"|cut -d' ' -f1)" "$(wc -c < "dist/$path")"
           done
