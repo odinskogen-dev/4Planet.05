@@ -1,3 +1,23 @@
+# ATLAS — PUBLIC DOMAIN MARK FAIL-CLOSED RIGHTS BOUNDARY — 21 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**RETURNED DEFECT:** OBIS records carrying Creative Commons Public Domain Mark 1.0 or an ambiguous `PUBLIC DOMAIN` token were classified as `OPEN_CC0` and could enter the ATLAS point layer.
+
+**HUMAN VALUE:** a person inspecting or reusing an ATLAS occurrence must not be told that a public-domain marking is a CC0 dedication or waiver.
+
+**RIGHTS BOUNDARY:** only a genuine Creative Commons Zero 1.0 URL or the exact vetted `CC0 1.0` token receives `OPEN_CC0`. Public Domain Mark 1.0 and ambiguous public-domain tokens require review, carry `UNKNOWN_OR_MISSING`, and are not map-admitted.
+
+**PRESERVATION:** issued CC BY behaviour, attribution requirements, original dataset evidence and genuine CC0 admission remain unchanged.
+
+**TRUTH BOUNDARY:** this classification correction prevents a false permission claim. It does not independently prove underlying public-domain status, dataset rights, release readiness, deployment or LIVE value.
+
+**BASE / ROLLBACK:** `king/test@1d0de7aa9b067a5eba06e18ee66c6d577cdc2094`; revert this bounded source/test/brief commit.
+
+**MAKER ≠ JUDGE:** Factory corrects the existing HEIR. Independent Gold must judge the exact resulting SHA and runtime/source behaviour before any release claim.
+
+---
+
 # 4SAPIEN FOOD — AUTHORITATIVE PANTRY-WRITE READBACK — 21 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

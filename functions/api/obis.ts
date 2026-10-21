@@ -81,7 +81,7 @@ const officialCreativeCommonsCode = (value: unknown) => {
     }
     const path = url.pathname.toLowerCase().replace(/\/+$/, "");
     const publicDomain = path.match(/^\/publicdomain\/(zero|mark)\/(1\.0)(?:\/legalcode)?$/);
-    if (publicDomain) return publicDomain[1] === "zero" ? "CC0" : "PUBLIC_DOMAIN";
+    if (publicDomain) return publicDomain[1] === "zero" ? "CC0" : "PUBLIC_DOMAIN_MARK";
     const licence = path.match(
       /^\/licenses\/(by(?:-(?:nc(?:-(?:nd|sa))?|nd|sa))?)\/(1\.0|2\.0|2\.5|3\.0|4\.0)(?:\/legalcode)?$/,
     );
@@ -97,7 +97,7 @@ const vettedLicenceCode = (value: unknown) => {
 
   const token = String(value || "").trim().toUpperCase().replace(/_/g, " ").replace(/\s+/g, " ");
   if (/^(?:CC0|CC-0) 1\.0$/.test(token)) return "CC0";
-  if (token === "PUBLIC DOMAIN" || token === "PUBLIC DOMAIN MARK 1.0") return "PUBLIC_DOMAIN";
+  if (token === "PUBLIC DOMAIN MARK 1.0") return "PUBLIC_DOMAIN_MARK";
 
   const licence = token.match(
     /^CC[ -]BY(?:[ -](NC(?:[ -](?:ND|SA))?|ND|SA))?[ -](1\.0|2\.0|2\.5|3\.0|4\.0)$/,
@@ -108,7 +108,7 @@ const vettedLicenceCode = (value: unknown) => {
 
 const licenceClass = (value: unknown) => {
   const code = vettedLicenceCode(value);
-  if (code === "CC0" || code === "PUBLIC_DOMAIN") return "OPEN_CC0";
+  if (code === "CC0") return "OPEN_CC0";
   if (!code?.startsWith("BY")) return "REVIEW_REQUIRED";
   if (code.includes("-NC")) return "NONCOMMERCIAL";
   if (code.includes("-ND")) return "NO_DERIVATIVES";

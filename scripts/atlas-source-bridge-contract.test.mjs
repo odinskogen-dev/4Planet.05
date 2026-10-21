@@ -376,6 +376,9 @@ test("OBIS licence authority rejects negated and spoofed open-rights claims befo
     ["by-token", "CC BY 4.0", "OPEN_ATTRIBUTION", true],
     ["cc0-url", "https://creativecommons.org/publicdomain/zero/1.0/", "OPEN_CC0", true],
     ["by-url", "https://creativecommons.org/licenses/by/4.0/", "OPEN_ATTRIBUTION", true],
+    ["pdm-token", "Public Domain Mark 1.0", "REVIEW_REQUIRED", false],
+    ["pdm-url", "https://creativecommons.org/publicdomain/mark/1.0/", "REVIEW_REQUIRED", false],
+    ["ambiguous-public-domain", "PUBLIC DOMAIN", "REVIEW_REQUIRED", false],
     ["negated-cc0", "NOT CC0", "REVIEW_REQUIRED", false],
     ["spoofed-cc0", "https://evil.example/CC0", "REVIEW_REQUIRED", false],
     ["negated-by", "NOT CC-BY", "REVIEW_REQUIRED", false],
@@ -404,6 +407,9 @@ test("OBIS licence authority rejects negated and spoofed open-rights claims befo
 
     for (const [id, , expectedClass, mapAdmitted] of rows) {
       assert.equal(byId[id].licenceClass, expectedClass, id);
+      if (expectedClass === "REVIEW_REQUIRED") {
+        assert.deepEqual(byId[id].licenceRestrictions, ["UNKNOWN_OR_MISSING"], id);
+      }
       assert.equal(Boolean(earthLayersRuntime.obisOccurrencePoint(byId[id], body.retrievedAt)), mapAdmitted, id);
     }
   } finally {
