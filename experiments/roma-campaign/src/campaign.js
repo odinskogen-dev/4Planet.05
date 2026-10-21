@@ -431,7 +431,7 @@
       const p = xy(16, 41.1);
       cam.x = p[0];
       cam.y = p[1];
-      cam.z = Math.min(cw / 135, ch / 220);
+      cam.z = Math.max(9, Math.min(cw / 85, ch / 90));
     }
     clampCam();
     drawSoon();
@@ -581,10 +581,11 @@
         const f = cam.z > 2 ? 12 : 10;
         ctx.font = `${city.id === state.selected ? 'bold ' : ''}${f}px Arial,sans-serif`;
         ctx.textAlign = 'left';
+        const labelY = y + (city.id === 'cannae' ? -14 : city.id === 'canusium' ? 20 : 3);
         ctx.fillStyle = 'rgba(23,32,34,.85)';
-        ctx.fillText(city.name, x + 9, y + 4);
+        ctx.fillText(city.name, x + 9, labelY + 1);
         ctx.fillStyle = '#f2e8d7';
-        ctx.fillText(city.name, x + 8, y + 3);
+        ctx.fillText(city.name, x + 8, labelY);
       }
     }
     for (const army of state.armies.filter(a => a.men > 0)) {
@@ -698,7 +699,8 @@
     const romanMen = state.armies
       .filter(a => a.owner === 'rome')
       .reduce((s, a) => s + a.men, 0);
-    const consumption = Math.ceil(romanMen / 195) + 21;
+    const frontierBlockade = isBlocked('canusium', 'cannae');
+    const consumption = Math.ceil(romanMen / 195) + 21 + (frontierBlockade ? 13 : 0);
     const income = 10;
     state.food = Math.max(
       0,
@@ -715,7 +717,7 @@
         friendly(a.at) &&
         roads.some(
           r => (r[0] === a.at || r[1] === a.at) && !isBlocked(r[0], r[1])
-        );
+        ) && !(frontierBlockade && a.at === 'canusium');
       const net = secured ? 2 : -4;
       a.supply = Math.max(0, Math.min(100, a.supply + net));
       if (a.supply < 22) a.morale = Math.max(12, a.morale - 1);
@@ -1048,8 +1050,7 @@
         c.lat.toFixed(2) +
         '° N / ' +
         c.lon.toFixed(2) +
-        '° E · HISTORICAL POSITION ' +
-        c.confidence.toUpperCase()
+        '° E · APPROXIMATE LOCATION · SOURCE REVIEW PENDING'
       : 'SURVEY REGION · GEOGRAPHY VISIBLE · PLAYABLE CONTENT NOT YET BUILT';
     $('#settlement').innerHTML = sett
       ? `<div class="mini-stat"><span>FARMS</span><b>${sett.farms}</b></div><div class="mini-stat"><span>GRANARIES</span><b>${sett.granaries}</b></div><div class="mini-stat"><span>LOCAL GRAIN</span><b>${sett.grain}</b></div><div class="mini-stat"><span>LOYALTY</span><b>${sett.loyalty}%</b></div>`
