@@ -6,6 +6,7 @@ on:
       - 'site/roma/index.html'
       - 'site/index.html'
       - 'site/games/**'
+      - 'site/medieval/**'
       - 'site/assets/**'
       - 'site/sitemap.xml'
       - 'site/robots.txt'
