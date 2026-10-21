@@ -15,6 +15,18 @@ for source in (donor, experience_source):
 html = donor.read_text(encoding='utf-8')
 experience = experience_source.read_text(encoding='utf-8')
 
+# Discard stale Finance reads across signout, account switch and unmount.
+# Exact seams fail closed if the donor changes; all aliases use this producer.
+old_load = " const load=async()=>{setLoading(true);setErr(\"\");try{const[a,e]=await Promise.all([sb.from(\"four_sapien_finance_accounts\").select(\"*\").order(\"created_at\",{ascending:true}),sb.from(\"four_sapien_finance_events\").select(\"*\").order(\"occurred_on\",{ascending:true})]);if(a.error)throw a.error;if(e.error)throw e.error;setAccounts((a.data||[]).map(dbAccount));setEvents((e.data||[]).map(dbEvent));}catch(x){setErr(x.message||\"Kunne ikke hente finansdata.\");}finally{setLoading(false);}};"
+new_load = " const requestScope=React.useRef({alive:false,user:null,generation:0});\n const load=async()=>{const scope=requestScope.current;if(!scope.alive||!scope.user)return;const generation=++scope.generation,user=scope.user;const current=()=>scope.alive&&scope.user===user&&scope.generation===generation;setLoading(true);setErr(\"\");try{const[a,e]=await Promise.all([sb.from(\"four_sapien_finance_accounts\").select(\"*\").order(\"created_at\",{ascending:true}),sb.from(\"four_sapien_finance_events\").select(\"*\").order(\"occurred_on\",{ascending:true})]);if(!current())return;if(a.error)throw a.error;if(e.error)throw e.error;setAccounts((a.data||[]).map(dbAccount));setEvents((e.data||[]).map(dbEvent));}catch(x){if(current())setErr(x.message||\"Kunne ikke hente finansdata.\");}finally{if(current())setLoading(false);}};"
+old_auth_effect = " useEffect(()=>{let alive=true;sb.auth.getSession().then(({data})=>{if(!alive)return;setSession(data.session||null);if(data.session)load();else setLoading(false);});const{data:{subscription}}=sb.auth.onAuthStateChange((evt,s)=>{setSession(s||null);if(s&&(evt===\"SIGNED_IN\"||evt===\"TOKEN_REFRESHED\"||evt===\"INITIAL_SESSION\"))load();if(!s){setAccounts([]);setEvents([]);setLoading(false);}});return()=>{alive=false;subscription.unsubscribe();};},[]);"
+new_auth_effect = " useEffect(()=>{const scope=requestScope.current;scope.alive=true;let authChanged=false;const applySession=s=>{if(!scope.alive)return;const user=s?.user?.id||null;scope.generation++;if(scope.user!==user){setAccounts([]);setEvents([]);setErr(\"\");}scope.user=user;setSession(s||null);if(user)load();else setLoading(false);};sb.auth.getSession().then(({data})=>{if(!authChanged)applySession(data.session);});const{data:{subscription}}=sb.auth.onAuthStateChange((evt,s)=>{authChanged=true;applySession(s);});return()=>{scope.alive=false;scope.generation++;scope.user=null;subscription.unsubscribe();};},[]);"
+for before, after in ((old_load, new_load), (old_auth_effect, new_auth_effect)):
+    if html.count(before) != 1:
+        raise SystemExit('Finance session ownership seam mismatch')
+    html = html.replace(before, after, 1)
+
+
 # Claude unified redesign keeps the known AXE seam. Preserve the existing V3
 # interaction refinement (wide desktop canvas + Enter/Esc direct editing) while
 # taking Claude's new visible layer as the source of truth.

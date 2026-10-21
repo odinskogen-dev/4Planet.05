@@ -53,15 +53,16 @@ for path in paths:
         "catch(e){l&&l.setAttribute('data-finance-sync','STALE');toast('Lagret, men visningen kunne ikke oppdateres. Prøv igjen.')}})});",
         "overlay serialized readback")
 
-    s = once(s, "finally{setLoading(false);}};",
-        "finally{setLoading(false);}};"
+    s = once(s, "finally{if(current())setLoading(false);}};",
+        "finally{if(current())setLoading(false);}};"
         "useEffect(()=>{let seq=0;const h=async ev=>{const d=(ev&&ev.detail)||{};"
         "if(d.source!=='overlay'&&d.source!=='document')return;const my=++seq;"
+        "const scope=requestScope.current,owner=scope.user,gen=scope.generation;if(!scope.alive||!owner)return;"
         "try{const[a,e]=await Promise.all([sb.from(\"four_sapien_finance_accounts\").select(\"*\").order(\"created_at\",{ascending:true}),"
         "sb.from(\"four_sapien_finance_events\").select(\"*\").order(\"occurred_on\",{ascending:true})]);"
-        "if(my!==seq)return;if(a.error)throw a.error;if(e.error)throw e.error;"
+        "if(my!==seq||!scope.alive||scope.user!==owner||scope.generation!==gen)return;if(a.error)throw a.error;if(e.error)throw e.error;"
         "setAccounts((a.data||[]).map(dbAccount));setEvents((e.data||[]).map(dbEvent));setErr(\"\");}"
-        "catch(x){if(my===seq)setErr(\"Lagret, men visningen kunne ikke oppdateres. Prøv igjen.\");}};"
+        "catch(x){if(my===seq&&scope.alive&&scope.user===owner&&scope.generation===gen)setErr(\"Lagret, men visningen kunne ikke oppdateres. Prøv igjen.\");}};"
         f"window.addEventListener(\"{EV}\",h);return()=>window.removeEventListener(\"{EV}\",h);}},[]);",
         "react silent readback")
 
