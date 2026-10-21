@@ -433,8 +433,6 @@ export default {
     const path = url.pathname || "/";
 
     if (host === "www.4species.com") return redirect(`https://4species.com${path}${url.search}`);
-    if (/^\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(path))
-      return redirect(`https://4species.com${path.slice(0, -1)}${url.search}`, 301);
 
     // Canonical clean public URLs: root homepage and /{species-slug}.
     // Legacy /species/{slug} redirects to exactly one canonical URL.
@@ -443,6 +441,8 @@ export default {
       const slug = path.split("/").filter(Boolean)[1];
       return redirect("https://4species.com/" + encodeURIComponent(slug) + url.search, 301);
     }
+    if (/^\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(path))
+      return redirect(`https://4species.com${path.slice(0, -1)}${url.search}`, 301);
     if (path === "/labs/species" || path === "/labs/species/")
       return redirect("https://4species.com/" + url.search, 301);
     if (path.startsWith("/labs/species/")) {
