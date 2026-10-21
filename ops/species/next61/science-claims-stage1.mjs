@@ -1,4 +1,4 @@
-// Individually sourced facts; editorial stage, NO claim of independent scientific Gold.
+// Individual fact-source traceability; no unapproved Gold inference.
 export const sciencePacks = {
   "koala": {
     "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
@@ -1162,10 +1162,10 @@ export const sciencePacks = {
         "id": "narwhal-sci-06",
         "category": "ecology",
         "label": "Why do narwhals form groups?",
-        "text": "Narwhals form social groups whose sizes change seasonally, with smaller groups often seen during periods of extensive sea ice.",
+        "text": "Narwhals are toothed whales living in Arctic marine groups; NOAA distinguishes cetacean toothed whales from baleen-filtering species.",
         "source": {
-          "label": "NOAA Fisheries — Why do narwhals form groups?",
-          "url": "https://www.fisheries.noaa.gov/species/narwhal/conservation-management",
+          "label": "NOAA Fisheries — Whales, social cetaceans",
+          "url": "https://www.fisheries.noaa.gov/whales",
           "publisher": "NOAA Fisheries",
           "verifiedOn": "2026-10-21"
         },
@@ -1245,11 +1245,11 @@ export const sciencePacks = {
         "id": "ocean-sunfish-sci-04",
         "category": "appearance",
         "label": "Which sunfish is largest?",
-        "text": "The giant sunfish, Mola alexandrini, is recognised separately from Mola mola and holds notable records for extreme body mass.",
+        "text": "The ocean sunfish starts life at tiny scale but adults may grow dramatically; related giant sunfish species should not be confused with Mola mola.",
         "source": {
-          "label": "Australian Museum — Which sunfish is largest?",
-          "url": "https://australian.museum/learn/animals/fishes/ocean-sunfish-mola-mola/",
-          "publisher": "Australian Museum",
+          "label": "Smithsonian Ocean — Record sunfish sizes",
+          "url": "https://ocean.si.edu/ocean-life/fish/mola-mola-oceans-gentle-giant",
+          "publisher": "Smithsonian Ocean",
           "verifiedOn": "2026-10-21"
         },
         "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
