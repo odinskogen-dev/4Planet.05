@@ -13,6 +13,7 @@ import { wildCommonsCandidates } from "./wild-commons-fallback.mjs";
 const seeds=[...mammals,...birds,...reptiles,...fishes,...invertebratesPlants];
 const rejectedPhotoEntries=JSON.parse(fs.readFileSync(new URL("./photo-visual-rejects-20261021.json",import.meta.url),"utf8")).rejects;
 const rejectedPhotoIds=new Set(rejectedPhotoEntries.map(x=>Number(x.photoId)));
+const rejectedObservationIds=new Set(rejectedPhotoEntries.filter(x=>Number.isInteger(x.observationId)).map(x=>Number(x.observationId)));
 if(rejectedPhotoIds.size!==rejectedPhotoEntries.length)throw Error("Duplicate rejected photo ID");
 
 const live=new Set("orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split(" "));
@@ -125,7 +126,7 @@ async function inatImages(scientific){
         observation.quality_grade!=="research"||
         observation.captive!==false||
         observation.taxon?.rank!=="species"||
-        seenObservations.has(observation.id))continue;
+        (seenObservations.has(observation.id)||rejectedObservationIds.has(Number(observation.id))))continue;
       // Ignore observation photos when the observation shows a preserved,
       // dead, collected or captive organism in its metadata.
       const text=(observation.description||"")+" "+
