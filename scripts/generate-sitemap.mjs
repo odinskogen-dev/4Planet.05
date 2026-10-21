@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readStories, absoluteUrl } from "./magazine-content.mjs";
+import { livingSystemsPublicRoutes } from "./living-systems-search-surfaces.mjs";
 
 const root = process.cwd();
 const publicDir = path.join(root, "public");
@@ -22,6 +23,7 @@ const staticRoutes = [
   "/missions",
   ...missionRoutes,
   "/livingsystems/",
+  ...livingSystemsPublicRoutes,
   "/impact/actions/bay-of-biscay-survey",
   "/cre4tor/odin",
   "/impact",
