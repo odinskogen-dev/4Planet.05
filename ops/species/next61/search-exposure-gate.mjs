@@ -52,6 +52,24 @@ for(const slug of slugs){
  const p=JSON.parse(fs.readFileSync(data,"utf8"));
  const html=fs.readFileSync(page,"utf8");
  const errors=[];
+ // Google/AI quality gate: duplicated references do not equal independently
+ // verified evidence. Require source diversity and sufficiently distinct claims.
+ const urls=new Set(),uniqueClaims=new Set();
+ function trace(value){
+  if(!value||typeof value!=="object")return;
+  if(Array.isArray(value)){value.forEach(trace);return;}
+  if(value.source?.url&&typeof value.source.url==="string"&&typeof value.text==="string"&&value.text.length>15){
+   urls.add(value.source.url);
+   uniqueClaims.add(value.text.toLowerCase().replace(/\s+/g," ").trim());
+  }
+  for(const [k,v] of Object.entries(value))if(k!=="source")trace(v);
+ }
+ trace({hook:p.hook,intro:p.intro,glance:p.glance,story:p.story,facts:p.facts});
+ if(urls.size<3)errors.push("SOURCE_DIVERSITY_LT3");
+ if(uniqueClaims.size<8)errors.push("DISTINCT_SOURCED_CLAIMS_LT8");
+ if([...urls].some(u=>u.includes("wikipedia.org/wiki/"))&&urls.size<3)
+  errors.push("SECONDARY_ENCYCLOPEDIA_NOT_PRIMARY_PROOF");
+
  if(p.slug!==slug||!["DRAFT","GOLD","PUBLISHED"].includes(p.provenance?.review))errors.push("REVIEW_STATE_OR_IDENTITY");
  if(approved.includes(slug)&&p.provenance?.review!=="GOLD")errors.push("GOLD_EDITORIAL_STATUS_REQUIRED");
  if(!html.includes("https://4species.com/"+slug))errors.push("CANONICAL");
