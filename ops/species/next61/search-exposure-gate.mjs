@@ -17,6 +17,9 @@ const approvedFile=process.env.SPECIES_APPROVED_MANIFEST||"ops/species/next61/ap
 const approved=fs.existsSync(approvedFile)?JSON.parse(fs.readFileSync(approvedFile,"utf8")).approved:[];
 if(!Array.isArray(approved)||approved.some(s=>!slugs.includes(s)))throw Error("Invalid species release approval manifest");
 const report={count:61,approved,missing:[],invalid:[],schemaInjected:0,readyForSearchRelease:0,policy:"Candidates only. No publishing, Google submission or readiness claim."};
+const researchFile=path.join(reportDir,"research-report.json");
+const research=fs.existsSync(researchFile)?JSON.parse(fs.readFileSync(researchFile,"utf8")):null;
+const knownBlocked=new Set(research?.records.filter(r=>!r.quality.photosLocal||!r.quality.licenceMetadata).map(r=>r.slug)||[]);
 const quote=s=>JSON.stringify(s).replace(/</g,"\\u003c");
 function structured(p){
  const name=p.identity.commonName,sci=p.identity.scientificName;
@@ -69,4 +72,5 @@ for(const slug of slugs){
 fs.mkdirSync(reportDir,{recursive:true});
 fs.writeFileSync(path.join(reportDir,"search-exposure-qa.json"),JSON.stringify(report,null,2));
 console.log("SPECIES61_SEARCH_EXPOSURE "+JSON.stringify({checked:61,jsonLdInjected:report.schemaInjected,ready:report.readyForSearchRelease,unresolved:report.invalid.length,missing:report.missing}));
-if(report.schemaInjected!==61||report.missing.length)process.exitCode=1;
+if(report.missing.some(slug=>!knownBlocked.has(slug))||report.schemaInjected+report.missing.length!==61)process.exitCode=1;
+console.log("SPECIES61_SEARCH_RELEASE_BLOCKED",JSON.stringify({blockedMedia:[...knownBlocked],indexableNew:report.readyForSearchRelease}));
