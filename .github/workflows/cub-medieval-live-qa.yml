@@ -31,11 +31,12 @@ jobs:
             ok=0
             for attempt in $(seq 1 24); do
               if curl -fsSL --max-time 30 "$host/medieval/index.html" -o /tmp/medieval-live.html &&
-                 echo '3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83  /tmp/medieval-live.html' | sha256sum -c - >/dev/null; then ok=1; break; fi
+                 echo '273a84a96d3d5fc3e9a34e6b3de657c2840a027230f6a1beb916acfc8a908d13  /tmp/medieval-live.html' | sha256sum -c - >/dev/null; then ok=1; break; fi
               sleep 7
             done
             test "$ok" -eq 1 || { echo "MEDIEVAL_LIVE_FAILED=$host"; exit 4; }
-            echo "MEDIEVAL_LIVE_EXACT_PASS=$host/medieval/"
+            curl -fsSL --max-time 25 "$host/medieval/clean-hud.css" | grep -Fq 'display: none !important'
+            echo "MEDIEVAL_CLEAN_HUD_LIVE_PASS=$host/medieval/"
           done
       - uses: actions/setup-node@v4
         with:
@@ -55,6 +56,9 @@ jobs:
               const response=await page.goto('https://labs.p4nther.com/medieval/',{waitUntil:'domcontentloaded',timeout:65000});
               await page.waitForTimeout(8500);
               const canvases=await page.locator('canvas').count();
+              const sidebarDisplay=await page.locator('.mk-left').evaluate(el=>getComputedStyle(el).display);
+              const footerDisplay=await page.locator('.mk-bottom').evaluate(el=>getComputedStyle(el).display);
+              if(sidebarDisplay!=='none'||footerDisplay!=='none')throw Error('Battlefield obstructed by HUD: '+sidebarDisplay+' / '+footerDisplay);
               const title=await page.title();
               const body=await page.locator('body').innerText().catch(()=>'');
               await page.screenshot({path:'medieval-'+cfg.label+'.png',fullPage:true});

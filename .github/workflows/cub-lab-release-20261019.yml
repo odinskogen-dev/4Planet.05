@@ -34,7 +34,24 @@ jobs:
           test "$(wc -c < site/roma/index.html)" -eq 2171887
           test -s site/roma/versions/challenger-01-20261018.html
           test -s site/index.html
+          echo '3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83  site/medieval/index.html' | sha256sum -c -
+          test -s site/medieval/clean-hud.css
           echo 'ROMA_ORIGINAL_NO_REBUILD_VALIDATED'
+      - name: Apply scoped MEDIEVAL battlefield HUD fix (release copy only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          file=Path('site/medieval/index.html')
+          original=file.read_text(encoding='utf-8')
+          assert original.count('</head>') == 1
+          link='<link rel="stylesheet" href="/medieval/clean-hud.css?v=20261022"/>'
+          assert link not in original
+          file.write_text(original.replace('</head>',link+'</head>',1),encoding='utf-8')
+          PY
+          echo '273a84a96d3d5fc3e9a34e6b3de657c2840a027230f6a1beb916acfc8a908d13  site/medieval/index.html' | sha256sum -c -
+          echo 'MEDIEVAL_HUD_CLEAN_FIX_DEPLOY_COPY_PASS'
       - name: Resolve authorised Cloudflare account
         shell: bash
         env:
@@ -125,6 +142,21 @@ jobs:
             grep -Fq 'WILD:' /tmp/live-hub.html
             echo "ROMA_LIVE_EXACT_PASS=$host/roma/"
             echo "CUB_HUB_PASS=$host/"
+          done
+      - name: Verify clean mobile MEDIEVAL HUD deployment and untouched ROMA
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            good=0
+            for attempt in $(seq 1 18); do
+              if curl -fsSL --max-time 30 "$host/medieval/index.html" -o /tmp/medieval-clean.html &&
+                 echo '273a84a96d3d5fc3e9a34e6b3de657c2840a027230f6a1beb916acfc8a908d13  /tmp/medieval-clean.html' | sha256sum -c - >/dev/null &&
+                 curl -fsSL --max-time 25 "$host/medieval/clean-hud.css" | grep -Fq 'display: none !important'; then good=1; break; fi
+              sleep 4
+            done
+            test "$good" -eq 1 || { echo "MEDIEVAL_CLEAN_HUD_RELEASE_FAILED=$host"; exit 5; }
+            echo "MEDIEVAL_CLEAN_HUD_LIVE_PASS=$host/medieval/"
           done
       - name: Safely add labs.p4nther.com alongside lab.p4nther.com
         shell: bash
