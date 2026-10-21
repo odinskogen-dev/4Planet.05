@@ -46,7 +46,7 @@ const intents={
  "panther-chameleon":"Colour change and Madagascar habitat",
  "leopard-gecko":"Spotted skin, tail and natural habitat",
  "golden-poison-frog":"How poison defence works in the wild",
- "western-santa-cruz-tortoise":"A Galápagos giant's life and habitat",
+ "western-santa-cruz-tortoise":"Life on the Galápagos Islands",
  "ocellaris-clownfish":"The fish–anemone partnership",
  "ocean-sunfish":"Size, strange shape and ocean life",
  "great-hammerhead":"Why hammerhead sharks have wide heads",
