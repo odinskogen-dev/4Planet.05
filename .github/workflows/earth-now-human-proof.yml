@@ -26,19 +26,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium webkit
-      - run: npx tsc -b && npx vite build && node scripts/prerender-discovery-seo.mjs
-      - name: Deploy corrected first-party route to immutable preview
+      - name: Wait for exact corrected source on existing production domain
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
+          echo "::add-mask::$CF_TOKEN"
           aid=$(curl -fsS -H "Authorization: Bearer $CF_TOKEN" 'https://api.cloudflare.com/client/v4/zones?name=4planet.org&status=active' | jq -r '.result[0].account.id')
-          export CLOUDFLARE_API_TOKEN="$CF_TOKEN" CLOUDFLARE_ACCOUNT_ID="$aid"
-          npx --yes wrangler@4.128.0 pages deploy dist --project-name=4planet-05 --branch=king/test --commit-hash=abeb4825c21629791b5e57180db8d53adaaf9826 --commit-dirty=false | tee /tmp/earth-preview.log
-          preview=$(grep -Eo 'https://[a-z0-9]+\.4planet-05\.pages\.dev' /tmp/earth-preview.log | head -1)
-          test -n "$preview"
-          echo "EARTH_BASE_URL=$preview" >> "$GITHUB_ENV"
-          echo "$preview" > earth-preview-url.txt
+          for attempt in $(seq 1 40); do
+            curl -fsS -H "Authorization: Bearer $CF_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$aid/pages/projects/4planet-05" > /tmp/earth-live.json
+            sha=$(jq -r '.result.canonical_deployment.deployment_trigger.metadata.commit_hash' /tmp/earth-live.json)
+            if [ "$sha" = abeb4825c21629791b5e57180db8d53adaaf9826 ]; then
+              jq '{name:.result.name,production_branch:.result.production_branch,canonical_deployment:.result.canonical_deployment}' /tmp/earth-live.json > earth-live-release.json
+              echo "EARTH_BASE_URL=https://4planet.org" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'Corrected production source not yet deployed'; exit 1
       - run: node scripts/earth-now-human-proof.mjs
       - run: node scripts/earth-now-human-proof.mjs
         env:
@@ -53,4 +58,5 @@ jobs:
             artifacts/earth-now-webkit
             earth-preview-url.txt
             earth-rollback.json
+            earth-live-release.json
           retention-days: 14
