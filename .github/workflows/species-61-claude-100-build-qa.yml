@@ -209,6 +209,7 @@ jobs:
             console.log('SPECIES61_QUARANTINED_UNLICENSED_OR_MISSING_PHOTOS',missing.length);
           }
           NODE
+          node "$GITHUB_WORKSPACE/ops/species/next61/science-all-packs-qa.mjs"
           node scripts/species-page-validate.mjs --write-index
           node scripts/species-page-validate.mjs
           echo SPECIES_V53_RECONCILED
