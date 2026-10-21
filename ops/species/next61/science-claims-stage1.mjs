@@ -1,4 +1,4 @@
-// Claim-level original-source anchored content for five editorial candidates; DO NOT self-award scientific GOLD.
+// Individual source-linked facts. Maker-reviewed provisional evidence only; independent GOLD pending.
 export const sciencePacks = {
   "koala": {
     "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
@@ -539,6 +539,442 @@ export const sciencePacks = {
           "label": "San Diego Zoo Wildlife Alliance — Habitat changes carry risk",
           "url": "https://animals.sandiegozoo.org/animals/capybara",
           "publisher": "San Diego Zoo Wildlife Alliance",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      }
+    ]
+  },
+  "red-panda": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "red-panda-sci-01",
+        "category": "appearance",
+        "label": "Bushy balance",
+        "text": "A red panda's long, ringed tail helps with balance as it crosses forest branches and can wrap around the body for insulation in cold weather.",
+        "source": {
+          "label": "World Wildlife Fund — Bushy balance",
+          "url": "https://www.worldwildlife.org/stories/where-do-red-pandas-live-and-other-red-panda-facts",
+          "publisher": "World Wildlife Fund",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-02",
+        "category": "appearance",
+        "label": "An unusual climbing ankle",
+        "text": "Flexible ankle joints help red pandas descend tree trunks head-first, a useful adaptation for a canopy-dwelling mammal.",
+        "source": {
+          "label": "Smithsonian National Zoo — An unusual climbing ankle",
+          "url": "https://nationalzoo.si.edu/animals/red-panda",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-03",
+        "category": "appearance",
+        "label": "A grasping wrist bone",
+        "text": "A modified wrist bone acts as a false thumb, helping the animal hold bamboo while feeding.",
+        "source": {
+          "label": "Smithsonian National Zoo — A grasping wrist bone",
+          "url": "https://nationalzoo.si.edu/animals/red-panda",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-04",
+        "category": "ecology",
+        "label": "Forest and bamboo together",
+        "text": "Red pandas depend on Himalayan mountain forests with bamboo undergrowth, not simply on bamboo wherever it is planted.",
+        "source": {
+          "label": "Red Panda Network — Forest and bamboo together",
+          "url": "https://redpandanetwork.org/files/galleries/Red_Panda_Ranger_Program_Offline.pdf",
+          "publisher": "Red Panda Network",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-05",
+        "category": "ecology",
+        "label": "Mostly solitary",
+        "text": "Red pandas spend much of their time alone and use scent marks to signal presence and territorial information.",
+        "source": {
+          "label": "Smithsonian National Zoo — Mostly solitary",
+          "url": "https://nationalzoo.si.edu/animals/red-panda",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-06",
+        "category": "ecology",
+        "label": "Eastern Himalayan habitat",
+        "text": "Wild populations inhabit temperate forest landscapes of the eastern Himalayas, including areas of Nepal, Bhutan and China.",
+        "source": {
+          "label": "World Wildlife Fund — Eastern Himalayan habitat",
+          "url": "https://www.worldwildlife.org/stories/where-do-red-pandas-live-and-other-red-panda-facts",
+          "publisher": "World Wildlife Fund",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-07",
+        "category": "conservation",
+        "label": "Habitat fragments threaten survival",
+        "text": "The removal of nesting trees and bamboo-rich forest damages red panda habitat and can separate surviving groups.",
+        "source": {
+          "label": "World Wildlife Fund — Habitat fragments threaten survival",
+          "url": "https://www.worldwildlife.org/species/red-panda/",
+          "publisher": "World Wildlife Fund",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "red-panda-sci-08",
+        "category": "conservation",
+        "label": "Free-roaming dogs are a threat",
+        "text": "Dogs in the red panda's range may directly attack animals and transmit diseases, alongside forest loss and poaching threats.",
+        "source": {
+          "label": "Red Panda Network — Free-roaming dogs are a threat",
+          "url": "https://redpandanetwork.org/threats/",
+          "publisher": "Red Panda Network",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      }
+    ]
+  },
+  "snow-leopard": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "snow-leopard-sci-01",
+        "category": "ecology",
+        "label": "Predator of mountain ungulates",
+        "text": "Wild snow leopards hunt mountain sheep, ibex and other hoofed mammals; specific prey varies between regions.",
+        "source": {
+          "label": "Snow Leopard Trust — Predator of mountain ungulates",
+          "url": "https://snowleopard.org/our-work/research/snow-leopard-ecology/",
+          "publisher": "Snow Leopard Trust",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-02",
+        "category": "appearance",
+        "label": "A tail built for cliffs",
+        "text": "The long tail helps a snow leopard balance on steep rocky slopes and can help conserve warmth while resting.",
+        "source": {
+          "label": "Panthera — A tail built for cliffs",
+          "url": "https://www.panthera.org/cat/snow-leopard",
+          "publisher": "Panthera",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-03",
+        "category": "appearance",
+        "label": "Cold-climate coat",
+        "text": "Dense fur and body adaptations make it possible to survive extremely cold, exposed mountain environments.",
+        "source": {
+          "label": "Panthera — Cold-climate coat",
+          "url": "https://www.panthera.org/cat/snow-leopard",
+          "publisher": "Panthera",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-04",
+        "category": "ecology",
+        "label": "A solitary cat",
+        "text": "Snow leopards are usually solitary and difficult to observe; research relies heavily on camera traps and other non-invasive monitoring.",
+        "source": {
+          "label": "Snow Leopard Trust — A solitary cat",
+          "url": "https://snowleopard.org/snow-leopard-facts/",
+          "publisher": "Snow Leopard Trust",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-05",
+        "category": "ecology",
+        "label": "An Asian mountain range",
+        "text": "Its range crosses high mountains in parts of Central and South Asia; it should not be described as uniformly distributed across those countries.",
+        "source": {
+          "label": "Panthera — An Asian mountain range",
+          "url": "https://www.panthera.org/cat/snow-leopard",
+          "publisher": "Panthera",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-06",
+        "category": "conservation",
+        "label": "Wild prey competes with livestock",
+        "text": "Overgrazing by domestic livestock can reduce forage available to the wild mountain ungulates that snow leopards hunt.",
+        "source": {
+          "label": "Snow Leopard Trust — Wild prey competes with livestock",
+          "url": "https://snowleopard.org/our-work/research/snow-leopard-ecology/",
+          "publisher": "Snow Leopard Trust",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-07",
+        "category": "conservation",
+        "label": "Retaliation after livestock losses",
+        "text": "Conflict arises where cats take livestock and are killed in response; protecting both people and wildlife requires locally designed solutions.",
+        "source": {
+          "label": "World Wildlife Fund — Retaliation after livestock losses",
+          "url": "https://www.worldwildlife.org/resources/facts/where-do-snow-leopards-live-and-nine-other-snow-leopard-facts/",
+          "publisher": "World Wildlife Fund",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "snow-leopard-sci-08",
+        "category": "conservation",
+        "label": "Vulnerable is not endangered",
+        "text": "Panthera reports the global IUCN category as Vulnerable; local population trajectories and knowledge gaps differ.",
+        "source": {
+          "label": "Panthera — Vulnerable is not endangered",
+          "url": "https://www.panthera.org/cat/snow-leopard",
+          "publisher": "Panthera",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      }
+    ]
+  },
+  "quokka": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "quokka-sci-01",
+        "category": "appearance",
+        "label": "A small wallaby",
+        "text": "Quokkas belong to the marsupial family Macropodidae and are among its smallest wallaby-like members.",
+        "source": {
+          "label": "Australian Museum — A small wallaby",
+          "url": "https://australian.museum/learn/animals/mammals/quokka/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-02",
+        "category": "ecology",
+        "label": "A Western Australian endemic",
+        "text": "Wild quokkas occur in the south-west of Western Australia, including Rottnest Island and limited mainland habitats.",
+        "source": {
+          "label": "Australian Museum — A Western Australian endemic",
+          "url": "https://australian.museum/learn/animals/mammals/quokka/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-03",
+        "category": "ecology",
+        "label": "Mostly a night-active browser",
+        "text": "Quokkas tend to forage at night and shelter in dense vegetation during daylight.",
+        "source": {
+          "label": "Australian Museum — Mostly a night-active browser",
+          "url": "https://australian.museum/learn/animals/mammals/quokka/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-04",
+        "category": "ecology",
+        "label": "Leaves and shoots",
+        "text": "Quokkas browse grasses, leaves and succulent vegetation, with dietary options depending on habitat and season.",
+        "source": {
+          "label": "Australian Museum — Leaves and shoots",
+          "url": "https://australian.museum/learn/animals/mammals/quokka/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-05",
+        "category": "appearance",
+        "label": "An agile little climber",
+        "text": "Despite their short, stocky form, quokkas can climb trees to reach food.",
+        "source": {
+          "label": "Australian Museum — An agile little climber",
+          "url": "https://australian.museum/learn/animals/mammals/quokka/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-06",
+        "category": "conservation",
+        "label": "Predators on the mainland",
+        "text": "Introduced predators, including foxes, have contributed to pressures on mainland quokka populations.",
+        "source": {
+          "label": "Australian Museum — Predators on the mainland",
+          "url": "https://australian.museum/learn/animals/mammals/quokka/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-07",
+        "category": "conservation",
+        "label": "The smile is not an invitation",
+        "text": "Quokkas are wild animals even when they approach visitors; feeding them or physically interfering with them is not appropriate.",
+        "source": {
+          "label": "Rottnest Island visitor guidance — The smile is not an invitation",
+          "url": "https://www.visitrottnestisland.com.au/things-to-do/",
+          "publisher": "Rottnest Island visitor guidance",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "quokka-sci-08",
+        "category": "conservation",
+        "label": "Protected island wildlife",
+        "text": "Western Australia's Rottnest Island regulations prohibit interfering with protected fauna and can prohibit feeding animals.",
+        "source": {
+          "label": "Western Australia Government legislation — Protected island wildlife",
+          "url": "https://www.legislation.wa.gov.au/legislation/statutes.nsf/RedirectURL?OpenAgent=&query=mrdoc_28538.htm",
+          "publisher": "Western Australia Government legislation",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      }
+    ]
+  },
+  "giant-sequoia": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "giant-sequoia-sci-01",
+        "category": "physical",
+        "label": "A living giant measured by volume",
+        "text": "Giant sequoias are among the world's largest organisms by wood volume and can live for thousands of years.",
+        "source": {
+          "label": "USDA Forest Service — A living giant measured by volume",
+          "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
+          "publisher": "USDA Forest Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-02",
+        "category": "ecology",
+        "label": "A small native range",
+        "text": "Wild giant sequoias occur naturally in isolated groves on the western slope of California's Sierra Nevada.",
+        "source": {
+          "label": "USDA Forest Service — A small native range",
+          "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
+          "publisher": "USDA Forest Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-03",
+        "category": "appearance",
+        "label": "Thick, low-resin bark",
+        "text": "Their thick, relatively fire-resistant bark is one adaptation to recurring fires in their native forests.",
+        "source": {
+          "label": "USDA Forest Service — Thick, low-resin bark",
+          "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
+          "publisher": "USDA Forest Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-04",
+        "category": "ecology",
+        "label": "Fire opens the next generation's habitat",
+        "text": "Periodic low- to moderate-intensity fires can create open ground and sunlight needed for successful giant sequoia seedlings.",
+        "source": {
+          "label": "U.S. National Park Service — Fire opens the next generation's habitat",
+          "url": "https://www.nps.gov/seki/learn/nature/giant-sequoias-and-fire.htm",
+          "publisher": "U.S. National Park Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-05",
+        "category": "ecology",
+        "label": "Seeds need suitable soil",
+        "text": "Sequoia seeds germinate and establish more successfully on exposed mineral soil and in sunny openings than beneath dense shade.",
+        "source": {
+          "label": "U.S. National Park Service — Seeds need suitable soil",
+          "url": "https://home.nps.gov/seki/learn/nature/bigtrees.htm",
+          "publisher": "U.S. National Park Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-06",
+        "category": "ecology",
+        "label": "Restoration after fire exclusion",
+        "text": "Long-term fire exclusion increased dense competing vegetation and fuel accumulation in many groves.",
+        "source": {
+          "label": "U.S. National Park Service — Restoration after fire exclusion",
+          "url": "https://www.nps.gov/seki/learn/nature/giant-sequoias-and-fire.htm",
+          "publisher": "U.S. National Park Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-07",
+        "category": "conservation",
+        "label": "High-severity fire is different",
+        "text": "Unlike frequent, lower-severity fires, extensive crown fires have killed large mature sequoias in recent extreme wildfire seasons.",
+        "source": {
+          "label": "USDA Forest Service — High-severity fire is different",
+          "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
+          "publisher": "USDA Forest Service",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      },
+      {
+        "id": "giant-sequoia-sci-08",
+        "category": "conservation",
+        "label": "Drought weakens trees",
+        "text": "Severe multi-year drought can damage giant sequoia foliage and reduce the establishment of seedlings.",
+        "source": {
+          "label": "USDA Forest Service — Drought weakens trees",
+          "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
+          "publisher": "USDA Forest Service",
           "verifiedOn": "2026-10-21"
         },
         "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
