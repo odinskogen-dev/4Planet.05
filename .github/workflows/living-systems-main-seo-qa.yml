@@ -1,0 +1,66 @@
+name: Living Systems Production-Base SEO Zero Loss QA
+on:
+  push:
+    branches: [fix/main-living-systems-search-metadata-20261021]
+    paths: [.github/workflows/living-systems-main-seo-qa.yml]
+permissions: {contents: read}
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - name: Install dependencies and run bounded tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          node --test scripts/living-systems-discovery-qa.test.mjs
+          node scripts/living-systems-v142-zero-loss.test.mjs
+      - name: Build exact production-base candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build
+          git diff --exit-code -- products/livingsystems
+          echo SOURCE_88_BLOBS_UNTOUCHED
+      - name: Assert existing live-product authority and 12 new canonical pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {LIVING_SYSTEMS_SEARCH_PAGES} from './scripts/living-systems-search-surfaces.mjs';
+          const sitemap=fs.readFileSync('dist/sitemap.xml','utf8');
+          const robots=fs.readFileSync('dist/robots.txt','utf8');
+          assert.ok(robots.includes('Sitemap: https://4planet.org/sitemap.xml'));
+          for (const p of LIVING_SYSTEMS_SEARCH_PAGES){
+            const url='https://4planet.org/livingsystems'+p.path;
+            const html=fs.readFileSync('dist/livingsystems'+p.path+'index.html','utf8');
+            assert.equal((html.match(/rel="canonical"/g)||[]).length,1,'canonical count '+url);
+            assert.equal((html.match(/name="description"/g)||[]).length,1,'description count '+url);
+            assert.ok(html.includes('rel="canonical" href="'+url+'"'),url);
+            assert.ok(html.includes('data-4planet-lsi-discovery="true"'),url);
+            assert.ok(html.includes('<h1'),url);
+            assert.ok(sitemap.includes('<loc>'+url+'</loc>'),url);
+            console.log('SEO_PRODUCTION_BASE_LSI_PASS '+url);
+          }
+          assert.ok(!sitemap.includes('<loc>https://4planet.org/atlas</loc>'));
+          assert.ok(!sitemap.includes('<loc>https://4planet.org/species</loc>'));
+          assert.ok(!sitemap.includes('<loc>https://4planet.org/places</loc>'));
+          console.log('EXISTING_ATLAS_SPECIES_PLACE_CANONICAL_AUTHORITY_PRESERVED');
+          assert.ok(fs.existsSync('dist/now/index.html'));
+          console.log('EXISTING_SITE_BUILD_PRESERVED');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lsi-seo-main-production-base-artifacts
+          path: |
+            dist/sitemap.xml
+            dist/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/index.html
+          retention-days: 7
