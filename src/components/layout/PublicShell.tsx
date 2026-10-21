@@ -182,7 +182,7 @@ function MobileMenu({ dialogRef, onClose }: { dialogRef: React.RefObject<HTMLDiv
 }
 
 function topIsDark(pathname: string) {
-  if (pathname === "/" || pathname === "/now" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/what-we-believe" || pathname === "/about/founder") return true;
+  if (pathname === "/" || pathname === "/about" || pathname === "/about/story" || pathname === "/about/what-we-believe" || pathname === "/about/founder") return true;
   if (pathname === "/atlas" || pathname === "/impact" || pathname.startsWith("/impact/")) return true;
   if (pathname.startsWith("/domains/") || pathname.startsWith("/missions/")) return true;
   if (pathname === "/domains" || pathname.startsWith("/species/") || pathname.startsWith("/ecosystems/")) return true;

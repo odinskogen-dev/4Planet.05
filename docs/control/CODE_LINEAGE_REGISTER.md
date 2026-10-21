@@ -120,3 +120,7 @@ Donors: PR #75 and `axe/s4piens-giga-multisprint-*` not adopted (Founder 13 Oct:
 
 ## Completion rule
 The register is not complete because branches are listed. Issue #132 closes only when every remote ref and product-bearing PR is accounted for and every material donor slice is dispositioned with evidence.
+
+## EARTH NOW 02 — 21 OCT 2026
+
+ACTIVE DEVELOPMENT: sole HEIR `king/test`, exact parent `aace934a6f616bba8b525e15c0033006b7c1a1f2`; no SANDBOX. Founder ordered human-first DM Sans/White redesign, recurring logo repair and bounded live iteration. LIVE rollback source `main@a60355872550939ba8a810befbd7981570e1d35b`. Review `https://test.4planet.org/now`; production `https://4planet.org/now/`. Only tested discovery, newline and embed seams may promote; homepage/shell preserved.

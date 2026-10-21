@@ -1858,7 +1858,9 @@ export async function onRequest(context) {
       ["/magazine", "https://4planetmagazine.com/magazine/"],
     ]);
 
-    if (exactRedirects.has(pathname)) {
+    // Preserve the existing first-party renderer for valid public ATLAS embeds. Normal navigation stays canonical.
+    const atlasEmbed = pathname === "/atlas" && ["news", "species", "place", "impact", "nation", "brands", "personal", "solutions", "s4piens"].includes(url.searchParams.get("embed"));
+    if (exactRedirects.has(pathname) && !atlasEmbed) {
       return Response.redirect(exactRedirects.get(pathname) + url.search, 308);
     }
 

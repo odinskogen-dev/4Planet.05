@@ -1,0 +1,36 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const base=process.env.EARTH_BASE_URL || 'http://127.0.0.1:5173';
+const out=process.env.EARTH_PROOF_DIR || 'artifacts/earth-now';
+fs.mkdirSync(out,{recursive:true});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const results=[];
+try {
+ for(const width of [390,430,1440]) {
+  const page=await browser.newPage({viewport:{width,height:width<500?844:900},isMobile:width<500,hasTouch:width<500});
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(base+'/now/',{waitUntil:'domcontentloaded'});
+  await page.getByRole('heading',{level:1,name:/A living planet/}).waitFor();
+  const decline=page.getByRole('button',{name:'DECLINE',exact:true});if(await decline.isVisible())await decline.click();
+  await page.frameLocator('.earth-now-map iframe').locator('.maplibregl-canvas').waitFor({timeout:45000});
+  assert.equal(await page.frameLocator('.earth-now-map iframe').locator('.atlas-panel').isVisible(),false);
+  await page.screenshot({path:`${out}/now-${width}.png`,fullPage:true});
+  const metrics=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,font:getComputedStyle(document.querySelector('.discovery-page')).fontFamily,background:getComputedStyle(document.querySelector('.discovery-page')).backgroundColor,h1:parseFloat(getComputedStyle(document.querySelector('h1')).fontSize),stray:[...document.body.childNodes].filter(n=>n.nodeType===3&&/\\n/.test(n.textContent)).map(n=>n.textContent)}));
+  assert.ok(metrics.scroll<=metrics.width,`overflow ${JSON.stringify(metrics)}`);assert.match(metrics.font,/DM Sans/);assert.equal(metrics.background,'rgb(255, 255, 255)');assert.ok(metrics.h1<=48);assert.equal(metrics.stray.length,0);
+  for(const [label,id,title] of [['Ocean','ocean','Ocean conditions'],['Land','land','Forests and land'],['Air','air','Our atmosphere'],['Life','life','Life on Earth'],['Events','events','Natural events']]){
+   await page.getByRole('button',{name:label,exact:true}).click();
+   await page.getByRole('heading',{name:title,exact:true}).waitFor();
+   assert.equal(await page.getByRole('button',{name:label,exact:true}).getAttribute('aria-pressed'),'true');
+   const frame=page.locator('.earth-now-map iframe');const src=await frame.getAttribute('src');assert.ok(src.startsWith('/atlas?'));assert.equal(new URL(src,base).searchParams.get('embed'),'news');
+   assert.equal(new URL(page.url()).searchParams.get('view'),id==='events'?null:id);
+  }
+  await page.getByRole('button',{name:'Ocean',exact:true}).click();await page.reload();await page.getByRole('button',{name:'Ocean',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Ocean',exact:true}).getAttribute('aria-pressed'),'true');
+  await page.getByText('About the data',{exact:true}).click();assert.ok(await page.getByText(/Earth Now means latest available/).isVisible());
+  await page.getByText('Explore all guides',{exact:true}).click();assert.equal(await page.getByRole('navigation',{name:'Earth and nature guides'}).locator('a').count(),20);
+  assert.equal(errors.length,0,JSON.stringify(errors));
+  results.push({width,metrics,categorySwitching:'PASS',reload:'PASS',disclosures:'PASS',errors});
+  await page.close();
+ }
+}finally{await browser.close();}
+fs.writeFileSync(`${out}/results.json`,JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));

@@ -1,3 +1,24 @@
+# EARTH NOW 02 — HUMAN-FIRST REPAIR — 21 OCT 2026
+
+USER ARRIVES BECAUSE: they want to understand current natural events and environmental change without technical clutter.
+ONE THING TO UNDERSTAND: choose one view; see its map, source and observation time.
+PRIMARY ACTION: choose Events, Ocean, Land, Air or Life.
+SECONDARY DEPTH: source limitations and the full guide index live in native disclosures.
+P1 / P2 / P3 / P4: real map / selected view / open full map or guide / methodology and other guides.
+WHAT CAN BE REMOVED: repeated fire rows, technical introductions, all-eight-layer default and oversized warnings.
+WHAT MUST BE REUSED: PublicShell, current ATLAS renderer/layer keys, discoveryTopics, source links, SEO and consent.
+TRUTH BOUNDARY: latest available is not real time; retain source/date/coverage limitations; no new data or observations.
+MOBILE-FIRST RISK: overflow, undersized touch targets, blocked cross-origin frame, oversized type and text concatenation.
+HUMAN SUCCESS: readable 390/430px view, functional URL-persisted category selection, no stray escaped newlines, visible map, unchanged homepage composition.
+BRAND PREFLIGHT: DM Sans throughout discovery; White #FFFFFF / Black #000000; controlled blue; 16px reading, 32–48px display; shared soft geometry, thin rules and whitespace; documentary map is dominant anchor. Defer technical depth.
+AUTHORITY: Founder explicitly ordered Earth Now and logo repairs with live iteration in this conversation on 21 Oct 2026. HEIR king/test parent aace934a6f616bba8b525e15c0033006b7c1a1f2; no sandbox; LIVE main a60355872550939ba8a810befbd7981570e1d35b read-only rollback/source donor. Scope only discovery UI, exact newline generation and same-origin NEWS embedding. No wholesale HEIR promotion.
+PROGRAMME ADMISSION: not applicable; bounded repair to existing product. EXECUTION: deterministic edits/build/browser QA. Reversible via exact prior production deployment.
+DONOR: preserve existing live homepage and shell unchanged; HEIR discovery evidence/layout primitives adapted, old oversized dark treatment rejected. NASA Worldview category and preselected-view mechanisms used, no visual copying.
+MAKER != JUDGE: independent exact-diff review required; automated verification does not confer Founder visual acceptance or Gold.
+WRITEBACK: existing Project Lead CURRENT/issue #132; no new project or system.
+
+---
+
 # ATLAS — PUBLIC DOMAIN MARK FAIL-CLOSED RIGHTS BOUNDARY — 21 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

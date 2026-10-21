@@ -108,15 +108,18 @@ test("every discovery page uses the shared ATLAS embed seam and public shell", (
   assert.match(page, /LAST CHECKED/);
 });
 
-test("discovery embeds the canonical ATLAS host instead of creating a second map runtime", () => {
-  assert.match(page, /https:\/\/4planetatlas\.com\/\?/);
+test("discovery embeds the first-party ATLAS renderer instead of a blocked cross-origin frame", () => {
+  assert.match(page, /return `\/atlas\?/);
+  const middleware = read("functions/_middleware.js");
+  assert.match(middleware, /pathname === "\/atlas" && \["news", "species", "place"/);
+  assert.match(middleware, /exactRedirects.has\(pathname\) && !atlasEmbed/);
   assert.match(page, /params\.set\("embed", embedKind\.toLowerCase\(\)\)/);
   assert.doesNotMatch(page, /new maplibregl\.Map/);
 });
 
 test("Earth Now is discoverable through the existing Master Brand OS navigation", () => {
   assert.match(shell, /\["EARTH NOW", "WHAT IS HAPPENING", "\/now"\]/);
-  assert.match(shell, /pathname === "\/now"/);
+  assert.doesNotMatch(shell.match(/function topIsDark[\s\S]*?\n\}/)?.[0] ?? "", /pathname === "\/now"/);
   assert.match(css, /DISCOVERY ENGINE 01/);
   assert.match(css, /--discovery-accent:#2E2EFF/);
   assert.match(css, /background:#080808/);
