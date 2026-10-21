@@ -1,4 +1,4 @@
-// Individual fact-source traceability; no unapproved Gold inference.
+// Individual original scientific and institutional source-linked facts; none self-certified Gold.
 export const sciencePacks = {
   "koala": {
     "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
@@ -1414,6 +1414,333 @@ export const sciencePacks = {
           "verifiedOn": "2026-10-21"
         },
         "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      }
+    ]
+  },
+  "axolotl": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "axolotl-sci-01",
+        "category": "appearance",
+        "label": "Why do axolotls keep their gills?",
+        "text": "Wild axolotls generally remain aquatic through adulthood, retaining external gills and a larval-like body form while becoming reproductively mature.",
+        "source": {
+          "label": "UNAM Journal of Scientific Communication — Why do axolotls keep their gills?",
+          "url": "https://www.revista.unam.mx/2019v20n1/el-mitico-monstruo-del-lago-la-conservacion-del-ajolote-de-xochimilco/",
+          "publisher": "UNAM Journal of Scientific Communication",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-02",
+        "category": "appearance",
+        "label": "Can axolotls regrow limbs?",
+        "text": "Experimental work shows axolotls can regenerate complex limb tissues, including structures associated with joints after injury.",
+        "source": {
+          "label": "University of California Irvine, PLOS ONE — Can axolotls regrow limbs?",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3503958/",
+          "publisher": "University of California Irvine, PLOS ONE",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-03",
+        "category": "ecology",
+        "label": "Where do wild axolotls survive?",
+        "text": "The Xochimilco wetland system in Mexico City is a crucial remnant habitat for the Mexican axolotl, a species with a very limited wild range.",
+        "source": {
+          "label": "UNAM Scientific Communication — Where do wild axolotls survive?",
+          "url": "https://www.dgcs.unam.mx/boletin/bdboletin/2023_890.html",
+          "publisher": "UNAM Scientific Communication",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-04",
+        "category": "ecology",
+        "label": "A freshwater predator",
+        "text": "Research into the Xochimilco food web found axolotls using a more diverse trophic niche than introduced carp and tilapia in the studied system.",
+        "source": {
+          "label": "UNAM original ecological study — A freshwater predator",
+          "url": "https://produccion.siia.unam.mx/Publicaciones/ProdCientif/PublicacionFrw.aspx?id=281578&scopus=0",
+          "publisher": "UNAM original ecological study",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-05",
+        "category": "ecology",
+        "label": "Why study their life cycle?",
+        "text": "Axolotl embryos and juveniles provide researchers with an unusual model for understanding development and regeneration across life stages.",
+        "source": {
+          "label": "Peer-reviewed regeneration review — Why study their life cycle?",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9536427/",
+          "publisher": "Peer-reviewed regeneration review",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-06",
+        "category": "conservation",
+        "label": "Introduced fish compete",
+        "text": "Carp and tilapia introduced for aquaculture dominate parts of the Xochimilco food web and overlap with wild axolotl resources.",
+        "source": {
+          "label": "UNAM original ecological study — Introduced fish compete",
+          "url": "https://produccion.siia.unam.mx/Publicaciones/ProdCientif/PublicacionFrw.aspx?id=281578&scopus=0",
+          "publisher": "UNAM original ecological study",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-07",
+        "category": "conservation",
+        "label": "Urban freshwater under pressure",
+        "text": "Pollution, urbanisation and the loss of wetland habitat are documented pressures associated with the species' severe wild decline.",
+        "source": {
+          "label": "UNAM Scientific Communication — Urban freshwater under pressure",
+          "url": "https://www.dgcs.unam.mx/boletin/bdboletin/2023_890.html",
+          "publisher": "UNAM Scientific Communication",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "axolotl-sci-08",
+        "category": "conservation",
+        "label": "Restoring wetland refuges",
+        "text": "University researchers and local conservation programmes have proposed restoring chinampas, refuges and water quality to protect surviving axolotls.",
+        "source": {
+          "label": "UNAM Scientific Communication — Restoring wetland refuges",
+          "url": "https://www.dgcs.unam.mx/boletin/bdboletin/2023_890.html",
+          "publisher": "UNAM Scientific Communication",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      }
+    ]
+  },
+  "komodo-dragon": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "komodo-dragon-sci-01",
+        "category": "appearance",
+        "label": "How large do Komodo dragons grow?",
+        "text": "Komodo dragons are the largest living lizards; wild males are generally larger and heavier than wild females.",
+        "source": {
+          "label": "Smithsonian National Zoo — How large do Komodo dragons grow?",
+          "url": "https://nationalzoo.si.edu/animals/komodo-dragon",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-02",
+        "category": "ecology",
+        "label": "Where do they live in the wild?",
+        "text": "Wild Komodo dragons occupy a small number of Indonesian Lesser Sunda islands, including Komodo, Rinca and Flores.",
+        "source": {
+          "label": "San Diego Zoo Wildlife Alliance — Where do they live in the wild?",
+          "url": "https://animals.sandiegozoo.org/animals/komodo-dragon",
+          "publisher": "San Diego Zoo Wildlife Alliance",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-03",
+        "category": "ecology",
+        "label": "What do adult dragons eat?",
+        "text": "Adults hunt and scavenge available animals such as deer and wild pigs, with prey choice changing as lizards grow.",
+        "source": {
+          "label": "San Diego Zoo Wildlife Alliance — What do adult dragons eat?",
+          "url": "https://animals.sandiegozoo.org/animals/komodo-dragon",
+          "publisher": "San Diego Zoo Wildlife Alliance",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-04",
+        "category": "appearance",
+        "label": "Tongue-led scent tracking",
+        "text": "Komodo dragons extend a forked tongue to collect airborne chemical clues, then analyse them using specialised sensory organs.",
+        "source": {
+          "label": "Smithsonian National Zoo — Tongue-led scent tracking",
+          "url": "https://nationalzoo.si.edu/animals/komodo-dragon",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-05",
+        "category": "ecology",
+        "label": "Young dragons climb trees",
+        "text": "Juvenile Komodo dragons often spend time in trees, where access to small prey and avoidance of larger predators may improve survival.",
+        "source": {
+          "label": "San Diego Zoo Wildlife Alliance — Young dragons climb trees",
+          "url": "https://animals.sandiegozoo.org/animals/komodo-dragon",
+          "publisher": "San Diego Zoo Wildlife Alliance",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-06",
+        "category": "ecology",
+        "label": "Savanna island landscapes",
+        "text": "The species uses grassland, forest and scrubland mosaics across its limited island habitats rather than living only in rainforest.",
+        "source": {
+          "label": "Smithsonian National Zoo — Savanna island landscapes",
+          "url": "https://nationalzoo.si.edu/animals/news/how-dangerous-are-komodo-dragons-and-other-komodo-dragon-facts",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-07",
+        "category": "conservation",
+        "label": "Restricted island range",
+        "text": "The species' naturally limited island distribution makes it especially vulnerable to habitat pressures and changing coastal conditions.",
+        "source": {
+          "label": "Smithsonian National Zoo — Restricted island range",
+          "url": "https://nationalzoo.si.edu/animals/news/how-dangerous-are-komodo-dragons-and-other-komodo-dragon-facts",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "komodo-dragon-sci-08",
+        "category": "conservation",
+        "label": "Are Komodo dragons endangered?",
+        "text": "National Geographic reports the species as globally Endangered; that category is distinct from the conservation status of every individual island population.",
+        "source": {
+          "label": "National Geographic — Are Komodo dragons endangered?",
+          "url": "https://www.nationalgeographic.com/animals/reptiles/facts/komodo-dragon",
+          "publisher": "National Geographic",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      }
+    ]
+  },
+  "saltwater-crocodile": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "saltwater-crocodile-sci-01",
+        "category": "appearance",
+        "label": "The largest living reptile",
+        "text": "Crocodylus porosus is the largest living reptile, with males typically growing considerably larger than females.",
+        "source": {
+          "label": "Australian Museum — The largest living reptile",
+          "url": "https://australian.museum/learn/animals/reptiles/estuarine-crocodile/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-02",
+        "category": "appearance",
+        "label": "How do crocodiles sense water?",
+        "text": "Eyes and nostrils sit high on the head, allowing the animal to watch and breathe with much of its body submerged.",
+        "source": {
+          "label": "Australian Museum — How do crocodiles sense water?",
+          "url": "https://australian.museum/learn/animals/reptiles/estuarine-crocodile/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-03",
+        "category": "ecology",
+        "label": "Where does a saltie live?",
+        "text": "Saltwater crocodiles live in tidal rivers, mangroves, coastal wetlands and freshwater swamps of northern Australia and parts of the Indo-Pacific.",
+        "source": {
+          "label": "Australia State of the Environment — Where does a saltie live?",
+          "url": "https://soe.dcceew.gov.au/coasts/environment/coastal-species",
+          "publisher": "Australia State of the Environment",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-04",
+        "category": "ecology",
+        "label": "A versatile estuarine predator",
+        "text": "Adult saltwater crocodiles ambush aquatic and terrestrial prey; different life stages take different-sized animals.",
+        "source": {
+          "label": "Australian Museum — A versatile estuarine predator",
+          "url": "https://australian.museum/learn/animals/reptiles/estuarine-crocodile/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-05",
+        "category": "ecology",
+        "label": "Nesting mounds in the wet season",
+        "text": "Females build mound nests from vegetation and soil near water and guard nesting sites during the breeding period.",
+        "source": {
+          "label": "Australian Museum — Nesting mounds in the wet season",
+          "url": "https://australian.museum/learn/animals/reptiles/estuarine-crocodile/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-06",
+        "category": "ecology",
+        "label": "Temperature shapes hatchlings",
+        "text": "Incubation temperature affects sex development in crocodilians, making nest microclimate biologically important.",
+        "source": {
+          "label": "Australian Museum — Temperature shapes hatchlings",
+          "url": "https://australian.museum/learn/animals/reptiles/estuarine-crocodile/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-07",
+        "category": "conservation",
+        "label": "Recovery after overhunting",
+        "text": "Australian saltwater crocodile populations recovered in many monitored areas following legal protection introduced in the 1970s.",
+        "source": {
+          "label": "Australia State of the Environment — Recovery after overhunting",
+          "url": "https://soe.dcceew.gov.au/coasts/environment/coastal-species",
+          "publisher": "Australia State of the Environment",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "saltwater-crocodile-sci-08",
+        "category": "conservation",
+        "label": "Safety and conservation coexist",
+        "text": "Northern Territory management explicitly balances human safety, conservation, regional monitoring and regulated harvest.",
+        "source": {
+          "label": "Northern Territory Government — Safety and conservation coexist",
+          "url": "https://nt.gov.au/environment/animals/wildlife-in-nt/crocodiles/management-program-for-the-saltwater-crocodile",
+          "publisher": "Northern Territory Government",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }
     ]
   }
