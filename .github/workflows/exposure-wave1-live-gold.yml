@@ -1,0 +1,62 @@
+name: MAX EXPOSURE W1 Independent Live GOLD Audit
+on:
+  push:
+    branches: [fix/exposure-wave1-main-20261021]
+    paths: [.github/workflows/exposure-wave1-live-gold.yml]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Independently verify real public 4planet.org production after W1
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {LIVING_SYSTEMS_SEARCH_PAGES} from './scripts/living-systems-search-surfaces.mjs';
+          const origin='https://4planet.org';
+          async function get(p){
+            const r=await fetch(origin+p,{redirect:'follow',signal:AbortSignal.timeout(30000),headers:{'User-Agent':'4PLANET-W1-Gold-ReadOnly/1.0'}});
+            return {status:r.status,url:r.url,body:await r.text(),h:r.headers};
+          }
+          const sm=await get('/sitemap.xml');assert.equal(sm.status,200);
+          let locs=[...sm.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(x=>x[1]);
+          assert.equal(locs.length,70,'expected 58 previously public and 12 new LS pages');
+          assert.equal(new Set(locs).size,70);
+          const robots=await get('/robots.txt');assert.equal(robots.status,200);
+          for(const bot of ['Googlebot','Bingbot','OAI-SearchBot'])assert.ok(robots.body.includes('User-agent: '+bot));
+          assert.ok(robots.body.includes('Disallow: /os$'));
+          assert.ok(robots.body.includes('Disallow: /os/'));
+          assert.ok(!robots.body.includes('Disallow: /os\n'));
+          assert.ok(robots.body.includes('Sitemap: https://4planet.org/sitemap.xml'));
+          const escape=(s)=>s.replace(/[.*+?^$\{}()|[\]\\]/g,'\\$&');
+          for(const p of LIVING_SYSTEMS_SEARCH_PAGES){
+            const path='/livingsystems'+p.path;
+            const r=await get(path);
+            assert.equal(r.status,200,path);
+            assert.ok(locs.includes(origin+path),path+' sitemap');
+            assert.match(r.body,/<h1(?:\s|>)/i,path+' h1');
+            assert.ok(r.body.includes('<link rel="canonical" href="'+origin+path+'"'),path+' canonical');
+            assert.ok(r.body.includes('data-4planet-lsi-discovery="true"'),path+' jsonld');
+            assert.ok(r.body.includes('name="robots" content="index,follow,max-image-preview:large"'),path+' robots');
+            assert.ok(!r.h.get('x-robots-tag')?.includes('noindex'),path+' xrobots');
+            console.log('W1_PRODUCTION_LSI_GOLD',path,r.body.length);
+          }
+          for(const p of ['/','/now/','/oslofjord','/about','/impact']){
+            const r=await get(p);assert.equal(r.status,200,p);assert.ok(r.body.length>2000,p);console.log('W1_PRESERVED_PUBLIC',p,r.body.length);
+          }
+          const now=await get('/now/');
+          for(const required of ['A living planet.','Natural events','Explore reported wildfires','Earthquakes','NASA FIRMS','USGS']){
+            assert.ok(now.body.includes(required),'Earth Now requirement '+required);
+          }
+          const atlas=await fetch(origin+'/atlas',{redirect:'follow',signal:AbortSignal.timeout(25000)});
+          assert.ok(atlas.url.startsWith('https://4planetatlas.com/'),'ATLAS canonical owner preserved');
+          console.log('W1_70_SITEMAP_ALL_12_LSI_OSLOFJORD_BOTS_EARTH_NOW_LIVE_GOLD_PASS');
+          NODE
