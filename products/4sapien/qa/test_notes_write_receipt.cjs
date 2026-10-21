@@ -26,12 +26,18 @@ const addBody=source.match(/async function addNote\(\)\{([\s\S]*?)\}\nasync func
 for(const [name,body] of [['update',updateBody],['create',addBody]]){
   assert.match(body,/Prefer:'return=representation'/,name+' must request authoritative row representation');
   assert.match(body,/activeNoteReceipt\(/,name+' must validate the returned row');
+  assert.match(body,/const attempt=await authAttempt\(\)/,name+' must capture the initiating identity and auth epoch');
+  assert.match(body,/if\(!eventAttemptCurrent\(attempt\)\)return;/,name+' must reject a stale post-write continuation');
+  assert.match(body,/renderNotes\(attempt\.epoch\)/,name+' must render only inside the initiating auth epoch');
 }
 assert.match(updateBody,/select=id,content,state/);
 assert.match(updateBody,/NOTE_UPDATE_NOT_CONFIRMED/);
 assert.ok(updateBody.indexOf('activeNoteReceipt')<updateBody.indexOf("emitEvent('note_updated'"),'update event must follow receipt confirmation');
+assert.match(updateBody,/emitEvent\('note_updated','brain',\{surface:'home_notes',note_id:saved\.id\},attempt\)/);
 assert.match(addBody,/select=id,content,state/);
 assert.match(addBody,/NOTE_CREATE_NOT_CONFIRMED/);
 assert.ok(addBody.indexOf('activeNoteReceipt')<addBody.indexOf("emitEvent('note_created'"),'create event must follow receipt confirmation');
+assert.match(addBody,/user_id:attempt\.userId/);
+assert.match(addBody,/emitEvent\('note_created','brain',\{surface:'home_notes',note_id:saved\.id\},attempt\)/);
 
 console.log('4SAPIEN note write receipt contract PASS');
