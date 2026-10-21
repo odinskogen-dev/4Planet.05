@@ -4,7 +4,8 @@ import { sciencePacks as stage1 } from "./science-claims-stage1.mjs";
 import { scienceStage2 as stage2 } from "./science-claims-stage2.mjs";
 import { scienceStage3 as stage3 } from "./science-claims-stage3.mjs";
 import { scienceStage4 as stage4 } from "./science-claims-stage4.mjs";
-const sciencePacks = { ...stage1, ...stage2, ...stage3, ...stage4 };
+import { scienceStage5 as stage5 } from "./science-claims-stage5.mjs";
+const sciencePacks = { ...stage1, ...stage2, ...stage3, ...stage4, ...stage5 };
 
 const dataDir=process.env.SPECIES_DATA_DIR||path.join(process.cwd(),"public/species-data/v1");
 const reportDir=process.env.SPECIES_REPORT_DIR||path.join(process.cwd(),"reports/species-next61");
