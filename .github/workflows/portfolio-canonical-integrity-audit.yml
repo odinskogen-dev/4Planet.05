@@ -1,0 +1,64 @@
+name: 4PLANET Canonical Sitemap Integrity Audit (Read Only)
+on:
+  push:
+    branches: [audit/portfolio-seo-ai-20261021]
+    paths: [.github/workflows/portfolio-canonical-integrity-audit.yml]
+permissions:
+  contents: read
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - name: Check every canonical sitemap page on 4PLANET and ATLAS without changing live
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/portfolio-seo
+          python3 - <<'PY'
+          import urllib.request,urllib.error,urllib.parse,concurrent.futures,re,json,collections,xml.etree.ElementTree as E
+          ROOTS=['https://4planet.org','https://4planetatlas.com','https://4planetmagazine.com']
+          headers={'User-Agent':'4PLANET-Canonical-Integrity-ReadOnly/1.0'}
+          def fetch(u,limit=140000):
+            req=urllib.request.Request(u,headers=headers)
+            try:
+              with urllib.request.urlopen(req,timeout=28) as r:return r.status,r.url,r.headers.get('Content-Type',''),r.read(limit).decode('utf-8','replace')
+            except urllib.error.HTTPError as e:return e.code,e.url,e.headers.get('Content-Type',''),''
+            except Exception as e:return 0,u,'',str(e)[:190]
+          allrows=[]
+          for origin in ROOTS:
+            status,url,mime,xml=fetch(origin+'/sitemap.xml',1800000)
+            if status!=200:print('SITEMAP_UNAVAILABLE',origin,status);continue
+            x=E.fromstring(xml)
+            urls=[];imageUrls=[]
+            for u in x.iter():
+              if u.tag.endswith('}url') or u.tag=='url':
+                loc=next((c.text for c in u if c.tag.endswith('}loc') or c.tag=='loc'),None)
+                if loc:urls.append(loc)
+              if u.tag.endswith('}image') or u.tag=='image':
+                loc=next((c.text for c in u if c.tag.endswith('}loc') or c.tag=='loc'),None)
+                if loc:imageUrls.append(loc)
+            print('SITEMAP_TYPES',json.dumps({'origin':origin,'pageUrls':len(urls),'imageUrls':len(imageUrls),'dupes':len(urls)-len(set(urls)),'xmlBytes':len(xml)}))
+            def check(u):
+              code,final,kind,html=fetch(u)
+              canon=re.findall(r'<link[^>]+rel=["\\x27]canonical["\\x27][^>]+href=["\\x27]([^"\\x27]+)',html,re.I)
+              if not canon:canon=re.findall(r'<link[^>]+href=["\\x27]([^"\\x27]+)["\\x27][^>]+rel=["\\x27]canonical',html,re.I)
+              title=re.findall(r'<title>(.*?)</title>',html,re.I|re.S)
+              descr=re.findall(r'<meta[^>]+name=["\\x27]description["\\x27][^>]*>',html,re.I)
+              robot=re.findall(r'<meta[^>]+name=["\\x27]robots["\\x27][^>]*>',html,re.I)
+              return {'u':u,'code':code,'final':final,'content':kind.split(';')[0],'canonical':canon[0] if canon else None,'title':title[0][:90] if title else None,'description':bool(descr),'robots':robot[0][:100] if robot else None,'h1':bool(re.search(r'<h1(?:\\s|>)',html,re.I))}
+            with concurrent.futures.ThreadPoolExecutor(max_workers=14) as pool:
+              rows=list(pool.map(check,urls))
+            allrows.extend(rows)
+            alarms=[r for r in rows if r['code']!=200 or r['u']!=r['final'] or (r['canonical'] is not None and r['canonical'].rstrip('/')!=r['u'].rstrip('/')) or r['canonical'] is None or r['title'] is None or not r['h1']]
+            print('SITEMAP_AUDIT_SUMMARY',json.dumps({'origin':origin,'rows':len(rows),'crossOriginRedirects':sum(urllib.parse.urlparse(r['final']).netloc!=urllib.parse.urlparse(r['u']).netloc for r in rows),'canonicalMismatch':sum(r['canonical'] is not None and r['canonical'].rstrip('/')!=r['u'].rstrip('/') for r in rows),'canonicalMissing':sum(r['canonical'] is None for r in rows),'brokenHttp':sum(r['code']!=200 for r in rows),'titleMissing':sum(r['title'] is None for r in rows),'h1Missing':sum(not r['h1'] for r in rows),'alerts':len(alarms)}))
+            for r in alarms[:50]:print('SITEMAP_ANOMALY',json.dumps(r)[:520])
+          with open('/tmp/portfolio-seo/sitemap-integrity.json','w') as f:json.dump(allrows,f,ensure_ascii=False,indent=2)
+          print('PORTFOLIO_CANONICAL_AUDIT_DONE',len(allrows))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portfolio-canonical-indexability-report
+          path: /tmp/portfolio-seo/sitemap-integrity.json
+          retention-days: 14
