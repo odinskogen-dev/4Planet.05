@@ -218,12 +218,20 @@ for(let i=0;i<seeds.length;i++){
  if(row.editorialSource.status!=="URL_AND_TAXON_VERIFIED_NOT_CLAIM_AUDITED")row.errors.push("INDEPENDENT_SPECIES_BIOGRAPHY_SOURCE_NOT_FOUND");
  let img=[];
  try{
-  let wiki=null;
-  try{wiki=await wikiLeadPhoto(s[2]);}catch(e){row.errors.push("WIKIPEDIA_LEAD "+e.message);}
+  // Founder P0: no pictures of captive or deceased animals.
+  // Wild research-grade observation with captive=false is minimum origin gate.
+  // It still cannot prove the animal is alive in an image: require human Gold.
+  // A Wikipedia lead image with unknown captivity status is NOT an animal hero.
+  const animal=s[3]!=="Plants";
   img=await inatImages(s[2]);
-  // Prefer taxon-article lead for species identity and composition. Keep
-  // field observation candidates separate and legally source-traced.
-  if(wiki)img=[wiki,...img.filter(p=>p.original!==wiki.original)];
+  if(!animal) {
+    try {
+      const wiki=await wikiLeadPhoto(s[2]);
+      if(wiki)img=[wiki,...img.filter(p=>p.original!==wiki.original)];
+    }catch(e){row.errors.push("PLANT_WIKIPEDIA_LEAD "+e.message);}
+  }
+  if(animal&&img.some(p=>p.captive!==false||p.observationQuality!=="RESEARCH_GRADE"))
+    throw Error("LIVE_WILD_ANIMAL_PROVENANCE_FAIL: "+slug);
   if(img.length<2)row.errors.push("LESS_THAN_TWO_VERIFIABLE_IMAGE_CANDIDATES");
   if(!img.length)row.errors.push("NO_PHOTOS_MATCHING_SOURCE_AND_RIGHTS_GATES");
  }
@@ -240,7 +248,7 @@ for(let i=0;i<seeds.length;i++){
    row.jsonCreated=true;
   }
  }else{row.pictures=img;row.quality.licenceMetadata=img.length>0;}
- row.photoOrigin = "iNaturalist exact-species research-grade wild observation with photo-specific commercial-safe license";
+ row.photoOrigin = s[3]==="Plants" ? "iNaturalist wild observation or taxon-specific Commons lead, visual rights review pending" : "iNaturalist research-grade wild (=not captive) observation; alive/dead and framing require human visual sign-off";
  report.records.push(row);
  console.log("SPECIES61 "+JSON.stringify({slug,taxon:row.quality.taxon,photos:row.pictures.length,created:row.jsonCreated,issues:row.errors}));
  if(i%5===0)await sleep(300);
