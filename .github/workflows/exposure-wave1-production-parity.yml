@@ -1,0 +1,99 @@
+name: MAX EXPOSURE W1 Production-Parity Safe Preview
+on:
+  push:
+    branches: [fix/exposure-wave1-main-20261021]
+    paths: [.github/workflows/exposure-wave1-production-parity.yml]
+permissions:
+  contents: read
+jobs:
+  parity-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PUBLIC_SITE_ORIGIN: https://4planet.org
+      VITE_PUBLIC_SITE_ORIGIN: https://4planet.org
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - name: Fail-closed original-source and SEO quality gates
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          node --test scripts/living-systems-discovery-qa.test.mjs
+          node --test scripts/discovery-seo-contract.test.mjs
+          echo MAXEXPOSURE_SOURCE_AND_SEO_TESTS_PASS
+      - name: Build real production carrier in isolation
+        run: |
+          set -euo pipefail
+          npm run build
+          test -f dist/now/index.html
+          test -f dist/livingsystems/index.html
+          test -f dist/atlas/index.html
+          grep -Fq 'Disallow: /os$' dist/robots.txt
+          ! grep -Fxq 'Disallow: /os' dist/robots.txt
+          grep -Fq 'https://4planet.org/livingsystems/species/western-honey-bee/' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/oslofjord</loc>' dist/sitemap.xml
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {LIVING_SYSTEMS_SEARCH_PAGES} from './scripts/living-systems-search-surfaces.mjs';
+          const sm=fs.readFileSync('dist/sitemap.xml','utf8');
+          for(const p of LIVING_SYSTEMS_SEARCH_PAGES){
+            const f='dist/livingsystems'+p.path+'index.html';
+            const body=fs.readFileSync(f,'utf8');
+            const u='https://4planet.org/livingsystems'+p.path;
+            assert.ok(body.includes('<link rel="canonical" href="'+u+'"/>' ));
+            assert.ok(body.includes('data-4planet-lsi-discovery="true"'));
+            assert.ok(sm.includes('<loc>'+u+'</loc>'));
+            assert.ok(body.includes('<h1'));
+            console.log('LSI_W1_CANONICAL_PASS',p.path);
+          }
+          console.log('WAVE1_12_LSI_MAIN_BUILD_NO_SOURCE_LOSS_PASS');
+          NODE
+      - name: Record immutable current live and Pages production truth
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "CANDIDATE_HEAD_SHA=$GITHUB_SHA"
+          git log -1 --format='PARENT_COMMIT=%P'
+          echo "EXPECTED_PARENT=abeb4825c21629791b5e57180db8d53adaaf9826"
+          current=$(curl -fsSL --max-time 25 -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/repos/odinskogen-dev/4Planet.05/branches/main | jq -r '.commit.sha')
+          echo "CURRENT_MAIN_SHA=$current"
+          test "$current" = abeb4825c21629791b5e57180db8d53adaaf9826 || { echo MAIN_MOVED_BLOCKED; exit 1; }
+          for path in /now/ /livingsystems/ /atlas/ /about /impact /robots.txt /sitemap.xml; do
+            key=$(printf '%s' "$path" | tr / _)
+            code=$(curl -fsSL --max-time 35 -o "/tmp/live$key" -w '%{http_code}' "https://4planet.org$path")
+            test "$code" = 200
+            printf 'EXISTING_LIVE %s sha256=%s bytes=%s\n' "$path" "$(sha256sum "/tmp/live$key"|cut -d' ' -f1)" "$(wc -c < "/tmp/live$key")"
+          done
+          for path in now/index.html livingsystems/index.html atlas/index.html; do
+            printf 'CANDIDATE_HTML %s sha256=%s bytes=%s\n' "$path" "$(sha256sum "dist/$path"|cut -d' ' -f1)" "$(wc -c < "dist/$path")"
+          done
+          if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            curl -fsSL --max-time 30 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/4planet-05/deployments?per_page=5" -o /tmp/w1-deployments.json
+            jq -c '.result[]|{id,environment,url,created_on,commit_hash:.deployment_trigger.metadata.commit_hash,branch:.deployment_trigger.metadata.branch}' /tmp/w1-deployments.json | head -n 5 | while read -r line; do echo "PRODUCTION_PAGES_DEPLOYMENT $line"; done
+          fi
+          echo WAVE1_PRODUCTION_BASELINE_CAPTURED
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Isolated Cloudflare candidate only, no main production change
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch exposure-wave1-preview-20261021 --commit-hash "$GITHUB_SHA" --commit-message "MAX EXPOSURE W1 isolated candidate, no live change" 2>&1 | tee /tmp/exposure-deploy.log
+          url=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.4planet-05\.pages\.dev' /tmp/exposure-deploy.log | head -n 1)
+          test -n "$url"
+          for p in /livingsystems/ /livingsystems/species/western-honey-bee/ /livingsystems/ecosystems/EC_AMAZON_RAINFOREST/ /now/ /sitemap.xml /robots.txt; do
+            code=$(curl -fsSL --max-time 30 -o /tmp/w1-page -w '%{http_code}' "$url$p")
+            test "$code" = 200
+            echo "WAVE1_PREVIEW_200 $p"
+          done
+          echo "WAVE1_SAFE_PREVIEW $url"
+          echo "Preview $url" >> "$GITHUB_STEP_SUMMARY"
