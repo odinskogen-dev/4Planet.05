@@ -1,0 +1,90 @@
+{
+  "audit": "Visual red-team review of first research-grade wild-observation hero sheet",
+  "sampleSource": "GitHub Actions run 39514836445; artifact 12308020773",
+  "date": "2026-10-21",
+  "evidence": "61 labelled thumbnails visually inspected; these exact photo IDs are prohibited for the corresponding species as a 4SPECIES hero (or gallery unless separately justified)",
+  "caveat": "Manual preview image-quality classification, not formal certification of capture circumstances, legal rights, or all future photographs. Captivity/death certainty is labelled, not inferred from absence of evidence.",
+  "rejects": [
+    {
+      "slug": "red-panda",
+      "photoId": 455658057,
+      "reason": "Ground traces; red panda not visible"
+    },
+    {
+      "slug": "chinese-pangolin",
+      "photoId": 640031637,
+      "reason": "Burrow and soil rather than a visible living pangolin"
+    },
+    {
+      "slug": "sea-otter",
+      "photoId": 216290669,
+      "reason": "Skull/bones of dead animal; explicit founder prohibition"
+    },
+    {
+      "slug": "west-indian-manatee",
+      "photoId": 61186254,
+      "reason": "Beached dead/carcass appearance; explicit founder prohibition"
+    },
+    {
+      "slug": "snowy-owl",
+      "photoId": 175457284,
+      "reason": "OwI on artificial structure/ambiguous captive setting; no demonstrated wild context"
+    },
+    {
+      "slug": "scarlet-macaw",
+      "photoId": 53458435,
+      "reason": "Drawing/illustration rather than documentary live wildlife photo"
+    },
+    {
+      "slug": "peregrine-falcon",
+      "photoId": 243839915,
+      "reason": "Distant flock/airborne dots; target falcon cannot be identified visually"
+    },
+    {
+      "slug": "indian-peafowl",
+      "photoId": 307026691,
+      "reason": "Head crop with uniform artificial backdrop; ambiguous captive/non-premium"
+    },
+    {
+      "slug": "axolotl",
+      "photoId": 321610,
+      "reason": "Animal handled in human hands; exclude founder-disallowed captive/handled imagery"
+    },
+    {
+      "slug": "saltwater-crocodile",
+      "photoId": 51609320,
+      "reason": "Crocodile presented adjacent to artificial enclosure/people; wild setting not established"
+    },
+    {
+      "slug": "panther-chameleon",
+      "photoId": 162222600,
+      "reason": "Animal physically held by a person; founder rejects captivity or handling"
+    },
+    {
+      "slug": "long-snouted-seahorse",
+      "photoId": 452478784,
+      "reason": "Seahorse physically held by a person"
+    },
+    {
+      "slug": "coconut-crab",
+      "photoId": 50101305,
+      "reason": "Crab held by human hand"
+    },
+    {
+      "slug": "giant-pacific-octopus",
+      "photoId": 78439903,
+      "reason": "Tank/aquarium-like visual; wild setting not established"
+    },
+    {
+      "slug": "venus-flytrap",
+      "photoId": 432274864,
+      "reason": "Close-up of white flowering structure, not recognisable iconic trapping leaves; fails hero search intent"
+    },
+    {
+      "slug": "komodo-dragon",
+      "photoId": 414069493,
+      "reason": "Tourist/crowd dominated background; fails wildlife-only premium hero standard"
+    }
+  ],
+  "unresolved": "All remaining images still require visual and legal signoff. This list does not mean any other photo is approved."
+}
