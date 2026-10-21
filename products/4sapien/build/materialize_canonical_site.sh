@@ -16,6 +16,7 @@ cp products/4sapien/source/4sapien-theme.js "$SITE/4sapien-theme.js"
 cp public/favicon.svg "$SITE/favicon.svg"
 python products/4sapien/build/apply_front_v2_release.py "$DROP/4sapien_app_unified.html" "$SITE/index.html"
 cp "$DROP/4sapien_food_MERGED.html" "$FOOD"
+python products/4sapien/build/apply_oauth_recovery_guard.py "$FOOD"
 
 python products/4sapien/build/apply_finance_route.py "$SITE/index.html" "$DROP/4sapien_finance_MERGED.html" "$DROP/4sapien_finance_AXE_experience_MERGED.html"
 python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
