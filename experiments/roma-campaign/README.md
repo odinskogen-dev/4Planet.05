@@ -6,6 +6,8 @@ Test build: https://roma-the-republic-campaign-01-b2li4t.v2.appdeploy.ai/
 
 This is a staged regional campaign surrounding the **existing Challenger Three.js** game, not a complete replacement for that engine.
 
+Original Challenger release SHA-256 verified from Google Drive bytes: `3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3` (2,171,887 bytes). Hash matches the canonical release record. The AppDeploy staging copy was made directly from this archive without source edits.
+
 ## Development
 
 From `experiments/roma-campaign`: `npm install && npm run dev`. The prepare step copies the unchanged local `site/roma/index.html` into `public/legacy.html` so the same-origin 3D tactical adapter works. The tracked coast and river data come from **Natural Earth ne_110m** (public domain); they depict present-day physical geography only. The map's political and military setup is an approximation under historical review. Local-region DEM/elevation data and exact tactical army composition handoff are not complete.
