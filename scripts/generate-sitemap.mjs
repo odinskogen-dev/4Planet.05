@@ -48,6 +48,7 @@ const staticRoutes = [
   "/magazine/sources",
   "/magazine/corrections",
   "/about",
+  "/about/story",
   "/privacy",
   "/join",
 ];

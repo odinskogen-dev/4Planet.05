@@ -197,3 +197,21 @@ test("IndexNow canonical sitemap source",()=>{const indexNow=read("scripts/submi
 
 
 test("about trailing slash canonical",()=>{const redirects=read("public/_redirects");assert.ok(redirects.includes("/about/  /about  301"));});
+
+test("About Story organic entry is server-readable, canonical and discoverable", () => {
+  const about = read("src/pages/v5/AboutPages.tsx");
+  assert.match(router, /path="\/about\/story" element={<AboutStory \/>}/);
+  assert.match(map, /^\s*"\/about\/story",?$/m);
+  assert.match(pre, /writeRoute\(aboutStoryPath, pageHtml/);
+  assert.match(pre, /"@type": "AboutPage"/);
+  for (const phrase of [
+    "The living planet is not an abstract issue.",
+    "Human life sits inside living systems.",
+    "Care is everywhere. Connection is not.",
+    "Make the living planet easier to see, understand and help.",
+  ]) {
+    assert.ok(about.includes(phrase), "client Story missing: " + phrase);
+    assert.ok(pre.includes(phrase), "server Story missing: " + phrase);
+  }
+});
+

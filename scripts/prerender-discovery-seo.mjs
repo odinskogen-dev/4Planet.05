@@ -96,6 +96,27 @@ writeRoute("/places", pageHtml({
   },
 }));
 
+
+const aboutStoryPath = "/about/story";
+const aboutStoryTitle = "The living planet is not an abstract issue.";
+const aboutStoryDescription = "It is the system beneath food, water, health, prosperity, freedom and almost everything people care about.";
+writeRoute(aboutStoryPath, pageHtml({
+  pathName: aboutStoryPath,
+  title: aboutStoryTitle + " | 4PLANET",
+  description: aboutStoryDescription,
+  body: `<main><p>ABOUT 4PLANET / THE STORY</p><h1>${esc(aboutStoryTitle)}</h1><p>${esc(aboutStoryDescription)}</p><h2>Human life sits inside living systems.</h2><p>Forests move water. Oceans move heat and nutrients. Soil, insects, fungi, plants and animals make food systems possible. The separation between ‘people’ and ‘nature’ is useful on an organisation chart, but false in the world itself.</p><h2>Care is everywhere. Connection is not.</h2><p>Science, field organisations, communities, companies, funders and millions of people already care about the living world. Yet understanding, participation, delivery and proof are often fragmented across different systems. 4PLANET is being built to connect those parts without weakening scientific truth.</p><h2>Make the living planet easier to see, understand and help.</h2><p>4PLANET combines Living Planet Intelligence, public products, Missions, cultural storytelling and evidence-aware action pathways. The aim is not to make ecological complexity disappear. It is to make complexity navigable enough that more people can act intelligently inside it.</p><p><a href="/about/system">Explore the 4PLANET system</a> · <a href="/about/what-we-believe">What we believe</a> · <a href="/join">Find your part</a></p></main>`,
+  jsonLd: {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: aboutStoryTitle,
+    description: aboutStoryDescription,
+    url: origin + aboutStoryPath,
+    inLanguage: "en-GB",
+    isPartOf: { "@type": "WebSite", name: "4PLANET", url: origin + "/" },
+    publisher: { "@type": "Organization", name: "4PLANET", url: origin + "/" },
+  },
+}));
+
 for (const item of species) {
   const pathName = `/species/${item.slug}`;
   const relatedPlaces = relatedPlacesForSpecies(item.slug);

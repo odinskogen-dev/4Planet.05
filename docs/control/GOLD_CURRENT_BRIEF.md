@@ -1773,3 +1773,35 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 - BASE / ROLLBACK: king/test@70ae08b5b5594c3f967f77b35cead9a3bb2871f4.
 - MAKER ≠ JUDGE: this correction does not supply Gold, merge, release or LIVE authority.
 
+# 4PLANET STORY — SERVER-READABLE ORGANIC ENTRY — 22 OCTOBER 2026
+
+**STATUS:** CONFIRMED MAX EXPOSURE DEFECT / BOUNDED HEIR CORRECTION / INDEPENDENT GOLD AND AUTHORISED RUNTIME VERIFICATION REQUIRED / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** an existing organic result can land directly on `/about/story`; the first response must explain why 4PLANET exists even before JavaScript runs.
+
+**ONE THING TO UNDERSTAND:** the living planet is the system beneath human life, and 4PLANET exists to make that system easier to see, understand and help.
+
+**PRIMARY ACTION:** read the existing 4PLANET Story, then continue to the existing System, beliefs or Join routes.
+
+**SECONDARY DEPTH:** the client-rendered visual Story remains unchanged and continues to carry the fuller editorial experience.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** existing Story headline / existing premise and truth boundary / existing About and Join links / the existing React Story after hydration.
+
+**WHAT CAN BE REMOVED:** the empty generic app shell as the only server response for an already public, measured organic landing.
+
+**WHAT MUST BE REUSED:** `AboutStory` wording and route, the existing discovery prerender helper, sitemap generator, PublicShell, Brand OS and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** this is an organisational purpose/story page. It claims no ecological outcome, partner relationship, delivered impact, live data or independent verification.
+
+**MOBILE-FIRST RISK:** no visual layout or client interaction changes; the bounded risk is crawler/server parity. Exact-head build and runtime HTML readback remain required.
+
+**HUMAN SUCCESS:** without JavaScript, the response contains one H1, substantive existing Story text, self-canonical metadata and working continuations; with JavaScript, the current visual Story remains unchanged.
+
+**QUESTION / DELETE / SIMPLIFY / REUSE:** no new story or page. Delete the empty-server-response failure, reuse approved wording, and extend the existing prerender route set only.
+
+**SIMPLEST CAPABLE EXECUTION:** deterministic build-time HTML projection plus exact source contract; no new service, content store, component or agent layer.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only code change. Base and rollback are `king/test@62927cf68ef2a8b2b00293d603cf2e30571efa34`.
+
+**MAKER ≠ JUDGE:** Factory may correct and verify the candidate. Independent Gold judges the exact SHA; deployment, search submission and LIVE release remain separately authorised.
+
