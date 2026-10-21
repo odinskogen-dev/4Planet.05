@@ -80,7 +80,7 @@ const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <cha
 fs.writeFileSync(path.join(publicDir, "rss.xml"), rss, "utf8");
 
 const robotDisallows = [
-  "/labs", "/os", "/sandbox", "/checkout", "/api", "/admin", "/auth",
+  "/labs", "/os$", "/os/", "/os?", "/sandbox", "/checkout", "/api", "/admin", "/auth",
   "/account", "/saved", "/id", "/oauth", "/4nation"
 ];
 const robotGroup = (agent) => [
