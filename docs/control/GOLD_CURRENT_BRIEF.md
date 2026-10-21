@@ -1,3 +1,25 @@
+# LIVING SYSTEMS — SOURCE-PRESERVED SEO AND AI CRAWL ENTRY — 21 OCT 2026
+
+**STATUS:** BOUNDED DISCOVERABILITY CANDIDATE / EXACT v1.4.2 SOURCE PRESERVED / INDEPENDENT GOLD AND CANONICAL LIVE RELEASE STILL REQUIRED.
+
+**USER ARRIVES BECAUSE:** They search for how species, ecosystems, ecological dependencies and human decisions are connected, and need grounded, readable answers rather than a blank JavaScript application.
+
+**PRIMARY ACTION:** Allow public readers and permitted search crawlers to discover twelve existing, substantial Living Systems pages using distinct titles, meta descriptions, canonical URLs, honest WebPage JSON-LD and existing internal links.
+
+**WHAT CHANGES:** Only existing 4PLANET public export HTML and the sole current 4planet.org sitemap. No new product, URL ownership, database, source registry, knowledge claim, or parallel sitemap.
+
+**PRESERVATION:** The 88 historical files under `products/livingsystems/` remain unchanged. HTML enhancement occurs only after the v1.4.2 export is built and before the public bundle is emitted. Existing 4SPECIES and ATLAS canonical authority remains separate.
+
+**TRUTH BOUNDARY:** This is improved crawler readiness and machine-readable context, not verified Google indexing, ranking increase, AI citation, full expert review, or proof of ecological impact. Search Console is unavailable under the current GSC Wizard subscription state.
+
+**VALIDATED PROOF:** Independent full v1.4.2 zero-loss build and bounded SEO tests passed GitHub Actions run `39569960627`. A second exact main-base build verified the same 12 pages, sitemap inclusion and preservation of ATLAS/SPECIES/PLACE route ownership in run `39570455635`.
+
+**MOBILE-FIRST RISK:** No modification of React components, interactions, assets or navigation geometry; only static HTML head metadata and sitemap entries.
+
+**GOLD / RELEASE:** Independent Gold judge and TEST KING convergence must approve the exact source candidate before any 4planet.org production deployment. No automatic full-main republish or Founder-restricted outbound send.
+
+---
+
 # ATLAS — PUBLIC DOMAIN MARK FAIL-CLOSED RIGHTS BOUNDARY — 21 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
