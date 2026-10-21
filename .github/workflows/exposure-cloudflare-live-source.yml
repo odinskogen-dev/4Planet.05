@@ -1,0 +1,32 @@
+name: MAX EXPOSURE Read-Only Cloudflare Live Source Authority
+on:
+  push:
+    branches: [fix/exposure-wave1-main-20261021]
+    paths: [.github/workflows/exposure-cloudflare-live-source.yml]
+permissions:
+  contents: read
+jobs:
+  resolve-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Resolve exact production code owner and deploy source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          API=https://api.cloudflare.com/client/v4
+          curl -fsSL --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/zones?name=4planet.org" -o /tmp/cf-zone.json
+          jq -e '.success==true and (.result|length)>=1' /tmp/cf-zone.json >/dev/null
+          acc=$(jq -r '.result[0].account.id' /tmp/cf-zone.json)
+          zone=$(jq -r '.result[0].id' /tmp/cf-zone.json)
+          echo "CF_ZONE_ACTIVE=$(jq -r '.result[0].status' /tmp/cf-zone.json)"
+          echo "CF_ZONE_ACCOUNT_PRESENT=$([ -n "$acc" ] && echo yes || echo no)"
+          curl -fsSL --max-time 30 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/accounts/$acc/pages/projects/4planet-05/deployments?per_page=15" -o /tmp/cf-pages.json
+          jq -e '.success==true' /tmp/cf-pages.json >/dev/null
+          jq -c '.result[] | {id,environment,created_on,url,trigger:.deployment_trigger.type,branch:.deployment_trigger.metadata.branch,commit:.deployment_trigger.metadata.commit_hash,message:.deployment_trigger.metadata.commit_message,stage:.latest_stage.name,stage_status:.latest_stage.status}' /tmp/cf-pages.json | head -n 12 | while IFS= read -r line; do echo "CLOUDFLARE_DEPLOY_SOURCE $line"; done
+          curl -fsSL --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/zones/$zone/workers/routes" -o /tmp/cf-routes.json
+          jq -c '.result[]? | select((.pattern|ascii_downcase)|contains("4planet.org")) | {pattern,script}' /tmp/cf-routes.json | while read -r line; do echo "CLOUDFLARE_ZONE_WORKER_ROUTE $line"; done
+          echo CLOUDFLARE_LIVE_SOURCE_READONLY_COMPLETED
