@@ -9,7 +9,8 @@ import { invertebratesPlants } from "./invertebrates-plants.mjs";
 import { sciencePacks as stage1SciencePacks } from "./science-claims-stage1.mjs";
 import { scienceStage2 } from "./science-claims-stage2.mjs";
 import { scienceStage3 } from "./science-claims-stage3.mjs";
-const sciencePacks={...stage1SciencePacks,...scienceStage2,...scienceStage3};
+import { scienceStage4 } from "./science-claims-stage4.mjs";
+const sciencePacks={...stage1SciencePacks,...scienceStage2,...scienceStage3,...scienceStage4};
 import { wildCommonsCandidates } from "./wild-commons-fallback.mjs";
 
 // Strictly non-live, non-Gold Claude V53 source-data donor. Never alter the 39.
