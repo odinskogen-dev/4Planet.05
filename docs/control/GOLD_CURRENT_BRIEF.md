@@ -1630,3 +1630,32 @@ Verified live public sitemap, preserved working animal cards, and discoverable r
 **HUMAN SUCCESS:** before reading a result, a user sees that the view ranks no more than eight mappable sources from one response page and is not the full dataset.
 **BASE / ROLLBACK:** `king/test@7dcd77c300c45922dc4060c66f3077c81126f2cf`; revert this three-file copy/contract/brief correction if independent Gold finds comprehension or layout regression.
 **MAKER ≠ JUDGE:** Factory closes the returned wording defect; independent Gold judges the exact resulting SHA. Release and runtime verification remain separate.
+
+
+# SPECIES — CANONICAL HOST REINFORCEMENT — 21 OCTOBER 2026
+
+**STATUS:** AXE SEARCH QA RETURN CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person searching for a species should reach one stable public SPECIES page instead of competing legacy and product-domain URLs.
+
+**ONE THING TO UNDERSTAND:** the clean `https://4species.com/{slug}` URL is the SPECIES profile; Living Systems interpretations remain distinct ecological routes.
+
+**PRIMARY ACTION:** open the source-bearing species profile on 4species.com.
+
+**SECONDARY DEPTH:** follow source, provenance and related 4PLANET routes without changing canonical ownership.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** species identity / provenance state / source follow-through / independent search and release verification.
+
+**WHAT CAN BE REMOVED:** trailing-slash duplicates and inherited upstream canonical metadata.
+
+**WHAT MUST BE REUSED:** issue #145, AXE comment #6298950923, the existing 4SPECIES Worker, reviewed/source-bearing publication gate, sitemap, legacy `/species/{slug}` redirect, PR #131 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** an HTML canonical plus HTTP Link signal and clean redirect reduce ambiguity; they do not prove Google re-selection, indexing, ranking, clicks, deployment, Gold or Founder acceptance.
+
+**MOBILE-FIRST RISK:** none introduced; no visual layout or interaction changes. Browser and crawler readback remain required on the exact released artifact.
+
+**HUMAN SUCCESS:** a valid source-bearing profile emits exactly one self-canonical clean 4species.com URL for GET and HEAD; trailing-slash and legacy aliases converge without collapsing Living Systems routes.
+
+**BASE / ROLLBACK:** `king/test@83b71dc8ccefb550ce6e7c196ccf1c30271225ea`; revert the bounded Worker/test/brief commit if independent Gold finds a routing, metadata or public-profile regression.
+
+**MAKER ≠ JUDGE:** Factory implements the bounded correction. Independent Gold must judge the exact resulting SHA, then authorised release control must bind any deployment to that SHA before Search Console follow-up.

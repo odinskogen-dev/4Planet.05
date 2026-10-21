@@ -11,6 +11,12 @@ const PROFILE_REVIEW_TIMEOUT_MS = 3000;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
 const PUBLIC_NON_PROFILE_PATHS = new Set(["/", "/explore", "/quiz", "/about"]);
 
+export function publicSpeciesCanonical(pathname) {
+  if (PUBLIC_NON_PROFILE_PATHS.has(pathname)) return `https://4species.com${pathname}`;
+  if (!/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return null;
+  return `https://4species.com${pathname}`;
+}
+
 // Founder override, 2026-10-17: publish complete source-bearing original
 // Claude premium profiles regardless of editorial draft label. Preserve
 // DRAFT provenance honestly, do not confer Gold/REVIEWED approval.
@@ -100,10 +106,12 @@ async function proxySpeciesV53(request) {
   }
   const upstream = await fetch(target.toString(), {method:request.method,headers,redirect:"follow"});
   const out = new Headers(upstream.headers);
+  const canonical = permitsSpeciesIndexing(reviewState) ? publicSpeciesCanonical(incoming.pathname) : null;
   out.delete("set-cookie");
   out.delete("content-length");
   out.delete("content-encoding");
   out.set("x-4species-release", "species-v53-immutable-72494005-restore-20261017");
+  if (canonical) out.set("link", `<${canonical}>; rel="canonical"`);
   // Pages preview emits preview-only noindex; never forward it to a completed
   // public Claude profile, while still enforcing noindex for missing profiles.
   if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");
@@ -124,7 +132,14 @@ async function proxySpeciesV53(request) {
       out.set("x-4species-index-gate", `review-${reviewState.toLowerCase()}`);
     }
   }
-  const response = new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
+  let response = new Response(request.method==="HEAD"?null:upstream.body, {status:upstream.status,statusText:upstream.statusText,headers:out});
+  if (request.method === "GET" && canonical && (out.get("content-type")||"").includes("text/html")) {
+    response = new HTMLRewriter()
+      .on('link[rel="canonical"]', { element(el) { el.remove(); } })
+      .on('meta[property="og:url"]', { element(el) { el.setAttribute("content", canonical); } })
+      .on("head", { element(el) { el.append(`<link rel="canonical" href="${canonical}">`, { html: true }); } })
+      .transform(response);
+  }
   if (request.method === "GET" && !permitsSpeciesIndexing(reviewState) && (out.get("content-type")||"").includes("text/html")) {
     return new HTMLRewriter()
       .on('meta[name="robots"]', { element(el) { el.setAttribute("content", "noindex,nofollow,noarchive"); } })
@@ -418,6 +433,8 @@ export default {
     const path = url.pathname || "/";
 
     if (host === "www.4species.com") return redirect(`https://4species.com${path}${url.search}`);
+    if (/^\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(path))
+      return redirect(`https://4species.com${path.slice(0, -1)}${url.search}`, 301);
 
     // Canonical clean public URLs: root homepage and /{species-slug}.
     // Legacy /species/{slug} redirects to exactly one canonical URL.

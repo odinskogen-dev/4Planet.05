@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import worker from "../ops/discovery/4species-router.js";
+import worker, { publicSpeciesCanonical } from "../ops/discovery/4species-router.js";
+import { readFileSync } from "node:fs";
+
+const workerSource = readFileSync(new URL("../ops/discovery/4species-router.js", import.meta.url), "utf8");
 
 test("4SPECIES serves robots.txt with canonical sitemap", async () => {
   const response = await worker.fetch(new Request("https://4species.com/robots.txt"));
@@ -42,4 +45,46 @@ test("4SPECIES sitemap keeps only source-backed complete species and canonical p
   assert.doesNotMatch(xml, /unavailable/);
   assert.doesNotMatch(xml, /pages\.dev/);
   assert.equal(response.headers.get("x-4species-index-gate"), "human-review-v1");
+});
+
+
+test("4SPECIES reinforces one clean canonical host on HTML and HEAD", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(input);
+    if (url.endsWith("/species-data/v1/green-sea-turtle.json")) {
+      return Response.json({
+        schema: "4PLANET_SPECIES_PAGE_01",
+        slug: "green-sea-turtle",
+        identity: { commonName: "Green sea turtle", scientificName: "Chelonia mydas" },
+        hook: { source: { label: "IUCN", url: "https://www.iucnredlist.org/" } },
+        provenance: { review: "REVIEWED" },
+      });
+    }
+    if (url.endsWith("/green-sea-turtle")) {
+      return new Response(init.method === "HEAD" ? null : "<!doctype html><html><head></head><body></body></html>", {
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    }
+    return new Response("Not found", { status: 404 });
+  };
+
+  const head = await worker.fetch(new Request("https://4species.com/green-sea-turtle", { method: "HEAD" }));
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get("link"), '<https://4species.com/green-sea-turtle>; rel="canonical"');
+
+  const slash = await worker.fetch(new Request("https://4species.com/green-sea-turtle/?from=legacy", { redirect: "manual" }));
+  assert.equal(slash.status, 301);
+  assert.equal(slash.headers.get("location"), "https://4species.com/green-sea-turtle?from=legacy");
+});
+
+test("canonical HTML rewrite is bound to the clean public SPECIES URL", () => {
+  assert.equal(publicSpeciesCanonical("/green-sea-turtle"), "https://4species.com/green-sea-turtle");
+  assert.equal(publicSpeciesCanonical("/explore"), "https://4species.com/explore");
+  assert.equal(publicSpeciesCanonical("/species/green-sea-turtle"), null);
+  assert.equal(publicSpeciesCanonical("/green-sea-turtle/"), null);
+  assert.match(workerSource, /link\[rel="canonical"\]/);
+  assert.match(workerSource, /meta\[property="og:url"\]/);
 });
