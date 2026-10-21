@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const sourcePath = path.join(__dirname, '..', 'source', '4sapien-live-hardening.js');
 const source = fs.readFileSync(sourcePath, 'utf8').replace(
   /\n\}\)\(\);\s*$/,
-  '\nwindow.__noteAuthTest={handleAuthChange,updateNote,addNote};\n})();\n',
+  '\nwindow.__noteAuthTest={handleAuthChange,updateNote,addNote,removeNote};\n})();\n',
 );
 
 const input = { value: '' };
@@ -57,7 +57,7 @@ context.window = context;
 vm.createContext(context);
 vm.runInContext(source, context, { filename: sourcePath });
 
-const { handleAuthChange, updateNote, addNote } = context.__noteAuthTest;
+const { handleAuthChange, updateNote, addNote, removeNote } = context.__noteAuthTest;
 const waitForMutation = async () => {
   for (let i = 0; i < 30 && !releaseMutation; i += 1) await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(typeof releaseMutation, 'function', 'held note write must reach the transport');
@@ -95,7 +95,30 @@ const waitForMutation = async () => {
   assert.deepEqual(eventUsers, [], 'a stale update completion must not emit under user C');
   assert.equal(state.textContent, '', 'a stale update completion must not paint user C UI');
 
-  console.log('PASS 4SAPIEN note auth epoch: A→B/C post-await continuations cannot emit or paint across accounts');
+  for (const [from, to] of [['user-c', 'user-d'], ['user-d', 'user-c']]) {
+    await handleAuthChange({ user: { id: from } });
+    eventUsers.length = 0;
+    state.textContent = '';
+    heldMutation = true;
+    releaseMutation = null;
+    const staleDelete = removeNote('note-existing');
+    await waitForMutation();
+    await handleAuthChange({ user: { id: to } });
+    releaseMutation();
+    await staleDelete;
+    assert.deepEqual(eventUsers, [], `${from}→${to} stale delete must not emit under the later identity`);
+    assert.equal(state.textContent, '', `${from}→${to} stale delete must not paint the later identity UI`);
+  }
+
+  heldMutation = false;
+  releaseMutation = null;
+  eventUsers.length = 0;
+  state.textContent = '';
+  await removeNote('note-existing');
+  assert.deepEqual(eventUsers, ['user-c'], 'same-epoch delete must emit for the initiating user');
+  assert.equal(state.textContent, 'Huskelappen ble fjernet.', 'same-epoch confirmed delete may announce success');
+
+  console.log('PASS 4SAPIEN note auth epoch: create/update/delete continuations remain bound across A→B and B→A switches');
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -22,11 +22,12 @@ assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const c=card
 assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return false;state\.textContent='Notater kunne ikke lastes akkurat nå\.'/ , "stale Notes rejection must not paint error state");
 
 assert.match(source, /id="fs-notes-state" class="fs-service-state" role="status" aria-live="polite"/, "notes mutations must expose an accessible live status");
-assert.match(source, /async function removeNote\(id\)\{const epoch=authEpoch;try\{await api\(/, "note deletion must bind to the initiating identity epoch");
-assert.match(source, /if\(!authCurrent\(epoch\)\)return;const rows=await noteRows\(\);if\(!authCurrent\(epoch\)\)return;/, "note deletion must guard authoritative readback across auth changes");
+assert.match(source, /async function removeNote\(id\)\{const attempt=await authAttempt\(\);if\(!attempt\)return;try\{await api\(/, "note deletion must bind to the initiating identity and epoch");
+assert.match(source, /if\(!eventAttemptCurrent\(attempt\)\)return;const rows=await noteRows\(\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "note deletion must guard authoritative readback across auth changes");
 assert.match(source, /if\(rows\.some\(row=>String\(row\.id\)===String\(id\)\)\)throw new Error\('NOTE_DELETE_NOT_CONFIRMED'\)/, "note deletion must not claim success while the note remains authoritative");
-assert.match(source, /await renderNotes\(epoch,rows\);if\(!authCurrent\(epoch\)\)return;/, "confirmed note deletion must render only in the initiating identity epoch");
+assert.match(source, /await renderNotes\(attempt\.epoch,rows\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "confirmed note deletion must render only in the initiating identity epoch");
+assert.match(source, /await emitEvent\('note_deleted','brain',\{surface:'home_notes'\},attempt\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "note deletion telemetry must use and revalidate the initiating identity attempt");
 assert.match(source, /state\.textContent='Huskelappen ble fjernet\.'/ , "confirmed note deletion must announce success");
-assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const state=document\.getElementById\('fs-notes-state'\);if\(state\)state\.textContent='Kunne ikke fjerne huskelappen\. Den kan fortsatt være lagret\. Prøv igjen\.'/ , "failed note deletion must preserve truth and announce uncertainty");
+assert.match(source, /catch\(e\)\{if\(!eventAttemptCurrent\(attempt\)\)return;const state=document\.getElementById\('fs-notes-state'\);if\(state\)state\.textContent='Kunne ikke fjerne huskelappen\. Den kan fortsatt være lagret\. Prøv igjen\.'/ , "failed note deletion must preserve truth and announce uncertainty without painting a later identity");
 
 console.log("PASS 4SAPIEN root auth boundary: cache + private DOM reset, stale-response guards, and truthful note deletion");
