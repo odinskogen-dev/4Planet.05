@@ -1701,7 +1701,7 @@ function sitemapXml(host, paths) {
 
 function atlasSitemapXml(host) {
   const urls = [
-    `  <url><loc>${xmlEscape(`https://${host}/atlas/`)}</loc></url>`,
+    `  <url><loc>${xmlEscape(`https://${host}/`)}</loc></url>`,
     `  <url><loc>${xmlEscape(`https://${host}/places`)}</loc></url>`,
     ...ATLAS_INDEXABLE_PLACES.map((place) => `  <url><loc>${xmlEscape(`https://${host}/place/${place.slug}`)}</loc><image:image><image:loc>${xmlEscape(`https://${host}/place/${place.slug}/map.svg`)}</image:loc></image:image></url>`)
   ].join("\n");

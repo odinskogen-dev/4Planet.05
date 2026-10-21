@@ -25,7 +25,7 @@ jobs:
     env:
       ATLAS_PROJECT: 4planet-atlas
       ATLAS_DOMAIN: 4planetatlas.com
-      BASELINE_SHA: 6c01c2029810f18838243c839d1f55477792ea3a
+      BASELINE_SHA: fceab8e18f2fb403184dcac9f04180b2d05cf36c
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,6 +41,10 @@ jobs:
           for file in "${changed[@]}"; do
             grep -Eq "$allowed" <<<"$file" || { echo "UNEXPECTED PRODUCT FILE: $file"; exit 21; }
           done
+          # Only the live Atlas middleware and this exact release gate may differ.
+          test "${#changed[@]}" = 2
+          printf '%s\n' "${changed[@]}" | grep -Fxq 'functions/_middleware.js'
+          printf '%s\n' "${changed[@]}" | grep -Fxq '.github/workflows/atlas-max-exposure-live.yml'
           echo "ATLAS_ZERO_LOSS_DIFF_PASS"
 
       - name: Apply exact protected v43 product overlay
@@ -140,6 +144,9 @@ jobs:
           done
 
           sm=$(curl -fsSL "https://$ATLAS_DOMAIN/sitemap.xml")
+          grep -Fq "<loc>https://$ATLAS_DOMAIN/</loc>" <<<"$sm"
+          ! grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas/</loc>" <<<"$sm"
+          echo ATLAS_ROOT_SELF_CANONICAL_SITEMAP_PASS
           sitemap_places=$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')
           sitemap_images=$(grep -o "<image:loc>https://$ATLAS_DOMAIN/place/[^<]*/map.svg</image:loc>" <<<"$sm" | sort -u | wc -l | tr -d ' ')
           test "$sitemap_places" = '250'
