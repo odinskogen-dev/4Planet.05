@@ -25,19 +25,24 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - name: Verify the immutable production-source artifact already built and deployed
         run: |
-          echo "EARTH_BASE_URL=https://02ced84e.4planet-05.pages.dev" >> "$GITHUB_ENV"
+          echo "EARTH_BASE_URL=https://4planet.org" >> "$GITHUB_ENV"
           echo "https://02ced84e.4planet-05.pages.dev" > earth-preview-url.txt
           echo 'Source 950e81ca36569793b28d0b4658d2871656a8ebc7; build and deploy receipt run39592111508.'
       - run: node scripts/earth-now-human-proof.mjs
+      - run: node scripts/earth-now-human-proof.mjs
+        env:
+          EARTH_ENGINE: webkit
+          EARTH_PROOF_DIR: artifacts/earth-now-webkit
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: earth-now-human-proof
           path: |
             artifacts/earth-now
+            artifacts/earth-now-webkit
             earth-preview-url.txt
             earth-rollback.json
           retention-days: 14
