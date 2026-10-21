@@ -1,4 +1,4 @@
-// Individual source-linked facts. Maker-reviewed provisional evidence only; independent GOLD pending.
+// Original source-linked editorial facts. Question headings reflect actual sourced species facts, not fake FAQ rich results.
 export const sciencePacks = {
   "koala": {
     "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
@@ -6,10 +6,10 @@ export const sciencePacks = {
       {
         "id": "koala-sci-01",
         "category": "ecology",
-        "label": "Selective feeding",
+        "label": "What do koalas eat?",
         "text": "Koalas eat leaves from a limited selection of eucalypt trees. The important food-tree species differ among Australian regions.",
         "source": {
-          "label": "New South Wales Environment and Heritage — Selective feeding",
+          "label": "New South Wales Environment and Heritage — What do koalas eat?",
           "url": "https://www.environment.nsw.gov.au/topics/animals-and-plants/native-animals/native-animal-facts/koala/koala-habitat",
           "publisher": "New South Wales Environment and Heritage",
           "verifiedOn": "2026-10-21"
@@ -45,10 +45,10 @@ export const sciencePacks = {
       {
         "id": "koala-sci-04",
         "category": "ecology",
-        "label": "Energy conservation",
+        "label": "Why do koalas rest for so long?",
         "text": "Because its fibrous, low-energy diet is difficult to digest, the koala conserves energy through long periods of rest.",
         "source": {
-          "label": "University of Michigan Museum of Zoology — Energy conservation",
+          "label": "University of Michigan Museum of Zoology — Why do koalas rest for so long?",
           "url": "https://animaldiversity.org/accounts/Phascolarctos_cinereus/",
           "publisher": "University of Michigan Museum of Zoology",
           "verifiedOn": "2026-10-21"
@@ -71,10 +71,10 @@ export const sciencePacks = {
       {
         "id": "koala-sci-06",
         "category": "conservation",
-        "label": "Conservation status has a geographical scope",
+        "label": "Are koalas endangered?",
         "text": "The combined koala populations of Queensland, New South Wales and the Australian Capital Territory are listed as Endangered under Australia's national environmental law; that listing must not be presented as the species' global status.",
         "source": {
-          "label": "Australian Department of Climate Change, Energy, the Environment and Water — Conservation status has a geographical scope",
+          "label": "Australian Department of Climate Change, Energy, the Environment and Water — Are koalas endangered?",
           "url": "https://www.dcceew.gov.au/environment/biodiversity/threatened/species/koalas",
           "publisher": "Australian Department of Climate Change, Energy, the Environment and Water",
           "verifiedOn": "2026-10-21"
@@ -115,10 +115,10 @@ export const sciencePacks = {
       {
         "id": "peregrine-falcon-sci-01",
         "category": "ecology",
-        "label": "Predatory flight",
+        "label": "How do peregrine falcons hunt?",
         "text": "Peregrine falcons hunt other birds, commonly diving steeply from above to seize prey in flight.",
         "source": {
-          "label": "Cornell Lab of Ornithology — Predatory flight",
+          "label": "Cornell Lab of Ornithology — How do peregrine falcons hunt?",
           "url": "https://www.allaboutbirds.org/guide/Peregrine_Falcon/",
           "publisher": "Cornell Lab of Ornithology",
           "verifiedOn": "2026-10-21"
@@ -141,10 +141,10 @@ export const sciencePacks = {
       {
         "id": "peregrine-falcon-sci-03",
         "category": "physical",
-        "label": "The famous stoop",
+        "label": "How fast is a peregrine falcon?",
         "text": "A peregrine can achieve exceptional speed in a hunting stoop, but an individual dive speed is not a universal cruising speed.",
         "source": {
-          "label": "Cornell Lab of Ornithology — The famous stoop",
+          "label": "Cornell Lab of Ornithology — How fast is a peregrine falcon?",
           "url": "https://www.allaboutbirds.org/guide/Peregrine_Falcon/lifehistory",
           "publisher": "Cornell Lab of Ornithology",
           "verifiedOn": "2026-10-21"
@@ -154,10 +154,10 @@ export const sciencePacks = {
       {
         "id": "peregrine-falcon-sci-04",
         "category": "ecology",
-        "label": "Cliffs and city ledges",
+        "label": "Where do peregrine falcons nest?",
         "text": "Peregrines can nest on coastal cliffs, mountain ledges, tall buildings and other high structures.",
         "source": {
-          "label": "Australian Museum — Cliffs and city ledges",
+          "label": "Australian Museum — Where do peregrine falcons nest?",
           "url": "https://australian.museum/learn/animals/birds/peregrine-falcon/",
           "publisher": "Australian Museum",
           "verifiedOn": "2026-10-21"
@@ -224,10 +224,10 @@ export const sciencePacks = {
       {
         "id": "venus-flytrap-sci-01",
         "category": "ecology",
-        "label": "Where a wild flytrap belongs",
+        "label": "Where do Venus flytraps grow wild?",
         "text": "The Venus flytrap is naturally restricted to distinct wet longleaf-pine habitats in the coastal plains and Sandhills of North and South Carolina.",
         "source": {
-          "label": "U.S. Fish and Wildlife Service — Where a wild flytrap belongs",
+          "label": "U.S. Fish and Wildlife Service — Where do Venus flytraps grow wild?",
           "url": "https://www.fws.gov/species/venus-fly-trap-dionaea-muscipula",
           "publisher": "U.S. Fish and Wildlife Service",
           "verifiedOn": "2026-10-21"
@@ -237,10 +237,10 @@ export const sciencePacks = {
       {
         "id": "venus-flytrap-sci-02",
         "category": "ecology",
-        "label": "Sunlight still powers growth",
+        "label": "Why do Venus flytraps eat insects?",
         "text": "Despite its carnivorous traps, the plant obtains its main energy through photosynthesis; captured arthropods supply scarce nutrients.",
         "source": {
-          "label": "U.S. Fish and Wildlife Service — Sunlight still powers growth",
+          "label": "U.S. Fish and Wildlife Service — Why do Venus flytraps eat insects?",
           "url": "https://www.fws.gov/species/venus-fly-trap-dionaea-muscipula",
           "publisher": "U.S. Fish and Wildlife Service",
           "verifiedOn": "2026-10-21"
@@ -250,10 +250,10 @@ export const sciencePacks = {
       {
         "id": "venus-flytrap-sci-03",
         "category": "physical",
-        "label": "Touch-sensitive traps",
+        "label": "How does a Venus flytrap close?",
         "text": "Experiments show electrical and mechanical signalling contribute to the closing response when sensitive hairs on a trap are stimulated.",
         "source": {
-          "label": "Plant Physiology, peer-reviewed experiment — Touch-sensitive traps",
+          "label": "Plant Physiology, peer-reviewed experiment — How does a Venus flytrap close?",
           "url": "https://pubmed.ncbi.nlm.nih.gov/18065564/",
           "publisher": "Plant Physiology, peer-reviewed experiment",
           "verifiedOn": "2026-10-21"
@@ -333,10 +333,10 @@ export const sciencePacks = {
       {
         "id": "giant-manta-ray-sci-01",
         "category": "physical",
-        "label": "The largest living ray",
+        "label": "How big can giant manta rays get?",
         "text": "The giant oceanic manta ray can reach around seven metres in disc width; maximum size observations vary by source and are not typical adult size.",
         "source": {
-          "label": "Manta Trust — The largest living ray",
+          "label": "Manta Trust — How big can giant manta rays get?",
           "url": "https://www.mantatrust.org/mobula-birostris",
           "publisher": "Manta Trust",
           "verifiedOn": "2026-10-21"
@@ -346,10 +346,10 @@ export const sciencePacks = {
       {
         "id": "giant-manta-ray-sci-02",
         "category": "ecology",
-        "label": "Plankton on the move",
+        "label": "What do giant manta rays eat?",
         "text": "This manta primarily filters zooplankton from seawater, using cephalic fins to help direct food-rich water towards its mouth.",
         "source": {
-          "label": "NOAA Fisheries — Plankton on the move",
+          "label": "NOAA Fisheries — What do giant manta rays eat?",
           "url": "https://www.fisheries.noaa.gov/species/giant-manta-ray/management",
           "publisher": "NOAA Fisheries",
           "verifiedOn": "2026-10-21"
@@ -398,10 +398,10 @@ export const sciencePacks = {
       {
         "id": "giant-manta-ray-sci-06",
         "category": "conservation",
-        "label": "Global category versus U.S. law",
+        "label": "Are giant manta rays endangered?",
         "text": "The IUCN's global assessment lists Mobula birostris as Endangered; NOAA's separate U.S. Endangered Species Act listing is Threatened.",
         "source": {
-          "label": "IUCN Red List assessment — Global category versus U.S. law",
+          "label": "IUCN Red List assessment — Are giant manta rays endangered?",
           "url": "https://doi.org/10.2305/IUCN.UK.2022-1.RLTS.T198921A214397182.en",
           "publisher": "IUCN Red List assessment",
           "verifiedOn": "2026-10-21"
@@ -442,10 +442,10 @@ export const sciencePacks = {
       {
         "id": "capybara-sci-01",
         "category": "appearance",
-        "label": "A rodent, not a pig",
+        "label": "Are capybaras rodents?",
         "text": "The capybara is the largest living rodent, despite the popular water-pig nickname.",
         "source": {
-          "label": "San Diego Zoo Wildlife Alliance — A rodent, not a pig",
+          "label": "San Diego Zoo Wildlife Alliance — Are capybaras rodents?",
           "url": "https://animals.sandiegozoo.org/animals/capybara",
           "publisher": "San Diego Zoo Wildlife Alliance",
           "verifiedOn": "2026-10-21"
@@ -455,10 +455,10 @@ export const sciencePacks = {
       {
         "id": "capybara-sci-02",
         "category": "ecology",
-        "label": "Built for water",
+        "label": "Where do capybaras live?",
         "text": "Capybaras live alongside rivers, ponds and marshes, using water to cool down and escape danger.",
         "source": {
-          "label": "San Diego Zoo Wildlife Alliance — Built for water",
+          "label": "San Diego Zoo Wildlife Alliance — Where do capybaras live?",
           "url": "https://animals.sandiegozoo.org/animals/capybara",
           "publisher": "San Diego Zoo Wildlife Alliance",
           "verifiedOn": "2026-10-21"
@@ -468,10 +468,10 @@ export const sciencePacks = {
       {
         "id": "capybara-sci-03",
         "category": "ecology",
-        "label": "A diet rooted in wetlands",
+        "label": "What do capybaras eat?",
         "text": "Capybaras graze on grasses and aquatic plants; seasonal food availability changes what they eat.",
         "source": {
-          "label": "San Diego Zoo Wildlife Alliance — A diet rooted in wetlands",
+          "label": "San Diego Zoo Wildlife Alliance — What do capybaras eat?",
           "url": "https://sdzwildlifeexplorers.org/animals/capybara",
           "publisher": "San Diego Zoo Wildlife Alliance",
           "verifiedOn": "2026-10-21"
@@ -551,10 +551,10 @@ export const sciencePacks = {
       {
         "id": "red-panda-sci-01",
         "category": "appearance",
-        "label": "Bushy balance",
+        "label": "Why is the red panda's tail so long?",
         "text": "A red panda's long, ringed tail helps with balance as it crosses forest branches and can wrap around the body for insulation in cold weather.",
         "source": {
-          "label": "World Wildlife Fund — Bushy balance",
+          "label": "World Wildlife Fund — Why is the red panda's tail so long?",
           "url": "https://www.worldwildlife.org/stories/where-do-red-pandas-live-and-other-red-panda-facts",
           "publisher": "World Wildlife Fund",
           "verifiedOn": "2026-10-21"
@@ -590,10 +590,10 @@ export const sciencePacks = {
       {
         "id": "red-panda-sci-04",
         "category": "ecology",
-        "label": "Forest and bamboo together",
+        "label": "Where do red pandas live?",
         "text": "Red pandas depend on Himalayan mountain forests with bamboo undergrowth, not simply on bamboo wherever it is planted.",
         "source": {
-          "label": "Red Panda Network — Forest and bamboo together",
+          "label": "Red Panda Network — Where do red pandas live?",
           "url": "https://redpandanetwork.org/files/galleries/Red_Panda_Ranger_Program_Offline.pdf",
           "publisher": "Red Panda Network",
           "verifiedOn": "2026-10-21"
@@ -629,10 +629,10 @@ export const sciencePacks = {
       {
         "id": "red-panda-sci-07",
         "category": "conservation",
-        "label": "Habitat fragments threaten survival",
+        "label": "Why are red pandas endangered?",
         "text": "The removal of nesting trees and bamboo-rich forest damages red panda habitat and can separate surviving groups.",
         "source": {
-          "label": "World Wildlife Fund — Habitat fragments threaten survival",
+          "label": "World Wildlife Fund — Why are red pandas endangered?",
           "url": "https://www.worldwildlife.org/species/red-panda/",
           "publisher": "World Wildlife Fund",
           "verifiedOn": "2026-10-21"
@@ -660,10 +660,10 @@ export const sciencePacks = {
       {
         "id": "snow-leopard-sci-01",
         "category": "ecology",
-        "label": "Predator of mountain ungulates",
+        "label": "What do snow leopards eat?",
         "text": "Wild snow leopards hunt mountain sheep, ibex and other hoofed mammals; specific prey varies between regions.",
         "source": {
-          "label": "Snow Leopard Trust — Predator of mountain ungulates",
+          "label": "Snow Leopard Trust — What do snow leopards eat?",
           "url": "https://snowleopard.org/our-work/research/snow-leopard-ecology/",
           "publisher": "Snow Leopard Trust",
           "verifiedOn": "2026-10-21"
@@ -712,10 +712,10 @@ export const sciencePacks = {
       {
         "id": "snow-leopard-sci-05",
         "category": "ecology",
-        "label": "An Asian mountain range",
+        "label": "Where do snow leopards live?",
         "text": "Its range crosses high mountains in parts of Central and South Asia; it should not be described as uniformly distributed across those countries.",
         "source": {
-          "label": "Panthera — An Asian mountain range",
+          "label": "Panthera — Where do snow leopards live?",
           "url": "https://www.panthera.org/cat/snow-leopard",
           "publisher": "Panthera",
           "verifiedOn": "2026-10-21"
@@ -751,10 +751,10 @@ export const sciencePacks = {
       {
         "id": "snow-leopard-sci-08",
         "category": "conservation",
-        "label": "Vulnerable is not endangered",
+        "label": "Are snow leopards endangered?",
         "text": "Panthera reports the global IUCN category as Vulnerable; local population trajectories and knowledge gaps differ.",
         "source": {
-          "label": "Panthera — Vulnerable is not endangered",
+          "label": "Panthera — Are snow leopards endangered?",
           "url": "https://www.panthera.org/cat/snow-leopard",
           "publisher": "Panthera",
           "verifiedOn": "2026-10-21"
@@ -782,10 +782,10 @@ export const sciencePacks = {
       {
         "id": "quokka-sci-02",
         "category": "ecology",
-        "label": "A Western Australian endemic",
+        "label": "Where do quokkas live?",
         "text": "Wild quokkas occur in the south-west of Western Australia, including Rottnest Island and limited mainland habitats.",
         "source": {
-          "label": "Australian Museum — A Western Australian endemic",
+          "label": "Australian Museum — Where do quokkas live?",
           "url": "https://australian.museum/learn/animals/mammals/quokka/",
           "publisher": "Australian Museum",
           "verifiedOn": "2026-10-21"
@@ -808,10 +808,10 @@ export const sciencePacks = {
       {
         "id": "quokka-sci-04",
         "category": "ecology",
-        "label": "Leaves and shoots",
+        "label": "What do quokkas eat?",
         "text": "Quokkas browse grasses, leaves and succulent vegetation, with dietary options depending on habitat and season.",
         "source": {
-          "label": "Australian Museum — Leaves and shoots",
+          "label": "Australian Museum — What do quokkas eat?",
           "url": "https://australian.museum/learn/animals/mammals/quokka/",
           "publisher": "Australian Museum",
           "verifiedOn": "2026-10-21"
@@ -847,10 +847,10 @@ export const sciencePacks = {
       {
         "id": "quokka-sci-07",
         "category": "conservation",
-        "label": "The smile is not an invitation",
+        "label": "Should visitors feed quokkas?",
         "text": "Quokkas are wild animals even when they approach visitors; feeding them or physically interfering with them is not appropriate.",
         "source": {
-          "label": "Rottnest Island visitor guidance — The smile is not an invitation",
+          "label": "Rottnest Island visitor guidance — Should visitors feed quokkas?",
           "url": "https://www.visitrottnestisland.com.au/things-to-do/",
           "publisher": "Rottnest Island visitor guidance",
           "verifiedOn": "2026-10-21"
@@ -878,10 +878,10 @@ export const sciencePacks = {
       {
         "id": "giant-sequoia-sci-01",
         "category": "physical",
-        "label": "A living giant measured by volume",
+        "label": "How big can giant sequoias get?",
         "text": "Giant sequoias are among the world's largest organisms by wood volume and can live for thousands of years.",
         "source": {
-          "label": "USDA Forest Service — A living giant measured by volume",
+          "label": "USDA Forest Service — How big can giant sequoias get?",
           "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
           "publisher": "USDA Forest Service",
           "verifiedOn": "2026-10-21"
@@ -891,10 +891,10 @@ export const sciencePacks = {
       {
         "id": "giant-sequoia-sci-02",
         "category": "ecology",
-        "label": "A small native range",
+        "label": "Where do giant sequoias grow?",
         "text": "Wild giant sequoias occur naturally in isolated groves on the western slope of California's Sierra Nevada.",
         "source": {
-          "label": "USDA Forest Service — A small native range",
+          "label": "USDA Forest Service — Where do giant sequoias grow?",
           "url": "https://research.fs.usda.gov/feis/species-reviews/seqgig",
           "publisher": "USDA Forest Service",
           "verifiedOn": "2026-10-21"
@@ -917,10 +917,10 @@ export const sciencePacks = {
       {
         "id": "giant-sequoia-sci-04",
         "category": "ecology",
-        "label": "Fire opens the next generation's habitat",
+        "label": "Why do giant sequoias need fire?",
         "text": "Periodic low- to moderate-intensity fires can create open ground and sunlight needed for successful giant sequoia seedlings.",
         "source": {
-          "label": "U.S. National Park Service — Fire opens the next generation's habitat",
+          "label": "U.S. National Park Service — Why do giant sequoias need fire?",
           "url": "https://www.nps.gov/seki/learn/nature/giant-sequoias-and-fire.htm",
           "publisher": "U.S. National Park Service",
           "verifiedOn": "2026-10-21"
