@@ -15,8 +15,12 @@ try {
   const decline=page.getByRole('button',{name:'DECLINE',exact:true});if(await decline.isVisible())await decline.click();
   await page.frameLocator('.earth-now-map iframe').locator('.maplibregl-canvas').waitFor({timeout:45000});
   assert.equal(await page.frameLocator('.earth-now-map iframe').locator('.atlas-panel').isVisible(),false);
-  const frame = page.frames().find(f=>f.url().includes('embed=news'));
-  await frame.waitForFunction(()=>window.__4planet_map?.getLayer('bluemarble') && window.__4planet_map?.isSourceLoaded('bluemarble'), {timeout:45000});
+  const frame = await (await page.locator('.earth-now-map iframe').elementHandle()).contentFrame();
+  console.log('MAP_FRAME_URL',frame.url());
+  try { await frame.waitForFunction(()=>window.__4planet_map?.getLayer('bluemarble') && window.__4planet_map?.isSourceLoaded('bluemarble'), null, {timeout:45000}); } catch(e) {
+    console.log('MAP_DEBUG',await frame.evaluate(()=>({url:location.href,body:document.body.innerText.slice(0,800),map:!!window.__4planet_map,sources:Object.keys(window.__4planet_map?.getStyle()?.sources||{})})));
+    await page.screenshot({path:`${out}/map-failure-${width}.png`,fullPage:true});throw e;
+  }
   console.log('MAP_READY',width,await frame.evaluate(()=>({url:location.href,loaded:window.__4planet_map?.loaded(),style:window.__4planet_map?.getStyle()?.name,sources:Object.keys(window.__4planet_map?.getStyle()?.sources||{})})));
   await page.screenshot({path:`${out}/now-${width}.png`,fullPage:true});
   const metrics=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,font:getComputedStyle(document.querySelector('.discovery-page')).fontFamily,background:getComputedStyle(document.querySelector('.discovery-page')).backgroundColor,h1:parseFloat(getComputedStyle(document.querySelector('h1')).fontSize),stray:[...document.body.childNodes].filter(n=>n.nodeType===3&&/\\n/.test(n.textContent)).map(n=>n.textContent)}));
