@@ -1,0 +1,69 @@
+name: Living Systems 1.4.2 SEO Safe Build QA
+on:
+  push:
+    branches: [fix/living-systems-search-surfaces-20261021]
+    paths: [.github/workflows/living-systems-seo-safe-qa.yml]
+permissions: {contents: read}
+jobs:
+  zero-loss-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Static discovery tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test scripts/living-systems-discovery-qa.test.mjs
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          node --test scripts/discovery-seo-contract.test.mjs scripts/atlas-search-discovery-contract.test.mjs
+          echo DISCOVERY_STATIC_CONTRACT_PASS
+      - name: Build historical v1.4.2 without modifications to 88 original source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-living-systems-v142.mjs
+          node scripts/enhance-living-systems-seo.mjs
+          node scripts/generate-sitemap.mjs
+          node scripts/living-systems-v142-zero-loss.test.mjs
+      - name: Assert canonical, unique metadata, source-preserving HTML and indexed coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {LIVING_SYSTEMS_SEARCH_PAGES} from './scripts/living-systems-search-surfaces.mjs';
+          const xml=fs.readFileSync('public/sitemap.xml','utf8');
+          let accepted=0;
+          for(const p of LIVING_SYSTEMS_SEARCH_PAGES){
+            const url='https://4planet.org/livingsystems'+p.path;
+            const file='public/livingsystems'+p.path+'index.html';
+            assert.ok(fs.existsSync(file),file);
+            const html=fs.readFileSync(file,'utf8');
+            assert.ok(html.length>5000,'unexpected skeleton '+file);
+            assert.ok(html.includes('<link rel="canonical" href="'+url+'"/>'),'canonical '+file);
+            assert.ok(html.includes('name="description" content="'+p.description.replaceAll('&','&amp;')+'"/>'),'description '+file);
+            assert.equal((html.match(/rel="canonical"/g)||[]).length,1,'one canonical '+file);
+            assert.equal((html.match(/name="description"/g)||[]).length,1,'one description '+file);
+            assert.ok(html.includes('<h1'),'substantive page '+file);
+            assert.ok(html.includes('data-4planet-lsi-discovery="true"'));
+            assert.ok(xml.includes('<loc>'+url+'</loc>'),'sitemap '+url);
+            accepted++;console.log('LSI_CANONICAL_DISCOVERY_PASS',url,html.length);
+          }
+          console.log('LSI_12_PUBLIC_SEARCH_PAGES_PASS',accepted);
+          NODE
+          git diff --exit-code -- products/livingsystems
+          echo LIVING_SYSTEMS_HISTORIC_SOURCE_UNTOUCHED
+      - name: Archive diagnostics (not deploy)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: living-systems-seo-safe-qa
+          path: |
+            public/sitemap.xml
+            public/livingsystems/start/index.html
+            public/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/index.html
+          retention-days: 7
