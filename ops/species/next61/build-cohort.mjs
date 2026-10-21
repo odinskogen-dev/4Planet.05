@@ -9,6 +9,10 @@ import { invertebratesPlants } from "./invertebrates-plants.mjs";
 
 // Strictly non-live, non-Gold Claude V53 source-data donor. Never alter the 39.
 const seeds=[...mammals,...birds,...reptiles,...fishes,...invertebratesPlants];
+const rejectedPhotoEntries=JSON.parse(fs.readFileSync(new URL("./photo-visual-rejects-20261021.json",import.meta.url),"utf8")).rejects;
+const rejectedPhotoIds=new Set(rejectedPhotoEntries.map(x=>Number(x.photoId)));
+if(rejectedPhotoIds.size!==rejectedPhotoEntries.length)throw Error("Duplicate rejected photo ID");
+
 const live=new Set("orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split(" "));
 if(seeds.length!==61)throw Error("Must have exactly 61 curated seeds");
 if(new Set(seeds.map(s=>s[0])).size!==61||seeds.some(s=>live.has(s[0])))throw Error("Duplicate or overlap with LIVE 39");
@@ -112,7 +116,7 @@ async function inatImages(scientific){
      observation.taxon?.rank!=="species")continue;
   for(const photo of observation.photos||[]){
    const license=String(photo.license_code||"").toLowerCase();
-   if(!licenceUrls[license]||!photo.id||!photo.url||seen.has(photo.id))continue;
+   if(!licenceUrls[license]||!photo.id||!photo.url||seen.has(photo.id)||rejectedPhotoIds.has(Number(photo.id)))continue;
    seen.add(photo.id);
    const credit=clean(photo.attribution || observation.user?.name || observation.user?.login);
    if(!credit)continue;
