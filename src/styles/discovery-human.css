@@ -1,0 +1,97 @@
+/* Earth Now / discovery only. The public homepage and shared shell retain their styles. */
+.discovery-page{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:#FFFFFF;color:#000000;--discovery-accent:#2E2EFF}
+.discovery-page *{box-sizing:border-box}
+.discovery-page :is(h1,h2,h3,p){font-family:inherit}
+.discovery-page a:focus-visible,.discovery-page button:focus-visible,.discovery-page summary:focus-visible{outline:2px solid #2E2EFF;outline-offset:5px}
+.discovery-page .editorial-wrap{width:min(1180px,calc(100% - 64px))}
+.discovery-page .editorial-kicker{font-family:inherit;font-size:12px;font-weight:500;letter-spacing:.08em;color:#2E2EFF}
+.discovery-page .discovery-hero{padding:64px 0 40px}
+.discovery-page .discovery-hero h1{font-size:clamp(32px,4vw,48px);line-height:1.1;font-weight:500;letter-spacing:-.04em;max-width:850px}
+.discovery-page .editorial-deck{font-size:18px;line-height:1.6;letter-spacing:-.015em;max-width:760px;margin-top:22px}
+.discovery-page .editorial-section{padding:48px 0}
+.discovery-page .editorial-section h2{font-size:28px;line-height:1.2;letter-spacing:-.025em;font-weight:500}
+.discovery-page .editorial-copy{font-size:16px;line-height:1.7;margin-top:18px}
+.discovery-page .editorial-actions :is(a,button){border-radius:999px;font:500 14px/1.3 'DM Sans',sans-serif;letter-spacing:0;text-transform:none}
+.discovery-page .discovery-atlas{background:#FFFFFF;color:#000000;padding:36px 0 0}
+.discovery-page .discovery-atlas__title-row h2{font-size:28px;line-height:1.2;font-weight:500;letter-spacing:-.025em}
+.discovery-page .discovery-atlas__title-row p{color:#505050;max-width:700px;font-size:15px;line-height:1.6}
+.discovery-page .discovery-atlas__open{font:500 14px/1.4 'DM Sans',sans-serif;color:#000;border-color:#D9D9D9;letter-spacing:0}
+.discovery-page .discovery-atlas__frame-wrap{height:480px;min-height:0;width:min(1180px,calc(100% - 64px));margin:auto;border:1px solid #D9D9D9;border-radius:16px;overflow:hidden}
+.discovery-page .discovery-atlas__fallback{display:flex;flex-wrap:wrap;gap:8px 16px;padding-block:16px;font-size:13px;line-height:1.5;color:#505050}
+.discovery-page .discovery-atlas__fallback strong{display:none}
+.discovery-page .discovery-atlas__fallback a{color:#000}
+.discovery-page .discovery-evidence p{font-size:16px;line-height:1.65}
+.discovery-page .discovery-fact p{font-size:16px;line-height:1.6}
+.discovery-now .earth-now-intro{padding-block:56px 36px}
+.discovery-now .earth-now-eyebrow{margin:0 0 20px;font-size:12px;font-weight:500;letter-spacing:.08em;color:#2E2EFF}
+.discovery-now .earth-now-intro h1{font-size:clamp(34px,4vw,48px);font-weight:500;line-height:1.08;letter-spacing:-.04em;margin:0 0 20px;max-width:760px}
+.discovery-now .earth-now-intro>p:last-child{font-size:17px;line-height:1.6;letter-spacing:-.015em;max-width:620px;margin:0;color:#505050}
+.discovery-now .earth-now-explorer{padding-bottom:72px}
+.earth-now-views{display:flex;gap:8px;flex-wrap:wrap;padding:0 0 24px;border-bottom:1px solid #D9D9D9}
+.earth-now-views button{font:500 15px/1.3 'DM Sans',sans-serif;background:#FFF;color:#000;border:1px solid #D9D9D9;border-radius:999px;padding:11px 22px;min-height:44px;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.earth-now-views button[aria-pressed=true]{background:#000;border-color:#000;color:#FFF}
+.earth-now-views button:hover:not([aria-pressed=true]){border-color:#000}
+.earth-now-map__heading{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-block:26px 20px}
+.earth-now-map h2,.earth-now-reading h2{font-size:22px;font-weight:500;line-height:1.25;letter-spacing:-.025em;margin:0}
+.earth-now-map__heading p{font-size:15px;line-height:1.55;max-width:720px;color:#505050;margin:8px 0 0}
+.earth-now-open{font-size:14px;line-height:1.4;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;padding:11px 18px;border:1px solid #D9D9D9;border-radius:999px;white-space:nowrap;text-decoration:none;color:#000}
+.earth-now-open:hover{border-color:#000}
+.earth-now-map__frame{width:100%;height:500px;border:1px solid #D9D9D9;border-radius:16px;overflow:hidden;background:#000}
+.earth-now-map__frame iframe{display:block;width:100%;height:100%;border:0}
+.earth-now-caption{font-size:13px;line-height:1.55;color:#505050;margin:12px 0 0}
+.earth-now-reading{padding-block:40px 30px}
+.earth-now-guides{margin-top:20px;border-top:1px solid #D9D9D9}
+.earth-now-guide{display:flex;justify-content:space-between;gap:28px;align-items:center;padding:22px 0;border-bottom:1px solid #D9D9D9;text-decoration:none;color:#000}
+.earth-now-guide h3{font-size:18px;line-height:1.3;font-weight:500;letter-spacing:-.015em;margin:0}
+.earth-now-guide p{font-size:15px;line-height:1.55;margin:6px 0;color:#505050;max-width:700px}
+.earth-now-source{display:block;font-size:12px;line-height:1.5;color:#505050}
+.earth-now-guide__action{font-size:14px;font-weight:500;white-space:nowrap;display:flex;gap:14px;min-height:44px;align-items:center}
+.earth-now-guide:hover h3{text-decoration:underline;text-underline-offset:4px}
+.earth-now-details{border-bottom:1px solid #D9D9D9}
+.earth-now-details summary{cursor:pointer;padding:20px 0;font-size:16px;line-height:1.5;font-weight:500;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.earth-now-details summary::-webkit-details-marker{display:none}
+.earth-now-details summary::after{content:'+';font-size:22px;font-weight:400}
+.earth-now-details[open] summary::after{content:'−'}
+.earth-now-details>div{max-width:780px;padding-bottom:20px}
+.earth-now-details p{font-size:15px;line-height:1.65;color:#505050;margin:0 0 14px}
+.earth-now-all-guides{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;padding-bottom:20px}
+.earth-now-all-guides a{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 0;font-size:15px;min-height:44px;line-height:1.4;text-decoration:none;color:#000}
+.earth-now-all-guides a:hover{text-decoration:underline;text-underline-offset:4px}
+@media(max-width:760px){
+ .discovery-page .editorial-wrap{width:calc(100% - 40px)}
+ .discovery-now .earth-now-intro{padding-block:36px 28px}
+ .discovery-now .earth-now-intro>p:last-child{font-size:16px}
+ .earth-now-views{gap:7px;padding-bottom:20px}
+ .earth-now-views button{padding:10px 16px;font-size:14px}
+ .earth-now-map__heading{align-items:flex-start;flex-direction:column;gap:14px;padding-block:22px 18px}
+ .earth-now-map__heading h2,.earth-now-reading h2{font-size:21px}
+ .earth-now-map__frame{height:420px;border-radius:12px}
+ .earth-now-reading{padding-top:32px}
+ .earth-now-guide{align-items:flex-start;gap:16px}
+ .earth-now-guide__action{font-size:0;min-width:24px;justify-content:flex-end}
+ .earth-now-guide__action span{font-size:20px}
+ .earth-now-all-guides{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+ .discovery-page .discovery-atlas__frame-wrap{width:calc(100% - 40px);height:420px}
+ .discovery-page .discovery-hero{padding-top:36px}
+ .discovery-page .editorial-section h2{font-size:25px}
+}
+@media(prefers-reduced-motion:reduce){.earth-now-views button{transition:none}}
+/* Structural rules ship with this stylesheet: production must not depend on another candidate's CSS. */
+.discovery-page .discovery-fact-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-block:1px solid #D9D9D9;margin-bottom:40px}
+.discovery-page .discovery-fact{padding:24px;min-height:0;border-right:1px solid #D9D9D9}
+.discovery-page .discovery-fact:first-child{padding-left:0}
+.discovery-page .discovery-fact:last-child{border-right:0}
+.discovery-page .discovery-fact span{font-size:12px;color:#505050}
+.discovery-page .discovery-fact p{margin:12px 0 0}
+.discovery-page .discovery-atlas__head{padding-bottom:20px}
+.discovery-page .discovery-atlas__title-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end}
+.discovery-page .discovery-atlas__frame{display:block;width:100%;height:100%;border:0;background:#000}
+.discovery-page .discovery-evidence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px}
+.discovery-page .discovery-evidence>div{border-top:1px solid #D9D9D9;padding-top:20px}
+.discovery-page .discovery-related{display:flex;align-items:center;justify-content:space-between;gap:20px;color:#000;text-decoration:none}
+.discovery-page .discovery-related span{flex-shrink:0}
+@media(max-width:760px){
+ .discovery-page .discovery-fact-strip,.discovery-page .discovery-evidence,.discovery-page .discovery-atlas__title-row{grid-template-columns:1fr}
+ .discovery-page .discovery-fact,.discovery-page .discovery-fact:first-child,.discovery-page .discovery-fact:last-child{padding:18px 0;border-right:0;border-bottom:1px solid #D9D9D9}
+ .discovery-page .discovery-fact:last-child{border-bottom:0}
+}

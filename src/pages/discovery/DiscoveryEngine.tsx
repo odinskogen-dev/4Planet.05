@@ -1,11 +1,12 @@
 import type { CSSProperties } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import discovery from "@/data/discoveryTopics.json";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Seo } from "@/components/Seo";
 import { NotFound } from "@/pages/system";
 import { trackEvent } from "@/analytics/Analytics";
 import "@/styles/human-first-public.css";
+import "@/styles/discovery-human.css";
 
 type DiscoveryTopic = (typeof discovery.topics)[number];
 
@@ -24,7 +25,7 @@ function atlasEmbedHref(atlasHref: string, embedKind: string) {
   const [, raw = ""] = atlasHref.split("?");
   const params = new URLSearchParams(raw);
   params.set("embed", embedKind.toLowerCase());
-  return `https://4planetatlas.com/?${params.toString()}`;
+  return `/atlas?${params.toString()}`;
 }
 
 function AtlasEmbed({
@@ -67,6 +68,20 @@ function AtlasEmbed({
           loading={eager ? "eager" : "lazy"}
           referrerPolicy="strict-origin-when-cross-origin"
         />
+      </div>
+      <div
+        className="editorial-wrap discovery-atlas__fallback"
+        role="note"
+        aria-label="ATLAS embed fallback"
+      >
+        <strong>ATLAS EMBED FALLBACK</strong>
+        <span>If the embedded map is unavailable, open the same governed view in full ATLAS.</span>
+        <a
+          href={href}
+          onClick={() => trackEvent("discovery_atlas_fallback_open", { product_area: "discovery", atlas_title: title })}
+        >
+          OPEN THE SAME VIEW IN FULL ATLAS →
+        </a>
       </div>
     </section>
   );
@@ -189,7 +204,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
           <section className="editorial-section editorial-split">
             <div className="editorial-kicker">What is happening</div>
             <div>
-              <h2>Read the latest available evidence in context.</h2>
+              <h2>What the evidence shows</h2>
               <p className="editorial-copy">{topic.happening}</p>
             </div>
           </section>
@@ -197,7 +212,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
           <section className="editorial-section editorial-split">
             <div className="editorial-kicker">Why it matters</div>
             <div>
-              <h2>Useful before it is simplified.</h2>
+              <h2>Why it matters</h2>
               <p className="editorial-copy">{topic.whyItMatters}</p>
             </div>
           </section>
@@ -242,111 +257,95 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
   );
 }
 
+const EARTH_VIEWS = [
+  { id: "events", label: "Events", title: "Natural events", layers: "bluemarble,events,quakes,fires", note: "Explore reported wildfires, earthquakes and other natural events.", signals: [0, 1] },
+  { id: "ocean", label: "Ocean", title: "Ocean conditions", layers: "bluemarble,coral,sst", note: "See sea-surface temperature and accumulated heat stress on coral reefs.", signals: [3, 6] },
+  { id: "land", label: "Land", title: "Forests and land", layers: "bluemarble,forest", note: "Explore mapped tree-cover change. These are historical assessments, not a live forest feed.", signals: [4] },
+  { id: "air", label: "Air", title: "Our atmosphere", layers: "bluemarble,aerosol", note: "Explore satellite aerosol observations. These are not street-level air-quality readings.", signals: [5] },
+  { id: "life", label: "Life", title: "Life on Earth", layers: "bluemarble,biodiv", note: "Explore reported biodiversity observations, not live animal locations or complete species ranges.", signals: [7] },
+] as const;
+
+const SIGNAL_NAMES: Record<number, string> = {
+  0: "Wildfires", 1: "Earthquakes", 3: "Coral heat stress", 4: "Forest change",
+  5: "Aerosols and air quality", 6: "Ocean temperature", 7: "Biodiversity observations",
+};
+
 export function EarthNowPage() {
   const now = discovery.earthNow;
-  const atlasHref = now.atlasHref;
+  const [params, setParams] = useSearchParams();
+  const view = EARTH_VIEWS.find((item) => item.id === params.get("view")) ?? EARTH_VIEWS[0];
+  const atlasParams = new URLSearchParams(now.atlasHref.split("?")[1]);
+  atlasParams.set("l", view.layers);
+  const atlasHref = `/atlas?${atlasParams.toString()}`;
   const indexableTopics = (discovery.topics as DiscoveryTopic[]).filter((topic) => topic.indexable);
 
   return (
     <PublicShell>
-      <Seo
-        title={now.title}
-        description={now.description}
-        path="/now"
-        imageAlt="Earth Now — 4PLANET"
+      <Seo title={now.title} description={now.description} path="/now" imageAlt="Earth Now — 4PLANET"
         jsonLd={({ canonicalUrl }) => ({
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "CollectionPage",
-              name: now.title,
-              description: now.description,
-              url: canonicalUrl,
-              dateModified: discovery.updatedAt,
-              inLanguage: "en-GB",
-              publisher: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/" },
-              hasPart: now.signals.map((signal) => ({
-                "@type": "WebPage",
-                name: signal.label,
-                url: new URL(signal.href, canonicalUrl).toString(),
-              })),
-            },
-            {
-              "@type": "ItemList",
-              name: "4PLANET Earth Now signals",
-              itemListElement: now.signals.map((signal, index) => ({
-                "@type": "ListItem",
-                position: index + 1,
-                name: signal.label,
-                url: new URL(signal.href, canonicalUrl).toString(),
-              })),
-            },
-          ],
+          "@context": "https://schema.org", "@type": "CollectionPage", name: now.title,
+          description: now.description, url: canonicalUrl, dateModified: discovery.updatedAt,
+          inLanguage: "en-GB", publisher: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/" },
+          hasPart: now.signals.map((signal) => ({ "@type": "WebPage", name: signal.label, url: new URL(signal.href, canonicalUrl).toString() })),
         })}
       />
-      <div className="editorial-page discovery-page discovery-now" style={{ "--discovery-accent": "#2E2EFF" } as CSSProperties}>
-        <div className="discovery-now__hero">
-          <div className="editorial-wrap">
-            <div className="editorial-kicker">4PLANET / EARTH NOW</div>
-            <h1>What is happening on Earth right now?</h1>
-            <p className="editorial-deck">{now.answer}</p>
-            <div className="discovery-now__status">
-              <strong>LATEST AVAILABLE</strong>
-              <span>Every source keeps its own clock, coverage and limitations.</span>
+      <div className="editorial-page discovery-page discovery-now">
+        <header className="earth-now-intro editorial-wrap">
+          <p className="earth-now-eyebrow">4PLANET / EARTH NOW</p>
+          <h1>A living planet.<br />A clearer view.</h1>
+          <p>Explore what is happening across Earth. Choose a view to see natural events and environmental change in context.</p>
+        </header>
+
+        <div className="editorial-wrap earth-now-explorer">
+          <nav className="earth-now-views" aria-label="Choose an Earth view">
+            {EARTH_VIEWS.map((item) => (
+              <button key={item.id} type="button" aria-pressed={view.id === item.id}
+                onClick={() => {
+                  const next = new URLSearchParams(params);
+                  if (item.id === "events") next.delete("view"); else next.set("view", item.id);
+                  setParams(next, { preventScrollReset: true });
+                  trackEvent("earth_now_view_selected", { product_area: "discovery", view: item.id });
+                }}>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <section className="earth-now-map" aria-labelledby="earth-now-map-title">
+            <div className="earth-now-map__heading">
+              <div><h2 id="earth-now-map-title">{view.title}</h2><p>{view.note}</p></div>
+              <a className="earth-now-open" href={atlasHref}>Open full map <span aria-hidden="true">↗</span></a>
             </div>
-          </div>
-        </div>
+            <div className="earth-now-map__frame">
+              <iframe key={view.id} src={atlasEmbedHref(atlasHref, "NEWS")} title={`Interactive Earth map: ${view.title}`}
+                loading="eager" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+            </div>
+            <p className="earth-now-caption">Latest available from each source. Select a marker for its details. Open the full map for layer sources and dates.</p>
+          </section>
 
-        <AtlasEmbed
-          href={atlasHref}
-          embedKind={now.embedKind}
-          title="Earth — latest available signals"
-          note="Move across fires, earthquakes, natural events, coral heat stress, forest change, atmosphere and biodiversity. A visible layer is not automatically live."
-          eager
-        />
-
-        <div className="editorial-wrap">
-          <section className="editorial-section">
-            <div className="editorial-kicker">Signals</div>
-            <div className="discovery-signal-list">
-              {now.signals.map((signal, index) => (
-                <Link
-                  key={`${signal.label}-${index}`}
-                  to={signal.href}
-                  className="discovery-signal-row"
-                  onClick={() => trackEvent("earth_now_signal_open", { product_area: "discovery", signal: signal.label })}
-                >
-                  <span className="discovery-signal-row__index">{String(index + 1).padStart(2, "0")}</span>
-                  <strong>{signal.label}</strong>
-                  <span>{signal.detail}</span>
-                  <small>{signal.layers}</small>
-                  <b aria-hidden>→</b>
-                </Link>
-              ))}
+          <section className="earth-now-reading" aria-labelledby="earth-now-reading-title">
+            <h2 id="earth-now-reading-title">Understand this view</h2>
+            <div className="earth-now-guides">
+              {view.signals.map((index) => {
+                const signal = now.signals[index];
+                return <Link key={index} to={signal.href} className="earth-now-guide"
+                  onClick={() => trackEvent("earth_now_signal_open", { product_area: "discovery", signal: signal.label })}>
+                  <div><h3>{SIGNAL_NAMES[index]}</h3><p>{signal.detail}</p><span className="earth-now-source">{signal.layers}</span></div>
+                  <span className="earth-now-guide__action">Read guide <span aria-hidden="true">→</span></span>
+                </Link>;
+              })}
             </div>
           </section>
 
-          <section className="editorial-section editorial-split">
-            <div className="editorial-kicker">Read this correctly</div>
-            <div>
-              <h2>Now is not one clock.</h2>
-              <p className="editorial-copy">{now.truthBoundary}</p>
-            </div>
-          </section>
-
-          <section className="editorial-section">
-            <div className="editorial-kicker">Explore permanent 4PLANET guides</div>
-            <div className="discovery-topic-index">
-              {indexableTopics.map((topic) => (
-                <Link key={topic.slug} to={`/${topic.slug}`} className="discovery-topic-index__row">
-                  <span>{topic.name}</span>
-                  <small>{topic.domain}</small>
-                  <b aria-hidden>→</b>
-                </Link>
-              ))}
-            </div>
-            <div className="editorial-meta">UPDATED {discovery.updatedAt}</div>
-          </section>
+          <details className="earth-now-details">
+            <summary>About the data</summary>
+            <div><p>{now.truthBoundary}</p><p>Sources include NASA, the US Geological Survey, NOAA, Global Forest Watch, GBIF and OBIS. Observation times, coverage and limitations differ. A visible layer is not an emergency warning service.</p><p>Guide content reviewed {new Date(discovery.updatedAt + "T12:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}. This is not the observation time of the map data.</p></div>
+          </details>
+          <details className="earth-now-details earth-now-details--guides">
+            <summary>Explore all guides</summary>
+            <nav aria-label="Earth and nature guides" className="earth-now-all-guides">
+              {indexableTopics.map((topic) => <Link key={topic.slug} to={`/${topic.slug}`}>{topic.name}<span aria-hidden="true">↗</span></Link>)}
+            </nav>
+          </details>
         </div>
       </div>
     </PublicShell>
