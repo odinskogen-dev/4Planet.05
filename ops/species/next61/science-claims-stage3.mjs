@@ -157,9 +157,9 @@ export const scienceStage3 = {
         "label": "The central column can produce heat",
         "text": "The spadix can warm during bloom, helping carry odours into the surrounding air.",
         "source": {
-          "label": "Kew — The giant, pongy plant",
-          "url": "https://www.kew.org/read-and-watch/the-giant-pongy-plant-titan-arum",
-          "publisher": "Royal Botanic Gardens Kew",
+          "label": "Royal Botanic Garden Edinburgh — Titan arum background",
+          "url": "https://www.rbge.org.uk/collections/living-collection/living-collection-at-the-royal-botanic-garden-edinburgh/amorphophallus-titanum/background-and-history/",
+          "publisher": "Royal Botanic Garden Edinburgh",
           "verifiedOn": "2026-10-21"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
@@ -209,9 +209,9 @@ export const scienceStage3 = {
         "label": "Threatened by rainforest loss",
         "text": "Kew identifies deforestation and land degradation in Sumatra as threats to titan arum in its natural habitat.",
         "source": {
-          "label": "Kew Gardens — Titan arum",
-          "url": "https://www.kew.org/plants/titan-arum",
-          "publisher": "Royal Botanic Gardens Kew",
+          "label": "Missouri Botanical Garden — Titan arum conservation",
+          "url": "https://www.missouribotanicalgarden.org/gardens-gardening/our-garden/notable-plant-collections/titan-arum/quot",
+          "publisher": "Missouri Botanical Garden",
           "verifiedOn": "2026-10-21"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
@@ -253,9 +253,9 @@ export const scienceStage3 = {
         "label": "Life in the North Pacific",
         "text": "The giant Pacific octopus lives in temperate North Pacific coastal waters from East Asia to western North America.",
         "source": {
-          "label": "Monterey Bay Aquarium — Giant Pacific octopus",
-          "url": "https://www.montereybayaquarium.org/animals/animals-a-to-z/giant-pacific-octopus",
-          "publisher": "Monterey Bay Aquarium",
+          "label": "University of Michigan Animal Diversity Web — Enteroctopus dofleini range",
+          "url": "https://animaldiversity.org/accounts/Enteroctopus_dofleini/",
+          "publisher": "University of Michigan Museum of Zoology",
           "verifiedOn": "2026-10-21"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
