@@ -102,11 +102,21 @@ test("synthetic first/return UI through existing Food Auth client and mock BACKE
  expect(decisions.at(-1)?.provenance?.evidence_class).toBe("USER_DECISION");
  expect(measurements.some(x=>x.name==="embla-core-preview"&&x.body?.measurement_event==="useful_outcome"&&x.body?.measurement_value==="yes")).toBeTruthy();
  expect(events.some(x=>x.event_type==="food_context_saved")).toBeTruthy();
+ // Same-session "Ja" is first value only; second value needs context older than 24 h.
+ await expect.poll(()=>events.some(x=>x.event_type==="food_value_reached")).toBeTruthy();
+ expect(events.some(x=>x.event_type==="food_second_value_reached")).toBeFalsy();
+ // Age the synthetic saved context past the 24 h return threshold (mock rows only).
+ for(const row of memory)row.created_at=new Date(Date.now()-25*60*60*1000).toISOString();
  await page.reload({waitUntil:"domcontentloaded"});
  await page.getByText("Middag",{exact:true}).first().click();
  await expect(pantry.getByText(/Tilbake: 1 tidligere bekreftede ingredienser/)).toBeVisible();
  await expect(pantry.getByLabel("Ingrediens 1")).toHaveValue("Havregryn");
- await expect.poll(()=>events.some(x=>x.event_type==="food_context_returned")).toBeTruthy();
+ await expect.poll(()=>events.some(x=>x.event_type==="food_context_loaded")).toBeTruthy();
+ expect(events.some(x=>x.event_type==="food_context_returned")).toBeFalsy();
+ // Second value requires a saved decision AND an explicit "Ja" in the returning session.
+ await pantry.getByRole("button",{name:"Bruk dette alternativet"}).first().click();
+ await expect(pantry.getByText(/Valget er lagret privat/)).toBeVisible();
+ await pantry.getByRole("button",{name:"Ja",exact:true}).click();
  await expect.poll(()=>events.some(x=>x.event_type==="food_second_value_reached")).toBeTruthy();
  await pantry.getByLabel("Mengde 1").fill("200");
  await pantry.getByRole("button",{name:/Bekreft og lagre/}).click();

@@ -40,30 +40,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SITE=products/4sapien/site
-          DROP=/tmp/4sapien-unified-20260917
-          FOOD=$SITE/app/food/index.html
-          rm -rf "$SITE" "$DROP"
-          mkdir -p "$SITE/app/food" "$SITE/app" "$DROP"
-          python products/4sapien/build/materialize_unified_drop.py products/4sapien/source/claude-unified-20260917 "$DROP"
-          cp products/4sapien/source/4sapien-design.css "$SITE/4sapien-design.css"
-          cp products/4sapien/source/4sapien-theme.js "$SITE/4sapien-theme.js"
-          python products/4sapien/build/apply_front_v2_release.py "$DROP/4sapien_app_unified.html" "$SITE/index.html"
-          cp "$DROP/4sapien_food_MERGED.html" "$FOOD"
-          python products/4sapien/build/apply_finance_route.py "$SITE/index.html" "$DROP/4sapien_finance_MERGED.html" "$DROP/4sapien_finance_AXE_experience_MERGED.html"
-          python products/4sapien/build/apply_finance_typography_guard.py "$SITE"
-          python products/4sapien/build/apply_unified_design_guard.py "$SITE"
-          cp products/4sapien/source/4sapien-live-hardening.css "$SITE/4sapien-live-hardening.css"
-          cp products/4sapien/source/4sapien-live-hardening.js "$SITE/4sapien-live-hardening.js"
-          python products/4sapien/build/apply_live_hardening_guard.py "$SITE"
-          python products/4sapien/build/apply_document_intake_guard.py "$SITE"
-          python products/4sapien/build/apply_finance_daniel_feedback_guard.py "$SITE"
-          python products/4sapien/build/apply_finance_truth_math_guard.py "$SITE"
-          python products/4sapien/build/apply_finance_sync_b1c_guard.py "$SITE"
-          python products/4sapien/build/apply_money_now_guard.py "$SITE"
-          python products/4sapien/build/apply_pantry_first_return_guard.py "$SITE"
-          cp products/4sapien/cloudflare/_headers "$SITE/_headers"
-          cp products/4sapien/cloudflare/_redirects "$SITE/_redirects"
+          # Single source of truth: the exact chain 4sapien-discovery-live.yml and CI use.
+          bash products/4sapien/build/materialize_canonical_site.sh products/4sapien/site /tmp/4sapien-unified-20260917
           python - <<'PY'
           import os, pathlib
           sha=os.environ["GITHUB_SHA"]
@@ -92,6 +70,14 @@ jobs:
           for marker in 'brainIdentity' 'functions/v1/brain-profile'; do grep -Fq "$marker" "$BRAIN"; done
           node --check "$SITE/4sapien-live-hardening.js"
           node --check "$SITE/4sapien-pantry-decision.js"
+          node --check "$SITE/4sapien-local-week.js"
+          node --check "$SITE/4sapien-shell.js"
+          for marker in 'FOUR_SAPIEN_UNKNOWN_TRUTH_V1'; do grep -Fq "$marker" "$MONEY"; done
+          grep -Fq '/4sapien-local-week.js' "$FOOD"
+          test -s "$SITE/robots.txt" && test -s "$SITE/sitemap.xml"
+          node products/4sapien/qa/test_document_analysis.cjs
+          node products/4sapien/build/test_finance_session_ownership.cjs products/4sapien/build/apply_finance_route.py "$SITE"
+          node products/4sapien/build/test_oauth_recovery.cjs "$FOOD"
           ! grep -ERqi 'service[_-]?role|sb_secret_|SUPABASE_SERVICE_ROLE|CLOUDFLARE_API_TOKEN|KASSALAPP_API_KEY|KASSALAPP_TOKEN' "$SITE"
           grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" "$ROOT"
           grep -Fq "4planet-source-sha\" content=\"$GITHUB_SHA" "$FOOD"
@@ -102,6 +88,9 @@ jobs:
           set -euo pipefail
           npm ci
           npx playwright install --with-deps chromium webkit >/dev/null
+          node products/4sapien/qa/test_unknown_truth.cjs products/4sapien/site/app/money/index.html
+          FS_BROWSER=chromium node products/4sapien/qa/test_shell_nav.cjs products/4sapien/site
+          FS_BROWSER=webkit node products/4sapien/qa/test_shell_nav.cjs products/4sapien/site
           python -m http.server 4173 -d products/4sapien/site >/tmp/4sapien-local.log 2>&1 &
           pid=$!
           trap 'kill $pid || true' EXIT
