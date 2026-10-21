@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readStories, absoluteUrl } from "./magazine-content.mjs";
+import { livingSystemsPublicRoutes } from "./living-systems-search-surfaces.mjs";
 
 const root = process.cwd();
 const publicDir = path.join(root, "public");
@@ -22,6 +23,7 @@ const staticRoutes = [
   "/missions",
   ...missionRoutes,
   "/livingsystems/",
+  ...livingSystemsPublicRoutes,
   "/impact/actions/bay-of-biscay-survey",
   "/cre4tor/odin",
   "/impact",
@@ -80,7 +82,7 @@ const rss = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <cha
 fs.writeFileSync(path.join(publicDir, "rss.xml"), rss, "utf8");
 
 const robotDisallows = [
-  "/labs", "/os", "/sandbox", "/checkout", "/api", "/admin", "/auth",
+  "/labs", "/os$", "/os/", "/os?", "/sandbox", "/checkout", "/api", "/admin", "/auth",
   "/account", "/saved", "/id", "/oauth", "/4nation"
 ];
 const robotGroup = (agent) => [
