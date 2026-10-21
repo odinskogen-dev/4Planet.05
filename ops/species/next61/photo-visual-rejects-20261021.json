@@ -323,7 +323,8 @@
       "slug": "fennec-fox",
       "photoId": 478559237,
       "reason": "Tiny nocturnal subject lost in dark image; neither species identification nor premium hero meets threshold",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 266354534
     },
     {
       "slug": "meerkat",
@@ -333,15 +334,17 @@
     },
     {
       "slug": "chinese-pangolin",
-      "photoId": 727620320,
+      "photoId": 727260320,
       "reason": "Human shoe and dark vegetation; live pangolin is not visible",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 396566202
     },
     {
       "slug": "sea-otter",
       "photoId": 216290204,
       "reason": "A dead otter skull/bone specimen, explicit founder prohibition",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 127403691
     },
     {
       "slug": "narwhal",
@@ -359,7 +362,8 @@
       "slug": "west-indian-manatee",
       "photoId": 61186220,
       "reason": "Stranded large marine mammal with carcass/death appearance; may not be a living free-swimming animal",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 38493659
     },
     {
       "slug": "platypus",
@@ -371,7 +375,8 @@
       "slug": "snowy-owl",
       "photoId": 177248630,
       "reason": "City building and decorative bell; no snowy owl visible",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 104681391
     },
     {
       "slug": "greater-flamingo",
@@ -383,7 +388,8 @@
       "slug": "axolotl",
       "photoId": 254456915,
       "reason": "Humans boating; live axolotl not visible; wrong subject",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 259266
     },
     {
       "slug": "reticulated-python",
@@ -401,13 +407,15 @@
       "slug": "long-snouted-seahorse",
       "photoId": 83211001,
       "reason": "Small seahorse physically held on a person's palm",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 52347719
     },
     {
       "slug": "giant-pacific-octopus",
       "photoId": 78439890,
       "reason": "Octopus photographed within a container/tank-like enclosure; captivity not excluded",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 49411821
     },
     {
       "slug": "coconut-crab",
@@ -419,7 +427,8 @@
       "slug": "orchid-mantis",
       "photoId": 168345086,
       "reason": "Only a pink blossom is recognisable, not an orchid mantis",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 100839994
     },
     {
       "slug": "quokka",
@@ -431,7 +440,8 @@
       "slug": "clouded-leopard",
       "photoId": 25636346,
       "reason": "Dead animal skin/pelt or artificial mounted display; cannot be live wild clouded leopard",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 16959518
     },
     {
       "slug": "red-fox",
@@ -441,27 +451,31 @@
     },
     {
       "slug": "fennec-fox",
-      "photoId": 46783558,
+      "photoId": 467833558,
       "reason": "Dark hole/wall with no visible fennec fox",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 260501698
     },
     {
       "slug": "chinese-pangolin",
       "photoId": 34117214,
       "reason": "Footprints and earth rather than a live pangolin",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 22010045
     },
     {
       "slug": "sea-otter",
-      "photoId": 622143772,
+      "photoId": 108350532,
       "reason": "Snow footprints only; no living sea otter in picture",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 67113585
     },
     {
       "slug": "west-indian-manatee",
       "photoId": 460377028,
       "reason": "Manatee in enclosed/marked water with buoys; cannot prove free-living natural setting",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 256733088
     },
     {
       "slug": "common-wombat",
@@ -491,7 +505,8 @@
       "slug": "axolotl",
       "photoId": 254457389,
       "reason": "Aquarium/terrarium enclosure with decorative stones; explicit no captive animals",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 147835301
     },
     {
       "slug": "saltwater-crocodile",
@@ -503,7 +518,8 @@
       "slug": "long-snouted-seahorse",
       "photoId": 727999458,
       "reason": "Seahorse photographed in unnatural near-monochrome container-like setting; free-living origin not demonstrated",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 396954623
     },
     {
       "slug": "zebrafish",
@@ -515,7 +531,8 @@
       "slug": "coconut-crab",
       "photoId": 354309842,
       "reason": "Crab beside bowls of captive food in artificial enclosure",
-      "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+      "reviewType": "second_full_hero_gallery_red_team_2026-10-21",
+      "observationId": 200784047
     },
     {
       "slug": "atlas-moth",
@@ -537,6 +554,6 @@
     }
   ],
   "unresolved": "All remaining images still require visual and legal signoff. This list does not mean any other photo is approved.",
-  "visualReviewScope": "Second batch all 58 hero + 57 gallery images inspected in six labelled contact sheets. Excluded humans, dead or ambiguity of aliveness, captured/held/enclosed animals, plants/landscapes instead of target animals, too small and low quality visuals. Every surviving image still needs independent original-resolution visual and rights Gold.",
+  "visualReviewScope": "Second batch all 58 hero + 57 gallery images inspected in six labelled contact sheets. Excluded humans, dead or ambiguity of aliveness, captured/held/enclosed animals, plants/landscapes instead of target animals, too small and low quality visuals. Every surviving image still needs independent original-resolution visual and rights Gold. Corrected 3 typed photo ID errors after matching to actual artifact source manifest; source observation identifiers recorded for confirmed bad observations.",
   "lastUpdated": "2026-10-21"
 }
