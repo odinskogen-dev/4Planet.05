@@ -3,7 +3,8 @@ on:
   push:
     branches: [fix/exposure-wave1-main-20261021]
     paths: [.github/workflows/exposure-wave1-parity-diff.yml]
-permissions: {contents:read}
+permissions:
+  contents: read
 jobs:
   compare:
     runs-on: ubuntu-latest
@@ -14,7 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: {node-version:22,cache:npm}
+        with:
+          node-version: 22
+          cache: npm
       - name: Build exact candidate and compare Earth Now and homepage with active live
         shell: bash
         run: |
