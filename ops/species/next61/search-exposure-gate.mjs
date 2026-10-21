@@ -49,12 +49,13 @@ for(const slug of slugs){
  const p=JSON.parse(fs.readFileSync(data,"utf8"));
  const html=fs.readFileSync(page,"utf8");
  const errors=[];
- if(p.slug!==slug||p.provenance?.review!=="DRAFT")errors.push("REVIEW_STATE_OR_IDENTITY");
+ if(p.slug!==slug||!["DRAFT","GOLD","PUBLISHED"].includes(p.provenance?.review))errors.push("REVIEW_STATE_OR_IDENTITY");
+ if(approved.includes(slug)&&p.provenance?.review!=="GOLD")errors.push("GOLD_EDITORIAL_STATUS_REQUIRED");
  if(!html.includes("https://4species.com/"+slug))errors.push("CANONICAL");
  if(!html.includes(p.identity.scientificName))errors.push("TAXON_NOT_VISIBLE");
  if(!p.hero?.url||!p.hero?.sourcePage||!p.hero?.credit||!p.hero?.licence)errors.push("PHOTO_METADATA");
  if(p.provenance?.sourceReview!=="DONE")errors.push("CLAIMS_SOURCE_REVIEW_OPEN");
- if(p.provenance?.photoVisualReview!=="DONE")errors.push("WILD_ALIVE_IMAGE_VISUAL_REVIEW_OPEN");
+ if(p.provenance?.photoVisualReview!=="DONE"||p.provenance?.aliveWildPhotoReview!=="DONE")errors.push("WILD_AND_ALIVE_IMAGE_VISUAL_REVIEW_OPEN");
  if(p.provenance?.photographyReview!=="DONE")errors.push("PHOTO_RIGHTS_REVIEW_OPEN");
  if(errors.length)report.invalid.push({slug,errors});
  if(approved.includes(slug)&&errors.length)throw Error("Release lock failure: "+slug+" "+errors.join(","));
