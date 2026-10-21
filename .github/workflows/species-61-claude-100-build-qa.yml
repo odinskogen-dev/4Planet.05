@@ -312,7 +312,7 @@ jobs:
         run: |
           set -euo pipefail
           origin="$SPECIES61_PREVIEW_URL"
-          for slug in quokka snow-leopard axolotl giant-manta-ray orchid-mantis venus-flytrap dragon-blood-tree; do
+          for slug in red-panda quokka snow-leopard koala giant-manta-ray venus-flytrap dragon-blood-tree; do
             curl -fsSL --retry 5 --retry-delay 2 --max-time 45 "$origin/$slug" -o /tmp/preview.html
             grep -Fq "https://4species.com/$slug" /tmp/preview.html
             curl -fsSL --max-time 30 "$origin/species-data/v1/$slug.json" -o /tmp/profile.json
