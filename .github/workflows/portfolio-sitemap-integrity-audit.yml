@@ -1,0 +1,50 @@
+name: 4PLANET Search Sitemap Integrity Deep Audit
+on:
+  push:
+    branches: [audit/portfolio-seo-ai-20261021]
+    paths: [.github/workflows/portfolio-sitemap-integrity-audit.yml]
+permissions: {contents: read}
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Read-only inspect canonical ownership and unresolved soft-404s
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import concurrent.futures, urllib.request, urllib.error, re, json, xml.etree.ElementTree as ET,collections
+          from html.parser import HTMLParser
+          from urllib.parse import urlparse
+          domains=['4planet.org','4planetatlas.com','4planetmagazine.com','4nation.org']
+          def get(u):
+            try:
+              req=urllib.request.Request(u,headers={'User-Agent':'4PLANET-Search-ReadOnly-Audit/1.0'})
+              with urllib.request.urlopen(req,timeout=18) as r:return r.status,r.url,r.headers.get('content-type',''),r.read(300000)
+            except Exception as e:return 0,str(e),'',b''
+          for host in domains:
+            status,_,_,raw=get('https://'+host+'/sitemap.xml')
+            try:links=[el.text for el in ET.fromstring(raw).iter() if el.tag.endswith('loc') and el.text]
+            except Exception as e:print('SITEMAP_PARSE_ERROR',host,status,str(e));continue
+            kinds=collections.Counter('svg' if urlparse(u).path.endswith('.svg') else 'html' if not re.search(r'\.[a-zA-Z0-9]+$',urlparse(u).path) else 'other' for u in links)
+            hosts=collections.Counter(urlparse(u).hostname for u in links)
+            print('SITEMAP_DEEP_COUNTS',json.dumps({'host':host,'urls':len(links),'types':dict(kinds),'hostnames':dict(hosts),'duplicates':len(links)-len(set(links))}),flush=True)
+            if host=='4planet.org':print('SITEMAP_4PLANET_URLS',json.dumps(links),flush=True)
+            html=[u for u in links if not u.lower().split('?')[0].endswith('.svg')]
+            if host=='4planetatlas.com':
+              html=[u for u in html if not ('/place/' in u and '/map.' in u)]
+            if host=='4planetmagazine.com':html=html[:100]
+            if host=='4planetatlas.com':html=html[:260]
+            def check(u):
+              code,final,typ,raw=get(u)
+              if code==0:return {'url':u,'error':final[:120]}
+              body=raw.decode('utf-8','replace')
+              m=re.search(r'<link\s+rel=["\x27]canonical["\x27]\s+href=["\x27]([^"\x27]+)',body,re.I)
+              r=re.search(r'<meta\s+name=["\x27]robots["\x27]\s+content=["\x27]([^"\x27]+)',body,re.I)
+              title=re.search(r'<title>([^<]*)</title>',body,re.I)
+              return {'url':u,'status':code,'final':final,'canonical':m.group(1) if m else None,'robots':r.group(1) if r else None,'title':title.group(1) if title else None,'h1':bool(re.search(r'<h1(?:\s|>)',body,re.I))}
+            with concurrent.futures.ThreadPoolExecutor(max_workers=13) as pool:rows=list(pool.map(check,html))
+            issues=[r for r in rows if r.get('status')!=200 or r.get('url')!=r.get('final') or (r.get('canonical') and r.get('canonical').rstrip('/')!=r.get('url').rstrip('/')) or not r.get('h1')]
+            print('SITEMAP_DEEP_AUDIT',json.dumps({'host':host,'checked':len(rows),'issueCount':len(issues),'issues':issues[:35]},ensure_ascii=False),flush=True)
+          PY
