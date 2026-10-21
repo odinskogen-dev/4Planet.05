@@ -551,6 +551,30 @@
       "photoId": 588932613,
       "reason": "Tiny unidentifiable arthropod in foliage, inadequate premium subject clarity",
       "reviewType": "second_full_hero_gallery_red_team_2026-10-21"
+    },
+    {
+      "slug": "tiger-shark",
+      "photoId": 587546933,
+      "observationId": 324601662,
+      "reason": "Photo visibly features aquarium/tank surroundings and divers; does not meet live wild animal photography gate"
+    },
+    {
+      "slug": "komodo-dragon",
+      "photoId": 414069518,
+      "observationId": 233021864,
+      "reason": "People's legs and managed tourist/wildlife encounter visible; fail premium unobstructed wild documentary hero"
+    },
+    {
+      "slug": "toco-toucan",
+      "photoId": 95469825,
+      "observationId": 59738495,
+      "reason": "Distant subject with overlaid graphic/watermark; weak premium hero and source-badged composition"
+    },
+    {
+      "slug": "dugong",
+      "photoId": 15625387,
+      "observationId": 11071486,
+      "reason": "Unclear/distant submerged shape; photo does not establish distinguishable species or premium composition"
     }
   ],
   "unresolved": "All remaining images still require visual and legal signoff. This list does not mean any other photo is approved.",
