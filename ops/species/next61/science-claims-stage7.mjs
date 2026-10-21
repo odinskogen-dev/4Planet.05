@@ -9,9 +9,9 @@ export const scienceStage7 = {
         "label": "Mainland and Sunda cats are different species",
         "text": "The mainland clouded leopard Neofelis nebulosa is taxonomically distinct from the Sunda clouded leopard Neofelis diardi of Borneo and Sumatra.",
         "source": {
-          "label": "IUCN Red List 2021 — Neofelis nebulosa",
-          "url": "https://doi.org/10.2305/IUCN.UK.2021-2.RLTS.T14519A198843258.en",
-          "publisher": "IUCN Red List",
+          "label": "IUCN World Conservation Congress 2025 — Two clouded leopard species",
+          "url": "https://portals.iucn.org/library/sites/library/files/resrecfiles/WCC_2025_RES_118_EN.pdf",
+          "publisher": "IUCN World Conservation Congress",
           "verifiedOn": "2026-10-21"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
