@@ -1,4 +1,4 @@
-// Source-linked original science; physical narrative correctly categorised as appearance. No IUCN restricted dataset reproduced.
+// Individually sourced facts; editorial stage, NO claim of independent scientific Gold.
 export const sciencePacks = {
   "koala": {
     "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
@@ -978,6 +978,442 @@ export const sciencePacks = {
           "verifiedOn": "2026-10-21"
         },
         "status": "WEB_SOURCE_PARAPHRASE_CHECKED_NOT_INDEPENDENT_GOLD"
+      }
+    ]
+  },
+  "platypus": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "platypus-sci-01",
+        "category": "appearance",
+        "label": "How do platypuses sense prey?",
+        "text": "The bill of a platypus has electroreceptors that detect small electrical signals emitted by aquatic prey moving under water.",
+        "source": {
+          "label": "Australian Museum — How do platypuses sense prey?",
+          "url": "https://australian.museum/learn/species-identification/ask-an-expert/what-is-a-monotreme/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-02",
+        "category": "appearance",
+        "label": "Why do platypuses lay eggs?",
+        "text": "Platypuses are monotremes: egg-laying mammals whose young receive milk despite lacking teats.",
+        "source": {
+          "label": "Australian Museum — Why do platypuses lay eggs?",
+          "url": "https://australian.museum/learn/species-identification/ask-an-expert/what-is-a-monotreme/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-03",
+        "category": "ecology",
+        "label": "Where do platypuses live?",
+        "text": "Wild platypuses occupy rivers, creeks and freshwater lakes across eastern Australia and Tasmania, including cold upland streams.",
+        "source": {
+          "label": "Tasmania Natural Resources — Where do platypuses live?",
+          "url": "https://nre.tas.gov.au/wildlife-management/fauna-of-tasmania/mammals/echidnas-and-platypus/platypus/platypus-in-tasmania",
+          "publisher": "Tasmania Natural Resources",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-04",
+        "category": "ecology",
+        "label": "How do they feed?",
+        "text": "In freshwater, a platypus forages for small invertebrates among stream beds using touch and electrical sensation in its bill.",
+        "source": {
+          "label": "Tasmania Natural Resources — How do they feed?",
+          "url": "https://nre.tas.gov.au/wildlife-management/fauna-of-tasmania/mammals/echidnas-and-platypus/platypus/platypus-in-tasmania",
+          "publisher": "Tasmania Natural Resources",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-05",
+        "category": "appearance",
+        "label": "Are platypuses venomous?",
+        "text": "Male platypuses possess venom-bearing spurs on their hind limbs, a feature that distinguishes them from other Australian mammals.",
+        "source": {
+          "label": "Australian Museum — Are platypuses venomous?",
+          "url": "https://australian.museum/learn/species-identification/ask-an-expert/what-is-a-monotreme/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-06",
+        "category": "ecology",
+        "label": "When do young leave the burrow?",
+        "text": "After a female incubates eggs, her young remain in a burrow and depend on her milk for months before emerging.",
+        "source": {
+          "label": "Australian Museum — When do young leave the burrow?",
+          "url": "https://australian.museum/platypus",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-07",
+        "category": "conservation",
+        "label": "What threatens waterways?",
+        "text": "Freshwater habitat degradation, impaired river flows and loss of suitable vegetated banks can reduce conditions that sustain platypus populations.",
+        "source": {
+          "label": "Australian Museum — What threatens waterways?",
+          "url": "https://australian.museum/platypus",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "platypus-sci-08",
+        "category": "conservation",
+        "label": "How can habitat be protected?",
+        "text": "Protecting natural streambank vegetation, river flows and connected freshwater refuges addresses important components of platypus habitat.",
+        "source": {
+          "label": "CSIRO Publishing — How can habitat be protected?",
+          "url": "https://ebooks.publish.csiro.au/content/platypus",
+          "publisher": "CSIRO Publishing",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      }
+    ]
+  },
+  "narwhal": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "narwhal-sci-01",
+        "category": "appearance",
+        "label": "What is a narwhal tusk?",
+        "text": "The famous spiral tusk is usually a lengthened upper canine tooth of a male narwhal, rather than a horn growing from the skull.",
+        "source": {
+          "label": "NOAA Ocean Exploration — What is a narwhal tusk?",
+          "url": "https://oceanexplorer.noaa.gov/ocean-fact/narwhal/",
+          "publisher": "NOAA Ocean Exploration",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-02",
+        "category": "appearance",
+        "label": "Does every narwhal have a tusk?",
+        "text": "Most adult females lack a protruding tusk, although unusual individuals of both sexes may have different tusk patterns.",
+        "source": {
+          "label": "NOAA Fisheries — Does every narwhal have a tusk?",
+          "url": "https://www.fisheries.noaa.gov/species/narwhal/conservation-management",
+          "publisher": "NOAA Fisheries",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-03",
+        "category": "ecology",
+        "label": "How deep can narwhals dive?",
+        "text": "Narwhals can make repeated deep dives to hunt in Arctic waters and spend extended periods far below the sea surface.",
+        "source": {
+          "label": "NOAA Ocean Exploration — How deep can narwhals dive?",
+          "url": "https://oceanexplorer.noaa.gov/ocean-fact/narwhal/",
+          "publisher": "NOAA Ocean Exploration",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-04",
+        "category": "ecology",
+        "label": "What do narwhals eat?",
+        "text": "Their recorded prey includes Arctic and polar cod, Greenland halibut, shrimp and squid; diet varies across the seasons.",
+        "source": {
+          "label": "NOAA Ocean Exploration — What do narwhals eat?",
+          "url": "https://oceanexplorer.noaa.gov/ocean-fact/narwhal/",
+          "publisher": "NOAA Ocean Exploration",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-05",
+        "category": "ecology",
+        "label": "Where do narwhals live?",
+        "text": "Narwhals inhabit Arctic seas, especially the Atlantic Arctic around Greenland and northern Canada, with seasonal movements tied to sea ice.",
+        "source": {
+          "label": "NOAA Fisheries — Where do narwhals live?",
+          "url": "https://www.fisheries.noaa.gov/species/narwhal/conservation-management",
+          "publisher": "NOAA Fisheries",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-06",
+        "category": "ecology",
+        "label": "Why do narwhals form groups?",
+        "text": "Narwhals form social groups whose sizes change seasonally, with smaller groups often seen during periods of extensive sea ice.",
+        "source": {
+          "label": "NOAA Fisheries — Why do narwhals form groups?",
+          "url": "https://www.fisheries.noaa.gov/species/narwhal/conservation-management",
+          "publisher": "NOAA Fisheries",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-07",
+        "category": "conservation",
+        "label": "Sea ice and Arctic change",
+        "text": "Changes in sea ice, hunting and environmental contaminants are among pressures and management considerations for Arctic narwhals.",
+        "source": {
+          "label": "NOAA Fisheries — Sea ice and Arctic change",
+          "url": "https://www.fisheries.noaa.gov/species/narwhal/conservation-management",
+          "publisher": "NOAA Fisheries",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "narwhal-sci-08",
+        "category": "conservation",
+        "label": "Local protection is distinct",
+        "text": "Narwhals are protected under the U.S. Marine Mammal Protection Act, while conservation and hunting management across the Arctic require regional jurisdictions.",
+        "source": {
+          "label": "NOAA Fisheries — Local protection is distinct",
+          "url": "https://www.fisheries.noaa.gov/species/narwhal/conservation-management",
+          "publisher": "NOAA Fisheries",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      }
+    ]
+  },
+  "ocean-sunfish": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "ocean-sunfish-sci-01",
+        "category": "appearance",
+        "label": "Why is the sunfish so flat?",
+        "text": "The ocean sunfish has a laterally compressed body with a blunt, shortened tail structure called the clavus.",
+        "source": {
+          "label": "Monterey Bay Aquarium — Why is the sunfish so flat?",
+          "url": "https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/ocean-sunfish",
+          "publisher": "Monterey Bay Aquarium",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-02",
+        "category": "ecology",
+        "label": "What do ocean sunfish eat?",
+        "text": "Large ocean sunfish eat gelatinous animals such as jellyfish, salps and siphonophores, while smaller fish may eat more varied prey.",
+        "source": {
+          "label": "Monterey Bay Aquarium — What do ocean sunfish eat?",
+          "url": "https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/ocean-sunfish",
+          "publisher": "Monterey Bay Aquarium",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-03",
+        "category": "ecology",
+        "label": "Do sunfish only float?",
+        "text": "Although they bask near the surface, tracked sunfish actively swim and dive to substantial depths in search of prey.",
+        "source": {
+          "label": "Monterey Bay Aquarium — Do sunfish only float?",
+          "url": "https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/ocean-sunfish",
+          "publisher": "Monterey Bay Aquarium",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-04",
+        "category": "appearance",
+        "label": "Which sunfish is largest?",
+        "text": "The giant sunfish, Mola alexandrini, is recognised separately from Mola mola and holds notable records for extreme body mass.",
+        "source": {
+          "label": "Australian Museum — Which sunfish is largest?",
+          "url": "https://australian.museum/learn/animals/fishes/ocean-sunfish-mola-mola/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-05",
+        "category": "ecology",
+        "label": "Where does Mola mola live?",
+        "text": "Mola mola inhabits tropical and temperate oceans worldwide, but sightings and migration patterns depend on local ocean conditions.",
+        "source": {
+          "label": "Australian Museum — Where does Mola mola live?",
+          "url": "https://australian.museum/learn/animals/fishes/ocean-sunfish-mola-mola/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-06",
+        "category": "ecology",
+        "label": "Why do sunfish bask?",
+        "text": "Sunfish may rest near the surface after deep dives and can be seen exposing large parts of their flattened bodies to sunlight.",
+        "source": {
+          "label": "Australian Museum — Why do sunfish bask?",
+          "url": "https://australian.museum/learn/animals/fishes/ocean-sunfish-mola-mola/",
+          "publisher": "Australian Museum",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-07",
+        "category": "conservation",
+        "label": "Fishing interactions matter",
+        "text": "Drift gillnets and other fishing practices can injure or accidentally capture ocean sunfish in marine waters.",
+        "source": {
+          "label": "Monterey Bay Aquarium — Fishing interactions matter",
+          "url": "https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/ocean-sunfish",
+          "publisher": "Monterey Bay Aquarium",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "ocean-sunfish-sci-08",
+        "category": "conservation",
+        "label": "Plastic can resemble prey",
+        "text": "Floating plastic bags may resemble the gelatinous prey of sunfish and create ingestion or blockage risks.",
+        "source": {
+          "label": "Monterey Bay Aquarium — Plastic can resemble prey",
+          "url": "https://www.montereybayaquarium.org/animals-the-ocean/animals-a-to-z/ocean-sunfish",
+          "publisher": "Monterey Bay Aquarium",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      }
+    ]
+  },
+  "peacock-mantis-shrimp": {
+    "review": "SOURCE_MATCHED_CANDIDATE_NOT_GOLD",
+    "claims": [
+      {
+        "id": "peacock-mantis-shrimp-sci-01",
+        "category": "appearance",
+        "label": "How powerful is its strike?",
+        "text": "High-speed experiments show that peacock mantis shrimps rapidly release stored mechanical energy through spring-like limb structures.",
+        "source": {
+          "label": "Nature / Patek et al. 2004 — How powerful is its strike?",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15103366/",
+          "publisher": "Nature / Patek et al. 2004",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-02",
+        "category": "ecology",
+        "label": "A shell-cracking predator",
+        "text": "Peacock mantis shrimps strike hard-shelled prey, including crabs and molluscs, with specialised powerful forelimbs.",
+        "source": {
+          "label": "Smithsonian Institution — A shell-cracking predator",
+          "url": "https://www.si.edu/collections/snapshot/behold-mantis-shrimp",
+          "publisher": "Smithsonian Institution",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-03",
+        "category": "appearance",
+        "label": "Cavitation adds a second hit",
+        "text": "High-speed force measurements found an impact pulse and a second force peak caused by collapsing cavitation bubbles.",
+        "source": {
+          "label": "Journal of Experimental Biology — Cavitation adds a second hit",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16169943/",
+          "publisher": "Journal of Experimental Biology",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-04",
+        "category": "appearance",
+        "label": "A mechanical spring",
+        "text": "Researchers identify a saddle-shaped exoskeletal structure that stores elastic energy before the animal's strike.",
+        "source": {
+          "label": "Nature / Patek et al. 2004 — A mechanical spring",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15103366/",
+          "publisher": "Nature / Patek et al. 2004",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-05",
+        "category": "ecology",
+        "label": "Where does it hunt?",
+        "text": "Odontodactylus scyllarus occupies tropical, shallow Indo-Pacific marine environments where hard-shelled prey occur.",
+        "source": {
+          "label": "Smithsonian Institution — Where does it hunt?",
+          "url": "https://www.si.edu/collections/snapshot/behold-mantis-shrimp",
+          "publisher": "Smithsonian Institution",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-06",
+        "category": "appearance",
+        "label": "Eyes move in three axes",
+        "text": "Studies demonstrate unusual yaw, pitch and torsional eye rotations used by this species to stabilise and inspect visual scenes.",
+        "source": {
+          "label": "Proceedings of the Royal Society B — Eyes move in three axes",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5966611/",
+          "publisher": "Proceedings of the Royal Society B",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-07",
+        "category": "appearance",
+        "label": "Polarisation vision in motion",
+        "text": "Experiments show mantis shrimps rotate their eyes to improve polarisation contrast, revealing a specialised visual system.",
+        "source": {
+          "label": "Peer-reviewed vision study — Polarisation vision in motion",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4945877/",
+          "publisher": "Peer-reviewed vision study",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
+      },
+      {
+        "id": "peacock-mantis-shrimp-sci-08",
+        "category": "conservation",
+        "label": "Reefs support its prey",
+        "text": "Healthy shallow marine habitats and prey-bearing reef structures support the hunting ecology of peacock mantis shrimps; local protection needs site-specific evidence.",
+        "source": {
+          "label": "Smithsonian Institution — Reefs support its prey",
+          "url": "https://www.si.edu/collections/snapshot/behold-mantis-shrimp",
+          "publisher": "Smithsonian Institution",
+          "verifiedOn": "2026-10-21"
+        },
+        "status": "ORIGINAL_SOURCE_CONTEXT_READ_INDEPENDENT_GOLD_PENDING"
       }
     ]
   }
