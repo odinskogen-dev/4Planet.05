@@ -1,0 +1,47 @@
+name: MAX EXPOSURE W1 Earth Now Isolation Differential
+on:
+  push:
+    branches: [fix/exposure-wave1-main-20261021]
+    paths: [.github/workflows/exposure-wave1-parity-diff.yml]
+permissions: {contents:read}
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PUBLIC_SITE_ORIGIN: https://4planet.org
+      VITE_PUBLIC_SITE_ORIGIN: https://4planet.org
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version:22,cache:npm}
+      - name: Build exact candidate and compare Earth Now and homepage with active live
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund >/dev/null
+          npm run build > /tmp/build.log 2>&1
+          mkdir -p /tmp/parity
+          for route in now/ index.html livingsystems/ about impact; do
+            case "$route" in
+              index.html) localfile=dist/index.html;remote=/;;
+              now/) localfile=dist/now/index.html;remote=/now/;;
+              livingsystems/) localfile=dist/livingsystems/index.html;remote=/livingsystems/;;
+              *) localfile="dist/$route/index.html";remote="/$route";;
+            esac
+            key=$(printf '%s' "$route" | tr '/.' '__')
+            curl -fsSL --max-time 25 "https://4planet.org$remote" -o "/tmp/parity/$key.live"
+            if [ -f "$localfile" ];then cp "$localfile" "/tmp/parity/$key.candidate";fi
+            python3 - "$key" <<'PY'
+          import sys,pathlib,difflib,re,hashlib
+          a,b=(pathlib.Path('/tmp/parity/'+sys.argv[1]+p) for p in ('.live','.candidate'))
+          if not b.exists():print('PARITY_UNBUILT',sys.argv[1]);sys.exit(0)
+          x=a.read_text(errors='replace');y=b.read_text(errors='replace')
+          normalize=lambda z:re.sub(r'\s+',' ',z)
+          print('PARITY_DIFF',sys.argv[1],'same_bytes',x==y,'same_normalized',normalize(x)==normalize(y),'live_bytes',len(x),'build_bytes',len(y))
+          if x!=y:
+            dif=list(difflib.unified_diff(x.splitlines(),y.splitlines(),fromfile='production',tofile='candidate',lineterm=''))
+            for line in dif[:38]:print('DIFF',sys.argv[1],line[:420])
+          PY
+          done
+          echo EARTH_NOW_PARITY_REPORT_COMPLETED
