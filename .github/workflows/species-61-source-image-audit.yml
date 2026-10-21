@@ -29,6 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           node ops/species/next61/build-cohort.mjs --build | tee /tmp/species61.log
+          node ops/species/next61/science-stage1-qa.mjs
           grep -q 'SPECIES61_SUMMARY' /tmp/species61.log
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
