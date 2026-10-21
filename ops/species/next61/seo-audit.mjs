@@ -37,4 +37,11 @@ console.log("SPECIES61_SEO_AUDIT_SUMMARY "+JSON.stringify(summary));
 console.log("SPECIES61_SEO_EXAMPLES "+JSON.stringify([found[0],found[12],found[31],found[44],found[60]]));
 const out=process.env.SPECIES_REPORT_DIR||path.join(process.cwd(),"reports/species-next61");
 fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,"seo-audit.json"),JSON.stringify({summary,pages:found},null,2));
-if(summary.checked!==61||summary.canonicalCorrect!==61||uniqueTitles!==61||summary.titleErrors.length)process.exitCode=1;
+const researchFile=path.join(out,"research-report.json");
+const research=fs.existsSync(researchFile)?JSON.parse(fs.readFileSync(researchFile,"utf8")):null;
+const blocked=new Set(research?.records.filter(x=>!x.quality.photosLocal||!x.quality.licenceMetadata).map(x=>x.slug)||[]);
+const missing=new Set(found.filter(x=>x.error==="HTML_MISSING").map(x=>x.slug));
+console.log("SPECIES61_SEO_RELEASE_BLOCKED",JSON.stringify({missing:[...missing],blocked:[...blocked]}));
+if(summary.checked!==61||summary.canonicalCorrect!==61-blocked.size||
+ uniqueTitles!==61-blocked.size||uniqueDescriptions!==61-blocked.size||
+ summary.titleErrors.length||missing.size!==blocked.size||[...missing].some(x=>!blocked.has(x)))process.exitCode=1;
