@@ -1,0 +1,68 @@
+name: MAX EXPOSURE Earth Now Same-Host Functional Comparison
+on:
+  push:
+    branches: [fix/exposure-wave1-main-20261021]
+    paths: [.github/workflows/exposure-earth-now-same-host-qa.yml]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - name: Install Chrome
+        run: |
+          npm install --prefix /tmp/same-host playwright@1.56.0
+          /tmp/same-host/node_modules/.bin/playwright install --with-deps chromium
+      - name: Compare actual product behaviour using same public host in two browser contexts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import {chromium,devices} from '/tmp/same-host/node_modules/playwright/index.mjs';
+          import assert from 'node:assert/strict';
+          const ORIGIN='https://4planet.org',STAGED='https://8cb1e695.4planet-05.pages.dev';
+          const browser=await chromium.launch({headless:true});
+          for(const form of ['mobile','desktop']){
+            const info=form==='mobile'?{...devices['iPhone 13'],locale:'en-GB'}:{viewport:{width:1440,height:900},locale:'en-GB'};
+            const snapshots={};
+            for(const surface of ['production','candidate']){
+              const context=await browser.newContext(info);
+              if(surface==='candidate'){
+                await context.route('https://4planet.org/**',async route=>{
+                  const req=route.request();
+                  if(!['document','script','stylesheet','font','image'].includes(req.resourceType()))return route.continue();
+                  const u=new URL(req.url());
+                  try{const response=await route.fetch({url:STAGED+u.pathname+u.search,maxRedirects:8,timeout:40000});
+                  await route.fulfill({response,headers:{...response.headers(),'access-control-allow-origin':'*'}})}
+                  catch(e){console.log('PROXY_FAILED',u.pathname,String(e));await route.abort()}
+                });
+              }
+              const p=await context.newPage();
+              const r=await p.goto(ORIGIN+'/now/',{waitUntil:'domcontentloaded',timeout:45000});
+              assert.equal(r.status(),200);
+              await p.waitForTimeout(2400);
+              const d=await p.evaluate(()=>({
+                title:document.title,
+                h1:document.querySelector('h1')?.textContent?.trim(),
+                body:document.body.innerText.replace(/\s+/g,' ').slice(0,2600),
+                buttons:[...document.querySelectorAll('button')].filter(e=>e.getClientRects().length).map(b=>(b.getAttribute('aria-label')||b.textContent||'').trim().slice(0,65)),
+                links:[...document.querySelectorAll('a[href]')].map(a=>a.getAttribute('href')).filter(Boolean).slice(0,80),
+                overflow:document.documentElement.scrollWidth-window.innerWidth,
+                errors:document.querySelectorAll('[role=alert]').length
+              }));
+              snapshots[surface]=d;
+              console.log('EARTH_NOW_SAME_HOST '+JSON.stringify({form,surface,...d}).slice(0,5500));
+              await context.close();
+            }
+            const a=snapshots.production,b=snapshots.candidate;
+            assert.equal(a.h1,b.h1,'Earth Now header parity');
+            assert.equal(a.body,b.body,'Earth Now human-readable content parity');
+            assert.deepEqual(a.buttons,b.buttons,'Earth Now interactive controls parity');
+            assert.deepEqual(a.links,b.links,'Earth Now navigation parity');
+            assert.ok(b.overflow<=15,'Earth Now no extra horizontal scroll');
+            console.log('EARTH_NOW_SAME_HOST_'+form.toUpperCase()+'_PARITY_PASS');
+          }
+          await browser.close();
+          console.log('EARTH_NOW_SAME_HOST_GOLD_PASS');
+          NODE
