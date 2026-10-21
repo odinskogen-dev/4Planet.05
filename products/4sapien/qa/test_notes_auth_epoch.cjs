@@ -15,6 +15,7 @@ const eventUsers = [];
 const memoryUsers = [];
 let heldMutation = null;
 let releaseMutation = null;
+let deleteReceiptOverride;
 
 const context = {
   console,
@@ -44,6 +45,14 @@ const context = {
       if (heldMutation) await new Promise((resolve) => { releaseMutation = resolve; });
       const content = body.content;
       const id = options.method === 'POST' ? 'note-created' : 'note-existing';
+      if (body.state === 'deleted') {
+        const expectedUser = decodeURIComponent((url.match(/[?&]user_id=eq\.([^&]+)/) || [])[1] || '');
+        const receipt = deleteReceiptOverride === undefined
+          ? [{ id, user_id: expectedUser, state: 'deleted', deleted_at: body.deleted_at }]
+          : deleteReceiptOverride;
+        deleteReceiptOverride = undefined;
+        return { ok: true, status: 200, json: async () => receipt };
+      }
       return { ok: true, status: 200, json: async () => [{ id, content, state: 'active' }] };
     }
     if (url.includes('four_sapien_embla_events')) {
@@ -118,7 +127,24 @@ const waitForMutation = async () => {
   assert.deepEqual(eventUsers, ['user-c'], 'same-epoch delete must emit for the initiating user');
   assert.equal(state.textContent, 'Huskelappen ble fjernet.', 'same-epoch confirmed delete may announce success');
 
-  console.log('PASS 4SAPIEN note auth epoch: create/update/delete continuations remain bound across A→B and B→A switches');
+  for (const [label, receipt] of [
+    ['zero-row/nonexistent', []],
+    ['other-owner', [{ id: 'note-existing', user_id: 'user-other', state: 'deleted', deleted_at: new Date().toISOString() }]],
+    ['wrong-id', [{ id: 'note-other', user_id: 'user-c', state: 'deleted', deleted_at: new Date().toISOString() }]],
+  ]) {
+    eventUsers.length = 0;
+    state.textContent = '';
+    deleteReceiptOverride = receipt;
+    await removeNote('note-existing');
+    assert.deepEqual(eventUsers, [], `${label} delete receipt must not emit note_deleted`);
+    assert.equal(
+      state.textContent,
+      'Kunne ikke fjerne huskelappen. Den kan fortsatt være lagret. Prøv igjen.',
+      `${label} delete receipt must retain the fail-closed retry state`,
+    );
+  }
+
+  console.log('PASS 4SAPIEN note auth epoch: delete requires an owner-bound affected-row receipt and continuations remain auth-bound');
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

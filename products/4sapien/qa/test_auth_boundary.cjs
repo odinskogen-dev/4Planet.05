@@ -22,11 +22,14 @@ assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return;const c=card
 assert.match(source, /catch\(e\)\{if\(!authCurrent\(epoch\)\)return false;state\.textContent='Notater kunne ikke lastes akkurat nå\.'/ , "stale Notes rejection must not paint error state");
 
 assert.match(source, /id="fs-notes-state" class="fs-service-state" role="status" aria-live="polite"/, "notes mutations must expose an accessible live status");
-assert.match(source, /async function removeNote\(id\)\{const attempt=await authAttempt\(\);if\(!attempt\)return;try\{await api\(/, "note deletion must bind to the initiating identity and epoch");
-assert.match(source, /if\(!eventAttemptCurrent\(attempt\)\)return;const rows=await noteRows\(\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "note deletion must guard authoritative readback across auth changes");
-assert.match(source, /if\(rows\.some\(row=>String\(row\.id\)===String\(id\)\)\)throw new Error\('NOTE_DELETE_NOT_CONFIRMED'\)/, "note deletion must not claim success while the note remains authoritative");
-assert.match(source, /await renderNotes\(attempt\.epoch,rows\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "confirmed note deletion must render only in the initiating identity epoch");
-assert.match(source, /await emitEvent\('note_deleted','brain',\{surface:'home_notes'\},attempt\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "note deletion telemetry must use and revalidate the initiating identity attempt");
+assert.match(source, /async function removeNote\(id\)\{const attempt=await authAttempt\(\);if\(!attempt\)return;try\{const rows=await api\(/, "note deletion must bind to the initiating identity and epoch");
+assert.match(source, /user_id=eq\.'\+encodeURIComponent\(attempt\.userId\).*select=id,user_id,state,deleted_at/, "note deletion mutation must be owner-scoped and request an authoritative representation");
+assert.match(source, /headers:\{Prefer:'return=representation'\}/, "note deletion must request affected-row evidence");
+assert.match(source, /const deleted=deletedNoteReceipt\(rows,\{id,userId:attempt\.userId\}\);if\(!deleted\)throw new Error\('NOTE_DELETE_NOT_CONFIRMED'\)/, "note deletion must reject an empty or mismatched affected-row receipt");
+assert.match(source, /if\(!eventAttemptCurrent\(attempt\)\)return;const activeRows=await noteRows\(\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "note deletion must guard authoritative readback across auth changes");
+assert.match(source, /if\(activeRows\.some\(row=>String\(row\.id\)===String\(id\)\)\)throw new Error\('NOTE_DELETE_NOT_CONFIRMED'\)/, "note deletion must not claim success while the note remains authoritative");
+assert.match(source, /await renderNotes\(attempt\.epoch,activeRows\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "confirmed note deletion must render only in the initiating identity epoch");
+assert.match(source, /await emitEvent\('note_deleted','brain',\{surface:'home_notes',note_id:deleted\.id\},attempt\);if\(!eventAttemptCurrent\(attempt\)\)return;/, "note deletion telemetry must use the authoritative id and initiating identity attempt");
 assert.match(source, /state\.textContent='Huskelappen ble fjernet\.'/ , "confirmed note deletion must announce success");
 assert.match(source, /catch\(e\)\{if\(!eventAttemptCurrent\(attempt\)\)return;const state=document\.getElementById\('fs-notes-state'\);if\(state\)state\.textContent='Kunne ikke fjerne huskelappen\. Den kan fortsatt være lagret\. Prøv igjen\.'/ , "failed note deletion must preserve truth and announce uncertainty without painting a later identity");
 
