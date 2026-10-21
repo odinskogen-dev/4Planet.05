@@ -31,4 +31,8 @@ jobs:
           jq -c '.result[] | {id,environment,created_on,url,branch:.deployment_trigger.metadata.branch,commit:.deployment_trigger.metadata.commit_hash,message:.deployment_trigger.metadata.commit_message,stage:.latest_stage.name,status:.latest_stage.status}' /tmp/cf-production.json | head -n 12 | while IFS= read -r line; do echo "CLOUDFLARE_PRODUCTION_SOURCE $line"; done
           curl -fsSL --max-time 25 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/zones/$zone/workers/routes" -o /tmp/cf-routes.json
           jq -c '.result[]? | select((.pattern|ascii_downcase)|contains("4planet.org")) | {pattern,script}' /tmp/cf-routes.json | while read -r line; do echo "CLOUDFLARE_ZONE_WORKER_ROUTE $line"; done
+          for project in 4planet-atlas 4planet-05; do
+            curl -fsSL --max-time 30 -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API/accounts/$acc/pages/projects/$project/deployments?env=production&per_page=3" -o /tmp/cf-atlas-project.json
+            jq -c --arg name "$project" '.result[] | {project:$name,id,created_on,branch:.deployment_trigger.metadata.branch,commit:.deployment_trigger.metadata.commit_hash,message:.deployment_trigger.metadata.commit_message,url}' /tmp/cf-atlas-project.json | while IFS= read -r line; do echo "CLOUDFLARE_ATLAS_PROJECT_SOURCE $line"; done
+          done
           echo CLOUDFLARE_LIVE_SOURCE_READONLY_COMPLETED
