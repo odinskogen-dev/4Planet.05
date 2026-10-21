@@ -1,0 +1,27 @@
+name: 4PLANET Oslofjord robots safe policy test
+on:
+  push:
+    branches: [fix/public-robots-oslofjord-20261021]
+    paths: [.github/workflows/robots-oslofjord-policy-qa.yml]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate source, generator, crawl boundary, and sitemap
+        run: |
+          set -euo pipefail
+          node --test scripts/robots-oslofjord-publicity-qa.test.mjs
+          node scripts/generate-sitemap.mjs
+          node --test scripts/robots-oslofjord-publicity-qa.test.mjs
+          grep -Fq 'Disallow: /os$' public/robots.txt
+          grep -Fq 'Disallow: /os/' public/robots.txt
+          ! grep -Fxq 'Disallow: /os' public/robots.txt
+          grep -Fq 'https://4planet.org/oslofjord' public/sitemap.xml
+          echo SEO_ROBOTS_OSLOFJORD_PUBLIC_PROTECTED_OS_PRIVATE_PASS
