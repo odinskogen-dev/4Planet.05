@@ -15,6 +15,9 @@ try {
   const decline=page.getByRole('button',{name:'DECLINE',exact:true});if(await decline.isVisible())await decline.click();
   await page.frameLocator('.earth-now-map iframe').locator('.maplibregl-canvas').waitFor({timeout:45000});
   assert.equal(await page.frameLocator('.earth-now-map iframe').locator('.atlas-panel').isVisible(),false);
+  const frame = page.frames().find(f=>f.url().includes('embed=news'));
+  await frame.waitForFunction(()=>window.__4planet_map?.getLayer('bluemarble') && window.__4planet_map?.isSourceLoaded('bluemarble'), {timeout:45000});
+  console.log('MAP_READY',width,await frame.evaluate(()=>({url:location.href,loaded:window.__4planet_map?.loaded(),style:window.__4planet_map?.getStyle()?.name,sources:Object.keys(window.__4planet_map?.getStyle()?.sources||{})})));
   await page.screenshot({path:`${out}/now-${width}.png`,fullPage:true});
   const metrics=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,font:getComputedStyle(document.querySelector('.discovery-page')).fontFamily,background:getComputedStyle(document.querySelector('.discovery-page')).backgroundColor,h1:parseFloat(getComputedStyle(document.querySelector('h1')).fontSize),stray:[...document.body.childNodes].filter(n=>n.nodeType===3&&/\\n/.test(n.textContent)).map(n=>n.textContent)}));
   assert.ok(metrics.scroll<=metrics.width,`overflow ${JSON.stringify(metrics)}`);assert.match(metrics.font,/DM Sans/);assert.equal(metrics.background,'rgb(255, 255, 255)');assert.ok(metrics.h1<=48);assert.equal(metrics.stray.length,0);

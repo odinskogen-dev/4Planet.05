@@ -5,6 +5,7 @@ import { AtlasSavedViews } from "./AtlasSavedViews";
 import { AtlasPlaceNameBridge } from "./AtlasPlaceNameBridge";
 import { AtlasBasemapSync } from "./AtlasBasemapSync";
 import { AtlasLiveEvidenceBridge } from "./AtlasLiveEvidenceBridge";
+import { isAtlasEmbedKind } from "./atlasViewContract";
 
 const World = lazy(() => import("./World"));
 
@@ -156,6 +157,19 @@ export default function PublicWorld() {
         />
       </main>
     );
+  }
+
+  // A small embedded map needs a small, useful capability fallback.
+  if (isAtlasEmbedKind(new URLSearchParams(location.search).get("embed"))) {
+    const fullParams = new URLSearchParams(location.search);
+    fullParams.delete("embed");
+    return <main style={{ minHeight: "100dvh", display: "grid", placeItems: "center", padding: 28, background: "#FFFFFF", color: "#000000", fontFamily: "'DM Sans', sans-serif" }}>
+      <section style={{ maxWidth: 420 }}>
+        <h2 style={{ fontSize: 22, lineHeight: 1.25, fontWeight: 500, letterSpacing: "-.025em", margin: "0 0 14px" }}>The map is unavailable in this browser.</h2>
+        <p role="status" style={{ fontSize: 15, lineHeight: 1.6, color: "#505050", margin: "0 0 20px" }}>You can still explore the guides below, or try opening the full map.</p>
+        <a href={`https://4planetatlas.com/atlas/?${fullParams.toString()}`} target="_top" style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "10px 18px", border: "1px solid #D9D9D9", borderRadius: 999, color: "#000000", fontSize: 14, textDecoration: "none" }}>Open full map ↗</a>
+      </section>
+    </main>;
   }
 
   const context = retainedContext(location.search);
