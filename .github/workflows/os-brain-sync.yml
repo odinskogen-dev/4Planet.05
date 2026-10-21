@@ -1,11 +1,7 @@
 name: 4PLANET OS Brain Sync
 on:
-  workflow_dispatch:
   schedule:
     - cron: '17 */6 * * *'
-  push:
-    branches: [labs/overview-v1]
-    paths: [scripts/os-brain-sync.mjs, .github/workflows/os-brain-sync.yml]
 permissions:
   contents: read
   id-token: write
