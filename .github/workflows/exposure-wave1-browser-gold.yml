@@ -1,0 +1,87 @@
+name: MAX EXPOSURE W1 Gold Browser Parity Production vs Candidate
+on:
+  push:
+    branches: [fix/exposure-wave1-main-20261021]
+    paths: [.github/workflows/exposure-wave1-browser-gold.yml]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Browser tooling
+        run: |
+          npm install --prefix /tmp/planet-gold playwright@1.56.0
+          /tmp/planet-gold/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Real production and isolated preview parity on desktop and mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/exposure-w1-shots
+          node --input-type=module <<'NODE'
+          import {chromium,webkit,devices} from '/tmp/planet-gold/node_modules/playwright/index.mjs';
+          import assert from 'node:assert/strict';
+          const prod='https://4planet.org',candidate='https://8cb1e695.4planet-05.pages.dev';
+          const tested=['/now/','/','/livingsystems/','/livingsystems/species/western-honey-bee/','/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/'];
+          for(const [browserName,engine] of [['Chrome',chromium],['Safari',webkit]]){
+            const browser=await engine.launch({headless:true});
+            for(const form of ['mobile','desktop']){
+              const configs=form==='mobile'?{...devices['iPhone 13'],locale:'en-GB'}:{viewport:{width:1440,height:900},locale:'en-GB'};
+              const ctx=await browser.newContext(configs);
+              const statuses={};
+              for(const [surface,origin] of [['LIVE',prod],['PREVIEW',candidate]]){
+                for(const path of tested){
+                  const page=await ctx.newPage();
+                  const response=await page.goto(origin+path,{waitUntil:'domcontentloaded',timeout:45000});
+                  assert.equal(response.status(),200,surface+' '+path+' HTTP');
+                  await page.waitForTimeout(path==='/now/'?2000:700);
+                  const d=await page.evaluate(()=>({
+                    h1:document.querySelector('h1')?.textContent?.trim()||'',
+                    title:document.title,
+                    buttons:[...document.querySelectorAll('button')].filter(e=>e.offsetWidth||e.offsetHeight).length,
+                    links:document.querySelectorAll('a[href]').length,
+                    body:document.body?.innerText?.replace(/\s+/g,' ').slice(0,1100)||'',
+                    canonical:document.querySelector('link[rel=canonical]')?.href||'',
+                    desc:document.querySelector('meta[name=description]')?.content||'',
+                    viewportWidth:document.documentElement.scrollWidth,
+                    windowWidth:window.innerWidth,
+                    nowSections:document.querySelectorAll('main section').length,
+                    nowCards:document.querySelectorAll('[class*=card],[class*=Card]').length
+                  }));
+                  assert.ok(d.h1||d.body.length>40,surface+' '+path+' content');
+                  assert.ok(d.viewportWidth<=d.windowWidth+15,surface+' '+path+' no horizontal overflow');
+                  statuses[surface+path]=d;
+                  console.log('GOLD_BROWSER_EVIDENCE '+JSON.stringify({browserName,form,surface,path,h1:d.h1,buttons:d.buttons,links:d.links,bodyLength:d.body.length,canonical:d.canonical,description:d.desc.slice(0,80)}));
+                  if(path==='/now/'||path==='/livingsystems/'){
+                    await page.screenshot({path:'/tmp/exposure-w1-shots/'+browserName+'-'+form+'-'+surface+'-'+path.replaceAll('/','_')+'.png',animations:'disabled'});
+                  }
+                  await page.close();
+                }
+              }
+              for(const path of ['/now/','/']){
+                const a=statuses['LIVE'+path],b=statuses['PREVIEW'+path];
+                assert.equal(a.h1,b.h1,path+' main heading parity');
+                assert.equal(a.buttons,b.buttons,path+' button count parity');
+                if (path==='/now/') {
+                  assert.equal(a.links,b.links,'Earth Now navigable links parity');
+                  assert.equal(a.body,b.body,'Earth Now visible semantic content parity');
+                  assert.equal(a.nowSections,b.nowSections,'Earth Now sections parity');
+                }
+              }
+              const ls=statuses['PREVIEW/livingsystems/species/western-honey-bee/'];
+              assert.match(ls.canonical,/4planet.org\/livingsystems\/species\/western-honey-bee\/$/);
+              const amazon=statuses['PREVIEW/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/'];
+              assert.match(amazon.canonical,/4planet.org\/livingsystems\/ecosystems\/EC_AMAZON_RAINFOREST\/$/);
+              await ctx.close();
+            }
+            await browser.close();
+          }
+          console.log('EARTH_NOW_AND_MAIN_FUNCTIONAL_PARITY_BROWSER_GOLD_PASS');
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exposure-w1-browser-parity-screenshots
+          path: /tmp/exposure-w1-shots/
+          retention-days: 14
