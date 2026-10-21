@@ -1,0 +1,75 @@
+name: 4PLANET Living Systems SEO Safe Build and Preview
+on:
+  push:
+    branches: [fix/living-systems-search-surfaces-20261021]
+    paths: [.github/workflows/living-systems-seo-qa-preview.yml]
+permissions: {contents:read}
+concurrency: {group:living-systems-seo-safe-20261021,cancel-in-progress:false}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth:0}
+      - uses: actions/setup-node@v4
+        with: {node-version:22,cache:npm}
+      - name: Test safety before costly build
+        run: |
+          set -euo pipefail
+          node --check scripts/enhance-living-systems-seo.mjs
+          node --test scripts/living-systems-discovery-qa.test.mjs
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          echo SOURCE_BASELINE_AND_METADATA_CONTRACT_PASS
+      - name: Build entire 4PLANET in isolation
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm run build
+          test -f dist/index.html
+          test -f dist/livingsystems/index.html
+          echo FULL_SOURCE_PRESERVING_BUILD_PASS
+      - name: Verify 12 actual files are correctly indexed and present in main sitemap
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import {LIVING_SYSTEMS_SEARCH_PAGES,LIVING_SYSTEMS_CANONICAL_PREFIX} from './scripts/living-systems-search-surfaces.mjs';
+          const map=fs.readFileSync('dist/sitemap.xml','utf8');
+          for(const p of LIVING_SYSTEMS_SEARCH_PAGES){
+            const f='dist/livingsystems/'+p.path.slice(1)+'index.html';
+            assert.ok(fs.existsSync(f),f);
+            const html=fs.readFileSync(f,'utf8');
+            const url=LIVING_SYSTEMS_CANONICAL_PREFIX+p.path;
+            assert.ok(html.includes('<link rel="canonical" href="'+url+'"'),p.path+' canonical');
+            assert.ok(html.includes('data-4planet-lsi-discovery="true"'),p.path+' JSON-LD');
+            assert.ok(html.includes('content="index,follow,max-image-preview:large"'),p.path+' robots');
+            assert.ok(map.includes('<loc>'+url+'</loc>'),p.path+' sitemap');
+            assert.ok(html.includes('<h1'),p.path+' h1');
+            assert.ok(!/name="robots"[^>]*noindex/i.test(html),p.path+' noindex');
+            console.log('LSI_INDEXABLE_PREVIEW_READY',p.path,html.length);
+          }
+          assert.equal(LIVING_SYSTEMS_SEARCH_PAGES.length,12);
+          console.log('LSI_12_PUBLIC_ROUTES_SITEMAP_AND_SOURCE_ZERO_LOSS_QA_PASS');
+          NODE
+      - name: Deploy separate preview only; no production or DNS modifications
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch lsi-seo-preview-20261021 --commit-hash "$GITHUB_SHA" --commit-message "read-only publication candidate / LSI SEO $GITHUB_SHA" 2>&1 | tee /tmp/lsi-preview.log
+          url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/lsi-preview.log | head -n 1)
+          test -n "$url"
+          echo "LSI_SEO_PREVIEW=$url" >> "$GITHUB_ENV"
+          for p in /livingsystems/ /livingsystems/start/ /livingsystems/species/western-honey-bee/ /livingsystems/ecosystems/EC_AMAZON_RAINFOREST/ /sitemap.xml; do
+            status=$(curl -fsSL --max-time 30 -o /tmp/probe -w '%{http_code}' "$url$p")
+            test "$status" = 200
+            echo "PREVIEW_HTTP_PASS $p"
+          done
+          echo "ISOLATED_NO_LIVE_CHANGE_PREVIEW_PASS $url"
+          echo "- Isolated preview: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "- No production promotion was performed" >> "$GITHUB_STEP_SUMMARY"
