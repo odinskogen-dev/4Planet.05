@@ -227,6 +227,16 @@
     ptolemaic: '#9dc3cc',
     seleucid: '#baa3cb',
   };
+  const ACTION_COSTS = Object.freeze({
+    farm: Object.freeze({ wood: 45, treasury: 45 }),
+    granary: Object.freeze({ wood: 65, stone: 25, treasury: 35 }),
+    fort: Object.freeze({ wood: 70, stone: 60, treasury: 65 }),
+    levy: Object.freeze({ treasury: 95, food: 65, iron: 28, manpower: 150 }),
+  });
+  const COST_LABELS = { wood: 'WOOD', stone: 'STONE', iron: 'IRON', treasury: 'COIN', food: 'GRAIN', manpower: 'MEN' };
+  function costLabel(type) {
+    return Object.entries(ACTION_COSTS[type]).map(([resource, value]) => value + ' ' + COST_LABELS[resource]).join(' · ');
+  }
   const initial = () => ({
     schema: 1,
     scenario: 'apulia-216',
@@ -555,9 +565,18 @@
       window.ROMA_CARTOGRAPHY.city(ctx,x,y,city,owner,state.selected===city.id,cam.z,showLabel);
     }
     for (const army of state.armies.filter(a => a.men > 0)) {
-      const c = cityById[army.move?.to || army.at];
+      const c = cityById[army.at];
       if (!c) continue;
-      const [x, y] = pos(c.lon, c.lat);
+      let [x, y] = pos(c.lon, c.lat);
+      if (army.move && cityById[army.move.to] && cityById[army.move.from]) {
+        const trip = route(army.move.from, army.move.to);
+        const days = trip ? trip[2] : Math.max(1, army.move.left);
+        const progress = Math.max(0, Math.min(1, 1 - army.move.left / days));
+        const start = cityById[army.move.from], end = cityById[army.move.to];
+        const [sx, sy] = pos(start.lon, start.lat), [ex, ey] = pos(end.lon, end.lat);
+        x = sx + (ex - sx) * progress;
+        y = sy + (ey - sy) * progress;
+      }
       if (x < -40 || x > cw + 40 || y < -40 || y > ch + 40) continue;
       window.ROMA_CARTOGRAPHY.army(ctx,x,y,army,state.selectedArmy===army.id,cam.z);
     }
@@ -634,7 +653,7 @@
     let foodProduction = 0;
     for (const [id, c] of Object.entries(state.settlements)) {
       if (c.owner === 'rome') {
-        const produced = c.farms * 11 + (c.granaries ? 3 : 0);
+        const produced = c.farms * 11 + c.granaries * 3;
         c.grain = Math.max(0, Math.min(1100, c.grain + produced - 4));
         foodProduction += produced;
       }
@@ -738,7 +757,7 @@
       return;
     }
     if (kind === 'farm') {
-      const lacking = changeResources({ wood: 45, treasury: 45 });
+      const lacking = changeResources(ACTION_COSTS.farm);
       if (lacking) {
         note('Insufficient ' + lacking + ' for a farm.', 'bad');
         return;
@@ -746,7 +765,7 @@
       c.farms++;
       note('New farmland established at ' + cityById[id].name + '.', 'good');
     } else if (kind === 'granary') {
-      const lacking = changeResources({ wood: 65, stone: 25, treasury: 35 });
+      const lacking = changeResources(ACTION_COSTS.granary);
       if (lacking) {
         note('Insufficient ' + lacking + ' for a granary.', 'bad');
         return;
@@ -755,7 +774,7 @@
       state.food += 80;
       note('Granary completed. Eighty grain secured for the Republic.', 'good');
     } else if (kind === 'fort') {
-      const lacking = changeResources({ wood: 70, stone: 60, treasury: 65 });
+      const lacking = changeResources(ACTION_COSTS.fort);
       if (lacking) {
         note('Insufficient ' + lacking + ' for fortifications.', 'bad');
         return;
@@ -772,12 +791,7 @@
         );
         return;
       }
-      const lacking = changeResources({
-        treasury: 95,
-        food: 65,
-        iron: 28,
-        manpower: 150,
-      });
+      const lacking = changeResources(ACTION_COSTS.levy);
       if (lacking) {
         note('Recruitment requires additional ' + lacking + '.', 'bad');
         return;
@@ -928,7 +942,9 @@
       state.settlements[e.place] && (state.settlements[e.place].owner = 'rome');
       if (punic.men > 0 && punic.at === e.place) punic.at = 'tarentum';
       state.senate = Math.min(100, state.senate + 6);
-      state.grainSafeguarded = true;
+      state.grainSafeguarded = e.place === 'cannae' &&
+        state.settlements.cannae?.owner === 'rome' &&
+        !isBlocked('canusium', 'cannae');
     } else {
       if (roman.men > 0 && roman.at === e.place) roman.at = 'venusia';
       state.senate = Math.max(0, state.senate - 9);
@@ -978,8 +994,10 @@
     $('#coin').textContent = Math.floor(state.treasury).toLocaleString();
     $('#manpower').textContent = Math.floor(state.manpower).toLocaleString();
     $('#senate').textContent = state.senate + '%';
-    $('#objective').textContent = state.grainSafeguarded
-      ? 'THE GRAIN ROAD IS SECURE. EXPAND AND CONSOLIDATE.'
+    const cannaeSecured = state.settlements.cannae?.owner === 'rome' &&
+      !isBlocked('canusium', 'cannae');
+    $('#objective').textContent = cannaeSecured
+      ? 'CANNAE RECLAIMED · THE GRAIN ROAD IS SECURE'
       : 'SECURE THE GRAIN ROAD TO CANNAE';
     const c = selectedCity(),
       sett = state.settlements[c.id];
@@ -995,12 +1013,31 @@
         c.lon.toFixed(2) +
         '° E · APPROXIMATE LOCATION · SOURCE REVIEW PENDING'
       : 'SURVEY REGION · GEOGRAPHY VISIBLE · PLAYABLE CONTENT NOT YET BUILT';
+    const romanMen = state.armies.filter(a => a.owner === 'rome').reduce((sum, a) => sum + Math.max(0,a.men), 0);
+    const farmOutput = Object.entries(state.settlements).reduce((total, [id, place]) =>
+      total + (place.owner === 'rome' ? place.farms * 11 + place.granaries * 3 : 0), 0);
+    const foodUse = Math.ceil(romanMen / 195) + 21 + (isBlocked('canusium','cannae') ? 13 : 0);
+    const dailyGrain = Math.floor(farmOutput * .43) - foodUse;
+    const dailyCoin = 10 - Math.ceil(romanMen / 600);
+    $('#stockpile').innerHTML =
+      '<div class="stockline"><span>WOOD</span><b>' + state.wood + '</b><span>STONE</span><b>' +
+      state.stone + '</b><span>IRON</span><b>' + state.iron + '</b></div>' +
+      '<div class="forecast">NEXT DAY · GRAIN <strong class="' + (dailyGrain < 0 ? 'negative' : '') +
+      '">' + (dailyGrain > 0 ? '+' : '') + dailyGrain + '</strong> · COIN <strong class="' +
+      (dailyCoin < 0 ? 'negative' : '') + '">' + (dailyCoin > 0 ? '+' : '') + dailyCoin + '</strong></div>';
     $('#settlement').innerHTML = sett
       ? `<div class="mini-stat"><span>FARMS</span><b>${sett.farms}</b></div><div class="mini-stat"><span>GRANARIES</span><b>${sett.granaries}</b></div><div class="mini-stat"><span>LOCAL GRAIN</span><b>${sett.grain}</b></div><div class="mini-stat"><span>LOYALTY</span><b>${sett.loyalty}%</b></div>`
       : '<p class="muted">Region mapped for future expansion.</p>';
     const owned = sett?.owner === 'rome';
     $('#city-actions').innerHTML = owned
-      ? '<button data-action="farm">FARM · 45 WOOD / 45 COIN</button><button data-action="granary">GRANARY · 65 WOOD / 25 STONE</button><button data-action="fort">FORTIFY · 70 WOOD / 60 STONE</button><button data-action="levy">RECRUIT 150 · 95 COIN</button>'
+      ? ['farm','granary','fort','levy'].map(kind => {
+          const labels = { farm: 'BUILD FARM', granary: 'BUILD GRANARY', fort: 'FORTIFY', levy: 'RECRUIT 150' };
+          const affordable = Object.entries(ACTION_COSTS[kind]).every(([r, amount]) => state[r] >= amount);
+          const stationed = kind !== 'levy' || state.armies.some(a => a.owner === 'rome' && a.at === c.id && !a.move);
+          return '<button data-action="' + kind + '" title="' + costLabel(kind) +
+            '" ' + (!affordable || !stationed ? 'disabled ' : '') + '>' + labels[kind] +
+            '<small>' + costLabel(kind) + '</small></button>';
+        }).join('')
       : c.playable
         ? '<p class="muted">This settlement is outside Roman administration.</p>'
         : '<p class="muted">Full regional simulation follows a later development stage.</p>';
@@ -1039,6 +1076,7 @@
     $('#advance1').disabled = !!e;
     $('#advance7').disabled = !!e;
     $('#saveflag').textContent = 'SAVED';
+    document.dispatchEvent(new CustomEvent('roma:campaign-render', { detail: { selectedSite: c.id } }));
     drawSoon();
   }
   function escapeText(x) {
@@ -1324,6 +1362,10 @@
   window.ROMA_CAMPAIGN = {
     get state() {
       return JSON.parse(JSON.stringify(state));
+    },
+    siteInfo(id) {
+      const c = cityById[id];
+      return c ? { id: c.id, name: c.name, lat: c.lat, lon: c.lon, region: c.region, confidence: c.confidence, playable: c.playable } : null;
     },
     advance,
     autoResolve: () => calculateBattle(),
