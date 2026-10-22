@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 const root = process.cwd();
 const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
@@ -28,9 +29,42 @@ const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 const analytics = exists("src/analytics/ProductAnalytics.ts") ? read("src/analytics/ProductAnalytics.ts") : "";
 const routeAnalytics = exists("src/analytics/ProductRouteAnalytics.tsx") ? read("src/analytics/ProductRouteAnalytics.tsx") : "";
 
+function activeStaticSitemapRoutes(sourceText) {
+  const sourceFile = ts.createSourceFile(
+    "generate-sitemap.mjs",
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.JS,
+  );
+  let routes = null;
+
+  const visit = (node) => {
+    if (
+      ts.isVariableDeclaration(node)
+      && ts.isIdentifier(node.name)
+      && node.name.text === "staticRoutes"
+      && node.initializer
+      && ts.isArrayLiteralExpression(node.initializer)
+    ) {
+      routes = node.initializer.elements
+        .filter((element) => ts.isStringLiteralLike(element))
+        .map((element) => element.text);
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  if (!routes) throw new Error("Unable to resolve the active staticRoutes array from scripts/generate-sitemap.mjs");
+  return new Set(routes);
+}
+
+const activeSitemapRoutes = activeStaticSitemapRoutes(sitemapGenerator);
+
 const routeCoverage = requiredDiscoveryRoutes.map((route) => ({
   route,
-  declaredInSitemapGenerator: sitemapGenerator.includes(JSON.stringify(route)),
+  declaredInSitemapGenerator: activeSitemapRoutes.has(route),
 }));
 
 const journeys = journeyEntries.map((entry) => {

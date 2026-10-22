@@ -2,7 +2,11 @@ import test from "node:test";
 import ts from "typescript";
 import vm from "node:vm";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const shared = read("src/analytics/ProductAnalytics.ts");
@@ -115,6 +119,45 @@ test("the user-entry audit checks the public Living Systems canonical instead of
   assert.match(userEntryAudit, /^\s*"\/livingsystems\/",\s*$/m);
   assert.doesNotMatch(userEntryAudit, /^\s*"\/living-systems",\s*$/m);
   assert.match(sitemap, /^\s*"\/livingsystems\/",\s*$/m);
+});
+
+test("the user-entry audit rejects a canonical route that survives only inside a sitemap comment", () => {
+  const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
+  const fixtureRoot = mkdtempSync(join(tmpdir(), "4planet-user-entry-audit-"));
+  const fixturePaths = [
+    "scripts/generate-sitemap.mjs",
+    "public/robots.txt",
+    "public/journey/jaguar/index.html",
+    "public/journey/orca/index.html",
+    "src/analytics/ProductAnalytics.ts",
+    "src/analytics/ProductRouteAnalytics.tsx",
+  ];
+
+  try {
+    for (const relativePath of fixturePaths) {
+      const destination = join(fixtureRoot, relativePath);
+      mkdirSync(dirname(destination), { recursive: true });
+      cpSync(join(repositoryRoot, relativePath), destination);
+    }
+
+    const sitemapFixture = join(fixtureRoot, "scripts/generate-sitemap.mjs");
+    const sitemapSource = readFileSync(sitemapFixture, "utf8");
+    const mutatedSource = sitemapSource.replace(
+      /^\s*"\/livingsystems\/",\s*$/m,
+      '  // "/livingsystems/",',
+    );
+    assert.notEqual(mutatedSource, sitemapSource, "fixture mutation must remove the active canonical route");
+    writeFileSync(sitemapFixture, mutatedSource, "utf8");
+
+    const result = spawnSync(process.execPath, [join(repositoryRoot, "scripts/user-entry-audit.mjs")], {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 1, `audit must fail when route is commented out; stdout=${result.stdout}; stderr=${result.stderr}`);
+    assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+  } finally {
+    rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 });
 
 test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {

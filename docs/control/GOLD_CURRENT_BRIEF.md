@@ -1931,3 +1931,35 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **MAKER ≠ JUDGE:** Factory may correct and verify the candidate. Independent Gold judges the exact SHA; merge, deployment, indexing and LIVE release remain separately authorised.
 
+# LIVING SYSTEMS — GENERATED-ROUTE AUDIT IMMUNITY — 23 OCTOBER 2026
+
+**STATUS:** INDEPENDENT GOLD QA_CORRECT / BOUNDED EVALUATOR REPAIR / RELEASE HOLD.
+
+**USER ARRIVES BECAUSE:** a visitor or crawler follows the existing public Living Systems entry.
+
+**ONE THING TO UNDERSTAND:** the audit must prove the canonical route is active in the sitemap route set, not merely present as inert source text.
+
+**PRIMARY ACTION:** retain the existing `/livingsystems/` public entry and its current journey.
+
+**SECONDARY DEPTH:** preserve the existing redirect alias, analytics classifiers, sitemap output and public experience unchanged.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** existing Living Systems entry / canonical route truth / enter the product / existing systems content.
+
+**WHAT CAN BE REMOVED:** the false-positive source-substring evaluator that accepts a commented-out route.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the current sitemap generator, user-entry audit, analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing active-route audit proves only that the canonical is present in the generator's active static route array. It does not prove deployment, HTTP redirect behaviour, indexation, traffic, user use or Gold acceptance.
+
+**MOBILE-FIRST RISK:** none; no rendered markup, styling, interaction or route output changes.
+
+**HUMAN SUCCESS:** a future accidental comment/removal of the canonical route fails the audit before release while the existing public product remains unchanged.
+
+**QUESTION / DELETE / SIMPLIFY / REUSE:** replace raw substring presence with deterministic syntax-tree extraction of the active array and lock the escaped failure with one isolated negative mutation.
+
+**SIMPLEST CAPABLE EXECUTION:** one audit correction plus one same-path failing-first regression; no new service, store, route, page or product branch.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only evaluator change. Base and rollback are `king/test@def5bef1c70b8fdb06112149fecfe8b1eb784d40`.
+
+**MAKER ≠ JUDGE:** Factory repairs and verifies the evaluator. Independent Gold must re-run the exact negative mutation against the returned SHA; merge, deployment and LIVE release remain separately authorised.
+
