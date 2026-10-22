@@ -1,0 +1,7 @@
+Claude — here is AXE's complete handoff of our separate ROMA campaign prototype (source code, map data, findings, historic context, and world vision). It does NOT replace your current ROMA Challenger engine, and you must not modify the tactical/battle source as part of reviewing it.
+
+Start with README_START_HERE_CLAUDE.md, then 01, 02, 03, 04 and 06. Read the actual src/ and public/ files, not only the brief. The preserved original tactical file public/legacy.html is intentionally absent; use your own existing original exact ROMA build when evaluating integration.
+
+Please critically evaluate what to keep, refactor or rebuild. The goal is a beautiful and strategically meaningful historical grand campaign, eventually set across Europe, North Africa and east to Persia/Central Asia with many date-appropriate nations/factions, but one genuinely excellent 216 BCE Apulia/Cannae chapter first. Explain what you recommend and why, especially the proper 3D geospatial map architecture and safe campaign-to-battle bridge.
+
+No new costs, no public changes, no autonomous merge or deployment. Odin will approve the next build direction after your review.

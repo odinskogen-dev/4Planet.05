@@ -1,0 +1,52 @@
+
+:root{--roma-gold:#cfb483;--roma-cream:#f1e3c5;--roma-ink:#26221c}
+#topbar{height:78px;min-height:78px;background:linear-gradient(120deg,#1c1c17,#29251e);border-bottom:1px solid #8d7045;box-shadow:0 7px 21px #1118;padding:0 23px;gap:25px}
+.logo{display:flex;align-items:flex-start;flex-direction:column;gap:4px;min-width:185px}
+.brand{font:normal 42px/.88 Georgia,serif;letter-spacing:.11em;color:#f3e6ca}
+.subtitle{font:700 8px 'DM Sans',sans-serif;letter-spacing:.28em;color:var(--roma-gold);margin-left:3px}
+.statbar{height:100%;gap:0;border-left:1px solid #a8946b55}
+.stat{height:100%;justify-content:center;gap:7px;min-width:104px;padding:15px 20px;border-right:1px solid #a8946b55}
+.stat span{color:#c0af90;letter-spacing:.17em;font-size:9px}
+.stat b{font:500 20px Georgia,serif;color:#f1e3c5}
+.date{font:500 12px Georgia,serif;color:#e8d4ae;letter-spacing:.06em}
+.stage{border-color:#9d84574d;color:#d3bb8a}
+#mapwrap{background:#66848a}#mapwrap:after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;box-shadow:inset 0 0 105px rgba(18,24,26,.19)}
+#sidebar{flex:0 0 335px;width:335px;background:linear-gradient(145deg,#28251e,#312a21 70%,#28241e);border-left:1px solid #7e6845;box-shadow:-8px 0 26px rgba(13,17,14,.22)}
+#sidebar section{border-bottom:1px solid #e9d6ab28;padding:20px}
+#sidebar h1{color:#f6e5c9;font:400 35px/.95 Georgia,serif;margin:10px 0}
+#sidebar h3{color:#c5ad83;font-size:9px;letter-spacing:.19em}
+#sidebar .eyebrow,.eyebrow{color:#c7aa76;letter-spacing:.2em;font-size:9px}
+#place-region{color:#d0b998}#place-info{color:#afa48a}
+.mini-stat{background:#f2dfb308;border-color:#f2dfb333;border-radius:7px}
+.mini-stat span{color:#af9d82}.mini-stat b{font:500 22px Georgia,serif;color:#ecd3a9}
+#city-actions button,.action{border-color:#bfa5786e;border-radius:7px;background:#e6ceb106;color:#f2e4c9}
+#city-actions button:hover,.action:hover{background:#b792532c;border-color:#dcc392}
+.action.primary,#move{background:#c4a978;color:#212018;border-color:#dfc899}
+.army{border-color:#d6c1924d;border-radius:7px;background:#dfd0af09}
+.army.selected{background:#bb9a6238;border-color:#d9bb83}
+.army small{color:#c0ae92}
+#move-context{color:#c7b696}#recent p{border-left-color:#bca172;color:#e4d0ab}
+#maptools{top:19px;left:20px;background:#26241ff2;border:1px solid #d0b8886b;border-radius:9px;padding:5px;box-shadow:0 8px 18px #1117}
+#maptools button{color:#e9d8b7;border-radius:6px;padding:11px 14px;font-size:10px;letter-spacing:.13em}
+#maptools button:hover{background:#6b583b}
+#zoomtools{top:20px;right:19px;background:#272821df;border:1px solid #cbb28a77}
+#mission{left:22px;bottom:25px;padding:20px 22px;max-width:365px;border-radius:5px;border:1px solid #dfc69888;border-left:3px solid #e1bb7b;background:linear-gradient(110deg,#25221fec,#3a3227e3);box-shadow:0 12px 40px #1117}
+#mission h2{font:400 27px/1.12 Georgia,serif;color:#f2e0bd}#mission p{color:#d4c3a6}
+#map-caption{position:absolute;z-index:1;top:92px;left:24px;pointer-events:none;text-shadow:0 2px 18px #233b3e}
+#map-caption b{display:block;color:#e8dab8;font:normal 29px Georgia,serif;letter-spacing:.12em}
+#map-caption span{color:#e8d2a9;font:700 9px 'DM Sans',sans-serif;letter-spacing:.23em}
+#geo-status{color:#e7e1d0;opacity:.7;font-size:7px}
+#destinations{margin:10px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#destinations button{border:1px solid #b89c6e88;color:#f1debb;background:#53463670;border-radius:7px;padding:10px;text-align:left;font:600 11px 'DM Sans',sans-serif}
+#destinations button:hover{background:#88714b}
+#destinations button small{display:block;font-size:9px;color:#c4b397;margin-top:4px}
+#bottombar{background:#24231d;border-top:1px solid #8b754f;min-height:62px}
+#bottombar button{background:#40382d;border:1px solid #c7a97b70;border-radius:7px;color:#eee0c4;letter-spacing:.07em}
+#bottombar button.next{background:#c6ab79;color:#28241e}
+.bottomnote{color:#b9aa8d}
+.enc-card{background:#2c281f;border-color:#c6ac76}.enc-card h2{font:400 36px Georgia,serif;color:#f5e4c7}.enc-card p{color:#d8c7ab}
+.enc-actions .primary{background:#c9ae79;color:#28231b}
+#basemap{top:72px;left:20px;display:flex;gap:4px;padding:5px;background:rgba(26,28,25,.91);border:1px solid #b49a7080;border-radius:9px;box-shadow:0 7px 20px #0005;pointer-events:auto}#basemap button{font:700 9px 'DM Sans',sans-serif;letter-spacing:.09em;border:0;border-radius:6px;background:transparent;color:#d0c2a3;padding:10px 12px}#basemap button.active{background:#d2b786;color:#29251f}#basemap button:hover:not(.active){background:#ffffff18}#map-caption{top:139px}#map-credits{bottom:12px;left:16px;max-width:calc(100% - 36px);padding:5px 8px;color:#f5eee0;font:500 8px/1.5 'DM Sans',sans-serif;letter-spacing:.02em;background:#141f1bc9;border-radius:5px;text-shadow:0 1px 2px #000;pointer-events:auto;z-index:2}#map-credits a{color:inherit;text-decoration:none}#geo-status{bottom:36px;left:16px;right:auto;max-width:70%;text-shadow:0 1px 4px #000}#mission{bottom:45px;max-width:305px;padding:13px 16px;border-radius:10px;backdrop-filter:blur(10px)}#mission h2{font-size:20px;margin:6px 0}#mission p{font-size:10px}#maptools,#zoomtools{border-radius:10px}#basemap{z-index:2}@media(max-width:950px){#basemap{left:10px;top:52px;padding:3px}#basemap button{font-size:8px;padding:8px 9px}#map-caption{top:103px;left:13px}#mission{bottom:56px;padding:11px;max-width:calc(100% - 140px)}#map-credits{bottom:5px;left:7px;font-size:6px;max-width:calc(100% - 14px)}#geo-status{bottom:27px;left:7px;font-size:6px}}@media(max-width:550px){#map-caption b{font-size:18px}#basemap button{padding:7px;font-size:7px}}
+@media(max-width:1100px){#topbar{gap:10px;padding:0 12px}.logo{min-width:130px}.brand{font-size:30px}.stat{min-width:78px;padding:12px}.stat b{font-size:16px}.stage{display:none}#sidebar{width:300px;flex-basis:300px}}
+@media(max-width:950px){#topbar{height:62px;min-height:62px}.logo{min-width:118px}.brand{font-size:27px}.subtitle{font-size:7px}.stat{min-width:57px;padding:7px}.stat b{font-size:14px}.stat span{font-size:7px}#sidebar{position:absolute;bottom:0;left:0;right:0;width:100%;height:min(70dvh,570px);border-radius:16px 16px 0 0;flex-basis:auto}#map-caption{top:68px;left:13px}#map-caption b{font-size:21px}#map-caption span{font-size:7px}#maptools{top:10px;left:10px}#maptools button{font-size:9px;padding:8px}#mission{left:11px;bottom:11px;padding:12px;max-width:calc(100% - 155px)}#mission h2{font-size:18px}#mission p{display:none}#mobile-panel{background:#352d23;border-color:#c4a775;color:#f7e8c7}}
+@media(max-width:550px){.stat:nth-child(n+3){display:none}.statbar{justify-content:flex-end}.stat{min-width:70px}#maptools button{font-size:8px;padding:8px 6px}#map-caption{top:66px}#mission h2{font-size:16px}#bottombar button{font-size:9px;padding:11px 9px}}

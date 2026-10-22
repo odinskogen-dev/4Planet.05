@@ -1,0 +1,85 @@
+[
+  {
+    "name": "Real satellite, relief and historical map layers",
+    "viewport": "desktop",
+    "covers": ["2016 EOxCloudless satellite basemap", "Mapzen digital elevation relief", "historical fallback", "map-layer controls", "proper source attribution", "saved map mode"],
+    "description": "Switch between real satellite imagery, DEM hillshade and historical layers while checking city alignment and sources.",
+    "steps": ["Open campaign centred on Apulia", "Verify SATELLITE is selected and credit names EOxCloudless 2016", "Switch REAL RELIEF and inspect terrain and source credit", "Switch HISTORIC, zoom to ITALIA, switch SATELLITE and refresh"],
+    "expected": "Basemap selector works with existing campaign, town markers remain geographically aligned, credits follow selected layer and the chosen mode persists on refresh."
+  },
+  {
+    "name": "Recruit and retain a Roman campaign",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": ["campaign resources", "recruitment", "persistent save"],
+    "description": "Recruit units from the Canusium settlement and verify that the campaign persists after refresh.",
+    "steps": [
+      "Open the campaign and select Canusium",
+      "Click Recruit 150 and verify manpower and treasury decrease",
+      "Refresh the page and inspect the army and resources"
+    ],
+    "expected": "The field army remains larger by 150 and treasury and manpower remain reduced after refresh."
+  },
+  {
+    "name": "World map and local town controls work on mobile",
+    "viewport": "mobile",
+    "covers": [
+      "geographic world map",
+      "mobile touch navigation",
+      "regional map selection",
+      "settlement details"
+    ],
+    "description": "Check that geographically grounded map navigation works on a narrow touchscreen.",
+    "steps": [
+      "Open the game on a mobile viewport",
+      "Tap WORLD then ITALIA then APULIA",
+      "Tap the DETAILS button and inspect Canusium settlement data"
+    ],
+    "expected": "All three map scales are usable, coastline is drawn, and Canusium details open without controls falling off-screen."
+  },
+  {
+    "name": "Prevent impossible recruitment",
+    "viewport": "desktop",
+    "covers": ["resource scarcity guardrail", "recruitment validation"],
+    "description": "Recruiting cannot create troops out of thin air when resources are exhausted.",
+    "steps": [
+      "Select Canusium",
+      "Click Recruit 150 repeatedly until the treasury or manpower is exhausted",
+      "Try recruiting one additional time"
+    ],
+    "expected": "A clear insufficient-resource warning appears and resources never become negative."
+  },
+  {
+    "name": "Tactical 3D engine remains playable",
+    "viewport": "desktop",
+    "covers": [
+      "preserved Challenger 3D engine",
+      "tactical launch",
+      "safe return to campaign"
+    ],
+    "description": "The original ROMA Three.js scene loads in an isolated same-origin iframe and can be exited without changing campaign resources.",
+    "steps": [
+      "Select Canusium and press INSPECT IN 3D",
+      "Wait for the original Challenger 3D battlefield to appear",
+      "Click Return to campaign"
+    ],
+    "expected": "The original ROMA 3D scene loads and is playable; returning restores the strategic map with campaign state intact."
+  },
+  {
+    "name": "Battle application is idempotent",
+    "viewport": "desktop",
+    "covers": [
+      "campaign encounter",
+      "automated tactical resolution",
+      "single-apply battle ledger"
+    ],
+    "description": "Verify an encounter affects both sides once and returns to the campaign.",
+    "steps": [
+      "Select Canusium and use MARCH TO CANNAE",
+      "Advance one day until the two armies meet",
+      "Choose AUTO RESOLVE",
+      "Inspect Roman and Carthaginian army strengths and advance a day"
+    ],
+    "expected": "Battle losses apply once, the encounter dialog disappears, and the campaign can continue without duplicate casualties."
+  }
+]

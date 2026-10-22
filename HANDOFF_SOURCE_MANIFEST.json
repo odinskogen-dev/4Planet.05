@@ -1,0 +1,77 @@
+{
+  "name": "ROMA THE REPUBLIC - Claude Campaign Handoff",
+  "created": "2026-10-22",
+  "project": "PRJ-ODIN-003 / HIS-002",
+  "source_provider": "AppDeploy source snapshot",
+  "app_id": "roma-the-republic-campaign-01-b2li4t",
+  "appdeploy_snapshot_version": "1792611566483",
+  "source_files": [
+    {
+      "path": "index.html",
+      "chars": 5776
+    },
+    {
+      "path": "src/main.ts",
+      "chars": 123
+    },
+    {
+      "path": "src/campaign.js",
+      "chars": 39459
+    },
+    {
+      "path": "src/geo-tiles.js",
+      "chars": 5495
+    },
+    {
+      "path": "src/map-art.js",
+      "chars": 5191
+    },
+    {
+      "path": "src/styles.css",
+      "chars": 11638
+    },
+    {
+      "path": "src/roma-visual.css",
+      "chars": 6803
+    },
+    {
+      "path": "public/land.geojson",
+      "chars": 138160
+    },
+    {
+      "path": "public/rivers.geojson",
+      "chars": 36549
+    },
+    {
+      "path": "package.json",
+      "chars": 479
+    },
+    {
+      "path": "postcss.config.js",
+      "chars": 81
+    },
+    {
+      "path": "tailwind.config.js",
+      "chars": 155
+    },
+    {
+      "path": "tsconfig.json",
+      "chars": 485
+    },
+    {
+      "path": "vite.config.ts",
+      "chars": 310
+    },
+    {
+      "path": "tests/tests.json",
+      "chars": 3964
+    }
+  ],
+  "notes": [
+    "public/legacy.html intentionally excluded (Claude original protected battle bundle)",
+    "GeoJSON files included; external satellite/elevation raster tiles not bundled",
+    "Current version is staging prototype; docs describe planned future features separately",
+    "No user-provided resources silently added"
+  ],
+  "source_url": "https://roma-the-republic-campaign-01-b2li4t.v2.appdeploy.ai/"
+}

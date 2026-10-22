@@ -2,33 +2,137 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#080808" />
-    <meta name="robots" content="index,follow,max-image-preview:large" />
-    <script src="/host-indexing-policy.js"></script>
-    <title>4PLANET_ — For a Living Planet</title>
-    <meta name="description" content="4PLANET is a system for ecological action — built to make participation understandable, trustworthy, measurable and easy." />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate" type="application/rss+xml" title="4PLANET MAGAZINE" href="/rss.xml" />
-
-    <!-- Open Graph / social. Route-specific Magazine metadata is generated at build and refreshed at runtime. -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="4PLANET_" />
-    <meta property="og:title" content="4PLANET_ — For a Living Planet" />
-    <meta property="og:description" content="A system for ecological action — built to make participation understandable, trustworthy, measurable and easy." />
-    <meta property="og:image" content="/og.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="4PLANET_ — For a Living Planet" />
-    <meta name="twitter:description" content="A system for ecological action — built to make participation understandable, trustworthy, measurable and easy." />
-    <meta name="twitter:image" content="/og.png" />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Sans:wght@400;500;600&family=Fragment+Mono:ital@0;1&display=swap" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ROMA — The Republic · Campaign Staging</title>
+    <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script src="/atlas-return-camera-lock-v68.js"></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="app">
+      <div id="topbar">
+        <div class="logo">
+          <div class="brand">ROMA</div>
+          <div class="subtitle">THE REPUBLIC</div>
+        </div>
+        <div class="statbar">
+          <div class="stat"><span>GRAIN</span><b id="food">—</b></div>
+          <div class="stat"><span>TREASURY</span><b id="coin">—</b></div>
+          <div class="stat"><span>MANPOWER</span><b id="manpower">—</b></div>
+          <div class="stat"><span>SENATE</span><b id="senate">—</b></div>
+        </div>
+        <div class="date" id="date">SUMMER 216 BCE</div>
+        <span class="stage">INTERNAL STAGING 01</span>
+      </div>
+      <div id="main">
+        <div id="mapwrap">
+          <canvas
+            id="map"
+            aria-label="Ancient Mediterranean campaign map"
+          ></canvas>
+          <div id="map-caption"><b>ITALIA · 216 BC</b><span>THE SECOND PUNIC WAR</span></div><div class="map-overlay" id="maptools">
+            <button id="worldbtn">WORLD</button
+            ><button id="italiabtn">ITALIA</button
+            ><button id="apuliabtn">APULIA</button>
+          </div>
+          <div class="map-overlay" id="basemap" role="group" aria-label="Geographic map layer"><button data-map-mode="satellite" aria-pressed="true">SATELLITE</button><button data-map-mode="relief" aria-pressed="false">REAL RELIEF</button><button data-map-mode="historical" aria-pressed="false">HISTORIC</button></div><div class="map-overlay" id="zoomtools">
+            <button id="zoom-in" aria-label="Zoom in">+</button
+            ><button id="zoom-out" aria-label="Zoom out">−</button>
+          </div>
+          <div class="map-overlay" id="mission">
+            <div class="eyebrow">I · THE GRAIN ROAD</div>
+            <h2 id="objective">SECURE THE GRAIN ROAD TO CANNAE</h2>
+            <p>
+              Manage the harvest, protect your supply lines and confront
+              Hannibal's army. Every day carries a cost.
+            </p>
+          </div>
+          <div class="map-overlay" id="map-credits"></div><div class="map-overlay" id="geo-status">
+            LOADING VERIFIED GEOGRAPHY
+          </div>
+          <button id="mobile-panel">SETTLEMENT & ORDERS ↗</button>
+        </div>
+        <aside id="sidebar">
+          <button id="close-panel">CLOSE ↓</button>
+          <section>
+            <div class="eyebrow">SELECTED LOCATION</div>
+            <h1 id="place-name">Canusium</h1>
+            <div id="place-region"></div>
+            <p id="place-info"></p>
+            <button class="action" id="inspect">
+              INSPECT IN 3D · CHALLENGER
+            </button>
+          </section>
+          <section>
+            <h3>SETTLEMENT ECONOMY</h3>
+            <div id="settlement"></div>
+            <div id="city-actions"></div>
+          </section>
+          <section>
+            <h3>LEGIONS & COMMAND</h3>
+            <div id="army-list"></div>
+            <p id="move-context"></p>
+            <div id="destinations" aria-label="Available army destinations"></div><button id="move" class="action primary" disabled>
+              SELECT ADJACENT DESTINATION
+            </button>
+          </section>
+          <section>
+            <h3>DISPATCHES FROM ITALIA</h3>
+            <div id="recent"></div>
+          </section>
+          <section>
+            <h3>CAMPAIGN CONTROLS</h3>
+            <button class="action" id="save">SAVE CAMPAIGN</button>
+            <button class="action" id="reset">NEW CAMPAIGN</button>
+          </section>
+        </aside>
+        <div id="encounter" class="hidden">
+          <div class="enc-card">
+            <div class="eyebrow">A DECISIVE ENCOUNTER</div>
+            <h2 id="enc-title">THE BATTLE FOR CANNAE</h2>
+            <p id="enc-desc"></p>
+            <div class="enc-actions">
+              <button id="resolve3d" class="primary">
+                ENTER ORIGINAL 3D BATTLE
+              </button>
+              <button id="autoresolve">AUTO RESOLVE · SIMULATED OUTCOME</button>
+              <button id="withdraw">WITHDRAW · PRESERVE THE ARMY</button>
+            </div>
+            <p style="font-size: 10px">
+              The 3D battlefield uses the preserved Challenger scenario.
+              Resulting casualty percentages are reflected into the campaign;
+              exact campaign force composition is not yet transmitted into the
+              local 3D scene.
+            </p>
+          </div>
+        </div>
+      </div>
+      <footer id="bottombar">
+        <button class="next" id="advance1">ADVANCE 1 DAY ›</button
+        ><button id="advance7">ADVANCE 7 DAYS »</button>
+        <div class="bottomnote">
+          ONE WORLD · ONE CAMPAIGN · ORIGINAL TACTICAL ENGINE<br /><span
+            id="saveflag"
+            >SAVED</span
+          >
+          · NO ACCOUNT REQUIRED
+        </div>
+      </footer>
+      <div id="toast" role="status" aria-live="polite"></div>
+      <div id="tactical" class="hidden">
+        <div id="tactical-toolbar">
+          <span id="tactical-label">ROMA CHALLENGER 01</span
+          ><button id="battle-cancel">RETURN TO CAMPAIGN</button
+          ><button id="battle-complete" class="primary">
+            RECORD BATTLE RESULT
+          </button>
+        </div>
+        <div id="battle-status">Loading preserved engine…</div>
+        <iframe
+          id="legacy"
+          title="ROMA original 3D tactical engine"
+          allow="fullscreen"
+        ></iframe>
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
