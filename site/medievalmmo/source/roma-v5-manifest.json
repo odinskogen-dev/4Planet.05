@@ -1,0 +1,12 @@
+{
+  "source": "founder upload ROMA_CHALLENGER_01 5.zip / ROMA_CHALLENGER_01/publish/web/index.html",
+  "sha256": "4beee0beb2a8313e8e89d7722aed4babd6397d84498ddaaf495c2462c1853e3f",
+  "encoding": "base64+brotli",
+  "parts": 28,
+  "compressedSourceBytes": 1323235,
+  "uncompressedSourceBytes": 2638022,
+  "partPrefix": "roma-v5-brotli-",
+  "partSuffix": ".txt",
+  "assembledOutput": "site/medievalmmo/next/index.html",
+  "note": "This is EXACT uploaded ROMA engine source; medieval modifications applied separately in build."
+}
