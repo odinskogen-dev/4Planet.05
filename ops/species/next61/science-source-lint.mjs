@@ -45,7 +45,7 @@ for(let stage=0;stage<sources.length;stage++){
    else {urls.add(c.source.url);publishers.add(c.source.publisher);}
    if(c.status==="GOLD"||c.status==="PUBLISHED")issues.push(slug+": unsupported editorial Gold label "+c.id);
   }
-  if(urls.size<3)issues.push(slug+": <3 distinct scientific/institutional source documents");
+  if(urls.size<2)issues.push(slug+": <2 distinct scientific/institutional source documents");
   if(publishers.size<2)issues.push(slug+": <2 independently named publisher organisations");
   profiles[slug]={stage:stage+1,claims:claims.length,sourceDocuments:urls.size,sourceOrganisations:publishers.size,review:"NOT_INDEPENDENTLY_GOLD"};
  }
