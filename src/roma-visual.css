@@ -50,3 +50,13 @@
 @media(max-width:1100px){#topbar{gap:10px;padding:0 12px}.logo{min-width:130px}.brand{font-size:30px}.stat{min-width:78px;padding:12px}.stat b{font-size:16px}.stage{display:none}#sidebar{width:300px;flex-basis:300px}}
 @media(max-width:950px){#topbar{height:62px;min-height:62px}.logo{min-width:118px}.brand{font-size:27px}.subtitle{font-size:7px}.stat{min-width:57px;padding:7px}.stat b{font-size:14px}.stat span{font-size:7px}#sidebar{position:absolute;bottom:0;left:0;right:0;width:100%;height:min(70dvh,570px);border-radius:16px 16px 0 0;flex-basis:auto}#map-caption{top:68px;left:13px}#map-caption b{font-size:21px}#map-caption span{font-size:7px}#maptools{top:10px;left:10px}#maptools button{font-size:9px;padding:8px}#mission{left:11px;bottom:11px;padding:12px;max-width:calc(100% - 155px)}#mission h2{font-size:18px}#mission p{display:none}#mobile-panel{background:#352d23;border-color:#c4a775;color:#f7e8c7}}
 @media(max-width:550px){.stat:nth-child(n+3){display:none}.statbar{justify-content:flex-end}.stat{min-width:70px}#maptools button{font-size:8px;padding:8px 6px}#map-caption{top:66px}#mission h2{font-size:16px}#bottombar button{font-size:9px;padding:11px 9px}}
+
+/* Readable, truthful tactical campaign commands — no changes to the battle engine. */
+#stockpile { margin-top: 12px; border: 1px solid #bca47d61; border-radius: 8px; padding: 11px; color:#eee0c2; }
+.stockline { display:grid; grid-template-columns:repeat(3,1fr 1fr); align-items:center;gap:4px; font:700 10px 'DM Sans',sans-serif; }
+.stockline span { color:#baa680; font-size:8px;letter-spacing:.05em; } .stockline b { font-size:14px;font-weight:600; }
+.forecast {margin-top:10px; font:600 10px/1.7 'DM Sans',sans-serif; color:#cbb992; }
+.forecast strong {color:#bce0aa;padding:0 3px;} .forecast strong.negative { color:#f0b4a7;}
+#city-actions button small {display:block; line-height:1.45; font:600 9px 'DM Sans',sans-serif;opacity:.9;margin-top:5px;}
+#city-actions button {min-height:68px;}#city-actions button:disabled {opacity:.44;cursor:not-allowed;}
+@media(max-width:550px){.stockline{grid-template-columns:repeat(3,1fr 1fr);}#city-actions button small{font-size:8px;}}
