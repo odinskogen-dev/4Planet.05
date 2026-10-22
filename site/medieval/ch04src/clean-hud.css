@@ -1,0 +1,5 @@
+#mkbar .mk-left,#mkbar .mk-bottom{display:none!important;pointer-events:none!important}
+#mkbar .mk-top{top:max(9px,env(safe-area-inset-top))!important;left:auto!important;right:max(9px,env(safe-area-inset-right))!important;width:auto!important;min-height:0!important;padding:5px!important;gap:0!important;background:rgba(13,23,23,.54)!important;border:1px solid rgba(255,255,255,.13)!important;border-radius:12px!important;box-shadow:none!important;backdrop-filter:blur(7px)}
+#mkbar .mk-top>div:first-child,#mkbar .mk-topstats>span{display:none!important}
+#mkbar .mk-topstats{gap:5px!important}#mkbar .mk-top button{border-radius:9px!important;padding:10px 12px!important;min-height:37px!important;font-size:10px!important;letter-spacing:.02em!important;background:rgba(24,33,33,.56)!important}
+#mkbar .mk-top button:focus-visible{outline:2px solid #f4da97;outline-offset:2px}

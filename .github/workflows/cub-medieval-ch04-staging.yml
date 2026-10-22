@@ -1,0 +1,109 @@
+name: CUB MEDIEVAL CH04 — isolated Cloudflare staging and browser QA
+on:
+  push:
+    branches: ['build/medieval-ch04-armies-worlds-20261022']
+    paths:
+      - '.github/workflows/cub-medieval-ch04-staging.yml'
+      - 'site/medieval/ch04src/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cub-medieval-ch04-staging
+  cancel-in-progress: false
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve Build 03 and ROMA and validate CH04 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          echo '3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83  site/medieval/index.html' | sha256sum -c -
+          node --check site/medieval/ch04src/challenger04_patch.js
+          node --check site/medieval/ch04src/ch04_extra_geometry.js
+          python3 -m py_compile site/medieval/ch04src/build_ch04.py
+      - name: Build actual Challenger 04 with the intact ROMA-derived Build 03
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 site/medieval/ch04src/build_ch04.py site/medieval/index.html site/medieval/challenger04/index.html
+          echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  site/medieval/challenger04/index.html' | sha256sum -c -
+          test "$(wc -c < site/medieval/challenger04/index.html)" -eq 2276326
+          echo 'CUB_CH04_BYTE_IDENTITY_AND_ROMA_PRESERVATION_PASS'
+      - name: Resolve Cloudflare account using existing authorised secrets
+        shell: bash
+        env:
+          TOKEN1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN2: ${{ secrets.CF_TOKEN }}
+          TOKEN3: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          token=''
+          for t in "$TOKEN1" "$TOKEN2" "$TOKEN3"; do
+            if [ -n "$t" ]; then token="$t"; break; fi
+          done
+          test -n "$token" || { echo 'CLOUDFLARE_TOKEN_UNAVAILABLE'; exit 2; }
+          token=$(printf '%s' "$token" | tr -d '\r\n' | sed 's/^Bearer //')
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          zones=$(curl -fsS -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones?name=p4nther.com')
+          account=$(jq -r '.result[0].account.id // empty' <<< "$zones")
+          test -n "$account" || { echo 'CLOUDFLARE_ACCOUNT_UNAVAILABLE'; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+      - name: Deploy independent CH04 staging worker (never touching production CUB worker)
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --name cub-medieval-ch04-staging --assets ./site --compatibility-date 2026-10-18
+      - name: Verify publicly served game content
+        run: |
+          set -euo pipefail
+          url=https://cub-medieval-ch04-staging.odin-skogen.workers.dev/medieval/challenger04/index.html
+          ok=0
+          for i in $(seq 1 12); do
+            if curl -fsSL --max-time 30 "$url" -o /tmp/ch04.html && echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  /tmp/ch04.html' | sha256sum -c - >/dev/null; then ok=1;break;fi
+            sleep 4
+          done
+          test "$ok" -eq 1 || { echo CH04_STAGE_NOT_VERIFIED; exit 5; }
+          echo "CH04_STAGE_LIVE=$url"
+      - name: Chromium mobile and desktop play-smoke on four maps
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          const url='https://cub-medieval-ch04-staging.odin-skogen.workers.dev/medieval/challenger04/';
+          (async()=>{
+           const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+           const cases=[{id:'hattin-mobile',mobile:true,sel:'#mkJer',map:'hattin-historical'},
+             {id:'belvoir-desktop',mobile:false,sel:'.mk-lab-btn',map:'belvoir-siege'},
+             {id:'sandbox-desktop',mobile:false,sel:'.mk04choice:nth-last-child(2)',map:'hattin-sandbox'},
+             {id:'marches-desktop',mobile:false,sel:'.mk04choice:last-child',map:'northern-marches'}];
+           for(const spec of cases){
+             const ctx=await browser.newContext({viewport:spec.mobile?{width:390,height:844}:{width:1365,height:900},hasTouch:spec.mobile,isMobile:spec.mobile});
+             const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
+             const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:70000});
+             await page.locator(spec.sel).click({timeout:30000});
+             await page.waitForTimeout(5500);
+             const state=await page.evaluate(()=>({playing:window.ROMA?.app?.playing,map:window.ROMA?.app?.sim?.mk04?.mapId,units:window.ROMA?.app?.sim?.units?.size,regs:window.ROMA?.app?.sim?.regiments?.size,menu:getComputedStyle(document.querySelector('.mk-left')).display,footer:getComputedStyle(document.querySelector('.mk-bottom')).display}));
+             await page.screenshot({path:'ch04-'+spec.id+'.png',fullPage:true});
+             console.log('CH04_BROWSER',spec.id,response.status(),JSON.stringify(state),'ERRORS',JSON.stringify(errors));
+             if(response.status()!==200||!state.playing||state.map!==spec.map||state.units<400||state.regs<24||state.menu!=='none'||state.footer!=='none'||errors.length)throw Error('CH04 browser QA failed for '+spec.id);
+             await ctx.close();
+           }
+           await browser.close();console.log('CH04_FOUR_MAPS_BROWSER_PASS');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: medieval-ch04-live-staging-screens
+          path: ch04-*.png
+          retention-days: 21
+          if-no-files-found: ignore

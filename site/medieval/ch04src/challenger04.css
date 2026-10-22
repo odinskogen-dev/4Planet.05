@@ -1,0 +1,5 @@
+/* CHALLENGER 04: quiet combat viewport. Visible controls only before battle. */
+.mk04-select{display:block;color:#ccba94;font:700 11px/1.5 system-ui,sans-serif;letter-spacing:.12em;margin:12px 0}
+.mk04-select select{margin-left:8px;max-width:100%;border-radius:8px;background:#25302d;border:1px solid #81765e;color:#fff;padding:9px;font:500 12px system-ui,sans-serif}
+.mk04-note{max-width:700px;font:400 11px/1.5 system-ui,sans-serif;color:#baa989;margin-top:16px}
+@media(max-width:840px){.mk04-select select{margin:7px 0 0;display:block;width:100%}.mk04choice{min-height:115px}}
