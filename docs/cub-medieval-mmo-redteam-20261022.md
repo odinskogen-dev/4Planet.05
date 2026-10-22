@@ -47,6 +47,6 @@ P7. Only then public alpha and growth; do not call any phase 'MMO live' until pr
 
 ## RELEASE PROOFS
 - Existing ROMA and MEDIEVAL SHA checks unchanged.
-- New ROMA06 campaign route isolated and exact-byte verified, QA with desktop/mobile 160-province view.
+- New ROMA06 campaign **source** archived byte-for-byte and SHA-256 verified; published HTML is a save-key-isolated derivative (not byte-identical). QA checks desktop/mobile 160-province view and separate localStorage namespace. The exact source remains in the compressed checked archive.
 - One playable history campaign asset exists; this does NOT upgrade /medievalmmo to persistent medieval MMO.
 - Manual iPhone gameplay review required; automated emulation cannot certify framerate.

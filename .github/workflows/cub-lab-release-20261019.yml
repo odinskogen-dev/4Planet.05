@@ -173,8 +173,15 @@ jobs:
           if digest!=manifest['sha256']: raise SystemExit('ROMA06_ORIGINAL_SHA_MISMATCH')
           if len(data)!=manifest['uncompressedBytes']: raise SystemExit('ROMA06_FILE_TRUNCATED')
           if b'Imperium' not in data or b'campaign' not in data: raise SystemExit('CAMPAIGN_CODE_NOT_PRESENT')
-          (root.parent/'index.html').write_bytes(data)
-          print('CUB_ROMA06_EXACT_UPLOADED_CAMPAIGN',len(data),digest)
+          # Preserve exact uploaded original in source parts, but isolate browser
+          # save keys from /roma/ and every other live CUB game on the same host.
+          prefix=b'roma_challenger01_'
+          if data.count(prefix) < 4: raise SystemExit('ROMA06_SAVE_NAMESPACE_ANCHORS_MISSING')
+          isolated=data.replace(prefix,b'roma_imperium_v6_')
+          if prefix in isolated: raise SystemExit('ROMA06_SAVE_NAMESPACE_COLLISION')
+          (root.parent/'index.html').write_bytes(isolated)
+          print('CUB_ROMA06_ORIGINAL_VERIFIED',len(data),digest)
+          print('CUB_ROMA06_ISOLATED_SAVE_DERIVATIVE',len(isolated),hashlib.sha256(isolated).hexdigest())
           PY
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
@@ -356,10 +363,16 @@ jobs:
               await page.locator('#bCamp').waitFor({state:'visible',timeout:25000});
               await page.locator('#bCamp').click();
               await page.locator('canvas.cmp-map').waitFor({state:'visible',timeout:25000});
-              const actual=await page.evaluate(()=>({provinces:window.ROMA?.app?.cmp?.c?.provinces?.length,armies:window.ROMA?.app?.cmp?.c?.armies?.length,world:!!window.ROMA?.app?.cmp?.map}));
+              const actual=await page.evaluate(()=>{
+                const campaign=window.ROMA?.app?.cmp;
+                campaign?.save();
+                return {provinces:campaign?.c?.provinces?.length,armies:campaign?.c?.armies?.length,world:!!campaign?.map,
+                  isolatedSave:!!localStorage.getItem('roma_imperium_v6_campaign_v1'),
+                  oldSave:!!localStorage.getItem('roma_challenger01_campaign_v1')};
+              });
               await page.screenshot({path:'roma-imperium-v6-'+t.name+'.png',fullPage:true});
               console.log('ROMA06_CAMPAIGN_SMOKE',t.name,response.status(),JSON.stringify(actual),'ERRORS',JSON.stringify(errors));
-              if(response.status()!==200||actual.provinces!==160||!actual.armies||!actual.world||errors.length)throw Error('ROMA06_CAMPAIGN_BROWSER_FAILED_'+t.name);
+              if(response.status()!==200||actual.provinces!==160||!actual.armies||!actual.world||!actual.isolatedSave||actual.oldSave||errors.length)throw Error('ROMA06_CAMPAIGN_BROWSER_FAILED_'+t.name);
               await context.close();
             }
             await browser.close();
