@@ -75,6 +75,18 @@ jobs:
           lines.insert(index + 1, alias)
           router.write_text("".join(lines))
 
+          seo = Path("src/components/Seo.tsx")
+          seo_source = seo.read_text()
+          canonical_line = "    const canonicalUrl = canonicalUrlFor(path, origin);"
+          assert seo_source.count(canonical_line) == 1, "shared canonical contract changed"
+          canonical_fix = """    const canonicalOrigin =
+              window.location.hostname.endsWith(".4planet-05.pages.dev")
+                ? "https://4species.com"
+                : origin;
+            const canonicalUrl = canonicalUrlFor(path, canonicalOrigin);"""
+          seo.write_text(seo_source.replace(canonical_line, canonical_fix, 1))
+          print("SPECIES_ROOT_ROUTE_AND_CANONICAL_SOURCE_PASS")
+
           PY
       - name: Recover EXACT original 39-profile donor files from pinned successful build
         shell: bash
