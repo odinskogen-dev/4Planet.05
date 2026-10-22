@@ -63,8 +63,8 @@ const requiredRoutes = [
   "/missions",
   "/magazine",
   "/join",
-  "/journey/jaguar/",
-  "/journey/orca/",
+  "/journey/jaguar",
+  "/journey/orca",
 ];
 
 function evaluateProductClassifier(sourceText, functionName, pathname, hostname = "4planet.org") {
@@ -277,6 +277,7 @@ test("product attribution covers person, company, commerce and creator surfaces"
 
 test("canonical discovery routes remain generated and crawlable", () => {
   for (const route of requiredRoutes) assert.ok(sitemap.includes(JSON.stringify(route)), `sitemap missing ${route}`);
+  assert.doesNotMatch(sitemap, /"\/journey\/(?:jaguar|orca)\/"/, "journey sitemap paths must match their no-trailing-slash runtime canonicals");
   assert.match(robots, /User-agent:\s*\*/i);
   assert.match(robots, /Allow:\s*\//i);
   assert.match(robots, /Sitemap:\s*https:\/\/4planet\.org\/sitemap\.xml/i);

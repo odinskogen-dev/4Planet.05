@@ -13,14 +13,14 @@ const requiredDiscoveryRoutes = [
   "/impact",
   "/missions",
   "/magazine",
-  "/journey/jaguar/",
-  "/journey/orca/",
+  "/journey/jaguar",
+  "/journey/orca",
   "/join",
 ];
 
 const journeyEntries = [
-  { route: "/journey/jaguar/", file: "public/journey/jaguar/index.html", returnNeedles: ["/species/jaguar", "/species", "/"] },
-  { route: "/journey/orca/", file: "public/journey/orca/index.html", returnNeedles: ["/species/orca", "/species", "/"] },
+  { route: "/journey/jaguar", file: "public/journey/jaguar/index.html", returnNeedles: ["/species/jaguar", "/species", "/"] },
+  { route: "/journey/orca", file: "public/journey/orca/index.html", returnNeedles: ["/species/orca", "/species", "/"] },
 ];
 
 const sitemapGenerator = read("scripts/generate-sitemap.mjs");

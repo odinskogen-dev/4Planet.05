@@ -1,3 +1,35 @@
+# 4PLANET JOURNEYS — SITEMAP/CANONICAL PATH ALIGNMENT — 22 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT, INDEX SUBMISSION OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler discovers the Jaguar or Orca journey through a search engine and needs one stable public address rather than duplicate URL signals.
+
+**ONE THING TO UNDERSTAND:** both public journeys declare a no-trailing-slash canonical, so the sitemap must advertise that exact path.
+
+**PRIMARY ACTION:** emit `/journey/jaguar` and `/journey/orca` from the canonical sitemap generator.
+
+**SECONDARY DEPTH:** keep the existing journey files, inbound slash aliases, navigation, analytics, content, visual presentation and rights boundaries unchanged.
+
+**P1 / P2 / P3 / P4:** canonical path / journey identity / search discovery / existing evidence and analytics.
+
+**WHAT CAN BE REMOVED:** the two duplicate trailing-slash sitemap signals.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** matching sitemap and canonical paths removes a technical contradiction. It does not prove recrawl, indexation, ranking, traffic, user use, deployment or LIVE value.
+
+**MOBILE-FIRST RISK:** none introduced; no rendered page, interaction or asset changes.
+
+**HUMAN SUCCESS:** generated sitemap contains exactly the declared no-trailing-slash Jaguar and Orca canonical URLs; the two public journeys and their return paths remain present.
+
+**DONOR DECISION:** no donor; correct the current HEIR generator and its existing audits in place.
+
+**BASE / ROLLBACK:** `king/test@b46410367696d472caa2963e23fe6623136bd65a`; revert this four-file correction if independent Gold finds a path-policy regression.
+
+**MAKER ≠ JUDGE:** Factory supplies a tested exact SHA. Independent Gold must verify the generated artifact and preview before any authorised release or index submission.
+
+---
+
 # 4SPECIES — UNKNOWN PROFILE SOFT-404 CORRECTION — 22 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
