@@ -47,6 +47,6 @@ test.describe("IMPACT Living Action Network Gold", () => {
 
     await page.getByRole("link", { name: "African Farmers Transforming Food Systems", exact: true }).click();
     await expect(page.getByRole("heading", { name: "African Farmers Transforming Food Systems", exact: true })).toBeVisible();
-    await expect(page.getByText(/External actions happen on the organisation’s own site/i)).toBeVisible();
+    await expect(page.getByText(/External support happens on the organisation’s own site/i)).toBeVisible();
   });
 });
