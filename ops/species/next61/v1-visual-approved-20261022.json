@@ -117,6 +117,37 @@
       "sha256": "6508df462c4d8b0abaceff6d037ad8b207c5425116ec06d96f2c834ce61fd989",
       "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
       "oneHeroOnly": true
+    },
+    "atlas-moth": {
+      "photoId": 60643931,
+      "sha256": "5be3cd37a787ac892405ee77d883a8d13fbbbfe6c736d39f7e390a0f18a1970b",
+      "review": "Visual contact sheet checked: recognisable living species and natural uncaged setting; animal field observation is research grade and captive=false; rights metadata validated by source",
+      "oneHeroOnly": true
+    },
+    "orchid-mantis": {
+      "photoId": 356484614,
+      "sha256": "557e83f12dc4b2b599b83d2f1be5c1c26a726dcef99b2c49a7cdc9c3465cd536",
+      "review": "Visual contact sheet checked: recognisable living species and natural uncaged setting; animal field observation is research grade and captive=false; rights metadata validated by source",
+      "oneHeroOnly": true
+    },
+    "peacock-spider": {
+      "photoId": 160634068,
+      "sha256": "5c4fc0a8fd37d12679e0b9b8d481392558d9af7ec81ec3db4df343c7a95f7451",
+      "review": "Visual contact sheet checked: recognisable living species and natural uncaged setting; animal field observation is research grade and captive=false; rights metadata validated by source",
+      "oneHeroOnly": true
+    },
+    "emperor-scorpion": {
+      "photoId": 539642635,
+      "sha256": "f6f9aa9401cb36ec638ad785a1ab16da5cb9054597b23e5b3c88729151aa24e6",
+      "review": "Visual contact sheet checked: recognisable living species and natural uncaged setting; animal field observation is research grade and captive=false; rights metadata validated by source",
+      "oneHeroOnly": true
+    },
+    "dragon-blood-tree": {
+      "photoId": null,
+      "sha256": "822a87936297ce4c47809e9a9f9d855a1b41d4285cbd86b26b347232d1b7941a",
+      "review": "Visual contact sheet checked: recognisable living species and natural uncaged setting; animal field observation is research grade and captive=false; rights metadata validated by source",
+      "oneHeroOnly": true
     }
-  }
+  },
+  "amendment": "2026-10-22 second selective cohort: +5 separate visual hero records. 18 previously published must match exactly byte-for-byte."
 }
