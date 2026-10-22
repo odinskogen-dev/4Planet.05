@@ -342,6 +342,37 @@ test("flagship journey entries physically exist and retain a return path", () =>
   }
 });
 
+test("flagship journey source HTML carries complete unique search and share metadata", () => {
+  const entries = [
+    {
+      path: "public/journey/jaguar/index.html",
+      canonical: "https://4planet.org/journey/jaguar",
+      subject: "jaguar",
+    },
+    {
+      path: "public/journey/orca/index.html",
+      canonical: "https://4planet.org/journey/orca",
+      subject: "orca",
+    },
+  ];
+
+  const descriptions = [];
+  for (const { path, canonical, subject } of entries) {
+    const html = read(path);
+    const title = html.match(/<title>([^<]+)<\/title>/i)?.[1];
+    const description = html.match(/<meta\s+name="description"\s+content="([^"]+)"\s*\/>/i)?.[1];
+    descriptions.push(description);
+
+    assert.ok(title, `${path} missing title`);
+    assert.match(description ?? "", new RegExp(subject, "i"), `${path} description must identify its journey`);
+    assert.match(html, new RegExp(`<link\\s+rel="canonical"\\s+href="${canonical}"\\s*\\/>`, "i"));
+    assert.match(html, new RegExp(`<meta\\s+property="og:title"\\s+content="${title.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}"\\s*\\/>`, "i"));
+    assert.match(html, new RegExp(`<meta\\s+property="og:description"\\s+content="${description?.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}"\\s*\\/>`, "i"));
+    assert.match(html, new RegExp(`<meta\\s+property="og:url"\\s+content="${canonical}"\\s*\\/>`, "i"));
+  }
+  assert.notEqual(descriptions[0], descriptions[1], "journey descriptions must stay unique");
+});
+
 
 test("convergence funnel exposes the required privacy-safe value events", () => {
   for (const token of ["signup_started", "signup_completed", "login"]) assert.ok(identity.includes(token), `identity event missing ${token}`);

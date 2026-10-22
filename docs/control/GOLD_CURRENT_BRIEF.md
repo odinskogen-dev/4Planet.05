@@ -1899,3 +1899,35 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **MAKER ≠ JUDGE:** Factory may correct and verify the candidate. Independent Gold judges the exact SHA; deployment, search submission and LIVE release remain separately authorised.
 
+# FLAGSHIP JOURNEYS — SOURCE HTML SEARCH + SHARE METADATA — 23 OCTOBER 2026
+
+**STATUS:** CONFIRMED MAX EXPOSURE DEFECT / BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a search result or shared link leads directly to the existing Jaguar or Orca journey.
+
+**ONE THING TO UNDERSTAND:** each page is a distinct, source-linked journey from one animal into its surrounding living system.
+
+**PRIMARY ACTION:** enter the existing Jaguar rainforest journey or Orca ocean journey.
+
+**SECONDARY DEPTH:** follow the existing evidence, ecosystem, place and action seams already inside each journey.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** existing animal journey / unique species-and-system description / enter journey / existing evidence and ecosystem layers.
+
+**WHAT CAN BE REMOVED:** the generic or missing search/share summary that makes two materially different journeys indistinguishable outside the rendered page.
+
+**WHAT MUST BE REUSED:** the existing static journey documents, exact canonical routes, page titles, user-entry audit, issue #483 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** metadata describes the existing source-linked journeys only. It does not claim live tracking, measured ecological outcome, independent impact or editorial Gold.
+
+**MOBILE-FIRST RISK:** no rendered layout, interaction or asset changes; risk is confined to document-head metadata and must be checked in built HTML.
+
+**HUMAN SUCCESS:** search and share surfaces can distinguish Jaguar from Orca before entry, while the current journeys render and behave unchanged.
+
+**QUESTION / DELETE / SIMPLIFY / REUSE:** no new page, story or component. Add the missing document metadata at the owning static paths and lock exact canonical/Open Graph parity in the existing discovery contract.
+
+**SIMPLEST CAPABLE EXECUTION:** deterministic HTML head tags plus one same-path regression; no new service, schema store, route or agent layer.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only source change. Base and rollback are `king/test@14b763166af1cd760df1cb4c537445ba5f2d3389`.
+
+**MAKER ≠ JUDGE:** Factory may correct and verify the candidate. Independent Gold judges the exact SHA; merge, deployment, indexing and LIVE release remain separately authorised.
+
