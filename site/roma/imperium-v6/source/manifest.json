@@ -1,0 +1,8 @@
+{
+  "sha256": "13409bae3a5bbb4bd75f85b257c223068d0eb203d18cd4dd402e9e80fba580e2",
+  "encoding": "zlib-base64",
+  "partCount": 32,
+  "uncompressedBytes": 2798409,
+  "sourceZip": "ROMA_CHALLENGER_01 6.zip",
+  "entry": "publish/web/index.html"
+}
