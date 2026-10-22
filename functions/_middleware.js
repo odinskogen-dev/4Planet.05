@@ -1,3 +1,4 @@
+import { isKnown4PlanetPublicRoute } from "./public-4planet-routes.generated.js";
 import { ATLAS_PROMOTED_PLACES } from "./atlas-promoted-places.generated.js";
 
 // ATLAS_ENTITY_AUTHORITY_CLOSURE_02
@@ -2185,6 +2186,23 @@ export async function onRequest(context) {
         statusText: response.statusText,
         headers,
       }));
+  }
+
+  // Search P0: Cloudflare Pages SPA fallback previously sent a successful homepage
+  // response for unknown public URLs. Reject only unowned HTML routes; preserve
+  // known React routes, legacy redirects, embedded maps and static assets.
+  if (
+    host === "4planet.org" &&
+    response.status === 200 &&
+    (response.headers.get("content-type") || "").toLowerCase().includes("text/html") &&
+    !routeConfig &&
+    !isKnown4PlanetPublicRoute(url.pathname)
+  ) {
+    const body = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Page not found | 4PLANET</title><style>body{margin:0;background:#fff;color:#151515;font:16px/1.6 "DM Sans",sans-serif}main{max-width:700px;margin:15vh auto;padding:28px}h1{font-size:clamp(32px,5vw,64px);letter-spacing:-.04em;font-weight:500}a{color:inherit;text-underline-offset:4px}</style></head><body><main><p>4PLANET / 404</p><h1>Page not found.</h1><p>This address does not match a published 4PLANET page.</p><p><a href="/">4PLANET home</a> · <a href="/livingsystems/">Living Systems</a> · <a href="https://4planetatlas.com/places">Explore ATLAS places</a></p></main></body></html>';
+    return new Response(context.request.method === "HEAD" ? null : body, {
+      status: 404,
+      headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300", "x-robots-tag": "noindex,nofollow" },
+    });
   }
 
   if (!config) return response;
