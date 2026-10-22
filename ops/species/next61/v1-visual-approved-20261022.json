@@ -1,0 +1,122 @@
+{
+  "date": "2026-10-22",
+  "status": "human-reviewed V1 photographic shortlist ONLY; other profiles unapproved",
+  "source": "Manual inspection of actual labelled photographic contact sheets and local sha256-verified original thumbnails; iNaturalist research-grade captive=false for animals; Commons specific licensed plant lead files",
+  "safety": "Deny by default: no captive, dead, handled, illustrated, inaccurate or rights-ambiguous subject. Single hero only; no gallery photographs without individual visual review.",
+  "approved": {
+    "koala": {
+      "photoId": 334142508,
+      "sha256": "d9ff91b752ca4ef2a8c9bed40df618d821e9d24a7ef4d582413e9d46cccda78f",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "quokka": {
+      "photoId": 16496002,
+      "sha256": "64b7cb01498f939b3e516fe25f2989d5fb31f670adf80b1e10f9f67dc202b319",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "capybara": {
+      "photoId": 10691626,
+      "sha256": "548277cb70f4a0911cc753e263ce5b8f3771c257776f98cd3d9f1b13708d3600",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "red-fox": {
+      "photoId": 57391469,
+      "sha256": "98ebad8c3453c3769605cb48fb7d99171e4ba50c2809e4e15044230f0ae3b6c8",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "giant-anteater": {
+      "photoId": 345917023,
+      "sha256": "98be3788f051e2c393ca9b03d703733130b579142a3a03dc2be1863b18fcb569",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "giant-otter": {
+      "photoId": 10663302,
+      "sha256": "9d8f5aada6e8c4217e9a8bfcf5e1f3db3055db4ddf7a4a155c672621cfdedd53",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "walrus": {
+      "photoId": 423522680,
+      "sha256": "73e973ff0aaac5e8417e27cbff3f53ad7002de39e43183d42046e3c7184aa031",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "common-kingfisher": {
+      "photoId": 163772236,
+      "sha256": "1e8e3236ef69ee43cc4f6e21e0b073c5abcf001ce5468d4b0d33c6863f8cfa5a",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "secretary-bird": {
+      "photoId": 507313802,
+      "sha256": "58c685b9b133a03dace8a92b661eb3c8327c1450a3868096d4aee0125ad09322",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "scarlet-macaw": {
+      "photoId": 591920768,
+      "sha256": "8c1624cddb94b160ba1a2a65b5eba05c668d243b057bb03faba3cbd53b362a7f",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "peregrine-falcon": {
+      "photoId": 180819760,
+      "sha256": "cf1f6682e49facf121384ac1c19a3e538f8f1402d10813ea11ff6a7e39f559a1",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "indian-peafowl": {
+      "photoId": 317280189,
+      "sha256": "8c87dcbe5db6adeb0a71262a05976da296b3b9dd1a11bb3330c9878b81b56982",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "ocean-sunfish": {
+      "photoId": 114458708,
+      "sha256": "e8db4dd24c8d5efee9410fd1f31cbee30521bbb9bc91e75708cbe92e1b4597b3",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "giant-manta-ray": {
+      "photoId": 594917798,
+      "sha256": "a2faebaa51e5bb1d65a7db3760b8ef82c6afec2362b45d69cc2df7ce2250cf71",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "greater-blue-ringed-octopus": {
+      "photoId": 40594012,
+      "sha256": "711d523806beab58053cd25a4b0f7f27dbba04c904f55391b6228afb316e3c7d",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "peacock-mantis-shrimp": {
+      "photoId": 15432324,
+      "sha256": "44756fabbfa82db15176cfb193bdec11b5663b27aaa3c81f1448f4b8a8bde982",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "venus-flytrap": {
+      "photoId": null,
+      "sha256": "6e5b87a782e373b30d483934fb5fa95cff25ed35d11d52f0a0175b89384eff9f",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "titan-arum": {
+      "photoId": null,
+      "sha256": "bb6fe849a5797daff44989c5627c2bfe597b99c067684074959e5386743f32d0",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "giant-sequoia": {
+      "photoId": null,
+      "sha256": "6508df462c4d8b0abaceff6d037ad8b207c5425116ec06d96f2c834ce61fd989",
+      "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    }
+  }
+}
