@@ -1,0 +1,61 @@
+name: CUB MEDIEVAL MMO — Premium02 isolated QA
+on:
+  push:
+    branches: [cub-medievalmmo-premium02-20261022]
+    paths:
+      - "site/medievalmmo/premium02/**"
+      - ".github/workflows/cub-medievalmmo-premium02-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Restore byte-verified isolated source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat site/medievalmmo/premium02/source/payload-*.txt | tr -d '\n\r ' | base64 --decode > /tmp/cub-premium02.tar.gz
+          echo 'c8659315dc2cc957ddd3610c6c41cd5e7852b5484b75bceedb8006cf15ce2d56  /tmp/cub-premium02.tar.gz' | sha256sum -c -
+          mkdir -p /tmp/cub-premium02
+          tar -xzf /tmp/cub-premium02.tar.gz -C /tmp/cub-premium02
+          test -s /tmp/cub-premium02/src/campaign/state.js
+          test -s /tmp/cub-premium02/src/campaign/world_data.js
+          cp site/medievalmmo/premium02/qa/browser-qa.mjs /tmp/cub-premium02/tests/browser-qa.mjs
+          echo 'PREMIUM02_ARCHIVE_VERIFIED'
+      - name: Unit test kingdom ownership, production, saves and casualty integration
+        working-directory: /tmp/cub-premium02
+        run: node tests/kingdom.mjs
+      - name: Install dependencies and compile actual single-file 3D game
+        working-directory: /tmp/cub-premium02
+        run: |
+          npm install --no-audit --no-fund playwright@1.56.1
+          npm run build
+          test -s publish/web/index.html
+          test "$(wc -c < publish/web/index.html)" -gt 1000000
+          grep -Fq 'MEDIEVAL KINGDOMS' publish/web/index.html
+          grep -Fq '<canvas id="world"></canvas>' publish/web/index.html
+          cp publish/web/index.html "$GITHUB_WORKSPACE/medieval-premium02-built.html"
+      - name: Run real Chromium desktop and mobile integration tests
+        working-directory: /tmp/cub-premium02
+        run: |
+          python3 -m http.server 8877 --bind 127.0.0.1 --directory publish/web >/tmp/cub-local-server.log 2>&1 &
+          WEB_PID=$!
+          trap 'kill $WEB_PID || true' EXIT
+          sleep 2
+          node tests/browser-qa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-medieval-premium02-isolated-qa
+          path: |
+            medieval-premium02-built.html
+            /tmp/cub-premium02/premium02-*.png
+          if-no-files-found: ignore
+          retention-days: 14
