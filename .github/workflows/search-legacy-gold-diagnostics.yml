@@ -1,0 +1,50 @@
+name: SEARCH Read-only Legacy Gold Failure Diagnostics
+on:
+  push:
+    branches: [diag/search-gold-failures-20261022]
+    paths: [.github/workflows/search-legacy-gold-diagnostics.yml]
+permissions:
+  contents: read
+jobs:
+  read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Check actual current HTML against stale assertions without modifying production
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          async function get(u){
+            try{const r=await fetch(u,{redirect:'follow',signal:AbortSignal.timeout(25000)});return {status:r.status,url:r.url,html:await r.text()}}catch(e){return {status:0,error:String(e),html:''}}
+          }
+          const cases=[
+            ['lsroot','https://4planet.org/livingsystems/',['A system for understanding how nature','Living Systems','/livingsystems/start']],
+            ['lsstart','https://4planet.org/livingsystems/start/',['Start with a question']],
+            ['lsdecisions','https://4planet.org/livingsystems/decisions/',['Decision']],
+            ['lslearning','https://4planet.org/livingsystems/learning/',['Learning']],
+            ['lstrust','https://4planet.org/livingsystems/trust/',['Trust']],
+            ['lsamazon','https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/',['Amazon']],
+            ['lsbee','https://4planet.org/livingsystems/species/western-honey-bee/',['Honey']],
+            ['atlas','https://4planetatlas.com/atlas/',['<html']],
+            ['places','https://4planetatlas.com/places',['<h1>Explore the world by place</h1>','numberOfItems']],
+            ['berlin','https://4planetatlas.com/place/berlin',['<h1>Berlin</h1>','name="viewport"','rel="canonical" href="https://4planetatlas.com/place/berlin"','BreadcrumbList','"@type":"City"','Natural Earth 1:50m Populated Places','Natural Earth NE_ID','1159151529','Q64','2950159','World Place Index','Evidence boundary:']],
+            ['manila','https://4planetatlas.com/place/manila',['<h1>Manila</h1>','Q1461','1701668','South-Eastern Asia']],
+            ['norway','https://4planetatlas.com/place/norway',['"@type":"Country"','Places within this geography']],
+            ['kenya','https://4planetatlas.com/place/kenya',['Connected Living Planet Intelligence','African Savanna Elephant','CLIM4TE_','Evidence sources']],
+            ['atlasrobots','https://4planetatlas.com/robots.txt',['Sitemap: https://4planetatlas.com/sitemap.xml']]
+          ];
+          for(const [label,url,fragments] of cases){
+            const r=await get(url);
+            console.log('SEARCH_GOLD_DIAG',JSON.stringify({label,status:r.status,bytes:r.html.length,missing:fragments.filter(f=>!r.html.includes(f)),sample:r.html.slice(0,90)}));
+            if(label==='lsroot'){
+              const assets=[...new Set(r.html.match(/\/livingsystems\/_next\/static\/[^"\s]+/g)||[])].slice(0,300);
+              const invalid=[];for(const a of assets){
+                const q=await get('https://4planet.org'+a);if(q.status!==200)invalid.push([a,q.status]);
+              }
+              console.log('SEARCH_GOLD_LS_ASSETS',JSON.stringify({count:assets.length,invalid:invalid.slice(0,15)}));
+            }
+          }
+          const sm=await get('https://4planetatlas.com/sitemap.xml');
+          console.log('SEARCH_GOLD_ATLAS_SITEMAP',JSON.stringify({status:sm.status,count:(sm.html.match(/<loc>https:\/\/4planetatlas\.com\/place\//g)||[]).length}));
+          console.log('LEGACY_DIAGNOSTICS_DONE');
+          NODE
