@@ -221,7 +221,7 @@ test("OS scheduled Drive synchronisation traverses only explicitly approved orga
   assert.match(sync,/sourceRevision=process\.env\.OS_SOURCE_SHA\|\|/);
   assert.match(sync,/rev-parse","HEAD"/);
   assert.match(sync,/SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2"/);
-  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V8_MULTILINE_CONTINUATIONS_FAIL_CLOSED"/);
+  assert.match(sync,/CONTENT_SAFETY_VERSION="ORG_CONTENT_CLASSIFIER_V9_CLINICAL_PROSE_FAIL_CLOSED"/);
   assert.ok(sync.indexOf("prepareClassifiedRecords(records)")<sync.indexOf('await ingest("start"'),
     "content classification must finish before the first ingest write");
 });
@@ -251,6 +251,26 @@ test("organisational BRAIN health wording is not automatically private medical i
   const norwegian=classifyContentForIngest("helse: privat opplysning",{allowReviewedProse:true});
   assert.equal(norwegian.state,"QUARANTINED");
   assert.ok(norwegian.categories.includes("HEALTH"));
+});
+
+test("reviewed-source authority does not admit free-text clinical prose",()=>{
+  const cases=[
+    "The Founder was diagnosed with ulcerative colitis.",
+    "Hun er under behandling for diabetes.",
+    "He is immunosuppressed and receives infliximab."
+  ];
+  for(const line of cases){
+    const result=classifyContentForIngest(`Project status: READY.\n${line}\nNext: independent Gold.`,
+      {allowReviewedProse:true});
+    assert.equal(result.state,"REDACTED",line);
+    assert.equal(result.redactedLines,1,line);
+    assert.ok(result.categories.includes("HEALTH"),line);
+    assert.ok(!result.content.includes(line),line);
+  }
+  const organisational=classifyContentForIngest("4PLANET BRAIN health check passed.",
+    {allowReviewedProse:true});
+  assert.equal(organisational.state,"SAFE");
+  assert.deepEqual(organisational.categories,[]);
 });
 
 test("Drive content classifier fail-closes common Gold-returned sensitive variants",()=>{
