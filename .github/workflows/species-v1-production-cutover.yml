@@ -41,14 +41,16 @@ jobs:
            before=json.loads(fetch(old+"/species-data/v1/"+slug+".json"))
            after=json.loads(fetch(new+"/species-data/v1/"+slug+".json"))
            assert before==after,"ORIGINAL39_CHANGED "+slug
-          root=ET.fromstring(fetch(new+"/species-sitemap.xml"))
-          urls=[]
-          for node in root:
-           for child in node:
-            if child.tag.endswith("loc") and child.text:urls.append(child.text);break
+          catalogue=json.loads(fetch(new+"/species-data/v1/index.json"))
+          slugs=[p["slug"] for p in catalogue["pages"]]
           oldnames=set(old39)
-          newnames=set(u.rsplit("/",1)[-1] for u in urls)-oldnames
-          assert len(urls)==57 and len(newnames)==18,(len(urls),len(newnames))
+          newnames=set(slugs)-oldnames
+          assert len(slugs)==57 and len(set(slugs))==57 and oldnames<=set(slugs) and len(newnames)==18,(len(slugs),len(newnames))
+          root=ET.fromstring(fetch(new+"/species-sitemap.xml"))
+          sitemap={node.text for node in root.iter() if node.tag.endswith("loc") and node.text}
+          for slug in slugs:
+           assert "https://4species.com/"+slug in sitemap,"Selected or original species not in source sitemap "+slug
+          print("SOURCE_SITEMAP_HAS_EXTRA_LEGACY_ROUTE_NAMES; WORKER_PUBLIC_SITEMAP_WILL_BE_EXACT_WHITELIST_ONLY")
           for slug in sorted(newnames):
            p=json.loads(fetch(new+"/species-data/v1/"+slug+".json"))
            assert p["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22" and len(p["gallery"])==0
@@ -90,6 +92,14 @@ jobs:
           a='if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");'
           assert s.count(a)==1
           s=s.replace(a,a+'\n  if (incoming.pathname === "/llms.txt" || incoming.pathname === "/species-v1-images.xml") out.delete("x-robots-tag");')
+          # Build the public XML sitemap from ONLY the 39 unchanged + exactly
+          # 18 approved source-backed V1 profiles. The upstream Claude build
+          # contains stale route aliases; none may become publicly indexable.
+          allow='if (!permitsSpeciesIndexing(review)) continue;'
+          assert s.count(allow)==1
+          approved="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia"
+          rule='const publicCanonical=new Set("'+approved+'".split(" ").map(v=>"/"+v));\n    if (!publicCanonical.has(slugPath) && !PUBLIC_NON_PROFILE_PATHS.has(slugPath)) continue;'
+          s=s.replace(allow,allow+'\n    '+rule)
           p.write_text(s)
           print("EXACT_CLAUDE_WORKER_ONLY_IMMUTABLE_ORIGIN_AND_DISCOVERY_METADATA")
           PY
@@ -122,8 +132,10 @@ jobs:
           for node in xml:
            for n in node:
             if n.tag.endswith("loc") and n.text:canon.append(n.text);break
-          selected=set(x.rsplit("/",1)[-1] for x in canon)-set(old39)
-          assert len(canon)==57 and len(selected)==18,(len(canon),len(selected))
+          names=set(x.rsplit("/",1)[-1] for x in canon)
+          normal=names-{"","explore","about","quiz"}
+          selected=normal-set(old39)
+          assert len(canon)==61 and len(normal)==57 and len(selected)==18 and set(old39)<=normal,(len(canon),len(normal),len(selected))
           for slug in old39:
            b,_=get("/species-data/v1/"+slug+".json")
            old=json.load(urllib.request.urlopen(target+"/species-data/v1/"+slug+".json",timeout=30))
