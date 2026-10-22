@@ -458,9 +458,9 @@ export const scienceStage10 = {
         "label": "Courtship is a complex dance",
         "text": "A courting male lifts its third pair of legs and raises coloured abdominal flaps towards a female.",
         "source": {
-          "label": "Australian Museum — jumping spiders and Maratus volans",
-          "url": "https://australian.museum/learn/animals/spiders/jumping-spiders/",
-          "publisher": "Australian Museum",
+          "label": "Girard et al. 2011 — Multimodal courtship in Maratus volans",
+          "url": "https://doi.org/10.1371/journal.pone.0025390",
+          "publisher": "PLOS ONE",
           "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
@@ -523,9 +523,9 @@ export const scienceStage10 = {
         "label": "Vision is central to signalling",
         "text": "The male's colourful presentation faces the female and forms a visually elaborate mating signal.",
         "source": {
-          "label": "Australian Museum — jumping spiders and Maratus volans",
-          "url": "https://australian.museum/learn/animals/spiders/jumping-spiders/",
-          "publisher": "Australian Museum",
+          "label": "Girard et al. 2011 — Multimodal courtship in Maratus volans",
+          "url": "https://doi.org/10.1371/journal.pone.0025390",
+          "publisher": "PLOS ONE",
           "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
