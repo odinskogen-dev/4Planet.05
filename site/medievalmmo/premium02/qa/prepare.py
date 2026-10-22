@@ -31,7 +31,7 @@ main=root/'src/main.js';text=main.read_text()
 poster_import="import { POSTER_PORTRAIT, POSTER_LANDSCAPE } from './assets/art/posters.js';"
 if poster_import not in text:raise SystemExit('Poster import anchor missing')
 text=text.replace(poster_import,"")
-old="s.classList.add('poster'); s.style.setProperty('--pp', \`url(\${POSTER_PORTRAIT})\`); s.style.setProperty('--pl', \`url(\${POSTER_LANDSCAPE})\`);"
+old="s.classList.add('poster'); s.style.setProperty('--pp', `url(${POSTER_PORTRAIT})`); s.style.setProperty('--pl', `url(${POSTER_LANDSCAPE})`);"
 if old not in text:raise SystemExit('Poster activation anchor missing')
 text=text.replace(old,"s.classList.add('kingdom-title');")
 text=text.replace("Challenger 01 · internal prototype. Key art: 4PLANET. In-game art, terrain and sound are generated in code for this project. Geography shaped after the real Aufidus valley near Cannae; alternate history is possible.",
