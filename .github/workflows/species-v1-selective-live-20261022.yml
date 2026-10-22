@@ -3,6 +3,9 @@ on:
   push:
     branches: [release/species-v1-selective-20261022]
     paths: [.github/workflows/species-v1-selective-live-20261022.yml]
+  pull_request:
+    branches: [release/species-39-20261019]
+    paths: [.github/workflows/species-v1-selective-live-20261022.yml]
 
 permissions:
   contents: read
