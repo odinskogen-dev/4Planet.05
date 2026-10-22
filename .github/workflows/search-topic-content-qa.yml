@@ -1,0 +1,45 @@
+name: P1 Source-Grounded Topic Candidate QA (No Live)
+on:
+  push:
+    branches: [editorial/search-topic-depth-20261022]
+    paths: [.github/workflows/search-topic-content-qa.yml]
+permissions:
+  contents: read
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      PUBLIC_SITE_ORIGIN: https://4planet.org
+      VITE_PUBLIC_SITE_ORIGIN: https://4planet.org
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Existing complete production build and scientific source checks
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const d=JSON.parse(fs.readFileSync('src/data/discoveryTopics.json','utf8'));
+          const slugs=['biodiversity','deforestation','coral-bleaching','climate-change'];
+          assert.equal(d.topics.length,20);
+          for(const slug of slugs){
+            const t=d.topics.find(p=>p.slug===slug);
+            assert.ok(t?.indexable,slug+' indexable');
+            assert.ok(t.answer.length>=320,slug+' substantive human answer');
+            assert.ok(t.sources.length>=2,slug+' diverse authoritative sources');
+            assert.ok(t.related.length>=4,slug+' contextual next steps');
+            assert.ok(t.sourceDoesNotEstablish.length>=90,slug+' limitations');
+            for(const s of t.sources)assert.ok(/^https:\/\//.test(s.url),slug+' full primary source url');
+          }
+          console.log('P1_FOUR_TOPICS_SCIENCE_SOURCE_CONTENT_GOLD_PASS');
+          NODE
+          npm run build
+          node --test scripts/discovery-seo-contract.test.mjs scripts/max-exposure-main-runtime.test.mjs
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          echo P1_SOURCE_ONLY_BUILD_PREVIEW_PASS
