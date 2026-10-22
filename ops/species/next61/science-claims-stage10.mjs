@@ -263,12 +263,12 @@ export const scienceStage10 = {
       {
         "id": "peacock-spider-sci10-04",
         "category": "ecology",
-        "label": "Different elements of the display",
-        "text": "Documented courtship behaviours include distinctive leg waves, fan dancing and vibratory signals.",
+        "label": "Female preference shapes the performance",
+        "text": "A separate study found that female mating success preferences depend on combinations of visual and vibration-based male courtship signals.",
         "source": {
-          "label": "Girard et al 2011 — Multi-modal Courtship in the Peacock Spider",
-          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3181266/",
-          "publisher": "PLOS ONE",
+          "label": "Girard et al — Female preference for multi-modal courtship in Maratus volans",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/26631566/",
+          "publisher": "Proceedings of the Royal Society B",
           "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
