@@ -7,6 +7,7 @@ for(const cfg of [{name:'desktop',width:1366,height:768,mobile:false},{name:'mob
  const page=await ctx.newPage(),errors=[];
  page.on('pageerror',e=>errors.push('PAGE: '+e.message));
  page.on('console',e=>{if(e.type()==='error')errors.push('CONSOLE: '+e.text())});
+ page.on('response',r=>{if(r.status()>=400)errors.push('HTTP '+r.status()+' '+r.url())});
  try{
   const response=await page.goto('http://127.0.0.1:8877/',{waitUntil:'domcontentloaded',timeout:60000});
   assert.equal(response.status(),200);
