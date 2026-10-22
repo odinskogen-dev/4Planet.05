@@ -8,6 +8,7 @@ const client = fs.readFileSync("src/impact/livingActionNetworkClient.ts", "utf8"
 const router = fs.readFileSync("src/routes/router.tsx", "utf8");
 const manifest = JSON.parse(fs.readFileSync("src/data/impactDiscovery.json", "utf8"));
 const prerender = fs.readFileSync("scripts/prerender-discovery-seo.mjs", "utf8");
+const sitemapGenerator = fs.readFileSync("scripts/generate-sitemap.mjs", "utf8");
 const analytics = fs.readFileSync("src/analytics/Analytics.tsx", "utf8");
 
 test("Impact runtime reads the existing NATUREBRAIN projection", () => {
@@ -70,6 +71,14 @@ test("Impact prerender gates projects and actors and does not assign third-party
   assert.match(prerender, /mainEntity: \{ "@type": "Thing", "@id": actor\.id, name: actor\.name \}/);
   assert.match(prerender, /about: \{ "@type": "Thing", "@id": actor\.id, name: actor\.name \}/);
   assert.doesNotMatch(prerender, /"@type": "Organization",\n\s+name: actor\.name/);
+});
+
+test("Impact sitemap gates both project and actor routes behind per-object publication authority", () => {
+  assert.match(sitemapGenerator, /impactObjectIsReleasedForOrigin/);
+  assert.match(sitemapGenerator, /impactDiscovery\.projects \?\? \[\]\)\.filter\(impactObjectIsReleasedForOrigin\)/);
+  assert.match(sitemapGenerator, /releasedImpactProjects\.map\(\(project\) => \[project\.actor\.slug, project\.actor\]\)/);
+  assert.match(sitemapGenerator, /\)\.filter\(impactObjectIsReleasedForOrigin\)/);
+  assert.doesNotMatch(sitemapGenerator, /impactDiscovery\.projects \?\? \[\]\)\.map\(\(item\) => `\/impact\/project/);
 });
 
 
