@@ -288,6 +288,14 @@ jobs:
            profile=json.loads(Path("dist/species-data/v1/"+slug+".json").read_text())
            assert profile["slug"]==slug and profile["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22"
            asset=profile["hero"]["url"].replace("https://4species.com","")
+           # The source refresh can change a photo while retaining its local filename.
+           # Restore the exact previously published photograph bytes too.
+           assert asset.startswith("/assets/species/next61/"),slug
+           request=urllib.request.Request(old+asset,headers={"User-Agent":"4SPECIES-IMMUTABLE-PREVIOUS-MEDIA/1.0"})
+           with urllib.request.urlopen(request,timeout=35) as response:
+            exact_image=response.read()
+           for loc in ("dist"+asset,"public"+asset):
+            output=Path(loc);output.parent.mkdir(parents=True,exist_ok=True);output.write_bytes(exact_image)
            media=Path("dist"+asset)
            assert media.is_file() and hashlib.sha256(media.read_bytes()).hexdigest()==profile["provenance"]["photoSha256"],slug
            print("PRESERVED_PREVIOUS_18_IMMUTABLE_CLAUDE_ARTICLE_AND_IMAGE "+slug)
