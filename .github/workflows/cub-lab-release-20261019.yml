@@ -112,6 +112,14 @@ jobs:
             console.log('CUB_POSTER_MEDIA_BUILD_PASS');
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+      - name: Generate isolated CH04 playable preview without changing Build03
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83  site/medieval/index.html' | sha256sum -c -
+          python3 site/medieval/ch04src/build_ch04.py site/medieval/index.html site/medieval/challenger04/index.html
+          echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  site/medieval/challenger04/index.html' | sha256sum -c -
+          echo 'CH04_ISOLATED_PREVIEW_READY'
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
@@ -157,6 +165,20 @@ jobs:
             done
             test "$good" -eq 1 || { echo "MEDIEVAL_CLEAN_HUD_RELEASE_FAILED=$host"; exit 5; }
             echo "MEDIEVAL_CLEAN_HUD_LIVE_PASS=$host/medieval/"
+          done
+      - name: Verify CH04 preview on CUB Cloudflare domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            ok=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 25 "$host/medieval/challenger04/index.html" -o /tmp/ch04-preview.html &&
+                 echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  /tmp/ch04-preview.html' | sha256sum -c - >/dev/null; then ok=1; break; fi
+              sleep 5
+            done
+            test "$ok" -eq 1 || { echo "CH04_PREVIEW_NOT_LIVE=$host"; exit 6; }
+            echo "CH04_PREVIEW_LIVE=$host/medieval/challenger04/"
           done
       - name: Safely add labs.p4nther.com alongside lab.p4nther.com
         shell: bash
