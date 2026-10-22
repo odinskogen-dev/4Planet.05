@@ -49,6 +49,7 @@ jobs:
                       images:all.length,
                       hero:hero.map(x=>({loaded:x.complete&&x.naturalWidth>0,src:x.currentSrc||x.src,alt:x.alt})),
                       broken:all.filter(x=>x.complete&&x.naturalWidth===0).length,
+                      approvedHero:all.filter(x=>x.complete&&x.naturalWidth>0&&(x.currentSrc||x.src).includes("/assets/species/next61/")).map(x=>({src:x.currentSrc||x.src,width:x.naturalWidth})),
                       overflow:document.documentElement.scrollWidth>window.innerWidth+4
                     };
                   });
@@ -62,7 +63,8 @@ jobs:
                   assert.ok(data.jsonld>0);
                   if(new18.includes(slug)){
                     assert.ok(pageResponse.headers()["x-4species-release"]?.includes("18-v1"));
-                    assert.ok(data.hero.some(x=>x.loaded&&x.src.includes("/assets/species/next61/")),"No reviewed hero loaded");
+                    assert.equal(data.approvedHero.length,1,"Exactly one approved V1 photograph must load");
+                    assert.equal(data.broken,0,"No failed images allowed on released V1 profile");
                   }
                   if(slug==="atlantic-cod"){
                     assert.equal(data.hero.length,1);
@@ -71,7 +73,7 @@ jobs:
                   }
                   assert.equal(data.overflow,false,"Mobile horizontal overflow "+slug);
                   reports.push({browserName,mobile,slug,...data});
-                  console.log("SPECIES_V1_REAL_BROWSER_PASS "+JSON.stringify({browserName,mobile,slug,heroLoaded:data.hero.filter(x=>x.loaded).length,broken:data.broken,ldjson:data.jsonld}));
+                  console.log("SPECIES_V1_REAL_BROWSER_PASS "+JSON.stringify({browserName,mobile,slug,heroLoaded:data.approvedHero.length||data.hero.filter(x=>x.loaded).length,broken:data.broken,ldjson:data.jsonld}));
                   if(["koala","giant-manta-ray","atlantic-cod"].includes(slug)){
                     await p.screenshot({path:"/tmp/species-v1-browser-proof/"+browserName+"-"+(mobile?"mobile":"desktop")+"-"+slug+".png",animations:"disabled"});
                   }
