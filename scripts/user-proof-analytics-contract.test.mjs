@@ -18,6 +18,7 @@ const pantry = read("src/pages/sapien/PantryChoice.tsx");
 const species = read("src/pages/integrated/Species.tsx");
 const atlas = read("src/earth/World.tsx");
 const sitemap = read("scripts/generate-sitemap.mjs");
+const userEntryAudit = read("scripts/user-entry-audit.mjs");
 const robots = read("public/robots.txt");
 
 const requiredEvents = [
@@ -108,6 +109,12 @@ test("canonical Living Systems routes resolve consistently in both analytics cla
   assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", "/livingsystems-extra"), "4planet");
   assert.equal(evaluateProductClassifier(analytics, "productArea", "/living-systems"), "living_systems");
   assert.equal(evaluateProductClassifier(routeAnalytics, "classifyProduct", "/living-systems"), "living_systems");
+});
+
+test("the user-entry audit checks the public Living Systems canonical instead of its redirect alias", () => {
+  assert.match(userEntryAudit, /^\s*"\/livingsystems\/",\s*$/m);
+  assert.doesNotMatch(userEntryAudit, /^\s*"\/living-systems",\s*$/m);
+  assert.match(sitemap, /^\s*"\/livingsystems\/",\s*$/m);
 });
 
 test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {

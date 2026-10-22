@@ -9,7 +9,7 @@ const requiredDiscoveryRoutes = [
   "/",
   "/atlas",
   "/species",
-  "/living-systems",
+  "/livingsystems/",
   "/impact",
   "/missions",
   "/magazine",
