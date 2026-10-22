@@ -269,6 +269,30 @@ jobs:
           test -f dist/_headers
           node "$GITHUB_WORKSPACE/ops/species/next61/intent-titles.mjs"
           node "$GITHUB_WORKSPACE/ops/species/next61/v1-search-release.mjs"
+          # Absolutely preserve all 18 already-live V1 static profiles from the
+          # immutable prior origin, rather than allowing dynamic source updates
+          # to alter visitor-facing text/metadata or JSON without review.
+          python3 - <<'PY'
+          from pathlib import Path
+          import urllib.request,json,hashlib
+          old="https://de9e3e0e.4planet-05.pages.dev"
+          previous="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          for slug in previous:
+           for relative,target in [(slug,"dist/"+slug+"/index.html"),
+                                   ("species-data/v1/"+slug+".json","dist/species-data/v1/"+slug+".json"),
+                                   ("species-data/v1/"+slug+".json","public/species-data/v1/"+slug+".json")]:
+            req=urllib.request.Request(old+"/"+relative,headers={"User-Agent":"4SPECIES-IMMUTABLE-PRIOR-57/1.0"})
+            with urllib.request.urlopen(req,timeout=35) as response:
+             source=response.read()
+            f=Path(target);f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(source)
+           profile=json.loads(Path("dist/species-data/v1/"+slug+".json").read_text())
+           assert profile["slug"]==slug and profile["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22"
+           asset=profile["hero"]["url"].replace("https://4species.com","")
+           media=Path("dist"+asset)
+           assert media.is_file() and hashlib.sha256(media.read_bytes()).hexdigest()==profile["provenance"]["photoSha256"],slug
+           print("PRESERVED_PREVIOUS_18_IMMUTABLE_CLAUDE_ARTICLE_AND_IMAGE "+slug)
+          print("PRESERVED_18_V1_EXACT_PROFILES_FROM_IMMUTABLE_PRIOR_ORIGIN")
+          PY
           echo SPECIES_PREMIUM_V1_STATIC_CLAUDE_RELEASE_CANDIDATE_PASS
       - name: Deploy candidate to ISOLATED Cloudflare Pages branch (NOT 4species.com)
         shell: bash
