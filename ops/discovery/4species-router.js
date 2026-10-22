@@ -5,7 +5,24 @@ const ORIGIN = "https://4planet-05.pages.dev";
 // SPECIES v53 — single canonical origin, proper pathname routing, no Orca fallback.
 // Versioned Cloudflare Pages preview was built from Claude's exact source and
 // verified before the founder-approved production cutover.
-const SPECIES_V53_ORIGIN = "https://bb0c99eb.4planet-05.pages.dev";
+const SPECIES_V53_ORIGIN = "https://e17e1392.4planet-05.pages.dev";
+
+/* 4SPECIES selective PREMIUM V1 release: leave the entire COD-enhanced
+   e17e1392 original 39 Claudia v53 origin untouched. Only route the 18
+   individually photographed, source-backed new species to de9e3e0e. */
+const SPECIES_V1_ORIGIN = "https://de9e3e0e.4planet-05.pages.dev";
+const SPECIES_V1_RELEASED = new Set("koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split(" "));
+function speciesV1OriginForPath(path) {
+  if (typeof path !== "string") return SPECIES_V53_ORIGIN;
+  const direct=path.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+  const profile=path.match(/^\/species-data\/v1\/([a-z0-9]+(?:-[a-z0-9]+)*)\.json$/);
+  if ((direct && SPECIES_V1_RELEASED.has(direct[1])) ||
+      (profile && SPECIES_V1_RELEASED.has(profile[1]))) return SPECIES_V1_ORIGIN;
+  if (path.startsWith("/assets/species/next61/") || path === "/llms.txt" ||
+      path === "/species-v1-images.xml") return SPECIES_V1_ORIGIN;
+  return SPECIES_V53_ORIGIN;
+}
+
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
@@ -29,7 +46,7 @@ export async function profileReviewState(pathname, fetchImpl = fetch) {
   if (!/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return "UNREVIEWED";
   const slug = pathname.slice(1);
   try {
-    const response = await fetchImpl(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
+    const response = await fetchImpl(speciesV1OriginForPath(pathname)+PROFILE_DATA_PREFIX+encodeURIComponent(slug)+".json", {
       headers: { accept: "application/json" },
       signal: AbortSignal.timeout(PROFILE_REVIEW_TIMEOUT_MS),
     });
@@ -77,6 +94,20 @@ async function reviewedSpeciesSitemap(request) {
     const canonical = "https://4species.com" + slugPath;
     kept.push(block.replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>"));
   }
+
+  // Supplement only those eighteen exact canonical species with separately
+  // validated first-party ImageObject URLs. Old 39 XML blocks stay unchanged.
+  try {
+    const extraResponse=await fetch(SPECIES_V1_ORIGIN+"/species-v1-images.xml");
+    if (extraResponse.ok) {
+      const extraBlocks=(await extraResponse.text()).match(/<url>[\s\S]*?<\/url>/g)||[];
+      for (const block of extraBlocks) {
+        const loc=block.match(/<loc>https:\/\/4species\.com\/([a-z0-9-]+)<\/loc>/)?.[1];
+        if (loc && SPECIES_V1_RELEASED.has(loc) &&
+            await profileReviewState("/"+loc)!=="UNREVIEWED") kept.push(block);
+      }
+    }
+  } catch { /* The existing 39-site sitemap remains available. */ }
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
   return new Response(body, {
     headers: {
@@ -87,26 +118,48 @@ async function reviewedSpeciesSitemap(request) {
   });
 }
 
+
+async function mergedSpeciesIndex(request) {
+  const source=await fetch(SPECIES_V53_ORIGIN+"/species-data/v1/index.json");
+  if (!source.ok || request.method==="HEAD") return source;
+  try {
+    const base=await source.json();
+    const nextResponse=await fetch(SPECIES_V1_ORIGIN+"/species-data/v1/index.json");
+    if (!nextResponse.ok) throw Error("V1 index missing");
+    const extension=await nextResponse.json();
+    if (!Array.isArray(base.pages) || !Array.isArray(extension.pages)) throw Error("Bad index");
+    const current=new Set(base.pages.map(p=>p.slug));
+    const added=extension.pages.filter(p=>SPECIES_V1_RELEASED.has(p.slug)&&!current.has(p.slug));
+    return new Response(JSON.stringify({...base,pages:[...base.pages,...added]}),{
+      headers:{"content-type":"application/json; charset=utf-8","cache-control":"public, max-age=180"}});
+  } catch {
+    return fetch(SPECIES_V53_ORIGIN+"/species-data/v1/index.json");
+  }
+}
 async function proxySpeciesV53(request) {
   if (request.method !== "GET" && request.method !== "HEAD")
     return new Response("Method not allowed", {status:405});
   const incoming = new URL(request.url);
   if (incoming.pathname === "/species-sitemap.xml") return reviewedSpeciesSitemap(request);
-  const target = new URL(incoming.pathname+incoming.search, SPECIES_V53_ORIGIN);
+  if (incoming.pathname === "/species-data/v1/index.json") return mergedSpeciesIndex(request);
+  const target = new URL(incoming.pathname+incoming.search, speciesV1OriginForPath(incoming.pathname));
   const reviewState = await profileReviewState(incoming.pathname);
   const headers = new Headers();
   for(const name of ["accept","accept-language","user-agent"]) {
     const value = request.headers.get(name); if(value) headers.set(name,value);
   }
-  const upstream = await fetch(target.toString(), {method:request.method,headers,redirect:"follow"});
+  let upstream = await fetch(target.toString(), {method:request.method,headers,redirect:"follow"});
+  // Do not regress old hash-named image/JS assets; fallback to new build only on genuine 404.
+  if (upstream.status===404 && incoming.pathname.startsWith("/assets/") && target.origin===SPECIES_V53_ORIGIN)
+    upstream=await fetch(new URL(incoming.pathname+incoming.search,SPECIES_V1_ORIGIN),{method:request.method,headers,redirect:"follow"});
   const out = new Headers(upstream.headers);
   out.delete("set-cookie");
   out.delete("content-length");
   out.delete("content-encoding");
-  out.set("x-4species-release", "species-v53-immutable-bb0c99eb-39-20261019");
+  out.set("x-4species-release", "species-v53-e17e1392-cod-preserved-plus-de9e3e0e-18-v1-20261022");
   // Pages preview emits preview-only noindex; never forward it to a completed
   // public Claude profile, while still enforcing noindex for missing profiles.
-  if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");
+  if (permitsSpeciesIndexing(reviewState) || incoming.pathname === "/llms.txt" || incoming.pathname === "/species-v1-images.xml") out.delete("x-robots-tag");
   if((out.get("content-type")||"").includes("text/html")) {
     // v53 is a versioned SPA: a stale HTML shell can reference JS hashes
     // removed by the next Pages deploy and leave iOS browsers on a blank page.
