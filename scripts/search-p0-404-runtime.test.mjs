@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { onRequest } from "../functions/_middleware.js";
 import { PUBLIC_EXACT_ROUTES, PUBLIC_PATTERN_ROUTES, RELEASED_MISSION_ROUTES, isKnown4PlanetPublicRoute } from "../functions/public-4planet-routes.generated.js";
 import fs from "node:fs";
+// Cloudflare HTMLRewriter is a runtime primitive; for status-gate unit tests
+// preserve its transform interface without substituting for browser QA.
+globalThis.HTMLRewriter ??= class { on(){return this;} transform(response){return response;} };
 
 function page(url, {method="GET",contentType="text/html; charset=utf-8",status=200}={}){
   return onRequest({
