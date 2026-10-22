@@ -9,6 +9,7 @@ on:
       - 'site/medieval/**'
       - 'site/medievalkingdoms/**'
       - 'site/medivalmmo/**'
+      - 'site/medievalmmo/**'
       - 'site/italy1796/**'
       - 'site/villains/**'
       - 'site/wildorca/**'
@@ -59,6 +60,17 @@ jobs:
           python3 site/medieval/ch05src/build_ch05.py site/medieval/challenger04/index.html site/medievalkingdoms/index.html
           echo 'dc7f5fbabcc970b803a66d9919aea7093cf937c2dc840ba2788b162327955584  site/medievalkingdoms/index.html' | sha256sum -c -
           echo 'CH05_INDEPENDENT_RELEASE_BUILT'
+      - name: Build isolated fullframe 3D MEDIEVAL MMO game (no source replacement)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/medievalkingdoms/index.html
+          python3 site/medievalmmo/build_mmo.py site/medievalkingdoms/index.html site/medievalmmo/index.html
+          test "$(wc -c < site/medievalmmo/index.html)" -gt 2000000
+          grep -Fq '<canvas id="world"></canvas>' site/medievalmmo/index.html
+          grep -Fq 'cub-medievalmmo-full-window' site/medievalmmo/index.html
+          grep -Fq 'cub_medievalmmo_' site/medievalmmo/index.html
+          echo 'CUB_MMO_ACTUAL_3D_GAME_PREDEPLOY_PASS'
       - name: Apply scoped MEDIEVAL battlefield HUD fix (release copy only)
         shell: bash
         run: |
@@ -170,15 +182,19 @@ jobs:
         run: |
           set -euo pipefail
           for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
-            curl -fsSL --max-time 25 "$host/medivalmmo/?stay" -o /tmp/live-mmo-entry.html
-            grep -Fq 'medieval-kingdoms-mmo-alpha-01-1fx5c6.v2.appdeploy.ai/' /tmp/live-mmo-entry.html
+            curl -fsSL --max-time 25 "$host/medievalmmo/" -o /tmp/live-mmo-entry.html
+            test "$(wc -c < /tmp/live-mmo-entry.html)" -gt 2000000
+            grep -Fq '<canvas id="world"></canvas>' /tmp/live-mmo-entry.html
+            grep -Fq 'cub-medievalmmo-full-window' /tmp/live-mmo-entry.html
+            curl -fsSL --max-time 25 "$host/medivalmmo/?stay" -o /tmp/live-mmo-old.html
+            grep -Fq '/medievalmmo/' /tmp/live-mmo-old.html
             curl -fsSL --max-time 25 "$host/games/medieval-mmo/" -o /tmp/live-mmo-alias.html
-            grep -Fq '/medivalmmo/' /tmp/live-mmo-alias.html
+            grep -Fq '/medievalmmo/' /tmp/live-mmo-alias.html
             curl -fsSL --max-time 25 "$host/roma/" -o /tmp/live-roma-preserved.html
             test -s /tmp/live-roma-preserved.html
             curl -fsSL --max-time 25 "$host/medieval/" -o /tmp/live-medieval-preserved.html
             test -s /tmp/live-medieval-preserved.html
-            echo "CUB_MMO_LAB_ENTRY_VERIFIED=$host/medivalmmo/"
+            echo "CUB_MMO_FULLFRAME_LIVE_VERIFIED=$host/medievalmmo/"
           done
       - name: Verify clean mobile MEDIEVAL HUD deployment and untouched ROMA
         shell: bash
@@ -224,6 +240,43 @@ jobs:
             test "$passed" -eq 1 || { echo "CH05_LIVE_OR_HOME_FAIL=$host"; exit 9; }
             echo "CH05_GAME_AND_HOME_LIVE_PASS=$host/medievalkingdoms/"
           done
+      - name: Verify MMO actual playable battle on desktop and mobile Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            for(const cfg of [{name:'desktop',width:1366,height:768,mobile:false},{name:'mobile',width:390,height:844,mobile:true}]){
+              const context=await browser.newContext({viewport:{width:cfg.width,height:cfg.height},isMobile:cfg.mobile,hasTouch:cfg.mobile});
+              const page=await context.newPage();
+              const faults=[];page.on('pageerror',e=>faults.push(String(e)));
+              const response=await page.goto('https://lab.p4nther.com/medievalmmo/',{waitUntil:'domcontentloaded',timeout:60000});
+              await page.waitForTimeout(4200);
+              const canvas=page.locator('canvas#world');
+              await canvas.waitFor({state:'visible',timeout:15000});
+              const rect=await canvas.boundingBox();
+              const start=page.locator('#bNew');
+              const startVisible=await start.isVisible().catch(()=>false);
+              if(startVisible){await start.click({timeout:10000});await page.waitForTimeout(1800)}
+              const stillCanvas=await canvas.isVisible();
+              await page.screenshot({path:'medievalmmo-'+cfg.name+'.png',fullPage:true});
+              console.log('MMO_3D_FULLFRAME',cfg.name,'HTTP',response.status(),'CANVAS',stillCanvas,'GAME_START_BUTTON',startVisible,'RECT',JSON.stringify(rect),'ERRORS',JSON.stringify(faults));
+              if(response.status()!==200||!stillCanvas||!rect||rect.width<cfg.width*.8||faults.length>0)throw Error('FULLFRAME_GAME_SMOKE_FAILED_'+cfg.name);
+              await context.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-medievalmmo-fullframe-gameplay
+          path: medievalmmo-*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Safely add labs.p4nther.com alongside lab.p4nther.com
         shell: bash
         run: |
