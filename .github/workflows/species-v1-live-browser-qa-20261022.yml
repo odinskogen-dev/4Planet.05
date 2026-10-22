@@ -52,6 +52,10 @@ jobs:
                       overflow:document.documentElement.scrollWidth>window.innerWidth+4
                     };
                   });
+                  if(new18.includes(slug) && (mobile || slug==="capybara" || slug==="venus-flytrap")){
+                    console.log("SPECIES_V1_BROWSER_DOM_DEBUG "+JSON.stringify({browserName,mobile,slug,heading:data.h1,hero:data.hero,images:data.images,broken:data.broken,html:(await p.locator("body").innerText()).slice(0,420),visibleImages:await p.locator("img").evaluateAll(xs=>xs.slice(0,9).map(i=>({src:i.currentSrc||i.src,loaded:i.naturalWidth>0,alt:i.alt}))),resourceIssues:await p.evaluate(()=>performance.getEntriesByType("resource").filter(x=>x.name.includes("/assets/")).slice(-8).map(x=>x.name))}));
+                    await p.screenshot({path:"/tmp/species-v1-browser-proof/DEBUG-"+browserName+"-"+(mobile?"mobile":"desktop")+"-"+slug+".png",animations:"disabled",fullPage:false});
+                  }
                   assert.equal(data.canonical,origin+"/"+slug);
                   assert.ok(!data.robots?.includes("noindex"));
                   assert.ok(data.h1.length>3);
