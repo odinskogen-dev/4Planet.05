@@ -11,6 +11,21 @@ const PROFILE_REVIEW_TIMEOUT_MS = 3000;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
 const PUBLIC_NON_PROFILE_PATHS = new Set(["/", "/explore", "/quiz", "/about"]);
 
+function isProfilePathCandidate(pathname) {
+  return typeof pathname === "string" && /^\/[^/.]+$/.test(pathname) && !PUBLIC_NON_PROFILE_PATHS.has(pathname);
+}
+
+function missingSpeciesProfile(method) {
+  const headers = {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "no-store, max-age=0, must-revalidate",
+    "x-robots-tag": "noindex, nofollow, noarchive",
+    "x-4species-index-gate": "review-unreviewed",
+  };
+  const body = method === "HEAD" ? null : "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow,noarchive\"><title>Species profile not found — 4SPECIES</title></head><body><main><h1>No species profile exists at this address.</h1><p>Explore the source-backed species profiles that are currently available.</p><p><a href=\"/explore\">Explore species</a></p></main></body></html>";
+  return new Response(body, { status: 404, headers });
+}
+
 export function publicSpeciesCanonical(pathname) {
   if (PUBLIC_NON_PROFILE_PATHS.has(pathname)) return `https://4species.com${pathname}`;
   if (!/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return null;
@@ -100,6 +115,12 @@ async function proxySpeciesV53(request) {
   if (incoming.pathname === "/species-sitemap.xml") return reviewedSpeciesSitemap(request);
   const target = new URL(incoming.pathname+incoming.search, SPECIES_V53_ORIGIN);
   const reviewState = await profileReviewState(incoming.pathname);
+  // The immutable SPA origin serves its application shell with HTTP 200 even
+  // when no source-bearing profile exists. Fail closed at the public edge so
+  // crawlers and people receive a real not-found response instead of a soft 404.
+  if (reviewState === "UNREVIEWED" && isProfilePathCandidate(incoming.pathname)) {
+    return missingSpeciesProfile(request.method);
+  }
   const headers = new Headers();
   for(const name of ["accept","accept-language","user-agent"]) {
     const value = request.headers.get(name); if(value) headers.set(name,value);

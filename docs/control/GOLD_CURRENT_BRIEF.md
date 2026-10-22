@@ -1,3 +1,35 @@
+# 4SPECIES — UNKNOWN PROFILE SOFT-404 CORRECTION — 22 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or search crawler follows a species-looking URL and needs a truthful distinction between an available source-backed profile and a missing page.
+
+**ONE THING TO UNDERSTAND:** an upstream SPA shell returning HTTP 200 is not evidence that a species profile exists.
+
+**PRIMARY ACTION:** return HTTP 404 with a clear path back to Explore when the public edge cannot verify source-bearing profile data for a single-segment profile candidate.
+
+**SECONDARY DEPTH:** valid REVIEWED/DRAFT profiles and the existing Home, Explore, Quiz and About routes retain their current behaviour.
+
+**P1 / P2 / P3 / P4:** truthful HTTP state / human-readable explanation / Explore species / unchanged source and indexing gates.
+
+**WHAT CAN BE REMOVED:** the misleading 200 SPA shell and canonical signal for missing profile-shaped paths.
+
+**WHAT MUST BE REUSED:** SPEC-GS-11, issue #145, the existing `profileReviewState` source gate, canonical-host worker, PR #131 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a 404 proves only that this public edge did not find an eligible source-bearing profile at request time. It does not judge taxonomy, delete content, grant Gold, deploy, change LIVE or prove search-engine removal.
+
+**MOBILE-FIRST RISK:** none beyond keeping the compact not-found response readable and the Explore link usable without client JavaScript.
+
+**HUMAN SUCCESS:** GET and HEAD return 404, no canonical, and noindex for a missing profile candidate while known profiles and non-profile routes preserve their contracts.
+
+**DONOR DECISION:** no donor; correct the current HEIR worker and its existing regression in place.
+
+**BASE / ROLLBACK:** `king/test@042cad8a6d958af80d1c42a5c0e288ab47243e03`; revert the bounded worker/test/brief commit if independent Gold finds a valid route, asset or source-gate regression.
+
+**MAKER ≠ JUDGE:** Factory implements and returns an exact SHA. Independent Gold must verify exact-head worker behaviour before any authorised release.
+
+---
+
 # 4SAPIEN — OWNER-BOUND NOTE-DELETE RECEIPT — 21 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

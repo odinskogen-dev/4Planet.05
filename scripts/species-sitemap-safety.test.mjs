@@ -92,3 +92,32 @@ test("canonical HTML rewrite is bound to the clean public SPECIES URL", () => {
   assert.match(workerSource, /link\[rel="canonical"\]/);
   assert.match(workerSource, /meta\[property="og:url"\]/);
 });
+
+test("unknown profile-shaped slugs return a real 404 for GET and HEAD", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith("/species-data/v1/__unreviewed-species-audit-canary-no-such-animal.json")) {
+      return new Response("Not found", { status: 404 });
+    }
+    if (url.endsWith("/__unreviewed-species-audit-canary-no-such-animal")) {
+      return new Response("<!doctype html><html><head></head><body><div id=\"root\"></div></body></html>", {
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
+    }
+    return new Response("Not found", { status: 404 });
+  };
+
+  for (const method of ["GET", "HEAD"]) {
+    const response = await worker.fetch(new Request(
+      "https://4species.com/__unreviewed-species-audit-canary-no-such-animal",
+      { method },
+    ));
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow, noarchive");
+    assert.equal(response.headers.get("link"), null);
+    if (method === "GET") assert.match(await response.text(), /No species profile exists at this address/i);
+  }
+});
