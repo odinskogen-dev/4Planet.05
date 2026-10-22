@@ -125,7 +125,8 @@ jobs:
           assert len(indexed)==57 and set(old39)<=indexed and selected<=indexed,"Explore catalogue merge failed"
           for slug in old39:
            b,_=get("/species-data/v1/"+slug+".json")
-           old=json.load(urllib.request.urlopen(target+"/species-data/v1/"+slug+".json",timeout=30))
+           immutable=urllib.request.Request(target+"/species-data/v1/"+slug+".json",headers={"User-Agent":"4SPECIES-IMMUTABLE-SAFETY/1.0"})
+           old=json.load(urllib.request.urlopen(immutable,timeout=30))
            assert json.loads(b)==old,"Lost/modified original "+slug
           for slug in sorted(selected):
            html,headers=get("/"+slug)
