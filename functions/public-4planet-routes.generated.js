@@ -108,6 +108,7 @@ export const PUBLIC_EXACT_ROUTES = [
   "/whales",
   "/wildfires"
 ];
+export const RELEASED_MISSION_ROUTES = ["/missions/cle4n","/missions/wh4les","/missions/cor4l","/missions/rewild-marine","/missions/clim4te","/missions/am4zonia","/missions/species","/missions/rewild-land","/missions/food","/missions/en4rgy","/missions/circular-city","/missions/f4shion","/missions/m4gazine","/missions/4film","/missions/4rt","/missions/4play"];
 export const PUBLIC_PATTERN_ROUTES = [
   "/4nation/*",
   "/labs/gold/object/:slug",
@@ -140,12 +141,18 @@ function patternToRegExp(pattern) {
   const converted=pieces.map((p)=>p==='*'?'(?:.*)':p.startsWith(':')?'[^/]+':p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
   return new RegExp('^/'+converted.join('/')+'/?$');
 }
-const exact=new Set(PUBLIC_EXACT_ROUTES.map(x=>x==='/'?'/':x.replace(/\/+$/,'')));
+const exact=new Set([...PUBLIC_EXACT_ROUTES,...RELEASED_MISSION_ROUTES].map(x=>x==='/'?'/':x.replace(/\/+$/,'')));
 const patterns=PUBLIC_PATTERN_ROUTES.map(patternToRegExp);
 
 export function isKnown4PlanetPublicRoute(pathname) {
   const p=pathname.replace(/\/+$/,'')||'/';
   if (exact.has(p)) return true;
+  // Finite canonical owners have authoritative released IDs. A React parameter
+  // matcher is not proof that every arbitrary slug is a published entity.
+  if (p.startsWith('/missions/')) return false;
+  if (p.startsWith('/domains/')) return false;
+  if (p.startsWith('/place/')) return false; // qualified Place IDs redirect first
+
   if (patterns.some(r=>r.test(p))) return true;
   // Next.js Living Systems and historical web game deliveries are independently
   // versioned static applications, not owned by src/routes/router.tsx.
