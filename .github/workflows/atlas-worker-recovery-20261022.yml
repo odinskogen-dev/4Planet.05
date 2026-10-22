@@ -1,0 +1,60 @@
+name: ATLAS MapLibre v6 worker — isolated Chromium/WebKit proof
+on:
+  push:
+    branches:
+      - fix/atlas-maplibre-worker-20261022
+    paths:
+      - 'src/earth/World.tsx'
+      - 'tests/e2e/atlas-worker-recovery.spec.ts'
+      - '.github/workflows/atlas-worker-recovery-20261022.yml'
+permissions:
+  contents: read
+jobs:
+  map-worker-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Keep dependency audit blocking high and critical
+        run: npm audit --audit-level=high
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Assert bundled worker has JavaScript extension and content
+        shell: bash
+        run: |
+          set -euo pipefail
+          found=$(find dist -type f \( -name '*maplibre*worker*.js' -o -name '*maplibre*worker*.mjs' \) | head -1)
+          [ -n "$found" ] && [ -s "$found" ] || { echo 'FAIL: Vite did not emit MapLibre worker JS'; exit 2; }
+          echo "Worker emitted: $found"
+          ! head -c 100 "$found" | grep -Eqi '<html|<!doctype' || { echo 'FAIL: worker is SPA HTML'; exit 3; }
+      - name: Install required real browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Chromium desktop/mobile + WebKit mobile worker and map readiness
+        shell: bash
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: |
+          set -euo pipefail
+          npm run preview -- --host 127.0.0.1 > "$RUNNER_TEMP/atlas-preview.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/atlas >/dev/null; then break; fi
+            sleep 1
+          done
+          npx playwright test tests/e2e/atlas-worker-recovery.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-390
+      - name: Retain failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-worker-recovery-proof
+          path: |
+            test-results/
+            playwright-report/
+            artifacts/
+          if-no-files-found: ignore
