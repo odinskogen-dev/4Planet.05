@@ -71,6 +71,15 @@ jobs:
           grep -Fq 'cub-medievalmmo-full-window' site/medievalmmo/index.html
           grep -Fq 'cub_medievalmmo_' site/medievalmmo/index.html
           echo 'CUB_MMO_ACTUAL_3D_GAME_PREDEPLOY_PASS'
+      - name: Build newest founder ROMA v5 engine as isolated MEDIEVAL experimental preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 site/medievalmmo/source/build_v5_medieval.py site/medievalmmo/source site/medievalmmo/next/index.html
+          test "$(wc -c < site/medievalmmo/next/index.html)" -gt 2600000
+          grep -Fq 'CUB_MEDIEVAL_V5' site/medievalmmo/next/index.html
+          grep -Fq '<canvas id="world"></canvas>' site/medievalmmo/next/index.html
+          echo 'CUB_UPLOADED_ROMA_V5_ENGINE_EXACT_HASH_AND_MEDIEVAL_BUILD_PASS'
       - name: Apply scoped MEDIEVAL battlefield HUD fix (release copy only)
         shell: bash
         run: |
@@ -275,6 +284,38 @@ jobs:
         with:
           name: cub-medievalmmo-fullframe-gameplay
           path: medievalmmo-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify newest MEDIEVAL v5 experimental game runs as real WebGL canvas
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const page=await browser.newPage({viewport:{width:1280,height:800}});
+            const faults=[];page.on('pageerror',e=>faults.push(String(e)));
+            const response=await page.goto('https://lab.p4nther.com/medievalmmo/next/',{waitUntil:'domcontentloaded',timeout:60000});
+            await page.waitForTimeout(5000);
+            const button=page.locator('#bNew');const visible=await button.isVisible();
+            console.log('MEDIEVAL_V5_NEW_ENGINE',response.status(),'START_BUTTON',visible,'TITLE',await page.title(),'ERRORS',JSON.stringify(faults));
+            if(response.status()!==200||!visible||faults.length)throw Error('MEDIEVAL_V5_STARTUP_FAILURE');
+            await button.click({timeout:10000});
+            await page.waitForTimeout(3000);
+            const active=await page.locator('canvas#world').isVisible();
+            const screenCount=await page.locator('#screen').count();
+            console.log('MEDIEVAL_V5_PLAYING',active,'SCREEN_OVERLAY',screenCount,'ERRORS',JSON.stringify(faults));
+            await page.screenshot({path:'medieval-v5-new-engine-desktop.png',fullPage:true});
+            if(!active||screenCount||faults.length)throw Error('MEDIEVAL_V5_PLAYABILITY_FAILURE');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-medieval-v5-experimental-gameplay
+          path: medieval-v5-new-engine-*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Safely add labs.p4nther.com alongside lab.p4nther.com
