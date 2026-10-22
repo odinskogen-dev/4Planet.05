@@ -62,6 +62,7 @@ jobs:
           cd ../species-v53-build
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           router = Path("src/routes/router.tsx")
           lines = router.read_text().splitlines(keepends=True)
@@ -75,7 +76,30 @@ jobs:
           alias = route.replace(needle, 'path="/:slug"', 1)
           lines.insert(index + 1, alias)
           router.write_text("".join(lines))
-          print("SPECIES_STANDALONE_ROOT_ROUTE_ALIAS_PASS")
+
+          host_marker = "species-v53.4planet-05.pages.dev"
+          host_files = []
+          for source_path in Path("src").rglob("*"):
+              if source_path.suffix not in {".ts", ".tsx"}:
+                  continue
+              source = source_path.read_text()
+              if host_marker in source:
+                  host_files.append((source_path, source))
+          assert len(host_files) == 1, f"expected one standalone-host source, found {len(host_files)}"
+          host_path, host_source = host_files[0]
+          marker_index = host_source.index(host_marker)
+          tail = host_source[marker_index:marker_index + 1200]
+          match = re.search(r"return\\s+([A-Za-z_$][\\w$]*)\\.includes\\(([^()\\n]+)\\)", tail)
+          assert match, "standalone-host includes contract not found near pinned hostname"
+          host_argument = match.group(2).strip()
+          original_return = match.group(0)
+          replacement_return = original_return + f' || {host_argument}.endsWith(".4planet-05.pages.dev")'
+          patched_tail = tail[:match.start()] + replacement_return + tail[match.end():]
+          host_source = host_source[:marker_index] + patched_tail + host_source[marker_index + len(tail):]
+          assert host_source.count('.endsWith(".4planet-05.pages.dev")') == 1
+          host_path.write_text(host_source)
+          print("SPECIES_STANDALONE_ROOT_ROUTE_AND_PREVIEW_HOST_PASS", host_path)
+
           PY
       - name: Recover EXACT original 39-profile donor files from pinned successful build
         shell: bash
