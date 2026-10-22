@@ -372,7 +372,8 @@ jobs:
             throw new Error("valid root slug hydrated to a fallback");
           }
           const visibleUrl = new URL(page.url());
-          if (visibleUrl.origin !== new URL(origin).origin || !/^\\/red-panda\\/?$/.test(visibleUrl.pathname)) {
+          const normalizedPath = visibleUrl.pathname.endsWith("/") ? visibleUrl.pathname.slice(0, -1) : visibleUrl.pathname;
+          if (visibleUrl.origin !== new URL(origin).origin || normalizedPath !== "/red-panda") {
             throw new Error(`root slug URL changed: ${page.url()}`);
           }
           const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
