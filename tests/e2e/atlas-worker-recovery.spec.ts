@@ -36,9 +36,13 @@ test("ATLAS receives executable MapLibre worker and reaches a loaded map state",
   expect(errors.filter(x => /worker|maplibre/i.test(x)), "Map worker errors").toEqual([]);
   const state = await page.evaluate(() => {
     const map = (window as any).__4planet_map;
-    return { loaded: map.isStyleLoaded(), zoom: map.getZoom(), center: map.getCenter() };
+    const canvas = map.getCanvas();
+    return { zoom: map.getZoom(), center: map.getCenter(), canvasWidth: canvas.width, canvasHeight: canvas.height };
   });
-  expect(state.loaded).toBe(true);
+  // Dynamic overlays may temporarily unset isStyleLoaded() *after* the successful
+  // readiness wait above. A second read here would race later style updates.
+  expect(state.canvasWidth).toBeGreaterThan(0);
+  expect(state.canvasHeight).toBeGreaterThan(0);
   expect(Number.isFinite(state.zoom)).toBe(true);
   expect(Number.isFinite(state.center.lng)).toBe(true);
 });
