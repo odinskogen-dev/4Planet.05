@@ -1,0 +1,9 @@
+{
+  "format": "tar.gz+base64",
+  "archive_sha256": "c8659315dc2cc957ddd3610c6c41cd5e7852b5484b75bceedb8006cf15ce2d56",
+  "encoded_bytes": 1802916,
+  "part_count": 29,
+  "source": "Founder-supplied ROMA 06 modular source with isolated medieval Levant changes",
+  "backend": "none; player campaign state stored in localStorage",
+  "release_gate": "public deployment only after integration QA"
+}
