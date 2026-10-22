@@ -55,6 +55,28 @@ jobs:
           git add -A
           test "$(git write-tree)" = 818b4ff766d4423cafc1709bda38d164da2b9731
           echo CLAUDE_V53_EXACT_BASE_PASS
+      - name: Bind standalone root slugs to the exact Claude V53 species experience
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          python3 - <<'PY'
+          from pathlib import Path
+
+          router = Path("src/routes/router.tsx")
+          lines = router.read_text().splitlines(keepends=True)
+          needle = 'path="/labs/species/:slug"'
+          matches = [(index, line) for index, line in enumerate(lines) if needle in line]
+          assert len(matches) == 1, f"expected one Claude V53 species route, found {len(matches)}"
+          index, route = matches[0]
+          assert route.lstrip().startswith("<Route "), "species route is not a single Route line"
+          assert route.rstrip().endswith("/>"), "species route must remain a single self-closing Route line"
+          assert not any('path="/:slug"' in line for line in lines), "root slug route already exists"
+          alias = route.replace(needle, 'path="/:slug"', 1)
+          lines.insert(index + 1, alias)
+          router.write_text("".join(lines))
+          print("SPECIES_STANDALONE_ROOT_ROUTE_ALIAS_PASS")
+          PY
       - name: Recover EXACT original 39-profile donor files from pinned successful build
         shell: bash
         run: |
@@ -328,6 +350,44 @@ jobs:
           headers=$(curl -fsSI "$origin/_review-next61/" | tr -d '\r')
           echo "$headers" | grep -qi 'x-robots-tag: noindex'
           echo SPECIES61_PREVIEW_NO_INDEX_AND_SEVEN_MEDIA_SAMPLES_PASS
+      - name: Hydrated root-profile and quarantine browser regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          npx playwright install chromium
+          node --input-type=module <<'JS'
+          import { chromium } from "@playwright/test";
+
+          const origin = process.env.SPECIES61_PREVIEW_URL;
+          if (!origin) throw new Error("missing SPECIES61_PREVIEW_URL");
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage();
+
+          const validResponse = await page.goto(`${origin}/red-panda`, { waitUntil: "networkidle" });
+          if (!validResponse?.ok()) throw new Error(`red-panda response ${validResponse?.status()}`);
+          await page.getByRole("heading", { level: 1, name: /red panda/i }).waitFor({ state: "visible" });
+          const validBody = await page.locator("body").innerText();
+          if (validBody.includes("Off the map") || validBody.includes("No profile resolved")) {
+            throw new Error("valid root slug hydrated to a fallback");
+          }
+          if (page.url() !== `${origin}/red-panda`) throw new Error(`root slug URL changed: ${page.url()}`);
+          const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+          if (canonical !== "https://4species.com/red-panda") throw new Error(`wrong canonical: ${canonical}`);
+          const validRobots = validResponse.headers()["x-robots-tag"] || "";
+          if (!validRobots.toLowerCase().includes("noindex")) throw new Error("preview lost noindex header");
+
+          const holdResponse = await page.goto(`${origin}/axolotl`, { waitUntil: "networkidle" });
+          if (!holdResponse?.ok()) throw new Error(`axolotl response ${holdResponse?.status()}`);
+          await page.getByText("No species page with this name yet.", { exact: true }).waitFor({ state: "visible" });
+          const holdBody = await page.locator("body").innerText();
+          if (/Red panda|Ailurus fulgens/i.test(holdBody)) throw new Error("quarantined slug leaked a valid profile");
+          const holdRobots = holdResponse.headers()["x-robots-tag"] || "";
+          if (!holdRobots.toLowerCase().includes("noindex")) throw new Error("quarantine lost noindex header");
+
+          await browser.close();
+          console.log("SPECIES61_HYDRATED_ROOT_AND_QUARANTINE_PASS");
+          JS
       - name: Collect full draft source/preview QA artifacts inside checkout
         if: always()
         shell: bash
