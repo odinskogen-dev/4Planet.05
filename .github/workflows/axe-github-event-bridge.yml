@@ -129,12 +129,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Send completed PR-associated CI wake signal
-        env:
-          EVENT_PATH: ${{ github.event_path }}
         run: |
           set -euo pipefail
 
-          PR_COUNT="$(jq '.workflow_run.pull_requests | length' "$EVENT_PATH")"
+          PR_COUNT="$(jq '.workflow_run.pull_requests | length' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
           if [ "$PR_COUNT" -lt 1 ]; then
             echo "No associated pull request; no AXE wake."
             exit 0
@@ -145,7 +143,7 @@ jobs:
             exit 2
           }
 
-          PR_NUMBER="$(jq -r '.workflow_run.pull_requests[0].number' "$EVENT_PATH")"
+          PR_NUMBER="$(jq -r '.workflow_run.pull_requests[0].number' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
           META="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
           HEAD_REPO="$(jq -r '.head.repo.full_name' <<<"$META")"
           if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
@@ -153,15 +151,40 @@ jobs:
             exit 0
           fi
 
-          HEAD_SHA="$(jq -r '.head.sha' <<<"$META")"
-          HEAD_REF="$(jq -r '.head.ref' <<<"$META")"
+          RUN_HEAD_SHA="$(jq -r '.workflow_run.head_sha // empty' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          RUN_HEAD_REF="$(jq -r '.workflow_run.head_branch // empty' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          test -n "$RUN_HEAD_SHA" || {
+            echo "workflow_run.head_sha is missing; refusing to misbind CI evidence."
+            exit 2
+          }
+
+          CURRENT_HEAD_SHA="$(jq -r '.head.sha' <<<"$META")"
+          CURRENT_HEAD_REF="$(jq -r '.head.ref' <<<"$META")"
           BASE_REF="$(jq -r '.base.ref' <<<"$META")"
           PR_URL="$(jq -r '.html_url' <<<"$META")"
-          WORKFLOW_NAME="$(jq -r '.workflow_run.name' "$EVENT_PATH")"
-          CONCLUSION="$(jq -r '.workflow_run.conclusion // "unknown"' "$EVENT_PATH")"
-          RUN_URL="$(jq -r '.workflow_run.html_url' "$EVENT_PATH")"
-          RUN_ID="$(jq -r '.workflow_run.id' "$EVENT_PATH")"
-          ACTOR="$(jq -r '.workflow_run.actor.login // "unknown"' "$EVENT_PATH")"
+
+          classify_sha_binding() {
+            if [ "$1" = "$2" ]; then
+              printf '%s' 'EXACT'
+            else
+              printf '%s' 'STALE_NON_ACTIONABLE'
+            fi
+          }
+
+          # Deterministic fixtures protect both the exact A→A and stale A→B cases.
+          test "$(classify_sha_binding fixture-a fixture-a)" = "EXACT"
+          test "$(classify_sha_binding fixture-a fixture-b)" = "STALE_NON_ACTIONABLE"
+
+          SHA_BINDING="$(classify_sha_binding "$RUN_HEAD_SHA" "$CURRENT_HEAD_SHA")"
+          if [ "$SHA_BINDING" = "STALE_NON_ACTIONABLE" ]; then
+            echo "Workflow run belongs to $RUN_HEAD_SHA; current PR head is $CURRENT_HEAD_SHA. Reporting stale evidence without promoting it."
+          fi
+
+          WORKFLOW_NAME="$(jq -r '.workflow_run.name' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          CONCLUSION="$(jq -r '.workflow_run.conclusion // "unknown"' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          RUN_URL="$(jq -r '.workflow_run.html_url' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          RUN_ID="$(jq -r '.workflow_run.id' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          ACTOR="$(jq -r '.workflow_run.actor.login // "unknown"' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
 
           EVENT_ID="github:${GITHUB_REPOSITORY}:ci:${RUN_ID}:${CONCLUSION}"
           TEXT="$(printf '%s\n' \
@@ -173,8 +196,11 @@ jobs:
             'action: completed' \
             "workflow: ${WORKFLOW_NAME}" \
             "conclusion: ${CONCLUSION}" \
-            "head_sha: ${HEAD_SHA}" \
-            "head_ref: ${HEAD_REF}" \
+            "head_sha: ${RUN_HEAD_SHA}" \
+            "head_ref: ${RUN_HEAD_REF}" \
+            "current_pr_head_sha: ${CURRENT_HEAD_SHA}" \
+            "current_pr_head_ref: ${CURRENT_HEAD_REF}" \
+            "candidate_binding: ${SHA_BINDING}" \
             "base_ref: ${BASE_REF}" \
             "pr_url: ${PR_URL}" \
             "run_url: ${RUN_URL}" \
@@ -197,7 +223,6 @@ jobs:
     steps:
       - name: Send Cloudflare Pages PR preview wake signal
         env:
-          EVENT_PATH: ${{ github.event_path }}
           COMMENT_ACTION: ${{ github.event.action }}
         run: |
           set -euo pipefail
@@ -206,7 +231,7 @@ jobs:
             .issue.pull_request != null
             and .comment.user.login == "cloudflare-workers-and-pages[bot]"
             and (.comment.body | contains("Cloudflare Pages"))
-          ' "$EVENT_PATH" >/dev/null; then
+          ' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}" >/dev/null; then
             echo "Not a Cloudflare Pages PR comment; no AXE wake."
             exit 0
           fi
@@ -216,7 +241,7 @@ jobs:
             exit 2
           }
 
-          PR_NUMBER="$(jq -r '.issue.number' "$EVENT_PATH")"
+          PR_NUMBER="$(jq -r '.issue.number' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
           META="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")"
           HEAD_REPO="$(jq -r '.head.repo.full_name' <<<"$META")"
           if [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
@@ -228,10 +253,10 @@ jobs:
           HEAD_REF="$(jq -r '.head.ref' <<<"$META")"
           BASE_REF="$(jq -r '.base.ref' <<<"$META")"
           PR_URL="$(jq -r '.html_url' <<<"$META")"
-          COMMENT_URL="$(jq -r '.comment.html_url' "$EVENT_PATH")"
-          COMMENT_ID="$(jq -r '.comment.id' "$EVENT_PATH")"
-          COMMENT_UPDATED_AT="$(jq -r '.comment.updated_at // .comment.created_at' "$EVENT_PATH")"
-          BODY="$(jq -r '.comment.body' "$EVENT_PATH")"
+          COMMENT_URL="$(jq -r '.comment.html_url' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          COMMENT_ID="$(jq -r '.comment.id' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          COMMENT_UPDATED_AT="$(jq -r '.comment.updated_at // .comment.created_at' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
+          BODY="$(jq -r '.comment.body' "${GITHUB_EVENT_PATH:?GitHub event payload path missing}")"
           if grep -q 'Deploy successful!' <<<"$BODY"; then
             CF_RESULT="success"
           else
