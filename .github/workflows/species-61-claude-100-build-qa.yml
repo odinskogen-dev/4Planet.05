@@ -62,8 +62,6 @@ jobs:
           cd ../species-v53-build
           python3 - <<'PY'
           from pathlib import Path
-          import re
-
           router = Path("src/routes/router.tsx")
           lines = router.read_text().splitlines(keepends=True)
           needle = 'path="/labs/species/:slug"'
@@ -76,34 +74,6 @@ jobs:
           alias = route.replace(needle, 'path="/:slug"', 1)
           lines.insert(index + 1, alias)
           router.write_text("".join(lines))
-
-          host_marker = "species-v53.4planet-05.pages.dev"
-          host_files = []
-          for source_path in Path(".").rglob("*"):
-              if not source_path.is_file() or ".git" in source_path.parts:
-                  continue
-              if source_path.suffix not in {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"}:
-                  continue
-              try:
-                  source = source_path.read_text()
-              except UnicodeDecodeError:
-                  continue
-              if host_marker in source:
-                  host_files.append((source_path, source))
-          assert len(host_files) == 1, f"expected one standalone-host source, found {len(host_files)}"
-          host_path, host_source = host_files[0]
-          marker_index = host_source.index(host_marker)
-          tail = host_source[marker_index:marker_index + 1200]
-          match = re.search(r"return\\s+([A-Za-z_$][\\w$]*)\\.includes\\(([^()\\n]+)\\)", tail)
-          assert match, "standalone-host includes contract not found near pinned hostname"
-          host_argument = match.group(2).strip()
-          original_return = match.group(0)
-          replacement_return = original_return + f' || {host_argument}.endsWith(".4planet-05.pages.dev")'
-          patched_tail = tail[:match.start()] + replacement_return + tail[match.end():]
-          host_source = host_source[:marker_index] + patched_tail + host_source[marker_index + len(tail):]
-          assert host_source.count('.endsWith(".4planet-05.pages.dev")') == 1
-          host_path.write_text(host_source)
-          print("SPECIES_STANDALONE_ROOT_ROUTE_AND_PREVIEW_HOST_PASS", host_path)
 
           PY
       - name: Recover EXACT original 39-profile donor files from pinned successful build
@@ -273,6 +243,39 @@ jobs:
           npm run typecheck
           npm run species:validate
           SPECIES_INDEX=1 SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          # The random immutable Pages hostname must behave like the standalone
+          # host during hydration, so canonical URLs remain on 4species.com.
+          # This helper only exists in the generated bundle; fail closed unless
+          # the pinned hostname and its exact includes() contract each match once.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          marker = "species-v53.4planet-05.pages.dev"
+          matches = []
+          for bundle in Path("dist/assets").glob("index-*.js"):
+              source = bundle.read_text()
+              if marker in source:
+                  matches.append((bundle, source))
+          assert len(matches) == 1, f"expected one generated standalone-host bundle, found {len(matches)}"
+          bundle, source = matches[0]
+          marker_index = source.index(marker)
+          tail = source[marker_index:marker_index + 1200]
+          contract = re.compile(r'return\s*([A-Za-z_$][\w$]*)\.includes\(([^()\n]+)\)\}')
+          found = list(contract.finditer(tail))
+          assert len(found) == 1, f"expected one standalone-host includes contract near marker, found {len(found)}"
+          match = found[0]
+          host_argument = match.group(2).strip()
+          replacement = (
+              f"return {match.group(1)}.includes({host_argument})"
+              f'||{host_argument}.endsWith(".4planet-05.pages.dev")}}'
+          )
+          patched_tail = tail[:match.start()] + replacement + tail[match.end():]
+          source = source[:marker_index] + patched_tail + source[marker_index + len(tail):]
+          assert source.count('.endsWith(".4planet-05.pages.dev")') == 1
+          bundle.write_text(source)
+          print("SPECIES_GENERATED_PREVIEW_HOST_CANONICAL_PASS", bundle)
+          PY
           test -f dist/index.html
           grep -Eiq 'species|Meet life' dist/index.html
           test -f dist/quiz/index.html
