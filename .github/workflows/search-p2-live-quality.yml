@@ -1,0 +1,29 @@
+name: SEARCH P2 Live Read-only Media Editorial and Browser QA
+on:
+  push:
+    branches: [audit/search-p2-live-quality-20261022]
+    paths: [.github/workflows/search-p2-live-quality.yml]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Current browser, no production writes
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          node scripts/search-p2-live-quality-audit.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 4planet-search-p2-live-quality-20261022
+          path: artifacts/discovery/search-p2-live-quality-20261022.json
+          retention-days: 21
