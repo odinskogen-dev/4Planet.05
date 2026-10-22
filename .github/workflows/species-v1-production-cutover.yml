@@ -1,10 +1,10 @@
-name: 4SPECIES V1 — 18 Individually Reviewed Profiles Guarded Live Cutover
+name: 4SPECIES V1 — Batch2 Four Additional Profiles Guarded Live Cutover
 on:
   push:
-    branches: [release/species-v1-selective-20261022]
+    branches: [release/species-v1-incremental-20261022-b]
     paths: [.github/workflows/species-v1-production-cutover.yml]
 permissions: {contents: read}
-concurrency: {group: 4species-v1-live-cutover-20261022, cancel-in-progress: false}
+concurrency: {group: 4species-v1-batch2-live-20261022, cancel-in-progress: false}
 jobs:
   safe-promote:
     runs-on: ubuntu-latest
@@ -12,9 +12,9 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       GH_TOKEN: ${{ github.token }}
-      PREVIEW: https://de9e3e0e.4planet-05.pages.dev
+      PREVIEW: https://53719d67.4planet-05.pages.dev
       PRIOR: https://e17e1392.4planet-05.pages.dev
-      ROLLBACK_EXPECTED: 59ccfcc5-f163-4c7a-ad87-02ba3504c27c
+      ROLLBACK_EXPECTED: c13f2334-bb70-4f79-b3a4-41222100f287
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
@@ -25,14 +25,14 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_API_TOKEN"
-          curl -fsSL --max-time 30 -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/39744540448 -o /tmp/accepted-qa.json
-          jq -e '.conclusion=="success" and .head_sha=="e63867a07d8d0a139fba649e7da40dece7a67215"' /tmp/accepted-qa.json >/dev/null
+          curl -fsSL --max-time 30 -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/39808030082 -o /tmp/accepted-qa.json
+          jq -e '.conclusion=="success" and .head_sha=="a8fdef667832be72141720b208f8b1ce89f0c5b0"' /tmp/accepted-qa.json >/dev/null
           curl -fsSL "$PREVIEW/release-identity.json" -o /tmp/pinned-species-identity.json
-          jq -e '.triggerSha=="e63867a07d8d0a139fba649e7da40dece7a67215" and (.payloadDigest|length)==64' /tmp/pinned-species-identity.json >/dev/null
+          jq -e '.triggerSha=="a8fdef667832be72141720b208f8b1ce89f0c5b0" and (.payloadDigest|length)==64' /tmp/pinned-species-identity.json >/dev/null
           python3 - <<'PY'
           import json,urllib.request,xml.etree.ElementTree as ET,hashlib
           old="https://e17e1392.4planet-05.pages.dev"
-          new="https://de9e3e0e.4planet-05.pages.dev"
+          new="https://53719d67.4planet-05.pages.dev"
           old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
           def fetch(u):
            req=urllib.request.Request(u,headers={"User-Agent":"4SPECIES-IMMUTABLE-SAFETY/1.0"})
@@ -41,11 +41,17 @@ jobs:
            actual=json.loads(fetch("https://4species.com/species-data/v1/"+slug+".json"))
            previous=json.loads(fetch(old+"/species-data/v1/"+slug+".json"))
            assert actual==previous,"CURRENT_COD_39_ORIGIN_DISAGREES_WITH_LIVE "+slug
+          prior18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          for slug in prior18:
+           before=json.loads(fetch("https://4species.com/species-data/v1/"+slug+".json"))
+           after=json.loads(fetch(new+"/species-data/v1/"+slug+".json"))
+           assert before==after,"ABORT: PREVIOUS_V1_ARTICLE_CHANGED "+slug
+          print("ORIGINAL_39_AND_PREVIOUS_18_DATA_IDENTICAL_TO_LIVE")
           catalogue=json.loads(fetch(new+"/species-data/v1/index.json"))
           slugs=[p["slug"] for p in catalogue["pages"]]
           oldnames=set(old39)
           newnames=set(slugs)-oldnames
-          assert len(slugs)==57 and len(set(slugs))==57 and oldnames<=set(slugs) and len(newnames)==18,(len(slugs),len(newnames))
+          assert len(slugs)==61 and len(set(slugs))==61 and oldnames<=set(slugs) and len(newnames)==22,(len(slugs),len(newnames))
           root=ET.fromstring(fetch(new+"/species-sitemap.xml"))
           sitemap={node.text for node in root.iter() if node.tag.endswith("loc") and node.text}
           for slug in slugs:
@@ -61,8 +67,8 @@ jobs:
            assert img.startswith("/assets/species/next61/")
            assert hashlib.sha256(fetch(new+img)).hexdigest()==p["provenance"]["photoSha256"],slug
           assert "4PLANET SPECIES" in fetch(new+"/llms.txt").decode()
-          assert fetch(new+"/species-v1-images.xml").count(b"<image:image>")==18
-          print("IMMUTABLE_PRELIVE_PASS 39_DATA_EQUIVALENT_AND_18_V1_SITE_IMAGE_SHA_SEO")
+          assert fetch(new+"/species-v1-images.xml").count(b"<image:image>")==22
+          print("IMMUTABLE_PRELIVE_PASS 39_ORIGINAL_AND_22_V1_SITE_IMAGE_SHA_SEO")
           PY
           api=https://api.cloudflare.com/client/v4
           curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" -o /tmp/species-zones.json
@@ -81,10 +87,11 @@ jobs:
           import fs from 'node:fs';
           const w=fs.readFileSync('ops/discovery/4species-router.js','utf8');
           if(!w.includes('const SPECIES_V53_ORIGIN = "https://e17e1392.4planet-05.pages.dev";'))throw Error('Current COD source not preserved');
-          if(!w.includes('const SPECIES_V1_ORIGIN = "https://de9e3e0e.4planet-05.pages.dev";'))throw Error('Selective new origin absent');
+          if(!w.includes('const SPECIES_V1_ORIGIN = "https://53719d67.4planet-05.pages.dev";'))throw Error('Selective new origin absent');
           if(!w.includes('SPECIES_V1_RELEASED')||!w.includes('mergedSpeciesIndex')||!w.includes('species-v1-images.xml'))throw Error('Per-art routing or discovery merger missing');
           if(w.includes('const SPECIES_V53_ORIGIN = "https://bb0c99eb.4planet-05.pages.dev";'))throw Error('Stale donor Worker disallowed');
-          console.log('CURRENT_COD_ORIGIN_LOCKED_AND_18_ADDITIVE_ONLY');
+          if(!w.includes('atlas-moth peacock-spider emperor-scorpion dragon-blood-tree'))throw Error('Missing exact newly approved species');
+          console.log('CURRENT_COD_ORIGIN_LOCKED_AND_22_ADDITIVE_ONLY');
           NODE
           node --check ops/discovery/4species-router.js
       - name: Promote and prove ALL LIVE URLS, automatic Worker rollback on any failure
@@ -118,11 +125,11 @@ jobs:
           names=set(x.rsplit("/",1)[-1] for x in canon)
           normal=names-{"","explore","about","quiz"}
           selected=normal-set(old39)
-          assert len(canon)==61 and len(normal)==57 and len(selected)==18 and set(old39)<=normal,(len(canon),len(normal),len(selected))
+          assert len(canon)==65 and len(normal)==61 and len(selected)==22 and set(old39)<=normal,(len(canon),len(normal),len(selected))
           merged,_=get("/species-data/v1/index.json")
           catalog=json.loads(merged)
           indexed={p["slug"] for p in catalog["pages"]}
-          assert len(indexed)==57 and set(old39)<=indexed and selected<=indexed,"Explore catalogue merge failed"
+          assert len(indexed)==61 and set(old39)<=indexed and selected<=indexed,"Explore catalogue merge failed"
           for slug in old39:
            b,_=get("/species-data/v1/"+slug+".json")
            immutable=urllib.request.Request(target+"/species-data/v1/"+slug+".json",headers={"User-Agent":"4SPECIES-IMMUTABLE-SAFETY/1.0"})
@@ -147,17 +154,17 @@ jobs:
           imageMap,imH=get("/species-v1-images.xml")
           assert b"Sitemap: https://4species.com/sitemap.xml" in robots
           assert b"4PLANET SPECIES" in llms and "noindex" not in llmsH.get("X-Robots-Tag","").lower()
-          assert imageMap.count(b"<image:image>")==18 and "noindex" not in imH.get("X-Robots-Tag","").lower()
-          print("SPECIES_V1_LIVE_QA_COMPLETE 57_TOTAL 39_UNCHANGED 18_NEW_IMAGES_SCIENCE_SEO_OK")
+          assert imageMap.count(b"<image:image>")==22 and "noindex" not in imH.get("X-Robots-Tag","").lower()
+          print("SPECIES_V1_BATCH2_LIVE_QA_COMPLETE 61_TOTAL 39_UNCHANGED 22_V1_IMAGES_SCIENCE_SEO_OK")
           PY
           trap - ERR
           echo "SPECIES_V1_LIVE_DEPLOY_SUCCEEDED_NEW_ORIGIN=$PREVIEW"
           echo "ROLLBACK_WORKER_VERSION=$ROLLBACK_VERSION"
           {
             echo '## 4SPECIES — V1 production closure'
-            echo '- 18 new species with checked photographic SHA and original Claude template'
+            echo '- 22 new species with checked photographic SHA and original Claude template'
             echo '- Current COD-enhanced original 39 preserved on e17e1392'
-            echo '- Immutable Pages target: https://de9e3e0e.4planet-05.pages.dev'
+            echo '- Immutable Pages target: https://53719d67.4planet-05.pages.dev'
             echo "- Rollback Worker: $ROLLBACK_VERSION"
             echo '- Canonical SEO, XML sitemap, image sitemap, Taxon markup and llms.txt checked'
             echo '- Search ranking and actual Google indexing unverified'
