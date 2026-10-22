@@ -10,8 +10,8 @@ const SPECIES_V53_ORIGIN = "https://e17e1392.4planet-05.pages.dev";
 /* 4SPECIES selective PREMIUM V1 release: leave the entire COD-enhanced
    e17e1392 original 39 Claudia v53 origin untouched. Only route the 18
    individually photographed, source-backed new species to de9e3e0e. */
-const SPECIES_V1_ORIGIN = "https://de9e3e0e.4planet-05.pages.dev";
-const SPECIES_V1_RELEASED = new Set("koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split(" "));
+const SPECIES_V1_ORIGIN = "https://53719d67.4planet-05.pages.dev";
+const SPECIES_V1_RELEASED = new Set("koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia atlas-moth peacock-spider emperor-scorpion dragon-blood-tree".split(" "));
 function speciesV1OriginForPath(path) {
   if (typeof path !== "string") return SPECIES_V53_ORIGIN;
   const direct=path.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
@@ -156,7 +156,7 @@ async function proxySpeciesV53(request) {
   out.delete("set-cookie");
   out.delete("content-length");
   out.delete("content-encoding");
-  out.set("x-4species-release", "species-v53-e17e1392-cod-preserved-plus-de9e3e0e-18-v1-20261022");
+  out.set("x-4species-release", "species-v53-e17e1392-cod-preserved-plus-53719d67-22-v1-20261022");
   // Pages preview emits preview-only noindex; never forward it to a completed
   // public Claude profile, while still enforcing noindex for missing profiles.
   if (permitsSpeciesIndexing(reviewState) || incoming.pathname === "/llms.txt" || incoming.pathname === "/species-v1-images.xml") out.delete("x-robots-tag");
