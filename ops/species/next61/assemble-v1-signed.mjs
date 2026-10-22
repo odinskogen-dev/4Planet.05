@@ -38,7 +38,7 @@ for(const rec of originalReport.records){
  if((pack?.claims?.length||0)<8||publishers.size<2||sources.size<2){
   blocked.push({slug,reason:"BIOLOGY_ORIGINAL_EVIDENCE_SHORTFALL"});fs.rmSync(dataFile);continue;
  }
- const pic=rec.pictures.find(p=>p.sha256===photoApproval.sha256&&p.photoId===photoApproval.photoId);
+ const pic=rec.pictures.find(p=>p.sha256===photoApproval.sha256&&(photoApproval.photoId===null?p.photoId==null:p.photoId===photoApproval.photoId));
  if(!pic||pic.sourcePage!==undefined && !pic.sourcePage.startsWith("https://")){
   blocked.push({slug,reason:"APPROVED_PHOTO_ID_SHA_MISSING_OR_CHANGED"});fs.rmSync(dataFile);continue;
  }
