@@ -1,0 +1,164 @@
+name: 4SPECIES V1 — 18 Individually Reviewed Profiles Guarded Live Cutover
+on:
+  push:
+    branches: [release/species-v1-selective-20261022]
+    paths: [.github/workflows/species-v1-production-cutover.yml]
+permissions: {contents: read}
+concurrency: {group: 4species-v1-live-cutover-20261022, cancel-in-progress: false}
+jobs:
+  safe-promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      PREVIEW: https://de9e3e0e.4planet-05.pages.dev
+      PRIOR: https://bb0c99eb.4planet-05.pages.dev
+      ROLLBACK_EXPECTED: eccd16ca-3dac-4825-894c-ed511f1e365a
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Preflight signed exact 18-and-39 release (NO live mutation)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          curl -fsSL --max-time 30 -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/39744540448 -o /tmp/accepted-qa.json
+          jq -e '.conclusion=="success" and .head_sha=="e63867a07d8d0a139fba649e7da40dece7a67215"' /tmp/accepted-qa.json >/dev/null
+          curl -fsSL "$PREVIEW/release-identity.json" -o /tmp/pinned-species-identity.json
+          jq -e '.triggerSha=="e63867a07d8d0a139fba649e7da40dece7a67215" and (.payloadDigest|length)==64' /tmp/pinned-species-identity.json >/dev/null
+          python3 - <<'PY'
+          import json,urllib.request,xml.etree.ElementTree as ET,hashlib
+          old="https://bb0c99eb.4planet-05.pages.dev"
+          new="https://de9e3e0e.4planet-05.pages.dev"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          def fetch(u):
+           req=urllib.request.Request(u,headers={"User-Agent":"4SPECIES-IMMUTABLE-SAFETY/1.0"})
+           with urllib.request.urlopen(req,timeout=30) as res:return res.read()
+          for slug in old39:
+           before=json.loads(fetch(old+"/species-data/v1/"+slug+".json"))
+           after=json.loads(fetch(new+"/species-data/v1/"+slug+".json"))
+           assert before==after,"ORIGINAL39_CHANGED "+slug
+          root=ET.fromstring(fetch(new+"/species-sitemap.xml"))
+          urls=[]
+          for node in root:
+           for child in node:
+            if child.tag.endswith("loc") and child.text:urls.append(child.text);break
+          oldnames=set(old39)
+          newnames=set(u.rsplit("/",1)[-1] for u in urls)-oldnames
+          assert len(urls)==57 and len(newnames)==18,(len(urls),len(newnames))
+          for slug in sorted(newnames):
+           p=json.loads(fetch(new+"/species-data/v1/"+slug+".json"))
+           assert p["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22" and len(p["gallery"])==0
+           html=fetch(new+"/"+slug).decode()
+           assert "https://4species.com/"+slug in html and "noindex" not in html.lower()
+           assert 'data-4species-v1="true"' in html
+           img=p["hero"]["url"].replace("https://4species.com","")
+           assert img.startswith("/assets/species/next61/")
+           assert hashlib.sha256(fetch(new+img)).hexdigest()==p["provenance"]["photoSha256"],slug
+          assert "4PLANET SPECIES" in fetch(new+"/llms.txt").decode()
+          assert fetch(new+"/species-v1-images.xml").count(b"<image:image>")==18
+          print("IMMUTABLE_PRELIVE_PASS 39_DATA_EQUIVALENT_AND_18_V1_SITE_IMAGE_SHA_SEO")
+          PY
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" -o /tmp/species-zones.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/species-zones.json)
+          test -n "$account"
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" -o /tmp/species-current-deploy.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/species-current-deploy.json)
+          test "$current" = "$ROLLBACK_EXPECTED" || { echo "Refusing: production Worker has changed to $current"; exit 1; }
+          echo "ROLLBACK_VERSION=$current" >> "$GITHUB_ENV"
+          echo "PRELIVE_PRODUCTION_39_WORKER_VERIFIED $current"
+      - name: Prepare byte-pinned original 39 Worker with ONLY origin/SEO discovery updates
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show c55c902938b62d96a05fe85a4e2aee7c273c1dee:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("ops/discovery/4species-router.js")
+          s=p.read_text()
+          changes=[
+           ('const SPECIES_V53_ORIGIN = "https://bb0c99eb.4planet-05.pages.dev";','const SPECIES_V53_ORIGIN = "https://de9e3e0e.4planet-05.pages.dev";'),
+           ('"species-v53-immutable-bb0c99eb-39-20261019"','"species-v53-v1-de9e3e0e-57-20261022"')
+          ]
+          for a,b in changes:
+           if s.count(a)!=1:raise SystemExit("SOURCE_AUTHORITY_CHANGED "+a)
+           s=s.replace(a,b)
+          a='if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");'
+          assert s.count(a)==1
+          s=s.replace(a,a+'\n  if (incoming.pathname === "/llms.txt" || incoming.pathname === "/species-v1-images.xml") out.delete("x-robots-tag");')
+          p.write_text(s)
+          print("EXACT_CLAUDE_WORKER_ONLY_IMMUTABLE_ORIGIN_AND_DISCOVERY_METADATA")
+          PY
+          node --check ops/discovery/4species-router.js
+      - name: Promote and prove ALL LIVE URLS, automatic Worker rollback on any failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "Validation failed, rolling back 4species-router to $ROLLBACK_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-v1-prod-deployment.txt
+          python3 - <<'PY'
+          import json,urllib.request,xml.etree.ElementTree as ET,hashlib,time
+          site="https://4species.com"; target="https://de9e3e0e.4planet-05.pages.dev"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          def get(uri):
+           for attempt in range(3):
+            try:
+             req=urllib.request.Request(site+uri,headers={"User-Agent":"4SPECIES-LIVE-VERIFICATION/1.0","Cache-Control":"no-cache"})
+             with urllib.request.urlopen(req,timeout=35) as res:return res.read(),dict(res.headers)
+            except Exception:
+             if attempt==2:raise
+             time.sleep(2)
+          raw,_=get("/sitemap.xml")
+          xml=ET.fromstring(raw)
+          canon=[]
+          for node in xml:
+           for n in node:
+            if n.tag.endswith("loc") and n.text:canon.append(n.text);break
+          selected=set(x.rsplit("/",1)[-1] for x in canon)-set(old39)
+          assert len(canon)==57 and len(selected)==18,(len(canon),len(selected))
+          for slug in old39:
+           b,_=get("/species-data/v1/"+slug+".json")
+           old=json.load(urllib.request.urlopen(target+"/species-data/v1/"+slug+".json",timeout=30))
+           assert json.loads(b)==old,"Lost/modified original "+slug
+          for slug in sorted(selected):
+           html,headers=get("/"+slug)
+           prof,_=get("/species-data/v1/"+slug+".json")
+           data=json.loads(prof)
+           assert data["slug"]==slug and data["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22"
+           assert ("https://4species.com/"+slug).encode() in html
+           assert data["identity"]["scientificName"].encode() in html
+           assert b'data-4species-v1="true"' in html
+           assert b"noindex" not in html.lower() and "noindex" not in headers.get("X-Robots-Tag","").lower()
+           path=data["hero"]["url"].replace(site,"")
+           assert path.startswith("/assets/species/next61/")
+           photo,_=get(path)
+           assert hashlib.sha256(photo).hexdigest()==data["provenance"]["photoSha256"],"Image changed "+slug
+           print("LIVE_ART_PHOTO_CANONICAL_JSONLD_PASS "+slug)
+          robots,_=get("/robots.txt")
+          llms,llmsH=get("/llms.txt")
+          imageMap,imH=get("/species-v1-images.xml")
+          assert b"Sitemap: https://4species.com/sitemap.xml" in robots
+          assert b"4PLANET SPECIES" in llms and "noindex" not in llmsH.get("X-Robots-Tag","").lower()
+          assert imageMap.count(b"<image:image>")==18 and "noindex" not in imH.get("X-Robots-Tag","").lower()
+          print("SPECIES_V1_LIVE_QA_COMPLETE 57_TOTAL 39_UNCHANGED 18_NEW_IMAGES_SCIENCE_SEO_OK")
+          PY
+          trap - ERR
+          echo "SPECIES_V1_LIVE_DEPLOY_SUCCEEDED_NEW_ORIGIN=$PREVIEW"
+          echo "ROLLBACK_WORKER_VERSION=$ROLLBACK_VERSION"
+          {
+            echo '## 4SPECIES — V1 production closure'
+            echo '- 18 new species with checked photographic SHA and original Claude template'
+            echo '- 39 existing species verified unchanged'
+            echo '- Immutable Pages target: https://de9e3e0e.4planet-05.pages.dev'
+            echo "- Rollback Worker: $ROLLBACK_VERSION"
+            echo '- Canonical SEO, XML sitemap, image sitemap, Taxon markup and llms.txt checked'
+            echo '- Search ranking and actual Google indexing unverified'
+          } >> "$GITHUB_STEP_SUMMARY"
