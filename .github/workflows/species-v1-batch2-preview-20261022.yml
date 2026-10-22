@@ -227,7 +227,7 @@ jobs:
           assert extra <= slugs, "Missing new Claude profile in static prerender: "+str(sorted(extra-slugs))
           signed=json.loads(Path("reports/species-next61/v1-release-selection.json").read_text())
           approved=len(signed["selected"])
-          assert approved == 23, f"Not exact 23 source/photo verified candidates: {approved}"
+          assert approved == 22, f"Photo-verified cohort must be exactly 22 (18 original + 4 new), got {approved}; orchid mantis remains quarantined"
           assert len(slugs)==39+approved, f"Exact original39+selected mismatch: {len(slugs)} vs {39+approved}"
           print("SPECIES_V1_EXACT_CLAUDE_SITES",len(slugs),"new_published_candidates",approved,"original39",39)
           for slug in sorted(slugs):
