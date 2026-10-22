@@ -339,7 +339,7 @@ jobs:
           path: medieval-v5-new-engine-*.png
           if-no-files-found: ignore
           retention-days: 14
-      - name: Browser smoke ROMA 06 Imperium: map, provinces, local save and return controls
+      - name: "Browser smoke ROMA 06 Imperium: map, provinces, local save and return controls"
         shell: bash
         run: |
           set -euo pipefail
