@@ -1,0 +1,41 @@
+name: SEARCH P0 Isolated Route Status + Production Contract
+on:
+  push:
+    branches: [fix/search-p0-route-status-20261022]
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PUBLIC_SITE_ORIGIN: https://4planet.org
+      VITE_PUBLIC_SITE_ORIGIN: https://4planet.org
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Build current live source and run P0 regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm run build
+          node --test scripts/search-p0-404-runtime.test.mjs scripts/max-exposure-main-runtime.test.mjs scripts/max-exposure-discovery-contract.test.mjs
+          node scripts/living-systems-v142-zero-loss.test.mjs
+          test -f dist/now/index.html
+          test -f dist/livingsystems/index.html
+          grep -Fq 'Western Honey Bee' dist/livingsystems/species/western-honey-bee/index.html
+          grep -Fq '<loc>https://4planet.org/now</loc>' dist/sitemap.xml
+          test $(grep -o '<loc>' dist/sitemap.xml | wc -l) -ge 70
+          node --check functions/_middleware.js
+          node --check functions/public-4planet-routes.generated.js
+          echo SEARCH_P0_SOURCE_AND_ROUTE_GOLD_PASS
+      - name: Confirm untouched Earth Now implementation
+        run: |
+          set -euo pipefail
+          git diff --name-only 22c8c718731a1b94ea33dd6e6facdfb43e29d99a HEAD | tee /tmp/p0-files
+          ! grep -E '^src/earth/|^src/pages/discovery/|^src/pages/v5/Home|^products/livingsystems/|^src/routes/router.tsx' /tmp/p0-files
+          echo EARTH_NOW_ATLAS_LIVING_SYSTEMS_UNMODIFIED_PASS
