@@ -2,16 +2,32 @@
   {
     "name": "Real satellite, relief and historical map layers",
     "viewport": "desktop",
-    "covers": ["2016 EOxCloudless satellite basemap", "Mapzen digital elevation relief", "historical fallback", "map-layer controls", "proper source attribution", "saved map mode"],
+    "covers": [
+      "2016 EOxCloudless satellite basemap",
+      "Mapzen digital elevation relief",
+      "historical fallback",
+      "map-layer controls",
+      "proper source attribution",
+      "saved map mode"
+    ],
     "description": "Switch between real satellite imagery, DEM hillshade and historical layers while checking city alignment and sources.",
-    "steps": ["Open campaign centred on Apulia", "Verify SATELLITE is selected and credit names EOxCloudless 2016", "Switch REAL RELIEF and inspect terrain and source credit", "Switch HISTORIC, zoom to ITALIA, switch SATELLITE and refresh"],
+    "steps": [
+      "Open campaign centred on Apulia",
+      "Verify SATELLITE is selected and credit names EOxCloudless 2016",
+      "Switch REAL RELIEF and inspect terrain and source credit",
+      "Switch HISTORIC, zoom to ITALIA, switch SATELLITE and refresh"
+    ],
     "expected": "Basemap selector works with existing campaign, town markers remain geographically aligned, credits follow selected layer and the chosen mode persists on refresh."
   },
   {
     "name": "Recruit and retain a Roman campaign",
     "sanity": true,
     "viewport": "desktop",
-    "covers": ["campaign resources", "recruitment", "persistent save"],
+    "covers": [
+      "campaign resources",
+      "recruitment",
+      "persistent save"
+    ],
     "description": "Recruit units from the Canusium settlement and verify that the campaign persists after refresh.",
     "steps": [
       "Open the campaign and select Canusium",
@@ -40,7 +56,10 @@
   {
     "name": "Prevent impossible recruitment",
     "viewport": "desktop",
-    "covers": ["resource scarcity guardrail", "recruitment validation"],
+    "covers": [
+      "resource scarcity guardrail",
+      "recruitment validation"
+    ],
     "description": "Recruiting cannot create troops out of thin air when resources are exhausted.",
     "steps": [
       "Select Canusium",
@@ -81,5 +100,24 @@
       "Inspect Roman and Carthaginian army strengths and advance a day"
     ],
     "expected": "Battle losses apply once, the encounter dialog disappears, and the campaign can continue without duplicate casualties."
+  },
+  {
+    "name": "Truthful campaign economics and army travel",
+    "viewport": "desktop",
+    "covers": [
+      "single-source build prices",
+      "hidden resource display",
+      "daily grain and coin forecast",
+      "army movement interpolation",
+      "correct Cannae objective"
+    ],
+    "description": "Regression test protecting campaign gameplay clarity without changing tactical engine.",
+    "steps": [
+      "Open Canusium; observe wood, stone, iron, and net day forecast",
+      "Verify granary shows 65 wood + 25 stone + 35 coin, fortification shows 70 wood + 60 stone + 65 coin, recruit shows 95 coin + 65 grain + 28 iron + 150 manpower",
+      "Issue a march from Canusium toward Luceria, advance one day, verify the army is between source and destination rather than at destination",
+      "Resolve any non-Cannae encounter as Romans and confirm the Cannae mission remains active"
+    ],
+    "expected": "All actual costs are shown, resource forecast and movement reflect simulation, and Cannae cannot be marked secure by an unrelated win."
   }
 ]
