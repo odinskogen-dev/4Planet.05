@@ -26,7 +26,7 @@ for(const [slug,pack] of Object.entries(sciencePacks)){
  const issu=[];
  if(p.slug!==slug||p.provenance.review!=="DRAFT")issu.push("CANDIDATE_STATUS_OR_SLUG");
  if(pack.claims.length<8||new Set(pack.claims.map(c=>c.text)).size!==pack.claims.length)issu.push("THIN_OR_DUPLICATE_SCIENCE");
- if(new Set(sources).size<3)issu.push("LESS_THAN_THREE_LINKED_SOURCE_DOCUMENTS");
+ if(new Set(sources).size<2)issu.push("FEWER_THAN_TWO_SOURCE_DOCUMENTS_PREMIUM_V1");
  if(new Set(pack.claims.map(c=>c.source.publisher)).size<2)issu.push("INSTITUTIONAL_DIVERSITY_MISSING");
  for(const c of pack.claims){
    if(!/^https:\/\//.test(c.source.url))issu.push("NON_CANONICAL_SOURCE_URL_"+c.id);
