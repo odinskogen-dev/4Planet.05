@@ -67,7 +67,7 @@ jobs:
       - name: Verify publicly served game content
         run: |
           set -euo pipefail
-          url=https://cub-medieval-ch05-staging.odin-skogen.workers.dev/medieval/challenger04/index.html
+          url=https://cub-medieval-ch05-staging.odin-skogen.workers.dev/medieval/challenger05/index.html
           ok=0
           for i in $(seq 1 12); do
             if curl -fsSL --max-time 30 "$url" -o /tmp/ch05.html && grep -q 'ch05-kingdoms-at-war-01' /tmp/ch05.html; then ok=1;break;fi
