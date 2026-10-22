@@ -2194,7 +2194,22 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
 
   // MAX EXPOSURE ZERO-LOSS: after bounded Place/robots/sitemap handlers,
   // every remaining ATLAS application route passes through unchanged.
-  if (host === "4planetatlas.com") return context.next();
+  if (host === "4planetatlas.com") {
+    // Keep the existing interactive atlas, camera and arbitrary query-state
+    // contracts intact. Only truly unowned document paths should stop resolving
+    // to a successful generic SPA shell. Valid Place slugs are handled above.
+    const response = await context.next();
+    const p = url.pathname.replace(/\/+$/, "") || "/";
+    const known = p === "/" || p === "/places" ||
+      /^\/atlas(?:\/|$)/.test(p) || /^\/embed(?:\/|$)/.test(p) ||
+      /^\/xr(?:\/|$)/.test(p);
+    if (known || response.status !== 200 || !(response.headers.get("content-type") || "").toLowerCase().includes("text/html")) return response;
+    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Place or page not found — 4PLANET ATLAS</title></head><body><main><h1>Page not found</h1><p>This is not a published ATLAS address.</p><p><a href="/">Explore ATLAS</a> · <a href="/places">World Place Index</a></p></main></body></html>';
+    return new Response(context.request.method === "HEAD" ? null : html, {
+      status: 404,
+      headers: {"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300","x-robots-tag":"noindex,nofollow"}
+    });
+  }
 
   const response = await context.next();
 
