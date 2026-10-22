@@ -13,8 +13,8 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       GH_TOKEN: ${{ github.token }}
       PREVIEW: https://de9e3e0e.4planet-05.pages.dev
-      PRIOR: https://bb0c99eb.4planet-05.pages.dev
-      ROLLBACK_EXPECTED: eccd16ca-3dac-4825-894c-ed511f1e365a
+      PRIOR: https://e17e1392.4planet-05.pages.dev
+      ROLLBACK_EXPECTED: 59ccfcc5-f163-4c7a-ad87-02ba3504c27c
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
@@ -31,16 +31,16 @@ jobs:
           jq -e '.triggerSha=="e63867a07d8d0a139fba649e7da40dece7a67215" and (.payloadDigest|length)==64' /tmp/pinned-species-identity.json >/dev/null
           python3 - <<'PY'
           import json,urllib.request,xml.etree.ElementTree as ET,hashlib
-          old="https://bb0c99eb.4planet-05.pages.dev"
+          old="https://e17e1392.4planet-05.pages.dev"
           new="https://de9e3e0e.4planet-05.pages.dev"
           old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
           def fetch(u):
            req=urllib.request.Request(u,headers={"User-Agent":"4SPECIES-IMMUTABLE-SAFETY/1.0"})
            with urllib.request.urlopen(req,timeout=30) as res:return res.read()
           for slug in old39:
-           before=json.loads(fetch(old+"/species-data/v1/"+slug+".json"))
-           after=json.loads(fetch(new+"/species-data/v1/"+slug+".json"))
-           assert before==after,"ORIGINAL39_CHANGED "+slug
+           actual=json.loads(fetch("https://4species.com/species-data/v1/"+slug+".json"))
+           previous=json.loads(fetch(old+"/species-data/v1/"+slug+".json"))
+           assert actual==previous,"CURRENT_COD_39_ORIGIN_DISAGREES_WITH_LIVE "+slug
           catalogue=json.loads(fetch(new+"/species-data/v1/index.json"))
           slugs=[p["slug"] for p in catalogue["pages"]]
           oldnames=set(old39)
@@ -77,32 +77,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git show c55c902938b62d96a05fe85a4e2aee7c273c1dee:ops/discovery/4species-router.js > ops/discovery/4species-router.js
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path("ops/discovery/4species-router.js")
-          s=p.read_text()
-          changes=[
-           ('const SPECIES_V53_ORIGIN = "https://bb0c99eb.4planet-05.pages.dev";','const SPECIES_V53_ORIGIN = "https://de9e3e0e.4planet-05.pages.dev";'),
-           ('"species-v53-immutable-bb0c99eb-39-20261019"','"species-v53-v1-de9e3e0e-57-20261022"')
-          ]
-          for a,b in changes:
-           if s.count(a)!=1:raise SystemExit("SOURCE_AUTHORITY_CHANGED "+a)
-           s=s.replace(a,b)
-          a='if (permitsSpeciesIndexing(reviewState)) out.delete("x-robots-tag");'
-          assert s.count(a)==1
-          s=s.replace(a,a+'\n  if (incoming.pathname === "/llms.txt" || incoming.pathname === "/species-v1-images.xml") out.delete("x-robots-tag");')
-          # Build the public XML sitemap from ONLY the 39 unchanged + exactly
-          # 18 approved source-backed V1 profiles. The upstream Claude build
-          # contains stale route aliases; none may become publicly indexable.
-          allow='if (!permitsSpeciesIndexing(review)) continue;'
-          assert s.count(allow)==1
-          approved="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia"
-          rule='const publicCanonical=new Set("'+approved+'".split(" ").map(v=>"/"+v));\n    if (!publicCanonical.has(slugPath) && !PUBLIC_NON_PROFILE_PATHS.has(slugPath)) continue;'
-          s=s.replace(allow,allow+'\n    '+rule)
-          p.write_text(s)
-          print("EXACT_CLAUDE_WORKER_ONLY_IMMUTABLE_ORIGIN_AND_DISCOVERY_METADATA")
-          PY
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const w=fs.readFileSync('ops/discovery/4species-router.js','utf8');
+          if(!w.includes('const SPECIES_V53_ORIGIN = "https://e17e1392.4planet-05.pages.dev";'))throw Error('Current COD source not preserved');
+          if(!w.includes('const SPECIES_V1_ORIGIN = "https://de9e3e0e.4planet-05.pages.dev";'))throw Error('Selective new origin absent');
+          if(!w.includes('SPECIES_V1_RELEASED')||!w.includes('mergedSpeciesIndex')||!w.includes('species-v1-images.xml'))throw Error('Per-art routing or discovery merger missing');
+          if(w.includes('const SPECIES_V53_ORIGIN = "https://bb0c99eb.4planet-05.pages.dev";'))throw Error('Stale donor Worker disallowed');
+          console.log('CURRENT_COD_ORIGIN_LOCKED_AND_18_ADDITIVE_ONLY');
+          NODE
           node --check ops/discovery/4species-router.js
       - name: Promote and prove ALL LIVE URLS, automatic Worker rollback on any failure
         shell: bash
@@ -116,7 +99,7 @@ jobs:
           npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-v1-prod-deployment.txt
           python3 - <<'PY'
           import json,urllib.request,xml.etree.ElementTree as ET,hashlib,time
-          site="https://4species.com"; target="https://de9e3e0e.4planet-05.pages.dev"
+          site="https://4species.com"; target="https://e17e1392.4planet-05.pages.dev"
           old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
           def get(uri):
            for attempt in range(3):
@@ -136,6 +119,10 @@ jobs:
           normal=names-{"","explore","about","quiz"}
           selected=normal-set(old39)
           assert len(canon)==61 and len(normal)==57 and len(selected)==18 and set(old39)<=normal,(len(canon),len(normal),len(selected))
+          merged,_=get("/species-data/v1/index.json")
+          catalog=json.loads(merged)
+          indexed={p["slug"] for p in catalog["pages"]}
+          assert len(indexed)==57 and set(old39)<=indexed and selected<=indexed,"Explore catalogue merge failed"
           for slug in old39:
            b,_=get("/species-data/v1/"+slug+".json")
            old=json.load(urllib.request.urlopen(target+"/species-data/v1/"+slug+".json",timeout=30))
@@ -168,7 +155,7 @@ jobs:
           {
             echo '## 4SPECIES — V1 production closure'
             echo '- 18 new species with checked photographic SHA and original Claude template'
-            echo '- 39 existing species verified unchanged'
+            echo '- Current COD-enhanced original 39 preserved on e17e1392'
             echo '- Immutable Pages target: https://de9e3e0e.4planet-05.pages.dev'
             echo "- Rollback Worker: $ROLLBACK_VERSION"
             echo '- Canonical SEO, XML sitemap, image sitemap, Taxon markup and llms.txt checked'
