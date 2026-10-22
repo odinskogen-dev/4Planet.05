@@ -1,0 +1,20 @@
+/* MEDIEVAL KINGDOMS CH05 · quiet, context-based economy controls */
+#mk05ui{position:fixed;inset:0;z-index:58;pointer-events:none;font:500 11px/1.2 system-ui,sans-serif;color:#f0efe7;--mkbg:rgba(16,26,24,.81)}
+#mk05ui.mk05-hidden{display:none!important}
+#mk05ui .mk05-ledger{pointer-events:auto;position:absolute;top:max(10px,env(safe-area-inset-top));left:max(9px,env(safe-area-inset-left));display:flex;flex-wrap:wrap;gap:3px;max-width:calc(100vw - 190px);border-radius:11px;padding:6px 7px;background:var(--mkbg);border:1px solid #ffffff1d;backdrop-filter:blur(9px)}
+.mk05-ledger span{display:flex;gap:4px;white-space:nowrap;padding:3px 5px;color:#bfbaae;font:600 9px/1.2 system-ui,sans-serif;letter-spacing:.035em}
+.mk05-ledger b{color:#f6e0ae;font-size:11px;font-weight:700}
+#mk05ui .mk05-actions{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:5px;align-items:center;background:var(--mkbg);border:1px solid #ffffff2a;border-radius:12px;padding:5px;pointer-events:auto;box-shadow:0 5px 25px #0005;backdrop-filter:blur(7px)}
+#mk05ui .mk05-actions button{border:1px solid #ffffff28;border-radius:8px;color:#f5f2df;background:#293b34;cursor:pointer;padding:11px 13px;font:650 10px system-ui,sans-serif;letter-spacing:.07em;min-height:38px;white-space:nowrap}
+#mk05ui .mk05-actions button:active{background:#716d4d}#mk05ui .mk05-actions button:focus-visible{outline:2px solid #f4dfab}
+#mk05ui .mk05-banner{position:absolute;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 58px);left:50%;transform:translateX(-50%);max-width:90vw;white-space:nowrap;border-radius:8px;padding:5px 9px;background:rgba(12,23,20,.65);font-size:9px;letter-spacing:.075em;text-align:center;color:#e9caa0}
+#mk05ui .mk05-banner.mk05-owned{color:#b7e5bd}
+/* Build is intentionally visible only when summoned. The original ROMA build menu
+   and placement controls remain authoritative and preserve existing collisions. */
+body.mk05-rts #buildmenu:not(.hidden){display:block!important;z-index:66;bottom:calc(79px + env(safe-area-inset-bottom))!important;max-height:35vh;overflow-y:auto;background:rgba(18,30,26,.95)!important;box-shadow:0 10px 35px #0008!important}
+body.mk05-rts #place:not(.hidden){display:flex!important;z-index:67;bottom:calc(80px + env(safe-area-inset-bottom))!important}
+body.mk05-rts #placeLabel:not(.hidden),body.mk05-rts #placeHint:not(.hidden){display:block!important;z-index:67}
+body.mk05-rts #idle:not(.hidden){display:none!important}
+body.mk05-rts #hud #context{bottom:calc(83px + env(safe-area-inset-bottom))!important;max-width:65vw;margin-inline:auto}
+body.mk05-rts #hud #minimap{bottom:calc(114px + env(safe-area-inset-bottom))!important;max-width:26vw;max-height:26vw;opacity:.67}
+@media(max-width:700px){#mk05ui .mk05-ledger{max-width:calc(100vw - 144px);padding:5px;gap:0}#mk05ui .mk05-actions{bottom:calc(8px + env(safe-area-inset-bottom))}#mk05ui .mk05-actions button{padding:10px 11px;font-size:9px;min-height:38px}#mk05ui .mk05-banner{bottom:calc(61px + env(safe-area-inset-bottom))}body.mk05-rts #hud #minimap{bottom:calc(130px + env(safe-area-inset-bottom))!important;width:95px;height:95px}body.mk05-rts #buildmenu:not(.hidden){max-height:42vh}}
