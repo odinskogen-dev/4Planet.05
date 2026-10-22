@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: species-61-claude-100-build-preview-only
+  group: species-v1-independent-20261022
   cancel-in-progress: false
 
 jobs:
