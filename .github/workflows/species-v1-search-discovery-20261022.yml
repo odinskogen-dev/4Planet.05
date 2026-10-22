@@ -1,0 +1,56 @@
+name: 4SPECIES V1 — One-Time Bing IndexNow Search Discovery
+on:
+  push:
+    branches: [release/species-v1-selective-20261022]
+    paths: [.github/workflows/species-v1-search-discovery-20261022.yml]
+permissions: {contents: read}
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify eighteen LIVE canonical indexed-eligible URLs and key ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This is a discovered/updated-URL notification, NOT proof of
+          # crawler access, Google inclusion, AI citations or search ranking.
+          KEY=8f4c2d91a7b64e3fa1c9d0b6e5274a83
+          echo "$KEY" >/tmp/species-indexnow-expected
+          curl -fsSL --max-time 25 "https://4species.com/$KEY.txt" -o /tmp/species-indexnow-key
+          cmp /tmp/species-indexnow-expected /tmp/species-indexnow-key || {
+            # text key path may not include trailing newline; verify exact bytes.
+            test "$(cat /tmp/species-indexnow-key)" = "$KEY"
+          }
+          curl -fsSL --max-time 30 https://4species.com/sitemap.xml -o /tmp/species-live-sitemap.xml
+          slugs="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia"
+          urls=[]
+          for slug in $slugs; do
+            grep -Fq "<loc>https://4species.com/$slug</loc>" /tmp/species-live-sitemap.xml
+            headers=$(curl -fsSI --max-time 30 "https://4species.com/$slug" | tr -d '\r')
+            ! grep -Eqi 'x-robots-tag:.*noindex' <<<"$headers"
+            code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 25 "https://4species.com/$slug")
+            test "$code" = 200
+            echo "INDEXNOW_LIVE_CRAWL_ELIGIBLE $slug"
+          done
+          echo SPECIES_INDEXNOW_PRECONDITION_PASS
+      - name: Notify participating IndexNow search engines of eighteen new URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          slugs="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(slugs)==18 and len(set(slugs))==18
+          payload={"host":"4species.com","key":"8f4c2d91a7b64e3fa1c9d0b6e5274a83",
+          "keyLocation":"https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt",
+          "urlList":["https://4species.com/"+slug for slug in slugs]}
+          open("/tmp/species-indexnow.json","w").write(json.dumps(payload))
+          PY
+          code=$(curl -sS --retry 2 --max-time 30 -o /tmp/species-indexnow-reply -w '%{http_code}' \
+           -X POST -H 'Content-Type: application/json; charset=utf-8' \
+           --data-binary @/tmp/species-indexnow.json https://api.indexnow.org/indexnow)
+          echo "SPECIES_V1_INDEXNOW_RESPONSE_HTTP=$code"
+          echo "INDEXNOW_REPLY $(head -c 200 /tmp/species-indexnow-reply)"
+          if [ "$code" != 200 ] && [ "$code" != 202 ]; then exit 1; fi
+          echo '18 URLs sent to the IndexNow participating search engine network. This is URL submission, NOT verified Bing/Google indexing or ranking.'
