@@ -7,6 +7,7 @@ on:
       - 'site/index.html'
       - 'site/games/**'
       - 'site/medieval/**'
+      - 'site/medivalmmo/**'
       - 'site/assets/**'
       - 'site/sitemap.xml'
       - 'site/robots.txt'
@@ -150,6 +151,21 @@ jobs:
             grep -Fq 'WILD:' /tmp/live-hub.html
             echo "ROMA_LIVE_EXACT_PASS=$host/roma/"
             echo "CUB_HUB_PASS=$host/"
+          done
+      - name: Verify MMO entrypoint, original ROMA and original MEDIEVAL unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            curl -fsSL --max-time 25 "$host/medivalmmo/?stay" -o /tmp/live-mmo-entry.html
+            grep -Fq 'medieval-kingdoms-mmo-alpha-01-1fx5c6.v2.appdeploy.ai/' /tmp/live-mmo-entry.html
+            curl -fsSL --max-time 25 "$host/games/medieval-mmo/" -o /tmp/live-mmo-alias.html
+            grep -Fq '/medivalmmo/' /tmp/live-mmo-alias.html
+            curl -fsSL --max-time 25 "$host/roma/" -o /tmp/live-roma-preserved.html
+            test -s /tmp/live-roma-preserved.html
+            curl -fsSL --max-time 25 "$host/medieval/" -o /tmp/live-medieval-preserved.html
+            test -s /tmp/live-medieval-preserved.html
+            echo "CUB_MMO_LAB_ENTRY_VERIFIED=$host/medivalmmo/"
           done
       - name: Verify clean mobile MEDIEVAL HUD deployment and untouched ROMA
         shell: bash

@@ -1,0 +1,59 @@
+name: CUB MMO — Sign-in and lab route smoke
+on:
+  push:
+    branches: [cub-lab-roma-challenger-20261018]
+    paths:
+      - 'site/medivalmmo/**'
+      - 'site/games/medieval-mmo/**'
+      - '.github/workflows/cub-mmo-auth-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inspect route and actual sign-in surface without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
+            const ctx=await browser.newContext({viewport:{width:1280,height:800}});
+            const page=await ctx.newPage();
+            const errors=[];
+            page.on('pageerror',e=>errors.push(String(e)));
+            const route=await page.goto('https://lab.p4nther.com/medivalmmo/?stay',{waitUntil:'domcontentloaded',timeout:30000});
+            if(route.status()!==200||!(await page.locator('#launch').count())) throw Error('Lab entry route missing');
+            const response=await page.goto('https://medieval-kingdoms-mmo-alpha-01-1fx5c6.v2.appdeploy.ai/',{waitUntil:'domcontentloaded',timeout:45000});
+            console.log('MMO_APP_HTTP',response.status(),'TITLE',await page.title());
+            const login=page.getByRole('button',{name:/sign in/i}).first();
+            await login.waitFor({state:'visible',timeout:15000});
+            const popupPromise=ctx.waitForEvent('page',{timeout:12000}).catch(()=>null);
+            await login.click();
+            const popup=await popupPromise;
+            console.log('AUTH_POPUP_OPENED',!!popup);
+            if(popup) {await popup.waitForLoadState('domcontentloaded',{timeout:12000}).catch(()=>{});console.log('AUTH_POPUP_URL',popup.url().split('?')[0]);await popup.screenshot({path:'mmo-sign-in-popup.png'}).catch(()=>{});}
+            const body=(await page.locator('body').innerText()).slice(-600);
+            console.log('LOGIN_PAGE_MESSAGE',body.replace(/\\n/g,' ').slice(-300));
+            console.log('PAGE_ERRORS',JSON.stringify(errors));
+            await page.screenshot({path:'mmo-sign-in-app.png',fullPage:true});
+            if(!popup)throw Error('SIGN_IN_NO_POPUP — Auth popup flow must be repaired on the game host');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-mmo-login-evidence
+          path: mmo-sign-in-*.png
+          if-no-files-found: ignore
+          retention-days: 14
