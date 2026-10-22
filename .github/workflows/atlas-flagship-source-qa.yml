@@ -1,0 +1,71 @@
+name: ATLAS 20 Flagship Source Candidate / No Public Editorial Release
+on:
+  push:
+    branches: [editorial/atlas-top20-source-depth-20261022]
+    paths: [.github/workflows/atlas-flagship-source-qa.yml]
+permissions:
+  contents: read
+jobs:
+  editorial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Exact released source, factual eligibility, rights and 20 flagship gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor f01d4943e8e5fd98f1f3253255f370293f0a9589 HEAD
+          node --check functions/_middleware.js
+          node --check functions/atlas-flagship-evidence.candidate.js
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import {ATLAS_FLAGSHIP_COHORT as c,ATLAS_FLAGSHIP_EVIDENCE as e} from './functions/atlas-flagship-evidence.candidate.js';
+          const source=fs.readFileSync('functions/_middleware.js','utf8');
+          const base=source.match(/const ATLAS_WORLD_PLACE_ROWS\s*=\s*(\[[\s\S]*?\]);/);
+          assert.ok(base,'currently-live 50 source Place rows preserved');
+          const slugs=[...base[1].matchAll(/^\s*\["([^"]+)",/gm)].map(x=>x[1]);
+          assert.equal(slugs.length,50);
+          assert.equal(c.length,20);assert.equal(new Set(c.map(x=>x.slug)).size,20);
+          for(const item of c)assert.ok(slugs.includes(item.slug),'missing canonical eligibility '+item.slug);
+          assert.equal(c.filter(x=>x.status==='EVIDENCE_READY').length,9);
+          assert.equal(c.filter(x=>x.status==='EVIDENCE_READY_EXISTING').length,1);
+          assert.equal(c.filter(x=>x.status==='SOURCE_SCOPING').length,10);
+          assert.equal(Object.keys(e).length,9);
+          for(const [slug,v] of Object.entries(e)){
+            assert.ok(c.find(x=>x.slug===slug)?.status==='EVIDENCE_READY',slug+' must be release-ready cohort');
+            assert.ok(v.explanation.length>180,slug+' substantive explanation');
+            assert.ok(v.sources.length>=2,slug+' primary sources');
+            assert.ok(v.truthBoundary.length>90,slug+' uncertainty');
+            assert.ok(v.relatedKnowledge.length>=2,slug+' useful next steps');
+            for(const s of v.sources)assert.ok(/^https:\/\//.test(s.url)&&s.use.length>40);
+          }
+          assert.ok(source.includes('...ATLAS_FLAGSHIP_EVIDENCE'));
+          assert.ok(source.includes('...ATLAS_INDEXABLE_PLACES'));
+          console.log('ATLAS_FLAGSHIP_20_SCOPED_9_SOURCE_GROUNDED_1_KEPT_10_HELD_GOLD_PASS');
+          NODE
+      - name: Reconstruct protected Atlas product and verify existing QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --check ops/atlas/r1-human-awe.patch
+          git apply ops/atlas/r1-human-awe.patch
+          echo 'ebdbd4dc533531fa3733993ada7e13bd3adeb2d4f605d72fa7482e1d7ddf7fe8  ops/atlas/v43-code-only.zip' | sha256sum -c -
+          unzip -q ops/atlas/v43-code-only.zip -d /tmp/v43
+          cp -a /tmp/v43/files/. ./
+          while IFS= read -r f; do [ -z "$f" ] || rm -f "$f"; done < /tmp/v43/patch/DELETED_FILES.txt
+          rm -f public-atlas-data-places-v1-manifest.json
+          npm ci --no-audit --no-fund
+          node scripts/build-atlas-places.mjs
+          npm run typecheck
+          node --test scripts/atlas-v43-contract.test.mjs scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs
+          npm run build:atlas
+          node --test scripts/atlas-max-exposure-middleware-runtime.test.mjs
+          echo ATLAS_250_PLACES_PROTECTED_CANDIDATE_BUILD_PASS
