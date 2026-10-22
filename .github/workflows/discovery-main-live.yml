@@ -152,7 +152,7 @@ jobs:
           grep -Fq 'A system for understanding how nature' <<<"$ls_root"
           grep -Fq 'Living Systems' <<<"$ls_root"
           grep -Fq '/livingsystems/start' <<<"$ls_root"
-          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$ls_root" | sed 's/\\\\$//' | sort -u)
+          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$ls_root" | sed 's/\\$//' | sort -u)
           test -n "$assets"
           while IFS= read -r asset; do
             curl -fsS --max-time 20 -o /dev/null "https://4planet.org$asset"
