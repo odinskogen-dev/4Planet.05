@@ -1,0 +1,9 @@
+{
+  "schema":"cub.scenario.v1","id":"medieval-hattin-1187-scenario-brief","gameId":"medieval-kingdoms",
+  "title":"Hattin · July 1187 · historical scenario research",
+  "truthStatus":"reconstruction","sources":["https://www.britannica.com/event/Battle-of-Hattin"],
+  "historicalWarnings":["Preset is only a design guide; existing MEDIEVAL Build 03 terrain is procedurally generated, not a verified terrain DEM.","Army numbers, camp positions and water location need source-specific review."],
+  "factions":[{"id":"ayyu","name":"Ayyubid coalition"},{"id":"crusader","name":"Crusader army"}],
+  "start":{"wallet":{"water":60},"armies":[{"id":"ayyu-01","factionId":"ayyu","soldiers":1000},{"id":"crusader-01","factionId":"crusader","soldiers":800}]},
+  "objectives":[{"id":"water","kind":"resource","resource":"water","minimum":60}]
+}

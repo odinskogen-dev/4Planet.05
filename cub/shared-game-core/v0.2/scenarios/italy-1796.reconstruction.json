@@ -1,0 +1,9 @@
+{
+  "schema":"cub.scenario.v1","id":"italy-1796-northern-italy-prototype","gameId":"italy-1796",
+  "title":"Northern Italy · 1796 · abstract operational exercise",
+  "truthStatus":"reconstruction","sources":["https://www.britannica.com/event/Italian-campaigns"],
+  "historicalWarnings":["This is not yet a geographically sourced military campaign. No invented real-world battle claims are intended."],
+  "factions":[{"id":"french","name":"French revolutionary forces"},{"id":"austrian","name":"Habsburg Austrian forces"}],
+  "start":{"wallet":{"food":200,"coin":50},"armies":[{"id":"french-01","factionId":"french","soldiers":800},{"id":"austrian-01","factionId":"austrian","soldiers":950}]},
+  "objectives":[{"id":"food","kind":"resource","resource":"food","minimum":250}]
+}

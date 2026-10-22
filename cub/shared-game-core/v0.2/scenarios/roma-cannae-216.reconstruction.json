@@ -1,0 +1,21 @@
+{
+  "schema": "cub.scenario.v1",
+  "id": "roma-apulia-cannae-216-brief",
+  "gameId": "roma-the-republic",
+  "title": "The grain road · Apulia · 216 BCE",
+  "truthStatus": "reconstruction",
+  "sources": ["https://sourcebooks.web.fordham.edu/ancient/polybius-cannae.asp"],
+  "historicalWarnings": [
+    "This is a gameplay reconstruction, not a precise archaeological battle layout.",
+    "Cannae was not an intact major Roman city in 216 BCE.",
+    "Scaled army strengths below are simulation placeholders, not documented ancient headcounts."
+  ],
+  "factions": [{"id":"roman-republic","name":"Roman Republic"},{"id":"carthaginian","name":"Carthaginian forces"}],
+  "start": {
+    "wallet":{"grain":240,"coin":180,"wood":75,"stone":45},
+    "settlements":{"canusium":{"owner":"roman-republic","buildings":{"farm":1,"granary":1}}},
+    "armies":[{"id":"roman-field-01","factionId":"roman-republic","soldiers":900},{"id":"punic-field-01","factionId":"carthaginian","soldiers":1250}],
+    "activeRoutes":["venusia-canusium"]
+  },
+  "objectives":[{"id":"grain","kind":"resource","resource":"grain","minimum":300},{"id":"route","kind":"route","routeId":"canusium-cannae"}]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@cub/game-core",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated, browser/Node, zero-runtime-dependency shared gameplay primitives for CUB Game Lab",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "demo": "node examples/roma-demo.mjs",
+    "verify:assets": "node tools/asset-audit.mjs assetbank/manifest.json",
+    "verify:rig": "node --test tests/rigged.test.mjs",
+    "verify:scenarios": "node tools/scenario_factory.mjs",
+    "verify:colliders": "python tools/asset_factory.py colliders --ids cub-grain_store cub-gate cub-wall cub-market_stalls",
+    "verify:source-preservation": "python tools/build_isolated_integrations.py",
+    "smoke:browser": "python tools/smoke_browser.py"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {}
+}

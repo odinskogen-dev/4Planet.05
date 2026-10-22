@@ -1,0 +1,26 @@
+{
+  "schema": "cub.integration.proof.v1",
+  "sourceZip": "MEDIEVAL_KINGDOMS_PREMIUM_BUILD_03(1).zip",
+  "builds": [
+    {
+      "game": "roma",
+      "originalFile": "ROMA_ORIGINAL_READ_ONLY.html",
+      "candidate": "integrations/previews/ROMA_ORIGINAL_PLUS_SHARED_CORE_02.html",
+      "originalSHA256": "3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3",
+      "originalBytes": 2171887,
+      "candidateSHA256": "706c8dc5869ed276594cf3dcf6beefe46852961a29e0b241cff81b07c946e521",
+      "exactOriginalReversible": true,
+      "integration": "read-only diagnostic overlay imports same shared core module; no gameplay hook"
+    },
+    {
+      "game": "medieval",
+      "originalFile": "MEDIEVAL_KINGDOMS_PREMIUM_CANDIDATE_03.html",
+      "candidate": "integrations/previews/MEDIEVAL_BUILD03_PLUS_SHARED_CORE_02.html",
+      "originalSHA256": "3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83",
+      "originalBytes": 2220604,
+      "candidateSHA256": "11a0a62f4b1b15c33c8c761cc44789c0600bd379ceaa6d57ab3eaffdb804b7fa",
+      "exactOriginalReversible": true,
+      "integration": "read-only diagnostic overlay imports same shared core module; no gameplay hook"
+    }
+  ]
+}
