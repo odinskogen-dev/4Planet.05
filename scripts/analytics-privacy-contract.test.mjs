@@ -4,9 +4,28 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 
 const source = readFileSync(new URL("../src/analytics/Analytics.tsx", import.meta.url), "utf8");
-const match = source.match(/export function privacySafeEventParameters[\s\S]*?\n}\n\nexport function trackEvent/);
-assert.ok(match, "privacy-safe event helper must exist");
-const isolated = match[0].replace(/\n\nexport function trackEvent$/, "");
+const sourceFile = ts.createSourceFile(
+  "Analytics.tsx",
+  source,
+  ts.ScriptTarget.ES2022,
+  true,
+  ts.ScriptKind.TSX,
+);
+
+function functionSource(name) {
+  const declaration = sourceFile.statements.find((statement) => (
+    ts.isFunctionDeclaration(statement) && statement.name?.text === name
+  ));
+  assert.ok(declaration, `${name} must exist`);
+  return declaration.getText(sourceFile);
+}
+
+const isolated = [
+  "decodeForAnalyticsInspection",
+  "hasUnsupportedNestedAnalyticsEncoding",
+  "containsSensitiveAnalyticsMaterial",
+  "privacySafeEventParameters",
+].map(functionSource).join("\n\n");
 const transpiled = ts.transpileModule(isolated, {
   compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
 }).outputText;
@@ -15,7 +34,7 @@ const { privacySafeEventParameters } = await import(
 );
 
 test("keeps useful anonymous product events", () => {
-  const row = { object_kind: "species", object_slug: "orca", product_area: "species", clicks: 2, internal: false };
+  const row = { object_kind: "species", object_slug: "orca", product_area: "species", attempts: 2, internal: false };
   assert.deepEqual(privacySafeEventParameters(row), row);
 });
 
@@ -79,8 +98,17 @@ test("drops credentials, personal values and long free text before GA4/PostHog",
 });
 
 test("tracking uses sanitised payload before BOTH sinks", () => {
-  assert.match(source, /\.\.\.privacySafeEventParameters\(parameters\)/);
-  const segment = source.slice(source.indexOf("export function trackEvent"), source.indexOf("export function resetAnalyticsConsent"));
-  assert.match(segment, /window\.gtag\?\.\("event", name, shared\)/);
-  assert.match(segment, /capturePostHog\(name, shared\)/);
+  const trackSegment = source.slice(
+    source.indexOf("export function trackEvent"),
+    source.indexOf("function dispatchAnalyticsEvent"),
+  );
+  assert.match(trackSegment, /const shared = privacySafeEventParameters\(\{[\s\S]*\.\.\.parameters/);
+  assert.match(trackSegment, /return dispatchAnalyticsEvent\(name, shared\)/);
+
+  const dispatchSegment = source.slice(
+    source.indexOf("function dispatchAnalyticsEvent"),
+    source.indexOf("export function resetAnalyticsConsent"),
+  );
+  assert.match(dispatchSegment, /window\.gtag\?\.\("event", name, properties\)/);
+  assert.match(dispatchSegment, /capturePostHog\(name, properties\)/);
 });
