@@ -109,6 +109,8 @@ test("tracking uses sanitised payload before BOTH sinks", () => {
     source.indexOf("function dispatchAnalyticsEvent"),
     source.indexOf("export function resetAnalyticsConsent"),
   );
-  assert.match(dispatchSegment, /window\.gtag\?\.\("event", name, properties\)/);
+  assert.match(dispatchSegment, /window\.gtag\?\.\("event", name, \{/);
+  assert.ok(dispatchSegment.includes("page_location: `${window.location.origin}${safePath}`"));
+  assert.match(dispatchSegment, /isSensitiveAnalyticsNavigation\(\)/);
   assert.match(dispatchSegment, /capturePostHog\(name, properties\)/);
 });
