@@ -1,4 +1,5 @@
 name: 4SPECIES — Wave02 8 More V1 Claude Pages (NO LIVE)
+# Editorial release rule: two independent reputable sources per species, not Gold.
 on:
   push:
     branches: [release/species-v1-wave02-20261022]
