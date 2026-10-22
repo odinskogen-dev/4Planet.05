@@ -7,6 +7,7 @@ on:
       - 'site/index.html'
       - 'site/games/**'
       - 'site/medieval/**'
+      - 'site/medievalkingdoms/**'
       - 'site/medivalmmo/**'
       - 'site/italy1796/**'
       - 'site/villains/**'
@@ -49,6 +50,15 @@ jobs:
           python3 site/medieval/ch04src/build_ch04.py site/medieval/index.html site/medieval/challenger04/index.html
           echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  site/medieval/challenger04/index.html' | sha256sum -c -
           echo 'CH04_ISOLATED_PREVIEW_READY'
+      - name: Build verified MEDIEVAL KINGDOMS CH05 in independent game path
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/medieval/challenger04/index.html
+          node --check site/medieval/ch05src/challenger05_patch.js
+          python3 site/medieval/ch05src/build_ch05.py site/medieval/challenger04/index.html site/medievalkingdoms/index.html
+          echo 'dc7f5fbabcc970b803a66d9919aea7093cf937c2dc840ba2788b162327955584  site/medievalkingdoms/index.html' | sha256sum -c -
+          echo 'CH05_INDEPENDENT_RELEASE_BUILT'
       - name: Apply scoped MEDIEVAL battlefield HUD fix (release copy only)
         shell: bash
         run: |
@@ -198,6 +208,21 @@ jobs:
             done
             test "$ok" -eq 1 || { echo "CH04_PREVIEW_NOT_LIVE=$host"; exit 6; }
             echo "CH04_PREVIEW_LIVE=$host/medieval/challenger04/"
+          done
+      - name: Verify CH05 live and index route without changing ROMA or Build03
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in https://lab.p4nther.com https://labs.p4nther.com; do
+            passed=0
+            for n in $(seq 1 15); do
+              if curl -fsSL --max-time 35 "$host/medievalkingdoms/index.html" -o /tmp/medievalkingdoms.html &&
+                 echo 'dc7f5fbabcc970b803a66d9919aea7093cf937c2dc840ba2788b162327955584  /tmp/medievalkingdoms.html' | sha256sum -c - >/dev/null &&
+                 curl -fsSL --max-time 25 "$host/" | grep -Fq 'href="/medievalkingdoms/"'; then passed=1; break; fi
+              sleep 5
+            done
+            test "$passed" -eq 1 || { echo "CH05_LIVE_OR_HOME_FAIL=$host"; exit 9; }
+            echo "CH05_GAME_AND_HOME_LIVE_PASS=$host/medievalkingdoms/"
           done
       - name: Safely add labs.p4nther.com alongside lab.p4nther.com
         shell: bash
