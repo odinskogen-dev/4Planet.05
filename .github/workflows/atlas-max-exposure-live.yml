@@ -25,7 +25,7 @@ jobs:
     env:
       ATLAS_PROJECT: 4planet-atlas
       ATLAS_DOMAIN: 4planetatlas.com
-      BASELINE_SHA: fceab8e18f2fb403184dcac9f04180b2d05cf36c
+      BASELINE_SHA: c60a670a3ceade04ac6f2d50e706948bd835d65d
     steps:
       - uses: actions/checkout@v4
         with:
@@ -74,6 +74,20 @@ jobs:
           node --test scripts/atlas-v43-contract.test.mjs scripts/atlas-human-awe-contract.test.mjs scripts/seo-ownership-contract.test.mjs scripts/atlas-mobile-context-control-contract.test.mjs scripts/atlas-recovery-contract.test.mjs
           npm run build:atlas
           node --test scripts/atlas-max-exposure-middleware-runtime.test.mjs
+          node --input-type=module <<'NODE'
+          import {onRequest} from './functions/_middleware.js';
+          import assert from 'node:assert/strict';
+          const call=async path=>onRequest({request:new Request('https://4planetatlas.com'+path),next:async()=>new Response('<!doctype html><html><body>ATLAS map</body></html>',{status:200,headers:{'content-type':'text/html'}})});
+          for(const path of ['/','/atlas/','/atlas/?place=oslo&z=7','/embed/atlas?place=berlin','/places','/place/oslo','/place/berlin']){
+            const r=await call(path);assert.equal(r.status,200,path);
+          }
+          for(const path of ['/unpublished-random-path-404','/unknown/prefix','/place/not-a-qualifying-place']){
+            const r=await call(path);assert.equal(r.status,404,path);
+            assert.match(r.headers.get('x-robots-tag'),/noindex/);
+          }
+          console.log('ATLAS_SOFT404_P0_DEEP_LINK_PRESERVATION_PASS');
+          NODE
+
           test -f dist/index.html
           js=$(grep -oE 'src="/assets/[^"]+\.js"' dist/index.html | head -1 | cut -d'"' -f2)
           [ -n "$js" ]
@@ -161,6 +175,12 @@ jobs:
           test "$status" = '404'
           grep -Fq 'noindex' /tmp/unknown.html
           echo "ATLAS_LIVE_CHECKPOINT unknown-404=PASS"
+          for path in /no-such-atlas-public-path-404 /unknown/nested-route; do
+            code=$(curl -sS -o /tmp/atlas-invalid.html -w '%{http_code}' "https://$ATLAS_DOMAIN$path")
+            test "$code" = 404
+            grep -Fq 'noindex' /tmp/atlas-invalid.html
+          done
+          echo "ATLAS_GENERIC_SOFT404_LIVE_PASS"
 
           http_code=$(curl -sS -o /dev/null -w '%{http_code}' "http://$ATLAS_DOMAIN/place/berlin")
           case "$http_code" in 301|302|307|308) : ;; *) echo "HTTP canonical transport failed: $http_code"; exit 31 ;; esac
