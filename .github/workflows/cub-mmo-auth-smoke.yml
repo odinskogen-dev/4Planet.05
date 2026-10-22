@@ -41,7 +41,15 @@ jobs:
             await login.click();
             const popup=await popupPromise;
             console.log('AUTH_POPUP_OPENED',!!popup);
-            if(popup) {await popup.waitForLoadState('domcontentloaded',{timeout:12000}).catch(()=>{});console.log('AUTH_POPUP_URL',popup.url().split('?')[0]);await popup.screenshot({path:'mmo-sign-in-popup.png'}).catch(()=>{});}
+            if(popup) {
+              await popup.waitForURL(url=>url.toString()!=='about:blank',{timeout:12000}).catch(()=>{});
+              await popup.waitForLoadState('domcontentloaded',{timeout:12000}).catch(()=>{});
+              console.log('AUTH_POPUP_URL',popup.url().split('?')[0]);
+              console.log('AUTH_POPUP_TITLE',await popup.title().catch(()=>'unavailable'));
+              const formText=(await popup.locator('body').innerText().catch(()=>'' )).slice(0,500);
+              console.log('AUTH_POPUP_BODY',formText.replace(/\\s+/g,' ').slice(0,320));
+              await popup.screenshot({path:'mmo-sign-in-popup.png'}).catch(()=>{});
+            }
             const body=(await page.locator('body').innerText()).slice(-600);
             console.log('LOGIN_PAGE_MESSAGE',body.replace(/\\n/g,' ').slice(-300));
             console.log('PAGE_ERRORS',JSON.stringify(errors));
