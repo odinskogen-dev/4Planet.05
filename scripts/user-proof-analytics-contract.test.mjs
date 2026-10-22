@@ -228,7 +228,9 @@ test("analytics page telemetry strips query strings and fragments", () => {
   assert.match(analytics, /page_location:\s*`\$\{window\.location\.origin\}\$\{safePath\}`/);
   assert.match(analytics, /const sharedPageProperties = privacySafeEventParameters\(\{/);
   assert.match(analytics, /page_path:\s*location\.pathname/);
-  assert.match(analytics, /window\.gtag\?\.\("event", "page_view", sharedPageProperties\)/);
+  assert.match(analytics, /window\.gtag\?\.\("event", "page_view", \{/);
+  assert.match(analytics, /page_location:\\s*\`\\$\\{window\\.location\\.origin\\}\\$\\{sharedPageProperties\\.page_path\\}\`/);
+  assert.match(analytics, /window\.gtag\?\.\("event", name, \{/);
 });
 
 test("PostHog reuses the same consented event spine and fails closed without configuration", () => {
