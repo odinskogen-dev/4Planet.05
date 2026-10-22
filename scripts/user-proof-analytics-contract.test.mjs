@@ -161,7 +161,7 @@ test("analytics privacy boundary rejects encoded credentials and unknown propert
   assert.match(analytics, /isInternalAnalyticsBrowser\(\)/);
 });
 
-function evaluateAnalyticsDispatch({ ga4Installed, posthogAccepted }) {
+function evaluateAnalyticsDispatch({ ga4Installed, posthogAccepted, sensitiveNavigation = false }) {
   const dispatchSource = analytics.match(/function dispatchAnalyticsEvent\([\s\S]*?\n}\n/);
   assert.ok(dispatchSource, "dispatchAnalyticsEvent must be extractable");
   const js = ts.transpileModule(`${dispatchSource[0]}\nexports.dispatchAnalyticsEvent = dispatchAnalyticsEvent;`, {
@@ -171,8 +171,16 @@ function evaluateAnalyticsDispatch({ ga4Installed, posthogAccepted }) {
   let posthogCalls = 0;
   const context = {
     exports: {},
-    window: { gtag: ga4Installed ? () => { ga4Calls += 1; } : undefined },
+    window: {
+      location: { origin: "https://4planet.org", pathname: "/livingsystems/species/orca/" },
+      gtag: ga4Installed ? (_command, _event, props) => {
+        assert.equal(props?.page_location, "https://4planet.org/livingsystems/species/orca/");
+        ga4Calls += 1;
+      } : undefined,
+    },
     document: { getElementById: () => ga4Installed ? {} : null },
+    privacySafeEventParameters: ({ page_path }) => ({ page_path }),
+    isSensitiveAnalyticsNavigation: () => sensitiveNavigation,
     capturePostHog: () => { posthogCalls += 1; return posthogAccepted; },
   };
   vm.runInNewContext(js, context);
@@ -197,6 +205,12 @@ test("delivery acknowledgement reflects actual configured transports", () => {
   assert.match(routeAnalytics, /if \(sessionDelivered\) \{/);
   assert.match(routeAnalytics, /const delivered = trackMeaningfulUse/);
   assert.match(routeAnalytics, /if \(!delivered\) return;/);
+});
+
+test("sensitive OAuth navigation suppresses GA4 even with consented tag", () => {
+  assert.deepEqual(evaluateAnalyticsDispatch({
+    ga4Installed: true, posthogAccepted: false, sensitiveNavigation: true,
+  }), { delivered: false, ga4Calls: 0, posthogCalls: 1 });
 });
 
 test("user proof funnel is broader than page views", () => {
