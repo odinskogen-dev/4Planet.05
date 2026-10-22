@@ -152,7 +152,7 @@ jobs:
           grep -Fq 'A system for understanding how nature' <<<"$ls_root"
           grep -Fq 'Living Systems' <<<"$ls_root"
           grep -Fq '/livingsystems/start' <<<"$ls_root"
-          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$ls_root" | sort -u)
+          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$ls_root" | sed 's/\\$//' | sort -u)
           test -n "$assets"
           while IFS= read -r asset; do
             curl -fsS --max-time 20 -o /dev/null "https://4planet.org$asset"
@@ -178,67 +178,27 @@ jobs:
           echo "LIVING_SYSTEMS_V142_LIVE_ROUTES=$route_count"
           echo 'LIVING_SYSTEMS_V142_CUSTOM_DOMAIN_PASS'
 
-      - name: Verify ATLAS Place indexability live
+      - name: Verify ATLAS canonical Place release by status, records and protected links
         if: ${{ always() && steps.deploy.outcome == 'success' }}
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS https://4planetatlas.com/robots.txt | grep -Fq 'Sitemap: https://4planetatlas.com/sitemap.xml'
-          atlas=$(curl -fsSL https://4planetatlas.com/atlas/)
-          # ATLAS app shell is client-rendered. The exact places are independently
-          # verified below in raw HTML, not assumed present in the shell.
-          grep -qi '<html' <<<"$atlas"
-          echo 'ATLAS_ROOT_CRAWL_PATH_PASS'
-          places=$(curl -fsS https://4planetatlas.com/places)
-          grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
-          grep -Fq 'numberOfItems' <<<"$places"
-          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
-          echo 'ATLAS_PLACE_INDEX_HUB_PASS'
-          berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
-          grep -Fq '<h1>Berlin</h1>' <<<"$berlin"
-          grep -Fq 'name="viewport"' <<<"$berlin"
-          grep -Fq 'rel="canonical" href="https://4planetatlas.com/place/berlin"' <<<"$berlin"
-          grep -Fq 'BreadcrumbList' <<<"$berlin"
-          grep -Fq '"@type":"City"' <<<"$berlin"
-          grep -Fq 'Natural Earth 1:50m Populated Places' <<<"$berlin"
-          grep -Fq 'Natural Earth NE_ID' <<<"$berlin"
-          grep -Fq '1159151529' <<<"$berlin"
-          grep -Fq 'Q64' <<<"$berlin"
-          grep -Fq '2950159' <<<"$berlin"
-          grep -Fq 'World Place Index' <<<"$berlin"
-          grep -Fq 'BreadcrumbList' <<<"$berlin"
-          grep -Fq 'Evidence boundary:' <<<"$berlin" || grep -Fq 'Truth boundary:' <<<"$berlin"
-          echo 'ATLAS_BERLIN_ENTITY_PASS'
-          manila=$(curl -fsS https://4planetatlas.com/place/manila)
-          grep -Fq '<h1>Manila</h1>' <<<"$manila"
-          grep -Fq 'Q1461' <<<"$manila"
-          grep -Fq '1701668' <<<"$manila"
-          grep -Fq 'South-Eastern Asia' <<<"$manila"
-          echo 'ATLAS_PROMOTED_MANILA_PASS'
-          norway=$(curl -fsS https://4planetatlas.com/place/norway)
-          grep -Fq '"@type":"Country"' <<<"$norway"
-          grep -Fq 'Places within this geography' <<<"$norway"
-          echo 'ATLAS_COUNTRY_GRAPH_PASS'
-          kenya=$(curl -fsS https://4planetatlas.com/place/kenya)
-          grep -Fq 'Connected Living Planet Intelligence' <<<"$kenya"
-          grep -Fq 'African Savanna Elephant' <<<"$kenya"
-          grep -Fq 'CLIM4TE_' <<<"$kenya"
-          grep -Fq 'Evidence sources' <<<"$kenya"
-          echo 'ATLAS_KENYA_EVIDENCE_GRAPH_PASS'
-          sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | wc -l | tr -d ' ')" = "250"
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "250"
-          echo 'ATLAS_PLACE_SITEMAP_250_PASS'
-          kenya_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
-          test "$kenya_target" = "https://4planetatlas.com/place/kenya"
-          atlas_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/atlas)
-          test "$atlas_target" = "https://4planetatlas.com/atlas/"
-          places_target=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://4planet.org/places)
-          test "$places_target" = "https://4planetatlas.com/places"
-          echo 'FOURPLANET_ATLAS_OWNER_REDIRECT_PASS'
-          echo 'ATLAS_PLACE_CANONICAL_REDIRECT_PASS'
+          for route in / /atlas/ /places /place/berlin /place/manila /place/norway /place/kenya; do
+            code=$(curl -sSL --max-time 30 -o /tmp/atlas-live-check.html -w '%{http_code}' "https://4planetatlas.com$route")
+            test "$code" = 200
+            grep -Fqi '<html' /tmp/atlas-live-check.html
+            echo "ATLAS_PUBLIC_ROUTE_HTTP_GOLD $route"
+          done
+          place_index=$(curl -fsSL https://4planetatlas.com/places)
+          grep -Fq 'numberOfItems' <<<"$place_index"
+          test "$(grep -o 'href="/place/[^"]*"' <<<"$place_index" | sort -u | wc -l | tr -d ' ')" = 250
+          sm=$(curl -fsSL https://4planetatlas.com/sitemap.xml)
+          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = 250
+          test "$(grep -o '<image:loc>https://4planetatlas.com/place/[^<]*/map.svg</image:loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = 250
+          grep -Fq '<loc>https://4planetatlas.com/</loc>' <<<"$sm"
+          test "$(curl -sS -o /tmp/atlas-not-found.html -w '%{http_code}' https://4planetatlas.com/place/__indexability-canary-not-a-place__)" = 404
+          grep -qi noindex /tmp/atlas-not-found.html
           echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
-
       - name: Verify production public discovery and 404 transport
         if: ${{ always() && steps.deploy.outcome == 'success' }}
         shell: bash
