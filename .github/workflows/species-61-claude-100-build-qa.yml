@@ -79,10 +79,15 @@ jobs:
 
           host_marker = "species-v53.4planet-05.pages.dev"
           host_files = []
-          for source_path in Path("src").rglob("*"):
-              if source_path.suffix not in {".ts", ".tsx"}:
+          for source_path in Path(".").rglob("*"):
+              if not source_path.is_file() or ".git" in source_path.parts:
                   continue
-              source = source_path.read_text()
+              if source_path.suffix not in {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json"}:
+                  continue
+              try:
+                  source = source_path.read_text()
+              except UnicodeDecodeError:
+                  continue
               if host_marker in source:
                   host_files.append((source_path, source))
           assert len(host_files) == 1, f"expected one standalone-host source, found {len(host_files)}"
