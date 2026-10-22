@@ -196,9 +196,9 @@ export const scienceStage10 = {
         "label": "Bycatch harms sharks",
         "text": "The species can be caught unintentionally by fisheries, including operations targeting other marine species.",
         "source": {
-          "label": "UN Convention on Migratory Species — great hammerhead",
-          "url": "https://www.cms.int/species/sphyrna-mokarran",
-          "publisher": "Convention on Migratory Species",
+          "label": "NOAA Fisheries — Shark conservation and fishing bycatch",
+          "url": "https://www.fisheries.noaa.gov/topic/sharks",
+          "publisher": "NOAA Fisheries",
           "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
