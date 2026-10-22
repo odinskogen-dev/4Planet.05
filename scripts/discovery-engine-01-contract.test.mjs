@@ -11,6 +11,7 @@ const prerender = read("scripts/prerender-discovery-seo.mjs");
 const shell = read("src/components/layout/PublicShell.tsx");
 const css = read("src/styles/human-first-public.css");
 const deferredRoutes = read("src/routes/deferredRoutes.tsx");
+const redirects = read("public/_redirects");
 
 const REQUIRED = [
   "wildfires",
@@ -93,6 +94,14 @@ test("routes, sitemap and prerender all consume the same canonical discovery reg
   assert.match(prerender, /discoveryTopics\.json/);
   assert.match(prerender, /writeRoute\("\/now"/);
   assert.match(prerender, /for \(const topic of discoveryTopics\)/);
+});
+
+test("Earth Now has one preferred URL matching its canonical", () => {
+  assert.match(redirects, /^\/now\/\s+\/now\s+301$/m);
+  assert.doesNotMatch(redirects, /^\/now\s+\/now\/\s+30[18]$/m);
+  assert.match(prerender, /writeRoute\("\/now"/);
+  assert.match(prerender, /writeRoute\("\/now", pageHtml\(\{\s*pathName: "\/now"/);
+  assert.match(prerender, /const canonical = origin \+ pathName;/);
 });
 
 test("every discovery page uses the shared ATLAS embed seam and public shell", () => {

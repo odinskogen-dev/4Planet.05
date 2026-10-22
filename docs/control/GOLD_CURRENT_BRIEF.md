@@ -1,3 +1,33 @@
+# EARTH NOW — CANONICAL ALIAS NORMALISATION — 22 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT, INDEX SUBMISSION OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler follows Earth Now and needs one stable public address rather than a visible trailing-slash alias that contradicts the page canonical.
+
+**ONE THING TO UNDERSTAND:** Earth Now declares `https://4planet.org/now` as canonical, so `/now/` must redirect to `/now` rather than remain the browser URL.
+
+**PRIMARY ACTION:** add the existing host-level permanent redirect pattern `/now/ → /now` and enforce it in the Discovery Engine contract.
+
+**SECONDARY DEPTH:** keep Earth Now content, navigation, data, map, typography, homepage composition, sitemap and prerendered canonical unchanged.
+
+**P1 / P2 / P3 / P4:** stable entry URL / matching canonical / unchanged human-first experience / existing source and truth boundaries.
+
+**WHAT CAN BE REMOVED:** the duplicate trailing-slash URL signal.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, `public/_redirects`, the existing Discovery Engine contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** matching redirect and canonical removes a technical contradiction. It does not prove deployment, recrawl, indexation, ranking, traffic, user use or LIVE value.
+
+**MOBILE-FIRST RISK:** none introduced; no rendered page, interaction or asset changes.
+
+**HUMAN SUCCESS:** `/now/` permanently redirects to `/now`; `/now` retains the no-trailing-slash canonical and the existing Earth Now experience.
+
+**BASE / ROLLBACK:** `king/test@9ff75e3a47db7b6c9e27de45af0f2663097e1edf`; revert this three-file correction if independent Gold finds a host-routing regression.
+
+**MAKER ≠ JUDGE:** Factory supplies a tested exact SHA. Independent Gold must verify redirect behaviour on the exact preview before any authorised release or index submission.
+
+---
+
 # 4PLANET JOURNEYS — SITEMAP/CANONICAL PATH ALIGNMENT — 22 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT, INDEX SUBMISSION OR LIVE RELEASE.

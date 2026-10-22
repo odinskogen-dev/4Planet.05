@@ -2,4 +2,5 @@
 /living-systems  /livingsystems/  301
 /api/*  /api/:splat  200
 /about/  /about  301
+/now/  /now  301
 /*  /index.html  200
