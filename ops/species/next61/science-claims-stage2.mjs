@@ -303,13 +303,13 @@ export const scienceStage2 = {
       {
         "id": "ring-tailed-lemur-sci2-07",
         "category": "conservation",
-        "label": "IUCN Endangered is a global assessment",
-        "text": "The IUCN Red List classifies Lemur catta as Endangered, distinct from any single local population's prospects.",
+        "label": "An endangered species",
+        "text": "Smithsonian's National Zoo describes the ring-tailed lemur as endangered while distinguishing that species-wide status from local conditions.",
         "source": {
-          "label": "IUCN Red List — Lemur catta assessment 2020",
-          "url": "https://doi.org/10.2305/IUCN.UK.2020-2.RLTS.T11496A115565760.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "Smithsonian National Zoo — Ring-tailed lemur",
+          "url": "https://nationalzoo.si.edu/animals/ring-tailed-lemur",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       },
@@ -317,12 +317,12 @@ export const scienceStage2 = {
         "id": "ring-tailed-lemur-sci2-08",
         "category": "conservation",
         "label": "Threats include hunting and forest loss",
-        "text": "IUCN identifies habitat loss, hunting and capture for the illegal pet trade among major pressures on wild ring-tailed lemurs.",
+        "text": "Habitat loss and fragmentation, hunting for food and capture for the pet trade all pressure wild ring-tailed lemurs.",
         "source": {
-          "label": "IUCN Red List — Lemur catta assessment 2020",
-          "url": "https://doi.org/10.2305/IUCN.UK.2020-2.RLTS.T11496A115565760.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "Smithsonian National Zoo — Ring-tailed lemur",
+          "url": "https://nationalzoo.si.edu/animals/ring-tailed-lemur",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }

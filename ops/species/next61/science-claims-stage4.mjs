@@ -193,26 +193,26 @@ export const scienceStage4 = {
       {
         "id": "indian-peafowl-sci4-07",
         "category": "conservation",
-        "label": "Regional extinction differs from global status",
-        "text": "The Bangladesh IUCN assessment classifies the species as Regionally Extinct in Bangladesh; this is not a species-wide extinction.",
+        "label": "National protection in India",
+        "text": "The Indian peafowl is protected under India's wildlife law; legal protection does not remove the need to monitor pressures on wild birds.",
         "source": {
-          "label": "IUCN Bangladesh — Regional Red List Pavo cristatus",
-          "url": "https://portals.iucn.org/library/sites/library/files/documents/RL-549.3-003-v.3.pdf",
-          "publisher": "IUCN Bangladesh",
-          "verifiedOn": "2026-10-21"
+          "label": "Journal of Threatened Taxa — Indian Peafowl status",
+          "url": "https://threatenedtaxa.org/index.php/JoTT/article/view/317/486",
+          "publisher": "Journal of Threatened Taxa",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       },
       {
         "id": "indian-peafowl-sci4-08",
         "category": "conservation",
-        "label": "Capture and land conversion are regional threats",
-        "text": "The Bangladesh assessment identifies habitat conversion and trapping among reasons for loss of the former resident population.",
+        "label": "Hunting and feather demand",
+        "text": "Demand for feathers and wild meat, conflict with farmers and habitat change are documented pressures on Indian peafowl.",
         "source": {
-          "label": "IUCN Bangladesh — Regional Red List Pavo cristatus",
-          "url": "https://portals.iucn.org/library/sites/library/files/documents/RL-549.3-003-v.3.pdf",
-          "publisher": "IUCN Bangladesh",
-          "verifiedOn": "2026-10-21"
+          "label": "Journal of Threatened Taxa — Indian Peafowl status",
+          "url": "https://threatenedtaxa.org/index.php/JoTT/article/view/317/486",
+          "publisher": "Journal of Threatened Taxa",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }
@@ -302,26 +302,26 @@ export const scienceStage4 = {
       {
         "id": "scarlet-macaw-sci4-07",
         "category": "conservation",
-        "label": "Global status is not local security",
-        "text": "The 2022 IUCN assessment lists the species as Least Concern globally while reporting an overall decreasing population trend.",
+        "label": "Protection differs by population",
+        "text": "United States endangered-species protections differ among scarlet macaw subspecies and distinct population segments.",
         "source": {
-          "label": "IUCN Red List — Scarlet Macaw 2022 assessment",
-          "url": "https://doi.org/10.2305/IUCN.UK.2022-2.RLTS.T22685563A163778999.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "US Fish and Wildlife Service — Scarlet Macaw final rule",
+          "url": "https://www.fws.gov/species-publication-action/listing-scarlet-macaw-final-rule-1",
+          "publisher": "United States Fish and Wildlife Service",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       },
       {
         "id": "scarlet-macaw-sci4-08",
         "category": "conservation",
-        "label": "Loss of forest persists",
-        "text": "IUCN records continuing degradation or loss of suitable habitat; recovery and threat exposure vary across the range.",
+        "label": "Forest loss and poaching",
+        "text": "Deforestation, habitat degradation and poaching for the pet trade are continuing threats to scarlet macaws.",
         "source": {
-          "label": "IUCN Red List — Scarlet Macaw 2022 assessment",
-          "url": "https://doi.org/10.2305/IUCN.UK.2022-2.RLTS.T22685563A163778999.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "US Fish and Wildlife Service — Scarlet Macaw threats",
+          "url": "https://www.fws.gov/press-release/2016-04/service-revises-proposal-list-scarlet-macaw-under-endangered-species-act",
+          "publisher": "United States Fish and Wildlife Service",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }

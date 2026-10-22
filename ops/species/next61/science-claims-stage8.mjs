@@ -180,7 +180,7 @@ export const scienceStage8 = {
       {
         "id": "giant-otter-sci8-06",
         "category": "ecology",
-        "label": "Freshwater distribution across South America",
+        "label": "South American freshwater range",
         "text": "Remaining giant otters inhabit wetlands in Amazonian and other tropical South American river systems.",
         "source": {
           "label": "WWF France — Loutre géante",
@@ -193,13 +193,13 @@ export const scienceStage8 = {
       {
         "id": "giant-otter-sci8-07",
         "category": "conservation",
-        "label": "An Endangered global status",
-        "text": "The IUCN SSC Otter Specialist Group describes the giant otter as Endangered; this must not be conflated with unrelated sea otter populations.",
+        "label": "Endangered in Peru",
+        "text": "Peru classifies the giant river otter as Endangered under national decree DS 004-2014-MINAGRI.",
         "source": {
-          "label": "IUCN SSC Otter Specialist Group — Giant otter Pteronura brasiliensis",
-          "url": "https://www.otterspecialistgroup.org/otter-species/giant-otter-pteronura-brasiliensis/",
-          "publisher": "IUCN SSC Otter Specialist Group",
-          "verifiedOn": "2026-10-21"
+          "label": "Wildlife Conservation Society Peru — Giant River Otter",
+          "url": "https://peru.wcs.org/en-us/Wildlife/Giant-River-Otter.aspx",
+          "publisher": "Wildlife Conservation Society Peru",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       },
@@ -207,12 +207,12 @@ export const scienceStage8 = {
         "id": "giant-otter-sci8-08",
         "category": "conservation",
         "label": "Risks at river margins",
-        "text": "Pollution, habitat loss, human persecution and historic pelt hunting have threatened wild giant otters.",
+        "text": "Habitat degradation, river contamination, overharvested fish and hunting for skins threaten giant river otters.",
         "source": {
-          "label": "IUCN SSC Otter Specialist Group — Giant otter Pteronura brasiliensis",
-          "url": "https://www.otterspecialistgroup.org/otter-species/giant-otter-pteronura-brasiliensis/",
-          "publisher": "IUCN SSC Otter Specialist Group",
-          "verifiedOn": "2026-10-21"
+          "label": "Wildlife Conservation Society Peru — Giant River Otter",
+          "url": "https://peru.wcs.org/en-us/Wildlife/Giant-River-Otter.aspx",
+          "publisher": "Wildlife Conservation Society Peru",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }

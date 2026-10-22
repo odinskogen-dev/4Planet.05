@@ -85,25 +85,25 @@ export const scienceStage6 = {
         "id": "red-fox-sci6-07",
         "category": "ecology",
         "label": "Why some thrive beside people",
-        "text": "Red foxes can exploit food and shelter in urban and agricultural landscapes, unlike less adaptable wildlife.",
+        "text": "Red foxes use forests, tundra, prairie, deserts, mountains, farmland and urban areas, showing broad habitat flexibility.",
         "source": {
-          "label": "IUCN Red List — Red fox 2021",
-          "url": "https://doi.org/10.2305/IUCN.UK.2021-1.RLTS.T23062A193903628.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "Animal Diversity Web — Vulpes vulpes",
+          "url": "https://animaldiversity.org/accounts/Vulpes_vulpes/",
+          "publisher": "University of Michigan Museum of Zoology",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       },
       {
         "id": "red-fox-sci6-08",
         "category": "conservation",
-        "label": "Population status is regional",
-        "text": "The red fox's IUCN assessment is global; being widespread in one country must not imply harmless impact where the species was introduced.",
+        "label": "Introduced impacts are regional",
+        "text": "In Australia, introduced European red foxes are invasive and contribute to severe losses of native mammals, birds and reptiles.",
         "source": {
-          "label": "IUCN Red List — Red fox 2021",
-          "url": "https://doi.org/10.2305/IUCN.UK.2021-1.RLTS.T23062A193903628.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "Australian Government — Pest animals in Australia",
+          "url": "https://www.agriculture.gov.au/biosecurity-trade/pests-diseases-weeds/pest-animals-and-weeds/priority-pest-animals",
+          "publisher": "Australian Department of Agriculture, Fisheries and Forestry",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }

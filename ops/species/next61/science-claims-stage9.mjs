@@ -206,7 +206,7 @@ export const scienceStage9 = {
       {
         "id": "coconut-crab-sci9-08",
         "category": "conservation",
-        "label": "Old sources may show out-of-date Red List labels",
+        "label": "Old status labels can be outdated",
         "text": "Historical documents sometimes report Data Deficient; the Natural History Museum reports the coconut crab as currently Vulnerable, so dated sources must not be conflated.",
         "source": {
           "label": "Natural History Museum London — Coconut crab ecology",

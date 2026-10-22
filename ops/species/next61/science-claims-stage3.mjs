@@ -97,13 +97,13 @@ export const scienceStage3 = {
       {
         "id": "secretary-bird-sci3-08",
         "category": "conservation",
-        "label": "Conservation status needs a dated source",
-        "text": "The IUCN Red List assessment treats the secretarybird as a separate species with a documented global threat evaluation; local observations cannot substitute for that assessment.",
+        "label": "Habitat protection matters",
+        "text": "The secretarybird is protected in many African countries, but habitat loss and deforestation could affect its future.",
         "source": {
-          "label": "IUCN Red List — Secretarybird 2020 assessment",
-          "url": "https://doi.org/10.2305/IUCN.UK.2020-3.RLTS.T22696221A173647556.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "San Diego Zoo Wildlife Alliance — Secretary bird",
+          "url": "https://animals.sandiegozoo.org/animals/secretary-bird",
+          "publisher": "San Diego Zoo Wildlife Alliance",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }
@@ -115,7 +115,7 @@ export const scienceStage3 = {
       {
         "id": "titan-arum-sci3-01",
         "category": "appearance",
-        "label": "A flowering structure, not a single flower",
+        "label": "An inflorescence, not one flower",
         "text": "The towering titan arum display is an inflorescence of many small flowers, arranged within a spadix and surrounding spathe.",
         "source": {
           "label": "Kew Gardens — Titan arum",

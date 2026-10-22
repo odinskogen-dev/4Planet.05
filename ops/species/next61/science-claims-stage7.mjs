@@ -6,7 +6,7 @@ export const scienceStage7 = {
       {
         "id": "clouded-leopard-sci7-01",
         "category": "ecology",
-        "label": "Mainland and Sunda cats are different species",
+        "label": "Mainland and Sunda cats differ",
         "text": "The mainland clouded leopard Neofelis nebulosa is taxonomically distinct from the Sunda clouded leopard Neofelis diardi of Borneo and Sumatra.",
         "source": {
           "label": "IUCN World Conservation Congress 2025 — Two clouded leopard species",
@@ -85,12 +85,12 @@ export const scienceStage7 = {
         "id": "clouded-leopard-sci7-07",
         "category": "conservation",
         "label": "Global conservation classification",
-        "text": "IUCN assessed the mainland clouded leopard as Vulnerable, with a decreasing global population trend; this classification is not the Sunda species' assessment.",
+        "text": "Smithsonian's National Zoo describes clouded leopards as vulnerable; the mainland and Sunda species must not be conflated.",
         "source": {
-          "label": "IUCN Red List 2021 — Neofelis nebulosa",
-          "url": "https://doi.org/10.2305/IUCN.UK.2021-2.RLTS.T14519A198843258.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "Smithsonian National Zoo — Clouded leopard",
+          "url": "https://nationalzoo.si.edu/animals/clouded-leopard",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       },
@@ -98,12 +98,12 @@ export const scienceStage7 = {
         "id": "clouded-leopard-sci7-08",
         "category": "conservation",
         "label": "Snares and habitat fragmentation",
-        "text": "IUCN identifies snaring, illegal wildlife trade, forest loss and reduced habitat connectivity as threats to mainland clouded leopard populations.",
+        "text": "Habitat destruction, deforestation and illegal poaching are major pressures on clouded leopards and their forest habitat.",
         "source": {
-          "label": "IUCN Red List 2021 — Neofelis nebulosa",
-          "url": "https://doi.org/10.2305/IUCN.UK.2021-2.RLTS.T14519A198843258.en",
-          "publisher": "IUCN Red List",
-          "verifiedOn": "2026-10-21"
+          "label": "Smithsonian National Zoo — Clouded leopard",
+          "url": "https://nationalzoo.si.edu/animals/clouded-leopard",
+          "publisher": "Smithsonian National Zoo",
+          "verifiedOn": "2026-10-22"
         },
         "status": "SOURCE_READ_INDEPENDENT_GOLD_PENDING"
       }
@@ -315,7 +315,7 @@ export const scienceStage7 = {
       {
         "id": "greater-flamingo-sci7-08",
         "category": "conservation",
-        "label": "Wetland disturbance is a major local pressure",
+        "label": "Wetland disturbance is a pressure",
         "text": "Changes in water availability, disturbance and habitat quality can affect nesting and feeding success; these effects vary among wetlands.",
         "source": {
           "label": "BirdLife South Africa — Greater Flamingo assessment 2025",

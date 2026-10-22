@@ -315,7 +315,7 @@ export const scienceStage5 = {
       {
         "id": "west-indian-manatee-sci5-08",
         "category": "conservation",
-        "label": "Protecting both seagrass and warm refuges",
+        "label": "Seagrass and warm refuges",
         "text": "Effective manatee habitat protection includes aquatic vegetation and suitable warm-water shelter in cold seasons.",
         "source": {
           "label": "Florida Fish and Wildlife Conservation Commission — Manatee habitat",
