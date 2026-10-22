@@ -161,16 +161,17 @@
       "title": "Climate Change — Evidence, Signals and Solutions | 4PLANET",
       "description": "Understand climate change through source-grounded evidence, planetary signals and connected solutions, with IPCC sources and 4PLANET ATLAS context.",
       "domain": "E4RTH",
-      "answer": "Climate change is a long-term shift in the climate system. The IPCC’s latest completed assessment is AR6; 4PLANET connects that evidence to observable planetary layers without pretending one map layer represents the whole climate system.",
+      "answer": "Climate change is the long-term alteration of the climate system, not the weather at one location on one day. The IPCC Sixth Assessment Synthesis Report concludes that human activities, especially greenhouse-gas emissions, unequivocally caused observed global warming; global surface temperature in 2011–2020 was approximately 1.1°C above 1850–1900. Those are historical assessed periods, not today's live temperature. Impacts, emissions cuts, adaptation and ecological outcomes must be evaluated with different evidence.",
       "keyFacts": [
-        "Climate is a long-term system, not a single weather event.",
-        "Different observations have different time scales and uncertainties.",
-        "Mitigation, adaptation and ecological response are separate but connected questions."
+        "The IPCC's completed AR6 Synthesis Report attributes observed global warming unequivocally to human activities.",
+        "Its assessed 1.1°C warming figure compares global averages for 2011–2020 and 1850–1900; it is not a real-time temperature reading.",
+        "Climate hazards and human vulnerability differ substantially by geography, exposure, infrastructure and ecosystems.",
+        "Mitigation reduces causes; adaptation reduces exposure or vulnerability; neither automatically demonstrates a particular local ecological outcome."
       ],
       "happening": "ATLAS can place temperature-related, sea-ice, vegetation, aerosol and other source layers beside one another. They should be read according to each source’s own date and method.",
-      "whyItMatters": "Climate change touches ecosystems, infrastructure, food, health and economies. Clear source boundaries matter because individual signals are often overinterpreted.",
-      "sourceEstablishes": "IPCC assessments synthesize the state of scientific knowledge across physical science, impacts, adaptation and mitigation.",
-      "sourceDoesNotEstablish": "A single local event or one ATLAS layer cannot by itself establish attribution to climate change.",
+      "whyItMatters": "Confusing a day's fire, flood or unusual temperature with climate attribution misleads. Global climate science, local observations, potential responses and implementation evidence are distinct layers that people need to navigate clearly.",
+      "sourceEstablishes": "IPCC AR6 synthesises observed warming, attribution, impacts and assessed response options with stated confidence. NASA Earth imagery offers dated observation layers, not a comprehensive climate attribution model.",
+      "sourceDoesNotEstablish": "An individual storm, wildfire or single satellite image cannot on its own establish climate-change attribution, effectiveness of a policy or a realised ecological benefit.",
       "atlasHref": "/atlas?m=PLANET&l=bluemarble,sst,seaice,ndvi,aerosol&z=1.65&c=5,18",
       "embedKind": "NEWS",
       "atlasLabel": "Climate-related planetary context",
@@ -178,29 +179,37 @@
       "sources": [
         {
           "authority": "IPCC",
-          "label": "AR6 Synthesis Report: Climate Change 2023",
-          "url": "https://www.ipcc.ch/synthesis-report/",
-          "checkedAt": "2026-10-06"
+          "label": "AR6 Synthesis Report — Summary for Policymakers",
+          "url": "https://www.ipcc.ch/report/ar6/syr/summary-for-policymakers/",
+          "checkedAt": "2026-10-22"
         },
         {
           "authority": "NASA EOSDIS",
-          "label": "Global Imagery Browse Services",
+          "label": "Global Imagery Browse Services — source-dated observations",
           "url": "https://nasa-gibs.github.io/gibs-api-docs/",
-          "checkedAt": "2026-10-06"
+          "checkedAt": "2026-10-22"
         }
       ],
       "related": [
         {
-          "label": "CLIM4TE_",
-          "href": "/missions/clim4te"
+          "label": "Climate solutions — mitigation and adaptation",
+          "href": "/climate-solutions"
         },
         {
-          "label": "Climate solutions",
-          "href": "/climate-solutions"
+          "label": "Living Systems — ecological dependencies",
+          "href": "/livingsystems/dependencies/"
         },
         {
           "label": "Renewable energy",
           "href": "/renewable-energy"
+        },
+        {
+          "label": "Coral bleaching and warming oceans",
+          "href": "/coral-bleaching"
+        },
+        {
+          "label": "IMPACT — outputs versus measured outcomes",
+          "href": "/impact"
         }
       ],
       "indexable": true
@@ -211,46 +220,55 @@
       "title": "Biodiversity — Species Records, Patterns and Sources | 4PLANET",
       "description": "Explore biodiversity through open species occurrence data, source-grounded explanations and 4PLANET ATLAS without confusing records with abundance.",
       "domain": "E4RTH",
-      "answer": "Biodiversity describes the variety of life at genetic, species and ecosystem levels. 4PLANET uses open biodiversity records as evidence of reported occurrences, not as a complete census of life.",
+      "answer": "Biodiversity is the variety of genes, species and ecosystems—and the relationships that sustain living systems. Its decline is not measured by a single global map: IPBES identifies land- and sea-use change, direct exploitation, climate change, pollution and invasive alien species among the major direct drivers. GBIF records can show where organisms were reported, but sampling effort and geographic gaps prevent treating those records as a census.",
       "keyFacts": [
-        "Occurrence records show where a source reported an organism.",
-        "More records can reflect more observation effort, not more life.",
-        "Species, places and living systems need distinct evidence layers."
+        "Biodiversity includes variation within species, between species and among ecosystems.",
+        "The 2019 IPBES Global Assessment identifies five major direct drivers of biodiversity loss; their importance differs by ecosystem and region.",
+        "Occurrence records reflect where and when observations were submitted. Denser records may show greater observer activity rather than greater biodiversity.",
+        "Evidence of species occurrence, population change, habitat condition and verified conservation outcomes must remain separate."
       ],
       "happening": "The ATLAS biodiversity view shows GBIF record density and selected occurrence layers. Bright or dense areas can indicate recording intensity rather than ecological abundance.",
-      "whyItMatters": "Biodiversity data becomes misleading when observation effort is confused with biological reality. The page keeps that limitation visible.",
-      "sourceEstablishes": "GBIF provides open access to occurrence records and taxonomic data supplied by its publishing network.",
-      "sourceDoesNotEstablish": "Record density alone does not establish abundance, complete range, population trend or ecosystem health.",
+      "whyItMatters": "A report of an organism is evidence of an observation, not proof of abundance or a stable population. Connecting species, habitat function, threats and human dependencies is more useful than treating record density as an ecological health score.",
+      "sourceEstablishes": "IPBES synthesises scientific evidence about drivers of biodiversity loss and nature's contributions to people. GBIF distributes source-attributed occurrence and taxonomy records, subject to uneven sampling and publisher data quality.",
+      "sourceDoesNotEstablish": "Neither a GBIF heatmap nor a broad IPBES global result establishes the local number of individuals, the health of a particular habitat or the success of an intervention.",
       "atlasHref": "/atlas?m=E4RTH&l=bluemarble,biodiv,species&z=1.65&c=5,18",
       "embedKind": "SPECIES",
       "atlasLabel": "Biodiversity records and context",
       "atlasContextNote": "Record density is partly a map of where people have looked.",
       "sources": [
         {
-          "authority": "GBIF",
-          "label": "Global Biodiversity Information Facility",
-          "url": "https://www.gbif.org/",
-          "checkedAt": "2026-10-06"
+          "authority": "IPBES",
+          "label": "2019 Global Assessment of Biodiversity and Ecosystem Services",
+          "url": "https://www.ipbes.net/global-assessment",
+          "checkedAt": "2026-10-22"
         },
         {
-          "authority": "IPBES",
-          "label": "Global Assessment of Biodiversity and Ecosystem Services",
-          "url": "https://www.ipbes.net/global-assessment",
-          "checkedAt": "2026-10-06"
+          "authority": "GBIF",
+          "label": "Open occurrence records, caveats and source attribution",
+          "url": "https://www.gbif.org/",
+          "checkedAt": "2026-10-22"
         }
       ],
       "related": [
         {
-          "label": "SPECIES_ Mission",
-          "href": "/missions/species"
+          "label": "Explore canonical SPECIES profiles",
+          "href": "https://4species.com/species/"
         },
         {
-          "label": "Whales",
-          "href": "/whales"
+          "label": "Living Systems — ecological dependencies",
+          "href": "/livingsystems/dependencies/"
         },
         {
-          "label": "Bees",
+          "label": "ATLAS — verified places",
+          "href": "https://4planetatlas.com/places"
+        },
+        {
+          "label": "Bees and pollination",
           "href": "/bees"
+        },
+        {
+          "label": "IMPACT — what is actually proven",
+          "href": "/impact"
         }
       ],
       "indexable": true
@@ -261,16 +279,17 @@
       "title": "Deforestation and Forest Change — Maps, Data and Context | 4PLANET",
       "description": "Explore forest change through authoritative assessments and mapped tree-cover loss, with clear distinctions between tree-cover loss and deforestation.",
       "domain": "E4RTH",
-      "answer": "Deforestation is the conversion of forest to another land use. Tree-cover loss is a different measure: it can include harvest, fire, storms and other temporary or permanent changes.",
+      "answer": "Deforestation means converting forest land to a different land use. It is not identical to satellite-detected tree-cover loss, which can reflect timber harvesting, fire, storms or permanent agricultural conversion. FAO's Global Forest Resources Assessment 2025—built from official national reporting—estimates approximately 4.14 billion hectares of forest worldwide. Forest change should therefore be interpreted with the observation year, measurement definition, land-use context and the intended conservation question visible.",
       "keyFacts": [
-        "Tree-cover loss is not automatically deforestation.",
-        "National forest assessments and satellite products answer different questions.",
-        "Time, threshold and land-use definitions must remain visible."
+        "FAO FRA 2025 reports approximately 4.14 billion hectares of forest globally using its assessment definitions; that is an assessment, not a live satellite count.",
+        "Global Forest Watch's tree-cover-loss measure includes temporary and permanent canopy removal and should not be labelled deforestation without additional evidence.",
+        "Forest degradation, conversion, fire, timber harvest and restoration are distinct processes with different consequences.",
+        "A mapped pixel does not reveal whether an activity was legal, permanent or caused by a particular actor."
       ],
       "happening": "ATLAS exposes a Global Forest Watch / UMD tree-cover-loss layer as spatial context. FAO’s FRA 2025 provides the latest global official national-data assessment.",
-      "whyItMatters": "Forest change is central to climate, biodiversity and livelihoods, but different datasets use different definitions. Conflating them produces false conclusions.",
-      "sourceEstablishes": "FAO FRA 2025 reports official national forest-resource trends; mapped tree-cover-loss products show detected canopy-loss patterns under their own methods.",
-      "sourceDoesNotEstablish": "A tree-cover-loss pixel by itself does not establish deforestation, illegality, cause or permanence.",
+      "whyItMatters": "A detected forest-loss signal may be urgent, but it cannot explain land use, the direct cause or responsibility on its own. Better decisions require reconciling remote sensing with country-level forest definitions, ecological context and verified local evidence.",
+      "sourceEstablishes": "FAO FRA 2025 describes country-reported forest area and trends through 2025. Global Forest Watch's University of Maryland products map loss of tree canopy under a separate satellite method.",
+      "sourceDoesNotEstablish": "Neither global totals nor a single tree-cover-loss detection identifies forest conversion, responsibility, compliance or the ecological outcome of restoration at a particular site.",
       "atlasHref": "/atlas?m=E4RTH&l=bluemarble,forest,ndvi&z=1.65&c=5,18",
       "embedKind": "NEWS",
       "atlasLabel": "Forest change context",
@@ -278,29 +297,37 @@
       "sources": [
         {
           "authority": "FAO",
-          "label": "Global Forest Resources Assessment 2025",
+          "label": "Global Forest Resources Assessment 2025 — national assessment",
           "url": "https://www.fao.org/forest-resources-assessment/past-assessments/fra-2025/en",
-          "checkedAt": "2026-10-06"
+          "checkedAt": "2026-10-22"
         },
         {
           "authority": "Global Forest Watch",
-          "label": "Global Forest Watch data platform",
+          "label": "Tree-cover loss is not identical to deforestation",
           "url": "https://www.globalforestwatch.org/",
-          "checkedAt": "2026-10-06"
+          "checkedAt": "2026-10-22"
         }
       ],
       "related": [
         {
-          "label": "Amazon rainforest",
+          "label": "Amazon rainforest — connected systems",
           "href": "/amazon-rainforest"
         },
         {
-          "label": "AM4ZONIA_",
+          "label": "Living Systems — Amazon rainforest",
+          "href": "/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/"
+        },
+        {
+          "label": "ATLAS — Brazil",
+          "href": "https://4planetatlas.com/place/brazil"
+        },
+        {
+          "label": "AM4ZONIA_ Mission",
           "href": "/missions/am4zonia"
         },
         {
-          "label": "Rewilding",
-          "href": "/rewilding"
+          "label": "MAGAZINE — Amazonia is more than a forest",
+          "href": "https://4planetmagazine.com/magazine/amazonia-more-than-a-forest"
         }
       ],
       "indexable": true
@@ -361,16 +388,17 @@
       "title": "Coral Bleaching — Heat Stress, Reef Context and Sources | 4PLANET",
       "description": "Explore coral heat stress and bleaching context using NOAA Coral Reef Watch layers, with a clear boundary between heat stress and observed bleaching.",
       "domain": "OCE4N",
-      "answer": "Coral bleaching can occur when corals experience stress, especially prolonged heat. NOAA Degree Heating Weeks measure accumulated thermal stress; they are a pressure indicator, not direct observation of bleaching on every reef.",
+      "answer": "Corals may bleach when stress—especially sustained abnormally warm water—causes them to expel their symbiotic algae. Bleaching is not automatically coral death, but prolonged or repeated severe stress can cause mortality. NOAA Coral Reef Watch maps satellite-derived sea-surface temperature and accumulated thermal exposure in Degree Heating Weeks (DHW); this is an early-warning measure, not a field survey of bleached coral.",
       "keyFacts": [
-        "Degree Heating Weeks accumulate heat stress over time.",
-        "Heat stress and observed bleaching are different evidence types.",
-        "Local reef condition still requires field evidence."
+        "NOAA Degree Heating Weeks combine the intensity and duration of anomalous reef heat stress over a moving twelve-week period.",
+        "The fourth global mass coral bleaching event likely ended in 2025, according to NOAA's June 2026 assessment.",
+        "NOAA reported bleaching-level heat stress across approximately 84% of the world's reef area during the 2023–2025 event; this is NOT evidence that 84% of individual corals bleached or died.",
+        "Reef-level condition requires diver, survey or other local biological observations in addition to thermal-stress mapping."
       ],
       "happening": "The ATLAS coral layer uses NOAA Coral Reef Watch heat-stress data where available.",
-      "whyItMatters": "Heat-stress maps are powerful early-warning context, but overclaiming them as direct reef condition hides what still needs field observation.",
-      "sourceEstablishes": "NOAA Coral Reef Watch products establish satellite-derived thermal-stress conditions under defined methods and spatial resolution.",
-      "sourceDoesNotEstablish": "Heat stress alone does not establish that every coral in a mapped area has bleached or died.",
+      "whyItMatters": "A heat-stress alert can support timely monitoring, but only field evidence can confirm local bleaching extent, species response and mortality. Repeated heat exposure matters alongside water quality, storms, fishing pressure and recovery capacity.",
+      "sourceEstablishes": "NOAA Coral Reef Watch supplies satellite-based temperature and DHW pressure indicators with documented methods. NOAA's June 2026 assessment describes the spatial reach and likely end of the fourth global bleaching event.",
+      "sourceDoesNotEstablish": "Satellite heat stress alone cannot establish a particular reef's bleaching percentage, mortality, resilience or restoration success.",
       "atlasHref": "/atlas?m=OCE4N&l=bluemarble,coral,sst&z=2.2&c=147,-18",
       "embedKind": "NEWS",
       "atlasLabel": "Coral heat stress and sea-surface temperature",
@@ -378,23 +406,37 @@
       "sources": [
         {
           "authority": "NOAA Coral Reef Watch",
-          "label": "Daily 5 km Coral Bleaching Heat Stress Monitoring",
-          "url": "https://coralreefwatch.noaa.gov/product/5km/",
-          "checkedAt": "2026-10-06"
+          "label": "5 km satellite bleaching and Degree Heating Week products",
+          "url": "https://www.coralreefwatch.noaa.gov/product/5km/",
+          "checkedAt": "2026-10-22"
+        },
+        {
+          "authority": "NOAA NESDIS",
+          "label": "2026 update — fourth global bleaching event likely ended in 2025",
+          "url": "https://www.nesdis.noaa.gov/news/worlds-fourth-mass-coral-bleaching-event-likely-ended-2025",
+          "checkedAt": "2026-10-22"
         }
       ],
       "related": [
         {
-          "label": "COR4L_",
-          "href": "/missions/cor4l"
-        },
-        {
-          "label": "Great Barrier Reef",
+          "label": "Living Systems — Great Barrier Reef",
           "href": "/living-systems/great-barrier-reef"
         },
         {
-          "label": "Climate change",
+          "label": "ATLAS — Australia geographic context",
+          "href": "https://4planetatlas.com/place/australia"
+        },
+        {
+          "label": "COR4L_ Mission",
+          "href": "/missions/cor4l"
+        },
+        {
+          "label": "Climate change — evidence and timescales",
           "href": "/climate-change"
+        },
+        {
+          "label": "IMPACT — evidence of action",
+          "href": "/impact"
         }
       ],
       "indexable": true
