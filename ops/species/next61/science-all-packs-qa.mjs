@@ -9,7 +9,8 @@ import { scienceStage6 as stage6 } from "./science-claims-stage6.mjs";
 import { scienceStage7 as stage7 } from "./science-claims-stage7.mjs";
 import { scienceStage8 as stage8 } from "./science-claims-stage8.mjs";
 import { scienceStage9 as stage9 } from "./science-claims-stage9.mjs";
-const sciencePacks = { ...stage1, ...stage2, ...stage3, ...stage4, ...stage5, ...stage6, ...stage7, ...stage8, ...stage9 };
+import { scienceStage10 as stage10 } from "./science-claims-stage10.mjs";
+const sciencePacks = { ...stage1, ...stage2, ...stage3, ...stage4, ...stage5, ...stage6, ...stage7, ...stage8, ...stage9, ...stage10 };
 
 const dataDir=process.env.SPECIES_DATA_DIR||path.join(process.cwd(),"public/species-data/v1");
 const reportDir=process.env.SPECIES_REPORT_DIR||path.join(process.cwd(),"reports/species-next61");
