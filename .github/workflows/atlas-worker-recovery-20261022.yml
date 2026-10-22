@@ -8,7 +8,7 @@ on:
       - 'tests/e2e/atlas-worker-recovery.spec.ts'
       - '.github/workflows/atlas-worker-recovery-20261022.yml'
 permissions:
-  contents: read
+  contents: write
 jobs:
   map-worker-regression:
     runs-on: ubuntu-latest
@@ -20,6 +20,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Patch Vite security finding without changing its 8.1 minor line
+        run: npm install --save-dev --save-exact vite@8.1.6
       - name: Keep dependency audit blocking high and critical
         run: npm audit --audit-level=high
       - run: npm run typecheck
@@ -48,6 +50,17 @@ jobs:
             sleep 1
           done
           npx playwright test tests/e2e/atlas-worker-recovery.spec.ts --project=desktop-1440 --project=mobile-390 --project=webkit-390
+      - name: Save reviewed dependency patch to isolated candidate after green browser tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name '4PLANET CI Candidate'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(security): pin Vite 8.1.6 after audited Atlas/browser proof'
+            git push origin HEAD:fix/atlas-maplibre-worker-20261022
+          fi
       - name: Retain failure evidence
         if: always()
         uses: actions/upload-artifact@v4
