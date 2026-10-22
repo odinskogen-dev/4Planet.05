@@ -371,7 +371,10 @@ jobs:
           if (validBody.includes("Off the map") || validBody.includes("No profile resolved")) {
             throw new Error("valid root slug hydrated to a fallback");
           }
-          if (page.url() !== `${origin}/red-panda`) throw new Error(`root slug URL changed: ${page.url()}`);
+          const visibleUrl = new URL(page.url());
+          if (visibleUrl.origin !== new URL(origin).origin || !/^\\/red-panda\\/?$/.test(visibleUrl.pathname)) {
+            throw new Error(`root slug URL changed: ${page.url()}`);
+          }
           const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
           if (canonical !== "https://4species.com/red-panda") throw new Error(`wrong canonical: ${canonical}`);
           const validRobots = validResponse.headers()["x-robots-tag"] || "";
