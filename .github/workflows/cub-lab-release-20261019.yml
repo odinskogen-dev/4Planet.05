@@ -183,6 +183,35 @@ jobs:
           print('CUB_ROMA06_ORIGINAL_VERIFIED',len(data),digest)
           print('CUB_ROMA06_ISOLATED_SAVE_DERIVATIVE',len(isolated),hashlib.sha256(isolated).hexdigest())
           PY
+      - name: Integrate and release verified Premium02 kingdom campaign as full-window game
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat site/medievalmmo/premium02/source/payload-*.txt | tr -d '\n\r ' | base64 --decode > /tmp/cub-premium02-release.tar.gz
+          echo 'c8659315dc2cc957ddd3610c6c41cd5e7852b5484b75bceedb8006cf15ce2d56  /tmp/cub-premium02-release.tar.gz' | sha256sum -c -
+          mkdir -p /tmp/cub-premium02-release
+          tar -xzf /tmp/cub-premium02-release.tar.gz -C /tmp/cub-premium02-release
+          cp site/medievalmmo/premium02/qa/browser-qa.mjs /tmp/cub-premium02-release/tests/browser-qa.mjs
+          cd /tmp/cub-premium02-release
+          node tests/kingdom.mjs
+          npm install --no-audit --no-fund playwright@1.56.1
+          python3 "$GITHUB_WORKSPACE/site/medievalmmo/premium02/qa/prepare.py"
+          npm run build
+          test "$(wc -c < publish/web/index.html)" -gt 1000000
+          grep -Fq 'MEDIEVAL KINGDOMS' publish/web/index.html
+          grep -Fq '<canvas id="world"></canvas>' publish/web/index.html
+          python3 -m http.server 8877 --bind 127.0.0.1 --directory publish/web >/tmp/cub-premium02-release-http.log 2>&1 &
+          WEB_PID=$!
+          trap 'kill $WEB_PID || true' EXIT
+          sleep 2
+          node tests/browser-qa.mjs
+          kill "$WEB_PID" || true
+          trap - EXIT
+          cp publish/web/index.html "$GITHUB_WORKSPACE/site/medievalmmo/index.html"
+          cd "$GITHUB_WORKSPACE"
+          sha256sum site/medievalmmo/index.html | cut -d' ' -f1 > /tmp/cub-premium02-publish.sha
+          rm -rf site/medievalmmo/premium02
+          echo 'CUB_MEDIEVAL_PREMIUM02_BUILD_AND_FULL_LOOP_QA_PASS'
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
@@ -220,9 +249,11 @@ jobs:
           set -euo pipefail
           for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
             curl -fsSL --max-time 25 "$host/medievalmmo/" -o /tmp/live-mmo-entry.html
-            test "$(wc -c < /tmp/live-mmo-entry.html)" -gt 2000000
+            test "$(wc -c < /tmp/live-mmo-entry.html)" -gt 1000000
             grep -Fq '<canvas id="world"></canvas>' /tmp/live-mmo-entry.html
-            grep -Fq 'cub-medievalmmo-full-window' /tmp/live-mmo-entry.html
+            grep -Fq 'MEDIEVAL KINGDOMS' /tmp/live-mmo-entry.html
+            test "$(sha256sum /tmp/live-mmo-entry.html | cut -d' ' -f1)" = "$(cat /tmp/cub-premium02-publish.sha)"
+            echo "CUB_MEDIEVAL_PREMIUM02_EXACT_BYTE_LIVE_PASS=$host/medievalmmo/"
             curl -fsSL --max-time 25 "$host/medivalmmo/?stay" -o /tmp/live-mmo-old.html
             grep -Fq '/medievalmmo/' /tmp/live-mmo-old.html
             curl -fsSL --max-time 25 "$host/games/medieval-mmo/" -o /tmp/live-mmo-alias.html
@@ -277,7 +308,7 @@ jobs:
             test "$passed" -eq 1 || { echo "CH05_LIVE_OR_HOME_FAIL=$host"; exit 9; }
             echo "CH05_GAME_AND_HOME_LIVE_PASS=$host/medievalkingdoms/"
           done
-      - name: Verify MMO actual playable battle on desktop and mobile Chromium
+      - name: Verify live Premium02 kingdom campaign starts on desktop and mobile
         shell: bash
         run: |
           set -euo pipefail
@@ -287,22 +318,21 @@ jobs:
           (async()=>{
             const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
             for(const cfg of [{name:'desktop',width:1366,height:768,mobile:false},{name:'mobile',width:390,height:844,mobile:true}]){
-              const context=await browser.newContext({viewport:{width:cfg.width,height:cfg.height},isMobile:cfg.mobile,hasTouch:cfg.mobile});
-              const page=await context.newPage();
-              const faults=[];page.on('pageerror',e=>faults.push(String(e)));
+              const ctx=await browser.newContext({viewport:{width:cfg.width,height:cfg.height},isMobile:cfg.mobile,hasTouch:cfg.mobile});
+              const page=await ctx.newPage(),errors=[];
+              page.on('pageerror',e=>errors.push(String(e)));
+              page.on('response',r=>{if(r.status()>=400)errors.push('HTTP '+r.status()+' '+r.url())});
               const response=await page.goto('https://lab.p4nther.com/medievalmmo/',{waitUntil:'domcontentloaded',timeout:60000});
-              await page.waitForTimeout(4200);
+              await page.locator('#bCamp').waitFor({state:'visible',timeout:25000});
+              await page.locator('#bCamp').click();
+              await page.locator('.cmp-map').waitFor({state:'visible',timeout:25000});
+              const progress=await page.locator('.cmp-top').innerText();
               const canvas=page.locator('canvas#world');
-              await canvas.waitFor({state:'visible',timeout:15000});
               const rect=await canvas.boundingBox();
-              const start=page.locator('#bNew');
-              const startVisible=await start.isVisible().catch(()=>false);
-              if(startVisible){await start.click({timeout:10000});await page.waitForTimeout(1800)}
-              const stillCanvas=await canvas.isVisible();
-              await page.screenshot({path:'medievalmmo-'+cfg.name+'.png',fullPage:true});
-              console.log('MMO_3D_FULLFRAME',cfg.name,'HTTP',response.status(),'CANVAS',stillCanvas,'GAME_START_BUTTON',startVisible,'RECT',JSON.stringify(rect),'ERRORS',JSON.stringify(faults));
-              if(response.status()!==200||!stillCanvas||!rect||rect.width<cfg.width*.8||faults.length>0)throw Error('FULLFRAME_GAME_SMOKE_FAILED_'+cfg.name);
-              await context.close();
+              console.log('PREMIUM02_LIVE_CAMPAIGN',cfg.name,'HTTP',response.status(),'DATE',progress.slice(0,100),'CANVAS',JSON.stringify(rect),'ERRORS',JSON.stringify(errors));
+              await page.screenshot({path:'medievalmmo-premium02-live-'+cfg.name+'.png',fullPage:true});
+              if(response.status()!==200||!progress.includes('1187 AD')||!rect||rect.width<cfg.width*.95||errors.length>0)throw Error('PREMIUM02_LIVE_CAMPAIGN_FAILURE_'+cfg.name);
+              await ctx.close();
             }
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
@@ -310,8 +340,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cub-medievalmmo-fullframe-gameplay
-          path: medievalmmo-*.png
+          name: cub-medievalmmo-premium02-live-proof
+          path: medievalmmo-premium02-live-*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Verify newest MEDIEVAL v5 experimental game runs as real WebGL canvas
