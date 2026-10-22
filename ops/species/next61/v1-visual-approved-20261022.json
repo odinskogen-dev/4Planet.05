@@ -1,6 +1,6 @@
 {
   "date": "2026-10-22",
-  "status": "human-reviewed V1 photographic shortlist ONLY; other profiles unapproved",
+  "status": "Original first 18 + up to eight visually screened Wave02 photos (fail closed if any source bytes differ)",
   "source": "Manual inspection of actual labelled photographic contact sheets and local sha256-verified original thumbnails; iNaturalist research-grade captive=false for animals; Commons specific licensed plant lead files",
   "safety": "Deny by default: no captive, dead, handled, illustrated, inaccurate or rights-ambiguous subject. Single hero only; no gallery photographs without individual visual review.",
   "approved": {
@@ -116,6 +116,54 @@
       "photoId": null,
       "sha256": "6508df462c4d8b0abaceff6d037ad8b207c5425116ec06d96f2c834ce61fd989",
       "review": "visual contact-sheet checked correct identifiable living species in apparently wild setting or living uncaged plant",
+      "oneHeroOnly": true
+    },
+    "clouded-leopard": {
+      "photoId": 544317503,
+      "sha256": "a387d02df3a1926aa5f88be40a919b76f7ef76892cf061ddaf453f85bfcad030",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "common-wombat": {
+      "photoId": 384574495,
+      "sha256": "38646c6272bb6fa9e396db9028797a18fd06c1c21e80aa7471aa41e7eee64fd6",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "ocellaris-clownfish": {
+      "photoId": 249409772,
+      "sha256": "5545d06d08021262e14bd74fed21664beb62daa4e47836b3bed305872033722c",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "great-hammerhead": {
+      "photoId": 353767237,
+      "sha256": "ea0b02c1ee3e31e8d8b6408a4208f2ce8e04ed43e8895c49388ec0807226ddd0",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "atlas-moth": {
+      "photoId": 60643931,
+      "sha256": "5be3cd37a787ac892405ee77d883a8d13fbbbfe6c736d39f7e390a0f18a1970b",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "orchid-mantis": {
+      "photoId": 356484614,
+      "sha256": "557e83f12dc4b2b599b83d2f1be5c1c26a726dcef99b2c49a7cdc9c3465cd536",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "peacock-spider": {
+      "photoId": 160634068,
+      "sha256": "5c4fc0a8fd37d12679e0b9b8d481392558d9af7ec81ec3db4df343c7a95f7451",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
+      "oneHeroOnly": true
+    },
+    "dragon-blood-tree": {
+      "photoId": null,
+      "sha256": "822a87936297ce4c47809e9a9f9d855a1b41d4285cbd86b26b347232d1b7941a",
+      "review": "visual contact sheet reviewed: recognisable living species in apparently wild outdoor/reef habitat (not handled, dead or in visible captivity); rights metadata from specific source file",
       "oneHeroOnly": true
     }
   }
