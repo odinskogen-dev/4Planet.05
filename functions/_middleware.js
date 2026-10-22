@@ -1,3 +1,4 @@
+import { ATLAS_FLAGSHIP_EVIDENCE, ATLAS_FLAGSHIP_COHORT } from "./atlas-flagship-evidence.candidate.js";
 import { ATLAS_PROMOTED_PLACES } from "./atlas-promoted-places.generated.js";
 
 // ATLAS_ENTITY_AUTHORITY_CLOSURE_02
@@ -1271,6 +1272,7 @@ const ATLAS_BASE_WORLD_PLACES = ATLAS_WORLD_PLACE_ROWS.map(([slug,name,type,cont
 const ATLAS_WORLD_PLACES = [...ATLAS_BASE_WORLD_PLACES, ...ATLAS_PROMOTED_PLACES];
 
 const ATLAS_EVIDENCE_RELATIONS = {
+  ...ATLAS_FLAGSHIP_EVIDENCE,
   "kenya": {
     "ecosystems": [
       "Lowland and mountain forests",
@@ -1993,11 +1995,13 @@ export async function onRequest(context) {
       ]};
       const evidenceRelation=ATLAS_EVIDENCE_RELATIONS[place.slug]||null;
       const evidenceHtml=evidenceRelation?`<h2>Connected Living Planet Intelligence</h2>
+        ${evidenceRelation.explanation?`<p>${escapeHtml(evidenceRelation.explanation)}</p>`:""}
         ${evidenceRelation.ecosystems?.length?`<h3>Living systems and habitats</h3><ul>${evidenceRelation.ecosystems.map((x)=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`:""}
         ${evidenceRelation.species?.length?`<h3>Curated species connections</h3><ul>${evidenceRelation.species.map((x)=>`<li><a href="https://4species.com/species/${escapeHtml(x.slug)}">${escapeHtml(x.label)}</a>${x.scientificName?` — <em>${escapeHtml(x.scientificName)}</em>`:""}</li>`).join("")}</ul>`:""}
         ${evidenceRelation.pressures?.length?`<h3>Documented pressures</h3><ul>${evidenceRelation.pressures.map((x)=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`:""}
         ${evidenceRelation.missions?.length?`<h3>Related 4PLANET Missions</h3><ul>${evidenceRelation.missions.map((x)=>`<li><a href="https://4planet.org/missions/${escapeHtml(x.slug)}">${escapeHtml(x.label)}</a> — ${escapeHtml(x.topic)}</li>`).join("")}</ul>`:""}
         ${evidenceRelation.sources?.length?`<h3>Evidence sources</h3><ul>${evidenceRelation.sources.map((x)=>`<li><a href="${escapeHtml(x.url)}">${escapeHtml(x.label)}</a> — checked ${escapeHtml(x.checkedAt||"")}</li>`).join("")}</ul>`:""}
+        ${evidenceRelation.relatedKnowledge?.length?`<h3>Follow the evidence into 4PLANET</h3><ul>${evidenceRelation.relatedKnowledge.map(([label,href])=>`<li><a href="${escapeHtml(href)}">${escapeHtml(label)}</a></li>`).join("")}</ul>`:""}
         ${evidenceRelation.truthBoundary?`<p><strong>Evidence boundary:</strong> ${escapeHtml(evidenceRelation.truthBoundary)}</p>`:""}`:"";
       const parentHtml=parent?`<p><strong>Parent geography:</strong> <a href="/place/${escapeHtml(parent.slug)}">${escapeHtml(parent.name)}</a>.</p>`:`<p><strong>Geographic context:</strong> ${escapeHtml(place.context)}. A canonical parent object is not yet published in this cohort.</p>`;
       const childHtml=children.length?`<h2>Places within this geography</h2><ul>${children.map((p)=>`<li><a href="/place/${escapeHtml(p.slug)}">${escapeHtml(p.name)}</a> — ${escapeHtml(p.type)}</li>`).join("")}</ul>`:"";
