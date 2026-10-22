@@ -1,0 +1,63 @@
+name: 4PLANET OS — existing access and BRAIN sync capability audit
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/os-access-capability-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GDRIVE_SA_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+      GDRIVE_TOKEN: ${{ secrets.GDRIVE_ACCESS_TOKEN }}
+      GOOGLE_DRIVE_TOKEN: ${{ secrets.GOOGLE_DRIVE_TOKEN }}
+      FOUNDER_EMAIL: ${{ secrets.OS_FOUNDER_EMAIL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Read-only OS hostname, Cloudflare Access and Google Drive credential capability audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          account="${CF_ACCOUNT:-d53c17b06219066a0325eec01c21729e}"
+          report=/tmp/os-capabilities.md
+          printf '# 4PLANET private OS — existing infrastructure capabilities\n\nGitHub SHA: `%s`\n\n' "$GITHUB_SHA" > "$report"
+          for url in https://os.4planet.org/ https://labs.4planet.org/; do
+            code="$(curl -sSL --max-time 18 -o /tmp/os-host-response -w '%{http_code}' "$url" 2>/dev/null || true)"
+            final="$(curl -sSL --max-time 18 -o /dev/null -w '%{url_effective}' "$url" 2>/dev/null || true)"
+            printf 'Host %s: HTTP %s, final host %s\n' "$url" "${code:-000}" "${final%%/*}" >> "$report"
+          done
+          if [[ -n "$CF_TOKEN" ]]; then
+            echo "::add-mask::$CF_TOKEN"
+            for endpoint in "/accounts/$account/access/apps" "/accounts/$account/pages/projects/4planet-05" "/accounts/$account/workers/domains"; do
+              code="$(curl -sS --max-time 20 -H "Authorization: Bearer $CF_TOKEN" -o /tmp/os-cf-result -w '%{http_code}' "$api$endpoint" 2>/dev/null || true)"
+              printf 'Cloudflare %s: HTTP %s\n' "$endpoint" "${code:-000}" >> "$report"
+              if [[ "$code" == 200 && "$endpoint" == *access/apps* ]]; then
+                jq -r '.result[]? | select((.domain // "") | contains("os.4planet.org")) | "Existing OS Access application ID: " + .id + "; domain: " + (.domain // "UNKNOWN") + "; policies count: " + ([.policies[]?]|length|tostring)' /tmp/os-cf-result >> "$report" || true
+              fi
+              if [[ "$code" == 200 && "$endpoint" == *pages/projects* ]]; then
+                jq -r '"Existing Pages domains: " + ([.result.domains[]?] | join(", "))' /tmp/os-cf-result >> "$report" || true
+              fi
+            done
+          else
+            printf 'Cloudflare token: MISSING\n' >> "$report"
+          fi
+          printf '\nExisting Google Drive machine credential flags (presence only; no values):\n' >> "$report"
+          for var in GOOGLE_SA_JSON GDRIVE_SA_JSON GDRIVE_TOKEN GOOGLE_DRIVE_TOKEN; do
+            if [[ -n "${!var:-}" ]]; then printf '%s: PRESENT\n' "$var" >> "$report"; else printf '%s: MISSING\n' "$var" >> "$report"; fi
+          done
+          if [[ -n "$FOUNDER_EMAIL" ]]; then printf 'OS_FOUNDER_EMAIL: PRESENT (value withheld)\n' >> "$report"; else printf 'OS_FOUNDER_EMAIL: MISSING\n' >> "$report"; fi
+          printf '\nThis is a read-only capability audit. No secrets, private BRAIN rows or personal data are printed.\n' >> "$report"
+          cat "$report"
+      - name: Write readback to existing OS task
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/os-capabilities.md ]]; then gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body-file /tmp/os-capabilities.md; fi

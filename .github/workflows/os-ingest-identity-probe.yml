@@ -1,0 +1,32 @@
+name: 4PLANET OS ingest identity probe
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/os-ingest-identity-probe.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check untrusted deny and GitHub OIDC endpoint without private payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          u=https://ghvdzetmplqkdtfqiror.supabase.co/functions/v1/os-brain-ingest
+          a=$(curl -sS --connect-timeout 5 --max-time 20 -X POST -H 'Content-Type: application/json' -d '{"action":"status"}' -o /tmp/brain-anon -w '%{http_code}' "$u" || true)
+          echo "ANONYMOUS_INGEST_HTTP=$a"
+          cat /tmp/brain-anon | head -c 200 || true
+          echo
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+          token=$(curl -sS --connect-timeout 5 --max-time 20 -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=4planet-os-brain-ingest" | jq -r .value)
+          test "$token" != null
+          test -n "$token"
+          echo "::add-mask::$token"
+          b=$(curl -sS --connect-timeout 5 --max-time 30 -X POST -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d '{"action":"bad-action","runKey":"123-1"}' -o /tmp/brain-oidc -w '%{http_code}' "$u" || true)
+          echo "OIDC_INGEST_HTTP=$b"
+          cat /tmp/brain-oidc | head -c 200 || true
+          echo

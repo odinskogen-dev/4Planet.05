@@ -1,0 +1,30 @@
+@media (max-width: 620px) {
+  /* Keep content inside the viewport. The prior shared inset rule shifted
+     relatively-positioned sections 14px to the right, which could place the
+     final rail/border just outside iPhone viewports. */
+  .labs-grid-section {
+    margin-inline: 14px;
+    inset-inline: auto;
+  }
+
+  .labs-rails {
+    margin-inline: 0;
+    inset-inline: 14px;
+  }
+
+  .labs-shell,
+  .labs-page {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+}
+
+@media (max-width: 390px) {
+  .labs-grid-section {
+    margin-inline: 12px;
+  }
+
+  .labs-rails {
+    inset-inline: 12px;
+  }
+}
