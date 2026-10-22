@@ -1,0 +1,40 @@
+/* ROMA city architect V0.1: isolated campaign-only construction scene */
+body.city-active { overflow:hidden; }
+#city-layer { position:fixed;inset:0;z-index:110;display:flex;flex-direction:column;background:#232b29;color:#f1e8d6;font-family:'DM Sans',Arial,sans-serif; }
+#city-layer.hidden { display:none; }
+.city-head { height:86px;flex-shrink:0;display:flex;align-items:center;gap:24px;padding:12px 30px;background:#222826;border-bottom:1px solid #8e9c8061; }
+.city-logo { font:500 31px Georgia,serif;letter-spacing:.045em;white-space:nowrap; }
+.city-logo span { display:block;font:600 9px 'DM Sans',sans-serif;letter-spacing:.18em;color:#b5ad8e;margin-top:2px; }
+.city-headline { flex:1; }.city-headline small { color:#b5b091;letter-spacing:.18em;font-size:9px; }
+.city-headline h2 { font:400 25px Georgia,serif;letter-spacing:.045em;margin:5px 0 0; }
+#city-close { flex:none;background:#363d38;color:#f1e6cd;border:1px solid #7c8374;border-radius:12px;padding:12px 18px;font-size:10px;letter-spacing:.1em;cursor:pointer; }
+#city-close span {padding-left:12px;}
+.city-main {display:flex;flex:1;min-height:0; }
+.city-scene {position:relative;flex:1;min-width:0;background:#607468;display:flex;align-items:center;overflow:hidden; }
+#city-canvas { width:100%;height:auto;max-height:100%;object-fit:contain;display:block;cursor:crosshair;touch-action:manipulation; }
+.city-overline,.city-bottom{position:absolute;z-index:2;left:22px;right:22px;color:#f5e9cc;font-size:9px;letter-spacing:.09em;text-shadow:0 1px 5px #121c15;}
+.city-overline{top:13px;}.city-bottom {bottom:17px;display:flex;justify-content:space-between;gap:8px;}
+.city-menu {width:340px;flex:0 0 340px;background:#292e2a;border-left:1px solid #68775d88;padding:24px 22px;overflow-y:auto; }
+.city-menu-title small {font-size:9px;color:#bda982;letter-spacing:.18em;}
+.city-menu-title h3 {font:400 27px Georgia,serif;margin:9px 0;}
+.city-menu-title p {color:#b4bbaa;font-size:12px;line-height:1.55;}
+.city-economy {display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0;}
+.city-economy>div {border:1px solid #727a694d;border-radius:9px;padding:12px 10px;background:#384037;}
+.city-economy span {display:block;font-size:9px;color:#aeb6a6;letter-spacing:.05em;}
+.city-economy b {display:block;font-size:14px;color:#eee3c8;margin-top:5px;}
+.city-category {border-top:1px solid #686e5b5c;padding-top:16px;margin:16px 0 9px;font-size:9px;letter-spacing:.13em;color:#c4b58c;}
+.city-tools {display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.city-tool {text-align:left;background:#353d37;color:#ede1c8;border:1px solid #67746369;border-radius:10px;padding:11px 9px;cursor:pointer;min-height:63px;}
+.city-tool:hover,.city-tool.is-active {border-color:#d5c198;background:#455047;}
+.city-tool span {display:block;font-size:10px;font-weight:700;}
+.city-tool small {display:block;margin-top:6px;font:500 9px/1.35 'DM Sans',sans-serif;color:#c4bea5;}
+.city-description {padding:14px;background:#363d35;border:1px solid #74775f7d;border-radius:12px;margin:17px 0 12px;}
+.city-description b {font-size:12px;letter-spacing:.08em;color:#fff1d0;}
+.city-description p {font-size:11px;line-height:1.55;color:#d1d3bc;margin:7px 0;}
+.city-description small {font-size:10px;color:#e8d6b0;}
+#city-construct {width:100%;padding:15px 10px;border-radius:11px;background:#d4bb8b;color:#282922;font-size:11px;font-weight:800;letter-spacing:.09em;border:1px solid #ffebb8;cursor:pointer;}
+#city-construct:disabled {opacity:.4;cursor:not-allowed;}
+.city-warning {font-size:10px;line-height:1.5;color:#a9afa1;margin:12px 0 0;}
+#city-open {width:100%;border:1px solid #d2b587;color:#f3e7cd;background:#524734;border-radius:8px;min-height:42px;margin:12px 0;cursor:pointer;font:700 11px 'DM Sans',sans-serif;}
+@media(max-width:950px){.city-head{height:65px;padding:9px 14px;gap:12px}.city-logo{font-size:22px}.city-headline h2{font-size:20px}.city-headline small{font-size:7px}#city-close{padding:11px 9px;font-size:9px}.city-main{flex-direction:column}.city-scene{flex:0 0 49%;height:49%;}.city-menu{width:100%;flex:1;padding:17px 14px;border-left:0;border-top:1px solid #5b6656;}.city-menu-title h3{font-size:20px;margin:3px 0}.city-menu-title p{display:none}.city-economy{grid-template-columns:repeat(4,1fr);gap:6px;margin:9px 0}.city-economy>div{padding:9px 6px}.city-economy span{font-size:7px}.city-economy b{font-size:11px}.city-category{margin:10px 0 7px;padding-top:10px}.city-tools{grid-template-columns:repeat(4,1fr)}.city-tool{min-height:48px;padding:8px}.city-tool span{font-size:9px}.city-tool small{font-size:8px}.city-description{margin:10px 0;padding:9px}.city-warning{font-size:9px}#city-construct{padding:11px}.city-overline{font-size:8px}.city-bottom{font-size:8px;bottom:8px}}
+@media(max-width:550px){.city-logo{display:none}.city-headline h2{font-size:18px}.city-economy{grid-template-columns:repeat(2,1fr)}.city-tools{grid-template-columns:repeat(2,1fr)}.city-scene{flex:0 0 40%;height:40%;}.city-overline{font-size:7px;max-width:260px;}.city-bottom{display:none;}}

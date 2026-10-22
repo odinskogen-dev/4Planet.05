@@ -1,141 +1,96 @@
 [
   {
-    "name": "Real satellite, relief and historical map layers",
-    "viewport": "desktop",
-    "covers": [
-      "2016 EOxCloudless satellite basemap",
-      "Mapzen digital elevation relief",
-      "historical fallback",
-      "map-layer controls",
-      "proper source attribution",
-      "saved map mode"
-    ],
-    "description": "Switch between real satellite imagery, DEM hillshade and historical layers while checking city alignment and sources.",
-    "steps": [
-      "Open campaign centred on Apulia",
-      "Verify SATELLITE is selected and credit names EOxCloudless 2016",
-      "Switch REAL RELIEF and inspect terrain and source credit",
-      "Switch HISTORIC, zoom to ITALIA, switch SATELLITE and refresh"
-    ],
-    "expected": "Basemap selector works with existing campaign, town markers remain geographically aligned, credits follow selected layer and the chosen mode persists on refresh."
-  },
-  {
-    "name": "Recruit and retain a Roman campaign",
+    "name": "Campaign and geography remain functional",
     "sanity": true,
     "viewport": "desktop",
     "covers": [
-      "campaign resources",
-      "recruitment",
-      "persistent save"
+      "historic map and basemap mode selection",
+      "world map and date visibility",
+      "original 3D tactical iframe preserved"
     ],
-    "description": "Recruit units from the Canusium settlement and verify that the campaign persists after refresh.",
+    "description": "Load campaign, pan/zoom and change map modes; verify the unchanged original battle view remains available.",
     "steps": [
-      "Open the campaign and select Canusium",
-      "Click Recruit 150 and verify manpower and treasury decrease",
-      "Refresh the page and inspect the army and resources"
+      "Open world map",
+      "Select SATELLITE and HISTORIC",
+      "Inspect Canusium and use original 3D inspect",
+      "Return to campaign"
     ],
-    "expected": "The field army remains larger by 150 and treasury and manpower remain reduced after refresh."
+    "expected": "Map and city markers render with fallback when external tiles fail, and the original 3D view is accessible."
   },
   {
-    "name": "World map and local town controls work on mobile",
+    "name": "Strategic city economy and persistent construction",
+    "viewport": "desktop",
+    "covers": [
+      "building placement",
+      "resource spending",
+      "timber stone treasury production",
+      "historical city data persists",
+      "auto resolve fortification bonus only on defender owned location"
+    ],
+    "description": "Test economic and placement gameplay without touching battle engine.",
+    "steps": [
+      "Enter Canusium city",
+      "Place and construct timber camp, return to campaign",
+      "Advance one day and check timber increases",
+      "Reenter city and confirm location persisted",
+      "Build wall at settlement perimeter and check local defence"
+    ],
+    "expected": "Resources and placement persist, production updates and the defense rating is local to the town."
+  },
+  {
+    "name": "City builder mobile and invalid placement protection",
     "viewport": "mobile",
     "covers": [
-      "geographic world map",
-      "mobile touch navigation",
-      "regional map selection",
-      "settlement details"
+      "touch construction",
+      "occupied plot protection",
+      "cost checks",
+      "enemy city view-only"
     ],
-    "description": "Check that geographically grounded map navigation works on a narrow touchscreen.",
+    "description": "Validate mobile settlement interactions and prevent unsupported construction.",
     "steps": [
-      "Open the game on a mobile viewport",
-      "Tap WORLD then ITALIA then APULIA",
-      "Tap the DETAILS button and inspect Canusium settlement data"
+      "Open Canusium on phone layout and enter city",
+      "Try placing a building in central forum or road tile",
+      "Try selecting a town controlled by Carthage",
+      "Check unaffordable building buttons disable"
     ],
-    "expected": "All three map scales are usable, coastline is drawn, and Canusium details open without controls falling off-screen."
+    "expected": "Invalid or foreign-controlled placements do not spend resources; navigation is usable on mobile."
   },
   {
-    "name": "Prevent impossible recruitment",
+    "name": "March logistics and truthful objective",
     "viewport": "desktop",
     "covers": [
-      "resource scarcity guardrail",
-      "recruitment validation"
+      "map army miniature",
+      "march interpolation",
+      "grain charge",
+      "Cannae gate conditions",
+      "save/load"
     ],
-    "description": "Recruiting cannot create troops out of thin air when resources are exhausted.",
+    "description": "March an army over multiple game days, inspecting movements and supply.",
     "steps": [
-      "Select Canusium",
-      "Click Recruit 150 repeatedly until the treasury or manpower is exhausted",
-      "Try recruiting one additional time"
+      "Select Roman field army at Canusium",
+      "Issue multi-day march toward Luceria",
+      "Advance one day; troop icon remains between source and destination",
+      "Resolve a non-Cannae fight if possible and verify Cannae still contested"
     ],
-    "expected": "A clear insufficient-resource warning appears and resources never become negative."
+    "expected": "Troop appears along the road and mission progress is not fabricated by an unrelated victory."
   },
   {
-    "name": "Tactical 3D engine remains playable",
+    "name": "Campaign-to-battle export is non-invasive",
     "viewport": "desktop",
     "covers": [
-      "preserved Challenger 3D engine",
-      "tactical launch",
-      "safe return to campaign"
+      "battle JSON draft",
+      "built structures layout included",
+      "history confidence labels",
+      "original 3D engine untouched"
     ],
-    "description": "The original ROMA Three.js scene loads in an isolated same-origin iframe and can be exited without changing campaign resources.",
+    "description": "Export a saved city battle brief for later Claude integration.",
     "steps": [
-      "Select Canusium and press INSPECT IN 3D",
-      "Wait for the original Challenger 3D battlefield to appear",
-      "Click Return to campaign"
+      "Enter Canusium and build a wall",
+      "Return to campaign",
+      "Click export battle brief",
+      "Inspect JSON for city plan and defence values, approximate coordinates, and draft-only status",
+      "Load the preserved original 3D view and return"
     ],
-    "expected": "The original ROMA 3D scene loads and is playable; returning restores the strategic map with campaign state intact."
-  },
-  {
-    "name": "Battle application is idempotent",
-    "viewport": "desktop",
-    "covers": [
-      "campaign encounter",
-      "automated tactical resolution",
-      "single-apply battle ledger"
-    ],
-    "description": "Verify an encounter affects both sides once and returns to the campaign.",
-    "steps": [
-      "Select Canusium and use MARCH TO CANNAE",
-      "Advance one day until the two armies meet",
-      "Choose AUTO RESOLVE",
-      "Inspect Roman and Carthaginian army strengths and advance a day"
-    ],
-    "expected": "Battle losses apply once, the encounter dialog disappears, and the campaign can continue without duplicate casualties."
-  },
-  {
-    "name": "Truthful campaign economics and army travel",
-    "viewport": "desktop",
-    "covers": [
-      "single-source build prices",
-      "hidden resource display",
-      "daily grain and coin forecast",
-      "army movement interpolation",
-      "correct Cannae objective"
-    ],
-    "description": "Regression test protecting campaign gameplay clarity without changing tactical engine.",
-    "steps": [
-      "Open Canusium; observe wood, stone, iron, and net day forecast",
-      "Verify granary shows 65 wood + 25 stone + 35 coin, fortification shows 70 wood + 60 stone + 65 coin, recruit shows 95 coin + 65 grain + 28 iron + 150 manpower",
-      "Issue a march from Canusium toward Luceria, advance one day, verify the army is between source and destination rather than at destination",
-      "Resolve any non-Cannae encounter as Romans and confirm the Cannae mission remains active"
-    ],
-    "expected": "All actual costs are shown, resource forecast and movement reflect simulation, and Cannae cannot be marked secure by an unrelated win."
-  },
-  {
-    "name": "Export geographically labelled, non-invasive battle research brief",
-    "viewport": "desktop",
-    "covers": [
-      "separate site briefing",
-      "dated and uncertain historical evidence",
-      "non-invasive strategic to battle JSON",
-      "preserved legacy battle engine"
-    ],
-    "description": "Exports a draft briefing without modifying the preserved battle runtime or changing the campaign state.",
-    "steps": [
-      "Select Cannae and read battlefield scout",
-      "Export battle brief",
-      "Confirm JSON includes site Cannae, approximate coordinates, campaign army metadata, DEM unavailable, source notes and draft-only status",
-      "Return to campaign and use Inspect in 3D, then return"
-    ],
-    "expected": "JSON download represents current state and site accurately, and no battle state changes or forced tactical engine modifications occur."
+    "expected": "Export contains actual saved structures but does not affect the 3D battle engine or pretend to have historical 3D terrain."
   }
 ]

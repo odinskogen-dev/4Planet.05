@@ -132,6 +132,12 @@
         modernPhysicalGeographyLayer: window.ROMA_GEO?.mode || 'unknown'
       },
       armies: selectedArmies,
+      city: state.settlements[c.id] ? {
+        plan: campaign.cityPlan(c.id),
+        defence: campaign.cityDefence(c.id),
+        tacticalGeometryImported: false,
+        note: 'Grid is a strategic planning layout, not verified archaeology. Future siege scene must explicitly interpret it.'
+      } : null,
       resources: { grain: state.food, treasury: state.treasury },
       integration: {
         originalBattleEngineModified: false,

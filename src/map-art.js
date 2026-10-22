@@ -99,13 +99,40 @@ function city(ctx,x,y,c,owner,selected,z,showLabel){
  ctx.restore();
 }
 function army(ctx,x,y,a,selected,z){
- ctx.save();const xx=x+(a.owner==='rome'?-26:26),yy=y+(a.owner==='rome'?-31:31);
- if(selected){ctx.fillStyle='rgba(255,229,165,.35)';ctx.beginPath();ctx.arc(xx,yy,22,0,Math.PI*2);ctx.fill();}
- ctx.fillStyle=a.owner==='rome'?'#922d26':'#3b3331';ctx.strokeStyle='#f0d4a5';ctx.lineWidth=1.5;
- ctx.beginPath();ctx.roundRect(xx-14,yy-13,28,28,4);ctx.fill();ctx.stroke();
- ctx.fillStyle='#f4e5c7';ctx.font='700 9px Arial';ctx.textAlign='center';ctx.fillText(a.owner==='rome'?'SPQR':'H',xx,yy+3);
- ctx.fillStyle='#f2d8ab';ctx.font='700 10px Arial';ctx.fillText((a.men/1000).toFixed(1)+'K',xx,yy+27);
- ctx.restore();
+  ctx.save();
+  const roman = a.owner === 'rome';
+  const baseX=x+(roman?-26:26), baseY=y+(roman?-31:31);
+  const marching=!!a.move;
+  const accent=roman?'#a6382d':'#453c32', metal=roman?'#d5c0a1':'#ccb391';
+  if(selected){ctx.beginPath();ctx.arc(baseX,baseY,28,0,Math.PI*2);ctx.fillStyle='#f5d89a66';ctx.fill();}
+  // Tiny formation is a strategic-map token, not an actual 3D unit.
+  if(z>1.35){
+    const phase=marching ? (Math.sin(performance.now()/220)+1)*.8 : 0;
+    for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+      const px=baseX-13+col*9,py=baseY-11+row*7+(marching && (row+col)%2?phase:-phase*.35);
+      ctx.fillStyle='#16251d55';ctx.beginPath();ctx.ellipse(px,py+8,4,2,0,0,7);ctx.fill();
+      ctx.strokeStyle='#785a3f';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(px-1,py+5);ctx.lineTo(px-3,py+8);ctx.moveTo(px+1,py+5);ctx.lineTo(px+3,py+8);ctx.stroke();
+      ctx.fillStyle=accent;ctx.beginPath();ctx.ellipse(px,py+2,4,5,0,0,7);ctx.fill();
+      ctx.fillStyle=metal;ctx.beginPath();ctx.ellipse(px,py-3,3.5,2.5,0,0,7);ctx.fill();
+    }
+    ctx.fillStyle=roman?'#872d27':'#3f3730';ctx.fillRect(baseX+14,baseY-23,2,29);
+    ctx.fillRect(baseX+16,baseY-23,20,12);
+    ctx.fillStyle='#f1e3c7';ctx.font='700 8px Arial';ctx.textAlign='left';
+    ctx.fillText(roman?'SPQR':'PUNIC',baseX+17,baseY-14);
+  }else{
+    ctx.fillStyle=accent;ctx.beginPath();ctx.arc(baseX,baseY,10,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=metal;ctx.lineWidth=2;ctx.stroke();
+  }
+  const strength=(a.men/1000).toFixed(1)+'K';
+  ctx.font='700 10px Arial';ctx.textAlign='center';
+  const width=Math.max(44,ctx.measureText(strength).width+24);
+  ctx.fillStyle=roman?'rgba(74,31,26,.88)':'rgba(39,38,36,.90)';
+  ctx.beginPath();ctx.roundRect(baseX-width/2,baseY+17,width,18,5);ctx.fill();
+  ctx.fillStyle='#f4e5c7';ctx.fillText(strength,baseX,baseY+30);
+  if(marching){
+    ctx.font='700 8px Arial';ctx.fillStyle='#efe1c0';ctx.fillText('MARCHING',baseX,baseY+45);
+  }
+  ctx.restore();
 }
 window.ROMA_CARTOGRAPHY={sea,land,river,labels,city,army};
 })();
