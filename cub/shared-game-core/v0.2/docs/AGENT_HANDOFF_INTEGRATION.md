@@ -7,7 +7,7 @@
 - `npm run verify:scenarios` — validate source-state and scenario envelopes.
 - `python tools/asset_factory.py audit` — numeric geometry info and licence provenance.
 - `python tools/make_rigged_characters.py` — reproducible two rigged GLB animation demos.
-- `python tools/build_isolated_integrations.py` — regenerate ROMA/MEDIEVAL previews from a preserved user-upload ZIP, with reversible hashes.
+- `python tools/build_isolated_integrations.py` — regenerate ROMA/MEDIEVAL previews using either the preserved user-upload ZIP or by exactly restoring originals from the two included reversible previews (source SHA check).
 - `python tools/smoke_browser.py` — Chromium standalone diagnostic: requires installed Playwright/Chromium; browser WebGL known to fail in sandbox.
 
 ## ROMA decision seam
