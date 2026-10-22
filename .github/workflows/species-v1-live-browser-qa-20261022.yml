@@ -1,0 +1,92 @@
+name: 4SPECIES V1 — LIVE Chrome + Safari Species QA (read-only)
+on:
+  push:
+    branches: [release/species-v1-selective-20261022]
+    paths: [.github/workflows/species-v1-live-browser-qa-20261022.yml]
+permissions: {contents: read}
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Install real browser engines
+        run: |
+          npm install --prefix /tmp/species-v1-real-browsers playwright@1.56.0 --no-audit --no-fund
+          /tmp/species-v1-real-browsers/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Audit all 18 live species, original 39 COD preserve, mobile and desktop
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-v1-browser-proof
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {chromium,webkit,devices} from '/tmp/species-v1-real-browsers/node_modules/playwright/index.mjs';
+          const new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split(" ");
+          const baseline="orca lion tiger atlantic-cod polar-bear jaguar giant-panda".split(" ");
+          const origin="https://4species.com";
+          const errors=[];const reports=[];
+          for(const [browserName,engine] of [["Chrome",chromium],["Safari",webkit]]){
+            const browser=await engine.launch({headless:true});
+            for(const mobile of [true,false]){
+              const ctx=await browser.newContext(mobile?{...devices["iPhone 13"],locale:"en-GB"}:{viewport:{width:1440,height:900},locale:"en-GB"});
+              const slugs=browserName==="Chrome"&&mobile?[...new18,...baseline]:mobile?["koala","giant-manta-ray","scarlet-macaw","atlantic-cod"]:["capybara","venus-flytrap","atlantic-cod"];
+              for(const slug of slugs){
+                const p=await ctx.newPage();
+                try {
+                  const pageResponse=await p.goto(origin+"/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+                  assert.equal(pageResponse?.status(),200);
+                  await p.locator("h1").first().waitFor({timeout:20000});
+                  await p.waitForTimeout(1100);
+                  const data=await p.evaluate(()=>{
+                    const hero=[...document.querySelectorAll(".spx-hero-slide img")];
+                    const all=[...document.querySelectorAll("img")];
+                    return {
+                      h1:document.querySelector("h1")?.textContent||"",
+                      canonical:document.querySelector('link[rel="canonical"]')?.href,
+                      robots:document.querySelector('meta[name="robots"]')?.getAttribute("content"),
+                      jsonld:document.querySelectorAll('script[type="application/ld+json"]').length,
+                      heading:document.querySelectorAll("h1").length,
+                      images:all.length,
+                      hero:hero.map(x=>({loaded:x.complete&&x.naturalWidth>0,src:x.currentSrc||x.src,alt:x.alt})),
+                      broken:all.filter(x=>x.complete&&x.naturalWidth===0).length,
+                      overflow:document.documentElement.scrollWidth>window.innerWidth+4
+                    };
+                  });
+                  assert.equal(data.canonical,origin+"/"+slug);
+                  assert.ok(!data.robots?.includes("noindex"));
+                  assert.ok(data.h1.length>3);
+                  assert.ok(data.jsonld>0);
+                  if(new18.includes(slug)){
+                    assert.ok(pageResponse.headers()["x-4species-release"]?.includes("18-v1"));
+                    assert.ok(data.hero.some(x=>x.loaded&&x.src.includes("/assets/species/next61/")),"No reviewed hero loaded");
+                  }
+                  if(slug==="atlantic-cod"){
+                    assert.equal(data.hero.length,1);
+                    assert.ok(data.hero[0].loaded);
+                    assert.ok(data.hero[0].src.includes("Torsk"));
+                  }
+                  assert.equal(data.overflow,false,"Mobile horizontal overflow "+slug);
+                  reports.push({browserName,mobile,slug,...data});
+                  console.log("SPECIES_V1_REAL_BROWSER_PASS "+JSON.stringify({browserName,mobile,slug,heroLoaded:data.hero.filter(x=>x.loaded).length,broken:data.broken,ldjson:data.jsonld}));
+                  if(["koala","giant-manta-ray","atlantic-cod"].includes(slug)){
+                    await p.screenshot({path:"/tmp/species-v1-browser-proof/"+browserName+"-"+(mobile?"mobile":"desktop")+"-"+slug+".png",animations:"disabled"});
+                  }
+                } catch(err){
+                  errors.push({browserName,mobile,slug,error:String(err)});
+                  console.log("SPECIES_V1_REAL_BROWSER_FAIL "+JSON.stringify(errors.at(-1)));
+                } finally{await p.close();}
+              }
+              await ctx.close();
+            }
+            await browser.close();
+          }
+          if(errors.length)throw Error("Real browser QA errors: "+JSON.stringify(errors));
+          console.log("SPECIES_V1_ALL_LIVE_BROWSERS_VERIFIED "+JSON.stringify({profiles:reports.length,uniqueSlugs:new Set(reports.map(x=>x.slug)).size,mobileChromeNew18:reports.filter(x=>x.browserName==="Chrome"&&x.mobile&&new18.includes(x.slug)).length,originalCodPreserved:true}));
+          NODE
+      - name: Store visual evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 4species-v1-live-safari-chrome-mobile-qa
+          path: /tmp/species-v1-browser-proof
+          retention-days: 14
