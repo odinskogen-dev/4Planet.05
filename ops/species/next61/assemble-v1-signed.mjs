@@ -39,6 +39,7 @@ for(const rec of originalReport.records){
   blocked.push({slug,reason:"BIOLOGY_ORIGINAL_EVIDENCE_SHORTFALL"});fs.rmSync(dataFile);continue;
  }
  const pic=rec.pictures.find(p=>p.sha256===photoApproval.sha256&&(photoApproval.photoId===null?p.photoId==null:p.photoId===photoApproval.photoId));
+ if(!pic)console.log("SPECIES_V1_IMAGE_SOURCE_DIAGNOSTIC "+JSON.stringify({slug,approvedId:photoApproval.photoId,approvedSha:photoApproval.sha256,found:rec.pictures.map(p=>({id:p.photoId,sha:p.sha256,source:p.sourcePage}))}));
  if(!pic||pic.sourcePage!==undefined && !pic.sourcePage.startsWith("https://")){
   blocked.push({slug,reason:"APPROVED_PHOTO_ID_SHA_MISSING_OR_CHANGED"});fs.rmSync(dataFile);continue;
  }
