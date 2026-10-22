@@ -42,6 +42,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as maplibregl from "maplibre-gl";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./world.css";
 
@@ -841,6 +842,10 @@ function WorldInner() {
 
   useEffect(() => {
     if (map.current) return;
+    // Bundle the matching MapLibre v6 worker with Vite. Otherwise the default
+    // worker URL can resolve to SPA HTML and keep isStyleLoaded() false forever.
+    // This changes only worker loading, not map state, controls or camera.
+    maplibregl.setWorkerUrl(maplibreWorkerUrl);
     const m = new maplibregl.Map({
       container: boxRef.current, style: VECTOR_STYLE, center: init.current.center,
       zoom: init.current.zoom, minZoom: 1, maxZoom: 22,
