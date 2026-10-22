@@ -4,6 +4,7 @@ on:
     branches: [cub-lab-roma-challenger-20261018]
     paths:
       - 'site/roma/index.html'
+      - 'site/roma/imperium-v6/**'
       - 'site/index.html'
       - 'site/games/**'
       - 'site/medieval/**'
@@ -155,6 +156,26 @@ jobs:
             console.log('CUB_POSTER_MEDIA_BUILD_PASS');
           })().catch(e=>{console.error(e);process.exit(1)});
           NODE
+      - name: Restore founder's ROMA 06 Imperium campaign as independent exact-byte playable preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,zlib,hashlib,json
+          root=Path('site/roma/imperium-v6/source')
+          manifest=json.loads((root/'manifest.json').read_text())
+          parts=sorted(root.glob('romav6-*.txt'))
+          if len(parts)!=manifest['partCount']: raise SystemExit('ROMA06_CHUNKS_MISSING')
+          payload=''.join(p.read_text().strip() for p in parts)
+          data=zlib.decompress(base64.b64decode(payload))
+          digest=hashlib.sha256(data).hexdigest()
+          if digest!=manifest['sha256']: raise SystemExit('ROMA06_ORIGINAL_SHA_MISMATCH')
+          if len(data)!=manifest['uncompressedBytes']: raise SystemExit('ROMA06_FILE_TRUNCATED')
+          if b'Imperium' not in data or b'campaign' not in data: raise SystemExit('CAMPAIGN_CODE_NOT_PRESENT')
+          (root.parent/'index.html').write_bytes(data)
+          print('CUB_ROMA06_EXACT_UPLOADED_CAMPAIGN',len(data),digest)
+          PY
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
@@ -316,6 +337,39 @@ jobs:
         with:
           name: cub-medieval-v5-experimental-gameplay
           path: medieval-v5-new-engine-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Browser smoke ROMA 06 Imperium: map, provinces, local save and return controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            for(const t of [{name:'desktop',w:1366,h:800,mobile:false},{name:'mobile',w:390,h:844,mobile:true}]){
+              const context=await browser.newContext({viewport:{width:t.w,height:t.h},isMobile:t.mobile,hasTouch:t.mobile});
+              const page=await context.newPage();
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              const url='https://lab.p4nther.com/roma/imperium-v6/';
+              const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:65000});
+              await page.locator('#bCamp').waitFor({state:'visible',timeout:25000});
+              await page.locator('#bCamp').click();
+              await page.locator('canvas.cmp-map').waitFor({state:'visible',timeout:25000});
+              const actual=await page.evaluate(()=>({provinces:window.ROMA?.app?.cmp?.c?.provinces?.length,armies:window.ROMA?.app?.cmp?.c?.armies?.length,world:!!window.ROMA?.app?.cmp?.map}));
+              await page.screenshot({path:'roma-imperium-v6-'+t.name+'.png',fullPage:true});
+              console.log('ROMA06_CAMPAIGN_SMOKE',t.name,response.status(),JSON.stringify(actual),'ERRORS',JSON.stringify(errors));
+              if(response.status()!==200||actual.provinces!==160||!actual.armies||!actual.world||errors.length)throw Error('ROMA06_CAMPAIGN_BROWSER_FAILED_'+t.name);
+              await context.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-roma-imperium-v6-campaign-proof
+          path: roma-imperium-v6-*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Safely add labs.p4nther.com alongside lab.p4nther.com
