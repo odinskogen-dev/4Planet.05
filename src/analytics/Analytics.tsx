@@ -404,8 +404,15 @@ function dispatchAnalyticsEvent(
   const ga4Installed = typeof window.gtag === "function"
     && Boolean(document.getElementById("4planet-ga4"));
   if (ga4Installed) {
-    window.gtag?.("event", name, properties);
-    delivered = true;
+    // Never allow GA4 to infer a full browser URL containing OAuth material.
+    const safePath = privacySafeEventParameters({ page_path: window.location.pathname }).page_path;
+    if (typeof safePath === "string" && !isSensitiveAnalyticsNavigation()) {
+      window.gtag?.("event", name, {
+        ...properties,
+        page_location: `${window.location.origin}${safePath}`,
+      });
+      delivered = true;
+    }
   }
   if (capturePostHog(name, properties)) delivered = true;
   return delivered;
@@ -442,7 +449,11 @@ export function Analytics() {
     });
     if (typeof sharedPageProperties.page_path !== "string") return;
 
-    window.gtag?.("event", "page_view", sharedPageProperties);
+    // Supply an explicit, scrubbed URL on every SPA route transition.
+    window.gtag?.("event", "page_view", {
+      ...sharedPageProperties,
+      page_location: `${window.location.origin}${sharedPageProperties.page_path}`,
+    });
     capturePostHog("$pageview", sharedPageProperties);
     trackDiscoveryEntryOnce(location.pathname);
   }, [allowedHost, consent, id, internalTraffic, location.pathname]);
