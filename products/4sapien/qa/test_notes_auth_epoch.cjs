@@ -13,10 +13,12 @@ const input = { value: '' };
 const state = { textContent: '' };
 const eventUsers = [];
 const memoryUsers = [];
+const updateMutationUrls = [];
 const deleteMutationUrls = [];
 let heldMutation = null;
 let releaseMutation = null;
 let deleteReceiptOverride;
+let updateReceiptOverride;
 
 const context = {
   console,
@@ -53,6 +55,15 @@ const context = {
           ? [{ id, user_id: expectedUser, state: 'deleted', deleted_at: body.deleted_at }]
           : deleteReceiptOverride;
         deleteReceiptOverride = undefined;
+        return { ok: true, status: 200, json: async () => receipt };
+      }
+      if (options.method === 'PATCH') {
+        updateMutationUrls.push(url);
+        const expectedUser = decodeURIComponent((url.match(/[?&]user_id=eq\.([^&]+)/) || [])[1] || '');
+        const receipt = updateReceiptOverride === undefined
+          ? [{ id, user_id: expectedUser, content, state: 'active', deleted_at: null }]
+          : updateReceiptOverride;
+        updateReceiptOverride = undefined;
         return { ok: true, status: 200, json: async () => receipt };
       }
       return { ok: true, status: 200, json: async () => [{ id, content, state: 'active' }] };
@@ -105,6 +116,30 @@ const waitForMutation = async () => {
   await staleUpdate;
   assert.deepEqual(eventUsers, [], 'a stale update completion must not emit under user C');
   assert.equal(state.textContent, '', 'a stale update completion must not paint user C UI');
+
+  heldMutation = false;
+  releaseMutation = null;
+  eventUsers.length = 0;
+  state.textContent = '';
+  await updateNote('note-existing', 'C edited note');
+  assert.deepEqual(eventUsers, ['user-c'], 'same-epoch update must emit for the initiating user');
+  assert.match(updateMutationUrls.at(-1), /[?&]user_id=eq\.user-c(?:&|$)/, 'update PATCH must require the initiating owner');
+  assert.match(updateMutationUrls.at(-1), /[?&]state=eq\.active(?:&|$)/, 'update PATCH must require an active row');
+  assert.match(updateMutationUrls.at(-1), /[?&]deleted_at=is\.null(?:&|$)/, 'update PATCH must require a not-deleted row');
+
+  for (const [label, receipt] of [
+    ['zero-row/deleted-or-nonexistent', []],
+    ['other-owner', [{ id: 'note-existing', user_id: 'user-other', content: 'C edited note', state: 'active', deleted_at: null }]],
+    ['inactive', [{ id: 'note-existing', user_id: 'user-c', content: 'C edited note', state: 'deleted', deleted_at: new Date().toISOString() }]],
+    ['wrong-id', [{ id: 'note-other', user_id: 'user-c', content: 'C edited note', state: 'active', deleted_at: null }]],
+  ]) {
+    eventUsers.length = 0;
+    state.textContent = '';
+    updateReceiptOverride = receipt;
+    await updateNote('note-existing', 'C edited note');
+    assert.deepEqual(eventUsers, [], `${label} update receipt must not emit note_updated`);
+    assert.equal(state.textContent, 'Kunne ikke oppdatere huskelappen.', `${label} update must fail closed`);
+  }
 
   for (const [from, to] of [['user-c', 'user-d'], ['user-d', 'user-c']]) {
     await handleAuthChange({ user: { id: from } });
@@ -159,7 +194,7 @@ const waitForMutation = async () => {
     );
   }
 
-  console.log('PASS 4SAPIEN note auth epoch: delete requires an owner-bound affected-row receipt and continuations remain auth-bound');
+  console.log('PASS 4SAPIEN note auth epoch: update and delete require owner-bound affected-row receipts and continuations remain auth-bound');
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

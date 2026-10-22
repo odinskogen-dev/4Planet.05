@@ -30,7 +30,10 @@ for(const [name,body] of [['update',updateBody],['create',addBody]]){
   assert.match(body,/if\(!eventAttemptCurrent\(attempt\)\)return;/,name+' must reject a stale post-write continuation');
   assert.match(body,/renderNotes\(attempt\.epoch\)/,name+' must render only inside the initiating auth epoch');
 }
-assert.match(updateBody,/select=id,content,state/);
+assert.match(updateBody,/user_id=eq\.'\+encodeURIComponent\(attempt\.userId\)/);
+assert.match(updateBody,/state=eq\.active&deleted_at=is\.null/);
+assert.match(updateBody,/select=id,user_id,content,state,deleted_at/);
+assert.match(updateBody,/activeNoteReceipt\(rows,\{id,content,userId:attempt\.userId\}\)/);
 assert.match(updateBody,/NOTE_UPDATE_NOT_CONFIRMED/);
 assert.ok(updateBody.indexOf('activeNoteReceipt')<updateBody.indexOf("emitEvent('note_updated'"),'update event must follow receipt confirmation');
 assert.match(updateBody,/emitEvent\('note_updated','brain',\{surface:'home_notes',note_id:saved\.id\},attempt\)/);
