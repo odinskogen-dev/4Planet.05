@@ -69,12 +69,16 @@ const generatedSitemapUrls = emittedSitemapRoutes();
 const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 
 const routeCoverage = requiredDiscoveryRoutes.map((route) => {
+  const expectedUrl = new URL(route, canonicalSiteOrigin).href;
   const matchingUrls = generatedSitemapUrls.filter((url) => url.pathname === route);
   return {
     route,
-    declaredInSitemapGenerator: matchingUrls.some((url) => url.origin === canonicalSiteOrigin),
+    declaredInSitemapGenerator: matchingUrls.some((url) => url.href === expectedUrl),
     nonCanonicalLocations: matchingUrls
       .filter((url) => url.origin !== canonicalSiteOrigin)
+      .map((url) => url.href),
+    nonCanonicalUrlIdentities: matchingUrls
+      .filter((url) => url.origin === canonicalSiteOrigin && url.href !== expectedUrl)
       .map((url) => url.href),
   };
 });
@@ -112,6 +116,7 @@ const robotsContract = {
 
 const hardFailures = [
   ...routeCoverage.flatMap((row) => row.nonCanonicalLocations.map((location) => `NON_CANONICAL_SITEMAP_ORIGIN:${location}`)),
+  ...routeCoverage.flatMap((row) => row.nonCanonicalUrlIdentities.map((location) => `NON_CANONICAL_SITEMAP_URL:${location}`)),
   ...routeCoverage.filter((row) => !row.declaredInSitemapGenerator).map((row) => `MISSING_SITEMAP_ROUTE:${row.route}`),
   ...journeys.filter((row) => !row.physicalEntryPresent).map((row) => `MISSING_ENTRY:${row.route}`),
   ...journeys.filter((row) => !row.returnPathPresent).map((row) => `DEAD_END:${row.route}`),

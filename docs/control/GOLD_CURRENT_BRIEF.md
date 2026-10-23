@@ -1,3 +1,33 @@
+# LIVING SYSTEMS — EXACT CANONICAL SITEMAP URL IDENTITY — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs one unambiguous Living Systems sitemap identity, without credentials, query state or fragments attached to the canonical URL.
+
+**ONE THING TO UNDERSTAND:** matching scheme, host, port and pathname is still insufficient; URL userinfo, search and hash can differ while `URL.origin` and `URL.pathname` remain unchanged.
+
+**PRIMARY ACTION:** require the emitted sitemap URL to equal the exact approved canonical URL `https://4planet.org/livingsystems/`.
+
+**SECONDARY DEPTH:** preserve explicit foreign-origin reporting, add exact-URL diagnostics, retain every prior deceptive-output regression, and restore generated files byte-for-byte.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** no UI changes; the evaluator's dominant result is exact canonical identity, oriented by the required route, with explicit failure type and generated-artifact evidence as depth.
+
+**WHAT CAN BE REMOVED:** partial identity assumptions that treat origin plus pathname as complete canonical equality.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing audit proves only that the current generator emitted each required exact canonical URL during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; this is an evaluator-only correction with no rendered-product mutation.
+
+**HUMAN SUCCESS:** held-out query, fragment and userinfo variants fail; the exact canonical URL and all prior comment/filter/shadow/foreign-origin fixtures retain their expected results.
+
+**BASE / ROLLBACK:** `king/test@c4c20703c7b917a88c04213fc1f669d8f0312cb8`; revert this three-file correction if independent Gold finds an approved canonical or generated-file restoration regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun every URL-identity and prior held-out fixture on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — CANONICAL SITEMAP ORIGIN IMMUNITY — 23 OCTOBER 2026
 
 **STATUS:** RETURNED QA GAP / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

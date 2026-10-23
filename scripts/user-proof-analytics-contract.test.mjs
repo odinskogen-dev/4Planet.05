@@ -198,6 +198,33 @@ test("the user-entry audit rejects a required path emitted under a foreign origi
   assert.match(result.stdout, /NON_CANONICAL_SITEMAP_ORIGIN:https:\/\/example\.invalid\/livingsystems\//);
 });
 
+test("the user-entry audit rejects a required canonical URL with a query string", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "`${origin}${route}`",
+    "`${origin}${route}?audit=1`",
+  ));
+  assert.equal(result.status, 1, `audit must reject query-bearing canonical URLs; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/4planet\.org\/livingsystems\/\?audit=1/);
+});
+
+test("the user-entry audit rejects a required canonical URL with a fragment", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "`${origin}${route}`",
+    "`${origin}${route}#audit`",
+  ));
+  assert.equal(result.status, 1, `audit must reject fragment-bearing canonical URLs; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/4planet\.org\/livingsystems\/#audit/);
+});
+
+test("the user-entry audit rejects a required canonical URL with userinfo", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    '"https://4planet.org"',
+    '"https://audit@4planet.org"',
+  ));
+  assert.equal(result.status, 1, `audit must reject userinfo-bearing canonical URLs; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/audit@4planet\.org\/livingsystems\//);
+});
+
 test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {
   assert.deepEqual(evaluatePrivacyParameters({
     page_path: "/livingsystems/orca",
