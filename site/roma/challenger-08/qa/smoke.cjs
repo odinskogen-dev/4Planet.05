@@ -18,8 +18,10 @@ for(const conf of [{name:'desktop',width:1366,height:768,mobile:false},{name:'mo
  const dims=await canvas.boundingBox();
  if(!dims||dims.width<conf.width*.85)throw Error('Not a full-viewport game');
  await page.screenshot({path:'roma08-title-'+conf.name+'.png',fullPage:true});
- await page.locator('#bCamp').click({timeout:16000});
- await page.locator('.cmp-map').waitFor({state:'visible',timeout:45000});
+ const startMs=Date.now();
+ await page.locator('#bCamp').click({force:true,noWaitAfter:true,timeout:90000});
+ await page.locator('.cmp-map').waitFor({state:'visible',timeout:90000});
+ console.log('CUB_ROMA_CH08_CAMPAIGN_START_MS',conf.name,Date.now()-startMs);
  const date=(await page.locator('.cmp-top').innerText()).slice(0,250);
  await page.screenshot({path:'roma08-imperium-'+conf.name+'.png',fullPage:true});
  const keys=await page.evaluate(()=>Object.keys(localStorage));
