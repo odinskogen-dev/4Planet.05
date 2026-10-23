@@ -359,6 +359,46 @@ test("the user-entry audit rejects a required path emitted under a foreign origi
   assert.match(result.stdout, /NON_CANONICAL_SITEMAP_ORIGIN:https:\/\/example\.invalid\/livingsystems\//);
 });
 
+const unlistedNonCanonicalSitemapFixtures = [
+  {
+    name: "a foreign origin on an unlisted path",
+    entries: ["https://foreign.example/unlisted"],
+    expectedFailures: [/NON_CANONICAL_SITEMAP_ORIGIN:https:\/\/foreign\.example\/unlisted/],
+  },
+  {
+    name: "a foreign origin on an unlisted nested path",
+    entries: ["https://foreign.example/hidden/archive"],
+    expectedFailures: [/NON_CANONICAL_SITEMAP_ORIGIN:https:\/\/foreign\.example\/hidden\/archive/],
+  },
+  {
+    name: "HTTP on an unlisted canonical-host path",
+    entries: ["http://4planet.org/hidden"],
+    expectedFailures: [/NON_CANONICAL_SITEMAP_ORIGIN:http:\/\/4planet\.org\/hidden/],
+  },
+  {
+    name: "foreign-origin and HTTP entries together",
+    entries: ["https://foreign.example/unlisted", "http://4planet.org/hidden"],
+    expectedFailures: [
+      /NON_CANONICAL_SITEMAP_ORIGIN:https:\/\/foreign\.example\/unlisted/,
+      /NON_CANONICAL_SITEMAP_ORIGIN:http:\/\/4planet\.org\/hidden/,
+    ],
+  },
+];
+
+for (const fixture of unlistedNonCanonicalSitemapFixtures) {
+  test(`the user-entry audit rejects ${fixture.name}`, () => {
+    const injectedEntries = fixture.entries
+      .map((entry) => `<url><loc>${entry}</loc></url>`)
+      .join("\\n");
+    const result = runUserEntryAuditFixture((source) => source.replace(
+      "${sitemapUrls}\\n</urlset>",
+      `\${sitemapUrls}\\n${injectedEntries}\\n</urlset>`,
+    ));
+    assert.equal(result.status, 1, `every emitted sitemap URL must be canonical; stdout=${result.stdout}; stderr=${result.stderr}`);
+    for (const expectedFailure of fixture.expectedFailures) assert.match(result.stdout, expectedFailure);
+  });
+}
+
 test("the user-entry audit rejects a required canonical URL with a query string", () => {
   const result = runUserEntryAuditFixture((source) => source.replace(
     "`${origin}${route}`",

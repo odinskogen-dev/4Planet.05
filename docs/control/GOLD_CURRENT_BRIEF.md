@@ -1,3 +1,27 @@
+# DISCOVERY SITEMAP — ALL-ENTRY CANONICAL IDENTITY — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** every URL emitted by the public sitemap must remain inside the approved HTTPS 4PLANET origin, including routes outside the small required-entry checklist.
+
+**ROOT CAUSE:** origin and raw-identity checks ran only inside `requiredDiscoveryRoutes`. A valid sitemap containing all required routes plus an unlisted foreign-origin or HTTP location could therefore pass the audit.
+
+**CORRECTION:** validate every parsed sitemap location before required-route coverage: exact HTTPS origin, no credentials/query/fragment, and exact raw identity equal to the canonical origin plus parsed path. Retain the required-route check only for coverage.
+
+**REGRESSION EVIDENCE:** four Gold fixtures first reproduce the false accepts for a foreign unlisted path, foreign nested path, HTTP canonical-host path, and combined foreign/HTTP extras; all must fail for their exact emitted values after correction. The full XML and URL-identity matrix remains mandatory.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the current sitemap generator, namespace-aware parser, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves only that every location emitted by the current generator was canonical during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; this is an evaluator and regression-harness correction with no rendered-product mutation.
+
+**BASE / ROLLBACK:** `king/test@7d3a4631e6704c88f3faef9ef4fe761fc1476fee`; revert this bounded audit/test/brief correction if independent Gold finds a canonical-location or generated-file restoration regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun all four unlisted-entry fixtures and the complete existing negative matrix on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — CLOSED SITEMAP URL SCHEMA — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

@@ -169,6 +169,21 @@ function emittedSitemapRoutes() {
 const generatedSitemapLocations = emittedSitemapRoutes();
 const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 
+const sitemapLocationIntegrity = generatedSitemapLocations.map(({ rawLocation, url }) => {
+  const canonicalUrl = `${canonicalSiteOrigin}${url.pathname}`;
+  const hasCanonicalOrigin = url.protocol === "https:" && url.origin === canonicalSiteOrigin;
+  const hasCanonicalIdentity = !url.username
+    && !url.password
+    && !url.search
+    && !url.hash
+    && rawLocation === canonicalUrl;
+  return {
+    rawLocation,
+    hasCanonicalOrigin,
+    hasCanonicalIdentity,
+  };
+});
+
 const routeCoverage = requiredDiscoveryRoutes.map((route) => {
   const expectedUrl = new URL(route, canonicalSiteOrigin).href;
   const matchingLocations = generatedSitemapLocations.filter(({ url }) => url.pathname === route);
@@ -216,8 +231,12 @@ const robotsContract = {
 };
 
 const hardFailures = [
-  ...routeCoverage.flatMap((row) => row.nonCanonicalLocations.map((location) => `NON_CANONICAL_SITEMAP_ORIGIN:${location}`)),
-  ...routeCoverage.flatMap((row) => row.nonCanonicalUrlIdentities.map((location) => `NON_CANONICAL_SITEMAP_URL:${location}`)),
+  ...sitemapLocationIntegrity
+    .filter((row) => !row.hasCanonicalOrigin)
+    .map((row) => `NON_CANONICAL_SITEMAP_ORIGIN:${row.rawLocation}`),
+  ...sitemapLocationIntegrity
+    .filter((row) => row.hasCanonicalOrigin && !row.hasCanonicalIdentity)
+    .map((row) => `NON_CANONICAL_SITEMAP_URL:${row.rawLocation}`),
   ...routeCoverage.filter((row) => !row.declaredInSitemapGenerator).map((row) => `MISSING_SITEMAP_ROUTE:${row.route}`),
   ...journeys.filter((row) => !row.physicalEntryPresent).map((row) => `MISSING_ENTRY:${row.route}`),
   ...journeys.filter((row) => !row.returnPathPresent).map((row) => `DEAD_END:${row.route}`),
@@ -234,6 +253,7 @@ const improvementQueue = journeys.flatMap((row) => [
 const report = {
   generatedAt: new Date().toISOString(),
   status: hardFailures.length ? "FAIL" : "PASS_WITH_IMPROVEMENTS",
+  sitemapLocationIntegrity,
   routeCoverage,
   journeys,
   analyticsContract,
