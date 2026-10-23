@@ -1,0 +1,38 @@
+name: CUB ROMA Challenger12 independent Cloudflare proof
+on:
+  push:
+    branches: [cub-roma-republic-v12-release-20261023]
+    paths:
+      - '.github/workflows/cub-roma-v12-independent-live-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check actual public CUB host and protected old game files
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in https://lab.p4nther.com https://labs.p4nther.com; do
+            for i in 1 2 3 4 5 6 7 8; do
+              if curl -fsSL --max-time 25 "$host/roma/challenger-12/" -o /tmp/roma-v12-live.html; then break; fi
+              sleep 5
+            done
+            echo '5645104ab6389bce380ef53af564cb115cab424c924601f0dac115532ff3d7b8  /tmp/roma-v12-live.html' | sha256sum -c -
+            curl -fsSL --max-time 25 "$host/roma/" -o /tmp/roma-cannae-live.html
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma-cannae-live.html' | sha256sum -c -
+            curl -fsSL --max-time 25 "$host/roma/challenger-08/" -o /tmp/roma-ch08-live.html
+            echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma-ch08-live.html' | sha256sum -c -
+            curl -fsSL --max-time 25 "$host/games/roma/" -o /tmp/roma-product-live.html
+            grep -Fq 'href="/roma/challenger-12/"' /tmp/roma-product-live.html
+            grep -Fq 'href="/roma/challenger-08/"' /tmp/roma-product-live.html
+            grep -Fq 'href="/roma/"' /tmp/roma-product-live.html
+            curl -fsSL --max-time 25 "$host/" -o /tmp/roma-home-live.html
+            grep -Fq 'href="/roma/challenger-12/"' /tmp/roma-home-live.html
+            echo "ROMA_V12_PUBLIC_EXACT_SHA_SUCCESS=$host/roma/challenger-12/"
+            echo "CANNAE_PRESERVED=$host/roma/"
+            echo "CHALLENGER08_PRESERVED=$host/roma/challenger-08/"
+          done
