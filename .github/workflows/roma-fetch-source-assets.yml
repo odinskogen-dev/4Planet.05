@@ -1,0 +1,65 @@
+name: ROMA transfer — fetch CC0 humanoids + NOAA ETOPO + NASA BMNG 500m
+on:
+  push:
+    branches: [handoff/roma-geo-army-assets-20261023]
+    paths:
+      - '.github/workflows/roma-fetch-source-assets.yml'
+      - 'handoffs/roma_asset_ingest/download_sources.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  asset-intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install offline-processing libraries (free/open)
+        run: python -m pip install --quiet --no-input numpy scipy pillow rasterio requests
+      - name: Download, georeference and audit primary sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python handoffs/roma_asset_ingest/download_sources.py | tee /tmp/roma-asset-ingest.log
+          cp /tmp/roma-asset-ingest.log roma_source_exports/download_log.txt
+          echo '--- statuses ---'
+          cat roma_source_exports/DATA_ACQUISITION_STATUS.json
+      - name: Remove temporary NOAA netCDF chunks before delivering original geotiff + PNG
+        if: always()
+        shell: bash
+        run: |
+          rm -rf roma_source_exports/geodata/NOAA_ET0PO_2022_raw_segments
+          test -f roma_source_exports/DATA_ACQUISITION_STATUS.json || echo '[]' > roma_source_exports/DATA_ACQUISITION_STATUS.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ROMA_CC0_KAYKIT_RIGGED_ASSETS
+          path: roma_source_exports/soldiers/
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ROMA_REAL_NOAA_ETOPO2022_REGION
+          path: roma_source_exports/geodata/
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ROMA_REAL_NASA_BMNG500M_REGION
+          path: roma_source_exports/satellite/
+          if-no-files-found: warn
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ROMA_DATA_DOWNLOAD_AUDIT
+          path: |
+            roma_source_exports/DATA_ACQUISITION_STATUS.json
+            roma_source_exports/download_log.txt
+          if-no-files-found: warn
+          retention-days: 30
