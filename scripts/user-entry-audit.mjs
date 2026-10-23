@@ -34,7 +34,10 @@ function sitemapLocationTexts(xml) {
   const locations = [];
   const stack = [];
   let locationText = null;
+  let sitemapValueText = null;
+  let currentUrlLocCount = null;
   let rootSeen = false;
+  const optionalUrlValues = new Set(["lastmod", "changefreq", "priority"]);
   const parser = new SaxesParser({
     xmlns: true,
     defaultXMLVersion: "1.0",
@@ -42,39 +45,67 @@ function sitemapLocationTexts(xml) {
   });
   const appendText = (text) => {
     if (locationText !== null) locationText += text;
+    else if (sitemapValueText !== null) sitemapValueText += text;
     else if (text.trim()) throw new Error("XML text is not allowed outside sitemap values");
   };
 
   parser.on("text", appendText);
-  parser.on("cdata", (text) => {
-    if (locationText !== null) locationText += text;
-  });
+  parser.on("cdata", appendText);
   parser.on("doctype", () => {
     throw new Error("Unsupported XML declaration in sitemap");
   });
   parser.on("opentag", (tag) => {
-    if (locationText !== null) throw new Error("Sitemap <loc> must contain text only");
+    if (locationText !== null || sitemapValueText !== null) {
+      throw new Error("Sitemap values must contain text only");
+    }
     stack.push(tag);
     if (stack.length === 1) {
       if (tag.local !== "urlset" || tag.uri !== sitemapNamespace || rootSeen) {
         throw new Error("Sitemap must contain one namespaced <urlset> root");
       }
       rootSeen = true;
-    }
-    if (tag.local === "loc"
-      && tag.uri === sitemapNamespace
-      && stack.length === 3
-      && stack[0].local === "urlset"
-      && stack[0].uri === sitemapNamespace
+    } else if (stack.length === 2) {
+      if (tag.uri === sitemapNamespace && tag.local !== "url") {
+        throw new Error(`Unexpected sitemap element: <${tag.local}>`);
+      }
+      if (tag.uri === sitemapNamespace) currentUrlLocCount = 0;
+    } else if (stack.length === 3
       && stack[1].local === "url"
       && stack[1].uri === sitemapNamespace) {
-      locationText = "";
+      if (tag.uri === sitemapNamespace && tag.local === "loc") {
+        currentUrlLocCount += 1;
+        if (currentUrlLocCount > 1) {
+          throw new Error("Each sitemap <url> must contain exactly one non-empty <loc>");
+        }
+        locationText = "";
+      } else if (tag.uri === sitemapNamespace && optionalUrlValues.has(tag.local)) {
+        sitemapValueText = "";
+      } else if (tag.uri === sitemapNamespace) {
+        throw new Error(`Unexpected sitemap element: <${tag.local}>`);
+      }
+    } else if (tag.uri === sitemapNamespace) {
+      throw new Error(`Unexpected sitemap element: <${tag.local}>`);
     }
   });
   parser.on("closetag", (tag) => {
     if (tag.local === "loc" && tag.uri === sitemapNamespace && locationText !== null) {
-      locations.push(locationText.trim());
+      const location = locationText.trim();
+      if (!location) {
+        throw new Error("Each sitemap <url> must contain exactly one non-empty <loc>");
+      }
+      locations.push(location);
       locationText = null;
+    } else if (tag.uri === sitemapNamespace
+      && optionalUrlValues.has(tag.local)
+      && sitemapValueText !== null) {
+      sitemapValueText = null;
+    } else if (tag.local === "url"
+      && tag.uri === sitemapNamespace
+      && stack.length === 2) {
+      if (currentUrlLocCount !== 1) {
+        throw new Error("Each sitemap <url> must contain exactly one non-empty <loc>");
+      }
+      currentUrlLocCount = null;
     }
     stack.pop();
   });
@@ -92,7 +123,9 @@ function sitemapLocationTexts(xml) {
     throw new Error(`Invalid sitemap XML: ${message}`);
   }
 
-  if (!rootSeen || stack.length > 0 || locationText !== null) throw new Error("Incomplete sitemap XML structure");
+  if (!rootSeen || stack.length > 0 || locationText !== null || sitemapValueText !== null) {
+    throw new Error("Incomplete sitemap XML structure");
+  }
   return locations;
 }
 

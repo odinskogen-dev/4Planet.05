@@ -195,7 +195,7 @@ test("the user-entry audit ignores loc-like markup inside an emitted XML comment
   assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
 });
 
-test("the user-entry audit ignores loc-like markup inside emitted CDATA", () => {
+test("the user-entry audit rejects loc-like markup inside emitted CDATA", () => {
   const result = runUserEntryAuditFixture((source) => source
     .replace(
       /^const routes = (\[.*\]);$/m,
@@ -205,8 +205,8 @@ test("the user-entry audit ignores loc-like markup inside emitted CDATA", () => 
       "${sitemapUrls}\\n</urlset>",
       "${sitemapUrls}\\n<![CDATA[<url><loc>https://4planet.org/livingsystems/</loc></url>]]>\\n</urlset>",
     ));
-  assert.equal(result.status, 1, `audit must ignore CDATA markup; stdout=${result.stdout}; stderr=${result.stderr}`);
-  assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+  assert.equal(result.status, 1, `audit must reject CDATA outside sitemap values; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
 });
 
 test("the user-entry audit rejects a sitemap without the sitemap namespace", () => {
@@ -251,12 +251,13 @@ test("the user-entry audit treats sitemap element names as case-sensitive", () =
     "<URL><LOC>${escapeXml(`${origin}${route}`)}</LOC></URL>",
   ));
   assert.equal(result.status, 1, `audit must reject uppercase sitemap elements; stdout=${result.stdout}; stderr=${result.stderr}`);
-  assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
+  assert.match(result.stderr, /Unexpected sitemap element: <URL>/);
 });
 
 const standardsInvalidSitemapFixtures = [
   {
     name: "duplicate expanded-name attributes",
+    expectedError: /duplicate attribute: \{urn:duplicate\}value/,
     mutate: (source) => source.replace(
       "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
       '<url xmlns:a="urn:duplicate" xmlns:b="urn:duplicate" a:value="1" b:value="2"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
@@ -264,6 +265,7 @@ const standardsInvalidSitemapFixtures = [
   },
   {
     name: "a prefix bound to the reserved xmlns namespace",
+    expectedError: /may not assign a prefix.*2000\/xmlns/,
     mutate: (source) => source.replace(
       "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
       '<url xmlns:bad="http://www.w3.org/2000/xmlns/"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
@@ -271,6 +273,7 @@ const standardsInvalidSitemapFixtures = [
   },
   {
     name: "a non-xml prefix bound to the reserved XML namespace",
+    expectedError: /may not assign the xml namespace to another prefix/,
     mutate: (source) => source.replace(
       "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
       '<url xmlns:bad="http://www.w3.org/XML/1998/namespace"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
@@ -278,6 +281,7 @@ const standardsInvalidSitemapFixtures = [
   },
   {
     name: "a raw U+0001 control character in the urlset attributes",
+    expectedError: /disallowed character/,
     mutate: (source) => source.replace(
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" audit="\u0001">',
@@ -285,6 +289,7 @@ const standardsInvalidSitemapFixtures = [
   },
   {
     name: "a raw U+0002 control character in a url attribute",
+    expectedError: /disallowed character/,
     mutate: (source) => source.replace(
       "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
       '<url audit="\u0002"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
@@ -296,9 +301,45 @@ for (const fixture of standardsInvalidSitemapFixtures) {
   test(`the user-entry audit rejects ${fixture.name}`, () => {
     const result = runUserEntryAuditFixture(fixture.mutate);
     assert.equal(result.status, 1, `standards-invalid sitemap must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
-    assert.match(result.stderr, /XML|xml|namespace|attribute|character/);
+    assert.match(result.stderr, fixture.expectedError);
   });
 }
+
+test("the user-entry audit rejects a sitemap url without a loc", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    "${sitemapUrls}\\n<url/>\\n</urlset>",
+  ));
+  assert.equal(result.status, 1, `a sitemap url without loc must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /Each sitemap <url> must contain exactly one non-empty <loc>/);
+});
+
+test("the user-entry audit rejects a sitemap url with duplicate loc elements", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    "${sitemapUrls}\\n<url><loc>https://4planet.org/</loc><loc>https://4planet.org/atlas</loc></url>\\n</urlset>",
+  ));
+  assert.equal(result.status, 1, `a sitemap url with duplicate loc elements must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /Each sitemap <url> must contain exactly one non-empty <loc>/);
+});
+
+test("the user-entry audit rejects unexpected elements in the sitemap namespace", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    "${sitemapUrls}\\n<foo/>\\n</urlset>",
+  ));
+  assert.equal(result.status, 1, `an unexpected sitemap element must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /Unexpected sitemap element: <foo>/);
+});
+
+test("the user-entry audit rejects non-whitespace CDATA outside sitemap values", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    "${sitemapUrls}\\n<![CDATA[garbage]]>\\n</urlset>",
+  ));
+  assert.equal(result.status, 1, `CDATA outside sitemap values must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
+});
 
 test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
   const result = runUserEntryAuditFixture((source) => `${source.replace(

@@ -1,3 +1,27 @@
+# LIVING SYSTEMS — CLOSED SITEMAP URL SCHEMA — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs the discovery audit to reject structurally incomplete or foreign sitemap records instead of treating any well-formed namespaced XML as route evidence.
+
+**ROOT CAUSE:** the parser verified the root namespace and extracted direct `url > loc` text, but it did not enforce the closed structure around those values. A namespaced `<url/>`, duplicate `<loc>`, unexpected same-namespace element or non-whitespace CDATA could therefore survive as accepted document structure.
+
+**CORRECTION:** require every namespaced `<url>` to contain exactly one non-empty direct `<loc>`; permit only the standard text-valued URL fields; reject unexpected same-namespace elements and non-whitespace CDATA/text outside permitted values.
+
+**REGRESSION EVIDENCE:** four held-out Gold fixtures first reproduced the false accepts, then failed for their specific causes. The five earlier XML standards fixtures now assert their precise parser reason rather than a generic XML word match; the complete focused contract remains mandatory.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the current sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves only that the current generator emitted structurally bounded sitemap evidence with exact approved locations during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; this is an evaluator and regression-harness correction with no rendered-product mutation.
+
+**BASE / ROLLBACK:** `king/test@94d4fe7b020fa58544bf26e071efe192de43c514`; revert this bounded audit/test/brief correction if independent Gold finds a sitemap-schema, canonical identity or generated-file restoration regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the four structural held-outs and the complete existing negative matrix on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — WELL-FORMED NAMESPACED SITEMAP EVIDENCE — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
