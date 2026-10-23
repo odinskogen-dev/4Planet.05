@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import ts from "typescript";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
@@ -24,47 +24,52 @@ const journeyEntries = [
   { route: "/journey/orca", file: "public/journey/orca/index.html", returnNeedles: ["/species/orca", "/species", "/"] },
 ];
 
-const sitemapGenerator = read("scripts/generate-sitemap.mjs");
-const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 const analytics = exists("src/analytics/ProductAnalytics.ts") ? read("src/analytics/ProductAnalytics.ts") : "";
 const routeAnalytics = exists("src/analytics/ProductRouteAnalytics.tsx") ? read("src/analytics/ProductRouteAnalytics.tsx") : "";
 
-function activeStaticSitemapRoutes(sourceText) {
-  const sourceFile = ts.createSourceFile(
-    "generate-sitemap.mjs",
-    sourceText,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.JS,
-  );
-  let routes = null;
+function emittedSitemapRoutes() {
+  const generatedFiles = [
+    "public/sitemap.xml",
+    "public/news-sitemap.xml",
+    "public/rss.xml",
+    "public/robots.txt",
+  ];
+  const priorFiles = new Map(generatedFiles.map((relativePath) => [
+    relativePath,
+    exists(relativePath) ? read(relativePath) : null,
+  ]));
 
-  const visit = (node) => {
-    if (
-      ts.isVariableDeclaration(node)
-      && ts.isIdentifier(node.name)
-      && node.name.text === "staticRoutes"
-      && node.initializer
-      && ts.isArrayLiteralExpression(node.initializer)
-    ) {
-      routes = node.initializer.elements
-        .filter((element) => ts.isStringLiteralLike(element))
-        .map((element) => element.text);
-      return;
+  try {
+    const result = spawnSync(process.execPath, [path.join(root, "scripts/generate-sitemap.mjs")], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    if (result.status !== 0) {
+      throw new Error(`Sitemap generation failed (${result.status}): ${result.stderr || result.stdout}`);
     }
-    ts.forEachChild(node, visit);
-  };
 
-  visit(sourceFile);
-  if (!routes) throw new Error("Unable to resolve the active staticRoutes array from scripts/generate-sitemap.mjs");
-  return new Set(routes);
+    const sitemap = read("public/sitemap.xml");
+    const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].replaceAll("&amp;", "&"));
+    if (locations.length === 0) throw new Error("Generated sitemap contains no <loc> entries");
+    return new Set(locations.map((location) => new URL(location).pathname));
+  } finally {
+    for (const [relativePath, priorContent] of priorFiles) {
+      const absolutePath = path.join(root, relativePath);
+      if (priorContent === null) {
+        if (fs.existsSync(absolutePath)) fs.unlinkSync(absolutePath);
+      } else {
+        fs.writeFileSync(absolutePath, priorContent, "utf8");
+      }
+    }
+  }
 }
 
-const activeSitemapRoutes = activeStaticSitemapRoutes(sitemapGenerator);
+const generatedSitemapRoutes = emittedSitemapRoutes();
+const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 
 const routeCoverage = requiredDiscoveryRoutes.map((route) => ({
   route,
-  declaredInSitemapGenerator: activeSitemapRoutes.has(route),
+  declaredInSitemapGenerator: generatedSitemapRoutes.has(route),
 }));
 
 const journeys = journeyEntries.map((entry) => {

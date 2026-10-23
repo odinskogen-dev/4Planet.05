@@ -2,7 +2,7 @@ import test from "node:test";
 import ts from "typescript";
 import vm from "node:vm";
 import assert from "node:assert/strict";
-import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -121,16 +121,21 @@ test("the user-entry audit checks the public Living Systems canonical instead of
   assert.match(sitemap, /^\s*"\/livingsystems\/",\s*$/m);
 });
 
-test("the user-entry audit rejects a canonical route that survives only inside a sitemap comment", () => {
+function runUserEntryAuditFixture(mutateSitemap) {
   const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
   const fixtureRoot = mkdtempSync(join(tmpdir(), "4planet-user-entry-audit-"));
   const fixturePaths = [
     "scripts/generate-sitemap.mjs",
-    "public/robots.txt",
+    "scripts/magazine-content.mjs",
     "public/journey/jaguar/index.html",
     "public/journey/orca/index.html",
     "src/analytics/ProductAnalytics.ts",
     "src/analytics/ProductRouteAnalytics.tsx",
+    "src/content/stories.ts",
+    "src/data/discoveryInventory.json",
+    "src/data/atlasDiscovery.json",
+    "src/data/discoveryTopics.json",
+    "src/data/impactDiscovery.json",
   ];
 
   try {
@@ -139,25 +144,49 @@ test("the user-entry audit rejects a canonical route that survives only inside a
       mkdirSync(dirname(destination), { recursive: true });
       cpSync(join(repositoryRoot, relativePath), destination);
     }
+    mkdirSync(join(fixtureRoot, "public"), { recursive: true });
+    symlinkSync(join(repositoryRoot, "node_modules"), join(fixtureRoot, "node_modules"), "dir");
 
     const sitemapFixture = join(fixtureRoot, "scripts/generate-sitemap.mjs");
     const sitemapSource = readFileSync(sitemapFixture, "utf8");
-    const mutatedSource = sitemapSource.replace(
-      /^\s*"\/livingsystems\/",\s*$/m,
-      '  // "/livingsystems/",',
-    );
+    const mutatedSource = mutateSitemap(sitemapSource);
     assert.notEqual(mutatedSource, sitemapSource, "fixture mutation must remove the active canonical route");
     writeFileSync(sitemapFixture, mutatedSource, "utf8");
 
-    const result = spawnSync(process.execPath, [join(repositoryRoot, "scripts/user-entry-audit.mjs")], {
+    return spawnSync(process.execPath, [join(repositoryRoot, "scripts/user-entry-audit.mjs")], {
       cwd: fixtureRoot,
       encoding: "utf8",
     });
-    assert.equal(result.status, 1, `audit must fail when route is commented out; stdout=${result.stdout}; stderr=${result.stderr}`);
-    assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
   } finally {
     rmSync(fixtureRoot, { recursive: true, force: true });
   }
+}
+
+test("the user-entry audit rejects a canonical route that survives only inside a sitemap comment", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    /^\s*"\/livingsystems\/",\s*$/m,
+    '  // "/livingsystems/",',
+  ));
+  assert.equal(result.status, 1, `audit must fail when route is commented out; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+});
+
+test("the user-entry audit rejects a route removed from the final emitted sitemap", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    /^const routes = (\[.*\]);$/m,
+    'const routes = $1.filter((route) => route !== "/livingsystems/");',
+  ));
+  assert.equal(result.status, 1, `audit must inspect final sitemap output; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+});
+
+test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
+  const result = runUserEntryAuditFixture((source) => `${source.replace(
+    /^\s*"\/livingsystems\/",\s*$/m,
+    '  // "/livingsystems/",',
+  )}\nfunction shadowedRouteFixture() { const staticRoutes = ["/livingsystems/"]; return staticRoutes; }\n`);
+  assert.equal(result.status, 1, `audit must ignore nested shadow declarations; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
 });
 
 test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {

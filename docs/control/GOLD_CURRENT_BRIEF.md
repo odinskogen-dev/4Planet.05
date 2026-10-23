@@ -1,3 +1,27 @@
+# LIVING SYSTEMS — EMITTED SITEMAP AUDIT IMMUNITY — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs the Living Systems canonical to remain present in the sitemap that the product actually emits.
+
+**ONE THING TO UNDERSTAND:** a route declaration is not proof of final output when later generator logic can remove it or a nested shadow declaration can mislead source analysis.
+
+**PRIMARY ACTION:** run the real sitemap generator in a reversible audit boundary and verify required discovery paths against its emitted `<loc>` entries.
+
+**SECONDARY DEPTH:** preserve the current canonical route, generator policy, public pages, analytics and generated files byte-for-byte after the audit.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing audit proves only that the current generator emitted each required path during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**HUMAN SUCCESS:** the audit fails when `/livingsystems/` is commented out, removed by final-output filtering or present only in a nested shadow declaration; the unchanged generator passes.
+
+**BASE / ROLLBACK:** `king/test@317bbe54e64e5469ba4f6c35b5b25801b3571d5e`; revert this three-file correction if independent Gold finds generator side effects or route-policy regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun all held-out negative fixtures on the exact returned SHA.
+
+---
+
 # EARTH NOW — CANONICAL ALIAS NORMALISATION — 22 OCT 2026
 
 **STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT, INDEX SUBMISSION OR LIVE RELEASE.
