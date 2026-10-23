@@ -1,0 +1,9 @@
+{
+  "source": "User ROMA_CHALLENGER_01 8.zip; ROMA_CHALLENGER_01/publish/web/index.html",
+  "source_sha256": "6ce526a7bbb95d1c57fad3c798d91d5a8e49986dcf63609a60b5db6ecd39b36c",
+  "isolated_sha256": "fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e",
+  "format": "gzip+base64",
+  "parts": 67,
+  "isolated_storage_keys": "cub_roma_ch08_* and cub_roma_ch08_ui_*",
+  "note": "isolated URL /roma/challenger-08/; existing /roma/index.html never modified"
+}

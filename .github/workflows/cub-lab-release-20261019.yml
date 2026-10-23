@@ -212,6 +212,36 @@ jobs:
           sha256sum site/medievalmmo/index.html | cut -d' ' -f1 > /tmp/cub-premium02-publish.sha
           rm -rf site/medievalmmo/premium02
           echo 'CUB_MEDIEVAL_PREMIUM02_BUILD_AND_FULL_LOOP_QA_PASS'
+      - name: Stage and test isolated ROMA Challenger 08 without changing Cannae
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip,base64,hashlib,json
+          directory=Path('site/roma/challenger-08')
+          manifest=json.loads((directory/'source/manifest.json').read_text())
+          parts=sorted((directory/'source').glob('part-*.txt'))
+          assert len(parts)==manifest['parts'],f'CH08 missing chunks: {len(parts)}'
+          binary=gzip.decompress(base64.b64decode(''.join(p.read_text().strip() for p in parts)))
+          assert hashlib.sha256(binary).hexdigest()==manifest['isolated_sha256'],'CH08_UPLOAD_DIGEST_MISMATCH'
+          assert b'<canvas id="world"></canvas>' in binary
+          assert b'cub_roma_ch08_save_v1' in binary
+          assert b'roma_challenger01_save_v1' not in binary
+          (directory/'index.html').write_bytes(binary)
+          print('CUB_ROMA_CH08_EXACT_UPLOAD_CONFIRMED',len(binary),manifest['isolated_sha256'])
+          PY
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          python3 -m http.server 8878 --bind 127.0.0.1 --directory site >/tmp/cub-roma08-release-server.log 2>&1 &
+          HTTP_PID=$!
+          trap 'kill $HTTP_PID || true' EXIT
+          sleep 2
+          node site/roma/challenger-08/qa/smoke.cjs
+          kill "$HTTP_PID" || true
+          trap - EXIT
+          rm -rf site/roma/challenger-08/source site/roma/challenger-08/qa
+          echo 'CUB_ROMA_CH08_RELEASE_GATE_PASSED'
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
@@ -242,6 +272,28 @@ jobs:
             grep -Fq 'WILD:' /tmp/live-hub.html
             echo "ROMA_LIVE_EXACT_PASS=$host/roma/"
             echo "CUB_HUB_PASS=$host/"
+          done
+      - name: Verify Challenger 08 live, dual play links and untouched Cannae
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            ok=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 40 "$host/roma/challenger-08/" -o /tmp/live-roma08.html &&                 echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/live-roma08.html' | sha256sum -c - >/dev/null; then ok=1;break;fi
+              sleep 5
+            done
+            test "$ok" -eq 1 || { echo "CH08_LIVE_OR_HASH_FAILED=$host";exit 10; }
+            curl -fsSL --max-time 30 "$host/roma/" -o /tmp/live-cannae-protected.html
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/live-cannae-protected.html' | sha256sum -c -
+            curl -fsSL --max-time 30 "$host/games/roma/" -o /tmp/live-roma-product-page.html
+            grep -Fq 'Play Imperium' /tmp/live-roma-product-page.html
+            grep -Fq 'Play Cannae' /tmp/live-roma-product-page.html
+            curl -fsSL --max-time 30 "$host/" -o /tmp/live-cub-roma-list.html
+            grep -Fq 'href="/roma/challenger-08/"' /tmp/live-cub-roma-list.html
+            grep -Fq 'href="/roma/"' /tmp/live-cub-roma-list.html
+            echo "CUB_ROMA_CH08_LIVE_VERIFIED=$host/roma/challenger-08/"
+            echo "CUB_ROMA_CANNAE_ORIGINAL_PROTECTED=$host/roma/"
           done
       - name: Verify MMO entrypoint, original ROMA and original MEDIEVAL unchanged
         shell: bash
