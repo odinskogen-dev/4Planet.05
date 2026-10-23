@@ -30,14 +30,54 @@ const analytics = exists("src/analytics/ProductAnalytics.ts") ? read("src/analyt
 const routeAnalytics = exists("src/analytics/ProductRouteAnalytics.tsx") ? read("src/analytics/ProductRouteAnalytics.tsx") : "";
 const sitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
 
+function isValidSitemapLastmod(value) {
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})?$/,
+  );
+  if (!match) return false;
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, timezone] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  if (year === 0 || month < 1 || month > 12) return false;
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+  if (day < 1 || day > daysInMonth) return false;
+
+  if (hourText !== undefined) {
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    const second = Number(secondText);
+    if (hour > 23 || minute > 59 || second > 59) return false;
+  }
+
+  if (timezone && timezone !== "Z") {
+    const timezoneHour = Number(timezone.slice(1, 3));
+    const timezoneMinute = Number(timezone.slice(4, 6));
+    if (timezoneHour > 14 || timezoneMinute > 59 || (timezoneHour === 14 && timezoneMinute !== 0)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function sitemapLocationTexts(xml) {
   const locations = [];
   const stack = [];
   let locationText = null;
   let sitemapValueText = null;
   let currentUrlLocCount = null;
+  let currentUrlElementOrder = null;
+  let currentUrlElements = null;
   let rootSeen = false;
   const optionalUrlValues = new Set(["lastmod", "changefreq", "priority"]);
+  const urlElementOrder = new Map([
+    ["loc", 0],
+    ["lastmod", 1],
+    ["changefreq", 2],
+    ["priority", 3],
+  ]);
   const allowedChangeFrequencies = new Set([
     "always",
     "hourly",
@@ -81,19 +121,42 @@ function sitemapLocationTexts(xml) {
         throw new Error("Sitemap <urlset> may contain only sitemap <url> elements");
       }
       currentUrlLocCount = 0;
+      currentUrlElementOrder = -1;
+      currentUrlElements = new Set();
     } else if (stack.length === 3
       && stack[1].local === "url"
       && stack[1].uri === sitemapNamespace) {
-      if (tag.uri === sitemapNamespace && tag.local === "loc") {
+      if (tag.uri !== sitemapNamespace) {
+        throw new Error("Sitemap <url> may contain only sitemap elements");
+      }
+      if (!urlElementOrder.has(tag.local)) {
+        throw new Error(`Unexpected sitemap element: <${tag.local}>`);
+      }
+      if (tag.local === "loc") {
         currentUrlLocCount += 1;
         if (currentUrlLocCount > 1) {
           throw new Error("Each sitemap <url> must contain exactly one non-empty <loc>");
         }
+        if (currentUrlElementOrder !== -1) {
+          throw new Error("Sitemap <loc> must be the first child of each <url>");
+        }
+        currentUrlElementOrder = 0;
+        currentUrlElements.add("loc");
         locationText = "";
-      } else if (tag.uri === sitemapNamespace && optionalUrlValues.has(tag.local)) {
+      } else if (optionalUrlValues.has(tag.local)) {
+        if (currentUrlLocCount !== 1) {
+          throw new Error("Sitemap <loc> must be the first child of each <url>");
+        }
+        if (currentUrlElements.has(tag.local)) {
+          throw new Error(`Sitemap <${tag.local}> may appear at most once per <url>`);
+        }
+        const elementOrder = urlElementOrder.get(tag.local);
+        if (elementOrder < currentUrlElementOrder) {
+          throw new Error("Sitemap <url> child elements must follow loc, lastmod, changefreq, priority order");
+        }
+        currentUrlElementOrder = elementOrder;
+        currentUrlElements.add(tag.local);
         sitemapValueText = "";
-      } else if (tag.uri === sitemapNamespace) {
-        throw new Error(`Unexpected sitemap element: <${tag.local}>`);
       }
     } else if (tag.uri === sitemapNamespace) {
       throw new Error(`Unexpected sitemap element: <${tag.local}>`);
@@ -114,6 +177,9 @@ function sitemapLocationTexts(xml) {
       if (tag.local === "changefreq" && !allowedChangeFrequencies.has(value)) {
         throw new Error(`Invalid sitemap <changefreq> value: ${value || "(empty)"}`);
       }
+      if (tag.local === "lastmod" && !isValidSitemapLastmod(value)) {
+        throw new Error(`Invalid sitemap <lastmod> value: ${value || "(empty)"}`);
+      }
       if (tag.local === "priority"
         && !/^(?:0(?:\.\d+)?|1(?:\.0+)?)$/.test(value)) {
         throw new Error("Sitemap <priority> must be a decimal from 0.0 to 1.0");
@@ -126,6 +192,8 @@ function sitemapLocationTexts(xml) {
         throw new Error("Each sitemap <url> must contain exactly one non-empty <loc>");
       }
       currentUrlLocCount = null;
+      currentUrlElementOrder = null;
+      currentUrlElements = null;
     }
     stack.pop();
   });

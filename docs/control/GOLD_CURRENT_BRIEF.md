@@ -1,3 +1,27 @@
+# DISCOVERY SITEMAP — OPTIONAL FIELD SEQUENCE, CARDINALITY AND LASTMOD — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** search and discovery evidence must fail closed when a sitemap contains repeated or out-of-order optional fields or an invalid modification date, rather than certify an XML document that violates the sitemap schema.
+
+**ROOT CAUSE:** the namespace-aware SAX audit enforced one `loc` and validated `priority` / `changefreq` values, but did not enforce the sitemap XSD child sequence, optional-field cardinality or the W3C date/dateTime type for `lastmod`.
+
+**CORRECTION:** require `loc` first, then optional `lastmod`, `changefreq` and `priority` in schema order; allow each optional field at most once; validate `lastmod` as a real W3C-profile calendar date or dateTime including bounded timezone offsets.
+
+**REGRESSION EVIDENCE:** four independent Gold fixtures reproduce duplicate `priority`, duplicate `changefreq`, optional-field-before-`loc`, and invalid `lastmod` false accepts; an ordered positive matrix protects valid date and dateTime values.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing `saxes` parser, generator-to-parser fixture harness, all retained XML/schema/URL-identity tests and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves only that the bounded generated-sitemap evaluator rejects these XML schema defects during execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; evaluator and regression-harness correction only, with no rendered-product mutation.
+
+**BASE / ROLLBACK:** `king/test@d5d42070f5edafeabbbd2ba9eaf24beac02bf600`; revert this bounded three-file correction if independent Gold finds a schema, generator-restoration or retained-matrix regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the four held-out fixtures, the ordered positive matrix and the complete retained negative matrix on the exact returned SHA.
+
+---
+
 # DISCOVERY SITEMAP — ROOT CHILD AND OPTIONAL VALUE SCHEMA — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

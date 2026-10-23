@@ -390,6 +390,52 @@ test("the user-entry audit accepts valid sitemap priority and changefreq values"
   assert.equal(result.status, 0, `schema-valid optional sitemap values must pass; stdout=${result.stdout}; stderr=${result.stderr}`);
 });
 
+const sitemapSequenceCardinalityFixtures = [
+  {
+    name: "duplicate sitemap priority elements",
+    entry: "<url><loc>https://4planet.org/schema-duplicate-priority</loc><priority>0.4</priority><priority>0.7</priority></url>",
+    expectedError: /Sitemap <priority> may appear at most once per <url>/,
+  },
+  {
+    name: "duplicate sitemap changefreq elements",
+    entry: "<url><loc>https://4planet.org/schema-duplicate-changefreq</loc><changefreq>daily</changefreq><changefreq>monthly</changefreq></url>",
+    expectedError: /Sitemap <changefreq> may appear at most once per <url>/,
+  },
+  {
+    name: "a sitemap loc after an optional field",
+    entry: "<url><priority>0.5</priority><loc>https://4planet.org/schema-loc-order</loc></url>",
+    expectedError: /Sitemap <loc> must be the first child of each <url>/,
+  },
+  {
+    name: "an invalid sitemap lastmod value",
+    entry: "<url><loc>https://4planet.org/schema-lastmod</loc><lastmod>yesterday-ish</lastmod></url>",
+    expectedError: /Invalid sitemap <lastmod> value: yesterday-ish/,
+  },
+];
+
+for (const fixture of sitemapSequenceCardinalityFixtures) {
+  test(`the user-entry audit rejects ${fixture.name}`, () => {
+    const result = runUserEntryAuditFixture((source) => source.replace(
+      "${sitemapUrls}\\n</urlset>",
+      `\${sitemapUrls}\\n${fixture.entry}\\n</urlset>`,
+    ));
+    assert.equal(result.status, 1, `schema-invalid sitemap must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+    assert.match(result.stderr, fixture.expectedError);
+  });
+}
+
+test("the user-entry audit accepts ordered optional sitemap fields and W3C lastmod values", () => {
+  const orderedEntries = [
+    "<url><loc>https://4planet.org/schema-lastmod-date</loc><lastmod>2026-10-23</lastmod></url>",
+    "<url><loc>https://4planet.org/schema-lastmod-datetime</loc><lastmod>2026-10-23T17:42:05+02:00</lastmod><changefreq>daily</changefreq><priority>0.5</priority></url>",
+  ].join("\\n");
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    `\${sitemapUrls}\\n${orderedEntries}\\n</urlset>`,
+  ));
+  assert.equal(result.status, 0, `schema-valid ordered sitemap fields must pass; stdout=${result.stdout}; stderr=${result.stderr}`);
+});
+
 test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
   const result = runUserEntryAuditFixture((source) => `${source.replace(
     /^\s*"\/livingsystems\/",\s*$/m,
