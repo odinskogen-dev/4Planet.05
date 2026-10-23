@@ -1,0 +1,118 @@
+name: Bind oddekalv.org to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - ops/oddekalv-domain
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bind-domain:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TARGET_DOMAIN: oddekalv.org
+      TARGET_PROJECT: odinoddekalv
+    steps:
+      - name: Validate Cloudflare token
+        shell: bash
+        run: |
+          test -n "$CF_API_TOKEN"
+          echo "Cloudflare token is present."
+
+      - name: Bind active Cloudflare zone to Pages
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.request, urllib.error, urllib.parse
+
+          token = os.environ['CF_API_TOKEN']
+          domain = os.environ['TARGET_DOMAIN']
+          target_project = os.environ['TARGET_PROJECT']
+          api = 'https://api.cloudflare.com/client/v4'
+
+          def call(method, path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              req = urllib.request.Request(api + path, data=data, method=method,
+                  headers={'Authorization': f'Bearer {token}', 'Content-Type':'application/json'})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  try: return json.loads(e.read().decode())
+                  except Exception: return {'success':False,'errors':[{'message':str(e)}]}
+
+          accounts = call('GET','/accounts?per_page=50')
+          if not accounts.get('success'):
+              print('Account lookup failed:', accounts.get('errors')); sys.exit(2)
+
+          account_id = zone = project = None
+          for acct in accounts.get('result', []):
+              aid = acct['id']
+              zones = call('GET','/zones?name=' + urllib.parse.quote(domain) + '&account.id=' + aid + '&per_page=50')
+              projects = call('GET', f'/accounts/{aid}/pages/projects')
+              maybe_project = next((p for p in projects.get('result', []) if p.get('name') == target_project or p.get('subdomain') == f'{target_project}.pages.dev'), None)
+              if zones.get('success') and zones.get('result') and maybe_project:
+                  account_id = aid
+                  zone = zones['result'][0]
+                  project = maybe_project
+                  break
+
+          if not zone:
+              print('Active Cloudflare zone not found for', domain); sys.exit(3)
+          if zone.get('status') != 'active':
+              print('Zone is not active:', zone.get('status')); sys.exit(4)
+
+          zone_id = zone['id']
+          project_name = project['name']
+          target = project.get('subdomain') or f'{project_name}.pages.dev'
+          print('Using Pages project:', project_name, target)
+          print('Zone status:', zone.get('status'))
+
+          # Ensure only web-routing records at apex/www point at Pages; leave MX/TXT/etc untouched.
+          for host in (domain, f'www.{domain}'):
+              records = call('GET', f'/zones/{zone_id}/dns_records?name={urllib.parse.quote(host)}&per_page=100')
+              web_records = [r for r in records.get('result', []) if r.get('type') in {'A','AAAA','CNAME'}]
+              cname = next((r for r in web_records if r.get('type') == 'CNAME'), None)
+              if cname:
+                  if cname.get('content') != target or not cname.get('proxied'):
+                      upd = call('PUT', f"/zones/{zone_id}/dns_records/{cname['id']}", {'type':'CNAME','name':host,'content':target,'ttl':1,'proxied':True})
+                      if not upd.get('success'):
+                          print('CNAME update failed:', host, upd.get('errors')); sys.exit(5)
+                      print('Updated DNS:', host, '->', target)
+                  else:
+                      print('DNS already correct:', host, '->', target)
+              else:
+                  # Delete only conflicting A/AAAA records for this exact host before adding CNAME.
+                  for r in web_records:
+                      deleted = call('DELETE', f"/zones/{zone_id}/dns_records/{r['id']}")
+                      if not deleted.get('success'):
+                          print('Conflicting web record delete failed:', host, r.get('type'), deleted.get('errors')); sys.exit(6)
+                      print('Removed conflicting web record:', r.get('type'), host)
+                  add = call('POST', f'/zones/{zone_id}/dns_records', {'type':'CNAME','name':host,'content':target,'ttl':1,'proxied':True})
+                  if not add.get('success'):
+                      print('DNS create failed:', host, add.get('errors')); sys.exit(7)
+                  print('Created DNS:', host, '->', target)
+
+          domains = call('GET', f'/accounts/{account_id}/pages/projects/{project_name}/domains')
+          current = {d.get('name') for d in domains.get('result', [])} if domains.get('success') else set()
+          for host in (domain, f'www.{domain}'):
+              if host not in current:
+                  added = call('POST', f'/accounts/{account_id}/pages/projects/{project_name}/domains', {'name':host})
+                  if not added.get('success'):
+                      print('Pages domain bind failed:', host, added.get('errors')); sys.exit(8)
+                  print('Bound Pages domain:', host)
+              else:
+                  print('Pages domain already present:', host)
+
+          domains = call('GET', f'/accounts/{account_id}/pages/projects/{project_name}/domains')
+          for d in domains.get('result', []):
+              if d.get('name') in {domain, f'www.{domain}'}:
+                  print('FINAL_DOMAIN:', d.get('name'), 'status=', d.get('status'))
+          PY
