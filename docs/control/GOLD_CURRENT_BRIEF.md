@@ -2123,3 +2123,33 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **MAKER ≠ JUDGE:** Factory repairs and verifies the evaluator. Independent Gold must re-run the exact negative mutation against the returned SHA; merge, deployment and LIVE release remain separately authorised.
 
+# DISCOVERY SITEMAP — STANDARDS-VALID XML EVALUATION — 23 OCTOBER 2026
+
+**STATUS:** INDEPENDENT GOLD QA_CORRECT / BOUNDED EVALUATOR CORRECTION / RELEASE HOLD.
+
+**USER ARRIVES BECAUSE:** visitors and crawlers depend on the existing sitemap to expose the public 4PLANET routes without accepting malformed XML as evidence.
+
+**ONE THING TO UNDERSTAND:** route coverage is evidence only when the emitted sitemap is a standards-valid, namespace-correct XML document.
+
+**PRIMARY ACTION:** retain the current public discovery routes and their exact canonical URL identities.
+
+**SECONDARY DEPTH:** preserve the existing comment, CDATA, namespace, origin, query, fragment and raw-path regression matrix.
+
+**WHAT CAN BE REMOVED:** the bespoke lexical XML approximation that accepted duplicate expanded-name attributes, reserved namespace rebinding and raw XML 1.0 control characters.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the current sitemap generator, user-entry audit, full analytics/discovery contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing evaluator proves standards-valid emitted XML and required canonical entries at build time. It does not prove deployment, indexing, traffic, user use, Gold acceptance or ecological outcome.
+
+**MOBILE-FIRST RISK:** none; the correction changes only build-time audit parsing and regression fixtures, not public markup, layout, interaction or navigation.
+
+**HUMAN SUCCESS:** malformed sitemap evidence fails before release while the valid current sitemap and existing public routes remain unchanged.
+
+**ROOT CAUSE / FAILED TEST:** the hand-built tokenizer compared raw attribute names and omitted reserved namespace and raw-character constraints. Gold reproduced five false accepts against `a6fcf5e7188a09d3c28112d7ed5bc38ebccef1fc`; permanent failing-first fixtures now cover all five cases.
+
+**SIMPLEST CAPABLE EXECUTION:** replace only the bespoke tokenizer with the small namespace-aware `saxes` XML 1.0 parser, retain the existing semantic sitemap checks and add the five owning-path regressions.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only evaluator change. Base and rollback are `king/test@a6fcf5e7188a09d3c28112d7ed5bc38ebccef1fc`; revert the bounded parser/dependency/test/brief commit if independent Gold finds regression.
+
+**MAKER ≠ JUDGE:** Factory corrects and verifies the candidate. Independent Gold must judge the exact returned SHA; merge, deployment, indexing and LIVE release remain separately authorised.
+

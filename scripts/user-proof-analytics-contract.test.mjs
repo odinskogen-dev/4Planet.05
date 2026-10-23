@@ -254,6 +254,52 @@ test("the user-entry audit treats sitemap element names as case-sensitive", () =
   assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
 });
 
+const standardsInvalidSitemapFixtures = [
+  {
+    name: "duplicate expanded-name attributes",
+    mutate: (source) => source.replace(
+      "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+      '<url xmlns:a="urn:duplicate" xmlns:b="urn:duplicate" a:value="1" b:value="2"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
+    ),
+  },
+  {
+    name: "a prefix bound to the reserved xmlns namespace",
+    mutate: (source) => source.replace(
+      "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+      '<url xmlns:bad="http://www.w3.org/2000/xmlns/"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
+    ),
+  },
+  {
+    name: "a non-xml prefix bound to the reserved XML namespace",
+    mutate: (source) => source.replace(
+      "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+      '<url xmlns:bad="http://www.w3.org/XML/1998/namespace"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
+    ),
+  },
+  {
+    name: "a raw U+0001 control character in the urlset attributes",
+    mutate: (source) => source.replace(
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" audit="\u0001">',
+    ),
+  },
+  {
+    name: "a raw U+0002 control character in a url attribute",
+    mutate: (source) => source.replace(
+      "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+      '<url audit="\u0002"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
+    ),
+  },
+];
+
+for (const fixture of standardsInvalidSitemapFixtures) {
+  test(`the user-entry audit rejects ${fixture.name}`, () => {
+    const result = runUserEntryAuditFixture(fixture.mutate);
+    assert.equal(result.status, 1, `standards-invalid sitemap must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+    assert.match(result.stderr, /XML|xml|namespace|attribute|character/);
+  });
+}
+
 test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
   const result = runUserEntryAuditFixture((source) => `${source.replace(
     /^\s*"\/livingsystems\/",\s*$/m,
