@@ -17,6 +17,18 @@ function canonicalFromRawHtml(html: string) {
   return tag?.match(/\bhref=["']([^"']+)["']/i)?.[1];
 }
 
+function headMetadataFromRawHtml(html: string) {
+  const meta = (key: string) => html.match(
+    new RegExp(`<meta\\s+name=["']${key}["'][^>]*content=["']([^"']+)["']`, "i"),
+  )?.[1];
+  return {
+    title: html.match(/<title>([^<]+)<\/title>/i)?.[1],
+    description: meta("description"),
+    robots: meta("robots"),
+    canonical: canonicalFromRawHtml(html),
+  };
+}
+
 function prerenderGraphsFromRawHtml(html: string) {
   return [...html.matchAll(
     /<script\b(?=[^>]*\btype=["']application\/ld\+json["'])(?=[^>]*\bdata-4planet-prerender=["']true["'])[^>]*>([\s\S]*?)<\/script>/gi,
@@ -93,12 +105,29 @@ test.describe("structured-data runtime ownership", () => {
     await expect(page.locator("#third-party-jsonld-proof")).toHaveCount(1);
   });
 
-  test("About Story hydration preserves its self-canonical identity", async ({ page }) => {
+  test("About Story keeps raw metadata through hydration and SPA return", async ({ page, request }) => {
+    const response = await request.get("/about/story/");
+    expect(response.ok()).toBeTruthy();
+    const raw = headMetadataFromRawHtml(await response.text());
+
     await page.goto("/about/story");
     await expectCurrentGraph(page, "/about/story");
+    await expect(page).toHaveTitle(raw.title!);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", raw.description!);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", raw.robots!);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", raw.canonical!);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "The living planet is not an abstract issue.",
     );
+
+    await navigateSpa(page, "/place/kenya");
+    await expectCurrentGraph(page, "/place/kenya");
+    await navigateSpa(page, "/about/story");
+    await expectCurrentGraph(page, "/about/story");
+    await expect(page).toHaveTitle(raw.title!);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", raw.description!);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", raw.robots!);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", raw.canonical!);
   });
 
   test("an unknown route removes owned ghost graphs but preserves third-party JSON-LD", async ({ page }) => {

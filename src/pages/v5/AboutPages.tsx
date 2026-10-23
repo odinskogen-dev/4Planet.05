@@ -41,8 +41,8 @@ export function AboutStory() {
   return (
     <PublicShell>
       <Seo
-        title="About · Story — 4PLANET_"
-        description="The living planet is the system beneath food, water, health, prosperity, freedom and almost everything people care about."
+        title="The living planet is not an abstract issue. | 4PLANET"
+        description="It is the system beneath food, water, health, prosperity, freedom and almost everything people care about."
         path="/about/story"
         jsonLd={({ canonicalUrl }) => ({
           "@context": "https://schema.org",

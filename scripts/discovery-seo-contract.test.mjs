@@ -200,12 +200,19 @@ test("about trailing slash canonical",()=>{const redirects=read("public/_redirec
 
 test("About Story organic entry is server-readable, canonical and discoverable", () => {
   const about = read("src/pages/v5/AboutPages.tsx");
+  const serverTitle = pre.match(/const aboutStoryTitle = "([^"]+)";/)?.[1] + " | 4PLANET";
+  const serverDescription = pre.match(/const aboutStoryDescription = "([^"]+)";/)?.[1];
+  const storySeo = about.match(/<Seo[\s\S]*?\/>/)?.[0] || "";
+  const clientTitle = storySeo.match(/title="([^"]+)"/)?.[1];
+  const clientDescription = storySeo.match(/description="([^"]+)"/)?.[1];
   assert.match(router, /path="\/about\/story" element={<AboutStory \/>}/);
   assert.match(map, /^\s*"\/about\/story",?$/m);
   assert.match(pre, /writeRoute\(aboutStoryPath, pageHtml/);
   assert.match(pre, /"@type": "AboutPage"/);
   assert.match(about, /<Seo[\s\S]*path="\/about\/story"/);
   assert.match(about, /"@type": "AboutPage"/);
+  assert.equal(clientTitle, serverTitle, "Story title must not change during hydration");
+  assert.equal(clientDescription, serverDescription, "Story description must not change during hydration");
   for (const phrase of [
     "The living planet is not an abstract issue.",
     "Human life sits inside living systems.",

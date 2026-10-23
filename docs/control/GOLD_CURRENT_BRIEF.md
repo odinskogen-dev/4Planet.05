@@ -2179,6 +2179,8 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **MAKER ≠ JUDGE:** Factory may correct and verify the candidate. Independent Gold judges the exact SHA; deployment, search submission and LIVE release remain separately authorised.
 
+**RETURN CORRECTION — 24 OCTOBER 2026:** Independent Gold found that the new client SEO owner used a different title and description from the existing server projection. The bounded correction keeps the server-approved Story metadata unchanged through hydration and adds source plus desktop/mobile browser parity coverage for raw response, hydration and SPA away/back. Visible Story copy and layout remain unchanged. Base/rollback is `king/test@f865ba226341f3af00452a7823b3474c90cfaf93`; independent re-Gold remains required.
+
 # FLAGSHIP JOURNEYS — SOURCE HTML SEARCH + SHARE METADATA — 23 OCTOBER 2026
 
 **STATUS:** CONFIRMED MAX EXPOSURE DEFECT / BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.
