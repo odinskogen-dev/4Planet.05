@@ -28,6 +28,113 @@ const journeyEntries = [
 const analytics = exists("src/analytics/ProductAnalytics.ts") ? read("src/analytics/ProductAnalytics.ts") : "";
 const routeAnalytics = exists("src/analytics/ProductRouteAnalytics.tsx") ? read("src/analytics/ProductRouteAnalytics.tsx") : "";
 
+function decodeXmlText(value) {
+  return value.replace(/&(#x[0-9a-f]+|#[0-9]+|amp|lt|gt|quot|apos);/gi, (entity, name) => {
+    if (name[0] === "#") {
+      const hexadecimal = name[1]?.toLowerCase() === "x";
+      const codePoint = Number.parseInt(name.slice(hexadecimal ? 2 : 1), hexadecimal ? 16 : 10);
+      if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+        throw new Error(`Invalid XML character reference: ${entity}`);
+      }
+      return String.fromCodePoint(codePoint);
+    }
+    return { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" }[name.toLowerCase()];
+  });
+}
+
+function findXmlTagEnd(xml, start) {
+  let quote = null;
+  for (let index = start; index < xml.length; index += 1) {
+    const character = xml[index];
+    if (quote) {
+      if (character === quote) quote = null;
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (character === ">") {
+      return index;
+    }
+  }
+  throw new Error("Unterminated XML tag");
+}
+
+function sitemapLocationTexts(xml) {
+  const locations = [];
+  const stack = [];
+  let cursor = 0;
+  let locationText = null;
+  let rootSeen = false;
+
+  while (cursor < xml.length) {
+    if (xml[cursor] !== "<") {
+      const nextTag = xml.indexOf("<", cursor);
+      const end = nextTag === -1 ? xml.length : nextTag;
+      if (locationText !== null) locationText += xml.slice(cursor, end);
+      cursor = end;
+      continue;
+    }
+
+    if (xml.startsWith("<!--", cursor)) {
+      const end = xml.indexOf("-->", cursor + 4);
+      if (end === -1) throw new Error("Unterminated XML comment");
+      cursor = end + 3;
+      continue;
+    }
+
+    if (xml.startsWith("<![CDATA[", cursor)) {
+      const end = xml.indexOf("]]>", cursor + 9);
+      if (end === -1) throw new Error("Unterminated XML CDATA section");
+      if (locationText !== null) locationText += xml.slice(cursor + 9, end);
+      cursor = end + 3;
+      continue;
+    }
+
+    if (xml.startsWith("<?", cursor)) {
+      const end = xml.indexOf("?>", cursor + 2);
+      if (end === -1) throw new Error("Unterminated XML processing instruction");
+      cursor = end + 2;
+      continue;
+    }
+
+    if (xml.startsWith("<!", cursor)) {
+      throw new Error("Unsupported XML declaration in sitemap");
+    }
+
+    const tagEnd = findXmlTagEnd(xml, cursor + 1);
+    const tag = xml.slice(cursor + 1, tagEnd).trim();
+    const closing = tag.startsWith("/");
+    const selfClosing = tag.endsWith("/");
+    const nameMatch = tag.match(/^\/?\s*([A-Za-z_][\w:.-]*)/);
+    if (!nameMatch) throw new Error(`Malformed XML tag: <${tag}>`);
+    const localName = nameMatch[1].split(":").at(-1).toLowerCase();
+
+    if (closing) {
+      if (selfClosing || stack.at(-1) !== localName) {
+        throw new Error(`Mismatched XML closing tag: ${localName}`);
+      }
+      if (localName === "loc" && locationText !== null) {
+        locations.push(decodeXmlText(locationText.trim()));
+        locationText = null;
+      }
+      stack.pop();
+    } else {
+      if (locationText !== null) throw new Error("Sitemap <loc> must contain text only");
+      stack.push(localName);
+      if (stack.length === 1) {
+        if (localName !== "urlset" || rootSeen) throw new Error("Sitemap must contain one <urlset> root");
+        rootSeen = true;
+      }
+      if (localName === "loc" && stack.length === 3 && stack[0] === "urlset" && stack[1] === "url") {
+        locationText = "";
+      }
+      if (selfClosing) stack.pop();
+    }
+    cursor = tagEnd + 1;
+  }
+
+  if (!rootSeen || stack.length > 0 || locationText !== null) throw new Error("Incomplete sitemap XML structure");
+  return locations;
+}
+
 function emittedSitemapRoutes() {
   const generatedFiles = [
     "public/sitemap.xml",
@@ -50,7 +157,7 @@ function emittedSitemapRoutes() {
     }
 
     const sitemap = read("public/sitemap.xml");
-    const rawLocations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].replaceAll("&amp;", "&"));
+    const rawLocations = sitemapLocationTexts(sitemap);
     if (rawLocations.length === 0) throw new Error("Generated sitemap contains no <loc> entries");
     return rawLocations.map((rawLocation) => ({ rawLocation, url: new URL(rawLocation) }));
   } finally {

@@ -1,3 +1,33 @@
+# LIVING SYSTEMS — STRUCTURAL SITEMAP XML IDENTITY — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs the sitemap audit to recognise only a real URL element, not markup-shaped text hidden in a comment or CDATA section.
+
+**ONE THING TO UNDERSTAND:** a regular expression cannot distinguish XML element nodes from arbitrary text; structural parsing must establish the `urlset > url > loc` relationship.
+
+**PRIMARY ACTION:** parse the emitted sitemap structure and accept raw location text only from a real `<loc>` element directly inside `<url>` inside `<urlset>`.
+
+**SECONDARY DEPTH:** ignore comment markup, treat CDATA as text rather than markup, preserve raw URL identity before WHATWG normalisation, and retain every prior output, shadow, origin, query, fragment, userinfo and dot-segment regression.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** no UI changes; structural sitemap evidence is dominant, the required route orients the result, explicit failure type is the action, and the full negative matrix supplies depth.
+
+**WHAT CAN BE REMOVED:** raw `<loc>` regular-expression matching that promotes non-element text to canonical evidence.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the current sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing audit proves only that the current generator emitted the exact approved URL inside a real sitemap element during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; this is an evaluator-only correction with no rendered-product mutation.
+
+**HUMAN SUCCESS:** comment-only and CDATA-contained pseudo-markup fail while a real canonical `<loc>` and every earlier deceptive-output fixture retain their expected results.
+
+**BASE / ROLLBACK:** `king/test@33cb110da0b66cd6fbdd288d797826e70e2cfb34`; revert this bounded audit/test/brief correction if independent Gold finds a structural parsing, canonical identity or generated-file restoration regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the XML-structure cases and the full negative matrix on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — RAW CANONICAL SITEMAP IDENTITY — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

@@ -180,6 +180,34 @@ test("the user-entry audit rejects a route removed from the final emitted sitema
   assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
 });
 
+test("the user-entry audit ignores loc-like markup inside an emitted XML comment", () => {
+  const result = runUserEntryAuditFixture((source) => source
+    .replace(
+      /^const routes = (\[.*\]);$/m,
+      'const routes = $1.filter((route) => route !== "/livingsystems/");',
+    )
+    .replace(
+      "${sitemapUrls}\\n</urlset>",
+      "${sitemapUrls}\\n<!-- <url><loc>https://4planet.org/livingsystems/</loc></url> -->\\n</urlset>",
+    ));
+  assert.equal(result.status, 1, `audit must ignore comment text; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+});
+
+test("the user-entry audit ignores loc-like markup inside emitted CDATA", () => {
+  const result = runUserEntryAuditFixture((source) => source
+    .replace(
+      /^const routes = (\[.*\]);$/m,
+      'const routes = $1.filter((route) => route !== "/livingsystems/");',
+    )
+    .replace(
+      "${sitemapUrls}\\n</urlset>",
+      "${sitemapUrls}\\n<![CDATA[<url><loc>https://4planet.org/livingsystems/</loc></url>]]>\\n</urlset>",
+    ));
+  assert.equal(result.status, 1, `audit must ignore CDATA markup; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+});
+
 test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
   const result = runUserEntryAuditFixture((source) => `${source.replace(
     /^\s*"\/livingsystems\/",\s*$/m,
