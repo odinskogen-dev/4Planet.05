@@ -1,0 +1,35 @@
+name: ROMA Transfer — verify NOAA NASA and KayKit access
+on:
+  push:
+    branches: [handoff/roma-geo-army-assets-20261023]
+    paths: ['.github/workflows/roma-data-probe.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify official downloads and 3D source
+        shell: bash
+        run: |
+          set +e
+          python3 - <<'PY'
+          import requests,time
+          urls={
+            'NOAA_ERDDAP_60S':'https://oceanwatch.pifsc.noaa.gov/erddap/griddap/ETOPO_2022_v1_60s.nc?z[(45):1:(45.05)][(20):1:(20.05)]',
+            'NASA_B1':'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/january/world.200401.3x21600x21600.B1.jpg',
+            'KAYKIT_REPO':'https://api.github.com/repos/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/zipball/main',
+            'NOAA_GRID':'https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/data/60s/60s_surface_elev_gtif/ETOPO_2022_v1_60s_N90W180_surface.tif'
+          }
+          for key,url in urls.items():
+            try:
+              kwargs={'timeout':35,'allow_redirects':True}
+              if key in ('NASA_B1','NOAA_GRID'):kwargs['headers']={'Range':'bytes=0-2047'}
+              r=requests.get(url,**kwargs)
+              print('ROMA_PROBE',key,'HTTP',r.status_code,'BYTES',len(r.content),'TYPE',r.headers.get('Content-Type'),'TOTAL',r.headers.get('Content-Length'),'END',r.url,flush=True)
+              if key=='NOAA_ERDDAP_60S' and r.status_code==200:open('/tmp/etopo-sample.nc','wb').write(r.content)
+            except Exception as e: print('ROMA_PROBE_ERROR',key,type(e).__name__,str(e)[:350],flush=True)
+          PY
