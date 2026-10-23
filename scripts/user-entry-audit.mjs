@@ -50,9 +50,9 @@ function emittedSitemapRoutes() {
     }
 
     const sitemap = read("public/sitemap.xml");
-    const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].replaceAll("&amp;", "&"));
-    if (locations.length === 0) throw new Error("Generated sitemap contains no <loc> entries");
-    return locations.map((location) => new URL(location));
+    const rawLocations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].replaceAll("&amp;", "&"));
+    if (rawLocations.length === 0) throw new Error("Generated sitemap contains no <loc> entries");
+    return rawLocations.map((rawLocation) => ({ rawLocation, url: new URL(rawLocation) }));
   } finally {
     for (const [relativePath, priorContent] of priorFiles) {
       const absolutePath = path.join(root, relativePath);
@@ -65,21 +65,21 @@ function emittedSitemapRoutes() {
   }
 }
 
-const generatedSitemapUrls = emittedSitemapRoutes();
+const generatedSitemapLocations = emittedSitemapRoutes();
 const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 
 const routeCoverage = requiredDiscoveryRoutes.map((route) => {
   const expectedUrl = new URL(route, canonicalSiteOrigin).href;
-  const matchingUrls = generatedSitemapUrls.filter((url) => url.pathname === route);
+  const matchingLocations = generatedSitemapLocations.filter(({ url }) => url.pathname === route);
   return {
     route,
-    declaredInSitemapGenerator: matchingUrls.some((url) => url.href === expectedUrl),
-    nonCanonicalLocations: matchingUrls
-      .filter((url) => url.origin !== canonicalSiteOrigin)
-      .map((url) => url.href),
-    nonCanonicalUrlIdentities: matchingUrls
-      .filter((url) => url.origin === canonicalSiteOrigin && url.href !== expectedUrl)
-      .map((url) => url.href),
+    declaredInSitemapGenerator: matchingLocations.some(({ rawLocation }) => rawLocation === expectedUrl),
+    nonCanonicalLocations: matchingLocations
+      .filter(({ url }) => url.origin !== canonicalSiteOrigin)
+      .map(({ rawLocation }) => rawLocation),
+    nonCanonicalUrlIdentities: matchingLocations
+      .filter(({ rawLocation, url }) => url.origin === canonicalSiteOrigin && rawLocation !== expectedUrl)
+      .map(({ rawLocation }) => rawLocation),
   };
 });
 

@@ -1,3 +1,27 @@
+# LIVING SYSTEMS — RAW CANONICAL SITEMAP IDENTITY — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs the sitemap to publish the one approved Living Systems URL, not a textually different URL that a parser silently normalises to it.
+
+**ONE THING TO UNDERSTAND:** WHATWG URL parsing removes dot segments, so comparing only the parsed URL can erase the evidence that the emitted `<loc>` was noncanonical.
+
+**PRIMARY ACTION:** retain the decoded raw `<loc>` text and require it to equal the exact approved canonical URL before accepting the route.
+
+**SECONDARY DEPTH:** retain parsed URL data for path association and foreign-origin diagnosis; preserve every prior comment, filter, shadow, origin, query, fragment and userinfo regression.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing audit proves only that the generator emitted the exact approved sitemap URL during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**BASE / ROLLBACK:** `king/test@27457e26f5e1bde8027fbcc1d195bba3aa66fd15`; revert this bounded audit/test/brief correction if independent Gold finds an approved-URL or generated-file restoration regression.
+
+**HUMAN SUCCESS:** raw `/./`, encoded-dot and parent-segment variants fail while the exact canonical URL and all earlier deceptive-output fixtures retain their expected results.
+
+**MAKER != JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the full negative matrix on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — EXACT CANONICAL SITEMAP URL IDENTITY — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

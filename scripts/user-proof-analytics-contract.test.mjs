@@ -225,6 +225,33 @@ test("the user-entry audit rejects a required canonical URL with userinfo", () =
   assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/audit@4planet\.org\/livingsystems\//);
 });
 
+test("the user-entry audit rejects a raw canonical URL with a dot segment", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "`${origin}${route}`",
+    'route === "/livingsystems/" ? `${origin}/./livingsystems/` : `${origin}${route}`',
+  ));
+  assert.equal(result.status, 1, `audit must reject raw dot-segment URLs; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/4planet\.org\/\.\/livingsystems\//);
+});
+
+test("the user-entry audit rejects a raw canonical URL with an encoded dot segment", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "`${origin}${route}`",
+    'route === "/livingsystems/" ? `${origin}/%2e/livingsystems/` : `${origin}${route}`',
+  ));
+  assert.equal(result.status, 1, `audit must reject raw encoded-dot URLs; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/4planet\.org\/%2e\/livingsystems\//i);
+});
+
+test("the user-entry audit rejects a raw canonical URL with a parent segment", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "`${origin}${route}`",
+    'route === "/livingsystems/" ? `${origin}/species/../livingsystems/` : `${origin}${route}`',
+  ));
+  assert.equal(result.status, 1, `audit must reject raw parent-segment URLs; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_URL:https:\/\/4planet\.org\/species\/\.\.\/livingsystems\//);
+});
+
 test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {
   assert.deepEqual(evaluatePrivacyParameters({
     page_path: "/livingsystems/orca",
