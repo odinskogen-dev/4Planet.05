@@ -5,6 +5,7 @@ on:
     paths:
       - 'site/roma/index.html'
       - 'site/roma/imperium-v6/**'
+      - 'site/roma/challenger-08/**'
       - 'site/index.html'
       - 'site/games/**'
       - 'site/medieval/**'
