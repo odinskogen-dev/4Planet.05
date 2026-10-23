@@ -305,6 +305,53 @@ for (const fixture of standardsInvalidSitemapFixtures) {
   });
 }
 
+const unexpectedSitemapAttributeFixtures = [
+  {
+    element: "urlset",
+    mutate: (source) => source.replace(
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" evil="yes">',
+    ),
+  },
+  {
+    element: "url",
+    mutate: (source) => source.replace(
+      "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+      '<url evil="yes"><loc>${escapeXml(`${origin}${route}`)}</loc></url>',
+    ),
+  },
+  {
+    element: "loc",
+    mutate: (source) => source.replace(
+      "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+      '<url><loc evil="yes">${escapeXml(`${origin}${route}`)}</loc></url>',
+    ),
+  },
+  {
+    element: "priority",
+    mutate: (source) => source.replace(
+      "${sitemapUrls}\\n</urlset>",
+      '${sitemapUrls}\\n<url><loc>https://4planet.org/schema-attribute</loc><priority evil="yes">0.5</priority></url>\\n</urlset>',
+    ),
+  },
+];
+
+for (const fixture of unexpectedSitemapAttributeFixtures) {
+  test(`the user-entry audit rejects an unexpected attribute on sitemap ${fixture.element}`, () => {
+    const result = runUserEntryAuditFixture(fixture.mutate);
+    assert.equal(result.status, 1, `attribute-bearing sitemap element must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+    assert.match(result.stderr, new RegExp(`Sitemap <${fixture.element}> must not contain attribute: evil`));
+  });
+}
+
+test("the user-entry audit preserves namespace declarations and root schemaLocation", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 https://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">',
+  ));
+  assert.equal(result.status, 0, `namespace declarations and standard root schemaLocation must pass; stdout=${result.stdout}; stderr=${result.stderr}`);
+});
+
 test("the user-entry audit rejects a sitemap url without a loc", () => {
   const result = runUserEntryAuditFixture((source) => source.replace(
     "${sitemapUrls}\\n</urlset>",

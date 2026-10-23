@@ -1,3 +1,27 @@
+# DISCOVERY SITEMAP — CLOSED ATTRIBUTE CONTRACT — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** sitemap evidence must fail closed when standard sitemap elements carry undeclared application attributes instead of certifying schema-invalid discovery data.
+
+**ROOT CAUSE:** the native SAX path validated element namespace, sequence, cardinality and values but ignored `tag.attributes`, so schema-invalid attributes on `urlset`, `url`, `loc` and optional value elements survived the audit.
+
+**CORRECTION:** reject every non-namespace attribute on sitemap elements; preserve XML namespace declarations and the standard root `xsi:schemaLocation` hint without broadening the accepted sitemap element model.
+
+**REGRESSION EVIDENCE:** four independent Gold fixtures reproduce unexpected attributes on `urlset`, `url`, `loc` and `priority` through the native generator-to-audit path; a positive fixture protects namespace declarations and root schemaLocation.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing `saxes` parser, generator-to-parser fixture harness, all retained XML/schema/URL-identity tests and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves only that the bounded generated-sitemap evaluator rejects these attribute defects during execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; evaluator and regression-harness correction only, with no rendered-product mutation.
+
+**BASE / ROLLBACK:** `king/test@e67a11c24b5269215fa01f05f01043ea4c2e4672`; revert this bounded three-file correction if independent Gold finds an attribute, namespace, generator-restoration or retained-matrix regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the four held-out attribute fixtures, the namespace/schemaLocation positive fixture and the complete retained matrix on the exact returned SHA.
+
+---
+
 # DISCOVERY SITEMAP — OPTIONAL FIELD SEQUENCE, CARDINALITY AND LASTMOD — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

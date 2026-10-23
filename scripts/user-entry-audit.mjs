@@ -29,6 +29,8 @@ const journeyEntries = [
 const analytics = exists("src/analytics/ProductAnalytics.ts") ? read("src/analytics/ProductAnalytics.ts") : "";
 const routeAnalytics = exists("src/analytics/ProductRouteAnalytics.tsx") ? read("src/analytics/ProductRouteAnalytics.tsx") : "";
 const sitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
+const xmlnsNamespace = "http://www.w3.org/2000/xmlns/";
+const xmlSchemaInstanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
 
 function isValidSitemapLastmod(value) {
   const match = value.match(
@@ -97,6 +99,17 @@ function sitemapLocationTexts(xml) {
     else if (sitemapValueText !== null) sitemapValueText += text;
     else if (text.trim()) throw new Error("XML text is not allowed outside sitemap values");
   };
+  const assertAllowedAttributes = (tag, allowSchemaLocation = false) => {
+    for (const attribute of Object.values(tag.attributes)) {
+      const isNamespaceDeclaration = attribute.uri === xmlnsNamespace;
+      const isSchemaLocation = allowSchemaLocation
+        && attribute.uri === xmlSchemaInstanceNamespace
+        && attribute.local === "schemaLocation";
+      if (!isNamespaceDeclaration && !isSchemaLocation) {
+        throw new Error(`Sitemap <${tag.local}> must not contain attribute: ${attribute.name}`);
+      }
+    }
+  };
 
   parser.on("text", appendText);
   parser.on("cdata", appendText);
@@ -112,6 +125,7 @@ function sitemapLocationTexts(xml) {
       if (tag.local !== "urlset" || tag.uri !== sitemapNamespace || rootSeen) {
         throw new Error("Sitemap must contain one namespaced <urlset> root");
       }
+      assertAllowedAttributes(tag, true);
       rootSeen = true;
     } else if (stack.length === 2) {
       if (tag.uri === sitemapNamespace && tag.local !== "url") {
@@ -120,6 +134,7 @@ function sitemapLocationTexts(xml) {
       if (tag.uri !== sitemapNamespace) {
         throw new Error("Sitemap <urlset> may contain only sitemap <url> elements");
       }
+      assertAllowedAttributes(tag);
       currentUrlLocCount = 0;
       currentUrlElementOrder = -1;
       currentUrlElements = new Set();
@@ -132,6 +147,7 @@ function sitemapLocationTexts(xml) {
       if (!urlElementOrder.has(tag.local)) {
         throw new Error(`Unexpected sitemap element: <${tag.local}>`);
       }
+      assertAllowedAttributes(tag);
       if (tag.local === "loc") {
         currentUrlLocCount += 1;
         if (currentUrlLocCount > 1) {
