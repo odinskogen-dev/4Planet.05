@@ -1,3 +1,27 @@
+# LIVING SYSTEMS — CANONICAL SITEMAP ORIGIN IMMUNITY — 23 OCTOBER 2026
+
+**STATUS:** RETURNED QA GAP / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs the Living Systems sitemap entry to identify the approved `4planet.org` resource, not merely reuse its path on another host.
+
+**ONE THING TO UNDERSTAND:** pathname equality is not canonical URL equality; `https://example.invalid/livingsystems/` must not certify the `https://4planet.org/livingsystems/` entry.
+
+**PRIMARY ACTION:** validate both the approved canonical origin and required pathname in the sitemap actually emitted by the real generator.
+
+**SECONDARY DEPTH:** report foreign-origin entries explicitly, preserve all prior deceptive-output regressions, and restore generated files byte-for-byte after every audit.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** a passing audit proves only that the current generator emitted required URLs under the approved origin during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**HUMAN SUCCESS:** the audit rejects a correct required path emitted under a foreign origin while the unchanged generator and prior comment/filter/shadow negatives retain their expected results.
+
+**BASE / ROLLBACK:** `king/test@fb97a5219e1020bc6e9657a10c95296a87e1b799`; revert this three-file correction if independent Gold finds an approved-origin or generator-restoration regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the foreign-origin and prior held-out fixtures on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — EMITTED SITEMAP AUDIT IMMUNITY — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 const root = process.cwd();
 const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
 const exists = (p) => fs.existsSync(path.join(root, p));
+const canonicalSiteOrigin = "https://4planet.org";
 
 const requiredDiscoveryRoutes = [
   "/",
@@ -51,7 +52,7 @@ function emittedSitemapRoutes() {
     const sitemap = read("public/sitemap.xml");
     const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1].replaceAll("&amp;", "&"));
     if (locations.length === 0) throw new Error("Generated sitemap contains no <loc> entries");
-    return new Set(locations.map((location) => new URL(location).pathname));
+    return locations.map((location) => new URL(location));
   } finally {
     for (const [relativePath, priorContent] of priorFiles) {
       const absolutePath = path.join(root, relativePath);
@@ -64,13 +65,19 @@ function emittedSitemapRoutes() {
   }
 }
 
-const generatedSitemapRoutes = emittedSitemapRoutes();
+const generatedSitemapUrls = emittedSitemapRoutes();
 const robots = exists("public/robots.txt") ? read("public/robots.txt") : "";
 
-const routeCoverage = requiredDiscoveryRoutes.map((route) => ({
-  route,
-  declaredInSitemapGenerator: generatedSitemapRoutes.has(route),
-}));
+const routeCoverage = requiredDiscoveryRoutes.map((route) => {
+  const matchingUrls = generatedSitemapUrls.filter((url) => url.pathname === route);
+  return {
+    route,
+    declaredInSitemapGenerator: matchingUrls.some((url) => url.origin === canonicalSiteOrigin),
+    nonCanonicalLocations: matchingUrls
+      .filter((url) => url.origin !== canonicalSiteOrigin)
+      .map((url) => url.href),
+  };
+});
 
 const journeys = journeyEntries.map((entry) => {
   const present = exists(entry.file);
@@ -104,6 +111,7 @@ const robotsContract = {
 };
 
 const hardFailures = [
+  ...routeCoverage.flatMap((row) => row.nonCanonicalLocations.map((location) => `NON_CANONICAL_SITEMAP_ORIGIN:${location}`)),
   ...routeCoverage.filter((row) => !row.declaredInSitemapGenerator).map((row) => `MISSING_SITEMAP_ROUTE:${row.route}`),
   ...journeys.filter((row) => !row.physicalEntryPresent).map((row) => `MISSING_ENTRY:${row.route}`),
   ...journeys.filter((row) => !row.returnPathPresent).map((row) => `DEAD_END:${row.route}`),

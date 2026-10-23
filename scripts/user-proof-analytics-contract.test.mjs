@@ -150,7 +150,7 @@ function runUserEntryAuditFixture(mutateSitemap) {
     const sitemapFixture = join(fixtureRoot, "scripts/generate-sitemap.mjs");
     const sitemapSource = readFileSync(sitemapFixture, "utf8");
     const mutatedSource = mutateSitemap(sitemapSource);
-    assert.notEqual(mutatedSource, sitemapSource, "fixture mutation must remove the active canonical route");
+    assert.notEqual(mutatedSource, sitemapSource, "fixture mutation must change sitemap evidence");
     writeFileSync(sitemapFixture, mutatedSource, "utf8");
 
     return spawnSync(process.execPath, [join(repositoryRoot, "scripts/user-entry-audit.mjs")], {
@@ -187,6 +187,15 @@ test("the user-entry audit ignores a nested shadow staticRoutes declaration", ()
   )}\nfunction shadowedRouteFixture() { const staticRoutes = ["/livingsystems/"]; return staticRoutes; }\n`);
   assert.equal(result.status, 1, `audit must ignore nested shadow declarations; stdout=${result.stdout}; stderr=${result.stderr}`);
   assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+});
+
+test("the user-entry audit rejects a required path emitted under a foreign origin", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    '"https://4planet.org"',
+    '"https://example.invalid"',
+  ));
+  assert.equal(result.status, 1, `audit must reject a required path under a foreign origin; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stdout, /NON_CANONICAL_SITEMAP_ORIGIN:https:\/\/example\.invalid\/livingsystems\//);
 });
 
 test("analytics privacy boundary rejects encoded credentials and unknown properties", () => {
