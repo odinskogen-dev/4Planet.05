@@ -1,0 +1,560 @@
+name: CUB LAB — Exact ROMA Release 2026-10-19
+on:
+  push:
+    branches: [cub-roma-republic-v12-release-20261023]
+    paths:
+      - 'site/roma/index.html'
+      - 'site/roma/imperium-v6/**'
+      - 'site/roma/challenger-08/**'
+      - 'site/roma/challenger-12/**'
+      - 'site/index.html'
+      - 'site/games/**'
+      - 'site/medieval/**'
+      - 'site/medievalkingdoms/**'
+      - 'site/medivalmmo/**'
+      - 'site/medievalmmo/**'
+      - 'site/italy1796/**'
+      - 'site/villains/**'
+      - 'site/wildorca/**'
+      - 'site/assets/**'
+      - 'site/sitemap.xml'
+      - 'site/robots.txt'
+      - '.github/workflows/cub-roma-republic-v12-release.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cub-lab-exact-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check original game bytes before deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          test "$(wc -c < site/roma/index.html)" -eq 2171887
+          test -s site/roma/versions/challenger-01-20261018.html
+          test -s site/index.html
+          echo '3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83  site/medieval/index.html' | sha256sum -c -
+          test -s site/medieval/clean-hud.css
+          echo 'ROMA_ORIGINAL_NO_REBUILD_VALIDATED'
+      - name: Generate isolated CH04 playable preview without changing Build03
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3a676e40e0dfdc4f91a413a9c8f4691851c55a0a6cf0a55dfa064bedc399ca83  site/medieval/index.html' | sha256sum -c -
+          python3 site/medieval/ch04src/build_ch04.py site/medieval/index.html site/medieval/challenger04/index.html
+          echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  site/medieval/challenger04/index.html' | sha256sum -c -
+          echo 'CH04_ISOLATED_PREVIEW_READY'
+      - name: Build verified MEDIEVAL KINGDOMS CH05 in independent game path
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/medieval/challenger04/index.html
+          node --check site/medieval/ch05src/challenger05_patch.js
+          python3 site/medieval/ch05src/build_ch05.py site/medieval/challenger04/index.html site/medievalkingdoms/index.html
+          echo 'dc7f5fbabcc970b803a66d9919aea7093cf937c2dc840ba2788b162327955584  site/medievalkingdoms/index.html' | sha256sum -c -
+          echo 'CH05_INDEPENDENT_RELEASE_BUILT'
+      - name: Build isolated fullframe 3D MEDIEVAL MMO game (no source replacement)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/medievalkingdoms/index.html
+          python3 site/medievalmmo/build_mmo.py site/medievalkingdoms/index.html site/medievalmmo/index.html
+          test "$(wc -c < site/medievalmmo/index.html)" -gt 2000000
+          grep -Fq '<canvas id="world"></canvas>' site/medievalmmo/index.html
+          grep -Fq 'cub-medievalmmo-full-window' site/medievalmmo/index.html
+          grep -Fq 'cub_medievalmmo_' site/medievalmmo/index.html
+          echo 'CUB_MMO_ACTUAL_3D_GAME_PREDEPLOY_PASS'
+      - name: Build newest founder ROMA v5 engine as isolated MEDIEVAL experimental preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 site/medievalmmo/source/build_v5_medieval.py site/medievalmmo/source site/medievalmmo/next/index.html
+          test "$(wc -c < site/medievalmmo/next/index.html)" -gt 2600000
+          grep -Fq 'CUB_MEDIEVAL_V5' site/medievalmmo/next/index.html
+          grep -Fq '<canvas id="world"></canvas>' site/medievalmmo/next/index.html
+          echo 'CUB_UPLOADED_ROMA_V5_ENGINE_EXACT_HASH_AND_MEDIEVAL_BUILD_PASS'
+      - name: Apply scoped MEDIEVAL battlefield HUD fix (release copy only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          file=Path('site/medieval/index.html')
+          original=file.read_text(encoding='utf-8')
+          assert original.count('</head>') == 1
+          link='<link rel="stylesheet" href="/medieval/clean-hud.css?v=20261022"/>'
+          assert link not in original
+          file.write_text(original.replace('</head>',link+'</head>',1),encoding='utf-8')
+          PY
+          echo '273a84a96d3d5fc3e9a34e6b3de657c2840a027230f6a1beb916acfc8a908d13  site/medieval/index.html' | sha256sum -c -
+          echo 'MEDIEVAL_HUD_CLEAN_FIX_DEPLOY_COPY_PASS'
+      - name: Resolve authorised Cloudflare account
+        shell: bash
+        env:
+          TOKEN1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN2: ${{ secrets.CF_TOKEN }}
+          TOKEN3: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -euo pipefail
+          token=""
+          for t in "$TOKEN1" "$TOKEN2" "$TOKEN3"; do if [ -n "$t" ]; then token="$t"; break; fi; done
+          test -n "$token" || { echo 'BLOCKED_CLOUDFLARE_TOKEN_MISSING'; exit 2; }
+          token=$(printf '%s' "$token" | tr -d '\r\n' | sed 's/^Bearer //')
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          zone=$(curl -fsS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/zones?name=p4nther.com")
+          account=$(jq -r '.result[0].account.id // empty' <<< "$zone")
+          zoneid=$(jq -r '.result[0].id // empty' <<< "$zone")
+          test -n "$account" && test -n "$zoneid" || { echo 'P4NTHER_CLOUDFLARE_ZONE_NOT_AUTHORISED'; exit 3; }
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "P4NTHER_ZONE_ID=$zoneid" >> "$GITHUB_ENV"
+      - name: Create compressed premium poster images and Open Graph cards
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/assets/poster-roma.png
+          test -s site/assets/poster-orca.png
+          npm install --no-save --no-audit --no-fund sharp@0.33.5
+          node <<'NODE'
+          const sharp=require('sharp'), fs=require('fs');
+          const inputs=[
+            {name:'roma',poster:'site/assets/poster-roma.png',title:'ROMA',subtitle:'The Republic',label:'Historical strategy'},
+            {name:'orca',poster:'site/assets/poster-orca.png',title:'WILD: ORCA',subtitle:'Enter another life',label:'Wildlife adventure'}
+          ];
+          async function exportCard(name,title,subtitle,label,path){
+            const source=fs.readFileSync(path);
+            const img=await sharp(source).resize(502,630,{fit:'cover',position:'attention'}).png().toBuffer();
+            const safe=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect x="0" y="0" width="1200" height="630" fill="#000000"/><rect x="70" y="84" width="48" height="3" fill="#d7ff64"/><text x="70" y="130" font-family="Arial,Helvetica,sans-serif" font-size="23" fill="#d7ff64" letter-spacing="4">CUB LAB</text><text x="70" y="275" font-family="Arial,Helvetica,sans-serif" font-size="64" fill="#ffffff" font-weight="bold">'+safe(title)+'</text><text x="70" y="333" font-family="Arial,Helvetica,sans-serif" font-size="35" fill="#e6e6e4">'+safe(subtitle)+'</text><path d="M70 465 H615" stroke="#ffffff" stroke-opacity=".3"/><text x="70" y="512" font-family="Arial,Helvetica,sans-serif" font-size="20" fill="#c9cac7">'+safe(label)+'</text><text x="70" y="550" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="#b2b5af">PLAYABLE DEVELOPMENT GAME</text></svg>';
+            await sharp(Buffer.from(svg)).composite([{input:img,top:0,left:698}]).png({compressionLevel:9}).toFile('site/assets/og-'+name+'.png');
+          }
+          (async()=>{
+            for(const x of inputs){
+              await sharp(x.poster).resize({width:1000,withoutEnlargement:true}).webp({quality:80,effort:6}).toFile('site/assets/poster-'+x.name+'.webp');
+              await exportCard(x.name,x.title,x.subtitle,x.label,x.poster);
+              const s=fs.statSync('site/assets/poster-'+x.name+'.webp').size;
+              if(s>450000)throw Error('Poster too heavy: '+x.name+' '+s);
+              console.log('CUB_PREMIUM_POSTER_OPTIMISED',x.name,s);
+            }
+            const r=await sharp(inputs[0].poster).resize(260,630,{fit:'cover'}).png().toBuffer();
+            const o=await sharp(inputs[1].poster).resize(260,630,{fit:'cover'}).png().toBuffer();
+            const label='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#000"/><rect x="65" y="83" width="60" height="3" fill="#d7ff64"/><text x="65" y="136" font-family="Arial" font-size="24" letter-spacing="5" fill="#d7ff64">CUB LAB</text><text x="65" y="314" font-family="Arial" font-weight="bold" font-size="58" fill="#fff">WORLDS WORTH</text><text x="65" y="385" font-family="Arial" font-weight="bold" font-size="60" fill="#fff">PLAYING.</text><text x="65" y="520" font-family="Arial" font-size="19" fill="#b8b8b8">INDEPENDENT GAMES IN DEVELOPMENT</text></svg>';
+            await sharp(Buffer.from(label)).composite([{input:r,left:680,top:0},{input:o,left:940,top:0}]).png({compressionLevel:9}).toFile('site/assets/og-home.png');
+            // Keep original PNG poster assets as backwards-compatible fallbacks for cached HTML.
+            // Newly published pages use the smaller .webp files.
+            for(const image of ['site/assets/poster-roma.png','site/assets/poster-orca.png']){
+              if(!fs.existsSync(image))throw Error('Original poster absent: '+image);
+            }
+            console.log('CUB_POSTER_MEDIA_BUILD_PASS');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Restore founder's ROMA 06 Imperium campaign as independent exact-byte playable preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,zlib,hashlib,json
+          root=Path('site/roma/imperium-v6/source')
+          manifest=json.loads((root/'manifest.json').read_text())
+          parts=sorted(root.glob('romav6-*.txt'))
+          if len(parts)!=manifest['partCount']: raise SystemExit('ROMA06_CHUNKS_MISSING')
+          payload=''.join(p.read_text().strip() for p in parts)
+          data=zlib.decompress(base64.b64decode(payload))
+          digest=hashlib.sha256(data).hexdigest()
+          if digest!=manifest['sha256']: raise SystemExit('ROMA06_ORIGINAL_SHA_MISMATCH')
+          if len(data)!=manifest['uncompressedBytes']: raise SystemExit('ROMA06_FILE_TRUNCATED')
+          if b'Imperium' not in data or b'campaign' not in data: raise SystemExit('CAMPAIGN_CODE_NOT_PRESENT')
+          # Preserve exact uploaded original in source parts, but isolate browser
+          # save keys from /roma/ and every other live CUB game on the same host.
+          prefix=b'roma_challenger01_'
+          if data.count(prefix) < 4: raise SystemExit('ROMA06_SAVE_NAMESPACE_ANCHORS_MISSING')
+          isolated=data.replace(prefix,b'roma_imperium_v6_')
+          if prefix in isolated: raise SystemExit('ROMA06_SAVE_NAMESPACE_COLLISION')
+          (root.parent/'index.html').write_bytes(isolated)
+          print('CUB_ROMA06_ORIGINAL_VERIFIED',len(data),digest)
+          print('CUB_ROMA06_ISOLATED_SAVE_DERIVATIVE',len(isolated),hashlib.sha256(isolated).hexdigest())
+          PY
+      - name: Integrate and release verified Premium02 kingdom campaign as full-window game
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat site/medievalmmo/premium02/source/payload-*.txt | tr -d '\n\r ' | base64 --decode > /tmp/cub-premium02-release.tar.gz
+          echo 'c8659315dc2cc957ddd3610c6c41cd5e7852b5484b75bceedb8006cf15ce2d56  /tmp/cub-premium02-release.tar.gz' | sha256sum -c -
+          mkdir -p /tmp/cub-premium02-release
+          tar -xzf /tmp/cub-premium02-release.tar.gz -C /tmp/cub-premium02-release
+          cp site/medievalmmo/premium02/qa/browser-qa.mjs /tmp/cub-premium02-release/tests/browser-qa.mjs
+          cd /tmp/cub-premium02-release
+          node tests/kingdom.mjs
+          npm install --no-audit --no-fund playwright@1.56.1
+          python3 "$GITHUB_WORKSPACE/site/medievalmmo/premium02/qa/prepare.py"
+          npm run build
+          test "$(wc -c < publish/web/index.html)" -gt 1000000
+          grep -Fq 'MEDIEVAL KINGDOMS' publish/web/index.html
+          grep -Fq '<canvas id="world"></canvas>' publish/web/index.html
+          python3 -m http.server 8877 --bind 127.0.0.1 --directory publish/web >/tmp/cub-premium02-release-http.log 2>&1 &
+          WEB_PID=$!
+          trap 'kill $WEB_PID || true' EXIT
+          sleep 2
+          node tests/browser-qa.mjs
+          kill "$WEB_PID" || true
+          trap - EXIT
+          cp publish/web/index.html "$GITHUB_WORKSPACE/site/medievalmmo/index.html"
+          cd "$GITHUB_WORKSPACE"
+          sha256sum site/medievalmmo/index.html | cut -d' ' -f1 > /tmp/cub-premium02-publish.sha
+          rm -rf site/medievalmmo/premium02
+          echo 'CUB_MEDIEVAL_PREMIUM02_BUILD_AND_FULL_LOOP_QA_PASS'
+      - name: Stage and test isolated ROMA Challenger 08 without changing Cannae
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip,base64,hashlib,json
+          directory=Path('site/roma/challenger-08')
+          manifest=json.loads((directory/'source/manifest.json').read_text())
+          parts=sorted((directory/'source').glob('part-*.txt'))
+          assert len(parts)==manifest['parts'],f'CH08 missing chunks: {len(parts)}'
+          binary=gzip.decompress(base64.b64decode(''.join(p.read_text().strip() for p in parts)))
+          assert hashlib.sha256(binary).hexdigest()==manifest['isolated_sha256'],'CH08_UPLOAD_DIGEST_MISMATCH'
+          assert b'<canvas id="world"></canvas>' in binary
+          assert b'cub_roma_ch08_save_v1' in binary
+          assert b'roma_challenger01_save_v1' not in binary
+          (directory/'index.html').write_bytes(binary)
+          print('CUB_ROMA_CH08_EXACT_UPLOAD_CONFIRMED',len(binary),manifest['isolated_sha256'])
+          PY
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          python3 -m http.server 8878 --bind 127.0.0.1 --directory site >/tmp/cub-roma08-release-server.log 2>&1 &
+          HTTP_PID=$!
+          trap 'kill $HTTP_PID || true' EXIT
+          sleep 2
+          node site/roma/challenger-08/qa/smoke.cjs
+          kill "$HTTP_PID" || true
+          trap - EXIT
+          rm -rf site/roma/challenger-08/source site/roma/challenger-08/qa
+          echo 'CUB_ROMA_CH08_RELEASE_GATE_PASSED'
+      - name: Stage byte-exact ROMA Republic Challenger 12 (preserve Cannae and CH08)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s site/roma/index.html
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          test -s site/roma/challenger-08/index.html
+          echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  site/roma/challenger-08/index.html' | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          source=Path('site/roma/challenger-12/source')
+          parts=sorted(source.glob('part-*.txt'))
+          if len(parts)!=47:raise SystemExit('CH12_INCOMPLETE_PARTS '+str(len(parts)))
+          payload=b''.join(p.read_bytes() for p in parts)
+          digest=hashlib.sha256(payload).hexdigest()
+          if len(payload)!=5814691:raise SystemExit('CH12_BYTES_MISMATCH '+str(len(payload)))
+          if digest!='5645104ab6389bce380ef53af564cb115cab424c924601f0dac115532ff3d7b8':raise SystemExit('CH12_SHA256_MISMATCH '+digest)
+          if not (payload.startswith(b'<!doctype html>') and b'roma_challenger01_' in payload and b'<canvas id="world"></canvas>' in payload):
+              raise SystemExit('CH12_GAME_IDENTITY_INVALID')
+          (source.parent/'index.html').write_bytes(payload)
+          print('ROMA_CHALLENGER12_EXACT_SOURCE_PASS bytes',len(payload),flush=True)
+          PY
+          grep -Fq 'href="/roma/challenger-12/"' site/games/roma/index.html
+          grep -Fq 'href="/roma/"' site/games/roma/index.html
+          grep -Fq 'href="/roma/challenger-08/"' site/games/roma/index.html
+          grep -Fq 'href="/roma/challenger-12/"' site/index.html
+          grep -Fq 'href="/roma/"' site/index.html
+          rm -rf site/roma/challenger-12/source
+          echo 'ROMA_CH12_SAFE_RELEASE_READY'
+      - name: Deploy exact static files to existing isolated CUB worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --name cub-lab-p4nther --assets ./site --compatibility-date 2026-10-18
+      - name: Verify direct ROMA and studio hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://cub-lab-p4nther.odin-skogen.workers.dev" "https://lab.p4nther.com"; do
+            good=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 30 "$host/roma/index.html" -o /tmp/live-roma.html && echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/live-roma.html' | sha256sum -c - >/dev/null; then good=1; break; fi
+              sleep 4
+            done
+            test "$good" -eq 1 || { echo "ROMA_LIVE_BYTE_VERIFICATION_FAILED=$host"; exit 4; }
+            curl -fsSL "$host/assets/poster-roma.webp" -o /tmp/live-roma-poster.webp
+            curl -fsSL "$host/assets/poster-orca.webp" -o /tmp/live-orca-poster.webp
+            curl -fsSL "$host/assets/poster-roma.png" -o /tmp/live-roma-poster.png
+            curl -fsSL "$host/assets/poster-orca.png" -o /tmp/live-orca-poster.png
+            test "$(wc -c < /tmp/live-roma-poster.webp)" -gt 10000
+            test "$(wc -c < /tmp/live-orca-poster.webp)" -gt 10000
+            test "$(wc -c < /tmp/live-roma-poster.png)" -gt 10000
+            test "$(wc -c < /tmp/live-orca-poster.png)" -gt 10000
+            echo 'CUB_POSTER_ALL_FORMATS_VERIFIED'
+            curl -fsSL "$host/" -o /tmp/live-hub.html
+            grep -Fq 'ROMA:' /tmp/live-hub.html
+            grep -Fq 'WILD:' /tmp/live-hub.html
+            echo "ROMA_LIVE_EXACT_PASS=$host/roma/"
+            echo "CUB_HUB_PASS=$host/"
+          done
+      - name: Verify Challenger 08 live, dual play links and untouched Cannae
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            ok=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 40 "$host/roma/challenger-08/" -o /tmp/live-roma08.html &&                 echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/live-roma08.html' | sha256sum -c - >/dev/null; then ok=1;break;fi
+              sleep 5
+            done
+            test "$ok" -eq 1 || { echo "CH08_LIVE_OR_HASH_FAILED=$host";exit 10; }
+            curl -fsSL --max-time 30 "$host/roma/" -o /tmp/live-cannae-protected.html
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/live-cannae-protected.html' | sha256sum -c -
+            curl -fsSL --max-time 30 "$host/games/roma/" -o /tmp/live-roma-product-page.html
+            grep -Fq 'Play Imperium' /tmp/live-roma-product-page.html
+            grep -Fq 'Play Cannae' /tmp/live-roma-product-page.html
+            curl -fsSL --max-time 30 "$host/" -o /tmp/live-cub-roma-list.html
+            grep -Fq 'href="/roma/challenger-08/"' /tmp/live-cub-roma-list.html
+            grep -Fq 'href="/roma/"' /tmp/live-cub-roma-list.html
+            echo "CUB_ROMA_CH08_LIVE_VERIFIED=$host/roma/challenger-08/"
+            echo "CUB_ROMA_CANNAE_ORIGINAL_PROTECTED=$host/roma/"
+          done
+      - name: Verify MMO entrypoint, original ROMA and original MEDIEVAL unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            curl -fsSL --max-time 25 "$host/medievalmmo/" -o /tmp/live-mmo-entry.html
+            test "$(wc -c < /tmp/live-mmo-entry.html)" -gt 1000000
+            grep -Fq '<canvas id="world"></canvas>' /tmp/live-mmo-entry.html
+            grep -Fq 'MEDIEVAL KINGDOMS' /tmp/live-mmo-entry.html
+            test "$(sha256sum /tmp/live-mmo-entry.html | cut -d' ' -f1)" = "$(cat /tmp/cub-premium02-publish.sha)"
+            echo "CUB_MEDIEVAL_PREMIUM02_EXACT_BYTE_LIVE_PASS=$host/medievalmmo/"
+            curl -fsSL --max-time 25 "$host/medivalmmo/?stay" -o /tmp/live-mmo-old.html
+            grep -Fq '/medievalmmo/' /tmp/live-mmo-old.html
+            curl -fsSL --max-time 25 "$host/games/medieval-mmo/" -o /tmp/live-mmo-alias.html
+            grep -Fq '/medievalmmo/' /tmp/live-mmo-alias.html
+            curl -fsSL --max-time 25 "$host/roma/" -o /tmp/live-roma-preserved.html
+            test -s /tmp/live-roma-preserved.html
+            curl -fsSL --max-time 25 "$host/medieval/" -o /tmp/live-medieval-preserved.html
+            test -s /tmp/live-medieval-preserved.html
+            echo "CUB_MMO_FULLFRAME_LIVE_VERIFIED=$host/medievalmmo/"
+          done
+      - name: Verify clean mobile MEDIEVAL HUD deployment and untouched ROMA
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            good=0
+            for attempt in $(seq 1 18); do
+              if curl -fsSL --max-time 30 "$host/medieval/index.html" -o /tmp/medieval-clean.html &&
+                 echo '273a84a96d3d5fc3e9a34e6b3de657c2840a027230f6a1beb916acfc8a908d13  /tmp/medieval-clean.html' | sha256sum -c - >/dev/null &&
+                 curl -fsSL --max-time 25 "$host/medieval/clean-hud.css" | grep -Fq 'display: none !important'; then good=1; break; fi
+              sleep 4
+            done
+            test "$good" -eq 1 || { echo "MEDIEVAL_CLEAN_HUD_RELEASE_FAILED=$host"; exit 5; }
+            echo "MEDIEVAL_CLEAN_HUD_LIVE_PASS=$host/medieval/"
+          done
+      - name: Verify CH04 preview on CUB Cloudflare domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            ok=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 25 "$host/medieval/challenger04/index.html" -o /tmp/ch04-preview.html &&
+                 echo 'b0d7768342447feb1339fae9046bc2a4ba40c2693743424d84c76f2ac996602e  /tmp/ch04-preview.html' | sha256sum -c - >/dev/null; then ok=1; break; fi
+              sleep 5
+            done
+            test "$ok" -eq 1 || { echo "CH04_PREVIEW_NOT_LIVE=$host"; exit 6; }
+            echo "CH04_PREVIEW_LIVE=$host/medieval/challenger04/"
+          done
+      - name: Verify CH05 live and index route without changing ROMA or Build03
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in https://lab.p4nther.com https://labs.p4nther.com; do
+            passed=0
+            for n in $(seq 1 15); do
+              if curl -fsSL --max-time 35 "$host/medievalkingdoms/index.html" -o /tmp/medievalkingdoms.html &&
+                 echo 'dc7f5fbabcc970b803a66d9919aea7093cf937c2dc840ba2788b162327955584  /tmp/medievalkingdoms.html' | sha256sum -c - >/dev/null &&
+                 curl -fsSL --max-time 25 "$host/" | grep -Fq 'href="/medievalkingdoms/"'; then passed=1; break; fi
+              sleep 5
+            done
+            test "$passed" -eq 1 || { echo "CH05_LIVE_OR_HOME_FAIL=$host"; exit 9; }
+            echo "CH05_GAME_AND_HOME_LIVE_PASS=$host/medievalkingdoms/"
+          done
+      - name: Verify live Premium02 kingdom campaign starts on desktop and mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            for(const cfg of [{name:'desktop',width:1366,height:768,mobile:false},{name:'mobile',width:390,height:844,mobile:true}]){
+              const ctx=await browser.newContext({viewport:{width:cfg.width,height:cfg.height},isMobile:cfg.mobile,hasTouch:cfg.mobile});
+              const page=await ctx.newPage(),errors=[];
+              page.on('pageerror',e=>errors.push(String(e)));
+              page.on('response',r=>{if(r.status()>=400)errors.push('HTTP '+r.status()+' '+r.url())});
+              const response=await page.goto('https://lab.p4nther.com/medievalmmo/',{waitUntil:'domcontentloaded',timeout:60000});
+              await page.locator('#bCamp').waitFor({state:'visible',timeout:25000});
+              await page.locator('#bCamp').click();
+              await page.locator('.cmp-map').waitFor({state:'visible',timeout:25000});
+              const progress=await page.locator('.cmp-top').innerText();
+              const canvas=page.locator('canvas#world');
+              const rect=await canvas.boundingBox();
+              console.log('PREMIUM02_LIVE_CAMPAIGN',cfg.name,'HTTP',response.status(),'DATE',progress.slice(0,100),'CANVAS',JSON.stringify(rect),'ERRORS',JSON.stringify(errors));
+              await page.screenshot({path:'medievalmmo-premium02-live-'+cfg.name+'.png',fullPage:true});
+              if(response.status()!==200||!progress.includes('1187 AD')||!rect||rect.width<cfg.width*.95||errors.length>0)throw Error('PREMIUM02_LIVE_CAMPAIGN_FAILURE_'+cfg.name);
+              await ctx.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-medievalmmo-premium02-live-proof
+          path: medievalmmo-premium02-live-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify newest MEDIEVAL v5 experimental game runs as real WebGL canvas
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const {chromium}=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const page=await browser.newPage({viewport:{width:1280,height:800}});
+            const faults=[];page.on('pageerror',e=>faults.push(String(e)));
+            const response=await page.goto('https://lab.p4nther.com/medievalmmo/next/',{waitUntil:'domcontentloaded',timeout:60000});
+            await page.waitForTimeout(5000);
+            const button=page.locator('#bNew');const visible=await button.isVisible();
+            console.log('MEDIEVAL_V5_NEW_ENGINE',response.status(),'START_BUTTON',visible,'TITLE',await page.title(),'ERRORS',JSON.stringify(faults));
+            if(response.status()!==200||!visible||faults.length)throw Error('MEDIEVAL_V5_STARTUP_FAILURE');
+            await button.click({timeout:10000});
+            await page.waitForTimeout(3000);
+            const active=await page.locator('canvas#world').isVisible();
+            const screenCount=await page.locator('#screen').count();
+            console.log('MEDIEVAL_V5_PLAYING',active,'SCREEN_OVERLAY',screenCount,'ERRORS',JSON.stringify(faults));
+            await page.screenshot({path:'medieval-v5-new-engine-desktop.png',fullPage:true});
+            if(!active||screenCount||faults.length)throw Error('MEDIEVAL_V5_PLAYABILITY_FAILURE');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-medieval-v5-experimental-gameplay
+          path: medieval-v5-new-engine-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: "Browser smoke ROMA 06 Imperium: map, provinces, local save and return controls"
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            for(const t of [{name:'desktop',w:1366,h:800,mobile:false},{name:'mobile',w:390,h:844,mobile:true}]){
+              const context=await browser.newContext({viewport:{width:t.w,height:t.h},isMobile:t.mobile,hasTouch:t.mobile});
+              const page=await context.newPage();
+              const errors=[];page.on('pageerror',e=>errors.push(e.message));
+              const url='https://lab.p4nther.com/roma/imperium-v6/';
+              const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:65000});
+              await page.locator('#bCamp').waitFor({state:'visible',timeout:25000});
+              await page.locator('#bCamp').click();
+              await page.locator('canvas.cmp-map').waitFor({state:'visible',timeout:25000});
+              const actual=await page.evaluate(()=>{
+                const campaign=window.ROMA?.app?.cmp;
+                campaign?.save();
+                return {provinces:campaign?.c?.provinces?.length,armies:campaign?.c?.armies?.length,world:!!campaign?.map,
+                  isolatedSave:!!localStorage.getItem('roma_imperium_v6_campaign_v1'),
+                  oldSave:!!localStorage.getItem('roma_challenger01_campaign_v1')};
+              });
+              await page.screenshot({path:'roma-imperium-v6-'+t.name+'.png',fullPage:true});
+              console.log('ROMA06_CAMPAIGN_SMOKE',t.name,response.status(),JSON.stringify(actual),'ERRORS',JSON.stringify(errors));
+              if(response.status()!==200||actual.provinces!==160||!actual.armies||!actual.world||!actual.isolatedSave||actual.oldSave||errors.length)throw Error('ROMA06_CAMPAIGN_BROWSER_FAILED_'+t.name);
+              await context.close();
+            }
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-roma-imperium-v6-campaign-proof
+          path: roma-imperium-v6-*.png
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Verify labs alias if available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if curl -fsSL --max-time 25 "https://labs.p4nther.com/roma/index.html" -o /tmp/labs-roma.html; then
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/labs-roma.html' | sha256sum -c -
+            curl -fsSL "https://labs.p4nther.com/" | grep -Fq 'WILD:'
+            echo 'LABS_P4NTHER_EXACT_PASS=https://labs.p4nther.com/roma/'
+          else
+            echo 'LABS_P4NTHER_DNS_PENDING; lab.p4nther.com remains verified'
+          fi
+      - name: Mobile browser smoke test of exact new release
+        shell: bash
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          const { chromium }=require('playwright');
+          (async()=>{
+            const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--use-gl=angle','--use-angle=swiftshader','--enable-webgl']});
+            const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true});
+            const page=await context.newPage();
+            const errors=[];page.on('pageerror',e=>errors.push(e.message));
+            const response=await page.goto('https://lab.p4nther.com/roma/',{waitUntil:'domcontentloaded',timeout:65000});
+            await page.waitForTimeout(8500);
+            const canvas=await page.locator('canvas').count();
+            const body=await page.locator('body').innerText().catch(()=>'');
+            console.log('ROMA_MOBILE_BROWSER_HTTP',response.status(),'TITLE',await page.title(),'CANVAS',canvas,'BODY_LENGTH',body.length,'PAGE_ERRORS',JSON.stringify(errors));
+            await page.screenshot({path:'roma-mobile-390.png',fullPage:true});
+            if(response.status()!==200||canvas<1||errors.length>0)throw Error('Mobile browser smoke QA failed');
+            console.log('ROMA_MOBILE_BROWSER_SMOKE_PASS');
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-lab-roma-mobile-screenshot-20261019
+          path: roma-mobile-390.png
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Verify ROMA Challenger 12 on both production hostnames without touching Cannae
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            ok=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 45 "$host/roma/challenger-12/" -o /tmp/roma-ch12-live.html && echo '5645104ab6389bce380ef53af564cb115cab424c924601f0dac115532ff3d7b8  /tmp/roma-ch12-live.html' | sha256sum -c - >/dev/null; then ok=1; break; fi
+              sleep 5
+            done
+            test "$ok" = 1 || { echo "ROMA_CH12_LIVE_FAILED=$host";exit 21; }
+            curl -fsSL --max-time 30 "$host/roma/" -o /tmp/roma-old-cannae.html
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma-old-cannae.html' | sha256sum -c -
+            curl -fsSL --max-time 35 "$host/roma/challenger-08/" -o /tmp/roma-old-ch08.html
+            echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma-old-ch08.html' | sha256sum -c -
+            curl -fsSL "$host/games/roma/" | grep -Fq 'href="/roma/challenger-12/"'
+            curl -fsSL "$host/" | grep -Fq 'href="/roma/challenger-12/"'
+            echo "ROMA_CH12_PRODUCTION_VERIFIED=$host/roma/challenger-12/"
+          done
