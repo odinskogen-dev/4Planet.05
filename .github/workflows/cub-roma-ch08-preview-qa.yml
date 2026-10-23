@@ -1,0 +1,57 @@
+name: CUB ROMA Challenger 08 — Isolated Preview QA
+on:
+  push:
+    branches: [cub-roma-challenger08-20261023]
+    paths:
+      - "site/roma/challenger-08/**"
+      - "site/games/roma/index.html"
+      - "site/index.html"
+      - ".github/workflows/cub-roma-ch08-preview-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore exact standalone ROMA 08 and verify no original game was touched
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  site/roma/index.html' | sha256sum -c -
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip,base64,hashlib,json
+          base=Path('site/roma/challenger-08')
+          data=base64.b64decode(''.join(p.read_text().strip() for p in sorted((base/'source').glob('part-*.txt'))))
+          src=gzip.decompress(data)
+          expected=json.loads((base/'source/manifest.json').read_text())['isolated_sha256']
+          assert hashlib.sha256(src).hexdigest()==expected,'ZIP_08_PROVENANCE_MISMATCH'
+          assert b'cub_roma_ch08_save_v1' in src
+          assert b'roma_challenger01_save_v1' not in src
+          assert b'<canvas id="world"></canvas>' in src
+          base.joinpath('index.html').write_bytes(src)
+          print('CUB_ROMA08_SOURCE_VERIFIED',len(src),expected)
+          PY
+      - name: Real browser smoke for both ROMA play links, Imperium and Cannae menu
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          python3 -m http.server 8878 --bind 127.0.0.1 --directory site >/tmp/roma08-preview-http.log 2>&1 &
+          PID=$!
+          trap 'kill $PID || true' EXIT
+          sleep 2
+          node site/roma/challenger-08/qa/smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cub-roma08-preview-screenshots
+          path: roma08-*.png
+          if-no-files-found: ignore
+          retention-days: 14
