@@ -1,3 +1,31 @@
+# LIVING SYSTEMS — WELL-FORMED NAMESPACED SITEMAP EVIDENCE — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a person or crawler needs the discovery audit to accept only a well-formed sitemap document, not XML-shaped text that happens to contain canonical-looking locations.
+
+**ONE THING TO UNDERSTAND:** matching tag names and stack depth is not XML validation; namespace binding, quoted attributes, case-sensitive names and the one-root document boundary are part of the evidence.
+
+**PRIMARY ACTION:** require a well-formed `urlset` in the sitemap namespace before accepting exact raw canonical locations from namespaced `url > loc` elements.
+
+**SECONDARY DEPTH:** reject missing namespaces, unbound prefixes, unquoted attributes, non-whitespace post-root text and uppercase sitemap element variants; retain comment, CDATA and every prior URL-identity negative.
+
+**TEST-HARNESS ROOT CAUSE:** the fixture omitted the pre-existing `public/robots.txt`, so an unrelated `ROBOTS_GAP` could make status-only negative assertions pass. The fixture now includes that file, proving each XML negative fails for its intended cause.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the current sitemap generator, user-entry audit, user-proof analytics contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves only that the current generator emitted well-formed, namespaced sitemap evidence with exact approved locations during that execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; this is an evaluator and regression-harness correction with no rendered-product mutation.
+
+**HUMAN SUCCESS:** all five independent held-out malformed-document fixtures fail after first being reproduced as false accepts, while the canonical sitemap and the previous comment, CDATA and raw-URL matrix remain green.
+
+**BASE / ROLLBACK:** `king/test@88ca18330b391aa0ef658e93987119c2fb2b181d`; revert this bounded audit/test/brief correction if independent Gold finds an XML, canonical identity or generated-file restoration regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the five held-out XML cases and the complete existing negative matrix on the exact returned SHA.
+
+---
+
 # LIVING SYSTEMS — STRUCTURAL SITEMAP XML IDENTITY — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

@@ -27,13 +27,25 @@ const journeyEntries = [
 
 const analytics = exists("src/analytics/ProductAnalytics.ts") ? read("src/analytics/ProductAnalytics.ts") : "";
 const routeAnalytics = exists("src/analytics/ProductRouteAnalytics.tsx") ? read("src/analytics/ProductRouteAnalytics.tsx") : "";
+const sitemapNamespace = "http://www.sitemaps.org/schemas/sitemap/0.9";
+const xmlNamespace = "http://www.w3.org/XML/1998/namespace";
+const xmlNamePattern = "[A-Za-z_][\\w.-]*(?::[A-Za-z_][\\w.-]*)?";
 
 function decodeXmlText(value) {
+  if (/&(?!#x[0-9a-f]+;|#[0-9]+;|amp;|lt;|gt;|quot;|apos;)/i.test(value)) {
+    throw new Error("Invalid XML entity reference");
+  }
   return value.replace(/&(#x[0-9a-f]+|#[0-9]+|amp|lt|gt|quot|apos);/gi, (entity, name) => {
     if (name[0] === "#") {
       const hexadecimal = name[1]?.toLowerCase() === "x";
       const codePoint = Number.parseInt(name.slice(hexadecimal ? 2 : 1), hexadecimal ? 16 : 10);
-      if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+      const validXmlCharacter = codePoint === 0x09
+        || codePoint === 0x0a
+        || codePoint === 0x0d
+        || (codePoint >= 0x20 && codePoint <= 0xd7ff)
+        || (codePoint >= 0xe000 && codePoint <= 0xfffd)
+        || (codePoint >= 0x10000 && codePoint <= 0x10ffff);
+      if (!Number.isInteger(codePoint) || !validXmlCharacter) {
         throw new Error(`Invalid XML character reference: ${entity}`);
       }
       return String.fromCodePoint(codePoint);
@@ -57,18 +69,84 @@ function findXmlTagEnd(xml, start) {
   throw new Error("Unterminated XML tag");
 }
 
+function splitXmlName(name) {
+  const separator = name.indexOf(":");
+  return separator === -1
+    ? { prefix: "", localName: name }
+    : { prefix: name.slice(0, separator), localName: name.slice(separator + 1) };
+}
+
+function parseXmlStartTag(tag, inheritedNamespaces) {
+  const selfClosing = tag.endsWith("/");
+  const content = (selfClosing ? tag.slice(0, -1) : tag).trimEnd();
+  const nameMatch = content.match(new RegExp(`^(${xmlNamePattern})`));
+  if (!nameMatch) throw new Error(`Malformed XML tag: <${tag}>`);
+
+  const qName = nameMatch[1];
+  const attributes = [];
+  const attributeNames = new Set();
+  let remainder = content.slice(qName.length);
+  const attributePattern = new RegExp(`^(${xmlNamePattern})\\s*=\\s*(["'])([^<]*?)\\2`);
+
+  while (remainder.length > 0) {
+    if (!/^\s/.test(remainder)) throw new Error(`Malformed XML attributes: <${tag}>`);
+    remainder = remainder.trimStart();
+    if (!remainder) break;
+    const attributeMatch = remainder.match(attributePattern);
+    if (!attributeMatch) throw new Error(`XML attributes must be quoted: <${tag}>`);
+    const [, name, , rawValue] = attributeMatch;
+    if (attributeNames.has(name)) throw new Error(`Duplicate XML attribute: ${name}`);
+    attributeNames.add(name);
+    attributes.push({ name, value: decodeXmlText(rawValue) });
+    remainder = remainder.slice(attributeMatch[0].length);
+  }
+
+  const namespaces = new Map(inheritedNamespaces);
+  for (const { name, value } of attributes) {
+    if (name === "xmlns") namespaces.set("", value);
+    if (name.startsWith("xmlns:")) {
+      const prefix = name.slice(6);
+      if (prefix === "xml" && value !== xmlNamespace) throw new Error("The xml prefix has a fixed namespace");
+      if (prefix === "xmlns" || value === "") throw new Error(`Invalid XML namespace declaration: ${name}`);
+      namespaces.set(prefix, value);
+    }
+  }
+
+  const { prefix, localName } = splitXmlName(qName);
+  if (prefix && !namespaces.has(prefix)) throw new Error(`Unbound XML namespace prefix: ${prefix}`);
+  for (const { name } of attributes) {
+    if (name === "xmlns" || name.startsWith("xmlns:")) continue;
+    const attributePrefix = splitXmlName(name).prefix;
+    if (attributePrefix && !namespaces.has(attributePrefix)) {
+      throw new Error(`Unbound XML namespace prefix: ${attributePrefix}`);
+    }
+  }
+
+  return {
+    qName,
+    localName,
+    namespace: prefix ? namespaces.get(prefix) : (namespaces.get("") ?? ""),
+    namespaces,
+    selfClosing,
+  };
+}
+
 function sitemapLocationTexts(xml) {
   const locations = [];
   const stack = [];
   let cursor = 0;
   let locationText = null;
   let rootSeen = false;
+  let rootClosed = false;
+  const baseNamespaces = new Map([["xml", xmlNamespace]]);
 
   while (cursor < xml.length) {
     if (xml[cursor] !== "<") {
       const nextTag = xml.indexOf("<", cursor);
       const end = nextTag === -1 ? xml.length : nextTag;
-      if (locationText !== null) locationText += xml.slice(cursor, end);
+      const text = xml.slice(cursor, end);
+      if (locationText !== null) locationText += decodeXmlText(text);
+      else if (text.trim()) throw new Error("XML text is not allowed outside sitemap values");
       cursor = end;
       continue;
     }
@@ -76,6 +154,7 @@ function sitemapLocationTexts(xml) {
     if (xml.startsWith("<!--", cursor)) {
       const end = xml.indexOf("-->", cursor + 4);
       if (end === -1) throw new Error("Unterminated XML comment");
+      if (xml.slice(cursor + 4, end).includes("--")) throw new Error("Malformed XML comment");
       cursor = end + 3;
       continue;
     }
@@ -83,6 +162,7 @@ function sitemapLocationTexts(xml) {
     if (xml.startsWith("<![CDATA[", cursor)) {
       const end = xml.indexOf("]]>", cursor + 9);
       if (end === -1) throw new Error("Unterminated XML CDATA section");
+      if (stack.length === 0) throw new Error("XML CDATA must be inside the root element");
       if (locationText !== null) locationText += xml.slice(cursor + 9, end);
       cursor = end + 3;
       continue;
@@ -91,6 +171,10 @@ function sitemapLocationTexts(xml) {
     if (xml.startsWith("<?", cursor)) {
       const end = xml.indexOf("?>", cursor + 2);
       if (end === -1) throw new Error("Unterminated XML processing instruction");
+      const instruction = xml.slice(cursor + 2, end).trim();
+      if (/^xml(?:\s|$)/i.test(instruction) && (cursor !== 0 || !/^xml\s+version=(?:"1\.0"|'1\.0')(?:\s+encoding=(?:"UTF-8"|'UTF-8'))?$/i.test(instruction))) {
+        throw new Error("Malformed or misplaced XML declaration");
+      }
       cursor = end + 2;
       continue;
     }
@@ -102,36 +186,52 @@ function sitemapLocationTexts(xml) {
     const tagEnd = findXmlTagEnd(xml, cursor + 1);
     const tag = xml.slice(cursor + 1, tagEnd).trim();
     const closing = tag.startsWith("/");
-    const selfClosing = tag.endsWith("/");
-    const nameMatch = tag.match(/^\/?\s*([A-Za-z_][\w:.-]*)/);
-    if (!nameMatch) throw new Error(`Malformed XML tag: <${tag}>`);
-    const localName = nameMatch[1].split(":").at(-1).toLowerCase();
 
     if (closing) {
-      if (selfClosing || stack.at(-1) !== localName) {
-        throw new Error(`Mismatched XML closing tag: ${localName}`);
+      const closingMatch = tag.match(new RegExp(`^/(${xmlNamePattern})\\s*$`));
+      if (!closingMatch || stack.at(-1)?.qName !== closingMatch[1]) {
+        throw new Error(`Mismatched XML closing tag: ${tag}`);
       }
-      if (localName === "loc" && locationText !== null) {
-        locations.push(decodeXmlText(locationText.trim()));
+      const current = stack.at(-1);
+      if (current.localName === "loc" && current.namespace === sitemapNamespace && locationText !== null) {
+        locations.push(locationText.trim());
         locationText = null;
       }
       stack.pop();
+      if (stack.length === 0) rootClosed = true;
     } else {
+      if (rootClosed) throw new Error("Sitemap must contain exactly one root element");
       if (locationText !== null) throw new Error("Sitemap <loc> must contain text only");
-      stack.push(localName);
+      const current = parseXmlStartTag(tag, stack.at(-1)?.namespaces ?? baseNamespaces);
+      stack.push(current);
       if (stack.length === 1) {
-        if (localName !== "urlset" || rootSeen) throw new Error("Sitemap must contain one <urlset> root");
+        if (current.localName !== "urlset" || current.namespace !== sitemapNamespace || rootSeen) {
+          throw new Error("Sitemap must contain one namespaced <urlset> root");
+        }
         rootSeen = true;
       }
-      if (localName === "loc" && stack.length === 3 && stack[0] === "urlset" && stack[1] === "url") {
+      if (current.localName === "loc"
+        && current.namespace === sitemapNamespace
+        && stack.length === 3
+        && stack[0].localName === "urlset"
+        && stack[0].namespace === sitemapNamespace
+        && stack[1].localName === "url"
+        && stack[1].namespace === sitemapNamespace) {
         locationText = "";
       }
-      if (selfClosing) stack.pop();
+      if (current.selfClosing) {
+        if (locationText !== null) {
+          locations.push("");
+          locationText = null;
+        }
+        stack.pop();
+        if (stack.length === 0) rootClosed = true;
+      }
     }
     cursor = tagEnd + 1;
   }
 
-  if (!rootSeen || stack.length > 0 || locationText !== null) throw new Error("Incomplete sitemap XML structure");
+  if (!rootSeen || !rootClosed || stack.length > 0 || locationText !== null) throw new Error("Incomplete sitemap XML structure");
   return locations;
 }
 

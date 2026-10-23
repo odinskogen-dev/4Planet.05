@@ -127,6 +127,7 @@ function runUserEntryAuditFixture(mutateSitemap) {
   const fixturePaths = [
     "scripts/generate-sitemap.mjs",
     "scripts/magazine-content.mjs",
+    "public/robots.txt",
     "public/journey/jaguar/index.html",
     "public/journey/orca/index.html",
     "src/analytics/ProductAnalytics.ts",
@@ -206,6 +207,51 @@ test("the user-entry audit ignores loc-like markup inside emitted CDATA", () => 
     ));
   assert.equal(result.status, 1, `audit must ignore CDATA markup; stdout=${result.stdout}; stderr=${result.stderr}`);
   assert.match(result.stdout, /MISSING_SITEMAP_ROUTE:\/livingsystems\//);
+});
+
+test("the user-entry audit rejects a sitemap without the sitemap namespace", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    "<urlset>",
+  ));
+  assert.equal(result.status, 1, `audit must require the sitemap namespace; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /namespaced <urlset> root/);
+});
+
+test("the user-entry audit rejects an unbound XML namespace prefix", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+    "<url><fake:loc>${escapeXml(`${origin}${route}`)}</fake:loc></url>",
+  ));
+  assert.equal(result.status, 1, `audit must reject unbound namespace prefixes; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /Unbound XML namespace prefix: fake/);
+});
+
+test("the user-entry audit rejects unquoted XML attributes", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+    "<url><loc audit=true>${escapeXml(`${origin}${route}`)}</loc></url>",
+  ));
+  assert.equal(result.status, 1, `audit must reject unquoted XML attributes; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /XML attributes must be quoted/);
+});
+
+test("the user-entry audit rejects non-whitespace text after the root element", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    "${sitemapUrls}\\n</urlset>not-xml",
+  ));
+  assert.equal(result.status, 1, `audit must reject trailing document text; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
+});
+
+test("the user-entry audit treats sitemap element names as case-sensitive", () => {
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "<url><loc>${escapeXml(`${origin}${route}`)}</loc></url>",
+    "<URL><LOC>${escapeXml(`${origin}${route}`)}</LOC></URL>",
+  ));
+  assert.equal(result.status, 1, `audit must reject uppercase sitemap elements; stdout=${result.stdout}; stderr=${result.stderr}`);
+  assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
 });
 
 test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
