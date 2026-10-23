@@ -204,6 +204,8 @@ test("About Story organic entry is server-readable, canonical and discoverable",
   assert.match(map, /^\s*"\/about\/story",?$/m);
   assert.match(pre, /writeRoute\(aboutStoryPath, pageHtml/);
   assert.match(pre, /"@type": "AboutPage"/);
+  assert.match(about, /<Seo[\s\S]*path="\/about\/story"/);
+  assert.match(about, /"@type": "AboutPage"/);
   for (const phrase of [
     "The living planet is not an abstract issue.",
     "Human life sits inside living systems.",

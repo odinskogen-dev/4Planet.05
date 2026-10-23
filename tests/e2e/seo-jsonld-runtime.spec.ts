@@ -93,6 +93,14 @@ test.describe("structured-data runtime ownership", () => {
     await expect(page.locator("#third-party-jsonld-proof")).toHaveCount(1);
   });
 
+  test("About Story hydration preserves its self-canonical identity", async ({ page }) => {
+    await page.goto("/about/story");
+    await expectCurrentGraph(page, "/about/story");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "The living planet is not an abstract issue.",
+    );
+  });
+
   test("an unknown route removes owned ghost graphs but preserves third-party JSON-LD", async ({ page }) => {
     await page.goto("/place/kenya");
     await expectCurrentGraph(page, "/place/kenya");

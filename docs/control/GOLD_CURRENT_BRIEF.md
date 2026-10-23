@@ -2273,3 +2273,13 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **MAKER ≠ JUDGE:** Factory corrects and verifies the candidate. Independent Gold must judge the exact returned SHA; merge, deployment, indexing and LIVE release remain separately authorised.
 
+# FACTORY RETURN — ABOUT STORY HYDRATION CANONICAL (ISSUE #483)
+
+**USER PROBLEM:** `/about/story` is server-readable and carries a self-canonical in prerendered HTML, but React hydration removes that canonical because the routed Story component does not own page metadata through the shared `Seo` manager.
+
+**BOUNDED CORRECTION:** reuse the existing `Seo` manager on `AboutStory`, keep the existing Story design and text unchanged, and add source plus browser regression coverage proving the hydrated route retains `/about/story`, one owned AboutPage graph and the existing H1.
+
+**TRUTH / RELEASE BOUNDARY:** this is a HEIR candidate on issue #483 and PR #131. It does not assert Gold, merge, deployment, indexation or user use. Independent Gold must judge the exact candidate SHA; Founder authority remains required for release.
+
+**ROLLBACK:** revert the bounded Story metadata/test/brief commit if independent Gold finds an ownership, canonical or structured-data regression.
+

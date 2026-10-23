@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Seo } from "@/components/Seo";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { T } from "@/styles/tokens";
 
@@ -39,6 +40,23 @@ function Statement({ eyebrow, title, body }: { eyebrow: string; title: string; b
 export function AboutStory() {
   return (
     <PublicShell>
+      <Seo
+        title="About · Story — 4PLANET_"
+        description="The living planet is the system beneath food, water, health, prosperity, freedom and almost everything people care about."
+        path="/about/story"
+        jsonLd={({ canonicalUrl }) => ({
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "The living planet is not an abstract issue.",
+          url: canonicalUrl,
+          inLanguage: "en-GB",
+          mainEntity: {
+            "@type": "Organization",
+            name: "4PLANET",
+            url: "https://4planet.org/",
+          },
+        })}
+      />
       <section style={{ minHeight: "88svh", background: "#050805", color: "#fff", display: "flex", alignItems: "flex-end" }}>
         <div style={{ ...max, width: "100%", paddingTop: 120, paddingBottom: "clamp(54px,8vw,110px)" }}>
           <div style={{ ...mono, color: T.acid }}>ABOUT_ · THE STORY</div>
