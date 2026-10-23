@@ -1,3 +1,27 @@
+# DISCOVERY SITEMAP — ROOT CHILD AND OPTIONAL VALUE SCHEMA — 23 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** search and discovery evidence must fail closed when a generated sitemap contains invalid root children or invalid protocol values, rather than certify an incomplete approximation of the sitemap schema.
+
+**ROOT CAUSE:** XML well-formedness and URL identity were enforced, but the SAX handlers allowed foreign-namespace elements directly under `urlset` and accumulated `priority` and `changefreq` without validating their protocol values.
+
+**CORRECTION:** require every direct `urlset` child to be a sitemap-namespaced `url`; validate `priority` as a decimal from 0.0 through 1.0 and `changefreq` against the seven protocol values; retain optional `lastmod` without inventing a new date policy.
+
+**REGRESSION EVIDENCE:** four Gold fixtures reproduce the false accepts for foreign root children before/after a valid URL, priority `999`, and changefreq `sometimesish`; a positive boundary matrix protects valid priorities and all seven valid change frequencies.
+
+**WHAT MUST BE REUSED:** issue #483, PR #131, the existing `saxes` parser, generator-to-parser fixture harness, all retained XML/schema/URL identity tests and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves only that the bounded generated sitemap evidence obeyed these XML, document-model, URL-identity and protocol-value checks during execution. It does not prove deployment, crawl, indexation, ranking, traffic, human use or LIVE value.
+
+**MOBILE-FIRST RISK:** none; this is an evaluator and regression-harness correction with no rendered-product mutation.
+
+**BASE / ROLLBACK:** `king/test@b06c3dadb0b67a033371fb51e8966fc339ff3643`; revert this bounded three-file correction if independent Gold finds a schema, generator-restoration or retained-matrix regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the four held-out fixtures, the valid optional-value matrix and the complete retained negative matrix on the exact returned SHA.
+
+---
+
 # DISCOVERY SITEMAP — ALL-ENTRY CANONICAL IDENTITY — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

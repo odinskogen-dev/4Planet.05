@@ -38,6 +38,15 @@ function sitemapLocationTexts(xml) {
   let currentUrlLocCount = null;
   let rootSeen = false;
   const optionalUrlValues = new Set(["lastmod", "changefreq", "priority"]);
+  const allowedChangeFrequencies = new Set([
+    "always",
+    "hourly",
+    "daily",
+    "weekly",
+    "monthly",
+    "yearly",
+    "never",
+  ]);
   const parser = new SaxesParser({
     xmlns: true,
     defaultXMLVersion: "1.0",
@@ -68,7 +77,10 @@ function sitemapLocationTexts(xml) {
       if (tag.uri === sitemapNamespace && tag.local !== "url") {
         throw new Error(`Unexpected sitemap element: <${tag.local}>`);
       }
-      if (tag.uri === sitemapNamespace) currentUrlLocCount = 0;
+      if (tag.uri !== sitemapNamespace) {
+        throw new Error("Sitemap <urlset> may contain only sitemap <url> elements");
+      }
+      currentUrlLocCount = 0;
     } else if (stack.length === 3
       && stack[1].local === "url"
       && stack[1].uri === sitemapNamespace) {
@@ -98,6 +110,14 @@ function sitemapLocationTexts(xml) {
     } else if (tag.uri === sitemapNamespace
       && optionalUrlValues.has(tag.local)
       && sitemapValueText !== null) {
+      const value = sitemapValueText.trim();
+      if (tag.local === "changefreq" && !allowedChangeFrequencies.has(value)) {
+        throw new Error(`Invalid sitemap <changefreq> value: ${value || "(empty)"}`);
+      }
+      if (tag.local === "priority"
+        && !/^(?:0(?:\.\d+)?|1(?:\.0+)?)$/.test(value)) {
+        throw new Error("Sitemap <priority> must be a decimal from 0.0 to 1.0");
+      }
       sitemapValueText = null;
     } else if (tag.local === "url"
       && tag.uri === sitemapNamespace

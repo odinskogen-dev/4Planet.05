@@ -341,6 +341,55 @@ test("the user-entry audit rejects non-whitespace CDATA outside sitemap values",
   assert.match(result.stderr, /XML text is not allowed outside sitemap values/);
 });
 
+const sitemapSchemaValueFixtures = [
+  {
+    name: "a foreign-namespace child after a valid sitemap url",
+    xml: '${sitemapUrls}\\n<foreign:extension xmlns:foreign="urn:foreign"/>\\n</urlset>',
+    expectedError: /Sitemap <urlset> may contain only sitemap <url> elements/,
+  },
+  {
+    name: "a foreign-namespace child before a valid sitemap url",
+    xml: '<foreign:extension xmlns:foreign="urn:foreign"/>\\n${sitemapUrls}\\n</urlset>',
+    expectedError: /Sitemap <urlset> may contain only sitemap <url> elements/,
+  },
+  {
+    name: "an out-of-range sitemap priority",
+    xml: '${sitemapUrls}\\n<url><loc>https://4planet.org/schema-priority</loc><priority>999</priority></url>\\n</urlset>',
+    expectedError: /Sitemap <priority> must be a decimal from 0\.0 to 1\.0/,
+  },
+  {
+    name: "an invalid sitemap change frequency",
+    xml: '${sitemapUrls}\\n<url><loc>https://4planet.org/schema-changefreq</loc><changefreq>sometimesish</changefreq></url>\\n</urlset>',
+    expectedError: /Invalid sitemap <changefreq> value: sometimesish/,
+  },
+];
+
+for (const fixture of sitemapSchemaValueFixtures) {
+  test(`the user-entry audit rejects ${fixture.name}`, () => {
+    const result = runUserEntryAuditFixture((source) => source.replace(
+      "${sitemapUrls}\\n</urlset>",
+      fixture.xml,
+    ));
+    assert.equal(result.status, 1, `schema-invalid sitemap must fail; stdout=${result.stdout}; stderr=${result.stderr}`);
+    assert.match(result.stderr, fixture.expectedError);
+  });
+}
+
+test("the user-entry audit accepts valid sitemap priority and changefreq values", () => {
+  const optionalValueEntries = [
+    '<url><loc>https://4planet.org/schema-priority-zero</loc><priority>0.0</priority></url>',
+    '<url><loc>https://4planet.org/schema-priority-one</loc><priority>1.0</priority></url>',
+    '<url><loc>https://4planet.org/schema-priority-middle</loc><priority>0.5</priority></url>',
+    ...["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"]
+      .map((value) => `<url><loc>https://4planet.org/schema-changefreq-${value}</loc><changefreq>${value}</changefreq></url>`),
+  ].join("\\n");
+  const result = runUserEntryAuditFixture((source) => source.replace(
+    "${sitemapUrls}\\n</urlset>",
+    `\${sitemapUrls}\\n${optionalValueEntries}\\n</urlset>`,
+  ));
+  assert.equal(result.status, 0, `schema-valid optional sitemap values must pass; stdout=${result.stdout}; stderr=${result.stderr}`);
+});
+
 test("the user-entry audit ignores a nested shadow staticRoutes declaration", () => {
   const result = runUserEntryAuditFixture((source) => `${source.replace(
     /^\s*"\/livingsystems\/",\s*$/m,
