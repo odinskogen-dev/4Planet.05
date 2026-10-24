@@ -42,7 +42,7 @@ for(const file of fs.readdirSync(DIR)){
  for(const [topic,claims] of Object.entries(p.facts||{})){
    if(!Array.isArray(claims))continue;
    for(const claim of claims){
-     if(!claim.label)claim.label=claim.text?String(claim.text).split(/[.!?]/)[0].trim().slice(0,80):"Source note";
+     if(!String(claim.label||"").trim())claim.label=(claim.text?String(claim.text).split(/[.!?]/)[0].trim().slice(0,80):"")||"Source note";
    }
  }
  p.provenance={...p.provenance,review:"DRAFT",founderRelease:"SPECIES100_FOUNDATION_2026-10-24",sourceReview:"INDEPENDENT_GOLD_PENDING",photoVisualReview:signed4.has(p.slug)?"EXACT_PHOTO_MATCH_NOT_INDEPENDENT_GOLD":"PHOTO_PENDING",photographyReview:signed4.has(p.slug)?"RIGHTS_METADATA_PRESENT_UNDER_REVIEW":"ORIGINAL_EDITORIAL_ART_ONLY",published:true,publicEditorialCaveat:true};
