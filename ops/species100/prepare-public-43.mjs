@@ -56,7 +56,7 @@ for(const file of fs.readdirSync(DIR)){
  const note=orchid.facts?.ecology?.[2];
  console.log("ORCHID_MANTIS_FACT_BEFORE_FINAL_GATE",JSON.stringify(note));
  if(!note||typeof note!=="object")throw Error("Orchid mantis ecology note is not a record");
- note.label="Orchid mantis and wild pollinator interactions";
+ note.label="Pollinator hunting";
  fs.writeFileSync(orchidFile,JSON.stringify(orchid,null,2)+String.fromCharCode(10));
  console.log("ORCHID_MANTIS_FACT_POST_FINAL_GATE",JSON.stringify(JSON.parse(fs.readFileSync(orchidFile,"utf8")).facts.ecology[2]));
 }
