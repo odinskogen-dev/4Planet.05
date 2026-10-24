@@ -1,0 +1,144 @@
+name: SPECIES100 Founder guarded immutable promotion
+on:
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: species100-founder-immutable-live-cutover, cancel-in-progress: false}
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SPECIES100_ORIGIN: __ORIGIN__
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      EXPECTED_WORKER: c13f2334-bb70-4f79-b3a4-41222100f287
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Freeze exact 43 new slugs and 57 immutable pages BEFORE live deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/species100
+          python3 - <<'PY'
+          import urllib.request, json, os, concurrent.futures, urllib.parse,hashlib
+          site="https://4species.com";origin=os.environ["SPECIES100_ORIGIN"]
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          old18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          def get(uri):
+            req=urllib.request.Request(uri,headers={"User-Agent":"SPECIES100-FOUNDER-IMMUTABLE-GUARD/20261024","Cache-Control":"no-cache"})
+            with urllib.request.urlopen(req,timeout=35) as r:return r.read(),dict(r.headers),r.status
+          candidate=json.loads(get(origin+"/species-data/v1/index.json")[0])
+          allSlugs={x["slug"] for x in candidate["pages"]}
+          assert len(candidate["pages"])==100 and len(allSlugs)==100
+          new43=sorted(allSlugs-set(old39)-set(old18))
+          assert len(new43)==43,("Wrong cohort; no deploy",len(new43))
+          def inspect(slug):
+            prof=json.loads(get(origin+"/species-data/v1/"+slug+".json")[0])
+            html,head,http=get(origin+"/"+slug)
+            assert http==200 and ("https://4species.com/"+slug).encode() in html
+            assert "noindex" in head.get("X-Robots-Tag","").lower(),("Noindex preview leak",slug)
+            assert prof["identity"]["scientificName"] and prof["slug"]==slug
+            if slug in old39+old18:
+              live=json.loads(get(site+"/species-data/v1/"+slug+".json")[0])
+              assert prof==live,("57 original drift",slug)
+            else:
+              assert prof["provenance"]["founderRelease"]=="SPECIES100_FOUNDATION_2026-10-24"
+              media=urllib.parse.urlparse(prof["hero"]["url"]).path
+              img,_,http=get(origin+media)
+              assert http==200 and len(img)>500
+            return slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:verified=list(ex.map(inspect,old39+old18+new43))
+          assert len(verified)==100
+          json.dump({"profiles":[{"slug":s} for s in new43]},open("reports/species100/prepare-43.json","w"),indent=2)
+          print("SPECIES100_READY_FOR_VERSION_GUARDED_RELEASE",len(verified),"43-new",len(new43),flush=True)
+          PY
+      - name: Prove live Worker unchanged and restore exact prior 57 router source
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" -o /tmp/zones.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/zones.json)
+          test -n "$account"
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" -o /tmp/current.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/current.json)
+          test "$current" = "$EXPECTED_WORKER" || { echo "LIVE_WORKER_CHANGED_STOP_NO_DEPLOY $current"; exit 1; }
+          echo "ROLLBACK_TO=$current" >> "$GITHUB_ENV"
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022
+          source=origin/release/species-v1-selective-20261022
+          mkdir -p ops/discovery
+          for p in ops/discovery/4species-router.js ops/discovery/species-proof-router.js public/species-data/v1/english-oak.json; do
+            if ! git cat-file -e "$source:$p" 2>/dev/null; then echo "Missing immutable import $p"; exit 1; fi
+            git restore --source="$source" --worktree -- "$p"
+          done
+          test -f ops/discovery/4species-router.js
+          python3 ops/species100/patch-worker-additive.py ops/discovery/4species-router.js ops/discovery/4species-router-100.js "$SPECIES100_ORIGIN" reports/species100/prepare-43.json
+          node --check ops/discovery/4species-router-100.js
+          echo "SPECIES100_ROUTER_BUILD_PASS_STRICT_VERSION_MATCH $current"
+      - name: Exact 43-route selective production deploy and full 100 live verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "SPECIES100_PRODUCTION_QA_FAILED_ROLLING_BACK $ROLLBACK_TO"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_TO" --name 4species-router || true
+          }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router-100.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species100-worker-deploy.txt
+          python3 - <<'PY'
+          import urllib.request,json,concurrent.futures,xml.etree.ElementTree as ET,time
+          site="https://4species.com"
+          latest=json.load(open("reports/species100/prepare-43.json"))
+          new43=[x["slug"] for x in latest["profiles"]]
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          old18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          def get(uri):
+            for i in range(3):
+              try:
+                req=urllib.request.Request(uri,headers={"User-Agent":"SPECIES100-LIVE100-FINAL-PROOF/20261024","Cache-Control":"no-cache"})
+                with urllib.request.urlopen(req,timeout=40) as r:return r.read(),dict(r.headers),r.status
+              except Exception:
+                if i==2:raise
+                time.sleep(3)
+          xml=get(site+"/sitemap.xml")[0]
+          links={x.text for x in ET.fromstring(xml).iter() if x.tag.endswith("loc") and x.text}
+          allSlugs=old39+old18+new43
+          assert len(allSlugs)==len(set(allSlugs))==100
+          assert all(site+"/"+s in links for s in allSlugs),("Sitemap missing published species",len(links))
+          catalog=json.loads(get(site+"/species-data/v1/index.json")[0])
+          indexed={p["slug"] for p in catalog["pages"]}
+          assert indexed==set(allSlugs) and len(catalog["pages"])==100,("CATALOG_MISMATCH",len(indexed))
+          def inspect(slug):
+            obj=json.loads(get(site+"/species-data/v1/"+slug+".json")[0])
+            html,headers,status=get(site+"/"+slug)
+            assert status==200 and obj["slug"]==slug and obj["identity"]["scientificName"]
+            assert ("https://4species.com/"+slug).encode() in html
+            assert "noindex" not in headers.get("X-Robots-Tag","").lower(),("UNEXPECTED_NOINDEX",slug)
+            if slug in old39+old18:
+              frozen="https://e17e1392.4planet-05.pages.dev" if slug in old39 else "https://de9e3e0e.4planet-05.pages.dev"
+              assert obj==json.loads(get(frozen+"/species-data/v1/"+slug+".json")[0]),("BASE57_REGRESSION",slug)
+            else:
+              assert obj["provenance"]["founderRelease"]=="SPECIES100_FOUNDATION_2026-10-24"
+            return slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:checked=list(ex.map(inspect,allSlugs))
+          assert len(checked)==100
+          print("SPECIES100_VERIFIED_LIVE100_SITEMAP100_CATALOG100_OLD57_PRESERVED_NEW43_RELEASED")
+          PY
+          trap - ERR
+          echo "SPECIES100_PUBLICATION_CONFIRMED_ORIGIN=$SPECIES100_ORIGIN"
+      - name: Submit 43 verified live canonical URLs to IndexNow (not actual indexing proof)
+        continue-on-error: true
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,json
+          key="8f4c2d91a7b64e3fa1c9d0b6e5274a83"
+          slugs=[x["slug"] for x in json.load(open("reports/species100/prepare-43.json"))["profiles"]]
+          host="https://4species.com"
+          with urllib.request.urlopen(host+"/"+key+".txt",timeout=25) as resp:assert resp.read().decode().strip()==key
+          payload=json.dumps({"host":"4species.com","key":key,"keyLocation":host+"/"+key+".txt","urlList":[host+"/"+s for s in slugs]}).encode()
+          req=urllib.request.Request("https://api.indexnow.org/indexnow",data=payload,headers={"Content-Type":"application/json"},method="POST")
+          with urllib.request.urlopen(req,timeout=40) as result:print("SPECIES100_INDEXNOW_ACCEPTED_HTTP",result.status,"SUBMITTED",len(slugs),"NOT_CONFIRMED_SEARCH_INDEXED")
+          PY
