@@ -1,0 +1,133 @@
+name: SPECIES Free Google Native Search Console Probe
+on:
+  push:
+    branches: [work/species-free-search-measurement-20261014]
+    paths: [.github/workflows/species-free-gsc-probe.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  read-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --quiet google-auth requests
+      - name: Verify free Google Search Console property, clicks, impressions and Orca index state
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,os
+          from urllib.parse import quote
+          from datetime import date,timedelta
+          def say(s):
+              print(s)
+              with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(s+'\n')
+          raw=os.environ.get('GA4_SERVICE_ACCOUNT_JSON','')
+          if not raw:
+              say('FREE_GSC: BLOCKED existing Google service-account secret absent')
+              raise SystemExit(0)
+          try:
+              from google.oauth2 import service_account
+              from google.auth.transport.requests import AuthorizedSession
+              identity=json.loads(raw)
+              service_email=identity.get('client_email','UNKNOWN')
+              say('FREE_GSC_SERVICE_ACCOUNT_EMAIL: '+service_email)
+              c=service_account.Credentials.from_service_account_info(identity,scopes=['https://www.googleapis.com/auth/webmasters.readonly'])
+              s=AuthorizedSession(c)
+              r=s.get('https://www.googleapis.com/webmasters/v3/sites',timeout=25)
+              if r.status_code!=200:
+                  try:
+                      failure=r.json().get('error',{})
+                      reason=(failure.get('errors') or [{}])[0].get('reason','')
+                      status=failure.get('status','')
+                      message=failure.get('message','')
+                  except Exception:
+                      reason=status=message='unreadable'
+                  # Do not log authentication tokens or response headers. Google error texts normally contain no secrets.
+                  safe_message=message[:450].replace('\\n',' ')
+                  say('FREE_GSC: property listing HTTP '+str(r.status_code)+'; error_status='+status+'; reason='+reason+'; diagnostic='+safe_message)
+                  raise SystemExit(0)
+              names=[x.get('siteUrl','') for x in r.json().get('siteEntry',[])]
+              site=next((x for x in ('sc-domain:4species.com','https://4species.com/') if x in names),None)
+              say('FREE_GSC: number of visible properties '+str(len(names)))
+              if not site:
+                  say('FREE_GSC: 4species.com not visible; verify domain property as owner then grant the service-account email above access (Settings > Users and permissions)')
+                  raise SystemExit(0)
+              say('FREE_GSC: 4species.com ACCESSIBLE '+site)
+              endpoint='https://www.googleapis.com/webmasters/v3/sites/'+quote(site,safe='')+'/searchAnalytics/query'
+              start=(date.today()-timedelta(days=30)).isoformat()
+              end=(date.today()-timedelta(days=3)).isoformat()
+              q=s.post(endpoint,json={'startDate':start,'endDate':end,'dimensions':['date'],'rowLimit':40},timeout=25)
+              if q.status_code==200:
+                  rows=q.json().get('rows',[])
+                  say('FREE_GSC_SEARCH: clicks='+str(sum(a.get('clicks',0) for a in rows))+' impressions='+str(sum(a.get('impressions',0) for a in rows))+' reported_days='+str(len(rows)))
+              else: say('FREE_GSC_SEARCH: query HTTP '+str(q.status_code))
+              a=s.post('https://searchconsole.googleapis.com/v1/urlInspection/index:inspect',json={'inspectionUrl':'https://4species.com/orca','siteUrl':site},timeout=25)
+              if a.status_code==200:
+                  z=a.json().get('inspectionResult',{}).get('indexStatusResult',{})
+                  say('FREE_GSC_ORCA: verdict='+str(z.get('verdict','UNKNOWN'))+' coverage='+str(z.get('coverageState','UNKNOWN'))+' lastCrawl='+str(z.get('lastCrawlTime','UNKNOWN')))
+              else: say('FREE_GSC_ORCA: inspection HTTP '+str(a.status_code))
+          except Exception as exc:
+              say('FREE_GSC: BLOCKED '+type(exc).__name__+'; no paid replacement needed')
+          PY
+
+      - name: Verify real 4SPECIES crawl access for Google, Bing and AI search
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from "node:fs";
+          const BASE="https://4species.com";
+          const report=s=>{console.log(s);appendFileSync(process.env.GITHUB_STEP_SUMMARY,s+"\n")};
+          const get=async (pathname,agent)=>fetch(BASE+pathname,{headers:agent?{"user-agent":agent}: {},signal:AbortSignal.timeout(25000)});
+          const robots=await get("/robots.txt");
+          const rules=await robots.text();
+          if(!robots.ok||!rules.includes("Sitemap: https://4species.com/sitemap.xml")||!rules.includes("Allow: /")) throw Error("Crawl policy or sitemap link not healthy");
+          const mapResponse=await get("/sitemap.xml");
+          const xml=await mapResponse.text();
+          if(!mapResponse.ok||!xml.includes("<urlset"))throw Error("Live sitemap not healthy");
+          const urls=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+          if(urls.length<28)throw Error("Species sitemap regression: fewer than 28 released pages");
+          if(urls.some(u=>!u.startsWith(BASE+"/")||u.startsWith(BASE+"/species/")))throw Error("Sitemap contains noncanonical species URLs");
+          report("CRAWL_SITEMAP: HTTP "+mapResponse.status+"; canonical pages="+urls.length);
+          const generalPages=new Set(["/","/explore","/quiz","/about"]);
+          const profiles=urls.map(u=>new URL(u).pathname).filter(p=>!generalPages.has(p));
+          const audit=[];
+          let position=0;
+          await Promise.all(Array.from({length:6},async()=>{
+            while(position<profiles.length){
+              const pathname=profiles[position++];
+              const slug=pathname.slice(1);
+              try{
+                const [source,htmlResponse]=await Promise.all([get("/species-data/v1/"+slug+".json"),get(pathname)]);
+                const data=source.ok?await source.json():{};
+                const html=await htmlResponse.text();
+                const valid=data.schema==="4PLANET_SPECIES_PAGE_01"&&data.slug===slug&&Boolean(data.identity?.scientificName)&&Boolean(data.identity?.commonName);
+                const sourceCount=(JSON.stringify(data).match(/https:\/\//g)||[]).length;
+                const canonical=html.includes('href="https://4species.com/'+slug+'"');
+                const noindex=/noindex/i.test(htmlResponse.headers.get("x-robots-tag")||"")||/<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html);
+                audit.push({slug,htmlStatus:htmlResponse.status,jsonStatus:source.status,valid,sourceCount,review:data.provenance?.review??"UNKNOWN",canonical,noindex});
+              }catch(e){audit.push({slug,error:String(e)})}
+            }
+          }));
+          const broken=audit.filter(x=>x.htmlStatus!==200||!x.valid||x.sourceCount===0||!x.canonical||x.noindex||x.error);
+          const reviewSummary={};for(const a of audit)reviewSummary[a.review??"ERROR"]=(reviewSummary[a.review??"ERROR"]||0)+1;
+          report("CRAWL_PROFILE_AUDIT: found="+profiles.length+"; verified="+(audit.length-broken.length)+"; breakdown="+JSON.stringify(reviewSummary));
+          if(broken.length)for(const a of broken)report("CRAWL_PROFILE_ERROR: "+JSON.stringify(a));
+          if(broken.length)throw Error("Sitemap profiles missing source-bearing premium identity or index-ready canonical");
+
+          const bots=["Googlebot","Bingbot","OAI-SearchBot","PerplexityBot","Claude-SearchBot","ChatGPT-User"];
+          for(const bot of bots){
+            const agent="Mozilla/5.0 (compatible; "+bot+"/1.0; +https://example.com/crawl-readiness)";
+            const res=await get("/orca",agent);
+            const html=await res.text();
+            const hasCanonical=/<link[^>]*rel=["']canonical["'][^>]*href=["']https:\/\/4species\.com\/orca["']/i.test(html);
+            const hasNoindex=/<meta[^>]*name=["']robots["'][^>]*content=["'][^"']*noindex/i.test(html)||/noindex/i.test(res.headers.get("x-robots-tag")||"");
+            report("CRAWLER_USER_AGENT: "+bot+" HTTP "+res.status+"; canonical="+hasCanonical+"; noindex="+hasNoindex);
+            if(res.status!==200||!hasCanonical||hasNoindex)throw Error("Crawler readiness regression: "+bot);
+          }
+          report("CRAWL_PROBE_PASS: user-agent test only; does not verify actual crawler IP allowlisting or Google indexing");
+          NODE

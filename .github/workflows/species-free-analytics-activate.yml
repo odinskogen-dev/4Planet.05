@@ -1,0 +1,37 @@
+name: SPECIES Free Cloudflare Web Analytics Activation
+on:
+  push:
+    branches: [work/species-free-search-measurement-20261014]
+    paths: [.github/workflows/species-free-analytics-activate.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Enable only missing 4species.com Web Analytics site (free)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          zone_json="$(curl -fsS --max-time 25 "${auth[@]}" "$api/zones?name=4species.com")"
+          zone="$(jq -r '.result[]? | select(.name=="4species.com" and .status=="active") | .id' <<<"$zone_json" | head -1)"
+          account="$(jq -r '.result[]? | select(.name=="4species.com" and .status=="active") | .account.id' <<<"$zone_json" | head -1)"
+          test -n "$zone" && test -n "$account" || { echo '4species.com zone/account inaccessible'; exit 1; }
+          list_json="$(curl -fsS --max-time 25 "${auth[@]}" "$api/accounts/$account/rum/site_info/list?per_page=100")"
+          jq -e '.success == true' <<<"$list_json" >/dev/null
+          existing="$(jq -r '.result[]? | select((.ruleset.zone_name // "")=="4species.com" or (.rules[]?.host // "")=="4species.com" or (.host // "")=="4species.com") | .site_tag' <<<"$list_json" | head -1)"
+          if [ -n "$existing" ]; then
+            echo 'SPECIES_FREE_ANALYTICS_ALREADY_ENABLED' | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            payload="$(jq -nc --arg z "$zone" '{zone_tag:$z,host:"4species.com",auto_install:true}')"
+            result="$(curl -fsS --max-time 25 -X POST "$api/accounts/$account/rum/site_info" "${auth[@]}" --data "$payload")"
+            jq -e '.success == true' <<<"$result" >/dev/null
+            echo 'SPECIES_FREE_ANALYTICS_SITE_CREATED' | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'Free Cloudflare Web Analytics: human visits/pageviews/referrers; not Search Console impressions or Google rankings.' >> "$GITHUB_STEP_SUMMARY"
