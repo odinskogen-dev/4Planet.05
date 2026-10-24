@@ -133,6 +133,7 @@ function runUserEntryAuditFixture(mutateSitemap) {
     "src/analytics/ProductAnalytics.ts",
     "src/analytics/ProductRouteAnalytics.tsx",
     "src/content/stories.ts",
+    "src/content/missions.ts",
     "src/data/discoveryInventory.json",
     "src/data/atlasDiscovery.json",
     "src/data/discoveryTopics.json",
