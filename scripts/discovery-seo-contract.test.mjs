@@ -9,6 +9,24 @@ async function buildReviewWorker(registry,heirSha){
   const worker=(await import(`${pathToFileURL(join(dir,"worker.mjs")).href}?sha=${heirSha}`)).default;
   return{worker,cleanup:()=>rmSync(dir,{recursive:true,force:true})};
 }
+
+function atlasIframePathFromComponent(item,source=atlasPage){
+  const iframeSource=source.match(/<iframe[\s\S]*?\bsrc=\{([A-Za-z_$][\w$]*)\}[\s\S]*?\/>/);
+  assert.ok(iframeSource,`${item.slug}: ATLAS iframe must bind src to a component variable`);
+  const bindingName=iframeSource[1];
+  const assignment=source.match(new RegExp(`\\bconst\\s+${bindingName}\\s*=\\s*([^;]+);`));
+  assert.ok(assignment,`${item.slug}: ${bindingName} must have a component assignment`);
+  const expression=assignment[1].trim();
+  if(expression==="atlasEmbedHref(object.atlasHref)"){
+    const params=new URLSearchParams(new URL(item.atlasHref,"https://4planet.org").search);
+    params.set("embed","news");
+    params.set("surface","atlas-discovery");
+    return `/atlas?${params.toString()}`;
+  }
+  const literal=expression.match(/^(["'])(.*?)\1$/);
+  if(literal)return literal[2];
+  assert.fail(`${item.slug}: unsupported ATLAS iframe binding ${expression}`);
+}
 test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=26);assert.equal(inv.species.filter(s=>s.indexable).length,26);assert.equal(inv.species.filter(s=>!s.indexable).length,0);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle","leopard","eastern-gorilla","chimpanzee","bornean-orangutan","emperor-penguin","acropora-palmata"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
 test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/path="\/place\/:slug"/);assert.match(map,/discoveryInventory/);assert.match(pre,/Prerendered discovery HTML/)});
 test("quality threshold",()=>assert.match(sr,/curated \? "index,follow,max-image-preview:large" : "noindex,follow"/));
@@ -149,10 +167,7 @@ test("ATLAS discovery routes execute through the real four-state worker registry
   try{
     for(const item of atlas.objects){
       const pageUrl=new URL(`https://test.4planet.org/atlas/${item.slug}/`);
-      const params=new URLSearchParams(new URL(item.atlasHref,"https://4planet.org").search);
-      params.set("embed","news");
-      params.set("surface","atlas-discovery");
-      const iframePath=`/atlas?${params.toString()}`;
+      const iframePath=atlasIframePathFromComponent(item);
       const upstream=[];
       globalThis.fetch=async(request)=>{upstream.push(new URL(request.url).pathname+new URL(request.url).search);return new Response("ATLAS HEIR",{status:200})};
       const response=await actual.worker.fetch(new Request(new URL(iframePath,pageUrl).href));
@@ -164,6 +179,20 @@ test("ATLAS discovery routes execute through the real four-state worker registry
       upstream.length=0;
       const rejected=await negative.worker.fetch(new Request(new URL(iframePath,pageUrl).href));
       assert.deepEqual(upstream,[],`${item.slug} must not proxy when ATLAS registration is missing`);
+      assert.match(await rejected.text(),/4PLANET_ PRODUCT CONTROL/);
+    }
+
+    const brokenBinding=atlasPage.replace(
+      "const embedHref = atlasEmbedHref(object.atlasHref);",
+      'const embedHref = "/_control";',
+    );
+    assert.notEqual(brokenBinding,atlasPage,"negative control must mutate the component iframe binding");
+    for(const item of atlas.objects){
+      const iframePath=atlasIframePathFromComponent(item,brokenBinding);
+      const upstream=[];
+      globalThis.fetch=async(request)=>{upstream.push(new URL(request.url).pathname);return new Response("ATLAS HEIR",{status:200})};
+      const rejected=await actual.worker.fetch(new Request(new URL(iframePath,`https://test.4planet.org/atlas/${item.slug}/`).href));
+      assert.deepEqual(upstream,[],`${item.slug} broken iframe binding must not reach ATLAS`);
       assert.match(await rejected.text(),/4PLANET_ PRODUCT CONTROL/);
     }
 
