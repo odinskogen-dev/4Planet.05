@@ -187,10 +187,10 @@ jobs:
           src="https://0debcf00.4planet-05.pages.dev"
           approval=json.loads((Path(os.environ["GITHUB_WORKSPACE"])/"ops/species/next61/v1-visual-approved-20261022.json").read_text())["approved"]
           for slug in "atlas-moth peacock-spider emperor-scorpion dragon-blood-tree".split():
-            with urllib.request.urlopen(src+"/species-data/v1/"+slug+".json",timeout=35) as r:p=json.load(r)
+            with urllib.request.urlopen(urllib.request.Request(src+"/species-data/v1/"+slug+".json",headers={"User-Agent":"4SPECIES-100-FROZEN-ASSET-RECOVERY/1.0"}),timeout=35) as r:p=json.load(r)
             assert p["slug"]==slug and p["hero"]["url"].startswith("https://4species.com/assets/species/next61/")
             media=urllib.parse.urlparse(p["hero"]["url"]).path
-            with urllib.request.urlopen(src+media,timeout=35) as r:raw=r.read()
+            with urllib.request.urlopen(urllib.request.Request(src+media,headers={"User-Agent":"4SPECIES-100-FROZEN-ASSET-RECOVERY/1.0"}),timeout=35) as r:raw=r.read()
             assert hashlib.sha256(raw).hexdigest()==p["provenance"]["photoSha256"]==approval[slug]["sha256"]
             for rel,blob in [("public/species-data/v1/"+slug+".json",json.dumps(p,ensure_ascii=False,indent=2).encode()),("public"+media,raw)]:
               f=Path(rel);f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(blob)
