@@ -1,0 +1,34 @@
+name: SPECIES100 Worker Additive Router Syntax Gate (NO LIVE)
+on:
+  push:
+    branches: [ops/species100-founder-live-20261024]
+    paths: [.github/workflows/species100-router-smoke.yml]
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Validate Python patch syntax, exact frozen Worker template and generated JS syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile ops/species100/patch-worker-additive.py
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022
+          mkdir -p /tmp/species100
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js >/tmp/species100/old.js
+          python3 - <<'PY'
+          import json
+          slugs="red-panda snow-leopard clouded-leopard fennec-fox meerkat ring-tailed-lemur brown-throated-sloth chinese-pangolin sea-otter narwhal beluga-whale dugong west-indian-manatee platypus common-wombat tasmanian-devil snowy-owl toco-toucan indian-peafowl greater-flamingo axolotl komodo-dragon king-cobra reticulated-python saltwater-crocodile panther-chameleon leopard-gecko golden-poison-frog western-santa-cruz-tortoise ocellaris-clownfish great-hammerhead electric-eel tiger-shark long-snouted-seahorse zebrafish giant-pacific-octopus coconut-crab japanese-spider-crab atlas-moth orchid-mantis peacock-spider emperor-scorpion dragon-blood-tree".split()
+          assert len(slugs)==len(set(slugs))==43
+          json.dump({"profiles":[{"slug":s} for s in slugs]},open("/tmp/species100/manifest.json","w"))
+          PY
+          python3 ops/species100/patch-worker-additive.py /tmp/species100/old.js /tmp/species100/generated.js https://dummypin.4planet-05.pages.dev /tmp/species100/manifest.json
+          node --check /tmp/species100/generated.js
+          grep -Fq "const SPECIES_V2_RELEASED" /tmp/species100/generated.js
+          grep -Fq "SPECIES_V53_ORIGIN" /tmp/species100/generated.js
+          echo SPECIES100_WORKER_ROUTER_PATCH_SYNTAX_PASS_NO_LIVE
