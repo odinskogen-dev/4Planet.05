@@ -49,7 +49,7 @@ function atlasEmbedHref(atlasHref: string) {
   const params = new URLSearchParams(raw);
   params.set("embed", "news");
   params.set("surface", "atlas-discovery");
-  return `/embed/atlas?${params.toString()}`;
+  return `/atlas?${params.toString()}`;
 }
 
 /* legacy contract marker: SOURCES / PROVENANCE — retained for automated discovery QA; not rendered */

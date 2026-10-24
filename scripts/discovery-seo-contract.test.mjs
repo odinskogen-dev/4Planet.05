@@ -117,7 +117,8 @@ test("ATLAS useful objects are routed, searchable and prerendered from one inven
 
 test("ATLAS useful objects expose the governed first-party map journey and human data note",()=>{
   assert.match(atlasPage,/function atlasEmbedHref\(atlasHref: string\)/);
-  assert.match(atlasPage,/return `\/embed\/atlas\?\$\{params\.toString\(\)\}`/);
+  assert.match(atlasPage,/return `\/atlas\?\$\{params\.toString\(\)\}`/);
+  assert.doesNotMatch(atlasPage,/return `\/embed\/atlas\?/);
   assert.match(atlasPage,/<iframe/);
   assert.match(atlasPage,/aria-label="ATLAS embed fallback"/);
   assert.match(atlasPage,/If the embedded map is unavailable/);
