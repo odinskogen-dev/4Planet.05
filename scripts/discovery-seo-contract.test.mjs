@@ -1,4 +1,14 @@
-import test from "node:test";import assert from "node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx"),speciesMedia=read("src/data/speciesMedia.ts"),sourceEnvelopes=read("src/data/speciesSourceEnvelope.ts");
+import test from "node:test";import assert from "node:assert/strict";import{mkdtempSync,readFileSync,rmSync,writeFileSync}from"node:fs";import{execFileSync}from"node:child_process";import{tmpdir}from"node:os";import{join}from"node:path";import{fileURLToPath,pathToFileURL}from"node:url";const ROOT=new URL("..",import.meta.url),read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx"),speciesMedia=read("src/data/speciesMedia.ts"),sourceEnvelopes=read("src/data/speciesSourceEnvelope.ts");
+
+async function buildReviewWorker(registry,heirSha){
+  const dir=mkdtempSync(join(tmpdir(),"4planet-atlas-dispatch-"));
+  const sandboxes=Object.fromEntries(Object.entries(registry.products||{}).filter(([,item])=>item.sandbox).map(([product])=>[product,{origin:"https://sandbox.example",render_origin:"https://sandbox-render.example",sha:"sandbox-fixture"}]));
+  writeFileSync(join(dir,"registry.json"),JSON.stringify(registry));
+  writeFileSync(join(dir,"runtime.json"),JSON.stringify({heir:{origin:"https://heir.example",render_origin:"https://heir-render.example",sha:heirSha},sandboxes}));
+  execFileSync(process.execPath,[fileURLToPath(new URL("./build-four-state-review-worker.mjs",import.meta.url)),"registry.json","runtime.json","worker.mjs"],{cwd:dir,stdio:"pipe"});
+  const worker=(await import(`${pathToFileURL(join(dir,"worker.mjs")).href}?sha=${heirSha}`)).default;
+  return{worker,cleanup:()=>rmSync(dir,{recursive:true,force:true})};
+}
 test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=26);assert.equal(inv.species.filter(s=>s.indexable).length,26);assert.equal(inv.species.filter(s=>!s.indexable).length,0);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle","leopard","eastern-gorilla","chimpanzee","bornean-orangutan","emperor-penguin","acropora-palmata"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
 test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/path="\/place\/:slug"/);assert.match(map,/discoveryInventory/);assert.match(pre,/Prerendered discovery HTML/)});
 test("quality threshold",()=>assert.match(sr,/curated \? "index,follow,max-image-preview:large" : "noindex,follow"/));
@@ -124,6 +134,46 @@ test("ATLAS useful objects expose the governed first-party map journey and human
   assert.match(atlasPage,/If the embedded map is unavailable/);
   assert.match(atlasPage,/A note on the data/);
   assert.doesNotMatch(atlasPage,/>Read this correctly</);
+});
+
+test("ATLAS discovery routes execute through the real four-state worker registry",async()=>{
+  const registry=JSON.parse(read("docs/control/PRODUCT_SURFACE_REGISTRY.json"));
+  const currentHead=execFileSync("git",["rev-parse","HEAD"],{cwd:ROOT,encoding:"utf8"}).trim();
+  const actual=await buildReviewWorker(registry,currentHead);
+  const mismatched=structuredClone(registry);
+  mismatched.products.ATLAS.heir.review_path="/atlas-registration-removed";
+  const negative=await buildReviewWorker(mismatched,currentHead);
+  const staleSha=`${currentHead[0]==="0"?"1":"0"}${currentHead.slice(1)}`;
+  const stale=await buildReviewWorker(registry,staleSha);
+  const originalFetch=globalThis.fetch;
+  try{
+    for(const item of atlas.objects){
+      const pageUrl=new URL(`https://test.4planet.org/atlas/${item.slug}/`);
+      const params=new URLSearchParams(new URL(item.atlasHref,"https://4planet.org").search);
+      params.set("embed","news");
+      params.set("surface","atlas-discovery");
+      const iframePath=`/atlas?${params.toString()}`;
+      const upstream=[];
+      globalThis.fetch=async(request)=>{upstream.push(new URL(request.url).pathname+new URL(request.url).search);return new Response("ATLAS HEIR",{status:200})};
+      const response=await actual.worker.fetch(new Request(new URL(iframePath,pageUrl).href));
+      assert.equal(response.status,200);
+      assert.deepEqual(upstream,[iframePath],`${item.slug} must proxy through the registered ATLAS route`);
+      assert.doesNotMatch(await response.text(),/4PLANET_ PRODUCT CONTROL/);
+      assert.equal(response.headers.get("x-4planet-review-source"),`heir-${currentHead.slice(0,12)}`);
+
+      upstream.length=0;
+      const rejected=await negative.worker.fetch(new Request(new URL(iframePath,pageUrl).href));
+      assert.deepEqual(upstream,[],`${item.slug} must not proxy when ATLAS registration is missing`);
+      assert.match(await rejected.text(),/4PLANET_ PRODUCT CONTROL/);
+    }
+
+    globalThis.fetch=async()=>new Response("ATLAS HEIR",{status:200});
+    const staleResponse=await stale.worker.fetch(new Request("https://test.4planet.org/atlas?embed=news&surface=atlas-discovery"));
+    assert.notEqual(staleResponse.headers.get("x-4planet-review-source"),`heir-${currentHead.slice(0,12)}`,"stale review runtime SHA must be detectable");
+  }finally{
+    globalThis.fetch=originalFetch;
+    actual.cleanup();negative.cleanup();stale.cleanup();
+  }
 });
 
 test("public product-host attribution includes 4NATION, SPECIES and MAGAZINE",()=>{
