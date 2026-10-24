@@ -1,3 +1,53 @@
+# ATLAS — UNESCO PAGINATION COMPLETENESS QA CORRECTION — 24 OCTOBER 2026
+
+**STATUS:** MAKER-CORRECTED / QA_READY / INDEPENDENT RE-GOLD REQUIRED / RELEASE HOLD / NOT LIVE.
+**RETURN CONSUMED:** Independent Gold comment `6377767538` on existing PR #456 found two fail-open completeness paths at exact head `d8ea288cc2bde5feff40a0340d75ea8fbd6c4e29`: `total_count:null` was coerced to zero and repeated upstream pages could be returned as a complete distinct recordset.
+**BOUNDED CORRECTION:** Keep the same PR/branch. Treat only actual non-negative integer counts as known; keep null/missing counts unknown; request deterministic dataset-specific order; require a stable source identity for every record; reject duplicate identities, changing counts, impossible counts and short incomplete pages. Add source-executing pagination regressions to the existing release workflow.
+**TRUTH BOUNDARY:** Upstream count and page transport are not proof of a complete distinct dataset. Any ambiguous or inconsistent pagination state is unavailable, not zero and not `truncated:false` success.
+**ROLLBACK:** Exact returned head `d8ea288cc2bde5feff40a0340d75ea8fbd6c4e29`. No merge, deploy, release or public state changes are authorised by this correction.
+**GOLD:** Maker returns exact SHA and deterministic evidence only; independent Gold must re-run the negative matrix and physical runtime before release.
+
+---
+
+# ATLAS — CURATED GREEN DATA RELEASE CARRIER RECONSTRUCTION — 22 OCTOBER 2026
+
+**STATUS:** MAKER-CORRECTED / QA_READY / INDEPENDENT RE-GOLD REQUIRED / RELEASE HOLD / NOT LIVE.
+**RETURN CONSUMED:** Independent Gold RUN LOG rows 2052 and 2076 found PR #456 stale/nonmergeable, seven positive browser failures, and four source-control rows that still claimed MAP_GREEN from an older base.
+**CORRECTION:** Reconstruct the existing PR #456 carrier on `main@22c8c718731a1b94ea33dd6e6facdfb43e29d99a`; retain only the Founder-approved four-layer data path, workflow and control; preserve current-main routing/Earth Now; reconcile strict decimal coordinate parsing from current `king/test@f1e07e131cd9cd298d525c00bbce546ac47fd0d3`.
+**BROWSER CONTRACT:** Prove each opt-in fixture as a public rendered MapLibre feature and as a human-visible layer count, then open the existing layer drawer and verify source, rights, time and limitation copy. Do not inspect private `_data`/`_options` internals or treat source existence as rendered value.
+**SOURCE CONTROL:** UNESCO MAB, World Heritage, Global Geoparks and IOC/OBIS rows are `PROMOTION_CANDIDATE` with `map=PENDING` until exact reconstructed-head browser evidence and independent Gold. Historical green runs remain evidence, not current status.
+**ROLLBACK:** Exact prior PR head `c86c1255f5fd2c58e7d2a5fd2c94d08fae3e5177`; current production/main parent `22c8c718731a1b94ea33dd6e6facdfb43e29d99a` remains unchanged unless the authorised release controller later acts.
+**BOUNDARY:** Existing PR/branch only. No new sibling, merge, deploy, release, self-Gold, public-canon or LIVE claim.
+
+## USER ARRIVES BECAUSE
+They want the same ATLAS with four optional, credible UNESCO/OBIS place and ocean layers.
+## ONE THING TO UNDERSTAND
+Designation and occurrence records are source-backed context, not current condition, complete boundaries, abundance or live positions.
+## PRIMARY ACTION
+Open LAYERS and enable one of the four curated layers.
+## SECONDARY DEPTH
+Open layer information to inspect source, rights, time and limitations.
+## P1 DOMINANT
+The existing map and current public navigation remain unchanged.
+## P2 ORIENTATION
+PLACES groups the three designation layers; LIFE contains the ocean-biodiversity summary layer.
+## P3 ACTION / NEXT
+Explore a rendered point and continue with existing ATLAS interactions.
+## P4 DEPTH
+Each layer retains attribution, ShareAlike status, source timing and explicit truth limits.
+## WHAT CAN BE REMOVED
+Private map internals, stale MAP_GREEN claims and the obsolete release base.
+## WHAT MUST BE REUSED
+Existing MapLibre engine, layer console, point renderer, info drawer, current main routing and release PR #456.
+## TRUTH BOUNDARY
+Source failure is unavailable, not zero; representative point is not boundary; records and counts are not complete ecological state.
+## MOBILE-FIRST RISK
+390/430 overflow, touch reachability and late rendered-feature availability across Chromium/WebKit.
+## HUMAN SUCCESS
+All four optional layers visibly render on the unchanged ATLAS and expose understandable source/rights/time limitations.
+
+---
+
 # WILD: ORCA — EMBEDDED ORIGINAL RENDERING CORRECTION — 15 OCTOBER 2026
 
 **FOUNDER EVIDENCE:** Founder submitted a production screenshot with a white orca despite Claude Challenger 02 original screenshots showing the black-white orca. This is a confirmed visual regression, regardless of static asset hash success.

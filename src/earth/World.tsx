@@ -98,8 +98,8 @@ const readUrl = () => {
 
 const SIGNAL_COLOR = { FIRE_ACTIVITY: C.red, NATURAL_EVENT: C.amber, SEISMIC: C.white, SPECIES_OBSERVATION: C.green };
 
-/* V36's three panel groups, in display order. Layers self-declare their group. */
-const LAYER_GROUPS = ["EARTH", "LIFE", "SIGNALS"];
+/* Preserve the existing panel design; PLACES is the curated home for source-backed geographic objects. */
+const LAYER_GROUPS = ["EARTH", "PLACES", "LIFE", "SIGNALS"];
 
 /* Keyboard activation for div-based interactive rows (Enter / Space). */
 const onKeyActivate = (fn) => (e) => {
@@ -1280,7 +1280,7 @@ function WorldInner() {
                           {l.label}
                         </span>
                         <span className="st" style={{ color: active ? l.color : undefined }}>{status[l.id] || ""}</span>
-                        <button className="ibtn" onClick={() => setInfo((s) => ({ ...s, [l.id]: !s[l.id] }))}>i</button>
+                        <button className="ibtn" aria-label="About this layer" onClick={() => setInfo((s) => ({ ...s, [l.id]: !s[l.id] }))}>i</button>
                       </div>
 
                       {info[l.id] && (
@@ -1309,6 +1309,8 @@ function WorldInner() {
                             ISOLATE
                           </button>
                           <div className="foot" style={{ marginTop: 6 }}>SOURCE · {l.src}</div>
+                          {l.rights && <div className="foot">RIGHTS · {l.rights}</div>}
+                          {l.period && <div className="foot">TIME · {l.period}</div>}
                         </div>
                       )}
                     </div>
