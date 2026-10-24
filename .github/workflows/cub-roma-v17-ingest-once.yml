@@ -1,0 +1,30 @@
+name: "CUB ROMA V17 — Import founder binary to immutable release"
+on:
+  push:
+    branches: [cub-roma-v17-full-release-20261024]
+    paths: ['.github/workflows/cub-roma-v17-ingest-once.yml']
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download founder-provided exact V17 publication-only archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          DOWNLOAD_URL='https://sdmntprcacentral.oaiusercontent.com/files/00000000-597c-820d-a5e3-6f3eb1214fba/raw?se=2026-10-24T13%3A07%3A05Z&sp=r&sv=2026-02-06&sr=b&scid=25f587ce-9826-5947-8c7d-4fddcc9ade12&skoid=6658dbdd-f305-4d30-8f6b-d62218202cb9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-24T06%3A04%3A11Z&ske=2026-10-25T06%3A04%3A11Z&sks=b&skv=2026-02-06&sig=UjWTqEQ%2BE4VQb14SjWVyAZOzWFdr0LjBV928xdOBULA%3D'
+          curl -fsSL --retry 3 --retry-all-errors --connect-timeout 20 --max-time 300 "$DOWNLOAD_URL" -o /tmp/roma-v17-web.zip
+          echo 'e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288  /tmp/roma-v17-web.zip' | sha256sum -c -
+          test "$(unzip -Z -1 /tmp/roma-v17-web.zip | grep -Ec '^tiles/r[0-9]+c[0-9]+\.jpg$')" -eq 240
+          unzip -tq /tmp/roma-v17-web.zip
+      - name: Preserve verified founder game artifact in CUB GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create 'roma-cub-v17-20261024' '/tmp/roma-v17-web.zip#ROMA_V17_WEB_RELEASE_2026-10-24.zip' --target "$GITHUB_SHA" --title 'ROMA V17 web build / Iteration 38' --notes 'Founder supplied exact web build, 240 NASA public-domain terrain tiles. SHA256 e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288. Includes one HTML and tiles/MANIFEST.json. Existing ROMA/Cannae remains preserved. Experimental development build.' --latest=false
+          echo 'ROMA_V17_GITHUB_RELEASE_STORED_AND_VERIFIED'
