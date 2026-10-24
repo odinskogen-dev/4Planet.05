@@ -1,0 +1,102 @@
+name: IMPACT SCALE02 — canonical LIVE proof 2026-10-24
+
+on:
+  push:
+    branches: [king/test]
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      EXPECTED_IMPACT_SHA: eaa46371516cf7e2d9c34917580a30db6ef40c78
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+      - run: npm ci
+
+      - name: Canonical crawl readback
+        shell: bash
+        run: |
+          set -uo pipefail
+          fail=0
+          fetch() {
+            name="$1"; url="$2"; needle="$3"
+            status=$(curl -L -sS --max-time 30 -H 'Cache-Control: no-cache' -w '%{http_code}' -o "/tmp/$name" "$url")
+            echo "$name HTTP $status bytes=$(wc -c < "/tmp/$name")"
+            if [ "$status" != "200" ]; then fail=1; fi
+            if ! grep -Fqi "$needle" "/tmp/$name"; then
+              echo "MISSING [$needle] in $name"
+              head -c 1800 "/tmp/$name" | tr '\n' ' '; echo
+              fail=1
+            else
+              echo "PASS [$needle]"
+            fi
+          }
+
+          build=$(curl -LfsS --max-time 30 -H 'Cache-Control: no-cache' "https://4planet.org/impact-build.json?proof=$EXPECTED_IMPACT_SHA")
+          live_sha=$(jq -r '.sha // empty' <<<"$build")
+          echo "Canonical build SHA: $live_sha"
+          [ "$live_sha" = "$EXPECTED_IMPACT_SHA" ] || fail=1
+
+          fetch home "https://4planet.org/impact/?proof=$EXPECTED_IMPACT_SHA" "Find people bringing life back"
+          fetch project "https://4planet.org/impact/project/namami-gange/?proof=$EXPECTED_IMPACT_SHA" "Namami Gange"
+          fetch actor "https://4planet.org/impact/actors/national-mission-clean-ganga/?proof=$EXPECTED_IMPACT_SHA" "National Mission for Clean Ganga"
+          fetch sitemap "https://4planet.org/sitemap.xml?proof=$EXPECTED_IMPACT_SHA" "/impact/project/namami-gange"
+          fetch robots "https://4planet.org/robots.txt?proof=$EXPECTED_IMPACT_SHA" "OAI-SearchBot"
+
+          grep -Fqi '<link rel="canonical"' /tmp/project || { echo "project canonical missing"; fail=1; }
+          grep -Fqi 'application/ld+json' /tmp/project || { echo "project JSON-LD missing"; fail=1; }
+          grep -Fqi 'index,follow' /tmp/project || { echo "project index/follow missing"; fail=1; }
+
+          dynamic=$(grep -Eo '<loc>https://4planet\.org/impact/[^<]+' /tmp/sitemap | wc -l | tr -d ' ')
+          echo "Canonical dynamic IMPACT sitemap URLs: $dynamic"
+          [ "$dynamic" -ge 130 ] || fail=1
+
+          echo "CRAWL_FAIL=$fail" >> "$GITHUB_ENV"
+
+      - name: Browser proof desktop + mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser=await chromium.launch();
+          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+            const page=await browser.newPage({viewport});
+            await page.goto('https://4planet.org/impact',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:/Find people bringing life back/i}).waitFor();
+            const hrefs=await page.locator('a[href^="/impact/project/"]').evaluateAll(nodes=>[...new Set(nodes.map(n=>n.getAttribute('href')).filter(Boolean))]);
+            console.log(`project links at ${viewport.width}px: ${hrefs.length}`);
+            if(hrefs.length<32) throw new Error(`expected >=32 unique project links, got ${hrefs.length}`);
+            const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+            if(overflow>0) throw new Error(`horizontal overflow ${overflow}px at ${viewport.width}px`);
+
+            await page.goto('https://4planet.org/impact/project/namami-gange',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:'Namami Gange',exact:true}).waitFor();
+            await page.getByRole('heading',{name:'What the sources establish'}).waitFor();
+
+            await page.goto('https://4planet.org/impact/actors/national-mission-clean-ganga',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:'National Mission for Clean Ganga',exact:true}).waitFor();
+            await page.close();
+          }
+          await browser.close();
+          console.log('BROWSER PASS: desktop + mobile, 32 project graph visible, no horizontal overflow');
+          NODE
+
+      - name: Final search + browser gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${CRAWL_FAIL:-1}" != "0" ]; then
+            echo "Canonical browser may work, but crawlable HTML gate failed." >&2
+            exit 1
+          fi
+          echo "IMPACT SCALE02 CANONICAL LIVE PROOF: PASS"
