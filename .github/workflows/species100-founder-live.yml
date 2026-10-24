@@ -207,5 +207,135 @@ jobs:
           node scripts/species-page-validate.mjs --write-index
           node scripts/species-page-validate.mjs
           echo SPECIES_V53_RECONCILED
+      - name: Build full v53 site and emit immutable identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          npm ci
+          npm run typecheck
+          npm run species:validate
+          SPECIES_INDEX=1 SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          test -f dist/index.html
+          grep -Eiq 'species|Meet life' dist/index.html
+          test -f dist/quiz/index.html
+          test -f dist/explore/index.html
+          test -f dist/species-data/v1/english-oak.json
+          # The Claude v52 renderer writes /labs/species/{slug}; the standalone
+          # public host MUST serve species-specific static HTML at /{slug}.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, shutil, re
+          dist = Path("dist")
+          pages = json.loads(Path("public/species-data/v1/index.json").read_text())["pages"]
+          slugs = {p["slug"] for p in pages}
+          expected = {
+            "orca","lion","tiger","african-savanna-elephant","asian-elephant",
+            "bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan",
+            "cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe",
+            "gray-wolf","great-white-shark","green-sea-turtle","hippopotamus",
+            "jaguar","monarch-butterfly","polar-bear",
+          }
+          assert expected <= slugs, "missing Orca or one of the twenty new species"
+          extra = {"humpback-whale","sperm-whale","harbour-porpoise","bottlenose-dolphin","atlantic-cod","blue-mussel","whale-shark","leopard","eastern-gorilla","acropora-palmata","hyacinth-macaw"}
+          assert extra <= slugs, "Missing new Claude profile in static prerender: "+str(sorted(extra-slugs))
+          report=json.loads(Path("reports/species100/prepare-43.json").read_text())
+          new43={p["slug"] for p in report["profiles"]}
+          assert len(new43)==43 and new43 <= slugs
+          assert len(slugs)==100 and len(pages)==100,("100 original V53 pages expected",len(slugs))
+          print("SPECIES100_EXACT_CLAUDE_V53_PAGES",len(slugs),flush=True)
+          for slug in sorted(slugs):
+              dst = dist / slug / "index.html"
+              legacy = dist / "labs/species" / slug / "index.html"
+              if not dst.is_file() and legacy.is_file():
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copyfile(legacy, dst)
+              assert dst.is_file(), "missing v53 canonical HTML for " + slug
+              html = dst.read_text()
+              assert "https://4species.com/" + slug in html, "wrong canonical: " + slug
+              assert "noindex" not in html.lower(), "unindexable page: " + slug
+          for slug in ["", "explore", "quiz", "about"]:
+              path = dist / slug / "index.html" if slug else dist / "index.html"
+              if not path.is_file(): continue
+              html = path.read_text()
+              html = re.sub(r'<meta\s+name=["\']robots["\'][^>]*>', '<meta name="robots" content="index,follow,max-image-preview:large" />', html, flags=re.I)
+              path.write_text(html)
+          assert (dist/"species-sitemap.xml").is_file()
+          print("SPECIES_CANONICAL_HTML_READY", len(slugs))
+          PY
+          git add -A
+          built_tree=$(git write-tree)
+          payload_digest=$(find dist -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+          jq -n \
+            --arg triggerSha "$GITHUB_SHA" \
+            --arg workflowBlob "$PREVIEW_WORKFLOW_BLOB" \
+            --arg reconstructedPatchSha256 "2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0" \
+            --arg expectedBaseTree "818b4ff766d4423cafc1709bda38d164da2b9731" \
+            --arg builtTree "$built_tree" \
+            --arg payloadDigest "$payload_digest" \
+            '{triggerSha:$triggerSha,workflowBlob:$workflowBlob,reconstructedPatchSha256:$reconstructedPatchSha256,expectedBaseTree:$expectedBaseTree,builtTree:$builtTree,payloadDigest:$payloadDigest}' \
+            > dist/release-identity.json
+          echo "V53_BUILT_TREE=$built_tree" >> "$GITHUB_ENV"
+          echo "V53_PAYLOAD_DIGEST=$payload_digest" >> "$GITHUB_ENV"
+          # Noindex is mandatory for every static review origin, never allow
+          # this preview to compete with the 39 original public URLs.
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' > dist/_headers
+          test -f dist/_headers
+          # Cloudflare Pages Advanced Mode: explicitly noindex every immutable preview URL.
+          cat > dist/_worker.js <<'JS'
+          export default { async fetch(request, env) {
+            const response=await env.ASSETS.fetch(request);
+            const headers=new Headers(response.headers);
+            headers.set("X-Robots-Tag","noindex, nofollow, noarchive");
+            return new Response(request.method==="HEAD"?null:response.body,
+              {status:response.status,statusText:response.statusText,headers});
+          }};
+          JS
+
+          # Titles are built from the complete source-backed V53 page model.
+          # Legacy 22-only search release is intentionally not used for 100 pages.
+          # Absolutely preserve all 18 already-live V1 static profiles from the
+          # immutable prior origin, rather than allowing dynamic source updates
+          # to alter visitor-facing text/metadata or JSON without review.
+          python3 - <<'PY'
+          from pathlib import Path
+          import urllib.request,json,hashlib
+          old="https://de9e3e0e.4planet-05.pages.dev"
+          previous="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          for slug in previous:
+           for relative,target in [(slug,"dist/"+slug+"/index.html"),
+                                   ("species-data/v1/"+slug+".json","dist/species-data/v1/"+slug+".json"),
+                                   ("species-data/v1/"+slug+".json","public/species-data/v1/"+slug+".json")]:
+            req=urllib.request.Request(old+"/"+relative,headers={"User-Agent":"4SPECIES-IMMUTABLE-PRIOR-57/1.0"})
+            with urllib.request.urlopen(req,timeout=35) as response:
+             source=response.read()
+            f=Path(target);f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(source)
+           profile=json.loads(Path("dist/species-data/v1/"+slug+".json").read_text())
+           assert profile["slug"]==slug and profile["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22"
+           asset=profile["hero"]["url"].replace("https://4species.com","")
+           # The source refresh can change a photo while retaining its local filename.
+           # Restore the exact previously published photograph bytes too.
+           assert asset.startswith("/assets/species/next61/"),slug
+           request=urllib.request.Request(old+asset,headers={"User-Agent":"4SPECIES-IMMUTABLE-PREVIOUS-MEDIA/1.0"})
+           with urllib.request.urlopen(request,timeout=35) as response:
+            exact_image=response.read()
+           for loc in ("dist"+asset,"public"+asset):
+            output=Path(loc);output.parent.mkdir(parents=True,exist_ok=True);output.write_bytes(exact_image)
+           media=Path("dist"+asset)
+           assert media.is_file() and hashlib.sha256(media.read_bytes()).hexdigest()==profile["provenance"]["photoSha256"],slug
+           print("PRESERVED_PREVIOUS_18_IMMUTABLE_CLAUDE_ARTICLE_AND_IMAGE "+slug)
+          print("PRESERVED_18_V1_EXACT_PROFILES_FROM_IMMUTABLE_PRIOR_ORIGIN")
+          PY
+          # Append 43 new links to existing Claude V53 llms information.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          f=Path("dist/llms.txt")
+          base=f.read_text() if f.is_file() else "4PLANET SPECIES — Living Species Intelligence"
+          report=json.loads(Path("reports/species100/prepare-43.json").read_text())
+          extra=["- https://4species.com/"+p["slug"]+" — "+p["scientificName"]+" (editorial science draft; citation review ongoing)" for p in report["profiles"]]
+          f.write_text(base+"\n\n## 43 Additional Species\n"+"\n".join(extra)+"\n")
+          PY
+          echo SPECIES100_STATIC_ORIGIN_READY_TO_QA
       - name: Pending release wiring
         run: echo WORKFLOW_DRAFT_ONLY_NOT_PUBLISHED
