@@ -133,11 +133,17 @@ jobs:
           const reports=[];
           for(const [engineName,engine,mobile] of [["Chromium",chromium,false],["WebKit",webkit,true]]){
             const browser=await engine.launch({headless:true});
-            const context=await browser.newContext(mobile?devices["iPhone 13"]:{viewport:{width:1440,height:900}});
+            const context=await browser.newContext(mobile?{...devices["iPhone 13"],serviceWorkers:"block"}:{viewport:{width:1440,height:900},serviceWorkers:"block"});
+            await context.route(/^https:\/\/4species\.com\//,async route=>{
+              const original=new URL(route.request().url());
+              const proxied=process.env.PREVIEW+original.pathname+original.search;
+              const upstream=await route.fetch({url:proxied,timeout:45000});
+              await route.fulfill({response:upstream});
+            });
             for(const slug of slugs){
               const page=await context.newPage();
               try {
-                const resp=await page.goto(process.env.PREVIEW+"/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+                const resp=await page.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
                 assert.equal(resp?.status(),200);
                 await page.locator("h1").first().waitFor({timeout:20000});
                 await page.waitForTimeout(1100);
