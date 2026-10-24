@@ -1,0 +1,153 @@
+name: 4SPECIES 100 — read-only LIVE57 backup and authority proof
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/species-100-live57-readonly-baseline-20261024.yml
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: species-100-readonly-live57-baseline
+  cancel-in-progress: false
+jobs:
+  baseline:
+    name: Read-only Cloudflare and 57 live profile evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CF_READ_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Snapshot exact public bytes and compare immutable sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p species-100-live57-evidence
+          python3 - <<'PY'
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          from datetime import datetime, timezone
+          from hashlib import sha256
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from urllib.parse import urlparse
+          import json, os, re, traceback, xml.etree.ElementTree as ET
+
+          base="https://4species.com"
+          old="https://e17e1392.4planet-05.pages.dev"
+          v1="https://de9e3e0e.4planet-05.pages.dev"
+          original="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          expected=original+new
+          assert len(original)==39 and len(new)==18 and len(set(expected))==57
+          out=Path("species-100-live57-evidence")
+          now=datetime.now(timezone.utc).isoformat()
+          manifest={"observedAtUTC":now,"scope":"read-only; no deploy, mutation, IndexNow or production writes","publicOrigin":base,"originalSource":old,"newSource":v1,"expectedOld":39,"expectedNew":18,"profiles":[],"errors":[],"worker":{}}
+
+          def get(url, headers=None):
+            req=Request(url, headers={"User-Agent":"4SPECIES-100-READONLY-BASELINE/20261024","Cache-Control":"no-cache",**(headers or {})})
+            with urlopen(req,timeout=35) as resp:
+              data=resp.read()
+              return data,dict(resp.headers),resp.geturl(),resp.status
+          def save(relative,data):
+            p=out/relative
+            p.parent.mkdir(parents=True,exist_ok=True)
+            p.write_bytes(data)
+            return {"path":relative,"sha256":sha256(data).hexdigest(),"bytes":len(data)}
+          def check(slug):
+            d={"slug":slug,"cohort":"original39" if slug in original else "new18"}
+            errors=[]
+            try:
+              jb,headers,url,status=get(base+"/species-data/v1/"+slug+".json")
+              p=json.loads(jb)
+              d["json"]=save("profiles/"+slug+".json",jb)
+              d["jsonHttp"]=status
+              d["identity"]=p.get("identity",{})
+              if p.get("slug")!=slug: errors.append("SLUG_MISMATCH")
+              if not p.get("identity",{}).get("scientificName"): errors.append("MISSING_SCIENTIFIC_IDENTITY")
+              sb,_,_,_=get((old if slug in original else v1)+"/species-data/v1/"+slug+".json")
+              d["immutableJsonEquivalent"]=json.loads(sb)==p
+              if not d["immutableJsonEquivalent"]: errors.append("IMMUTABLE_SOURCE_JSON_DRIFT")
+              hb,hh,final,code=get(base+"/"+slug)
+              d["html"]=save("pages/"+slug+".html",hb)
+              d["htmlHttp"]=code
+              d["finalUrl"]=final
+              html=hb.decode("utf-8",errors="replace")
+              if urlparse(final).netloc not in ("4species.com","www.4species.com"): errors.append("UNEXPECTED_PUBLIC_REDIRECT")
+              if "https://4species.com/"+slug not in html: errors.append("MISSING_CANONICAL_IN_HTML")
+              if "noindex" in hh.get("X-Robots-Tag","").lower(): errors.append("HTTP_NOINDEX")
+              if re.search(r'<meta[^>]*name=["\x27]robots["\x27][^>]*content=["\x27][^"\x27]*noindex',html,re.I): errors.append("HTML_NOINDEX")
+              if slug in new:
+                img=p.get("hero",{}).get("url","")
+                if not img.startswith(base+"/assets/species/next61/"):errors.append("UNSAFE_NEW_HERO")
+                else:
+                  ib,_,ifinal,istat=get(img)
+                  d["hero"]=save("media/"+slug+Path(urlparse(img).path).suffix,ib)
+                  d["heroHttp"]=istat
+                  want=p.get("provenance",{}).get("photoSha256","")
+                  if not want or sha256(ib).hexdigest()!=want: errors.append("HERO_HASH_MISMATCH")
+              else:
+                d["heroUrl"]=p.get("hero",{}).get("url")
+              d["errors"]=errors
+            except Exception as exc:
+              errors.append(type(exc).__name__+": "+str(exc)[:250])
+              d["errors"]=errors
+            return d
+          with ThreadPoolExecutor(max_workers=5) as pool:
+            jobs=[pool.submit(check,slug) for slug in expected]
+            for future in as_completed(jobs):
+              d=future.result()
+              manifest["profiles"].append(d)
+              if d["errors"]:manifest["errors"].append({"slug":d["slug"],"problems":d["errors"]})
+              print("READONLY_SPECIES_CHECK",d["slug"],"PASS" if not d["errors"] else d["errors"],flush=True)
+          manifest["profiles"].sort(key=lambda x:expected.index(x["slug"]))
+          for resource in ("/","/explore","/quiz","/about","/sitemap.xml","/robots.txt","/species-data/v1/index.json","/species-v1-images.xml","/llms.txt"):
+            try:
+              raw,_,final,status=get(base+resource)
+              name=resource.strip("/").replace("/","__") or "home"
+              manifest.setdefault("publicSurfaceArtifacts",[]).append({"url":base+resource,"final":final,"status":status,**save("public/"+name,raw)})
+              if resource=="/sitemap.xml":
+                xml=ET.fromstring(raw)
+                found={e.text for e in xml.iter() if e.tag.endswith("loc") and e.text}
+                missing=[s for s in expected if base+"/"+s not in found]
+                if missing:manifest["errors"].append({"scope":"sitemap","missing":missing})
+                manifest["speciesSitemapEntriesVerified"]=57-len(missing)
+              if resource=="/species-data/v1/index.json":
+                index=json.loads(raw)
+                slugs={x.get("slug") for x in index.get("pages",[])}
+                if set(expected)!=slugs:manifest["errors"].append({"scope":"catalogue","missing":sorted(set(expected)-slugs),"unexpected":sorted(slugs-set(expected))})
+            except Exception as exc: manifest["errors"].append({"scope":resource,"error":str(exc)[:250]})
+          token=os.environ.get("CF_READ_TOKEN","")
+          if token:
+            try:
+              hdr={"Authorization":"Bearer "+token}
+              zones=json.loads(get("https://api.cloudflare.com/client/v4/zones?name=4species.com",hdr)[0])
+              account=zones["result"][0]["account"]["id"]
+              deployments=json.loads(get("https://api.cloudflare.com/client/v4/accounts/"+account+"/workers/scripts/4species-router/deployments",hdr)[0])
+              arr=deployments["result"]
+              if isinstance(arr,dict):arr=arr["deployments"]
+              version=arr[0]["versions"][0]["version_id"]
+              manifest["worker"]={"script":"4species-router","currentVersion":version,"previousKnownGood":"c13f2334-bb70-4f79-b3a4-41222100f287","priorRollback":"59ccfcc5-f163-4c7a-ad87-02ba3504c27c","matchesLastVerified57":version=="c13f2334-bb70-4f79-b3a4-41222100f287"}
+              if not manifest["worker"]["matchesLastVerified57"]:manifest["errors"].append({"scope":"worker","reason":"LIVE_WORKER_VERSION_CHANGED_REQUIRES_FRESH_ROUTE_REVIEW","actual":version})
+            except Exception as exc:
+              manifest["worker"]={"error":type(exc).__name__+": "+str(exc)[:250]}
+              manifest["errors"].append({"scope":"worker","reason":"CLOUDFLARE_READBACK_FAILED"})
+          else:
+            manifest["worker"]={"status":"NO_TOKEN"}
+            manifest["errors"].append({"scope":"worker","reason":"CLOUDFLARE_VERSION_UNVERIFIED"})
+          manifest["profilesVerified"]=sum(not d["errors"] for d in manifest["profiles"])
+          manifest["passed"]=manifest["profilesVerified"]==57 and not manifest["errors"]
+          save("manifest.json",json.dumps(manifest,ensure_ascii=False,indent=2).encode())
+          checks=[]
+          for p in sorted(out.rglob("*")):
+            if p.is_file():checks.append(sha256(p.read_bytes()).hexdigest()+"  "+str(p.relative_to(out)))
+          save("SHA256SUMS.txt",("\n".join(checks)+"\n").encode())
+          print("SPECIES100_READONLY_BASELINE_RESULT",json.dumps({"passed":manifest["passed"],"profilesVerified":manifest["profilesVerified"],"errors":manifest["errors"][:15],"worker":manifest["worker"]}),flush=True)
+          if not manifest["passed"]:raise SystemExit(1)
+          PY
+      - name: Preserve complete baseline evidence as downloadable GitHub artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: species-100-live57-readonly-backup-20261024
+          path: species-100-live57-evidence/
+          retention-days: 30
+          if-no-files-found: error
