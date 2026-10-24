@@ -1,0 +1,51 @@
+name: CUB ROMA V17 — Direct production asset and legacy QA
+on:
+  push:
+    branches: [cub-roma-republic-v12-release-20261023]
+    paths: ['.github/workflows/cub-roma-v17-live-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify exact V17 and preserved original games on both domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          for HOST in 'https://lab.p4nther.com' 'https://labs.p4nther.com'; do
+            echo "QA_HOST=$HOST"
+            curl -fsSL --retry 5 --retry-delay 4 --connect-timeout 15 --max-time 80 "$HOST/rome/index.html" -o /tmp/roma17-game.html
+            echo 'c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8  /tmp/roma17-game.html' | sha256sum -c -
+            curl -fsSL --max-time 30 "$HOST/rome/tiles/MANIFEST.json" -o /tmp/roma17-tiles.json
+            echo '83585b548207f6b3ebbb76ebbfe6c63cda358119f35684aa1fcb292ae4d92a36  /tmp/roma17-tiles.json' | sha256sum -c -
+            python3 - <<'PY'
+          import json
+          m=json.load(open('/tmp/roma17-tiles.json'))
+          assert m['count']==240 and len(m['tiles'])==240
+          print('ALL_240_V17_TILES_IN_PUBLISHED_MANIFEST')
+          PY
+            curl -fsSL --max-time 30 "$HOST/rome/tiles/r0c0.jpg" -o /tmp/roma17-t1.jpg
+            echo '521acd746e0108cda164ea04cfe1c5b4f6f3898c11bc8f867cb79a4cc0cc6aab  /tmp/roma17-t1.jpg' | sha256sum -c -
+            curl -fsSL --max-time 30 "$HOST/rome/tiles/r6c10.jpg" -o /tmp/roma17-t2.jpg
+            echo 'f5369b10263ff80fcaf0ae2f9d875bcd64b85367ea04f7551b9b73b543abafb1  /tmp/roma17-t2.jpg' | sha256sum -c -
+            curl -fsSL --max-time 30 "$HOST/rome/tiles/r11c19.jpg" -o /tmp/roma17-t3.jpg
+            echo 'd4e0a1b37d9ff4fa5419779899114054b667d8ac84447c74571b4368fb010139  /tmp/roma17-t3.jpg' | sha256sum -c -
+            curl -fsSL --max-time 30 "$HOST/" -o /tmp/cub-front.html
+            grep -Fq 'Play ROMA · New V17' /tmp/cub-front.html
+            grep -Fq 'href="/rome/"' /tmp/cub-front.html
+            curl -fsSL --max-time 30 "$HOST/games/roma/" -o /tmp/roma-game-page.html
+            grep -Fq 'Play ROMA · Challenger V17' /tmp/roma-game-page.html
+            grep -Fq 'href="/roma/challenger-12/"' /tmp/roma-game-page.html
+            grep -Fq 'href="/roma/challenger-08/"' /tmp/roma-game-page.html
+            grep -Fq 'href="/roma/"' /tmp/roma-game-page.html
+            curl -fsSL --max-time 30 "$HOST/roma/" -o /tmp/roma-old.html
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma-old.html' | sha256sum -c -
+            curl -fsSL --max-time 40 "$HOST/roma/challenger-08/" -o /tmp/roma08-old.html
+            echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma08-old.html' | sha256sum -c -
+            curl -fsSL --max-time 45 "$HOST/roma/challenger-12/" -o /tmp/roma12-old.html
+            echo '5645104ab6389bce380ef53af564cb115cab424c924601f0dac115532ff3d7b8  /tmp/roma12-old.html' | sha256sum -c -
+            echo "ROMA_V17_ALL_EXACT_ASSET_AND_LEGACY_LIVE_PASS=$HOST/rome/"
+          done
