@@ -193,8 +193,8 @@ jobs:
             body=$(curl -fsS --max-time 20 "$deployment_url/impact-build.json" || true)
             sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
             if [ "$sha" = "$GITHUB_SHA" ]; then
-              curl -fsS "$deployment_url/impact/project/namami-gange/" | grep -q 'Namami Gange'
-              curl -fsS "$deployment_url/impact/actors/national-mission-clean-ganga/" | grep -q 'National Mission for Clean Ganga'
+              curl -LfsS "$deployment_url/impact/project/namami-gange/" | grep -q 'Namami Gange'
+              curl -LfsS "$deployment_url/impact/actors/national-mission-clean-ganga/" | grep -q 'National Mission for Clean Ganga'
               echo "Immutable deployment verified."
               exit 0
             fi
@@ -222,15 +222,15 @@ jobs:
         run: |
           set -euo pipefail
           for i in $(seq 1 24); do
-            body=$(curl -fsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact-build.json?v=$GITHUB_SHA" || true)
+            body=$(curl -LfsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact-build.json?v=$GITHUB_SHA" || true)
             sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
             echo "LIVE probe $i: ${sha:-unresolved}"
             if [ "$sha" = "$GITHUB_SHA" ]; then
-              home=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/impact?v=$GITHUB_SHA")
-              project=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA")
-              actor=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA")
-              sitemap=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/sitemap.xml?v=$GITHUB_SHA")
-              robots=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/robots.txt?v=$GITHUB_SHA")
+              home=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact?v=$GITHUB_SHA")
+              project=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA")
+              actor=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA")
+              sitemap=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/sitemap.xml?v=$GITHUB_SHA")
+              robots=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/robots.txt?v=$GITHUB_SHA")
               grep -q 'Find people bringing life back' <<<"$home"
               grep -q 'Namami Gange' <<<"$project"
               grep -q 'National Mission for Clean Ganga' <<<"$actor"
