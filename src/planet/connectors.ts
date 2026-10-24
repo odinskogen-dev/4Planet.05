@@ -498,7 +498,7 @@ export const taxonPhoto = async (scientificName: string): Promise<TaxonPhoto | n
   const licence = String(photo?.license_code ?? photo?.license ?? "").trim();
   const rightsState = classifyInaturalistTaxonPhotoRights(licence);
 
-  let hasBoundedMediaIdentity = false;
+  let hasBoundedMediaIdentity: boolean;
   try {
     const parsed = new URL(url);
     const allowedHosts = new Set([

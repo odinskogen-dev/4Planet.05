@@ -1,3 +1,15 @@
+# SOURCE MEDIA RIGHTS — LINT / INITIALISATION CORRECTION — 24 OCTOBER 2026
+
+**STATUS:** BOUNDED HEIR DEFECT REPAIR / GOLD REQUESTED / NO LIVE OR PUBLIC CONTENT RELEASE.
+
+**REASON:** GitHub CI for the existing MAX EXPOSURE issue #483 failed on ESLint no-useless-assignment in the existing iNaturalist media rights guard. This is a release-tooling blocker, not a search-ranking or SEO failure.
+
+**CHANGE:** Remove only the redundant initial false assignment to hasBoundedMediaIdentity. Both try and catch paths already explicitly assign the boolean before the fail-closed display guard reads it. Do not broaden image hosts, rights, attribution or identity trust. No runtime semantic change intended.
+
+**VERIFICATION:** Typecheck, lint, existing species-media rights contract, Atlas and Species source restrictions, and full governance gates on the exact SHA; independent Gold for any public release. Preserve rollback and readback. No public deployment.
+
+---
+
 # 4PLANET MISSIONS — CANONICAL DISCOVERABILITY / HUMAN FIRST — 24 OCTOBER 2026
 
 **STATUS:** BOUNDED HEIR SOURCE DELIVERY / INDEPENDENT GOLD REQUESTED / NO LIVE OR INDEXATION CLAIM / NO FOUNDER RELEASE.
