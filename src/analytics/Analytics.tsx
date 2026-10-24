@@ -329,6 +329,12 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     actor_id: /^(?:actor:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}|P17-A[0-9]{3,})$/,
     project_id: /^project:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}$/,
   };
+  const publicCanonicalValuePatterns: Record<string, RegExp> = {
+    legal_identity: /^(?:brreg_exact|unresolved)$/,
+    source_id: /^source:[a-z][a-z0-9._-]{0,119}$/,
+    object_id: /^(?:[a-z][a-z0-9._-]{0,79}|[a-z][a-z0-9._-]{0,39}:[a-z0-9][a-z0-9._:-]{0,119})$/,
+    product_key: /^[a-z][a-z0-9._-]{0,99}$/,
+  };
   const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
   const tokenValue = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
   const pathValue = /^\/[A-Za-z0-9._~!$'()*+,;=:@%/-]{0,219}$/;
@@ -353,6 +359,16 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
       if (typeof value === "string") {
         const bounded = value.trim();
         if (canonicalContextIdPattern.test(bounded)) safe[key] = bounded;
+      }
+      continue;
+    }
+    const publicCanonicalValuePattern = publicCanonicalValuePatterns[key];
+    if (publicCanonicalValuePattern) {
+      if (typeof value === "string") {
+        const bounded = value.trim();
+        // Public canonical IDs are namespaced/slugs, never raw long digit sequences
+        // that can be mistaken for identity, telephone or payment-card data.
+        if (!/\d{7,}/.test(bounded) && publicCanonicalValuePattern.test(bounded)) safe[key] = bounded;
       }
       continue;
     }

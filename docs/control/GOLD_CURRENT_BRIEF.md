@@ -1,3 +1,25 @@
+# ANALYTICS PRIVACY — PUBLIC ID VALUE SEMANTICS — 24 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** consented analytics must preserve useful anonymous public-product events without sending values shaped like personal identity, telephone or payment-card data to GA4 or PostHog.
+
+**ROOT CAUSE:** the key allowlist restricted telemetry property names, but `legal_identity`, `source_id`, `object_id` and `product_key` still shared the generic token validator. Arbitrary long digit strings therefore survived through the common payload into both sinks.
+
+**CORRECTION:** apply field-specific public semantics before the generic token path: `legal_identity` is the bounded `brreg_exact|unresolved` state; `source_id` is a `source:` namespace; `object_id` is a public slug/namespaced identifier; `product_key` is a public slug. All four reject raw or embedded runs of seven or more digits. Existing consent, host, sensitive-navigation and shared-sink controls remain unchanged.
+
+**REGRESSION EVIDENCE:** the exact four synthetic Gold values fail before correction and are removed after correction. The executable harness runs the real `trackEvent` and `dispatchAnalyticsEvent` bodies with consent granted on an allowed host and proves both mocked GA4 and PostHog receive only `product_area` plus the canonical site/path fields. Positive cases protect the current BRREG state, IMR source namespace, object slug and live market-product slug.
+
+**WHAT MUST BE REUSED:** PR #476, PR #131 lawful `king/test` HEIR, the existing explicit key allowlist, consent/host/navigation gates, shared sanitised payload and both analytics sinks.
+
+**TRUTH BOUNDARY:** passing proves only the bounded synthetic confidentiality contract on the exact HEIR code. It does not assert a real personal-data leak, production deployment, LIVE safety, user use or impact.
+
+**BASE / ROLLBACK:** `king/test@05ee4a3de7d60fb687d5ccf7df4cfaf46792fd3c`; revert the returned three-file correction if independent Gold finds a legitimate public-ID, consent, dispatch or sink regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the four exact synthetic values through both sinks, the four positive public values, retained historical bypasses and dispatch gates on the exact returned SHA.
+
+---
+
 # DISCOVERY SITEMAP — CLOSED ATTRIBUTE CONTRACT — 23 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.

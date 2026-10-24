@@ -33,6 +33,34 @@ const { privacySafeEventParameters } = await import(
   "data:text/javascript;base64," + Buffer.from(transpiled).toString("base64")
 );
 
+function analyticsRuntime() {
+  const runtimeSource = [
+    "const ga4Events = [];",
+    "const postHogEvents = [];",
+    "const window = { location: { hostname: '4planet.org', pathname: '/species/orca', origin: 'https://4planet.org' }, gtag: (...args) => ga4Events.push(args) };",
+    "const document = { getElementById: (id) => id === '4planet-ga4' ? {} : null };",
+    "function readConsent() { return 'granted'; }",
+    "function isInternalAnalyticsBrowser() { return false; }",
+    "function isAnalyticsHostAllowed() { return true; }",
+    "function isSensitiveAnalyticsNavigation() { return false; }",
+    "function canonicalHost(host) { return host; }",
+    "function capturePostHog(name, properties) { postHogEvents.push([name, properties]); return true; }",
+    ...[
+      "decodeForAnalyticsInspection",
+      "hasUnsupportedNestedAnalyticsEncoding",
+      "containsSensitiveAnalyticsMaterial",
+      "privacySafeEventParameters",
+      "trackEvent",
+      "dispatchAnalyticsEvent",
+    ].map(functionSource),
+    "export { trackEvent, ga4Events, postHogEvents };",
+  ].join("\n\n");
+  const runtimeTranspiled = ts.transpileModule(runtimeSource, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+  }).outputText;
+  return import("data:text/javascript;base64," + Buffer.from(runtimeTranspiled).toString("base64"));
+}
+
 test("keeps useful anonymous product events", () => {
   const row = { object_kind: "species", object_slug: "orca", product_area: "species", attempts: 2, internal: false };
   assert.deepEqual(privacySafeEventParameters(row), row);
@@ -107,6 +135,50 @@ test("drops independent-Gold authorization, cookie and nested-code bypass cases"
   });
 
   assert.deepEqual(clean, { product_area: "species" });
+});
+
+test("enforces public value semantics for identity and canonical ID fields", () => {
+  assert.deepEqual(privacySafeEventParameters({
+    legal_identity: "brreg_exact",
+    source_id: "source:imr_no",
+    object_id: "orca-profile",
+    product_key: "summit-at-sunset-fine-art-print",
+  }), {
+    legal_identity: "brreg_exact",
+    source_id: "source:imr_no",
+    object_id: "orca-profile",
+    product_key: "summit-at-sunset-fine-art-print",
+  });
+
+  assert.deepEqual(privacySafeEventParameters({
+    legal_identity: "11029912345",
+    source_id: "11029912345",
+    object_id: "4798765432",
+    product_key: "4111111111111111",
+  }), {});
+});
+
+test("drops identity-shaped values before BOTH analytics sinks", async () => {
+  const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
+  assert.equal(trackEvent("test_event", {
+    product_area: "species",
+    legal_identity: "11029912345",
+    source_id: "11029912345",
+    object_id: "4798765432",
+    product_key: "4111111111111111",
+  }), true);
+
+  assert.equal(ga4Events.length, 1);
+  assert.equal(postHogEvents.length, 1);
+  assert.deepEqual(ga4Events[0][2], {
+    product_area: "species",
+    site_host: "4planet.org",
+    page_location: "https://4planet.org/species/orca",
+  });
+  assert.deepEqual(postHogEvents[0][1], {
+    product_area: "species",
+    site_host: "4planet.org",
+  });
 });
 
 test("tracking uses sanitised payload before BOTH sinks", () => {
