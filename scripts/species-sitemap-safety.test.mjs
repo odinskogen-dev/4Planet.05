@@ -14,7 +14,7 @@ test("4SPECIES serves robots.txt with canonical sitemap", async () => {
   assert.match(robots, /Disallow: \/api\//);
 });
 
-test("4SPECIES sitemap keeps only source-backed complete species and canonical public URLs", async (t) => {
+test("4SPECIES sitemap keeps the 57-profile baseline and rejects unapproved new profiles", async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
   globalThis.fetch = async (input) => {
@@ -41,7 +41,7 @@ test("4SPECIES sitemap keeps only source-backed complete species and canonical p
   const xml = await response.text();
   assert.match(xml, /https:\/\/4species\.com\/orca</);
   assert.match(xml, /https:\/\/4species\.com\/explore</);
-  assert.match(xml, /https:\/\/4species\.com\/draft-species</);
+  assert.doesNotMatch(xml, /draft-species/);
   assert.doesNotMatch(xml, /unavailable/);
   assert.doesNotMatch(xml, /pages\.dev/);
   assert.equal(response.headers.get("x-4species-index-gate"), "human-review-v1");

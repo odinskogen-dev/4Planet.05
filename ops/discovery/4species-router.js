@@ -10,6 +10,48 @@ const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
 const PUBLIC_NON_PROFILE_PATHS = new Set(["/", "/explore", "/quiz", "/about"]);
+// Production rollback baseline verified on 24 Oct 2026. These 57 profiles are
+// intentionally preserved unchanged. Any later slug is a new admission and
+// must pass the explicit Founder batch and independently signed photo gate.
+export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([
+  "orca", "lion", "tiger", "african-savanna-elephant", "asian-elephant",
+  "bald-eagle", "black-rhinoceros", "blue-whale", "bornean-orangutan",
+  "cheetah", "chimpanzee", "emperor-penguin", "giant-panda", "giraffe",
+  "gray-wolf", "great-white-shark", "green-sea-turtle", "hippopotamus",
+  "jaguar", "monarch-butterfly", "polar-bear", "english-oak",
+  "western-honey-bee", "fly-agaric", "common-octopus", "atlantic-puffin",
+  "sei-whale", "eurasian-lynx", "humpback-whale", "sperm-whale",
+  "harbour-porpoise", "bottlenose-dolphin", "atlantic-cod", "blue-mussel",
+  "whale-shark", "leopard", "eastern-gorilla", "acropora-palmata",
+  "hyacinth-macaw", "koala", "quokka", "capybara", "red-fox",
+  "giant-anteater", "giant-otter", "walrus", "common-kingfisher",
+  "secretary-bird", "scarlet-macaw", "peregrine-falcon", "ocean-sunfish",
+  "giant-manta-ray", "greater-blue-ringed-octopus", "peacock-mantis-shrimp",
+  "venus-flytrap", "titan-arum", "giant-sequoia",
+]);
+
+// Fail closed. A new slug is added only by an exact Founder-authorised batch
+// change after independent science, photograph, rights and byte verification.
+const FOUNDER_AUTHORISED_NEW_PROFILE_BATCH = new Set([]);
+
+export function hasApprovedNewSpeciesPhoto(page) {
+  const hero = page?.hero;
+  const provenance = page?.provenance;
+  if (!hero || typeof hero !== "object" || !provenance || typeof provenance !== "object") return false;
+  let photo;
+  let source;
+  try {
+    photo = new URL(hero.url);
+    source = new URL(hero.sourcePage);
+  } catch {
+    return false;
+  }
+  return photo.protocol === "https:" && /\.(?:avif|jpe?g|png|webp)$/i.test(photo.pathname) &&
+    source.protocol === "https:" && Boolean(String(hero.credit || "").trim()) &&
+    Boolean(String(hero.licence || "").trim()) &&
+    /^[a-f0-9]{64}$/i.test(String(provenance.photoSha256 || "")) &&
+    provenance.photoVisualReview === "GOLD" && provenance.sourceReview === "GOLD";
+}
 
 function isProfilePathCandidate(pathname) {
   return typeof pathname === "string" && /^\/[^/.]+$/.test(pathname) && !PUBLIC_NON_PROFILE_PATHS.has(pathname);
@@ -66,6 +108,10 @@ export async function profileReviewState(pathname, fetchImpl = fetch) {
       return Object.values(value).some(containsSource);
     };
     if (!containsSource(page)) return "UNREVIEWED";
+    if (!CURRENT_PUBLIC_SPECIES_SLUGS.has(slug) &&
+        (!FOUNDER_AUTHORISED_NEW_PROFILE_BATCH.has(slug) || !hasApprovedNewSpeciesPhoto(page))) {
+      return "UNREVIEWED";
+    }
     return page.provenance?.review === "REVIEWED" ? "REVIEWED" : "DRAFT";
   } catch {
     return "UNREVIEWED";

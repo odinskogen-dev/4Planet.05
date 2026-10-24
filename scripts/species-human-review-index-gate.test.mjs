@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
+  CURRENT_PUBLIC_SPECIES_SLUGS,
+  hasApprovedNewSpeciesPhoto,
   NON_PROFILE_REVIEW_STATE,
   permitsSpeciesIndexing,
   profileReviewState,
@@ -15,6 +17,13 @@ const sourcedProfile = (slug, review = "DRAFT") => ({
   hook: { text: "The largest dolphin species.", source: { label: "NOAA Fisheries", url: "https://www.fisheries.noaa.gov/species/killer-whale" } },
   provenance: { review, writtenBy: "GPT draft for 4PLANET" }
 });
+
+const signedPhoto = {
+  url: "https://4species.com/assets/species/approved/test-animal.jpg",
+  sourcePage: "https://example.org/photos/test-animal",
+  credit: "Field photographer",
+  licence: "CC BY 4.0",
+};
 
 test("founder 17 Oct: DRAFT is publicly discoverable ONLY when original Claude profile has taxon identity and a real source", async () => {
   assert.equal(await profileReviewState("/orca", async () => Response.json(sourcedProfile("orca","DRAFT"))), "DRAFT");
@@ -42,6 +51,36 @@ test("profile review lookup fails closed for unavailable or invalid evidence", a
     assert.equal(state, "UNREVIEWED", label);
     assert.equal(permitsSpeciesIndexing(state), false, label);
   }
+});
+
+test("founder 24 Oct: a new DRAFT or REVIEWED profile cannot publish without a signed photograph and authorised batch", async () => {
+  assert.equal(CURRENT_PUBLIC_SPECIES_SLUGS.size, 57);
+  for (const review of ["DRAFT", "REVIEWED"]) {
+    const missingPhoto = sourcedProfile("test-animal", review);
+    assert.equal(await profileReviewState("/test-animal", async () => Response.json(missingPhoto)), "UNREVIEWED", `${review} missing photo`);
+
+    const unlicensedPhoto = { ...missingPhoto, hero: { url: signedPhoto.url } };
+    assert.equal(await profileReviewState("/test-animal", async () => Response.json(unlicensedPhoto)), "UNREVIEWED", `${review} missing rights`);
+  }
+});
+
+test("new-profile photo approval requires photograph, creator, licence, source, immutable SHA and independent Gold", () => {
+  const page = {
+    ...sourcedProfile("test-animal", "REVIEWED"),
+    hero: signedPhoto,
+    provenance: {
+      review: "REVIEWED",
+      photoSha256: "a".repeat(64),
+      photoVisualReview: "GOLD",
+      sourceReview: "GOLD",
+    },
+  };
+  assert.equal(hasApprovedNewSpeciesPhoto(page), true);
+  assert.equal(hasApprovedNewSpeciesPhoto({ ...page, hero: { ...signedPhoto, url: "https://4species.com/assets/species/test-animal.svg" } }), false);
+  assert.equal(hasApprovedNewSpeciesPhoto({ ...page, hero: { ...signedPhoto, credit: "" } }), false);
+  assert.equal(hasApprovedNewSpeciesPhoto({ ...page, hero: { ...signedPhoto, licence: "" } }), false);
+  assert.equal(hasApprovedNewSpeciesPhoto({ ...page, provenance: { ...page.provenance, photoSha256: "unpinned" } }), false);
+  assert.equal(hasApprovedNewSpeciesPhoto({ ...page, provenance: { ...page.provenance, photoVisualReview: "PENDING" } }), false);
 });
 
 test("enumerated public non-profile routes remain eligible without profile JSON", async () => {
