@@ -349,7 +349,7 @@ jobs:
             curl -fsSL --max-time 30 "$host/roma/" -o /tmp/live-cannae-protected.html
             echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/live-cannae-protected.html' | sha256sum -c -
             curl -fsSL --max-time 30 "$host/games/roma/" -o /tmp/live-roma-product-page.html
-            grep -Fq 'Play Imperium' /tmp/live-roma-product-page.html
+            grep -Fq 'Play ROMA · Challenger V17' /tmp/live-roma-product-page.html
             grep -Fq 'Play Cannae' /tmp/live-roma-product-page.html
             curl -fsSL --max-time 30 "$host/" -o /tmp/live-cub-roma-list.html
             grep -Fq 'href="/roma/challenger-08/"' /tmp/live-cub-roma-list.html
