@@ -1,14 +1,9 @@
-name: 4SPECIES — Additional 5 Source-Photo-Signed Species Claude V53 Preview
+name: 4SPECIES 100 — Founder Additive Preview QA
 on:
   push:
-    branches: [release/species-v1-incremental-20261022-b]
-    paths: [.github/workflows/species-v1-batch2-preview-20261022.yml]
-  pull_request:
-    branches: [release/species-39-20261019]
-    paths: [.github/workflows/species-v1-batch2-preview-20261022.yml]
-
-permissions:
-  contents: read
+    branches: [ops/species100-founder-live-20261024]
+    paths: [.github/workflows/species100-founder-live.yml]
+permissions: {contents: read}
 
 concurrency:
   group: species-v1-batch2-isolated-20261022
