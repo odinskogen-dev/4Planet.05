@@ -555,6 +555,8 @@ jobs:
             curl -fsSL --max-time 35 "$host/roma/challenger-08/" -o /tmp/roma-old-ch08.html
             echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma-old-ch08.html' | sha256sum -c -
             curl -fsSL "$host/games/roma/" | grep -Fq 'href="/roma/challenger-12/"'
-            curl -fsSL "$host/" | grep -Fq 'href="/roma/challenger-12/"'
+            curl -fsSL "$host/" | grep -Fq 'href="/rome/"'
+            curl -fsSL "$host/rome/" | grep -Fq 'ROMA: The Republic'
+            curl -fsSL "$host/rome/index.html" | grep -Fq 'url=/roma/challenger-12/'
             echo "ROMA_CH12_PRODUCTION_VERIFIED=$host/roma/challenger-12/"
           done
