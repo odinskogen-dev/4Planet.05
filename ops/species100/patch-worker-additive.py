@@ -35,7 +35,7 @@ block='''  if ((direct && SPECIES_V2_RELEASED.has(direct[1])) ||
   if (path==="/llms.txt") return SPECIES_V2_ORIGIN;
 '''
 s=s.replace(before2,block+before2,1)
-before='  const body = \`<?xml version="1.0" encoding="UTF-8"?>'
+before='  const body = `<?xml version="1.0" encoding="UTF-8"?>'
 assert s.count(before)==1
 addon='''  // Only published new43 canonical URLs from the immutable batch origin.
   const existingLocs=new Set(kept.map(block => block.match(/<loc>([^<]+)<\\\\/loc>/)?.[1]).filter(Boolean));
