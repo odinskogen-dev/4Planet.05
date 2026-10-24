@@ -2237,7 +2237,7 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
 
   // Existing prerendered discovery routes keep their own metadata. Named public
   // organisation routes and standalone product homes are normalised below.
-  if (host === "4planet.org" && url.pathname !== "/" && !routeConfig) {
+  if (host === "4planet.org" && url.pathname !== "/" && (!routeConfig || normalisedPath === "/impact")) {
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
