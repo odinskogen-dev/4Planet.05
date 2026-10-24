@@ -67,7 +67,8 @@ export function MissionDetail() {
       <Seo title={m.name + " — " + m.hero + " | 4PLANET"} description={m.hero}
         path={"/missions/" + m.slug}
         jsonLd={({ canonicalUrl }) => ({ "@context": "https://schema.org", "@type": "WebPage",
-          name: m.name, description: m.hero, url: canonicalUrl, inLanguage: "en-GB" })} />
+          name: m.name, description: m.hero, url: canonicalUrl, inLanguage: "en-GB",
+          isPartOf: { "@type": "CollectionPage", name: "4PLANET Missions", url: new URL("/missions", canonicalUrl).toString() } })} />
       {returnHref && (
         <Link to={returnHref} data-testid="return-to-atlas" style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 70px)", left: 20, zIndex: 40, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: acc, padding: "10px 14px", textDecoration: "none" }}>
           ← BACK TO OBSERVATION IN ATLAS

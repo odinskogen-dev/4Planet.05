@@ -348,4 +348,5 @@ test("Mission discovery is present in server HTML and hydrated client metadata",
   assert.match(missionPrerender, /Current development status/);
   assert.match(missionPrerender, /What this mission addresses/);
   assert.match(missionClient, /<Seo title=\{m\.name/);
+  assert.match(missionClient, /isPartOf: \{ "@type": "CollectionPage"/);
 });

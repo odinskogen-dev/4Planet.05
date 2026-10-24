@@ -1,3 +1,21 @@
+# 4PLANET MISSIONS — CANONICAL DISCOVERABILITY / HUMAN FIRST — 24 OCTOBER 2026
+
+**STATUS:** BOUNDED HEIR SOURCE DELIVERY / INDEPENDENT GOLD REQUESTED / NO LIVE OR INDEXATION CLAIM / NO FOUNDER RELEASE.
+
+**HUMAN VALUE:** People discovering an ocean, land, human-system or cultural mission through search should find a real, readable explanation of the mission's issue, ecological relevance, potential responses, 4PLANET's stated role and present development status, with access to the other missions. Search should not send them to an empty JavaScript shell or imply an unverified ecological outcome.
+
+**WHAT IS BUILT:** The existing canonical mission register supplies 16 slugs. The public sitemap lists only 14 locally owned mission URLs, excluding 4film and m4gazine whose live routes hand off to Magazine. The main build now pre-renders an HTML index and 14 textual mission pages using the original canonical mission content and explicit development-status text. Client MissionDetail owns its own title, self-canonical, meta-description and matching WebPage JSON-LD; original visual composition, content, links and mission behaviour remain unchanged.
+
+**TRUTH / SECURITY:** All 16 canonical mission source lists are currently empty. No new external claims, dates, partners, quantitative results or citations were invented. Indexability is not Google indexation. External culture destinations must not be duplicated as local mission URLs. Previews remain protected by existing noindex policy. No paid tool or live deployment.
+
+**TESTS / PROOF:** Run production build + mission source contract + sitemap generator + user-entry audit + product-authority gate + existing smoke. Verify generated dist/missions/index.html and all 14 dist/missions/<slug>/index.html have readable text, unique title, H1, self-canonical, correct robots and genuine links; verify SPA hydration leaves metadata congruent. Run mobile and desktop once immutable HEIR preview is available; independent Gold is required. QA does not substitute for Google/Bing URL Inspection.
+
+**AUTHORITY / ROLLBACK:** Existing issue #483, sole PR #131 and HEIR king/test only. No new sandbox, parallel content register or deployment. Revert the bounded Mission prerender/helper/client/contract changes if sources, production safety, product experience or hydrated metadata regress. The earlier sitemap-only commits remain identified separately for regression archaeology.
+
+**REQUEST FOR INDEPENDENT GOLD:** Review exact HEIR source and generated artifacts, ensure 14/16 canonical ownership, validate HTML/server/hydrated parity and confirm no draft/private or unsupported-claim leakage. Mark QA_ACCEPT only from independent evidence; release remains separate Founder gate.
+
+---
+
 # ATLAS DISCOVERY OBJECTS — EMBEDDED MAP JOURNEY — 24 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
