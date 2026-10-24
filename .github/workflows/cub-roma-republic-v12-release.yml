@@ -584,13 +584,16 @@ jobs:
             echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma-old-cannae.html' | sha256sum -c -
             curl -fsSL --max-time 35 "$host/roma/challenger-08/" -o /tmp/roma-old-ch08.html
             echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma-old-ch08.html' | sha256sum -c -
-            curl -fsSL "$host/games/roma/" | grep -Fq 'href="/roma/challenger-12/"'
-            curl -fsSL "$host/" | grep -Fq 'href="/rome/"'
-            curl -fsSL "$host/rome/" | grep -Fq 'ROMA: The Republic'
+            curl -fsSL "$host/games/roma/" -o /tmp/roma-version-page.html
+            grep -Fq 'href="/roma/challenger-12/"' /tmp/roma-version-page.html
+            curl -fsSL "$host/" -o /tmp/roma-cub-home.html
+            grep -Fq 'href="/rome/"' /tmp/roma-cub-home.html
+            curl -fsSL --max-time 45 "$host/rome/" -o /tmp/roma-v17-index.html
+            grep -Fq 'ROMA: The Republic' /tmp/roma-v17-index.html
             curl -fsSL --max-time 45 "$host/rome/index.html" -o /tmp/live-roma-v17.html
             echo 'c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8  /tmp/live-roma-v17.html' | sha256sum -c -
             curl -fsSL --max-time 30 "$host/rome/tiles/r0c0.jpg" -o /tmp/live-roma-v17-tile.jpg
             echo '521acd746e0108cda164ea04cfe1c5b4f6f3898c11bc8f867cb79a4cc0cc6aab  /tmp/live-roma-v17-tile.jpg' | sha256sum -c -
-            curl -fsSL "$host/games/roma/" | grep -Fq 'Play ROMA · Challenger V17'
+            grep -Fq 'Play ROMA · Challenger V17' /tmp/roma-version-page.html
             echo "ROMA_CH12_PRODUCTION_VERIFIED=$host/roma/challenger-12/"
           done
