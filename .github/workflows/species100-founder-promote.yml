@@ -40,6 +40,14 @@ jobs:
             assert http==200 and ("https://4species.com/"+slug).encode() in html
             if "noindex" not in head.get("X-Robots-Tag","").lower(): print("SPECIES100_PREVIEW_EDGE_NOINDEX_MISSING_NOTE_CANONICAL_PUBLIC_RELEASE_REQUIRED",slug,flush=True)
             assert prof["identity"]["scientificName"] and prof["slug"]==slug
+            if slug in new43:
+              hero=prof.get("hero") or {}
+              photo=(hero.get("url") or "").lower()
+              assert photo.endswith((".jpg",".jpeg",".png",".webp",".avif")),("No photographic media",slug)
+              assert "/final43/" not in photo and "editorial-card" not in photo,("Artwork is prohibited",slug)
+              assert all(hero.get(field) for field in ("credit","sourcePage","licence")),("Missing image attribution",slug)
+              assert prof.get("provenance",{}).get("photoVisualReview")=="GOLD",("Photo approval pending",slug)
+              assert prof.get("provenance",{}).get("sourceReview")=="GOLD",("Scientific approval pending",slug)
             if slug in old39+old18:
               live=json.loads(get(site+"/species-data/v1/"+slug+".json")[0])
               assert prof==live,("57 original drift",slug)
