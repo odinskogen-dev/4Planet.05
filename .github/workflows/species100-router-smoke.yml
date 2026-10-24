@@ -2,7 +2,7 @@ name: SPECIES100 Worker Additive Router Syntax Gate (NO LIVE)
 on:
   push:
     branches: [ops/species100-founder-live-20261024]
-    paths: [.github/workflows/species100-router-smoke.yml]
+    paths: [.github/workflows/species100-router-smoke.yml, ops/species100/patch-worker-additive.py]
 permissions: {contents: read}
 jobs:
   check:
