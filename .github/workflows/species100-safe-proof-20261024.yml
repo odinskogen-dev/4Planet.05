@@ -97,9 +97,9 @@ jobs:
             html,h,status=get(preview+"/"+slug)
             assert status==200 and "https://4species.com/"+slug in html.decode()
             if "noindex" not in (h.get("X-Robots-Tag","")+html.decode()).lower():
-            print("SPECIES100_RELEASE_HOLD_PREVIEW_NOT_NOINDEX",slug,flush=True)
-            checks_issue=slug
-          else: checks_issue=None
+              print("SPECIES100_RELEASE_HOLD_PREVIEW_NOT_NOINDEX",slug,flush=True)
+              checks_issue=slug
+            else: checks_issue=None
             hero=page["hero"]
             assert hero["url"].startswith("https://4species.com/assets/species/next61/")
             data,_,status=get(preview+urllib.parse.urlparse(hero["url"]).path)
