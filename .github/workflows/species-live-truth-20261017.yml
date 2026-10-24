@@ -1,0 +1,43 @@
+name: SPECIES Read-Only Live Status and Search Truth 20261017
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-live-truth-20261017.yml]
+permissions: {contents: read}
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - run: npm install --prefix /tmp/species-qa playwright@1.56.0
+      - run: /tmp/species-qa/node_modules/.bin/playwright install --with-deps chromium
+      - name: Inspect actual 4species.com source JSON, robot response, sitemap and hydrated SEO
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from '/tmp/species-qa/node_modules/playwright/index.mjs';
+          const base='https://4species.com';
+          const species=['orca','african-savanna-elephant','asian-elephant','bald-eagle','black-rhinoceros','blue-whale','bornean-orangutan','cheetah','chimpanzee','emperor-penguin','giant-panda','giraffe','gray-wolf','great-white-shark','green-sea-turtle','hippopotamus','jaguar','lion','monarch-butterfly','polar-bear','tiger','english-oak','western-honey-bee','fly-agaric','common-octopus','atlantic-puffin','sei-whale','eurasian-lynx','humpback-whale','sperm-whale','harbour-porpoise','bottlenose-dolphin','atlantic-cod','blue-mussel','whale-shark','leopard','eastern-gorilla','acropora-palmata','hyacinth-macaw'];
+          const fetchSafe=async(path)=>{try{let r=await fetch(base+path,{redirect:'follow',signal:AbortSignal.timeout(13000)});let t=await r.text();return {code:r.status,final:r.url,robots:r.headers.get('x-robots-tag'),gate:r.headers.get('x-4species-index-gate'),body:t,type:r.headers.get('content-type')};}catch(e){return {code:0,error:String(e).slice(0,95),body:''}}};
+          const sitemap=await fetchSafe('/sitemap.xml');
+          const speciesmap=await fetchSafe('/species-sitemap.xml');
+          const robot=await fetchSafe('/robots.txt');
+          const urls=[...sitemap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+          const surls=[...speciesmap.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+          console.log('SPECIES_LIVE_INDEX_FILES '+JSON.stringify({sitemapHttp:sitemap.code,sitemapURLs:urls.length,sitemapPaths:urls.map(x=>new URL(x).pathname),speciesSitemapHttp:speciesmap.code,speciesSitemapURLs:surls.length,speciesSitemapPaths:surls.map(x=>new URL(x).pathname),robotsHttp:robot.code,robotsHead:robot.body.slice(0,580)}));
+          const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+          const data=[];
+          for(let i=0;i<species.length;i++){
+            const slug=species[i];
+            const [html,json]=await Promise.all([fetchSafe('/'+slug),fetchSafe('/species-data/v1/'+slug+'.json')]);
+            let review=null,actualSlug=null,sci=null,sourceNum=0,sourceUnique=0;
+            try{const d=JSON.parse(json.body);review=d.provenance?.review||'UNKNOWN';actualSlug=d.slug;sci=d.identity?.scientificName;const src=[];const walk=x=>{if(Array.isArray(x))x.forEach(walk);else if(x&&typeof x==='object'){if(x.source?.url)src.push(x.source.url);Object.values(x).forEach(walk)}};walk(d);sourceNum=src.length;sourceUnique=new Set(src).size;}catch{}
+            const canonical=(html.body.match(/<link[^>]+rel="canonical"[^>]*href="([^"]+)"/i)||[])[1]||null;
+            const serverMeta=(html.body.match(/<meta[^>]+name="robots"[^>]*content="([^"]+)"/i)||[])[1]||null;
+            const og=(html.body.match(/<meta[^>]+property="og:image"[^>]*content="([^"]+)"/i)||[])[1]||null;
+            const row={slug,html:html.code,json:json.code,final:html.final?.replace(base,''),review,actualSlug,sci,sources:sourceNum,distinctSources:sourceUnique,headerRobots:html.robots,gate:html.gate,serverRobots:serverMeta,canonical,ogImage:og?.replace(base,''),inSitemap:urls.includes(base+'/'+slug),inSpeciesSitemap:surls.includes(base+'/'+slug),includesSpeciesName:sci?html.body.includes(sci):null};
+            if(['orca','lion','tiger','english-oak','humpback-whale','atlantic-cod'].includes(slug)){const p=await browser.newPage({viewport:{width:390,height:844}});try{await p.goto(base+'/'+slug,{waitUntil:'domcontentloaded',timeout:20000});await p.waitForTimeout(900);row.hydrated=await p.evaluate(()=>({title:document.title,robots:document.querySelector('meta[name="robots"]')?.content,canonical:document.querySelector('link[rel="canonical"]')?.href,h1:document.querySelector('h1')?.innerText.slice(0,75),spx:!!document.querySelector('.spx')}));}catch(e){row.hydrationError=String(e).slice(0,120)}await p.close();}
+            data.push(row);console.log('SPECIES_LIVE_PROFILE '+JSON.stringify(row));
+          }
+          const page=await browser.newPage({viewport:{width:1440,height:900}});await page.goto(base+'/explore',{waitUntil:'domcontentloaded',timeout:30000});await page.waitForTimeout(1100);let cards=await page.evaluate(()=>[...document.querySelectorAll('.spx-card')].map(x=>({slug:x.getAttribute('data-card'),source:!!x.querySelector('a.spx-card-source')})));await page.close();await browser.close();
+          console.log('SPECIES_LIVE_SUMMARY '+JSON.stringify({checked:data.length,profilesWithJSON:data.filter(x=>x.json===200&&x.actualSlug===x.slug).length,drafts:data.filter(x=>x.review==='DRAFT').length,reviewed:data.filter(x=>x.review==='REVIEWED').length,knownSitesIndexable:data.filter(x=>x.html===200&&!x.headerRobots?.includes('noindex')&&x.inSitemap).length,explicitNoindex:data.filter(x=>x.headerRobots?.includes('noindex')).map(x=>x.slug),cards:cards.length,cardSlugs:cards.map(x=>x.slug),missingCardSources:cards.filter(x=>!x.source).map(x=>x.slug),sitemapUrls:urls.length,speciesSitemapUrls:surls.length,missingProfile:cards.filter(c=>!data.some(x=>x.slug===c.slug&&x.actualSlug===c.slug)).map(x=>x.slug)}));
+          NODE

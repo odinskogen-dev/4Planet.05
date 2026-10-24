@@ -1,0 +1,85 @@
+name: SPECIES Restore Proven 28 Premium Profiles to Production
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-restore-28-live-20261017.yml]
+permissions: {contents: read}
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      EXPECTED_BAD_VERSION: 06560aa5-adcc-497d-bfab-cd7927222eb4
+      ACCEPTED_GOOD_VERSION: cb8fb25c-71e0-4f5a-af89-21436971100d
+      PREVIEW: https://72494005.4planet-05.pages.dev
+    steps:
+      - name: Confirm exact independent all-28 browser proof and immutable release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          proof=$(curl -fsS --max-time 25 -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/39020380308")
+          jq -e '.conclusion=="success" and .name=="SPECIES Restore 28 Claude Host-Mapped Gold-Safety Preview"' <<<"$proof" >/dev/null
+          for slug in orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
+            data=$(curl -fsSL --retry 2 --max-time 20 "$PREVIEW/species-data/v1/$slug.json")
+            jq -e --arg slug "$slug" '.slug==$slug and .schema=="4PLANET_SPECIES_PAGE_01" and .identity.scientificName!=null and (.glance|length)>0 and (.provenance.review=="DRAFT" or .provenance.review=="REVIEWED")' <<<"$data" >/dev/null
+          done
+          echo "SPECIES_IMMUTABLE_28_CLAUDE_PROFILES_PRECHECK_PASS"
+      - name: Exact Worker-version restore; automatically revert on smoke failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          cf=https://api.cloudflare.com/client/v4
+          headers=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+          zone_data=$(curl -fsS "${headers[@]}" "$cf/zones?name=4species.com")
+          account=$(jq -r '.result[0].account.id // ""' <<<"$zone_data")
+          test -n "$account"
+          endpoint="$cf/accounts/$account/workers/scripts/4species-router/deployments"
+          current=$(curl -fsS "${headers[@]}" "$endpoint" | jq -r '.result.deployments[0].versions[0].version_id')
+          if [ "$current" != "$EXPECTED_BAD_VERSION" ]; then
+            echo "BLOCKED: worker changed; do not overwrite concurrent production version: $current";exit 1
+          fi
+          deploy() {
+            version="$1"
+            payload=$(jq -nc --arg v "$version" '{strategy:"percentage",versions:[{version_id:$v,percentage:100}],annotations:{"workers/message":"Founder SPECIES recovery 2026-10-17; restore accepted v53 with 28 proven premium full articles; keep previous for rollback"}}')
+            response=$(curl -fsS --max-time 35 "${headers[@]}" -X POST "$endpoint" --data "$payload")
+            jq -e '.success==true' <<<"$response" >/dev/null
+          }
+          restored=false
+          on_exit() {
+            code=$?
+            if [ "$restored" != true ]; then
+              echo "REVERTING: restore failed QA; roll back exact prior Worker version"
+              deploy "$EXPECTED_BAD_VERSION" || echo "URGENT: automatic rollback failed; manual intervention needed"
+            fi
+            exit "$code"
+          }
+          trap on_exit EXIT
+          deploy "$ACCEPTED_GOOD_VERSION"
+          sleep 4
+          failures=0
+          for slug in orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx; do
+            json=$(curl -fsSL --retry 2 --max-time 20 "https://4species.com/species-data/v1/$slug.json" || true)
+            good=$(jq -r --arg s "$slug" 'if (.slug==$s and .schema=="4PLANET_SPECIES_PAGE_01") then "yes" else "no" end' <<<"$json" 2>/dev/null || echo no)
+            html_file=$(mktemp)
+            head_file=$(mktemp)
+            code=$(curl -sSL --retry 2 --max-time 20 -D "$head_file" -o "$html_file" -w '%{http_code}' "https://4species.com/$slug" || true)
+            if [ "$good" != yes ] || [ "$code" != 200 ] || ! grep -Fq "https://4species.com/$slug" "$html_file"; then
+              echo "FAIL_ARTICLE $slug json=$good html=$code canonical=$(grep -o 'rel="canonical"[^>]*' "$html_file"|head -c 95)"
+              failures=$((failures+1))
+            else
+              echo "SPECIES_RESTORED_PROFILE $slug"
+            fi
+            rm -f "$html_file" "$head_file"
+          done
+          if [ "$failures" != 0 ]; then echo "BLOCK_RELEASE_BAD_ARTICLES $failures"; exit 1; fi
+          final=$(curl -fsS "${headers[@]}" "$endpoint"|jq -r '.result.deployments[0].versions[0].version_id')
+          test "$final" = "$ACCEPTED_GOOD_VERSION"
+          restored=true
+          trap - EXIT
+          echo "SPECIES_RESTORED_28_PREMIUM_ARTICLES_ON_LIVE_PASS"
+          echo "Previous Worker version $EXPECTED_BAD_VERSION preserved in Cloudflare for rollback" >> "$GITHUB_STEP_SUMMARY"
+          echo "28 distinct founder-authorised pre-existing Claude full profiles delivered. REVIEW/rights Gold still per-art work; never claim all 39." >> "$GITHUB_STEP_SUMMARY"

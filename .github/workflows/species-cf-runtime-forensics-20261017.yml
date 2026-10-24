@@ -1,0 +1,42 @@
+name: SPECIES Cloudflare Actual Runtime Forensics 20261017
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-cf-runtime-forensics-20261017.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Read-only Cloudflare deployment history for 4species.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "SPECIES_CF_AUDIT_TOKEN_MISSING"; exit 1; fi
+          base=https://api.cloudflare.com/client/v4
+          headers=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN")
+          zones="$(curl -fsS --max-time 25 "${headers[@]}" "$base/zones?name=4species.com")"
+          z="$(jq -r '.result[0].id // ""' <<<"$zones")"
+          a="$(jq -r '.result[0].account.id // ""' <<<"$zones")"
+          test -n "$z" && test -n "$a"
+          echo "SPECIES_CF_ZONE_IDENTIFIED"
+          for path in "accounts/$a/workers/scripts/4species-router/deployments" "accounts/$a/workers/scripts/4species-router/versions?per_page=15" "accounts/$a/workers/routes?zone_id=$z" "zones/$z/workers/routes" "accounts/$a/pages/projects/4planet-05/deployments?per_page=15"; do
+            file="/tmp/audit-$RANDOM.json"
+            code="$(curl -sS --max-time 25 -w '%{http_code}' -o "$file" "${headers[@]}" "$base/$path" || true)"
+            echo "SPECIES_CF_AUDIT_ENDPOINT $(echo "$path" | sed -E 's#accounts/[^/]+/#accounts/ACCOUNT/#g;s#zones/[^/]+/#zones/ZONE/#g') HTTP $code"
+            if [ "$code" = 200 ]; then
+              jq -c '{success,errors,items:(.result|if type=="array" then .[:12] | map({id,created_on,modified_on,updated_on,created_at,version_id,versions,deployment_id,environment,aliases,branch,latest_stage:{name:(.stages[-1].name // null),status:(.stages[-1].status // null)},url,pattern,script}) else {id,deployments:(.deployments // [])[:12],name,latest_version,created_on,modified_on} end)}' "$file" | head -c 12000
+              echo
+            else
+              jq -c '{success,errors}' "$file" 2>/dev/null | head -c 800 || true; echo
+            fi
+          done
+          for path in "/" "/orca" "/lion" "/english-oak" "/sitemap.xml"; do
+            f="/tmp/page-$(echo "$path" | tr '/' '_').txt"
+            c="$(curl -sSL -D "$f" -o /dev/null -w '%{http_code}' --max-time 20 "https://4species.com$path" || true)"
+            echo "SPECIES_CF_LIVE_HTTP $path $c"
+            grep -Ei '^(HTTP/|x-robots-tag:|x-4species-release:|x-4species-index-gate:|cf-ray:|server:|location:)' "$f" | tail -n 11 || true
+          done
