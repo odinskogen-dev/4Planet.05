@@ -1,6 +1,6 @@
 # ROMA ITERATION 37 — GATED DEPLOYMENT, NOT LIVE
 
-24 October 2026 — CUB release staging only. DO NOT MERGE this branch until the exact new game code and 240 NASA imagery tiles are available. This branch contains **no Iteration 37 game assets** and must not be described as having published them.
+24 October 2026 — founder expressly requested LIVE. This branch is approved ONLY for publication of the existing verified Challenger 12 as a transparent temporary /rome/ fallback, while retaining all original builds. This branch contains **no Iteration 37 game assets** and must not be described as having published them. The exact Iteration 37 binary remains blocked pending the 240 required tiles.
 
 ## Source evidence
 - Founder-provided `HANDOFF TO GPT AXE 6.md` states Iteration 37 exists in Claude's workspace, but does **not** include its `publish/web/index.html` nor the directory `public/tiles`.
