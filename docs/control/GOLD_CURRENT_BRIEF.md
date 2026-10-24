@@ -56,19 +56,19 @@
 
 **USER ARRIVES BECAUSE:** consented analytics must preserve useful anonymous public-product events without sending values shaped like personal identity, telephone or payment-card data to GA4 or PostHog.
 
-**ROOT CAUSE:** the key allowlist restricted telemetry property names, but `legal_identity`, `source_id`, `object_id` and `product_key` still shared the generic token validator. Arbitrary long digit strings therefore survived through the common payload into both sinks.
+**ROOT CAUSE:** the key allowlist restricted telemetry property names, but identifier values were not governed uniformly. The first bounded correction covered `legal_identity`, `source_id`, `object_id` and `product_key`; independent Gold then proved that long identity/card-shaped digit sequences still survived in `actor_id`, `project_id`, `action_id`, `campaign_id`, `object_slug` and `event_id` and reached both sinks.
 
-**CORRECTION:** apply field-specific public semantics before the generic token path: `legal_identity` is the bounded `brreg_exact|unresolved` state; `source_id` is a `source:` namespace; `object_id` is a public slug/namespaced identifier; `product_key` is a public slug. All four reject raw or embedded runs of seven or more digits. Existing consent, host, sensitive-navigation and shared-sink controls remain unchanged.
+**CORRECTION:** apply field-specific public semantics before the generic token path for every allowlisted public identifier/slug field, including the six returned fields. Legitimate public namespaced IDs and slugs remain accepted; raw or embedded runs of seven or more digits are rejected uniformly. Existing consent, host, sensitive-navigation and shared-sink controls remain unchanged.
 
-**REGRESSION EVIDENCE:** the exact four synthetic Gold values fail before correction and are removed after correction. The executable harness runs the real `trackEvent` and `dispatchAnalyticsEvent` bodies with consent granted on an allowed host and proves both mocked GA4 and PostHog receive only `product_area` plus the canonical site/path fields. Positive cases protect the current BRREG state, IMR source namespace, object slug and live market-product slug.
+**REGRESSION EVIDENCE:** the six exact returned Gold values fail on the immutable baseline and are removed after correction. The executable harness runs the real `trackEvent` and `dispatchAnalyticsEvent` bodies with consent granted on an allowed host and proves both mocked GA4 and PostHog receive only `product_area` plus the canonical site/path fields. Positive cases protect the current IMPACT action/project/actor IDs, BRREG state, IMR source namespace, object/species slugs and live market-product slug.
 
 **WHAT MUST BE REUSED:** PR #476, PR #131 lawful `king/test` HEIR, the existing explicit key allowlist, consent/host/navigation gates, shared sanitised payload and both analytics sinks.
 
 **TRUTH BOUNDARY:** passing proves only the bounded synthetic confidentiality contract on the exact HEIR code. It does not assert a real personal-data leak, production deployment, LIVE safety, user use or impact.
 
-**BASE / ROLLBACK:** `king/test@05ee4a3de7d60fb687d5ccf7df4cfaf46792fd3c`; revert the returned three-file correction if independent Gold finds a legitimate public-ID, consent, dispatch or sink regression.
+**BASE / ROLLBACK:** `king/test@0dfaad01ccf275edc015a0e383fd15030eae338a`; revert this returned three-file correction if independent Gold finds a legitimate public-ID, consent, dispatch or sink regression.
 
-**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the four exact synthetic values through both sinks, the four positive public values, retained historical bypasses and dispatch gates on the exact returned SHA.
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must rerun the six exact returned values through both sinks, the protected positive public values, retained historical bypasses and dispatch gates on the exact returned SHA.
 
 ---
 

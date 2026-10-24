@@ -325,15 +325,22 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     lifecycle_stage: new Set(["STATE", "DECISION", "ACTION", "OUTCOME", "PROOF", "RETURN"]),
     evidence_state: new Set(["SOURCE_REFERENCED", "USER_CONFIRMED", "DEMO_FIXTURE_NOT_VERIFIED", "UNKNOWN"]),
   };
-  const publicCanonicalContextIdPatterns: Record<string, RegExp> = {
+  const publicIdentifierValuePatterns: Record<string, RegExp> = {
+    action_id: /^action:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}$/,
     actor_id: /^(?:actor:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}|P17-A[0-9]{3,})$/,
-    project_id: /^project:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}$/,
-  };
-  const publicCanonicalValuePatterns: Record<string, RegExp> = {
+    campaign_id: /^(?:campaign:[a-z0-9][a-z0-9._:-]{0,119}|[a-z][a-z0-9._-]{0,99})$/,
+    canonical_entity: /^(?:[a-z][a-z0-9._-]{0,99}|[a-z][a-z0-9._-]{0,39}:[a-z0-9][a-z0-9._:-]{0,119})$/,
+    event_id: /^(?:event:[a-z0-9][a-z0-9._:-]{0,119}|[a-z][a-z0-9._-]{0,99})$/,
     legal_identity: /^(?:brreg_exact|unresolved)$/,
-    source_id: /^source:[a-z][a-z0-9._-]{0,119}$/,
     object_id: /^(?:[a-z][a-z0-9._-]{0,79}|[a-z][a-z0-9._-]{0,39}:[a-z0-9][a-z0-9._:-]{0,119})$/,
+    object_slug: /^[a-z][a-z0-9._-]{0,99}$/,
+    opportunity_id: /^(?:opportunity:[a-z0-9][a-z0-9._:-]{0,119}|[a-z][a-z0-9._-]{0,99})$/,
     product_key: /^[a-z][a-z0-9._-]{0,99}$/,
+    project_id: /^project:4p:impact:[a-z0-9][a-z0-9._:-]{0,119}$/,
+    public_slug: /^[a-z][a-z0-9._-]{0,99}$/,
+    source_id: /^source:[a-z][a-z0-9._-]{0,119}$/,
+    species_slug: /^[a-z][a-z0-9._-]{0,99}$/,
+    variant_id: /^(?:variant:[a-z0-9][a-z0-9._:-]{0,119}|[a-z][a-z0-9._-]{0,99})$/,
   };
   const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
   const tokenValue = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
@@ -354,21 +361,13 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
       if (typeof value === "boolean") safe[key] = value;
       continue;
     }
-    const canonicalContextIdPattern = publicCanonicalContextIdPatterns[key];
-    if (canonicalContextIdPattern) {
-      if (typeof value === "string") {
-        const bounded = value.trim();
-        if (canonicalContextIdPattern.test(bounded)) safe[key] = bounded;
-      }
-      continue;
-    }
-    const publicCanonicalValuePattern = publicCanonicalValuePatterns[key];
-    if (publicCanonicalValuePattern) {
+    const publicIdentifierValuePattern = publicIdentifierValuePatterns[key];
+    if (publicIdentifierValuePattern) {
       if (typeof value === "string") {
         const bounded = value.trim();
         // Public canonical IDs are namespaced/slugs, never raw long digit sequences
         // that can be mistaken for identity, telephone or payment-card data.
-        if (!/\d{7,}/.test(bounded) && publicCanonicalValuePattern.test(bounded)) safe[key] = bounded;
+        if (!/\d{7,}/.test(bounded) && publicIdentifierValuePattern.test(bounded)) safe[key] = bounded;
       }
       continue;
     }

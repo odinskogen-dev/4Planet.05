@@ -20,6 +20,8 @@ function functionSource(name) {
   return declaration.getText(sourceFile);
 }
 
+let analyticsRuntimeSequence = 0;
+
 const isolated = [
   "decodeForAnalyticsInspection",
   "hasUnsupportedNestedAnalyticsEncoding",
@@ -58,7 +60,8 @@ function analyticsRuntime() {
   const runtimeTranspiled = ts.transpileModule(runtimeSource, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
   }).outputText;
-  return import("data:text/javascript;base64," + Buffer.from(runtimeTranspiled).toString("base64"));
+  analyticsRuntimeSequence += 1;
+  return import("data:text/javascript;base64," + Buffer.from(runtimeTranspiled).toString("base64") + `#runtime=${analyticsRuntimeSequence}`);
 }
 
 test("keeps useful anonymous product events", () => {
@@ -158,6 +161,17 @@ test("enforces public value semantics for identity and canonical ID fields", () 
   }), {});
 });
 
+test("rejects identity-shaped values in every returned identifier field", () => {
+  assert.deepEqual(privacySafeEventParameters({
+    actor_id: "actor:4p:impact:11029912345",
+    project_id: "project:4p:impact:4111111111111111",
+    action_id: "action:4p:impact:11029912345",
+    campaign_id: "11029912345",
+    object_slug: "11029912345",
+    event_id: "4111111111111111",
+  }), {});
+});
+
 test("drops identity-shaped values before BOTH analytics sinks", async () => {
   const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
   assert.equal(trackEvent("test_event", {
@@ -177,6 +191,31 @@ test("drops identity-shaped values before BOTH analytics sinks", async () => {
   });
   assert.deepEqual(postHogEvents[0][1], {
     product_area: "species",
+    site_host: "4planet.org",
+  });
+});
+
+test("drops returned identifier bypasses before BOTH analytics sinks", async () => {
+  const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
+  assert.equal(trackEvent("test_event", {
+    product_area: "impact",
+    actor_id: "actor:4p:impact:11029912345",
+    project_id: "project:4p:impact:4111111111111111",
+    action_id: "action:4p:impact:11029912345",
+    campaign_id: "11029912345",
+    object_slug: "11029912345",
+    event_id: "4111111111111111",
+  }), true);
+
+  assert.equal(ga4Events.length, 1);
+  assert.equal(postHogEvents.length, 1);
+  assert.deepEqual(ga4Events[0][2], {
+    product_area: "impact",
+    site_host: "4planet.org",
+    page_location: "https://4planet.org/species/orca",
+  });
+  assert.deepEqual(postHogEvents[0][1], {
+    product_area: "impact",
     site_host: "4planet.org",
   });
 });
