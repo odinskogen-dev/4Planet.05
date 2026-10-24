@@ -270,7 +270,8 @@ jobs:
           grep -Fq 'href="/roma/challenger-12/"' site/games/roma/index.html
           grep -Fq 'href="/roma/"' site/games/roma/index.html
           grep -Fq 'href="/roma/challenger-08/"' site/games/roma/index.html
-          grep -Fq 'href="/roma/challenger-12/"' site/index.html
+          grep -Fq 'href="/rome/"' site/index.html
+          grep -Fq 'url=/roma/challenger-12/' site/rome/index.html
           grep -Fq 'href="/roma/"' site/index.html
           rm -rf site/roma/challenger-12/source
           echo 'ROMA_CH12_SAFE_RELEASE_READY'
