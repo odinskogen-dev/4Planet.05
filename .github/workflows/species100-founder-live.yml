@@ -337,5 +337,55 @@ jobs:
           f.write_text(base+"\n\n## 43 Additional Species\n"+"\n".join(extra)+"\n")
           PY
           echo SPECIES100_STATIC_ORIGIN_READY_TO_QA
-      - name: Pending release wiring
-        run: echo WORKFLOW_DRAFT_ONLY_NOT_PUBLISHED
+      - name: Deploy immutable candidate to isolated Cloudflare Pages (NOT LIVE)
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          cd ../species-v53-build
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch species100-founder-candidate --commit-hash "$GITHUB_SHA" --commit-message "SPECIES100 ADDITIVE 43 — noindex preview only" 2>&1 | tee /tmp/species100-preview.log
+          url=$(grep -Eo 'https://[A-Za-z0-9.-]+\.4planet-05\.pages\.dev' /tmp/species100-preview.log | head -n 1)
+          test -n "$url"
+          echo "SPECIES100_ORIGIN=$url" >> "$GITHUB_ENV"
+          echo "SPECIES100_PINNED_NO_LIVE_ORIGIN $url"
+      - name: Read-only QA 100 static candidate profiles, 57 unchanged and preview noindex
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,urllib.request,concurrent.futures,os
+          site="https://4species.com";base=os.environ["SPECIES100_ORIGIN"]
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          live18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          new43=[x["slug"] for x in json.loads(Path("reports/species100/prepare-43.json").read_text())["profiles"]]
+          assert len(set(old39+live18+new43))==100
+          def get(url):
+            req=urllib.request.Request(url,headers={"User-Agent":"SPECIES100-READONLY-STAGE/20261024","Cache-Control":"no-cache"})
+            with urllib.request.urlopen(req,timeout=35) as r:return r.read(),dict(r.headers),r.status
+          def check(slug):
+            body,_,status=get(base+"/species-data/v1/"+slug+".json")
+            p=json.loads(body)
+            assert status==200 and p["slug"]==slug and p["identity"]["scientificName"],slug
+            html,headers,code=get(base+"/"+slug)
+            assert code==200 and (site+"/"+slug).encode() in html,("Bad static HTML",slug)
+            assert "noindex" in headers.get("X-Robots-Tag","").lower(),("PREVIEW_NOINDEX_MISSING",slug)
+            photo=p["hero"]["url"].replace(site,"")
+            assert photo.startswith("/assets/species/"),("Bad media URL",slug)
+            if slug in new43:
+              b,h,c=get(base+photo)
+              assert c==200 and len(b)>500 and h.get("Content-Type","").startswith(("image/","application/octet-stream")),("Image not available",slug)
+            else:
+              snapshot=json.loads(get(site+"/species-data/v1/"+slug+".json")[0])
+              assert p==snapshot,("EXISTING57_SOURCE_CHANGED",slug)
+            return slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:
+            names=list(ex.map(check,old39+live18+new43))
+          assert len(names)==100
+          print("SPECIES100_PRELIVE_IMMUTABLE_PREVIEW100_OK_57_UNCHANGED_43_STAGED",flush=True)
+          PY
+      - name: Candidate only - no live deployment in this QA workflow
+        run: echo SPECIES100_ISOLATED_QA_ONLY_NO_LIVE_DEPLOY
