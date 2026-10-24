@@ -178,3 +178,26 @@ a:hover{color:#fff}a:focus-visible,button:focus-visible{outline:2px solid white;
  .partner h2{font-size:47px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}
+
+
+/* CUB premium brand preview 01: make first player action unmistakable.
+   Private review branch only; no game binaries touched. */
+.hero-cta-stack{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px;margin-top:25px}
+.hero-cta-stack .btn{min-height:48px;display:inline-flex;align-items:center;gap:16px;font-size:14px}
+.hero-cta-stack .hero-primary{background:#d7ff64;color:#111;border:1px solid #d7ff64;padding:13px 19px;justify-content:center;transition:background-color .2s ease,border-color .2s ease}
+.hero-cta-stack .hero-primary:hover{background:#ebffa8;border-color:#ebffa8;color:#111}
+.hero-cta-stack .hero-primary .arrow{color:#111}
+.hero-cta-stack .hero-secondary{border-color:rgba(255,255,255,.55)}
+.hero-buildnote{width:100%;margin:0!important;font-size:12px!important;line-height:1.5!important;color:var(--dim)!important}
+.site-nav .nav-links a{display:inline-flex;align-items:center;min-height:44px}
+.roma-build-switch .btn{min-height:44px}
+@media(max-width:760px){
+ .studio-hero .intro-aside{max-width:100%}
+ .hero-cta-stack{margin-top:18px}
+}
+@media(max-width:530px){
+ .hero-cta-stack{gap:12px}
+ .hero-cta-stack .hero-primary{width:100%;justify-content:space-between}
+ .hero-cta-stack .hero-secondary{width:100%;justify-content:space-between}
+}
+@media(prefers-reduced-motion:reduce){.hero-cta-stack .hero-primary{transition:none}}
