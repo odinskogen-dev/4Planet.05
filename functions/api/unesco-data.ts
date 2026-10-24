@@ -116,7 +116,7 @@ const recordIdentity = (dataset: DatasetKey, record: unknown) => {
 export const onRequestGet = async ({ request }: { request: Request }) => {
   const url = new URL(request.url);
   const dataset = url.searchParams.get("dataset") as DatasetKey | null;
-  if (!dataset || !(dataset in DATASETS)) {
+  if (!dataset || !Object.prototype.hasOwnProperty.call(DATASETS, dataset)) {
     return json({ ok: false, error: "UNSUPPORTED_DATASET" }, 400, 60);
   }
 
