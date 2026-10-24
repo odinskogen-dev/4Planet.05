@@ -153,9 +153,27 @@ test("a genuinely empty dataset remains a valid complete response", async () => 
 });
 
 test("unsupported datasets return 400 without contacting upstream", async () => {
+  for (const dataset of ["unknown", "__proto__", "constructor", "toString"]) {
+    let calls = 0;
+    const response = await loadHandler(async () => { calls += 1; })({ request: request(dataset) });
+    assert.equal(response.status, 400, `${dataset} must fail closed`);
+    assert.equal((await response.json()).error, "UNSUPPORTED_DATASET");
+    assert.equal(calls, 0, `${dataset} must not contact upstream`);
+  }
+});
+
+test("an own allowlisted dataset key remains accepted", async () => {
   let calls = 0;
-  const response = await loadHandler(async () => { calls += 1; })({ request: request("unknown") });
-  assert.equal(response.status, 400);
-  assert.equal((await response.json()).error, "UNSUPPORTED_DATASET");
-  assert.equal(calls, 0);
+  const response = await loadHandler(async () => {
+    calls += 1;
+    return new Response(JSON.stringify({ total_count: 0, results: [] }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  })({ request: request("cou001") });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.equal(body.dataset, "cou001");
+  assert.equal(calls, 1);
 });
