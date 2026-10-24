@@ -96,7 +96,10 @@ jobs:
             assert len(facts)>=8 and len(sources)>=3,("Insufficient facts/sources",slug)
             html,h,status=get(preview+"/"+slug)
             assert status==200 and "https://4species.com/"+slug in html.decode()
-            assert "noindex" in (h.get("X-Robots-Tag","")+html.decode()).lower(),("Preview MUST remain noindex",slug)
+            if "noindex" not in (h.get("X-Robots-Tag","")+html.decode()).lower():
+            print("SPECIES100_RELEASE_HOLD_PREVIEW_NOT_NOINDEX",slug,flush=True)
+            checks_issue=slug
+          else: checks_issue=None
             hero=page["hero"]
             assert hero["url"].startswith("https://4species.com/assets/species/next61/")
             data,_,status=get(preview+urllib.parse.urlparse(hero["url"]).path)
@@ -104,13 +107,15 @@ jobs:
             assert digest==approvals[slug]["sha256"]==page["provenance"]["photoSha256"],("Hero identity/rights digest mismatch",slug)
             assert all(hero.get(k) for k in ("credit","licence","sourcePage","alt"))
             assert page["provenance"]["review"]=="DRAFT"
-            checks.append({"slug":slug,"url":preview+"/"+slug,"facts":len(facts),"documents":len(sources),"photoSha256":digest,"photoBytes":len(data),"independentGold":False})
+            checks.append({"slug":slug,"url":preview+"/"+slug,"facts":len(facts),"documents":len(sources),"photoSha256":digest,"photoBytes":len(data),"previewNoindex":checks_issue is None,"independentGold":False})
             print("SPECIES100_PREVIEW4_SOURCE_PHOTO_CANONICAL_PASS",slug,flush=True)
           catalog=json.loads(get(preview+"/species-data/v1/index.json")[0])
           slugs=[p["slug"] for p in catalog["pages"]]
           assert len(slugs)==61 and len(set(slugs))==61 and set(slugs)==set(old39+new18+preview4),("Exactly 61 verified preview pages required",len(slugs))
           Path("evidence/preview4-qa.json").write_text(json.dumps(checks,indent=2))
-          print("SPECIES100_EXACT_PREVIEW61_PASS_NO_LIVE_DEPLOY",flush=True)
+          print("SPECIES100_EXACT_PREVIEW61_DATA_PASS_NO_LIVE_DEPLOY",flush=True)
+          if any(not row["previewNoindex"] for row in checks):
+            raise SystemExit("RELEASE_HOLD: Public preview includes indexable unapproved species routes; requires noindex before Gold/production")
           PY
       - name: Preserve audit evidence
         if: always()
