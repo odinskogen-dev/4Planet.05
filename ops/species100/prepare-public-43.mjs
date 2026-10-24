@@ -32,12 +32,19 @@ for(const file of fs.readdirSync(DIR)){
   const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 960"><rect width="1600" height="960" fill="#f0f5f0"/><circle cx="1230" cy="230" r="410" fill="#e1eae0"/><path d="M0 850Q300 530 720 800T1600 710V960H0" fill="#d9e6d8"/><circle cx="260" cy="270" r="95" fill="none" stroke="#bacbb9" stroke-width="2"/><path d="M205 300Q258 145 320 260" fill="none" stroke="#a8bea6" stroke-width="3"/><text x="110" y="540" fill="#173d30" font-family="Arial,Helvetica,sans-serif" font-size="76" font-weight="600">'+esc(common)+'</text><text x="112" y="614" fill="#456957" font-family="Arial,Helvetica,sans-serif" font-size="31" font-style="italic">'+esc(p.identity.scientificName)+'</text><text x="112" y="760" fill="#597468" font-family="Arial,Helvetica,sans-serif" font-size="24">4SPECIES · ORIGINAL EDITORIAL CARD · PHOTOGRAPH UNDER REVIEW</text></svg>';
   const filename=p.slug+"-editorial-card.svg";
   fs.writeFileSync(path.join(MEDIA,filename),svg);
-  p.hero={url:"https://4species.com/assets/species/final43/"+filename,alt:"4SPECIES editorial card for "+common+"; not a wildlife photograph",credit:"4PLANET original editorial artwork",licence:"Copyright 4PLANET — original illustrative placeholder",sourcePage:"https://4species.com/"+p.slug,focus:"50% 50%"};
+  p.hero={url:"https://4species.com/assets/species/final43/"+filename,alt:"4SPECIES editorial card for "+common+"; not a wildlife photograph",credit:"4PLANET original editorial artwork",licence:"CC BY 4.0",sourcePage:"https://4species.com/"+p.slug,focus:"50% 50%"};
   report.editorialWorkingImagePlaceholders.push(p.slug);
  } else {
   report.photographsExternallySigned4.push(p.slug);
  }
  p.gallery=[];
+ // Preserve sourced text but repair genuinely empty editor labels without inventing additional facts.
+ for(const [topic,claims] of Object.entries(p.facts||{})){
+   if(!Array.isArray(claims))continue;
+   for(const claim of claims){
+     if(!claim.label&&claim.text)claim.label=String(claim.text).split(/[.!?]/)[0].trim().slice(0,80);
+   }
+ }
  p.provenance={...p.provenance,review:"DRAFT",founderRelease:"SPECIES100_FOUNDATION_2026-10-24",sourceReview:"INDEPENDENT_GOLD_PENDING",photoVisualReview:signed4.has(p.slug)?"EXACT_PHOTO_MATCH_NOT_INDEPENDENT_GOLD":"PHOTO_PENDING",photographyReview:signed4.has(p.slug)?"RIGHTS_METADATA_PRESENT_UNDER_REVIEW":"ORIGINAL_EDITORIAL_ART_ONLY",published:true,publicEditorialCaveat:true};
  fs.writeFileSync(path.join(DIR,file),JSON.stringify(p,null,2)+"\n");
  report.profiles.push({slug:p.slug,scientificName:p.identity.scientificName,hasLicensedPhoto:signed4.has(p.slug),draftScience:!p.provenance.sourcePackStage1});
