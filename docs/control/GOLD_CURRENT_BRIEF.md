@@ -2181,6 +2181,8 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **RETURN CORRECTION — 24 OCTOBER 2026:** Independent Gold found that the new client SEO owner used a different title and description from the existing server projection. The bounded correction keeps the server-approved Story metadata unchanged through hydration and adds source plus desktop/mobile browser parity coverage for raw response, hydration and SPA away/back. Visible Story copy and layout remain unchanged. Base/rollback is `king/test@f865ba226341f3af00452a7823b3474c90cfaf93`; independent re-Gold remains required.
 
+**SECOND RETURN CORRECTION — 24 OCTOBER 2026:** Independent Gold correctly rejected unconditional raw/client robots equality on preview hosts. The existing Cloudflare middleware already applies `X-Robots-Tag: noindex, nofollow, noarchive` and `Cache-Control: no-store` to `test.4planet.org`, `*.pages.dev` and localhost responses while leaving `4planet.org` indexable. This correction adds an exact `/about/story/` raw-response regression on that owning middleware path and makes the browser proof environment-aware: the prerendered production artifact remains indexable, preview hydration must be noindex, and title, description, canonical path and owned graph remain stable through SPA return. No global `_headers` noindex is added. Base/rollback is `king/test@5bf9e998b4187256444c7016053e50d70d1a0368`; independent re-Gold remains required.
+
 # FLAGSHIP JOURNEYS — SOURCE HTML SEARCH + SHARE METADATA — 23 OCTOBER 2026
 
 **STATUS:** CONFIRMED MAX EXPOSURE DEFECT / BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO LIVE RELEASE.

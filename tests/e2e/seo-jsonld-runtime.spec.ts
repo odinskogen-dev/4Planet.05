@@ -7,6 +7,8 @@ const OWNED_JSON_LD = [
 ].join(",");
 
 const RAW_ROUTES = ["/species/orca/", "/place/kenya/", "/atlas/"] as const;
+const PRODUCTION_ROBOTS = "index,follow,max-image-preview:large";
+const PRIVATE_ROBOTS = "noindex,nofollow,noarchive";
 
 function normalisePath(pathname: string) {
   return pathname === "/" ? pathname : pathname.replace(/\/$/, "");
@@ -105,17 +107,19 @@ test.describe("structured-data runtime ownership", () => {
     await expect(page.locator("#third-party-jsonld-proof")).toHaveCount(1);
   });
 
-  test("About Story keeps raw metadata through hydration and SPA return", async ({ page, request }) => {
+  test("About Story keeps metadata while preview hydration fails closed", async ({ page, request }) => {
     const response = await request.get("/about/story/");
     expect(response.ok()).toBeTruthy();
     const raw = headMetadataFromRawHtml(await response.text());
+    expect(raw.robots).toBe(PRODUCTION_ROBOTS);
 
     await page.goto("/about/story");
     await expectCurrentGraph(page, "/about/story");
     await expect(page).toHaveTitle(raw.title!);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", raw.description!);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", raw.robots!);
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", raw.canonical!);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", PRIVATE_ROBOTS);
+    expect(normalisePath(new URL((await page.locator('link[rel="canonical"]').getAttribute("href"))!).pathname))
+      .toBe(normalisePath(new URL(raw.canonical!).pathname));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "The living planet is not an abstract issue.",
     );
@@ -126,8 +130,9 @@ test.describe("structured-data runtime ownership", () => {
     await expectCurrentGraph(page, "/about/story");
     await expect(page).toHaveTitle(raw.title!);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", raw.description!);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", raw.robots!);
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", raw.canonical!);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", PRIVATE_ROBOTS);
+    expect(normalisePath(new URL((await page.locator('link[rel="canonical"]').getAttribute("href"))!).pathname))
+      .toBe(normalisePath(new URL(raw.canonical!).pathname));
   });
 
   test("an unknown route removes owned ghost graphs but preserves third-party JSON-LD", async ({ page }) => {

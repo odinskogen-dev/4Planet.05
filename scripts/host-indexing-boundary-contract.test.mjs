@@ -79,6 +79,35 @@ test("public roots remain indexable and preserve their upstream cache policy", a
   }
 });
 
+test("About Story raw response is indexable only on the production host", async () => {
+  const storyHtml = '<!doctype html><html><head><meta name="robots" content="index,follow,max-image-preview:large"></head><body>Story</body></html>';
+  const upstream = () => new Response(storyHtml, {
+    status: 200,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "public, max-age=300",
+    },
+  });
+
+  for (const host of ["test.4planet.org", "candidate-42.pages.dev", "localhost"]) {
+    const harness = request(`https://${host}/about/story/`, upstream());
+    const response = await onRequest(harness.context);
+
+    assert.equal(response.headers.get("x-robots-tag"), PRIVATE_POLICY, host);
+    assert.equal(response.headers.get("cache-control"), "no-store", host);
+    assert.equal(await response.text(), storyHtml, host);
+    assert.equal(harness.nextCalls(), 1, host);
+  }
+
+  const production = request("https://4planet.org/about/story/", upstream());
+  const response = await onRequest(production.context);
+
+  assert.equal(response.headers.get("x-robots-tag"), null);
+  assert.equal(response.headers.get("cache-control"), "public, max-age=300");
+  assert.equal(await response.text(), storyHtml);
+  assert.equal(production.nextCalls(), 1);
+});
+
 test("private robots policy fails closed before the application response", async () => {
   for (const host of ["test.4planet.org", "candidate-42.pages.dev", "localhost"]) {
     const harness = request(`https://${host}/robots.txt`);
