@@ -56,6 +56,7 @@ jobs:
           json.dump({"profiles":[{"slug":s} for s in new43]},open("reports/species100/prepare-43.json","w"),indent=2)
           print("SPECIES100_READY_FOR_VERSION_GUARDED_RELEASE",len(verified),"43-new",len(new43),flush=True)
           PY
+      # Strict Worker node syntax and entire 100-route verification must pass before any mutation.
       - name: Prove live Worker unchanged and restore exact prior 57 router source
         shell: bash
         run: |
