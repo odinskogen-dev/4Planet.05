@@ -38,11 +38,12 @@ s=s.replace(before2,block+before2,1)
 before='  const body = `<?xml version="1.0" encoding="UTF-8"?>'
 assert s.count(before)==1
 addon='''  // Only published new43 canonical URLs from the immutable batch origin.
-  const existingLocs=new Set(kept.map(block => block.match(/<loc>([^<]+)<\\\\/loc>/)?.[1]).filter(Boolean));
+  const existingLocs=new Set(kept.map(block => block.split("<loc>")[1]?.split("</loc>")[0]).filter(Boolean));
   const newSitemap=await fetch(SPECIES_V2_ORIGIN+"/species-sitemap.xml");
   if(!newSitemap.ok) throw Error("Founder-approved SPECIES100 sitemap origin unavailable");
-  for(const block of ((await newSitemap.text()).match(/<url>[\\\\s\\\\S]*?<\\\\/url>/g)||[])){
-    const slug=block.match(/<loc>https:\\\\/\\\\/4species\\\\.com\\\\/([a-z0-9-]+)<\\\\/loc>/)?.[1];
+  for(const piece of (await newSitemap.text()).split("<url>").slice(1)){
+    const block="<url>"+piece.split("</url>")[0]+"</url>";
+    const slug=block.split("<loc>https://4species.com/")[1]?.split("</loc>")[0];
     if(!slug||!SPECIES_V2_RELEASED.has(slug))continue;
     if(await profileReviewState("/"+slug)==="UNREVIEWED")throw Error("New species missing direct source-backed review state: "+slug);
     const canonical="https://4species.com/"+slug;
