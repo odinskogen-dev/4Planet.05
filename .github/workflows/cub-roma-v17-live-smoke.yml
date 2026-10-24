@@ -38,14 +38,16 @@ jobs:
             grep -Fq 'href="/rome/"' /tmp/cub-front.html
             curl -fsSL --max-time 30 "$HOST/games/roma/" -o /tmp/roma-game-page.html
             grep -Fq 'Play ROMA · Challenger V17' /tmp/roma-game-page.html
-            grep -Fq 'href="/roma/challenger-12/"' /tmp/roma-game-page.html
+            ! grep -Fq 'href="/roma/challenger-12/"' /tmp/roma-game-page.html
             grep -Fq 'href="/roma/challenger-08/"' /tmp/roma-game-page.html
             grep -Fq 'href="/roma/"' /tmp/roma-game-page.html
             curl -fsSL --max-time 30 "$HOST/roma/" -o /tmp/roma-old.html
             echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma-old.html' | sha256sum -c -
             curl -fsSL --max-time 40 "$HOST/roma/challenger-08/" -o /tmp/roma08-old.html
             echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma08-old.html' | sha256sum -c -
-            curl -fsSL --max-time 45 "$HOST/roma/challenger-12/" -o /tmp/roma12-old.html
-            echo '5645104ab6389bce380ef53af564cb115cab424c924601f0dac115532ff3d7b8  /tmp/roma12-old.html' | sha256sum -c -
-            echo "ROMA_V17_ALL_EXACT_ASSET_AND_LEGACY_LIVE_PASS=$HOST/rome/"
+            curl -fsSL --max-time 45 "$HOST/roma/challenger-12/" -o /tmp/roma12-retired.html
+            test "$(wc -c < /tmp/roma12-retired.html)" -lt 2500
+            grep -Fq 'url=/rome/' /tmp/roma12-retired.html
+            grep -Fq 'window.location.replace' /tmp/roma12-retired.html
+            echo "ROMA_V17_VERIFIED_AND_CHALLENGER12_RETIRED=$HOST/rome/"
           done
