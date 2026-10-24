@@ -68,6 +68,11 @@ jobs:
       - name: Production build
         run: npm run build
 
+      # Keep Factory QA wiring on its authorised governance surface. The
+      # package manifest is product code; this required step must not be skipped.
+      - name: SPECIES index media rights
+        run: node --test scripts/species-index-media-rights.test.mjs
+
       - name: Contract and smoke tests
         run: npm run test:smoke
 
