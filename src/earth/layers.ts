@@ -99,6 +99,9 @@ const formatPct = (value) => Number.isFinite(Number(value)) ? `${(Number(value) 
 
 const unescoAtlasRows = async (datasetId) => {
   const response = await fetchUnescoDataset(datasetId);
+  if (response.truncated) {
+    throw new Error(`UNESCO_${datasetId}_PARTIAL_UNAVAILABLE`);
+  }
   const metadata = UNESCO_DATASETS[datasetId];
   return response.records
     .map((record) => normaliseUnescoAtlasRecord(datasetId, record))

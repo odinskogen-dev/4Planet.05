@@ -460,11 +460,20 @@ export async function fetchUnescoDataset(dataset: UnescoDatasetId): Promise<Unes
   if (!response.ok || !body || body.ok !== true || !Array.isArray(body.records)) {
     throw new Error(String(body?.error || `UNESCO_${dataset}_UNAVAILABLE`));
   }
+  if (body.dataset !== dataset) {
+    throw new Error(`UNESCO_DATASET_IDENTITY_MISMATCH:${dataset}:${String(body.dataset ?? "UNKNOWN")}`);
+  }
+  const totalCount = typeof body.totalCount === "number"
+    && Number.isFinite(body.totalCount)
+    && Number.isInteger(body.totalCount)
+    && body.totalCount >= 0
+    ? body.totalCount
+    : null;
   return {
     ok: true,
     dataset,
     retrievedAt: String(body.retrievedAt ?? ""),
-    totalCount: Number.isFinite(Number(body.totalCount)) ? Number(body.totalCount) : null,
+    totalCount,
     truncated: body.truncated === true,
     records: body.records,
     rights: meta.rights,
