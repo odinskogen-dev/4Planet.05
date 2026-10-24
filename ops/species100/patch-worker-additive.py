@@ -50,10 +50,10 @@ addon='''  // Only published new43 canonical URLs from the immutable batch origi
     existingLocs.add(canonical);
     kept.push(block);
   }
-  if([...existingLocs].filter(u=>/^https:\\\\/\\\\/4species\\\\.com\\\\/[a-z0-9-]+$/.test(u)).length!==100)
-    throw Error("SPECIES100 sitemap not exactly 100 canonical URLs");
+  if([...existingLocs].filter(u=>SPECIES_V2_RELEASED.has(u.split("/").at(-1))).length!==43)
+    throw Error("SPECIES100 sitemap missing required 43 new canonical species URLs");
 '''
-# Note user-facing counts assert can have old non-profile /about etc; regex filtered only names.
+# Public sitemap may include /about, /quiz, /explore; only new species routes count.
 s=s.replace(before,addon+before,1)
 before='    return new Response(JSON.stringify({...base,pages:[...base.pages,...added]}),{'
 assert s.count(before)==1
