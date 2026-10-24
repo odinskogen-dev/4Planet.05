@@ -7,7 +7,7 @@ permissions: {contents: read}
 
 concurrency:
   group: species-v1-batch2-isolated-20261022
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
