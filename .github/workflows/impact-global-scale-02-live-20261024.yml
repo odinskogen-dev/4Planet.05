@@ -210,8 +210,12 @@ jobs:
           api='https://api.cloudflare.com/client/v4'
           auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
           payload='{"files":["https://4planet.org/impact-build.json","https://4planet.org/impact","https://4planet.org/impact/project/namami-gange/","https://4planet.org/impact/project/ksa-national-greening-program/","https://4planet.org/impact/actors/national-mission-clean-ganga/","https://4planet.org/sitemap.xml","https://4planet.org/robots.txt"]}'
-          purge=$(curl -fsS -X POST "${api}/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" "${auth[@]}" --data "$payload")
-          jq -e '.success == true' <<<"$purge" >/dev/null
+          purge=$(curl -sS -X POST "${api}/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" "${auth[@]}" --data "$payload" || true)
+          if jq -e '.success == true' <<<"$purge" >/dev/null 2>&1; then
+            echo "Canonical cache purge accepted."
+          else
+            echo "Cache purge unavailable with current token; continuing with cache-busted canonical verification."
+          fi
 
       - name: Verify canonical LIVE + crawlability
         shell: bash
