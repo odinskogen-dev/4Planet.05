@@ -334,3 +334,18 @@ test("all locally owned canonical missions are included in the generated sitemap
   }
   assert.equal(slugs.filter((slug) => !handOffs.has(slug)).length, 14);
 });
+
+test("Mission discovery is present in server HTML and hydrated client metadata", () => {
+  const missionPrerender = read("scripts/prerender-discovery-seo.mjs");
+  const missionClient = read("src/pages/v5/Missions.tsx");
+  const missionExtractor = read("scripts/mission-content.mjs");
+  assert.match(missionExtractor, /MISSION_CONTENT/);
+  assert.match(missionExtractor, /EXTERNAL_HANDOFF_SLUGS/);
+  assert.match(missionExtractor, /ts\.createSourceFile/);
+  assert.match(missionPrerender, /data-4planet-prerender-content='mission'/);
+  assert.match(missionPrerender, /data-4planet-prerender-content='missions-index'/);
+  assert.match(missionPrerender, /readLocalMissionRecords/);
+  assert.match(missionPrerender, /Current development status/);
+  assert.match(missionPrerender, /What this mission addresses/);
+  assert.match(missionClient, /<Seo title=\{m\.name/);
+});

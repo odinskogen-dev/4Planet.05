@@ -1,6 +1,7 @@
 import { useParams, Link, useLocation } from "react-router-dom";
 import { T, DOMAIN_ACCENT, DOMAIN_DESC, DARK_MISSIONS } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
+import { Seo } from "@/components/Seo";
 import { Section, Button } from "@/components/ui";
 import { CinematicImage, Reveal } from "@/components/Cinematic";
 import { MissionStrip } from "@/components/MissionStrip";
@@ -63,6 +64,10 @@ export function MissionDetail() {
 
   return (
     <PublicShell>
+      <Seo title={m.name + " — " + m.hero + " | 4PLANET"} description={m.hero}
+        path={"/missions/" + m.slug}
+        jsonLd={({ canonicalUrl }) => ({ "@context": "https://schema.org", "@type": "WebPage",
+          name: m.name, description: m.hero, url: canonicalUrl, inLanguage: "en-GB" })} />
       {returnHref && (
         <Link to={returnHref} data-testid="return-to-atlas" style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 70px)", left: 20, zIndex: 40, display: "inline-flex", alignItems: "center", gap: 8, fontFamily: T.mono, fontSize: 11, letterSpacing: ".12em", color: "#fff", background: acc, padding: "10px 14px", textDecoration: "none" }}>
           ← BACK TO OBSERVATION IN ATLAS

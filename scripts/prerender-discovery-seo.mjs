@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { readLocalMissionRecords } from "./mission-content.mjs";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -58,6 +59,44 @@ const species = (inventory.species || []).filter((item) => item.indexable === tr
 const places = (inventory.places || []).filter(placeIsReleasedForOrigin);
 const atlasObjects = (atlasDiscovery.objects || []).filter((item) => item.indexable === true);
 const discoveryTopics = (discovery.topics || []).filter((item) => item.indexable === true);
+
+const localMissionRecords = origin === "https://4planet.org" ? readLocalMissionRecords(root) : [];
+if (localMissionRecords.length) {
+  const missionIndex = "<main data-4planet-prerender-content='missions-index'><h1>4PLANET Missions</h1>" +
+    "<p>Explore missions for oceans, land, human systems and culture. Each page records a developing approach, not a verified ecological outcome.</p><ul>" +
+    localMissionRecords.map((m) => "<li><a href='/missions/" + esc(m.slug) + "'>" + esc(m.name) + " — " + esc(m.hero) + "</a></li>").join("") +
+    "</ul></main>";
+  writeRoute("/missions", pageHtml({
+    pathName: "/missions",
+    title: "4PLANET Missions — Oceans, Land, Human Systems and Culture",
+    description: "Explore 4PLANET missions addressing nature, ecosystems and human systems, with clearly stated development status.",
+    body: missionIndex,
+    jsonLd: { "@context": "https://schema.org", "@type": "CollectionPage",
+      name: "4PLANET Missions", url: origin + "/missions",
+      mainEntity: { "@type": "ItemList", itemListElement: localMissionRecords.map((m, i) =>
+        ({ "@type": "ListItem", position: i + 1, url: origin + "/missions/" + m.slug, name: m.name })) } },
+  }));
+}
+for (const m of localMissionRecords) {
+  const pathName = "/missions/" + m.slug;
+  const title = m.name + " — " + m.hero + " | 4PLANET";
+  const body = "<main data-4planet-prerender-content='mission'><p>4PLANET / " + esc(m.domain) + " / MISSION</p>" +
+    "<h1>" + esc(m.name) + "</h1><p>" + esc(m.hero) + "</p>" +
+    "<h2>What this mission addresses</h2><p>" + esc(m.issue) + "</p>" +
+    "<h2>Why it matters</h2><p>" + esc(m.whyItMatters) + "</p>" +
+    "<h2>The proposed approach</h2><p>" + esc(m.thesis) + "</p>" +
+    "<h2>What could help</h2><p>" + esc(m.whatCanHelp) + "</p>" +
+    "<h2>4PLANET's role</h2><p>" + esc(m.fourPlanetRole) + "</p>" +
+    "<h2>Current development status</h2><p>" + esc(m.currentStatus) + "</p>" +
+    "<p>A development status is not proof that an ecological outcome has been delivered.</p>" +
+    "<p><a href='/missions'>All missions</a> · <a href='/livingsystems/'>Explore living systems</a></p></main>";
+  writeRoute(pathName, pageHtml({
+    pathName, title, description: m.hero, body,
+    jsonLd: { "@context": "https://schema.org", "@type": "WebPage",
+      name: m.name, description: m.hero, url: origin + pathName,
+      inLanguage: "en-GB", isPartOf: { "@type": "CollectionPage", name: "4PLANET Missions", url: origin + "/missions" } },
+  }));
+}
 
 const relatedPlacesForSpecies = (slug) =>
   places.filter((place) => (place.relatedSpecies || []).some((item) => item.slug === slug && item.state === "CURATED"));
