@@ -275,6 +275,35 @@ jobs:
           grep -Fq 'href="/roma/"' site/index.html
           rm -rf site/roma/challenger-12/source
           echo 'ROMA_CH12_SAFE_RELEASE_READY'
+      - name: Stage EXACT founder ROMA V17 with full native NASA tile set
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/roma-v17-release site/rome
+          gh release download roma-cub-v17-20261024 --repo "$GITHUB_REPOSITORY" --pattern 'roma-v17-web.zip' --dir /tmp/roma-v17-release
+          echo 'e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288  /tmp/roma-v17-release/roma-v17-web.zip' | sha256sum -c -
+          unzip -qo /tmp/roma-v17-release/roma-v17-web.zip -d site/rome
+          echo 'c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8  site/rome/index.html' | sha256sum -c -
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          root=pathlib.Path('site/rome')
+          manifest=json.loads((root/'tiles/MANIFEST.json').read_text())
+          tiles=manifest['tiles']
+          assert manifest['count']==240 and len(tiles)==240
+          assert len(list((root/'tiles').glob('r*c*.jpg')))==240
+          for tile in tiles:
+              p=root/tile['file']
+              assert p.is_file(), p
+              blob=p.read_bytes()
+              assert len(blob)==tile['bytes'],p
+              assert hashlib.sha256(blob).hexdigest()==tile['sha256'],p
+          s=(root/'index.html').read_text(encoding='utf-8')
+          assert 'tiles/' in s and len(s)>6000000 and '<canvas' in s
+          print('ROMA_V17_RELEASE_STAGED: EXACT HTML, MANIFEST, ALL 240 NATIVE TILES VERIFIED')
+          PY
+          rm -rf site/roma/challenger-12/source
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
@@ -558,6 +587,10 @@ jobs:
             curl -fsSL "$host/games/roma/" | grep -Fq 'href="/roma/challenger-12/"'
             curl -fsSL "$host/" | grep -Fq 'href="/rome/"'
             curl -fsSL "$host/rome/" | grep -Fq 'ROMA: The Republic'
-            curl -fsSL "$host/rome/index.html" | grep -Fq 'url=/roma/challenger-12/'
+            curl -fsSL --max-time 45 "$host/rome/index.html" -o /tmp/live-roma-v17.html
+            echo 'c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8  /tmp/live-roma-v17.html' | sha256sum -c -
+            curl -fsSL --max-time 30 "$host/rome/tiles/r0c0.jpg" -o /tmp/live-roma-v17-tile.jpg
+            echo '521acd746e0108cda164ea04cfe1c5b4f6f3898c11bc8f867cb79a4cc0cc6aab  /tmp/live-roma-v17-tile.jpg' | sha256sum -c -
+            curl -fsSL "$host/games/roma/" | grep -Fq 'Play ROMA · Challenger V17'
             echo "ROMA_CH12_PRODUCTION_VERIFIED=$host/roma/challenger-12/"
           done
