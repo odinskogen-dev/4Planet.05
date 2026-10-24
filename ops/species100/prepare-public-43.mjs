@@ -57,7 +57,7 @@ for(const file of fs.readdirSync(DIR)){
  console.log("ORCHID_MANTIS_FACT_BEFORE_FINAL_GATE",JSON.stringify(note));
  if(!note||typeof note!=="object")throw Error("Orchid mantis ecology note is not a record");
  note.label="Orchid mantis and wild pollinator interactions";
- fs.writeFileSync(orchidFile,JSON.stringify(orchid,null,2)+"\\n");
+ fs.writeFileSync(orchidFile,JSON.stringify(orchid,null,2)+String.fromCharCode(10));
  console.log("ORCHID_MANTIS_FACT_POST_FINAL_GATE",JSON.stringify(JSON.parse(fs.readFileSync(orchidFile,"utf8")).facts.ecology[2]));
 }
 if(all.size!==43)throw Error("Must be exactly 43 distinct new pages: "+all.size);
