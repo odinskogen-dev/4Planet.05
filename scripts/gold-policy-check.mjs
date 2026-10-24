@@ -267,7 +267,7 @@ if (mode === "pr-main") {
     ].sort())
     && files.includes("docs/control/GOLD_CURRENT_BRIEF.md")
     && files.includes(".github/workflows/atlas-green-data-live-release.yml")
-    && git(["hash-object", "functions/api/unesco-data.ts"]) === "f730131668c7e4482b494f1f8e3e6a653901309e"
+    && git(["hash-object", "functions/api/unesco-data.ts"]) === "adee64fdd8bb983e39b519660f0238d8588bc2c4"
     && git(["hash-object", "src/data/unescoOpenData.ts"]) === "6f6b69f60a12ff8e50f521e60bcc6d6d468e86c0"
     && git(["hash-object", "src/earth/World.tsx"]) === "1912175f71f5aaa1de65895d60e0f6d16e9b1bd7"
     && git(["hash-object", "src/earth/atlasSourceControl.ts"]) === "7dd51fa178c8d71375cb72ccdd579cd90216e10a"

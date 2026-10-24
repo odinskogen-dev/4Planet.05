@@ -15,31 +15,43 @@ const DATASETS: Record<DatasetKey, {
   maxRecords: number;
   select: string;
   attribution: string;
+  identityFields: string[];
+  orderBy: string;
 }> = {
   mab001: {
     maxRecords: 900,
     select: "mab_id,title_en,iso2,country_title_en,date,introduction_en,coordinates,uuid",
     attribution: "UNESCO",
+    identityFields: ["uuid", "mab_id"],
+    orderBy: "uuid",
   },
   whc001: {
     maxRecords: 1400,
     select: "name_en,uuid,id_no,coordinates,category,states_names,iso_codes,date_inscribed,short_description_en",
     attribution: "UNESCO",
+    identityFields: ["uuid", "id_no"],
+    orderBy: "uuid",
   },
   eg0001: {
     maxRecords: 300,
     select: "uuid,ugg_id,title_en,countries,date,introduction_en,coordinates,url,website",
     attribution: "UNESCO",
+    identityFields: ["uuid", "ugg_id"],
+    orderBy: "uuid",
   },
   ioc001: {
     maxRecords: 2000,
     select: "uuid,area_id,area_name,area_type,country_iso2,coordinates,n_observations,n_species,n_taxa,n_datasets,n_threatened_species,pct_threatened,year_first,year_last,source_url,country_title_en,regional_group",
     attribution: "OBIS",
+    identityFields: ["uuid", "area_id"],
+    orderBy: "uuid",
   },
   cou001: {
     maxRecords: 250,
     select: "country_title_en,capital_en,regional_group,membership,coordinates,iso2,iso3,uuid",
     attribution: "UNESCO",
+    identityFields: ["uuid", "iso3", "iso2"],
+    orderBy: "uuid",
   },
 };
 
@@ -62,6 +74,7 @@ const upstreamUrl = (dataset: DatasetKey, offset: number) => {
     limit: String(PAGE_SIZE),
     offset: String(offset),
     select: cfg.select,
+    order_by: cfg.orderBy,
   });
   return `${API}/${dataset}/records?${q.toString()}`;
 };
@@ -77,10 +90,27 @@ const fetchPage = async (dataset: DatasetKey, offset: number) => {
   if (!response.ok) throw new Error(`UPSTREAM_${response.status}`);
   const data: any = await response.json();
   if (!data || !Array.isArray(data.results)) throw new Error("CONTRACT_MISMATCH");
+  const rawTotalCount = Object.prototype.hasOwnProperty.call(data, "total_count")
+    ? data.total_count
+    : null;
+  if (rawTotalCount !== null && (!Number.isInteger(rawTotalCount) || rawTotalCount < 0)) {
+    throw new Error("INVALID_TOTAL_COUNT");
+  }
   return {
-    totalCount: Number.isFinite(Number(data.total_count)) ? Number(data.total_count) : null,
+    totalCount: rawTotalCount as number | null,
     results: data.results as unknown[],
   };
+};
+
+const recordIdentity = (dataset: DatasetKey, record: unknown) => {
+  if (!record || typeof record !== "object") return null;
+  const value = record as Record<string, unknown>;
+  for (const field of DATASETS[dataset].identityFields) {
+    const candidate = value[field];
+    if (typeof candidate === "string" && candidate.trim()) return `${field}:${candidate.trim()}`;
+    if (typeof candidate === "number" && Number.isFinite(candidate)) return `${field}:${candidate}`;
+  }
+  return null;
 };
 
 export const onRequestGet = async ({ request }: { request: Request }) => {
@@ -92,20 +122,46 @@ export const onRequestGet = async ({ request }: { request: Request }) => {
 
   const cfg = DATASETS[dataset];
   const records: unknown[] = [];
+  const seenIdentities = new Set<string>();
   let totalCount: number | null = null;
+  let completeByShortPage = false;
 
   try {
     for (let offset = 0; offset < cfg.maxRecords; offset += PAGE_SIZE) {
       const page = await fetchPage(dataset, offset);
-      if (totalCount === null) totalCount = page.totalCount;
-      records.push(...page.results);
+      if (page.totalCount !== null) {
+        if (totalCount !== null && page.totalCount !== totalCount) {
+          throw new Error("TOTAL_COUNT_CONFLICT");
+        }
+        totalCount = page.totalCount;
+      }
 
-      if (page.results.length < PAGE_SIZE) break;
-      if (totalCount !== null && records.length >= totalCount) break;
+      for (const record of page.results) {
+        const identity = recordIdentity(dataset, record);
+        if (!identity) throw new Error("MISSING_RECORD_ID");
+        if (seenIdentities.has(identity)) throw new Error("DUPLICATE_RECORD_ID");
+        seenIdentities.add(identity);
+        records.push(record);
+      }
+
+      if (totalCount !== null && records.length > totalCount) {
+        throw new Error("TOTAL_COUNT_CONFLICT");
+      }
+
+      if (page.results.length < PAGE_SIZE) {
+        if (totalCount !== null && records.length !== totalCount) {
+          throw new Error("INCOMPLETE_RECORDSET");
+        }
+        completeByShortPage = true;
+        break;
+      }
+      if (totalCount !== null && records.length === totalCount) break;
     }
 
     if (records.length > cfg.maxRecords) records.length = cfg.maxRecords;
-    const truncated = totalCount !== null ? totalCount > records.length : records.length >= cfg.maxRecords;
+    const truncated = totalCount !== null
+      ? totalCount > records.length
+      : !completeByShortPage && records.length >= cfg.maxRecords;
 
     return json({
       ok: true,

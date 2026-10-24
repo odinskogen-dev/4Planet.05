@@ -1,3 +1,14 @@
+# ATLAS — UNESCO PAGINATION COMPLETENESS QA CORRECTION — 24 OCTOBER 2026
+
+**STATUS:** MAKER-CORRECTED / QA_READY / INDEPENDENT RE-GOLD REQUIRED / RELEASE HOLD / NOT LIVE.
+**RETURN CONSUMED:** Independent Gold comment `6377767538` on existing PR #456 found two fail-open completeness paths at exact head `d8ea288cc2bde5feff40a0340d75ea8fbd6c4e29`: `total_count:null` was coerced to zero and repeated upstream pages could be returned as a complete distinct recordset.
+**BOUNDED CORRECTION:** Keep the same PR/branch. Treat only actual non-negative integer counts as known; keep null/missing counts unknown; request deterministic dataset-specific order; require a stable source identity for every record; reject duplicate identities, changing counts, impossible counts and short incomplete pages. Add source-executing pagination regressions to the existing release workflow.
+**TRUTH BOUNDARY:** Upstream count and page transport are not proof of a complete distinct dataset. Any ambiguous or inconsistent pagination state is unavailable, not zero and not `truncated:false` success.
+**ROLLBACK:** Exact returned head `d8ea288cc2bde5feff40a0340d75ea8fbd6c4e29`. No merge, deploy, release or public state changes are authorised by this correction.
+**GOLD:** Maker returns exact SHA and deterministic evidence only; independent Gold must re-run the negative matrix and physical runtime before release.
+
+---
+
 # ATLAS — CURATED GREEN DATA RELEASE CARRIER RECONSTRUCTION — 22 OCTOBER 2026
 
 **STATUS:** MAKER-CORRECTED / QA_READY / INDEPENDENT RE-GOLD REQUIRED / RELEASE HOLD / NOT LIVE.

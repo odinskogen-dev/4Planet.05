@@ -10,6 +10,7 @@ on:
       - "src/earth/World.tsx"
       - "src/earth/atlasSourceControl.ts"
       - "tests/e2e/atlas-green-data.spec.ts"
+      - "scripts/atlas-unesco-api-contract.test.mjs"
       - ".github/workflows/atlas-green-data-live-release.yml"
   workflow_dispatch:
 
@@ -53,6 +54,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: UNESCO API pagination and completeness contract
+        run: node --test scripts/atlas-unesco-api-contract.test.mjs
 
       - name: Production build
         run: npm run build
