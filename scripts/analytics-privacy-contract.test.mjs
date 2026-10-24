@@ -97,6 +97,18 @@ test("drops credentials, personal values and long free text before GA4/PostHog",
   assert.deepEqual(clean, { public_slug: "orca", attempts: 7 });
 });
 
+test("drops independent-Gold authorization, cookie and nested-code bypass cases", () => {
+  const clean = privacySafeEventParameters({
+    product_area: "species",
+    authorization: "Bearer TEST_CREDENTIAL",
+    Authorization: "Bearer TEST_CREDENTIAL",
+    cookie: "sessionid=TEST_CREDENTIAL",
+    redirect: "https://4planet.org/?code=TEST_CREDENTIAL",
+  });
+
+  assert.deepEqual(clean, { product_area: "species" });
+});
+
 test("tracking uses sanitised payload before BOTH sinks", () => {
   const trackSegment = source.slice(
     source.indexOf("export function trackEvent"),
