@@ -60,9 +60,10 @@ jobs:
               p=json.loads(jb)
               d["json"]=save("profiles/"+slug+".json",jb)
               d["jsonHttp"]=status
-              d["identity"]=p.get("identity",{})
+              ident=p.get("identity",{})
+              d["identity"]=ident
               if p.get("slug")!=slug: errors.append("SLUG_MISMATCH")
-              if not p.get("identity",{}).get("scientificName"): errors.append("MISSING_SCIENTIFIC_IDENTITY")
+              if slug in new and (not isinstance(ident,dict) or not ident.get("scientificName")): errors.append("MISSING_SCIENTIFIC_IDENTITY")
               sb,_,_,_=get((old if slug in original else v1)+"/species-data/v1/"+slug+".json")
               d["immutableJsonEquivalent"]=json.loads(sb)==p
               if not d["immutableJsonEquivalent"]: errors.append("IMMUTABLE_SOURCE_JSON_DRIFT")
@@ -76,7 +77,8 @@ jobs:
               if "noindex" in hh.get("X-Robots-Tag","").lower(): errors.append("HTTP_NOINDEX")
               if re.search(r'<meta[^>]*name=["\x27]robots["\x27][^>]*content=["\x27][^"\x27]*noindex',html,re.I): errors.append("HTML_NOINDEX")
               if slug in new:
-                img=p.get("hero",{}).get("url","")
+                hero=p.get("hero")
+                img=hero.get("url","") if isinstance(hero,dict) else ""
                 if not img.startswith(base+"/assets/species/next61/"):errors.append("UNSAFE_NEW_HERO")
                 else:
                   ib,_,ifinal,istat=get(img)
@@ -85,7 +87,8 @@ jobs:
                   want=p.get("provenance",{}).get("photoSha256","")
                   if not want or sha256(ib).hexdigest()!=want: errors.append("HERO_HASH_MISMATCH")
               else:
-                d["heroUrl"]=p.get("hero",{}).get("url")
+                h=p.get("hero")
+                d["heroUrl"]=h.get("url") if isinstance(h,dict) else h
               d["errors"]=errors
             except Exception as exc:
               errors.append(type(exc).__name__+": "+str(exc)[:250])
