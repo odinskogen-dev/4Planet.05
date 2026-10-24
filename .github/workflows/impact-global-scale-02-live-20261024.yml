@@ -1,0 +1,270 @@
+name: IMPACT GLOBAL SCALE 02 — LIVE release 2026-10-24
+
+on:
+  push:
+    branches:
+      - release/impact-global-scale-02-live-20261024
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+      MIN_PROJECTS: "32"
+      MIN_ACTORS: "32"
+      MIN_SOLUTIONS: "27"
+      MIN_PLACES: "32"
+    steps:
+      - name: Resolve Cloudflare authority + rollback reference
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do
+            [ -n "$candidate" ] && { TOKEN="$candidate"; break; }
+          done
+          [ -n "$TOKEN" ] || { echo "missing Cloudflare token"; exit 2; }
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json')
+          root=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account_id=$(jq -r '.result[0].account.id // empty' <<<"$root")
+          zone_id=$(jq -r '.result[0].id // empty' <<<"$root")
+          [ -n "$account_id" ] && [ -n "$zone_id" ]
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ZONE_ID=$zone_id" >> "$GITHUB_ENV"
+
+          project=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05" "${auth[@]}")
+          production_branch=$(jq -r '.result.production_branch // empty' <<<"$project")
+          [ -n "$production_branch" ] || production_branch=main
+          echo "CF_PRODUCTION_BRANCH=$production_branch" >> "$GITHUB_ENV"
+          echo "Cloudflare Pages production branch: $production_branch"
+
+          prior=$(curl -fsS "${api}/accounts/${account_id}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=1" "${auth[@]}")
+          echo "ROLLBACK_REFERENCE"
+          jq -r '.result[0] | {id,url,created_on,environment,commit:(.deployment_trigger.metadata.commit_hash // ""),branch:(.deployment_trigger.metadata.branch // "")}' <<<"$prior"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard Claude design lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=814b9e630ae313c30c526dcc9072f9e1b8109bab
+          git diff --name-only "$BASE"...HEAD | tee /tmp/changed.txt
+          while IFS= read -r f; do
+            case "$f" in
+              .github/workflows/impact-global-scale-02-live-20261024.yml) ;;
+              "") ;;
+              *) echo "Design/code drift forbidden in this release delta: $f" >&2; exit 1 ;;
+            esac
+          done < /tmp/changed.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify live NATUREBRAIN publication gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload=$(curl -fsS --max-time 25 -X POST             "${SUPABASE_URL}/rest/v1/rpc/impact_lan_v02"             -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}"             -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}"             -H "Content-Type: application/json" -d '{}')
+          printf '%s' "$payload" > /tmp/impact-v02.json
+          env63=$(jq '[.issues[] | select(.id | startswith("problem:4p:env63:"))] | length' /tmp/impact-v02.json)
+          issues=$(jq '.issues | length' /tmp/impact-v02.json)
+          projects=$(jq '.projects | length' /tmp/impact-v02.json)
+          actors=$(jq '.actors | length' /tmp/impact-v02.json)
+          solutions=$(jq '.solutions | length' /tmp/impact-v02.json)
+          places=$(jq '.places | length' /tmp/impact-v02.json)
+          actions=$(jq '.actions | length' /tmp/impact-v02.json)
+          echo "NATUREBRAIN: $projects projects / $actors actors / $solutions solutions / $places places / $actions actions / $issues issues / $env63 ENV63"
+          test "$env63" -eq 63
+          test "$projects" -ge "$MIN_PROJECTS"
+          test "$actors" -ge "$MIN_ACTORS"
+          test "$solutions" -ge "$MIN_SOLUTIONS"
+          test "$places" -ge "$MIN_PLACES"
+          test "$actions" -ge "$MIN_PROJECTS"
+
+          jq -e '.projects[] | select(.id=="project:4p:impact:namami-gange") |
+            ((.edges | map(select(.predicate=="has_lead_actor")) | length) >= 1) and
+            ((.edges | map(select(.predicate=="occurs_in")) | length) >= 1) and
+            ((.edges | map(select(.predicate=="uses_solution")) | length) >= 1) and
+            ((.edges | map(select(.predicate=="addresses_problem")) | length) >= 1) and
+            ((.evidence | length) >= 2)' /tmp/impact-v02.json >/dev/null
+
+      - name: Existing IMPACT truth contracts
+        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs scripts/impact-proof-chain-integrity-contract.test.mjs
+
+      - name: Build Claude templates from live NATUREBRAIN
+        env:
+          CF_PAGES: "1"
+          CF_PAGES_COMMIT_SHA: ${{ github.sha }}
+          CF_PAGES_BRANCH: release/impact-global-scale-02-live-20261024
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: release/impact-global-scale-02-live-20261024
+        run: npm run build
+
+      - name: Search + AI discovery gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/impact-build.json
+          built=$(jq -r '.sha // empty' dist/impact-build.json)
+          test "$built" = "$GITHUB_SHA"
+
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
+          const env=d.issues.filter(i=>i.id.startsWith('problem:4p:env63:'));
+          if(env.length!==63) throw new Error(`expected 63 ENV63 issues, got ${env.length}`);
+          if(d.projects.length<32) throw new Error(`expected >=32 projects, got ${d.projects.length}`);
+          if(d.actors.length<32) throw new Error(`expected >=32 actors, got ${d.actors.length}`);
+          if(d.solutions.length<27) throw new Error(`expected >=27 solutions, got ${d.solutions.length}`);
+          for (const slug of ['namami-gange','trinational-atlantic-forest-pact','ksa-national-greening-program']) {
+            const p=d.projects.find(x=>x.slug===slug);
+            if(!p || p.claims.length<2 || !p.actors.length || !p.solutions.length || !p.issues.length || !p.citations.length)
+              throw new Error(`discovery object incomplete: ${slug}`);
+          }
+          console.log(`Snapshot PASS: ${d.projects.length} projects / ${d.actors.length} actors / ${d.solutions.length} solutions / ${d.issues.length} issues / ${env.length} ENV63`);
+          NODE
+
+          for path in             dist/impact/project/namami-gange/index.html             dist/impact/project/trinational-atlantic-forest-pact/index.html             dist/impact/project/ksa-national-greening-program/index.html             dist/impact/actors/national-mission-clean-ganga/index.html             dist/impact/issue/habitat-destruction/index.html; do
+            test -f "$path"
+            grep -qi '<link rel="canonical"' "$path"
+            grep -qi 'application/ld+json' "$path"
+            grep -qi 'name="robots" content="index,follow' "$path"
+          done
+
+          grep -q '/impact/project/namami-gange' dist/sitemap.xml
+          grep -q '/impact/project/trinational-atlantic-forest-pact' dist/sitemap.xml
+          grep -q '/impact/project/ksa-national-greening-program' dist/sitemap.xml
+          grep -q '/impact/actors/national-mission-clean-ganga' dist/sitemap.xml
+          grep -q '/impact/issue/habitat-destruction' dist/sitemap.xml
+
+          impact_urls=$(grep -Eo '<loc>https://4planet\.org/impact/[^<]+' dist/sitemap.xml | wc -l | tr -d ' ')
+          echo "Dynamic IMPACT sitemap URLs: $impact_urls"
+          test "$impact_urls" -ge 130
+
+      - name: Deploy isolated production artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist             --project-name 4planet-05             --branch "$CF_PRODUCTION_BRANCH"             --commit-hash "$GITHUB_SHA"             --commit-dirty=true 2>&1 | tee /tmp/wrangler-deploy.txt
+
+          clean=$(sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/wrangler-deploy.txt)
+          deployment_url=$(printf '%s\n' "$clean" | grep -Eo 'https://[0-9a-f]+\.4planet-05\.pages\.dev' | head -1 || true)
+
+          if [ -z "$deployment_url" ]; then
+            api='https://api.cloudflare.com/client/v4'
+            auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+            for i in $(seq 1 18); do
+              deployments=$(curl -fsS "${api}/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/4planet-05/deployments?page=1&per_page=50" "${auth[@]}")
+              deployment_url=$(jq -r --arg sha "$GITHUB_SHA" '.result[] | select(.deployment_trigger.metadata.commit_hash==$sha) | .url' <<<"$deployments" | head -1)
+              [ -n "$deployment_url" ] && break
+              sleep 4
+            done
+          fi
+          [ -n "$deployment_url" ] || { echo "Could not resolve immutable deployment URL"; exit 1; }
+          echo "DEPLOYMENT_URL=$deployment_url" >> "$GITHUB_ENV"
+          echo "Immutable deployment: $deployment_url"
+
+          for i in $(seq 1 18); do
+            body=$(curl -fsS --max-time 20 "$deployment_url/impact-build.json" || true)
+            sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
+            if [ "$sha" = "$GITHUB_SHA" ]; then
+              curl -fsS "$deployment_url/impact/project/namami-gange/" | grep -q 'Namami Gange'
+              curl -fsS "$deployment_url/impact/actors/national-mission-clean-ganga/" | grep -q 'National Mission for Clean Ganga'
+              echo "Immutable deployment verified."
+              exit 0
+            fi
+            sleep 4
+          done
+          echo "Immutable deployment verification failed" >&2
+          exit 1
+
+      - name: Purge canonical IMPACT paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          api='https://api.cloudflare.com/client/v4'
+          auth=(-H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" -H 'Content-Type: application/json')
+          payload='{"files":["https://4planet.org/impact-build.json","https://4planet.org/impact","https://4planet.org/impact/project/namami-gange/","https://4planet.org/impact/project/ksa-national-greening-program/","https://4planet.org/impact/actors/national-mission-clean-ganga/","https://4planet.org/sitemap.xml","https://4planet.org/robots.txt"]}'
+          purge=$(curl -fsS -X POST "${api}/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" "${auth[@]}" --data "$payload")
+          jq -e '.success == true' <<<"$purge" >/dev/null
+
+      - name: Verify canonical LIVE + crawlability
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 24); do
+            body=$(curl -fsS -H 'Cache-Control: no-cache' --max-time 20 "https://4planet.org/impact-build.json?v=$GITHUB_SHA" || true)
+            sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
+            echo "LIVE probe $i: ${sha:-unresolved}"
+            if [ "$sha" = "$GITHUB_SHA" ]; then
+              home=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/impact?v=$GITHUB_SHA")
+              project=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA")
+              actor=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA")
+              sitemap=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/sitemap.xml?v=$GITHUB_SHA")
+              robots=$(curl -fsS -H 'Cache-Control: no-cache' "https://4planet.org/robots.txt?v=$GITHUB_SHA")
+              grep -q 'Find people bringing life back' <<<"$home"
+              grep -q 'Namami Gange' <<<"$project"
+              grep -q 'National Mission for Clean Ganga' <<<"$actor"
+              grep -q '/impact/project/namami-gange' <<<"$sitemap"
+              grep -q 'User-agent: Googlebot' <<<"$robots"
+              grep -q 'User-agent: OAI-SearchBot' <<<"$robots"
+              echo "Canonical LIVE + crawlability verified."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Canonical LIVE verification failed. Immutable artifact remains at $DEPLOYMENT_URL" >&2
+          exit 1
+
+      - name: Browser proof — Claude design, desktop + mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser=await chromium.launch();
+          for (const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+            const page=await browser.newPage({viewport});
+            await page.goto('https://4planet.org/impact',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:/Find people bringing life back/i}).waitFor();
+            const tiles=page.locator('.iu-section--index .iu-tile');
+            const n=await tiles.count();
+            if(n<32) throw new Error(`expected >=32 project tiles at ${viewport.width}px; got ${n}`);
+            const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+            if(overflow>0) throw new Error(`horizontal overflow ${overflow}px at ${viewport.width}px`);
+            await page.goto('https://4planet.org/impact/project/namami-gange',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:'Namami Gange',exact:true}).waitFor();
+            await page.getByRole('heading',{name:'What the sources establish'}).waitFor();
+            await page.goto('https://4planet.org/impact/actors/national-mission-clean-ganga',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:'National Mission for Clean Ganga',exact:true}).waitFor();
+            await page.close();
+          }
+          await browser.close();
+          console.log('LIVE browser proof PASS: Claude template unchanged / desktop 1440 + mobile 390');
+          NODE
