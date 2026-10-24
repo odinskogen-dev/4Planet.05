@@ -1,8 +1,6 @@
 name: SPECIES100 Founder guarded immutable promotion
 on:
-  push:
-    branches: [ops/species100-founder-live-20261024]
-    paths: [.github/workflows/species100-founder-promote.yml]
+  workflow_dispatch:
 permissions: {contents: read}
 concurrency: {group: species100-founder-immutable-live-cutover, cancel-in-progress: false}
 jobs:
