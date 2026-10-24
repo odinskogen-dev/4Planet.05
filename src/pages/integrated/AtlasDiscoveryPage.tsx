@@ -44,6 +44,14 @@ function atlasHostHref(href: string) {
     : `https://4planet.org${href}`;
 }
 
+function atlasEmbedHref(atlasHref: string) {
+  const [, raw = ""] = atlasHref.split("?");
+  const params = new URLSearchParams(raw);
+  params.set("embed", "news");
+  params.set("surface", "atlas-discovery");
+  return `/embed/atlas?${params.toString()}`;
+}
+
 /* legacy contract marker: SOURCES / PROVENANCE — retained for automated discovery QA; not rendered */
 export function AtlasDiscoveryPage() {
   const { objectSlug = "" } = useParams();
@@ -75,6 +83,7 @@ export function AtlasDiscoveryPage() {
 
   const canonicalPath = `/atlas/${object.slug}`;
   const fullAtlasHref = atlasHostHref(object.atlasHref);
+  const embedHref = atlasEmbedHref(object.atlasHref);
 
   const share = async () => {
     const url = `https://4planet.org${canonicalPath}`;
@@ -139,7 +148,44 @@ export function AtlasDiscoveryPage() {
               </button>
             </div>
           </header>
+        </div>
 
+        <section
+          aria-labelledby="atlas-object-map-title"
+          style={{ background: "#FFFFFF", borderTop: "4px solid #2E2EFF", borderBottom: "4px solid #2E2EFF" }}
+        >
+          <div className="editorial-wrap" style={{ paddingTop: 30, paddingBottom: 24 }}>
+            <div className="editorial-kicker">4PLANET ATLAS</div>
+            <h2 id="atlas-object-map-title" style={{ marginTop: 12 }}>Explore {object.name} on the map</h2>
+          </div>
+          <iframe
+            src={embedHref}
+            title={`Explore ${object.name} in 4PLANET ATLAS`}
+            loading="eager"
+            referrerPolicy="strict-origin-when-cross-origin"
+            style={{ width: "100%", height: "min(64svh, 720px)", minHeight: 390, display: "block", border: 0, background: "#FFFFFF" }}
+          />
+          <div
+            className="editorial-wrap"
+            role="note"
+            aria-label="ATLAS embed fallback"
+            style={{ paddingTop: 22, paddingBottom: 26 }}
+          >
+            <p className="editorial-note" style={{ margin: 0 }}>
+              If the embedded map is unavailable, open the same governed view in full ATLAS.
+            </p>
+            <a
+              href={fullAtlasHref}
+              className="editorial-secondary"
+              style={{ display: "inline-block", marginTop: 14 }}
+              onClick={() => trackEvent("discovery_object_embed_fallback", { object_kind: "atlas", object_slug: object.slug, product_area: "atlas" })}
+            >
+              OPEN THE SAME VIEW IN FULL ATLAS →
+            </a>
+          </div>
+        </section>
+
+        <div className="editorial-wrap">
           <section className="editorial-section editorial-split">
             <div className="editorial-kicker">Why it matters</div>
             <div>
@@ -156,7 +202,7 @@ export function AtlasDiscoveryPage() {
           </section>
 
           <section className="editorial-section editorial-split">
-            <div className="editorial-kicker">Read this correctly</div>
+            <div className="editorial-kicker">A note on the data</div>
             <div>
               <p className="editorial-copy" style={{ marginTop: 0 }}>{human.note}</p>
               <p className="editorial-note" style={{ marginTop: 18 }}>

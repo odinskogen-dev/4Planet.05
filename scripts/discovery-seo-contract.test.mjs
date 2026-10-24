@@ -115,6 +115,16 @@ test("ATLAS useful objects are routed, searchable and prerendered from one inven
   assert.ok(atlasPage.includes("SOURCES / PROVENANCE"));
 });
 
+test("ATLAS useful objects expose the governed first-party map journey and human data note",()=>{
+  assert.match(atlasPage,/function atlasEmbedHref\(atlasHref: string\)/);
+  assert.match(atlasPage,/return `\/embed\/atlas\?\$\{params\.toString\(\)\}`/);
+  assert.match(atlasPage,/<iframe/);
+  assert.match(atlasPage,/aria-label="ATLAS embed fallback"/);
+  assert.match(atlasPage,/If the embedded map is unavailable/);
+  assert.match(atlasPage,/A note on the data/);
+  assert.doesNotMatch(atlasPage,/>Read this correctly</);
+});
+
 test("public product-host attribution includes 4NATION, SPECIES and MAGAZINE",()=>{
   for(const host of ["4nation.org","4species.com","4planetmagazine.com"]) assert.ok(analytics.includes(`"${host}"`));
   assert.ok(analytics.includes('host === "4nation.org"'));

@@ -1,3 +1,25 @@
+# ATLAS DISCOVERY OBJECTS — EMBEDDED MAP JOURNEY — 24 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** Earth, Fires and Whales discovery pages should let a visitor explore the relevant governed ATLAS view without losing the source explanation, limitations or a working continuation when the embedded map is unavailable.
+
+**ROOT CAUSE:** the lawful HEIR retained the three human-readable object pages and full-ATLAS link, but the integrated object component had diverged from the accepted donor's embedded-map journey. The owning regression asserted a legacy hidden marker instead of the visible first-party embed, fallback and human data note.
+
+**CORRECTION:** derive a first-party `/embed/atlas` URL from each existing `atlasHref`, render the governed view between the object introduction and explanation, retain a visible same-view fallback to full ATLAS, and replace the visible `Read this correctly` label with `A note on the data`.
+
+**REGRESSION EVIDENCE:** the new semantic contract fails on the baseline and requires the first-party embed helper, iframe, accessible fallback, same-view continuation and human note while forbidding the legacy visible wording. Existing Earth Now, discovery, source, route, sitemap and prerender contracts remain green.
+
+**WHAT MUST BE REUSED:** PR #384, issue #503 context, the existing ATLAS object inventory, `/embed/atlas` renderer, PublicShell, human-first public styles, source links, limitations and sole `king/test` HEIR. The homepage and current Earth Now component remain untouched.
+
+**TRUTH BOUNDARY:** passing proves the bounded candidate code, build and semantic journey only. It does not certify WebGL rendering, mobile browser behaviour, production deployment, Google indexing, user use or ecological impact.
+
+**BASE / ROLLBACK:** `king/test@2a1cb07153d902dc4be09afd80bb0cc747a09a77`; revert this three-file correction if independent Gold finds a map, route, source, layout, accessibility or fallback regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must test Earth, Fires and Whales on the exact returned SHA at 390, 430 and desktop widths with WebGL available and unavailable, then return QA_ACCEPT or the smallest failing selector/screenshot.
+
+---
+
 # ANALYTICS PRIVACY — PUBLIC ID VALUE SEMANTICS — 24 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
