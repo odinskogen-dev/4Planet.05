@@ -1,0 +1,87 @@
+name: SPECIES100 — emergency remove unapproved illustration pages, preserve 57
+on:
+  push:
+    branches: [ops/species100-founder-live-20261024]
+    paths: [.github/workflows/species100-emergency-no-illustrations-rollback.yml]
+permissions: {contents: read}
+concurrency: {group: species100-emergency-rollback, cancel-in-progress: false}
+jobs:
+  rollback:
+    name: Revert illustration-bearing extra43 only; verify original57
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      PRIOR57_WORKER: c13f2334-bb70-4f79-b3a4-41222100f287
+      BAD_EXTRA_ORIGIN: https://464ed8e9.4planet-05.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Prove exact live illustration leak and current Worker, fail closed on unrelated changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          python3 - <<'PY'
+          from urllib.request import Request,urlopen
+          import json
+          def get(url):
+            with urlopen(Request(url,headers={"User-Agent":"4SPECIES-ILLUSTRATION-POLICY-ROLLBACK/20261024","Cache-Control":"no-cache"}),timeout=30) as r:return r.read()
+          new=json.loads(get("https://4species.com/species-data/v1/red-panda.json"))
+          assert new["slug"]=="red-panda"
+          assert "/assets/species/final43/red-panda-editorial-card.svg" in new["hero"]["url"],"Current production no longer matches known bad illustration publication. Stop to avoid rollback of unrelated work."
+          previous=json.loads(get("https://4species.com/species-data/v1/orca.json"))
+          frozen=json.loads(get("https://e17e1392.4planet-05.pages.dev/species-data/v1/orca.json"))
+          assert previous==frozen,"Original39 drift - stop instead of masking regression"
+          print("SPECIES100_CONFIRMED_UNAPPROVED_ILLUSTRATION_LIVE_AND_ORIGINAL_ORCA_UNCHANGED")
+          PY
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" > /tmp/species100-zone.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/species100-zone.json)
+          test -n "$account"
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" > /tmp/species100-current.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/species100-current.json)
+          test "$current" != "$PRIOR57_WORKER"
+          echo "ILLUSTRATION_RELEASE_WORKER_VERSION=$current" >> "$GITHUB_ENV"
+          echo "SPECIES100_EMERGENCY_PRECONDITION_PASSED $current"
+      - name: Roll back exact 4species-router to proven original39 plus new18 immutable release
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 rollback "$PRIOR57_WORKER" --name 4species-router 2>&1 | tee /tmp/species100-emergency-rollback.txt
+      - name: Verify 39 original + 18 already-live profiles, no extra illustration pages on public route
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from concurrent.futures import ThreadPoolExecutor
+          from urllib.request import Request,urlopen
+          from urllib.error import HTTPError
+          import json,xml.etree.ElementTree as ET
+          domain="https://4species.com"
+          original="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(original)==39 and len(new18)==18
+          def get(url):
+            with urlopen(Request(url,headers={"User-Agent":"SPECIES100-NO-ILLUSTRATION-ROLLBACK-VERIFY/20261024","Cache-Control":"no-cache"}),timeout=35) as r:return r.read(),dict(r.headers),r.status
+          def verify(slug):
+            raw,_,_=get(domain+"/species-data/v1/"+slug+".json")
+            source="https://e17e1392.4planet-05.pages.dev" if slug in original else "https://de9e3e0e.4planet-05.pages.dev"
+            frozen,_,_=get(source+"/species-data/v1/"+slug+".json")
+            assert json.loads(raw)==json.loads(frozen),("Original profile modified",slug)
+            html,headers,code=get(domain+"/"+slug)
+            assert code==200 and (domain+"/"+slug).encode() in html,("Bad canonical page",slug)
+            assert b"editorial-card.svg" not in html,("Old species inherited illustration",slug)
+            return slug
+          with ThreadPoolExecutor(max_workers=5) as pool: passed=list(pool.map(verify,original+new18))
+          assert len(passed)==57
+          index=json.loads(get(domain+"/species-data/v1/index.json")[0])
+          slugs={p["slug"] for p in index["pages"]}
+          assert slugs==set(original+new18) and len(slugs)==57,("Public index still contains bad extra species",len(slugs))
+          xml=get(domain+"/sitemap.xml")[0]
+          urls={e.text for e in ET.fromstring(xml).iter() if e.tag.endswith("loc") and e.text}
+          assert all(domain+"/"+s in urls for s in original+new18)
+          assert domain+"/red-panda" not in urls
+          print("SPECIES100_NO_ILLUSTRATIONS_ROLLBACK_COMPLETE_39_ORIGINAL_UNCHANGED_18_UNCHANGED_57_CATALOG")
+          PY
