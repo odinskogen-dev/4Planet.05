@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 import { readStories, absoluteUrl } from "./magazine-content.mjs";
 
 const root = process.cwd();
@@ -19,6 +20,43 @@ const releasedImpactProjects = (impactDiscovery.projects ?? []).filter(impactObj
 const releasedImpactActors = Array.from(
   new Map(releasedImpactProjects.map((project) => [project.actor.slug, project.actor])).values(),
 ).filter(impactObjectIsReleasedForOrigin);
+
+
+/**
+ * One mission identity source: src/content/missions.ts. Do not maintain a second
+ * handwritten route list. The two cultural hand-off routes redirect to another
+ * canonical site and must not be indexed as local /missions/ URLs.
+ */
+function missionRoutesFromCanonicalContent() {
+  const missionPath = path.join(root, "src/content/missions.ts");
+  const ast = ts.createSourceFile(missionPath, fs.readFileSync(missionPath, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const declaration = ast.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])
+    .find((node) => ts.isIdentifier(node.name) && node.name.text === "MISSION_CONTENT");
+  if (!declaration?.initializer || !ts.isArrayLiteralExpression(declaration.initializer)) {
+    throw new Error("MISSION_CONTENT array is missing; refuse an incomplete sitemap");
+  }
+  const slugs = declaration.initializer.elements.map((entry) => {
+    if (!ts.isObjectLiteralExpression(entry)) throw new Error("Unsupported MISSION_CONTENT entry");
+    const slug = entry.properties.find((property) =>
+      ts.isPropertyAssignment(property) &&
+      ((ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) && property.name.text === "slug"));
+    if (!slug || !ts.isStringLiteral(slug.initializer) ||
+        !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug.initializer.text)) {
+      throw new Error("Missing or invalid canonical mission slug");
+    }
+    return slug.initializer.text;
+  });
+  if (!slugs.length || new Set(slugs).size !== slugs.length) {
+    throw new Error("Empty or duplicate canonical mission slugs");
+  }
+  const externalHandOffs = new Set(["m4gazine", "4film"]);
+  for (const slug of externalHandOffs) {
+    if (!slugs.includes(slug)) throw new Error("External mission hand-off changed; review canonical ownership");
+  }
+  return slugs.filter((slug) => !externalHandOffs.has(slug)).map((slug) => `/missions/${slug}`);
+}
 
 const staticRoutes = [
   "/",
@@ -67,7 +105,8 @@ const discoveryRoutes = [
   ...releasedImpactProjects.map((item) => `/impact/project/${item.slug}`),
   ...releasedImpactActors.map((item) => `/impact/actors/${item.slug}`),
 ];
-const routes = [...new Set([...staticRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
+const missionRoutes = origin === "https://4planet.org" ? missionRoutesFromCanonicalContent() : [];
+const routes = [...new Set([...staticRoutes, ...missionRoutes, ...discoveryRoutes, ...stories.map((story) => `/magazine/${story.slug}`)])];
 
 const escapeXml = (value) => String(value)
   .replaceAll("&", "&amp;")

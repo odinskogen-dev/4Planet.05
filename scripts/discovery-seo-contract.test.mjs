@@ -285,3 +285,23 @@ test("About Story organic entry is server-readable, canonical and discoverable",
   }
 });
 
+
+
+test("all locally owned canonical missions are included in the generated sitemap, excluding external hand-offs", () => {
+  const missionSource = read("src/content/missions.ts");
+  const slugs = [...missionSource.matchAll(/^\\s*slug:\\s*"([a-z0-9-]+)",\\s*domain:/gm)].map((match) => match[1]);
+  assert.equal(slugs.length, 16, "Review sitemap policy when the canonical mission roster changes");
+  assert.match(map, /missionRoutesFromCanonicalContent/);
+  assert.match(map, /ts\\.createSourceFile/);
+  execFileSync(process.execPath, ["scripts/generate-sitemap.mjs"], {
+    cwd: ROOT, stdio: "pipe",
+    env: { ...process.env, PUBLIC_SITE_ORIGIN: "https://4planet.org", VITE_PUBLIC_SITE_ORIGIN: "https://4planet.org" },
+  });
+  const sitemap = read("public/sitemap.xml");
+  const handOffs = new Set(["m4gazine", "4film"]);
+  for (const slug of slugs) {
+    const loc = `<loc>https://4planet.org/missions/${slug}</loc>`;
+    assert.equal(sitemap.includes(loc), !handOffs.has(slug), `Unexpected sitemap state: ${slug}`);
+  }
+  assert.equal(slugs.filter((slug) => !handOffs.has(slug)).length, 14);
+});
