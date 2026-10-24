@@ -43,6 +43,13 @@ jobs:
           build=$(curl -LfsS --max-time 30 -H 'Cache-Control: no-cache' "https://4planet.org/impact-build.json?proof=$EXPECTED_IMPACT_SHA")
           live_sha=$(jq -r '.sha // empty' <<<"$build")
           echo "Canonical build SHA: $live_sha"
+          immutable_home=$(curl -LfsS --max-time 30 "https://57cfa78d.4planet-05.pages.dev/impact/")
+          if grep -Fqi "Find people bringing life back" <<<"$immutable_home"; then
+            echo "IMMUTABLE HOME: current crawl representation"
+          else
+            echo "IMMUTABLE HOME: stale crawl representation"
+            printf "%s" "$immutable_home" | head -c 1600 | tr "\n" " "; echo
+          fi
           [ "$live_sha" = "$EXPECTED_IMPACT_SHA" ] || fail=1
 
           fetch home "https://4planet.org/impact/?proof=$EXPECTED_IMPACT_SHA" "Find people bringing life back"
