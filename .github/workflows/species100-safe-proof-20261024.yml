@@ -1,0 +1,122 @@
+name: 4SPECIES 100 - 43 readiness and immutable preview-4 QA NO LIVE
+on:
+  push:
+    branches: [ops/species100-safe-proof-20261024]
+    paths: [.github/workflows/species100-safe-proof-20261024.yml]
+permissions: {contents: read}
+jobs:
+  read-only-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DONOR: 748addeabfe7aa2641a8cbd672b9ca4c8aa6b1c9
+      PREVIEW: https://0debcf00.4planet-05.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Read frozen donor branch without writing it or any production surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/release/species-v1-incremental-20261022-b:refs/remotes/origin/release/species-v1-incremental-20261022-b
+          test "$(git rev-parse origin/release/species-v1-incremental-20261022-b)" = "$DONOR"
+          mkdir -p /tmp/species100 evidence
+          for f in mammals birds reptiles fishes invertebrates-plants science-claims-stage1 science-claims-stage2 science-claims-stage3 science-claims-stage4 science-claims-stage5 science-claims-stage6 science-claims-stage7 science-claims-stage8 science-claims-stage9 science-claims-stage10; do
+            git show "$DONOR:ops/species/next61/$f.mjs" > "/tmp/species100/$f.mjs"
+          done
+          git show "$DONOR:ops/species/next61/v1-visual-approved-20261022.json" > /tmp/species100/photo-approvals.json
+      - name: Account for all 43 species and identify exact per-species blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const dir="/tmp/species100/";
+          const names=["mammals","birds","reptiles","fishes","invertebrates-plants"];
+          const seeds=(await Promise.all(names.map(async n=>(await import("file://"+dir+n+".mjs"))[n==="invertebrates-plants"?"invertebratesPlants":n]))).flat();
+          const packs={};
+          for(let n=1;n<=10;n++)Object.assign(packs,Object.values(await import("file://"+dir+"science-claims-stage"+n+".mjs"))[0]);
+          const approved=JSON.parse(fs.readFileSync(dir+"photo-approvals.json","utf8")).approved;
+          const released=new Set("koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split(" "));
+          const preview4=new Set("atlas-moth peacock-spider emperor-scorpion dragon-blood-tree".split(" "));
+          if(seeds.length!==61||new Set(seeds.map(s=>s[0])).size!==61)throw Error("61 unique source species required");
+          const rows=seeds.filter(s=>!released.has(s[0])).map(s=>{
+            const [slug,name,scientificName]=s;
+            const claims=packs[slug]?.claims||[];
+            const sources=new Set(claims.map(c=>c.source?.url).filter(Boolean));
+            const publishers=new Set(claims.map(c=>c.source?.publisher).filter(Boolean));
+            const claimCheck=claims.length>=8&&sources.size>=3&&publishers.size>=2&&claims.every(c=>c.text?.length>=45&&c.source?.url?.startsWith("https://"));
+            const photo=approved[slug]||null;
+            const blockers=[...(claimCheck?[]:["SOURCE_EVIDENCE_INCOMPLETE"]),...(photo?[]:["PHOTO_NOT_VISUALLY_APPROVED"]),"INDEPENDENT_SCIENCE_GOLD_NOT_SIGNED","INDEPENDENT_MEDIA_GOLD_NOT_SIGNED"];
+            return {slug,name,scientificName,claimCount:claims.length,sourceDocuments:sources.size,publishers:publishers.size,sourceStructurePass:claimCheck,photoShortlist:!!photo,preview:preview4.has(slug),independentGold:false,releaseApproved:false,blockers};
+          });
+          if(rows.length!==43)throw Error("Expected exactly 43 unreleased");
+          const result={date:new Date().toISOString(),donor:process.env.DONOR,liveCount:57,unreleasedCount:43,sourcePacks:rows.filter(x=>x.claimCount>=8).length,sourceStructurePass:rows.filter(x=>x.sourceStructurePass).length,missingPacks:rows.filter(x=>!x.claimCount).length,previewCandidates:rows.filter(x=>x.preview).length,independentGold:0,rows};
+          fs.writeFileSync("evidence/readiness43.json",JSON.stringify(result,null,2));
+          fs.writeFileSync("evidence/readiness43.csv",["slug,claims,documents,publishers,source_ok,photo_shortlist,preview,gold,release",...rows.map(x=>[x.slug,x.claimCount,x.sourceDocuments,x.publishers,x.sourceStructurePass,x.photoShortlist,x.preview,false,false].join(","))].join("\n")+"\n");
+          console.log("SPECIES100_43_PRODUCTION_READINESS",JSON.stringify({unreleased:result.unreleasedCount,withResearch:result.sourcePacks,sourceCheckPass:result.sourceStructurePass,missing:result.missingPacks,preview4:4,independentGold:0}));
+          for(const row of rows)console.log("SPECIES100_PROFILE",JSON.stringify({slug:row.slug,claims:row.claimCount,sources:row.sourceDocuments,photo:row.photoShortlist,preview:row.preview,blocks:row.blockers}));
+          NODE
+      - name: Verify production 57 unchanged and validate four isolated preview URLs and exact hero image SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import concurrent.futures,hashlib,json,os,urllib.request,urllib.parse
+          from pathlib import Path
+          base="https://4species.com";preview=os.environ["PREVIEW"]
+          source39="https://e17e1392.4planet-05.pages.dev";source18="https://de9e3e0e.4planet-05.pages.dev"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          preview4="atlas-moth peacock-spider emperor-scorpion dragon-blood-tree".split()
+          approvals=json.loads(Path("/tmp/species100/photo-approvals.json").read_text())["approved"]
+          def get(url):
+            req=urllib.request.Request(url,headers={"User-Agent":"4SPECIES-100-READONLY/20261024","Cache-Control":"no-cache"})
+            with urllib.request.urlopen(req,timeout=35) as response:return response.read(),dict(response.headers),response.status
+          def verify_live(slug):
+            live=json.loads(get(base+"/species-data/v1/"+slug+".json")[0])
+            frozen=json.loads(get((source39 if slug in old39 else source18)+"/species-data/v1/"+slug+".json")[0])
+            candidate=json.loads(get(preview+"/species-data/v1/"+slug+".json")[0])
+            assert live==frozen and live==candidate,("Existing 57 mutated in preview or live",slug)
+            html,_,status=get(base+"/"+slug)
+            assert status==200 and "https://4species.com/"+slug in html.decode(),("Live HTML fail",slug)
+            return slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+            verified=list(pool.map(verify_live,old39+new18))
+          assert len(verified)==57
+          print("SPECIES100_LIVE57_AND_PREVIEW_JSON_EQUIVALENT",len(verified),flush=True)
+          checks=[]
+          for slug in preview4:
+            page=json.loads(get(preview+"/species-data/v1/"+slug+".json")[0])
+            assert page["slug"]==slug and page["identity"]["scientificName"]
+            facts=[v for bucket in page.get("facts",{}).values() for v in bucket]
+            sources=set(v.get("source",{}).get("url") for v in facts if isinstance(v,dict))
+            assert len(facts)>=8 and len(sources)>=3,("Insufficient facts/sources",slug)
+            html,h,status=get(preview+"/"+slug)
+            assert status==200 and "https://4species.com/"+slug in html.decode()
+            assert "noindex" in (h.get("X-Robots-Tag","")+html.decode()).lower(),("Preview MUST remain noindex",slug)
+            hero=page["hero"]
+            assert hero["url"].startswith("https://4species.com/assets/species/next61/")
+            data,_,status=get(preview+urllib.parse.urlparse(hero["url"]).path)
+            digest=hashlib.sha256(data).hexdigest()
+            assert digest==approvals[slug]["sha256"]==page["provenance"]["photoSha256"],("Hero identity/rights digest mismatch",slug)
+            assert all(hero.get(k) for k in ("credit","licence","sourcePage","alt"))
+            assert page["provenance"]["review"]=="DRAFT"
+            checks.append({"slug":slug,"url":preview+"/"+slug,"facts":len(facts),"documents":len(sources),"photoSha256":digest,"photoBytes":len(data),"independentGold":False})
+            print("SPECIES100_PREVIEW4_SOURCE_PHOTO_CANONICAL_PASS",slug,flush=True)
+          catalog=json.loads(get(preview+"/species-data/v1/index.json")[0])
+          slugs=[p["slug"] for p in catalog["pages"]]
+          assert len(slugs)==61 and len(set(slugs))==61 and set(slugs)==set(old39+new18+preview4),("Exactly 61 verified preview pages required",len(slugs))
+          Path("evidence/preview4-qa.json").write_text(json.dumps(checks,indent=2))
+          print("SPECIES100_EXACT_PREVIEW61_PASS_NO_LIVE_DEPLOY",flush=True)
+          PY
+      - name: Preserve audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: species100-full43-readiness-preview4-proof-NO-LIVE
+          path: evidence/
+          retention-days: 30
+          if-no-files-found: error
