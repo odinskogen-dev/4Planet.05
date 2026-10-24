@@ -49,6 +49,17 @@ for(const file of fs.readdirSync(DIR)){
  fs.writeFileSync(path.join(DIR,file),JSON.stringify(p,null,2)+"\n");
  report.profiles.push({slug:p.slug,scientificName:p.identity.scientificName,hasLicensedPhoto:signed4.has(p.slug),draftScience:!p.provenance.sourcePackStage1});
 }
+// Apply a precise, inspectable editorial label to the formerly unlabelled orchid-mantis ecology note.
+{
+ const orchidFile=path.join(DIR,"orchid-mantis.json");
+ const orchid=JSON.parse(fs.readFileSync(orchidFile,"utf8"));
+ const note=orchid.facts?.ecology?.[2];
+ console.log("ORCHID_MANTIS_FACT_BEFORE_FINAL_GATE",JSON.stringify(note));
+ if(!note||typeof note!=="object")throw Error("Orchid mantis ecology note is not a record");
+ note.label="Orchid mantis and wild pollinator interactions";
+ fs.writeFileSync(orchidFile,JSON.stringify(orchid,null,2)+"\\n");
+ console.log("ORCHID_MANTIS_FACT_POST_FINAL_GATE",JSON.stringify(JSON.parse(fs.readFileSync(orchidFile,"utf8")).facts.ecology[2]));
+}
 if(all.size!==43)throw Error("Must be exactly 43 distinct new pages: "+all.size);
 if(report.photographsExternallySigned4.length!==4||report.editorialWorkingImagePlaceholders.length!==39)throw Error("Media cohort failed");
 fs.mkdirSync("reports/species100",{recursive:true});
