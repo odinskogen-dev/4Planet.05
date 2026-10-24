@@ -141,8 +141,10 @@ jobs:
           [ -n "$immutable" ]
           echo "IMMUTABLE_URL=$immutable" >> "$GITHUB_ENV"
           echo "Immutable: $immutable"
-          curl -LfsS "$immutable/impact/" | grep -Fq 'Find people bringing life back'
-          curl -LfsS "$immutable/impact/project/namami-gange/" | grep -Fq 'Namami Gange'
+          curl -LfsS "$immutable/impact/" -o /tmp/immutable-impact-home.html
+          curl -LfsS "$immutable/impact/project/namami-gange/" -o /tmp/immutable-impact-project.html
+          grep -Fq 'Find people bringing life back' /tmp/immutable-impact-home.html
+          grep -Fq 'Namami Gange' /tmp/immutable-impact-project.html
 
       - name: Canonical LIVE crawl proof
         shell: bash
