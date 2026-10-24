@@ -149,14 +149,16 @@ jobs:
                   overflow:document.documentElement.scrollWidth>window.innerWidth+4,
                   schemas:document.querySelectorAll('script[type="application/ld+json"]').length
                 }));
+                console.log("SPECIES100_BROWSER4_DOM_DEBUG",JSON.stringify({slug,browser:engineName,mobile,...obj,allImages:await page.locator("img").evaluateAll(xs=>xs.slice(0,12).map(i=>({url:i.currentSrc||i.src,loaded:i.complete&&i.naturalWidth>0,naturalWidth:i.naturalWidth,alt:i.alt}))),bodySnippet:(await page.locator("body").innerText()).slice(0,300)}));
+                const filename="evidence/"+slug+"-"+engineName+(mobile?"-mobile":"-desktop")+".png";
+                await page.screenshot({path:filename,fullPage:false,animations:"disabled"});
                 assert.equal(obj.canonical,"https://4species.com/"+slug);
                 assert.ok(obj.h1.length>4);
                 assert.equal(obj.goodImages,1);
                 assert.equal(obj.broken,0);
                 assert.equal(obj.overflow,false);
                 assert.ok(obj.schemas>0);
-                const filename="evidence/"+slug+"-"+engineName+(mobile?"-mobile":"-desktop")+".png";
-                await page.screenshot({path:filename,fullPage:false,animations:"disabled"});
+
                 reports.push({slug,browser:engineName,mobile,...obj,pass:true});
                 console.log("SPECIES100_BROWSER4_PASS",slug,engineName,mobile);
               }catch(e){
