@@ -2,7 +2,7 @@ name: 4SPECIES 100 — Founder Additive Preview QA
 on:
   push:
     branches: [ops/species100-founder-live-20261024]
-    paths: [.github/workflows/species100-founder-live.yml]
+    paths: [.github/workflows/species100-founder-live.yml, ops/species100/prepare-public-43.mjs]
 permissions: {contents: read}
 
 concurrency:
