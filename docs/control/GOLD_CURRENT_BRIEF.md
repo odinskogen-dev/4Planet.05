@@ -2331,3 +2331,28 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **ROLLBACK:** revert the bounded Story metadata/test/brief commit if independent Gold finds an ownership, canonical or structured-data regression.
 
+# HUMAN FIRST / ATLAS — REAL EDGE-DISPATCH REGRESSION — 24 OCTOBER 2026
+
+**STATUS:** INDEPENDENT GOLD QA_CORRECT / REGRESSION-GUARD REPAIR ON SOLE HEIR / RELEASE HOLD.
+
+**USER ARRIVES BECAUSE:** Earth, Fires and Whales must open the governed ATLAS renderer or its honest capability fallback, never the internal Product Control dashboard.
+
+**ONE THING TO UNDERSTAND:** a component URL string is not route proof; the same URL must execute through the generated four-state worker and the current `PRODUCT_SURFACE_REGISTRY`.
+
+**PRIMARY ACTION:** preserve the existing Earth, Fires and Whales journeys and their registered `/atlas?...embed=news&surface=atlas-discovery` destinations.
+
+**SECONDARY DEPTH:** keep the human data note, sources, full-view continuation and current review-runtime SHA visible and independently checkable.
+
+**WHAT CAN BE REMOVED:** confidence based only on source regex matching `/atlas?`.
+
+**WHAT MUST BE REUSED:** PR #384, the existing `atlasDiscovery.json` records, `build-four-state-review-worker.mjs`, `PRODUCT_SURFACE_REGISTRY.json`, the owning discovery contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** this regression proves real generated-worker dispatch against deterministic upstream fixtures. It does not prove WebGL rendering, mobile layout, production LIVE, real visitor use or independent Gold acceptance.
+
+**ROOT CAUSE / FAILED TEST:** the prior owning contract inspected the component source only. Gold removed/mismatched the ATLAS registry path and showed all three iframe URLs fell to Product Control while 24/24 source tests still passed.
+
+**SIMPLEST CAPABLE EXECUTION:** one same-path test builds and executes the real worker with the actual registry for all three routes, repeats against a mismatched ATLAS registration, and verifies the response SHA guard exposes stale runtime identity. No product code, route, registry or architecture change.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only test/brief correction. Base and rollback are `king/test@94d2e02aba07e5f67ed948a69abf2ce0dca39165`.
+
+**MAKER ≠ JUDGE:** Factory repairs and verifies the guard. Independent Gold judges the exact returned SHA; merge, deployment and LIVE release remain separately authorised.
