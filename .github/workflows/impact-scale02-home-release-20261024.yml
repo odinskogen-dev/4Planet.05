@@ -1,0 +1,191 @@
+name: IMPACT SCALE02 — canonical home closure 2026-10-24
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/impact-scale02-home-release-20261024.yml
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      PRODUCT_BASE_SHA: 814b9e630ae313c30c526dcc9072f9e1b8109bab
+      MIDDLEWARE_PATCH_SHA: cbb36f7bedce6ea6e5cf3ba66199599160817d61
+      SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_4: ${{ secrets.CF_TOKEN }}
+    steps:
+      - name: Checkout exact Claude Impact donor
+        uses: actions/checkout@v4
+        with:
+          ref: 814b9e630ae313c30c526dcc9072f9e1b8109bab
+          fetch-depth: 0
+
+      - name: Apply only approved canonical-host middleware patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("functions/_middleware.js")
+          s=p.read_text()
+          old='  if (host === "4planet.org" && url.pathname !== "/" && !routeConfig) {'
+          new='  if (host === "4planet.org" && url.pathname !== "/" && (!routeConfig || normalisedPath === "/impact")) {'
+          if s.count(old)!=1:
+              raise SystemExit(f"expected exactly one middleware target; got {s.count(old)}")
+          p.write_text(s.replace(old,new))
+          PY
+          git diff -- functions/_middleware.js
+          test "$(git diff --name-only | wc -l | tr -d ' ')" = "1"
+          test "$(git diff --name-only)" = "functions/_middleware.js"
+
+      - name: Resolve Cloudflare deployment authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          [ -n "$TOKEN" ]
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json')
+          z=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$z")
+          [ -n "$account" ]
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          p=$(curl -fsS "${api}/accounts/${account}/pages/projects/4planet-05" "${auth[@]}")
+          branch=$(jq -r '.result.production_branch // "main"' <<<"$p")
+          echo "CF_PRODUCTION_BRANCH=$branch" >> "$GITHUB_ENV"
+          prior=$(curl -fsS "${api}/accounts/${account}/pages/projects/4planet-05/deployments?env=production&page=1&per_page=1" "${auth[@]}")
+          echo "Rollback: $(jq -c '.result[0] | {id,url,commit:(.deployment_trigger.metadata.commit_hash // ""),created_on}' <<<"$prior")"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+      - run: npm ci
+
+      - name: Verify live NATUREBRAIN before build
+        shell: bash
+        run: |
+          set -euo pipefail
+          d=$(curl -fsS -X POST "${SUPABASE_URL}/rest/v1/rpc/impact_lan_v02"             -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}"             -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}"             -H 'content-type: application/json' -d '{}')
+          projects=$(jq '.projects|length' <<<"$d")
+          actors=$(jq '.actors|length' <<<"$d")
+          solutions=$(jq '.solutions|length' <<<"$d")
+          issues=$(jq '.issues|length' <<<"$d")
+          env63=$(jq '[.issues[]|select(.id|startswith("problem:4p:env63:"))]|length' <<<"$d")
+          echo "NATUREBRAIN $projects projects / $actors actors / $solutions solutions / $issues issues / $env63 ENV63"
+          test "$projects" -ge 32
+          test "$actors" -ge 32
+          test "$solutions" -ge 27
+          test "$env63" -eq 63
+
+      - name: Build fresh discovery artifact
+        env:
+          CF_PAGES: "1"
+          CF_PAGES_COMMIT_SHA: ${{ github.sha }}
+          CF_PAGES_BRANCH: king/test
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: king/test
+        run: npm run build
+
+      - name: Pre-deploy truth, search and design guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'Impact — Find people bringing life back | 4PLANET' dist/impact/index.html
+          ! grep -Fq 'From Understanding to Credible Action' dist/impact/index.html
+          grep -Fq '/impact/project/namami-gange' dist/sitemap.xml
+          grep -Fq 'OAI-SearchBot' dist/robots.txt
+          grep -Fq 'Googlebot' dist/robots.txt
+          grep -Fq 'normalisedPath === "/impact"' functions/_middleware.js
+          dynamic=$(grep -Eo '<loc>https://4planet\.org/impact/[^<]+' dist/sitemap.xml | wc -l | tr -d ' ')
+          echo "Dynamic IMPACT sitemap URLs: $dynamic"
+          test "$dynamic" -ge 130
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
+          if(d.projects.length<32||d.actors.length<32||d.issues.filter(x=>x.id.startsWith('problem:4p:env63:')).length!==63) throw new Error('Impact discovery snapshot below release gate');
+          const p=d.projects.find(x=>x.slug==='namami-gange');
+          if(!p||p.claims.length<2||!p.actors.length||!p.issues.length||!p.solutions.length||!p.citations.length) throw new Error('Namami Gange admission gate failed');
+          console.log('Discovery snapshot PASS', {projects:d.projects.length,actors:d.actors.length,solutions:d.solutions.length,issues:d.issues.length});
+          NODE
+          cat > dist/impact-release.json <<JSON
+          {
+            "releaseControllerSha":"${GITHUB_SHA}",
+            "productBaseSha":"${PRODUCT_BASE_SHA}",
+            "middlewarePatchSha":"${MIDDLEWARE_PATCH_SHA}",
+            "scope":"Claude Impact templates + NATUREBRAIN snapshot + one canonical-host middleware bypass",
+            "designChanged":false
+          }
+          JSON
+
+      - name: Deploy exact isolated production artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist             --project-name 4planet-05             --branch "$CF_PRODUCTION_BRANCH"             --commit-hash "$GITHUB_SHA"             --commit-dirty=true 2>&1 | tee /tmp/deploy.txt
+          clean=$(sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/deploy.txt)
+          immutable=$(printf '%s\n' "$clean" | grep -Eo 'https://[0-9a-f]+\.4planet-05\.pages\.dev' | head -1 || true)
+          [ -n "$immutable" ]
+          echo "IMMUTABLE_URL=$immutable" >> "$GITHUB_ENV"
+          echo "Immutable: $immutable"
+          curl -LfsS "$immutable/impact/" | grep -Fq 'Find people bringing life back'
+          curl -LfsS "$immutable/impact/project/namami-gange/" | grep -Fq 'Namami Gange'
+
+      - name: Canonical LIVE crawl proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass=0
+          for i in $(seq 1 24); do
+            home=$(curl -LfsS --max-time 30 -H 'Cache-Control: no-cache' "https://4planet.org/impact/?release=$GITHUB_SHA" || true)
+            project=$(curl -LfsS --max-time 30 -H 'Cache-Control: no-cache' "https://4planet.org/impact/project/namami-gange/?release=$GITHUB_SHA" || true)
+            sitemap=$(curl -LfsS --max-time 30 "https://4planet.org/sitemap.xml?release=$GITHUB_SHA" || true)
+            rel=$(curl -LfsS --max-time 30 "https://4planet.org/impact-release.json?release=$GITHUB_SHA" || true)
+            if grep -Fq 'Find people bringing life back' <<<"$home" &&                grep -Fq 'Namami Gange' <<<"$project" &&                grep -Fq '/impact/project/namami-gange' <<<"$sitemap" &&                grep -Fq "$MIDDLEWARE_PATCH_SHA" <<<"$rel"; then
+              pass=1; break
+            fi
+            echo "canonical probe $i not converged"; sleep 5
+          done
+          test "$pass" = "1"
+          ! grep -Fq 'From Understanding to Credible Action' <<<"$home"
+          grep -Fq '<link rel="canonical"' <<<"$home"
+          grep -Fq 'application/ld+json' <<<"$home"
+          grep -Fq 'index,follow' <<<"$home"
+          echo "Canonical LIVE crawler home PASS"
+
+      - name: Browser proof current Claude design desktop + mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium >/dev/null
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const browser=await chromium.launch();
+          for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+            const page=await browser.newPage({viewport});
+            await page.goto('https://4planet.org/impact',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:/Find people bringing life back/i}).waitFor();
+            const links=await page.locator('a[href^="/impact/project/"]').evaluateAll(ns=>[...new Set(ns.map(n=>n.getAttribute('href')).filter(Boolean))]);
+            if(links.length<32) throw new Error('expected >=32 project links, got '+links.length);
+            const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+            if(overflow>0) throw new Error('horizontal overflow '+overflow);
+            await page.goto('https://4planet.org/impact/project/namami-gange',{waitUntil:'networkidle',timeout:90000});
+            await page.getByRole('heading',{level:1,name:'Namami Gange',exact:true}).waitFor();
+            await page.close();
+          }
+          await browser.close();
+          console.log('Claude design/runtime PASS desktop + mobile');
+          NODE
