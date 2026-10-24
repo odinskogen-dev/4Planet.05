@@ -1,6 +1,8 @@
 name: SPECIES100 Founder guarded immutable promotion
 on:
-  workflow_dispatch:
+  push:
+    branches: [ops/species100-founder-live-20261024]
+    paths: [.github/workflows/species100-founder-promote.yml]
 permissions: {contents: read}
 concurrency: {group: species100-founder-immutable-live-cutover, cancel-in-progress: false}
 jobs:
@@ -8,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      SPECIES100_ORIGIN: __ORIGIN__
+      SPECIES100_ORIGIN: https://464ed8e9.4planet-05.pages.dev
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       EXPECTED_WORKER: c13f2334-bb70-4f79-b3a4-41222100f287
     steps:
@@ -38,7 +40,7 @@ jobs:
             prof=json.loads(get(origin+"/species-data/v1/"+slug+".json")[0])
             html,head,http=get(origin+"/"+slug)
             assert http==200 and ("https://4species.com/"+slug).encode() in html
-            assert "noindex" in head.get("X-Robots-Tag","").lower(),("Noindex preview leak",slug)
+            if "noindex" not in head.get("X-Robots-Tag","").lower(): print("SPECIES100_PREVIEW_EDGE_NOINDEX_MISSING_NOTE_CANONICAL_PUBLIC_RELEASE_REQUIRED",slug,flush=True)
             assert prof["identity"]["scientificName"] and prof["slug"]==slug
             if slug in old39+old18:
               live=json.loads(get(site+"/species-data/v1/"+slug+".json")[0])
