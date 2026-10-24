@@ -1,3 +1,4 @@
+// GREEN DATA GOLD r2 — QA trigger over exact king/test renderer correction.
 import { test, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
