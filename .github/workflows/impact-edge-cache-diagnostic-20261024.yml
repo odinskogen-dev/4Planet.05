@@ -1,0 +1,60 @@
+name: IMPACT Edge Cache Diagnostic 2026-10-24
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/impact-edge-cache-diagnostic-20261024.yml]
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+      TOKEN_4: ${{ secrets.CF_TOKEN }}
+    steps:
+      - name: Inspect 4planet.org routing and cache policy read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for candidate in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$candidate" ] && { TOKEN="$candidate"; break; }; done
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"
+          TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          api=https://api.cloudflare.com/client/v4
+          auth=(-H "Authorization: Bearer ${TOKEN}" -H 'Content-Type: application/json')
+          zone=$(curl -fsS "${api}/zones?name=4planet.org&status=active" "${auth[@]}")
+          zid=$(jq -r '.result[0].id // empty' <<<"$zone")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          echo "ZONE $zid ACCOUNT $account"
+
+          echo "=== WORKER ROUTES ==="
+          curl -sS "${api}/zones/${zid}/workers/routes" "${auth[@]}" | jq '{success,errors,result}' || true
+
+          echo "=== WORKER CUSTOM DOMAINS ==="
+          curl -sS "${api}/accounts/${account}/workers/domains" "${auth[@]}" | jq '{success,errors,result:[.result[]? | select(.hostname|contains("4planet.org"))]}' || true
+
+          echo "=== ZONE RULESETS ==="
+          rs=$(curl -sS "${api}/zones/${zid}/rulesets" "${auth[@]}")
+          jq '{success,errors,result:[.result[]? | {id,name,kind,phase}]}' <<<"$rs" || true
+          jq -r '.result[]? | [.id,.name,.phase] | @tsv' <<<"$rs" | while IFS=$'\t' read -r id name phase; do
+            case "$phase" in
+              http_request_cache_settings|http_request_dynamic_redirect|http_request_transform|http_request_origin|http_config_settings)
+                echo "=== RULESET $name / $phase / $id ==="
+                curl -sS "${api}/zones/${zid}/rulesets/${id}" "${auth[@]}" | jq '{success,errors,result:{id:.result.id,name:.result.name,phase:.result.phase,rules:[.result.rules[]? | {id,action,expression,description,enabled,action_parameters}]}}' || true
+                ;;
+            esac
+          done
+
+          echo "=== PAGE RULES ==="
+          curl -sS "${api}/zones/${zid}/pagerules?status=active&per_page=100" "${auth[@]}" | jq '{success,errors,result}' || true
+
+          echo "=== CACHE HEADERS ==="
+          for u in             https://4planet.org/impact/             https://4planet.org/impact/project/namami-gange/             https://57cfa78d.4planet-05.pages.dev/impact/; do
+            echo "--- $u"
+            curl -sSIL --max-time 20 "$u" | tr -d '\r' | grep -Ei '^(HTTP/|age:|cache-control:|cf-cache-status:|etag:|last-modified:|vary:|location:)' || true
+          done
