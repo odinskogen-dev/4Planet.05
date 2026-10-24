@@ -53,6 +53,23 @@ jobs:
           echo "=== PAGE RULES ==="
           curl -sS "${api}/zones/${zid}/pagerules?status=active&per_page=100" "${auth[@]}" | jq '{success,errors,result}' || true
 
+
+          echo "=== IMPACT PATH RESOLUTION ==="
+          for u in \
+            https://4planet.org/impact \
+            https://4planet.org/impact/ \
+            https://4planet.org/impact/index.html \
+            https://57cfa78d.4planet-05.pages.dev/impact \
+            https://57cfa78d.4planet-05.pages.dev/impact/ \
+            https://57cfa78d.4planet-05.pages.dev/impact/index.html; do
+            tmp=$(mktemp)
+            code=$(curl -LsS --max-time 20 -w "%{http_code}" -o "$tmp" "$u")
+            title=$(grep -Eio "<title>[^<]*</title>" "$tmp" | head -1 || true)
+            if grep -Fqi "Find people bringing life back" "$tmp"; then state=CURRENT; elif grep -Fqi "From Understanding to Credible Action" "$tmp"; then state=LEGACY; else state=OTHER; fi
+            echo "$u | HTTP=$code | $state | $title | bytes=$(wc -c < "$tmp")"
+            rm -f "$tmp"
+          done
+
           echo "=== CACHE HEADERS ==="
           for u in             https://4planet.org/impact/             https://4planet.org/impact/project/namami-gange/             https://57cfa78d.4planet-05.pages.dev/impact/; do
             echo "--- $u"
