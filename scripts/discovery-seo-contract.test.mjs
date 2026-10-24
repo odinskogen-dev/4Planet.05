@@ -1,4 +1,4 @@
-import test from "node:test";import assert from "node:assert/strict";import{mkdtempSync,readFileSync,rmSync,writeFileSync}from"node:fs";import{execFileSync}from"node:child_process";import{tmpdir}from"node:os";import{join}from"node:path";import{fileURLToPath,pathToFileURL}from"node:url";const ROOT=new URL("..",import.meta.url),read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx"),speciesMedia=read("src/data/speciesMedia.ts"),sourceEnvelopes=read("src/data/speciesSourceEnvelope.ts");
+import test from "node:test";import assert from "node:assert/strict";import{mkdtempSync,readFileSync,rmSync,writeFileSync}from"node:fs";import{execFileSync}from"node:child_process";import{tmpdir}from"node:os";import{join}from"node:path";import{fileURLToPath,pathToFileURL}from"node:url";import{runInNewContext}from"node:vm";const ROOT=new URL("..",import.meta.url),read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8"),inv=JSON.parse(read("src/data/discoveryInventory.json")),atlas=JSON.parse(read("src/data/atlasDiscovery.json")),router=read("src/routes/router.tsx"),atlasPage=read("src/pages/integrated/AtlasDiscoveryPage.tsx"),map=read("scripts/generate-sitemap.mjs"),pre=read("scripts/prerender-discovery-seo.mjs"),sr=read("src/pages/integrated/SpeciesRoute.tsx"),robots=read("public/robots.txt"),idx=read("index.html"),analytics=read("src/analytics/Analytics.tsx"),speciesMedia=read("src/data/speciesMedia.ts"),sourceEnvelopes=read("src/data/speciesSourceEnvelope.ts");
 
 async function buildReviewWorker(registry,heirSha){
   const dir=mkdtempSync(join(tmpdir(),"4planet-atlas-dispatch-"));
@@ -18,14 +18,22 @@ function atlasIframePathFromComponent(item,source=atlasPage){
   assert.ok(assignment,`${item.slug}: ${bindingName} must have a component assignment`);
   const expression=assignment[1].trim();
   if(expression==="atlasEmbedHref(object.atlasHref)"){
-    const params=new URLSearchParams(new URL(item.atlasHref,"https://4planet.org").search);
-    params.set("embed","news");
-    params.set("surface","atlas-discovery");
-    return `/atlas?${params.toString()}`;
+    const helperSource=source.match(/function atlasEmbedHref\(atlasHref: string\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(helperSource,`${item.slug}: component must define atlasEmbedHref`);
+    const helper=runInNewContext(`(atlasHref)=>{${helperSource[1]}}`,{URLSearchParams});
+    return helper(item.atlasHref);
   }
   const literal=expression.match(/^(["'])(.*?)\1$/);
   if(literal)return literal[2];
   assert.fail(`${item.slug}: unsupported ATLAS iframe binding ${expression}`);
+}
+
+function assertAtlasIframeQuery(item,iframePath){
+  const sourceParams=new URL(item.atlasHref,"https://4planet.org").searchParams;
+  const effectiveParams=new URL(iframePath,"https://4planet.org").searchParams;
+  for(const[key,value]of sourceParams)assert.equal(effectiveParams.get(key),value,`${item.slug}: ATLAS iframe must preserve ${key}`);
+  assert.equal(effectiveParams.get("embed"),"news",`${item.slug}: ATLAS iframe must identify the news embed`);
+  assert.equal(effectiveParams.get("surface"),"atlas-discovery",`${item.slug}: ATLAS iframe must identify the discovery surface`);
 }
 test("inventory",()=>{assert.ok(inv.places.some(p=>p.slug==="kenya"&&p.indexable));assert.ok(inv.species.length>=26);assert.equal(inv.species.filter(s=>s.indexable).length,26);assert.equal(inv.species.filter(s=>!s.indexable).length,0);for(const slug of["african-savanna-elephant","lion","cheetah","blue-whale","asian-elephant","tiger","polar-bear","giant-panda","whale-shark","green-sea-turtle","leopard","eastern-gorilla","chimpanzee","bornean-orangutan","emperor-penguin","acropora-palmata"])assert.ok(inv.species.some(s=>s.slug===slug&&s.indexable===true&&s.state==="CURATED"))});
 test("routes",()=>{assert.match(router,/path="\/places"/);assert.match(router,/path="\/place\/:slug"/);assert.match(map,/discoveryInventory/);assert.match(pre,/Prerendered discovery HTML/)});
@@ -168,6 +176,7 @@ test("ATLAS discovery routes execute through the real four-state worker registry
     for(const item of atlas.objects){
       const pageUrl=new URL(`https://test.4planet.org/atlas/${item.slug}/`);
       const iframePath=atlasIframePathFromComponent(item);
+      assertAtlasIframeQuery(item,iframePath);
       const upstream=[];
       globalThis.fetch=async(request)=>{upstream.push(new URL(request.url).pathname+new URL(request.url).search);return new Response("ATLAS HEIR",{status:200})};
       const response=await actual.worker.fetch(new Request(new URL(iframePath,pageUrl).href));
@@ -194,6 +203,16 @@ test("ATLAS discovery routes execute through the real four-state worker registry
       const rejected=await actual.worker.fetch(new Request(new URL(iframePath,`https://test.4planet.org/atlas/${item.slug}/`).href));
       assert.deepEqual(upstream,[],`${item.slug} broken iframe binding must not reach ATLAS`);
       assert.match(await rejected.text(),/4PLANET_ PRODUCT CONTROL/);
+    }
+
+    const queryDroppingHelper=atlasPage.replace(
+      "const params = new URLSearchParams(raw);",
+      "const params = new URLSearchParams();",
+    );
+    assert.notEqual(queryDroppingHelper,atlasPage,"negative control must remove the source query input");
+    for(const item of atlas.objects){
+      const iframePath=atlasIframePathFromComponent(item,queryDroppingHelper);
+      assert.throws(()=>assertAtlasIframeQuery(item,iframePath),/ATLAS iframe must preserve/);
     }
 
     globalThis.fetch=async()=>new Response("ATLAS HEIR",{status:200});
