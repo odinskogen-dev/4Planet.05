@@ -125,12 +125,37 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
 
   for (const s of solutions) {
     const path = `/impact/solution/${s.slug}`;
+    const claims = s.claims ?? [];
+    const citations = s.citations ?? [];
+    const relatedProjects = s.projectRefs ?? projects.filter((p) => (p.solutions ?? []).some((x) => x.id === s.id));
+    const relatedIssues = s.issues ?? [];
+    const claimHtml = claims.length
+      ? `<h2>What the sources establish</h2><ul>${claims.map((claim) => `<li><p>${esc(claim.statement)}</p>${claim.url ? `<p><small><a href="${esc(claim.url)}" rel="noreferrer nofollow">${esc(claim.source || host(claim.url))}</a> · ${esc(claim.strength || "source record")}</small></p>` : ""}</li>`).join("")}</ul>`
+      : "";
+    const mechanismHtml = s.mechanism ? `<h2>How the method works</h2><p>${esc(s.mechanism)}</p>` : "";
+    const applicabilityHtml = (s.applicability ?? []).length ? `<h2>Where it may apply</h2><ul>${s.applicability.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+    const risksHtml = (s.risks ?? []).length ? `<h2>Limitations and risks</h2><ul>${s.risks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+    const issuesHtml = relatedIssues.length ? `<h2>Issues connected to this method</h2><ul>${relatedIssues.map((i) => `<li><a href="/impact/issue/${esc(i.slug)}">${esc(i.name)}</a></li>`).join("")}</ul>` : "";
+    const projectsHtml = relatedProjects.length ? `<h2>Projects using this method</h2><ul>${relatedProjects.map((project) => `<li><a href="${projectHref(esc(project.slug))}">${esc(project.name)}</a></li>`).join("")}</ul>` : "";
     writeRoute(path, pageHtml({
       pathName: path,
-      title: `${s.name} — Method | 4PLANET Impact`,
-      description: s.description || s.name,
-      body: `<main><p>4PLANET IMPACT / METHOD</p><h1>${esc(s.name)}</h1>${s.description ? `<p>${esc(s.description)}</p>` : ""}</main>`,
-      jsonLd: { "@context": "https://schema.org", "@type": "WebPage", name: s.name, url: url(path) },
+      title: `${s.name} — Method and evidence | 4PLANET Impact`,
+      description: `${s.description || s.name} See source-grounded projects, evidence, applicability and limitations in 4PLANET Impact.`,
+      body: `<main><p>4PLANET IMPACT / METHOD</p><h1>${esc(s.name)}</h1>${s.description ? `<p>${esc(s.description)}</p>` : ""}${mechanismHtml}${claimHtml}${issuesHtml}${projectsHtml}${applicabilityHtml}${risksHtml}${sourcesList(citations)}${boundary}</main>`,
+      jsonLd: {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: s.name,
+        description: s.description || undefined,
+        url: url(path),
+        dateModified: s.lastReviewed || undefined,
+        citation: citations,
+        about: { "@type": "Thing", name: s.name, identifier: s.id, description: s.description || undefined },
+        mentions: [
+          ...relatedIssues.map((i) => ({ "@type": "Thing", name: i.name, url: url(`/impact/issue/${i.slug}`) })),
+          ...relatedProjects.map((project) => ({ "@type": "Project", name: project.name, url: url(projectHref(project.slug)) })),
+        ],
+      },
     }));
   }
 
