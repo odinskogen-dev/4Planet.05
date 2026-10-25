@@ -9,7 +9,7 @@ export async function verifyMapOutcome({page,frame,width,outDir=out}) {
   const embedded = page.frameLocator('.earth-now-map iframe');
   const canvas = embedded.locator('.maplibregl-canvas');
   const fallback = embedded.locator('main h2').filter({hasText:'The map is unavailable in this browser.'});
-  await embedded.locator('main, .maplibregl-canvas').first().waitFor({timeout:45000});
+  await canvas.or(fallback).first().waitFor({state:'visible',timeout:45000});
   assert.equal(await embedded.locator('.atlas-panel').isVisible(),false);
 
   if (!await canvas.isVisible()) {
