@@ -255,8 +255,19 @@ test("rejects encoded identity-shaped values in every path field", () => {
   const encoded = "/profile/%31%31%30%32%39%39%31%32%33%34%35";
   const doubleEncoded = "/profile/%2531%2531%2530%2532%2539%2539%2531%2532%2533%2534%2535";
   const punctuated = "/profile/%31%31%30-%32%39%39/%31%32%33%34%35";
+  const separatorVariants = [
+    "/profile/11+02+99+12345",
+    "/profile/11%2B02%2B99%2B12345",
+    "/profile/11%2002%2099%2012345",
+    "/profile/11%252B02%252B99%252B12345",
+    "/profile/11%252002%252099%252012345",
+    "/profile/11~02~99~12345",
+    "/profile/11;02;99;12345",
+    "/profile/11,02,99,12345",
+    "/profile/11@02@99@12345",
+  ];
 
-  for (const path of [raw, encoded, doubleEncoded, punctuated]) {
+  for (const path of [raw, encoded, doubleEncoded, punctuated, ...separatorVariants]) {
     assert.deepEqual(privacySafeEventParameters({
       page_path: path,
       entry_path: path,
@@ -281,6 +292,15 @@ test("unsafe current pathname suppresses BOTH sinks without caller path properti
     "/profile/%31%31%30%32%39%39%31%32%33%34%35",
     "/profile/%2531%2531%2530%2532%2539%2539%2531%2532%2533%2534%2535",
     "/profile/%31%31%30-%32%39%39/%31%32%33%34%35",
+    "/profile/11+02+99+12345",
+    "/profile/11%2B02%2B99%2B12345",
+    "/profile/11%2002%2099%2012345",
+    "/profile/11%252B02%252B99%252B12345",
+    "/profile/11%252002%252099%252012345",
+    "/profile/11~02~99~12345",
+    "/profile/11;02;99;12345",
+    "/profile/11,02,99,12345",
+    "/profile/11@02@99@12345",
   ];
 
   for (const path of paths) {
@@ -288,6 +308,24 @@ test("unsafe current pathname suppresses BOTH sinks without caller path properti
     assert.equal(trackEvent("audit_test", { product_area: "impact" }), false, path);
     assert.equal(ga4Events.length, 0, path);
     assert.equal(postHogEvents.length, 0, path);
+  }
+});
+
+test("legitimate public routes still reach BOTH analytics sinks", async () => {
+  const paths = [
+    "/species/orca",
+    "/atlas/place/bergen",
+    "/livingsystems",
+    "/impact",
+    "/magazine/forest-health",
+  ];
+
+  for (const path of paths) {
+    const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime(path);
+    assert.equal(trackEvent("audit_test", { product_area: "impact" }), true, path);
+    assert.equal(ga4Events.length, 1, path);
+    assert.equal(postHogEvents.length, 1, path);
+    assert.equal(ga4Events[0][2].page_location, `https://4planet.org${path}`, path);
   }
 });
 

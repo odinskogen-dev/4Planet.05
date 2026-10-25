@@ -1,3 +1,27 @@
+# ANALYTICS PRIVACY — URL-SEPARATOR IDENTITY GUARD — 25 OCTOBER 2026
+
+**STATUS:** INDEPENDENT GOLD QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
+
+**USER RISK:** a consented visit to a path containing a synthetic identity-, phone- or payment-shaped digit sequence separated by valid URL punctuation or decoded whitespace could reach GA4 `page_location` and PostHog.
+
+**ROOT CAUSE:** the existing shared sensitive-material predicate recognised seven-digit sequences only across `._:/-`. The path grammar also admits `+~;,@` and percent escapes, while URL inspection converts plus to whitespace. Those separator classes therefore evaded the guard.
+
+**FAILING-FIRST:** the owning contract added nine Gold-returned separator variants across all three path fields and current-navigation delivery. On the exact base it passed 16/18 test cases; both new negative cases failed because the raw plus path was retained and dispatched.
+
+**CORRECTION:** extend the one existing decoded sensitive-material predicate to treat `+`, `~`, `;`, `,`, `@` and whitespace as possible separators inside identity-shaped digit sequences. Do not add a second policy helper or change analytics consent, host, public-route or numeric-counter behaviour.
+
+**PERMANENT REGRESSION:** raw plus, `%2B`, `%20`, double-encoded plus/space, tilde, semicolon, comma and @ must be rejected from `page_path`, `entry_path`, `landing_path`, current navigation, GA4 `page_location` and both sinks. Five legitimate public routes must still reach both mocked sinks.
+
+**WHAT MUST BE REUSED:** PR #476, lawful `king/test` HEIR, the shared sanitizer/navigation predicate, existing consent and host controls, GA4/PostHog adapters and the owning analytics privacy contract.
+
+**TRUTH BOUNDARY:** passing proves synthetic exact-source and mocked-sink rejection only. It does not prove a real leak, production deployment, historical-data deletion, live telemetry safety or user use.
+
+**BASE / ROLLBACK:** `king/test@6ad529cc5b521b76bc0839ef23b928e56d96f1ae`; revert the bounded three-file commit if independent Gold finds a legitimate-route, consent, host, counter or sink regression.
+
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the 57-control matrix and exact separator cases on the returned SHA before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # ONE-LEAN COLD START — SEMANTIC REGRESSION IMMUNITY — 25 OCTOBER 2026
 
 **STATUS:** INDEPENDENT GOLD QA_CORRECT / TEST-ONLY HEIR REPAIR / RE-GOLD REQUIRED / NO INSTRUCTION, PRODUCT, RUNTIME OR RELEASE CHANGE.

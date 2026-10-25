@@ -179,7 +179,7 @@ function containsSensitiveAnalyticsMaterial(value: string): boolean {
     || /\b[^\s/@]+@[^\s/@]+\.[a-z]{2,}\b/i.test(inspected)
     || /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/.test(inspected)
     || /\bbearer[\s_:.-]+[A-Za-z0-9._~-]{8,}/i.test(inspected)
-    || /(?:\d[._:/-]*){7}/.test(inspected);
+    || /(?:\d[._:/+~;,@\s-]*){7}/.test(inspected);
 }
 
 export function isSensitiveAnalyticsNavigation(): boolean {
