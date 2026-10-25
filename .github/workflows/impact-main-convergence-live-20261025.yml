@@ -1,0 +1,162 @@
+name: IMPACT — current-main convergence LIVE 2026-10-25
+
+on:
+  push:
+    branches:
+      - release/impact-main-convergence-20261025
+
+permissions:
+  contents: read
+
+jobs:
+  prove-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SUPABASE_URL: https://ghvdzetmplqkdtfqiror.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_H6TT_u7YO4DVlvQdCJ06mA_VEvgxsOE
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prove current-main ancestry and Claude design lock
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=f3392550d5d6e7b360a80fb530debf23184699ab
+          git merge-base --is-ancestor "$BASE" HEAD
+          test "$(git ls-files -s src/impact/ui/HomeTemplate.tsx | awk '{print $2}')" = "013c7ebaa6b7bcf958db3afe8680343fc2bde5c2"
+          test "$(git ls-files -s src/impact/ui/ProjectTemplate.tsx | awk '{print $2}')" = "3c46f27cab71e3389a0ad5399503d3acd14e667b"
+          test "$(git ls-files -s src/impact/ui/ActorTemplate.tsx | awk '{print $2}')" = "826494e5347c92f2f5f0861933fc495c48b9fca8"
+          test "$(git ls-files -s src/impact/ui/IssueTemplate.tsx | awk '{print $2}')" = "7566bc6956c13ff2cbc6f010b852398fbdbe8296"
+          test "$(git ls-files -s src/impact/ui/SolutionTemplate.tsx | awk '{print $2}')" = "86f3e773f9c36654a398e3c73472c67a2148deda"
+          test "$(git ls-files -s src/styles/impact-living-action-network.css | awk '{print $2}')" = "e10266a761ef58512d8a61fb469b4e596149136f"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+      - run: npm ci
+
+      - name: NATUREBRAIN publication integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=$(curl -fsS --max-time 25 -X POST "$SUPABASE_URL/rest/v1/rpc/impact_lan_v02" -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY" -H "Content-Type: application/json" -d '{}')
+          echo "$p" >/tmp/impact.json
+          test "$(jq '.projects|length' /tmp/impact.json)" -ge 55
+          test "$(jq '.actors|length' /tmp/impact.json)" -ge 52
+          test "$(jq '.solutions|length' /tmp/impact.json)" -ge 37
+          test "$(jq '.places|length' /tmp/impact.json)" -ge 55
+          test "$(jq '[.issues[]|select(.id|startswith("problem:4p:env63:"))]|length' /tmp/impact.json)" -eq 63
+          test "$(jq '[.solutions[]|select(.profile.publication=="public")]|length' /tmp/impact.json)" -ge 35
+
+      - name: IMPACT truth contracts
+        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs scripts/impact-proof-chain-integrity-contract.test.mjs
+
+      - name: Typecheck current main + IMPACT
+        run: npm run typecheck
+
+      - name: Build current-main artifact from live NATUREBRAIN
+        env:
+          CF_PAGES: "1"
+          CF_PAGES_COMMIT_SHA: ${{ github.sha }}
+          CF_PAGES_BRANCH: release/impact-main-convergence-20261025
+          GITHUB_SHA: ${{ github.sha }}
+        run: npm run build
+
+      - name: Discovery closure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.sha' dist/impact-build.json)" = "$GITHUB_SHA"
+          test "$(jq -r '.impactProjects' dist/impact-build.json)" -ge 55
+          for f in             dist/impact/project/agave-restoration-initiative/index.html             dist/impact/project/borneo-peat-swamp-restoration/index.html             dist/impact/actors/bat-conservation-international/index.html             dist/impact/issue/habitat-fragmentation/index.html             dist/impact/solution/peatland-rewetting/index.html; do
+            test -f "$f"
+            grep -qi '<link rel="canonical"' "$f"
+            grep -qi 'application/ld+json' "$f"
+          done
+          grep -q '/impact/project/agave-restoration-initiative' dist/sitemap.xml
+          grep -q '/impact/solution/peatland-rewetting' dist/sitemap.xml
+          impact_urls=$(grep -Eo '<loc>https://4planet\.org/impact/[^<]+' dist/sitemap.xml | wc -l | tr -d ' ')
+          echo "Dynamic IMPACT sitemap URLs: $impact_urls"
+          test "$impact_urls" -ge 208
+
+      - name: Resolve Cloudflare authority
+        env:
+          TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_2: ${{ secrets.CLOUDFLARE_TOKEN }}
+          TOKEN_3: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_4: ${{ secrets.CF_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOKEN=""
+          for c in "$TOKEN_1" "$TOKEN_2" "$TOKEN_3" "$TOKEN_4"; do [ -n "$c" ] && { TOKEN="$c"; break; }; done
+          [ -n "$TOKEN" ]
+          TOKEN=$(printf '%s' "$TOKEN" | tr -d '\r\n')
+          TOKEN="${TOKEN#Bearer }"; TOKEN="${TOKEN#bearer }"; TOKEN="${TOKEN#CLOUDFLARE_API_TOKEN=}"; TOKEN="${TOKEN#CF_API_TOKEN=}"
+          TOKEN="${TOKEN#\"}"; TOKEN="${TOKEN%\"}"; TOKEN="${TOKEN#\'}"; TOKEN="${TOKEN%\'}"
+          echo "::add-mask::$TOKEN"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
+      - name: Deploy current-main-derived artifact to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx wrangler@4 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=true 2>&1 | tee /tmp/deploy.txt
+          clean=$(sed -r 's/\x1B\[[0-9;]*[mK]//g' /tmp/deploy.txt)
+          url=$(printf '%s\n' "$clean" | grep -Eo 'https://[0-9a-f]+\.4planet-05\.pages\.dev' | head -1)
+          [ -n "$url" ]
+          echo "DEPLOYMENT_URL=$url" >> "$GITHUB_ENV"
+          echo "Immutable deployment: $url"
+          for i in $(seq 1 15); do
+            x=$(curl -LfsS "$url/impact-build.json" || true)
+            [ "$(jq -r '.sha // empty' <<<"$x" 2>/dev/null || true)" = "$GITHUB_SHA" ] && break
+            sleep 4
+          done
+          test "$(jq -r '.sha' <<<"$x")" = "$GITHUB_SHA"
+
+      - name: Canonical LIVE + regression proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 20); do
+            x=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact-build.json?v=$GITHUB_SHA" || true)
+            [ "$(jq -r '.sha // empty' <<<"$x" 2>/dev/null || true)" = "$GITHUB_SHA" ] && break
+            sleep 5
+          done
+          test "$(jq -r '.sha' <<<"$x")" = "$GITHUB_SHA"
+          for u in             https://4planet.org/             https://4planet.org/impact             https://4planet.org/impact/project/agave-restoration-initiative             https://4planet.org/impact/solution/peatland-rewetting             https://4planet.org/now             https://4planet.org/missions; do
+            code=$(curl -Lso /dev/null -w '%{http_code}' -H 'Cache-Control: no-cache' "$u?v=$GITHUB_SHA")
+            echo "$u -> $code"
+            test "$code" = "200"
+          done
+
+      - name: Browser proof desktop + mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          const b=await chromium.launch();
+          for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+            const p=await b.newPage({viewport});
+            await p.goto('https://4planet.org/impact',{waitUntil:'networkidle',timeout:90000});
+            await p.getByRole('heading',{level:1,name:/Find people bringing life back/i}).waitFor();
+            const n=await p.locator('.iu-section--index .iu-tile').count();
+            if(n<55) throw new Error('Impact project count '+n);
+            if(await p.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)>0) throw new Error('Impact overflow');
+            await p.goto('https://4planet.org/impact/project/agave-restoration-initiative',{waitUntil:'networkidle',timeout:90000});
+            await p.getByRole('heading',{level:1,name:'Agave Restoration Initiative',exact:true}).waitFor();
+            await p.goto('https://4planet.org/impact/solution/peatland-rewetting',{waitUntil:'networkidle',timeout:90000});
+            await p.getByRole('heading',{level:1,name:'Peatland rewetting',exact:true}).waitFor();
+            await p.goto('https://4planet.org/',{waitUntil:'domcontentloaded',timeout:90000});
+            if(await p.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)>2) throw new Error('Homepage overflow');
+            await p.close();
+          }
+          await b.close();
+          console.log('CURRENT MAIN CONVERGENCE BROWSER PASS');
+          NODE
