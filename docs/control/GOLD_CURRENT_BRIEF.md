@@ -1,3 +1,15 @@
+# MAX EXPOSURE — MISSION DISCOVERY INTERNAL LINKS — 25 OCTOBER 2026
+
+**STATE:** BOUNDED HEIR CANDIDATE / INDEPENDENT GOLD REQUIRED / NO LIVE OR INDEXATION CLAIM.
+**RECEIVER:** Existing MAX EXPOSURE issue #483, integration PR #131, sole HEIR king/test.
+**USER NEED:** People who discover any local mission should navigate meaningfully to related same-domain missions and the domain overview; text-only crawlers must find the same real HTML anchors.
+**SMALLEST WORK:** Enhance only existing mission server-prerender HTML, reuse 14 local canonical mission records; add one regression to the existing discovery contract. Do not edit UI styles, routes, auth, analytics or public release.
+**TRUTH:** Source relationships are determined solely by the canonical mission domain; the cultural external hand-offs m4gazine and 4film remain excluded. The 16 mission source lists are empty; do not fabricate citations, claimed achievements or impact.
+**PROOF:** Validate same-domain relations, escaping, server HTML, link integrity, existing sitemap and production build, independent Gold and preview proof. Source changes are not live SEO outcomes.
+**ROLLBACK:** Restore exact previous file blobs / revert this bounded patch by verified GitHub commit. Founder promotion remains separate.
+
+---
+
 # ANALYTICS PRIVACY — COMPLETE STRING VALUE-SHAPE GUARD — 25 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
