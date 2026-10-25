@@ -1,0 +1,66 @@
+name: 4SPECIES 57 — IndexNow live URL submission with acceptance evidence
+on:
+  push:
+    branches: [ops/species57-search-discovery-20261025]
+    paths: [.github/workflows/species57-indexnow-confirmed-submit-20261025.yml]
+permissions: {contents: read}
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Confirm live 57, latest sitemap and real public IndexNow ownership key
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p indexnow57-evidence
+          KEY=8f4c2d91a7b64e3fa1c9d0b6e5274a83
+          curl -fsSL --retry 2 --max-time 25 -A "4SPECIES57-LIVE-INDEXNOW/20261025" "https://4species.com/$KEY.txt" -o /tmp/key.txt
+          test "$(cat /tmp/key.txt)" = "$KEY"
+          curl -fsSL --retry 2 --max-time 30 -A "4SPECIES57-LIVE-INDEXNOW/20261025" "https://4species.com/sitemap.xml" -o /tmp/live-sitemap.xml
+          curl -fsSL --retry 2 --max-time 30 -A "4SPECIES57-LIVE-INDEXNOW/20261025" "https://4species.com/species-data/v1/index.json" -o /tmp/live-index.json
+          python3 - <<'PY'
+          import json,urllib.request,concurrent.futures,xml.etree.ElementTree as ET
+          from pathlib import Path
+          catalog=json.load(open("/tmp/live-index.json"))["pages"]
+          names=[x["slug"] for x in catalog]
+          assert len(names)==len(set(names))==57
+          xml=ET.parse("/tmp/live-sitemap.xml")
+          urls={x.text for x in xml.iter() if x.tag.endswith("loc") and x.text}
+          assert "https://4species.com/species-directory" in urls
+          assert all("https://4species.com/"+s in urls for s in names)
+          assert "https://4species.com/red-panda" not in urls
+          def verify(slug):
+            r=urllib.request.Request("https://4species.com/"+slug,headers={"User-Agent":"4SPECIES57-LIVE-INDEXNOW/20261025","Cache-Control":"no-cache"})
+            with urllib.request.urlopen(r,timeout=30) as resp:
+              h=resp.read()
+              assert resp.status==200 and ("https://4species.com/"+slug).encode() in h
+              assert "noindex" not in resp.headers.get("X-Robots-Tag","").lower()
+            return "https://4species.com/"+slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:public=list(pool.map(verify,names))
+          assert len(public)==57
+          data={"host":"4species.com","key":"8f4c2d91a7b64e3fa1c9d0b6e5274a83","keyLocation":"https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt","urlList":public}
+          Path("/tmp/submit.json").write_text(json.dumps(data,ensure_ascii=False))
+          Path("indexnow57-evidence/manifest.json").write_text(json.dumps({"liveVerified":57,"urls":public,"keyOwnership":True,"inSitemap":True,"noUnreleased":True},indent=2))
+          print("SPECIES57_INDEXNOW_PRECONDITION_57_LIVE_CRAWLABLE_AND_KEY_PASS",flush=True)
+          PY
+      - name: Submit once to worldwide participating IndexNow engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --retry 2 --max-time 45 -sS -o /tmp/indexnow-reply.txt -w '%{http_code}' \
+            -A '4SPECIES57-LIVE-INDEXNOW/20261025' \
+            -X POST 'https://api.indexnow.org/indexnow' \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            --data-binary @/tmp/submit.json)
+          echo "SPECIES57_INDEXNOW_RESPONSE_HTTP=$code"
+          echo "INDEXNOW_REPLY $(head -c 250 /tmp/indexnow-reply.txt)"
+          printf '{"http":%s,"submittedUrls":57,"meaning":"Submission received; actual search-engine indexing NOT verified"}\n' "$code" > indexnow57-evidence/result.json
+          if [ "$code" != "200" ] && [ "$code" != "202" ]; then exit 1; fi
+          echo "SPECIES57_INDEXNOW_57_URLS_ACKNOWLEDGED_NO_INDEXING_GUARANTEE"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-indexnow-57-canonical-acceptance-evidence
+          path: indexnow57-evidence/
+          retention-days: 30
