@@ -1,3 +1,25 @@
+# ANALYTICS PRIVACY — ENCODED NAVIGATION IDENTITY GUARD — 25 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
+
+**USER RISK:** a consented visit to a path containing a percent-encoded identity-, phone- or payment-shaped digit sequence could reach GA4 `page_location` and PostHog even when the event caller supplied no path property.
+
+**ROOT CAUSE:** string-value identity controls inspected raw generic values, while path admission and navigation dispatch did not apply the same digit-shape rule to the decoded pathname. Percent encoding therefore bypassed the shared telemetry boundary.
+
+**CORRECTION:** reuse one identity-shaped digit policy after bounded decoding in both current-navigation suppression and `page_path` / `entry_path` / `landing_path` admission. Unsupported nested or malformed encoding remains fail-closed. Unsafe current navigation suppresses both sinks before inferred GA4 location is built.
+
+**FAILING-FIRST / REGRESSION:** the owning contract moved from 15/17 to 17/17. It covers raw, single-encoded, double-encoded and punctuation-separated long digits in all three path fields; direct current-path delivery to mocked GA4 and PostHog with no caller path property; and legitimate Species, Atlas and Living Systems paths.
+
+**WHAT MUST BE REUSED:** PR #476, lawful `king/test` HEIR, existing analytics sanitizer, consent/host/navigation controls, GA4 and PostHog adapters, and the owning privacy contract.
+
+**TRUTH BOUNDARY:** passing proves synthetic source-and-sink rejection on the exact candidate only. It does not prove deployment, historical-data deletion, live telemetry safety or user use.
+
+**BASE / ROLLBACK:** `king/test@7559355cbbe07e7ddab9b63937432db17e679dff`; revert the bounded three-file commit if independent Gold finds a legitimate-route, consent, host or sink regression.
+
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the exact encoded paths and both sinks on the returned SHA. Founder release remains separate.
+
+---
+
 # ANALYTICS PRIVACY — BOUNDED NUMERIC COUNTER ADMISSION — 25 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.

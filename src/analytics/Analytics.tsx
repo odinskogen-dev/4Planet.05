@@ -178,7 +178,8 @@ function containsSensitiveAnalyticsMaterial(value: string): boolean {
   return /(?:^|[/?#&])(?:access_token|refresh_token|id_token|token_hash|authorization_code|authorization_id|code|state|client_secret|session_token|auth_return)=/i.test(inspected)
     || /\b[^\s/@]+@[^\s/@]+\.[a-z]{2,}\b/i.test(inspected)
     || /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/.test(inspected)
-    || /\bbearer[\s_:.-]+[A-Za-z0-9._~-]{8,}/i.test(inspected);
+    || /\bbearer[\s_:.-]+[A-Za-z0-9._~-]{8,}/i.test(inspected)
+    || /(?:\d[._:/-]*){7}/.test(inspected);
 }
 
 export function isSensitiveAnalyticsNavigation(): boolean {

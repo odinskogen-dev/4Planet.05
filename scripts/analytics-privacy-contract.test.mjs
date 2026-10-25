@@ -35,22 +35,22 @@ const { privacySafeEventParameters } = await import(
   "data:text/javascript;base64," + Buffer.from(transpiled).toString("base64")
 );
 
-function analyticsRuntime() {
+function analyticsRuntime(pathname = "/species/orca") {
   const runtimeSource = [
     "const ga4Events = [];",
     "const postHogEvents = [];",
-    "const window = { location: { hostname: '4planet.org', pathname: '/species/orca', origin: 'https://4planet.org' }, gtag: (...args) => ga4Events.push(args) };",
+    `const window = { location: { hostname: '4planet.org', pathname: ${JSON.stringify(pathname)}, search: '', hash: '', origin: 'https://4planet.org' }, gtag: (...args) => ga4Events.push(args) };`,
     "const document = { getElementById: (id) => id === '4planet-ga4' ? {} : null };",
     "function readConsent() { return 'granted'; }",
     "function isInternalAnalyticsBrowser() { return false; }",
     "function isAnalyticsHostAllowed() { return true; }",
-    "function isSensitiveAnalyticsNavigation() { return false; }",
     "function canonicalHost(host) { return host; }",
     "function capturePostHog(name, properties) { postHogEvents.push([name, properties]); return true; }",
     ...[
       "decodeForAnalyticsInspection",
       "hasUnsupportedNestedAnalyticsEncoding",
       "containsSensitiveAnalyticsMaterial",
+      "isSensitiveAnalyticsNavigation",
       "privacySafeEventParameters",
       "trackEvent",
       "dispatchAnalyticsEvent",
@@ -248,6 +248,47 @@ test("admits only bounded non-negative integer counters", () => {
     option_count: 1.5,
     unsupported_items: 100001,
   }), {});
+});
+
+test("rejects encoded identity-shaped values in every path field", () => {
+  const raw = "/profile/11029912345";
+  const encoded = "/profile/%31%31%30%32%39%39%31%32%33%34%35";
+  const doubleEncoded = "/profile/%2531%2531%2530%2532%2539%2539%2531%2532%2533%2534%2535";
+  const punctuated = "/profile/%31%31%30-%32%39%39/%31%32%33%34%35";
+
+  for (const path of [raw, encoded, doubleEncoded, punctuated]) {
+    assert.deepEqual(privacySafeEventParameters({
+      page_path: path,
+      entry_path: path,
+      landing_path: path,
+    }), {});
+  }
+
+  assert.deepEqual(privacySafeEventParameters({
+    page_path: "/species/orca",
+    entry_path: "/atlas/place/bergen",
+    landing_path: "/livingsystems",
+  }), {
+    page_path: "/species/orca",
+    entry_path: "/atlas/place/bergen",
+    landing_path: "/livingsystems",
+  });
+});
+
+test("unsafe current pathname suppresses BOTH sinks without caller path properties", async () => {
+  const paths = [
+    "/profile/11029912345",
+    "/profile/%31%31%30%32%39%39%31%32%33%34%35",
+    "/profile/%2531%2531%2530%2532%2539%2539%2531%2532%2533%2534%2535",
+    "/profile/%31%31%30-%32%39%39/%31%32%33%34%35",
+  ];
+
+  for (const path of paths) {
+    const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime(path);
+    assert.equal(trackEvent("audit_test", { product_area: "impact" }), false, path);
+    assert.equal(ga4Events.length, 0, path);
+    assert.equal(postHogEvents.length, 0, path);
+  }
 });
 
 test("drops identity-shaped values before BOTH analytics sinks", async () => {
