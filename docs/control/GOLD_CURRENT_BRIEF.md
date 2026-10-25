@@ -1,3 +1,15 @@
+# MISSION SCIENTIFIC SOURCE COVERAGE 12/12 — 25 OCTOBER 2026
+
+**STATUS:** ADDITIVE SOURCE-LINK STAGING, NOT PUBLISHED, NOT INDEPENDENT GOLD.
+**NEED:** Give every one of the 12 science/environment/human-system missions a legitimate authoritative context source in its canonical mission record, leaving the four 4CULTURE projects without invented ecological evidence.
+**NEW VERIFIED SOURCES:** UNEP Out of the Blue / marine rewilding; IEA World Energy Outlook 2025 / energy; UNEP Circular Economy in Cities 2024 / circular-city; UNEP Sustainable and Circular Textiles / fashion.
+**TRUTH:** These works substantiate broad environmental context, not each unique 4PLANET assertion, partnership, delivery, commercial readiness or verified impact. A single source pointer is a starting reference only, NOT comprehensive sourcing or Gold article quality.
+**IMPLEMENTATION:** Only existing mission-source records and owning source regression; the existing shared AST projection and client automatically display verified references.
+**PROOF:** Own test updated 8→12, exact source readback, full production build and independently reviewed output. No LIVE release; preserve Founder gates.
+**ROLLBACK:** revert only this bounded three-file code/docs update by exact commit if source-to-claim matching or release fails.
+
+---
+
 # MISSION SOURCE REFERENCES — CANONICAL VERIFIED BACKGROUND — 25 OCTOBER 2026
 
 **STATUS:** 8 SOURCE-BACKGROUND POINTERS / BOUNDED HEIR CODE CANDIDATE / INDEPENDENT GOLD REQUIRED / NO PUBLIC RELEASE.
