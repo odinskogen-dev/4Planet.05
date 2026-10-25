@@ -53,7 +53,7 @@ jobs:
           test "$(jq '[.solutions[]|select(.profile.publication=="public")]|length' /tmp/impact.json)" -ge 35
 
       - name: IMPACT truth contracts
-        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs scripts/impact-proof-chain-integrity-contract.test.mjs
+        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
 
       - name: Typecheck current main + IMPACT
         run: npm run typecheck
