@@ -131,6 +131,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "Release branch: canonical authority deferred until main fast-forward; immutable browser proof follows."
+            exit 0
+          fi
           for i in $(seq 1 20); do
             x=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact-build.json?v=$GITHUB_SHA" || true)
             [ "$(jq -r '.sha // empty' <<<"$x" 2>/dev/null || true)" = "$GITHUB_SHA" ] && break
