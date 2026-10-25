@@ -4,12 +4,20 @@ import { readFileSync } from "node:fs";
 import ts from "typescript";
 
 const source = readFileSync(new URL("../src/analytics/Analytics.tsx", import.meta.url), "utf8");
+const productAnalyticsSource = readFileSync(new URL("../src/analytics/ProductAnalytics.ts", import.meta.url), "utf8");
 const sourceFile = ts.createSourceFile(
   "Analytics.tsx",
   source,
   ts.ScriptTarget.ES2022,
   true,
   ts.ScriptKind.TSX,
+);
+const productAnalyticsSourceFile = ts.createSourceFile(
+  "ProductAnalytics.ts",
+  productAnalyticsSource,
+  ts.ScriptTarget.ES2022,
+  true,
+  ts.ScriptKind.TS,
 );
 
 function functionSource(name) {
@@ -18,6 +26,14 @@ function functionSource(name) {
   ));
   assert.ok(declaration, `${name} must exist`);
   return declaration.getText(sourceFile);
+}
+
+function productFunctionSource(name) {
+  const declaration = productAnalyticsSourceFile.statements.find((statement) => (
+    ts.isFunctionDeclaration(statement) && statement.name?.text === name
+  ));
+  assert.ok(declaration, `${name} must exist in ProductAnalytics.ts`);
+  return declaration.getText(productAnalyticsSourceFile);
 }
 
 let analyticsRuntimeSequence = 0;
@@ -72,12 +88,14 @@ function analyticsRuntime(pathname = "/species/orca") {
     "function isAnalyticsHostAllowed() { return true; }",
     "function canonicalHost(host) { return host; }",
     "function capturePostHog(name, properties) { postHogEvents.push([name, properties]); return true; }",
+    "function isAtlasEmbedKind(value) { return ['news', 'species', 'place', 'impact', 'nation', 'brands', 'personal', 'solutions', 's4piens'].includes(value); }",
     ...[
       "decodeForAnalyticsInspection",
       "hasUnsupportedNestedAnalyticsEncoding",
       "containsSensitiveAnalyticsMaterial",
       "isSensitiveAnalyticsNavigation",
       "privacySafeEventParameters",
+      "isEmbeddedAnalyticsSurface",
       "trackEvent",
       "dispatchAnalyticsEvent",
     ].map(functionSource),
@@ -89,6 +107,89 @@ function analyticsRuntime(pathname = "/species/orca") {
   analyticsRuntimeSequence += 1;
   return import("data:text/javascript;base64," + Buffer.from(runtimeTranspiled).toString("base64") + `#runtime=${analyticsRuntimeSequence}`);
 }
+
+function routeAnalyticsRuntime({
+  pathname,
+  search = "",
+  consent = "granted",
+  internal = false,
+  allowedHost = true,
+  hostname = "4planet.org",
+} = { pathname: "/species/orca" }) {
+  const runtimeSource = [
+    "const ga4Events = [];",
+    "const postHogEvents = [];",
+    `const window = { location: { hostname: ${JSON.stringify(hostname)}, pathname: ${JSON.stringify(pathname)}, search: ${JSON.stringify(search)}, hash: '', origin: 'https://4planet.org' }, gtag: (...args) => ga4Events.push(args) };`,
+    "const document = { getElementById: (id) => id === '4planet-ga4' ? {} : null };",
+    `function readConsent() { return ${JSON.stringify(consent)}; }`,
+    `function isInternalAnalyticsBrowser() { return ${JSON.stringify(internal)}; }`,
+    `function isAnalyticsHostAllowed() { return ${JSON.stringify(allowedHost)}; }`,
+    "function canonicalHost(host) { return host; }",
+    "function capturePostHog(name, properties) { postHogEvents.push([name, properties]); return true; }",
+    "function isAtlasEmbedKind(value) { return ['news', 'species', 'place', 'impact', 'nation', 'brands', 'personal', 'solutions', 's4piens'].includes(value); }",
+    ...[
+      "decodeForAnalyticsInspection",
+      "hasUnsupportedNestedAnalyticsEncoding",
+      "containsSensitiveAnalyticsMaterial",
+      "isSensitiveAnalyticsNavigation",
+      "privacySafeEventParameters",
+      "isEmbeddedAnalyticsSurface",
+      "trackEvent",
+      "dispatchAnalyticsEvent",
+    ].map(functionSource),
+    ...[
+      "safeToken",
+      "trackProductEntry",
+      "trackMeaningfulUse",
+    ].map(productFunctionSource),
+    "export { trackEvent, trackProductEntry, trackMeaningfulUse, ga4Events, postHogEvents };",
+  ].join("\n\n");
+  const runtimeTranspiled = ts.transpileModule(runtimeSource, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+  }).outputText;
+  analyticsRuntimeSequence += 1;
+  return import("data:text/javascript;base64," + Buffer.from(runtimeTranspiled).toString("base64") + `#route-runtime=${analyticsRuntimeSequence}`);
+}
+
+test("route analytics cannot bypass the valid Atlas embed boundary", async () => {
+  for (const [pathname, search] of [
+    ["/embed/atlas", "?embed=news&surface=discovery"],
+    ["/atlas", "?embed=species"],
+  ]) {
+    const runtime = await routeAnalyticsRuntime({ pathname, search });
+    assert.equal(runtime.trackProductEntry("atlas", pathname, "internal"), false);
+    assert.equal(runtime.trackEvent("return_visit", { product_area: "atlas" }), false);
+    assert.equal(runtime.trackMeaningfulUse("atlas", "engaged_time", "route"), false);
+    assert.equal(runtime.ga4Events.length, 0);
+    assert.equal(runtime.postHogEvents.length, 0);
+  }
+
+  for (const control of [
+    { pathname: "/species/orca", search: "" },
+    { pathname: "/embed/atlas", search: "?embed=unknown" },
+    { pathname: "/now/", search: "?embed=news" },
+  ]) {
+    const runtime = await routeAnalyticsRuntime(control);
+    assert.equal(runtime.trackProductEntry("species", control.pathname, "direct"), true);
+    assert.equal(runtime.trackEvent("return_visit", { product_area: "species" }), true);
+    assert.equal(runtime.trackMeaningfulUse("species", "engaged_time", "route"), true);
+    assert.equal(runtime.ga4Events.length, 3);
+    assert.equal(runtime.postHogEvents.length, 3);
+  }
+
+  for (const control of [
+    { pathname: "/species/orca", consent: "denied" },
+    { pathname: "/species/orca", consent: null },
+    { pathname: "/species/orca", internal: true },
+    { pathname: "/species/orca", allowedHost: false },
+    { pathname: "/auth/4planet/callback", search: "?code=TEST_CREDENTIAL" },
+  ]) {
+    const runtime = await routeAnalyticsRuntime(control);
+    assert.equal(runtime.trackProductEntry("species", control.pathname, "direct"), false);
+    assert.equal(runtime.ga4Events.length, 0);
+    assert.equal(runtime.postHogEvents.length, 0);
+  }
+});
 
 test("keeps useful anonymous product events", () => {
   const row = { object_kind: "species", object_slug: "orca", product_area: "species", attempts: 2, internal: false };

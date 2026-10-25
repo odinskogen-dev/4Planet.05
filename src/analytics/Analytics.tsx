@@ -414,6 +414,7 @@ export function trackEvent(name: string, parameters: Record<string, string | num
     || readConsent() !== "granted"
     || isInternalAnalyticsBrowser()
     || !isAnalyticsHostAllowed(window.location.hostname)
+    || isEmbeddedAnalyticsSurface(window.location.pathname, window.location.search)
     || isSensitiveAnalyticsNavigation()) return false;
 
   const shared = privacySafeEventParameters({

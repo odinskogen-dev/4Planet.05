@@ -46,6 +46,8 @@
 
 # EARTH NOW — EMBEDDED ANALYTICS CONSENT CLUTTER — 25 OCTOBER 2026
 
+**GOLD RETURN / ROUTE TELEMETRY CORRECTION:** Independent Gold found that component-level suppression left `ProductRouteAnalytics` able to reach the shared `trackEvent` under stored granted consent. The smallest correction adds the same canonical valid-embed predicate to `trackEvent` itself, before either sink. The owning source-to-sink regression must prove zero `product_entry`, `return_visit` and `meaningful_use` events on both valid Atlas embeds while standalone, invalid-kind and spoofed-route controls remain permitted. Denied/no-consent, internal, disallowed-host and sensitive-navigation controls remain blocked. This is a bounded correction on exact parent `15363697f11a96feba55e1da41caae0c5a7fac7f`; independent Gold must replay both sinks and physical browser/mobile paths. No merge, deployment, LIVE release or user-use claim.
+
 **STATUS:** CODE FIXED / BOUNDED ISSUE #503 HEIR CANDIDATE / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
 
 **USER DEFECT:** production Earth Now renders a second analytics-preferences bar inside its Atlas iframe, covering the bottom of the map fallback even though the parent page owns the visitor journey.
