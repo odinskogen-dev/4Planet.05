@@ -67,7 +67,9 @@ jobs:
               data=json.loads(js)
               immutable="https://e17e1392.4planet-05.pages.dev" if slug in old39 else "https://de9e3e0e.4planet-05.pages.dev"
               prior=json.loads(fetch(immutable+"/species-data/v1/"+slug+".json")[0])
-              row.update({"http":status,"title":p.title.strip(),"description":p.meta.get("description",""),"canonical":p.canon,"robotsHeader":head.get("X-Robots-Tag",""),"robotsMeta":p.meta.get("robots",""),"ogTitle":p.meta.get("og:title",""),"ogImage":p.meta.get("og:image",""),"h1Count":p.headings,"jsonldCount":len(scripts),"schemaTypes":sorted(kinds),"scientificName":data.get("identity",{}).get("scientificName"),"imageUrl":(data.get("hero") or {}).get("url"),"imageCredit":(data.get("hero") or {}).get("credit"),"imageLicense":(data.get("hero") or {}).get("licence"),"imageSource":(data.get("hero") or {}).get("sourcePage"),"dataUnchanged":data==prior,"htmlHash":sha256(content).hexdigest()})
+              hero=data.get("hero")
+              hero=hero if isinstance(hero,dict) else {}
+              row.update({"http":status,"title":p.title.strip(),"description":p.meta.get("description",""),"canonical":p.canon,"robotsHeader":head.get("X-Robots-Tag",""),"robotsMeta":p.meta.get("robots",""),"ogTitle":p.meta.get("og:title",""),"ogImage":p.meta.get("og:image",""),"h1Count":p.headings,"jsonldCount":len(scripts),"schemaTypes":sorted(kinds),"scientificName":data.get("identity",{}).get("scientificName"),"imageUrl":hero.get("url") or p.meta.get("og:image"),"imageCredit":hero.get("credit"),"imageLicense":hero.get("licence"),"imageSource":hero.get("sourcePage"),"legacyAutomaticHero":data.get("hero")=="auto","dataUnchanged":data==prior,"htmlHash":sha256(content).hexdigest()})
               if status!=200:row["errors"].append("HTTP_NOT_200")
               if not row["title"]:row["errors"].append("MISSING_TITLE")
               if not row["description"]:row["errors"].append("MISSING_DESCRIPTION")
@@ -75,11 +77,11 @@ jobs:
               if "noindex" in (row["robotsMeta"]+" "+row["robotsHeader"]).lower():row["errors"].append("BLOCKED_INDEX")
               if bad:row["errors"].append("JSON_LD_PARSE_FAIL")
               if "Taxon" not in kinds or "WebPage" not in kinds:row["errors"].append("TAXON_SCHEMA_MISSING")
-              if not all(row.get(x) for x in ("imageUrl","imageCredit","imageLicense","imageSource")):row["errors"].append("HERO_PROVENANCE_INCOMPLETE")
+              if slug in new18 and not all(row.get(x) for x in ("imageUrl","imageCredit","imageLicense","imageSource")):row["errors"].append("NEW_HERO_PROVENANCE_INCOMPLETE")
               if not row["dataUnchanged"]:row["errors"].append("IMMUTABLE_ARTICLE_CHANGED")
               if "editorial-card" in str(row["imageUrl"]):row["errors"].append("PROHIBITED_ILLUSTRATION")
               if slug in new18:
-                img=(data.get("hero") or {}).get("url","")
+                img=hero.get("url","")
                 if not img.startswith(SITE+"/assets/species/next61/"):row["errors"].append("NEW_IMAGE_NOT_FIRST_PARTY")
                 else:
                   image,_,code=fetch(img)
