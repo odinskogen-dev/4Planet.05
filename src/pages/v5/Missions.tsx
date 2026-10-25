@@ -61,6 +61,8 @@ export function MissionDetail() {
   const dhero = domainHero(m.domain);
   const second = missionSecondary(m.slug);
   const status = publicStatus(m.slug);
+  const relatedMissions = content.getMissionsByDomain(m.domain).filter((candidate) =>
+    candidate.slug !== m.slug && candidate.slug !== "m4gazine" && candidate.slug !== "4film");
 
   return (
     <PublicShell>
@@ -256,6 +258,26 @@ export function MissionDetail() {
               </div>
             )}
           </Reveal>
+
+          {relatedMissions.length > 0 && (
+            <nav aria-label="Related missions" style={{ marginTop: "clamp(36px,5vw,64px)" }}>
+              <h2 style={{ ...display, color: "#fff", fontSize: "clamp(21px,2.5vw,32px)", lineHeight: 1.1 }}>
+                Explore related {strip(m.domain)} missions
+              </h2>
+              <ul style={{ listStyle: "none", margin: "20px 0 0", padding: 0, display: "grid", gap: 12 }}>
+                {relatedMissions.map((candidate) => (
+                  <li key={candidate.slug}>
+                    <Link to={"/missions/" + candidate.slug} className="link"
+                      style={{ display: "block", borderTop: "1px solid rgba(255,255,255,.18)",
+                        paddingTop: 12, color: "#fff", textDecoration: "none", lineHeight: 1.5 }}>
+                      <span style={{ color: acc, fontWeight: 600 }}>{candidate.name}</span>
+                      <span style={{ color: "rgba(255,255,255,.76)" }}> — {candidate.hero}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", borderTop: `1px solid rgba(255,255,255,.18)`, marginTop: "clamp(40px,6vw,72px)", paddingTop: 22 }}>
             <Link to={"/domains/" + dslug(m.domain)} className="link" style={{ fontSize: 14, color: acc }}>← {strip(m.domain)}</Link>
