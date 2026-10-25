@@ -1,3 +1,25 @@
+# ANALYTICS PRIVACY — COMPLETE STRING VALUE-SHAPE GUARD — 25 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** consented public analytics must retain useful anonymous events without forwarding values shaped like personal identity, telephone or payment-card numbers to GA4 or PostHog.
+
+**ROOT CAUSE:** the shared sanitizer governed keys and selected public identifiers, but generic allowlisted strings still fell through to `tokenValue`; namespaced IDs also accepted long digit sequences when punctuation split the digits. Gold reproduced 11 synthetic false accepts and both-sink propagation.
+
+**CORRECTION:** reject any allowlisted string containing seven or more digits in one punctuation-separated sequence before identifier, path, host or generic-token admission. Preserve the existing explicit key allowlist, field-specific public-ID patterns, legitimate public enums/IDs/slugs, numeric aggregates, booleans, consent, host and sensitive-navigation gates, and the single sanitized payload shared by both sinks.
+
+**REGRESSION EVIDENCE:** the owning contract first fails on all 11 exact Gold-returned values and both sink assertions. It protects real public IMPACT IDs and ordinary anonymous values, then proves the corrected shared sanitizer strips all 11 values before mocked GA4 and PostHog.
+
+**WHAT MUST BE REUSED:** PR #476, lawful `king/test` HEIR, existing analytics privacy contract, explicit field allowlist, shared sanitizer, consent/host/navigation controls and both analytics sinks.
+
+**TRUTH BOUNDARY:** passing proves only the bounded synthetic confidentiality contract on the exact candidate source. It does not prove a real personal-data leak, production deployment, live telemetry safety, user use or impact.
+
+**BASE / ROLLBACK:** `king/test@c3f51ef65cbe37eb9e0ca0111ea62b4f0fdf5a48`; revert this three-file correction if independent Gold finds a legitimate public telemetry, consent, dispatch or sink regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must replay the seven generic, four punctuation-formatted and both-sink cases on the exact returned SHA before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # 4SPECIES — NEW-PROFILE PHOTO ATTESTATION — 25 OCTOBER 2026
 
 **STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO NEW PROFILE, MERGE, DEPLOYMENT OR LIVE RELEASE.

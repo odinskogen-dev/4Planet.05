@@ -343,6 +343,9 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
     variant_id: /^(?:variant:[a-z0-9][a-z0-9._:-]{0,119}|[a-z][a-z0-9._-]{0,99})$/,
   };
   const blockedKeys = /(?:^|_)(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|client_secret|password|email|phone|secret|api_key|apikey|jwt|otp)(?:$|_)/i;
+  // Treat seven or more digits as identity-shaped even when punctuation splits
+  // the sequence. A public-looking namespace is not proof of public provenance.
+  const identityShapedDigitValue = /(?:\d[._:/-]*){7}/;
   const tokenValue = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
   const pathValue = /^\/[A-Za-z0-9._~!$'()*+,;=:@%/-]{0,219}$/;
   const hostValue = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
@@ -367,7 +370,7 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
         const bounded = value.trim();
         // Public canonical IDs are namespaced/slugs, never raw long digit sequences
         // that can be mistaken for identity, telephone or payment-card data.
-        if (!/\d{7,}/.test(bounded) && publicIdentifierValuePattern.test(bounded)) safe[key] = bounded;
+        if (!identityShapedDigitValue.test(bounded) && publicIdentifierValuePattern.test(bounded)) safe[key] = bounded;
       }
       continue;
     }
@@ -380,7 +383,8 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
       continue;
     }
     const bounded = value.trim();
-    if (!bounded || bounded.length > 220 || containsSensitiveAnalyticsMaterial(bounded)) continue;
+    if (!bounded || bounded.length > 220 || containsSensitiveAnalyticsMaterial(bounded)
+      || identityShapedDigitValue.test(bounded)) continue;
     if (pathKeys.has(key)) {
       const inspected = decodeForAnalyticsInspection(bounded);
       if (pathValue.test(bounded) && !/[?#]/.test(inspected)) safe[key] = bounded;

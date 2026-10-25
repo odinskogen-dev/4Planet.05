@@ -172,6 +172,50 @@ test("rejects identity-shaped values in every returned identifier field", () => 
   }), {});
 });
 
+test("rejects Gold-returned digit shapes across every allowlisted string field", () => {
+  assert.deepEqual(privacySafeEventParameters({
+    destination: "11029912345",
+    action_kind: "4111111111111111",
+    error_kind: "4798765432",
+    content_group: "11029912345",
+    placement: "4111111111111111",
+    product_area: "11029912345",
+    decision_state: "11029912345",
+    actor_id: "actor:4p:impact:110299-12345",
+    project_id: "project:4p:impact:4111-1111-1111-1111",
+    action_id: "action:4p:impact:110299-12345",
+    campaign_id: "campaign:110299-12345",
+  }), {});
+});
+
+test("preserves legitimate public values while rejecting punctuation-separated digit payloads", () => {
+  assert.deepEqual(privacySafeEventParameters({
+    destination: "impact",
+    action_kind: "external",
+    error_kind: "source_unavailable",
+    content_group: "species",
+    placement: "atlas_embed",
+    product_area: "impact",
+    decision_state: "evidence_ready",
+    actor_id: "P17-A036",
+    project_id: "project:4p:impact:bay-of-biscay",
+    action_id: "action:4p:impact:shared-label:a",
+    campaign_id: "campaign:orca-return",
+  }), {
+    destination: "impact",
+    action_kind: "external",
+    error_kind: "source_unavailable",
+    content_group: "species",
+    placement: "atlas_embed",
+    product_area: "impact",
+    decision_state: "evidence_ready",
+    actor_id: "P17-A036",
+    project_id: "project:4p:impact:bay-of-biscay",
+    action_id: "action:4p:impact:shared-label:a",
+    campaign_id: "campaign:orca-return",
+  });
+});
+
 test("drops identity-shaped values before BOTH analytics sinks", async () => {
   const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
   assert.equal(trackEvent("test_event", {
@@ -216,6 +260,33 @@ test("drops returned identifier bypasses before BOTH analytics sinks", async () 
   });
   assert.deepEqual(postHogEvents[0][1], {
     product_area: "impact",
+    site_host: "4planet.org",
+  });
+});
+
+test("drops all Gold-returned generic and formatted values before BOTH analytics sinks", async () => {
+  const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
+  assert.equal(trackEvent("audit_test", {
+    destination: "11029912345",
+    action_kind: "4111111111111111",
+    error_kind: "4798765432",
+    content_group: "11029912345",
+    placement: "4111111111111111",
+    product_area: "11029912345",
+    decision_state: "11029912345",
+    actor_id: "actor:4p:impact:110299-12345",
+    project_id: "project:4p:impact:4111-1111-1111-1111",
+    action_id: "action:4p:impact:110299-12345",
+    campaign_id: "campaign:110299-12345",
+  }), true);
+
+  assert.equal(ga4Events.length, 1);
+  assert.equal(postHogEvents.length, 1);
+  assert.deepEqual(ga4Events[0][2], {
+    site_host: "4planet.org",
+    page_location: "https://4planet.org/species/orca",
+  });
+  assert.deepEqual(postHogEvents[0][1], {
     site_host: "4planet.org",
   });
 });
