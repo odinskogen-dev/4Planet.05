@@ -414,7 +414,7 @@ test("mission source citations are canonical, HTTPS and visible to both crawlers
   const extractor = read("scripts/mission-content.mjs");
   const renderer = read("scripts/prerender-discovery-seo.mjs");
   const client = read("src/pages/v5/Missions.tsx");
-  const expected = ["cle4n", "wh4les", "cor4l", "clim4te", "am4zonia", "species", "rewild-land", "food"];
+  const expected = ["cle4n", "wh4les", "cor4l", "rewild-marine", "clim4te", "am4zonia", "species", "rewild-land", "food", "en4rgy", "circular-city", "f4shion"];
   for (const slug of expected) {
     const match = canonical.match(new RegExp('slug: "' + slug + '", domain:[\\s\\S]*?sources: \\[\\{ title: "([^"]+)", url: "(https:\\/\\/[^"]+)", confidence: "high" \\}\\]'));
     assert.ok(match, slug + ": mission requires an evidence-labelled canonical source");
