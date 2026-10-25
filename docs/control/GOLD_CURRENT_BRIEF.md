@@ -22,27 +22,27 @@
 
 ---
 
-# ONE-LEAN COLD START — SEMANTIC REGRESSION IMMUNITY RETURN 02 — 25 OCTOBER 2026
+# ONE-LEAN COLD START — CLAUSE-SCOPED REGRESSION IMMUNITY RETURN 03 — 25 OCTOBER 2026
 
 **STATUS:** INDEPENDENT GOLD QA_CORRECT / TEST-ONLY HEIR REPAIR / RE-GOLD REQUIRED / NO INSTRUCTION, PRODUCT, RUNTIME OR RELEASE CHANGE.
 
 **USER VALUE:** memoryless 4PLANET agents must begin with the sole short derived 00 router, then retrieve only one task's exact original authority. The guard must prevent bulk historical or private ODIN context from silently returning as mandatory startup.
 
-**ROOT CAUSE:** the first semantic repair still required both historical archives on one line, recognised too few private-memory and derived-authority synonyms, and skipped every line containing `do not` even when the phrase was `do not skip` inside an unsafe mandate. Seven semantically equivalent regressions therefore still passed.
+**ROOT CAUSE:** the guard evaluated whole lines. A single `do not`, `on-demand only` or historical-quote marker suppressed a later unsafe clause, while imperative/default/step-order forms were outside the mandatory vocabulary. It also treated benign `optional, not mandatory` text as mandatory. Independent Gold therefore found twelve new false accepts and one false reject.
 
-**FAILING-FIRST:** independent Gold supplied seven new false-negative mutations. After adding them to the owning contract without changing the guard, the owning suite passed 4/5 test cases; the returned-mutation case failed first because `Before starting any task, MUST load the entire 01 Project Lead document.` returned no contract failure.
+**FAILING-FIRST:** Gold's twelve unsafe directives and the benign `Targeted lookup of 02 Active Tasks is optional, not mandatory.` control were added before changing the guard. The owning suite passed 4/6 test cases: the new unsafe-mutation case failed first on `Before each task, consult the complete 01 Project Lead archive.`, and the safe-reference case falsely rejected the optional control.
 
-**CORRECTION:** the same deterministic guard now rejects mandatory use of either historical archive, including split-line mandates; private ODIN memory synonyms; derived 00/context authority and supersession synonyms; and mixed `do not skip` mandates. It distinguishes genuine explicit prohibitions and negated authority from unsafe instructions. Current corrected instructions remain byte-for-byte unchanged.
+**CORRECTION:** the same deterministic guard now removes only a labelled historical quotation, evaluates each remaining semicolon-delimited instruction clause, scopes optionality and prohibition to that clause, and recognises imperative/default/startup/boot/step-order directives plus private-memory and derived-authority synonyms. Current corrected instructions remain byte-for-byte unchanged.
 
-**PERMANENT REGRESSION:** retain the original four mutations and all seven returned mutations as exact negative fixtures. Prove independently that unmodified instructions, quoted historical text and explicitly optional targeted on-demand lookup remain valid.
+**PERMANENT REGRESSION:** retain the original four, prior seven and new twelve unsafe mutations as exact negative fixtures. Prove that unmodified instructions, quoted history, explicit prohibitions, negated derived authority and optional targeted on-demand lookup remain valid, including a historical quote followed by a real mandate on the same line.
 
 **WHAT MUST BE REUSED:** PR #511, the sole derived router, original Founder/Project Home/OKF/WBS/Atomic authority, current corrected `AGENTS.md` and Copilot instructions, the existing convergence workflow and the same owning contract.
 
 **TRUTH BOUNDARY:** passing proves deterministic source-guard coverage for the exact fixtures. It does not prove native GraphRAG retrieval, blind agent behaviour, full BRAIN health, LIVE operation or user use.
 
-**BASE / ROLLBACK:** `king/test@d60da51a9ef584679224a9dced9bfdeb7f03bfa4`; revert the bounded test/brief commit if independent Gold finds a legitimate instruction, explicit-prohibition or quoted-history false positive.
+**BASE / ROLLBACK:** `king/test@f7ed0d8b4bb50095227174a40e30f1a497926800`; revert the bounded test/brief commit if independent Gold finds a legitimate instruction, explicit-prohibition, optional-lookup or quoted-history false positive.
 
-**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the complete eleven-mutation matrix, three positive controls and a fresh cold start on the returned SHA.
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the complete twenty-three-mutation matrix, five positive controls and a fresh cold start on the returned SHA.
 
 ---
 
