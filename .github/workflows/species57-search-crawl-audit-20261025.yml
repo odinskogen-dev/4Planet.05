@@ -1,0 +1,136 @@
+name: 4SPECIES — Read-only 57 search / AI crawler audit
+on:
+  push:
+    branches: [ops/species57-search-discovery-20261025]
+    paths: [.github/workflows/species57-search-crawl-audit-20261025.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - name: Crawl 57 live canonicals and exact immutable source, human-visible and bot-visible SEO signals
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p species57-search-evidence
+          python3 - <<'PY'
+          import re,html,json,hashlib,concurrent.futures,urllib.request,urllib.error,time,datetime,xml.etree.ElementTree as ET
+          from html.parser import HTMLParser
+          from pathlib import Path
+          SITE="https://4species.com"
+          OLD="https://e17e1392.4planet-05.pages.dev"
+          NEW="https://de9e3e0e.4planet-05.pages.dev"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          slugs=old39+new18
+          assert len(old39)==39 and len(new18)==18 and len(set(slugs))==57
+          out=Path("species57-search-evidence")
+          class Tags(HTMLParser):
+            def __init__(self):super().__init__();self.title="";self.h1=[];self.meta={};self.links=[];self.scripts=[];self.images=[];self.inTitle=False;self.inH1=False;self.block=""
+            def handle_starttag(self,name,attrs):
+              a=dict(attrs)
+              if name=="title":self.inTitle=True
+              if name=="h1":self.inH1=True;self.block=""
+              if name=="meta":self.meta[a.get("name") or a.get("property") or ""]=a.get("content","")
+              if name=="link":self.links.append(a)
+              if name=="a":self.links.append(a)
+              if name=="img":self.images.append(a)
+              if name=="script" and a.get("type")=="application/ld+json":self.scripts.append("")
+            def handle_endtag(self,name):
+              if name=="title":self.inTitle=False
+              if name=="h1":self.inH1=False;self.h1.append(self.block.strip())
+            def handle_data(self,data):
+              if self.inTitle:self.title+=data
+              if self.inH1:self.block+=data
+              if self.scripts and not self.inTitle and not self.inH1:self.scripts[-1]+=data
+          def get(url):
+            r=urllib.request.Request(url,headers={"User-Agent":"4SPECIES-57-SEO-READONLY/20261025","Cache-Control":"no-cache"})
+            start=time.monotonic()
+            with urllib.request.urlopen(r,timeout=40) as u:
+              return u.read(),dict(u.headers),u.status,u.geturl(),round((time.monotonic()-start)*1000)
+          manifest={"observedUTC":datetime.datetime.now(datetime.timezone.utc).isoformat(),"scope":"READ-ONLY all 57; no DNS/Worker/site/data changes","profiles":[],"shared":{}}
+          def check(slug):
+            errors=[];record={"slug":slug,"cohort":"original39" if slug in old39 else "existing18"}
+            try:
+              b,h,status,url,lat=get(SITE+"/"+slug)
+              p=Tags();p.feed(b.decode("utf-8",errors="replace"))
+              record["http"]=status;record["pageBytes"]=len(b);record["elapsedMs"]=lat
+              record["title"]=p.title.strip();record["h1"]=p.h1
+              record["canonical"]=[l.get("href") for l in p.links if l.get("rel")=="canonical"]
+              record["metaDescription"]=p.meta.get("description")
+              record["robotsMeta"]=p.meta.get("robots")
+              record["robotsHeader"]=h.get("X-Robots-Tag")
+              record["ogTitle"]=p.meta.get("og:title")
+              record["ogImage"]=p.meta.get("og:image")
+              record["ldjsonBlocks"]=len(p.scripts)
+              record["structuredTypes"]=[]
+              for text in p.scripts:
+                try:
+                  v=json.loads(text)
+                  for d in [v] if isinstance(v,dict) else v if isinstance(v,list) else []:
+                    if isinstance(d,dict):record["structuredTypes"].append(d.get("@type"))
+                except:errors.append("MALFORMED_JSON_LD")
+              record["serverHtmlWords"]=len(re.findall(r"\b\w+\b",re.sub(r"<script[\s\S]*?</script>|<style[\s\S]*?</style>|<[^>]+>"," ",b.decode("utf-8","replace"),flags=re.I)))
+              record["anchors"]=sorted({l.get("href") for l in p.links if l.get("href") and (l.get("href","").startswith("/") or l.get("href","").startswith(SITE+"/"))})
+              record["images"]=[{"src":x.get("src"),"alt":x.get("alt"),"loading":x.get("loading")} for x in p.images][:15]
+              record["htmlSha256"]=hashlib.sha256(b).hexdigest()
+              record["jsonData"]=None
+              doc=json.loads(get(SITE+"/species-data/v1/"+slug+".json")[0])
+              original=json.loads(get((OLD if slug in old39 else NEW)+"/species-data/v1/"+slug+".json")[0])
+              record["immutableJsonEquivalent"]=doc==original
+              record["jsonData"]={"scientificName":doc.get("identity",{}).get("scientificName"),"commonName":doc.get("identity",{}).get("commonName"),"hero":doc.get("hero")}
+              if not record["immutableJsonEquivalent"]:errors.append("IMMUTABLE_DATA_DRIFT")
+              if record["canonical"] != [SITE+"/"+slug]:errors.append("CANONICAL_WRONG_OR_MISSING")
+              if "noindex" in str(record["robotsMeta"] or "").lower() or "noindex" in str(record["robotsHeader"] or "").lower():errors.append("NOINDEX")
+              if not record["title"]:errors.append("MISSING_TITLE")
+              if not record["metaDescription"]:errors.append("MISSING_META_DESCRIPTION")
+              if not record["h1"]:errors.append("MISSING_H1")
+              if not record["structuredTypes"]:errors.append("MISSING_STRUCTURED_DATA")
+              if record["serverHtmlWords"] < 130:errors.append("THIN_SERVER_HTML_UNDER_130_WORDS")
+              if len(record["anchors"]) < 2:errors.append("WEAK_CRAWLABLE_INTERNAL_LINKS")
+              if "editorial-card.svg" in str(doc.get("hero")):errors.append("PROHIBITED_ILLUSTRATION")
+            except Exception as exc:
+              errors.append(type(exc).__name__+": "+str(exc)[:220])
+            record["warnings"]=errors;return record
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool: manifest["profiles"]=list(pool.map(check,slugs))
+          for name,url in {"robots":"/robots.txt","sitemap":"/sitemap.xml","llms":"/llms.txt","explore":"/explore","home":"/","imageSitemap":"/species-v1-images.xml","index":"/species-data/v1/index.json","indexNowKey":"/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt"}.items():
+            try:
+              b,h,status,final,lat=get(SITE+url)
+              item={"status":status,"bytes":len(b),"latencyMs":lat,"contentType":h.get("Content-Type"),"bodySha256":hashlib.sha256(b).hexdigest()}
+              if name in ("robots","llms"):item["excerpt"]=b.decode(errors="replace")[:3000]
+              if name in ("explore","home"):
+                p=Tags();p.feed(b.decode(errors="replace"));item["anchors"]=[l.get("href") for l in p.links if l.get("href")][:100];item["title"]=p.title
+              if name=="sitemap":
+                root=ET.fromstring(b)
+                urls={x.text for x in root.iter() if x.tag.endswith("loc") and x.text}
+                item["urlCount"]=len(urls)
+                item["missing57"]=[SITE+"/"+s for s in slugs if SITE+"/"+s not in urls]
+                item["unreleasedSlugsPresent"]=[u for u in urls if u.endswith("/red-panda") or u.endswith("/orchid-mantis")]
+                item["lastmodCount"]=len([x for x in root.iter() if x.tag.endswith("lastmod")])
+                item["imageLocCount"]=len([x for x in root.iter() if x.tag.endswith("image") or x.tag.endswith("image:loc")])
+              if name=="index":
+                catalog=json.loads(b);item["speciesCount"]=len(catalog["pages"]);item["slugs"]=[x.get("slug") for x in catalog["pages"]]
+              manifest["shared"][name]=item
+              (out/(name+".txt")).write_bytes(b)
+            except Exception as exc:manifest["shared"][name]={"error":str(exc)[:300]}
+          manifest["total"]=len(manifest["profiles"])
+          manifest["immutablePass"]=sum(p.get("immutableJsonEquivalent",False) for p in manifest["profiles"])
+          from collections import Counter
+          manifest["warningCounts"]=dict(Counter(w for p in manifest["profiles"] for w in p["warnings"]))
+          manifest["all57HttpPass"]=sum(p.get("http")==200 for p in manifest["profiles"])==57
+          (out/"per-species-57.json").write_text(json.dumps(manifest,indent=2,ensure_ascii=False))
+          (out/"readme.txt").write_text("4SPECIES read-only search audit. Live production was not modified. SEO flags are observational and some (word count/links) are warning thresholds, not Google ranking determinations.\n")
+          print("SPECIES57_SEARCH_AUDIT",json.dumps({k:manifest[k] for k in ["total","immutablePass","all57HttpPass","warningCounts"]}),flush=True)
+          print("SPECIES57_SHARED",json.dumps({k:{z:v.get(z) for z in ("status","urlCount","speciesCount","missing57","unreleasedSlugsPresent","lastmodCount","anchors")} for k,v in manifest["shared"].items()}),flush=True)
+          for p in manifest["profiles"]:
+            print("SPECIES57_PAGE",json.dumps({z:p.get(z) for z in ("slug","http","title","serverHtmlWords","canonical","ldjsonBlocks","warnings")}),flush=True)
+          if not manifest["all57HttpPass"] or manifest["immutablePass"]!=57:raise SystemExit("FAIL: existing 57 integrity or availability")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-live-seo-technical-57url-audit
+          path: species57-search-evidence/
+          retention-days: 30
+          if-no-files-found: error
