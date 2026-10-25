@@ -1,3 +1,27 @@
+# ANALYTICS PRIVACY — UNICODE PATH IDENTITY GUARD — 25 OCTOBER 2026
+
+**STATUS:** CODE FIXED / P0 BOUNDED HEIR CORRECTION / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
+
+**USER RISK:** a consented visit to a path containing a non-ASCII decimal identity sequence or internationalised email-like value could reach GA4 `page_location` and PostHog, including when no path property was supplied by the event caller.
+
+**ROOT CAUSE:** the shared sensitive-material predicate recognised only ASCII `\d` sequences and ASCII email top-level domains. Bounded decoding worked, but the decoded Unicode values fell outside both detectors and were admitted by the percent-encoded path grammar.
+
+**FAILING-FIRST:** the owning contract added the twelve Gold-returned classes: six decimal-digit scripts, two punctuation-separated Unicode digit sequences, one mixed ASCII/Arabic-digit sequence and three internationalised email forms. On exact base `01dba3244d5c3fbc06fa1758e5613d24b4c2f687`, 18/20 tests passed; both new negative cases failed first on the Arabic-Indic path while the existing 18 cases remained green.
+
+**CORRECTION:** the one shared decoded predicate now recognises Unicode decimal digits with Unicode property escapes and internationalised letter/number email components. Public identifier, generic value and navigation admission all reuse that predicate; no parallel analytics policy or sink path was added.
+
+**PERMANENT REGRESSION:** all twelve paths must be removed from `page_path`, `entry_path` and `landing_path`, and current navigation must stop both mocked GA4 and PostHog before `page_location` is emitted. Existing public routes plus encoded French and Chinese routes must still reach both sinks.
+
+**WHAT MUST BE REUSED:** PR #476 as the QA/evidence thread, TEST KING `king/test` / PR #131 as the physical receiver, existing bounded decoder, shared sanitizer/navigation guard, consent and host controls, both analytics adapters and the owning privacy contract.
+
+**TRUTH BOUNDARY:** passing proves rejection of the exact synthetic Unicode matrix at the source and mocked sinks. It does not prove a real leak, production deployment, historical-data deletion, live telemetry safety or user use.
+
+**BASE / ROLLBACK:** `king/test@01dba3244d5c3fbc06fa1758e5613d24b4c2f687`; revert the bounded three-file commit if independent Gold finds a multilingual public-route, consent, host, identifier or sink regression.
+
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay all twelve negative cases, multilingual positives and both sinks on the returned SHA before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # ANALYTICS PRIVACY — COMPLETE URL-GRAMMAR IDENTITY GUARD — 25 OCTOBER 2026
 
 **STATUS:** INDEPENDENT GOLD QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
