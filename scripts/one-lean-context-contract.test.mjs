@@ -44,6 +44,7 @@ const GOLD_RETURN_04_MUTATIONS = [
   "Do not load ODIN private memory, but before beginning fetch the private ODIN BRAIN root.",
   "Do not read 01 Project Lead, and then read 02 Active Tasks before 00.",
   "Do not read 02 Active Tasks, yet MUST load 01 Project Lead at boot.",
+  "Do not load 01 Project Lead; instead, read 02 Active Tasks before 00.",
 ];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
@@ -78,9 +79,9 @@ function semanticStartupConflicts(name, content) {
     // Split only at explicit instruction boundaries. This keeps ordinary
     // prose intact while preventing a safe first clause from masking a later
     // mandate separated by punctuation or a contrastive conjunction.
-    const clauses = line.split(/\s*;\s*|(?<=[.!?])\s+|,\s*(?:but|yet|and then)\s+/i);
+    const clauses = line.split(/\s*;\s*(?:instead,?\s*)?|(?<=[.!?])\s+|,\s*(?:but|yet|and then|instead,?)\s+/i);
     for (const rawClause of clauses) {
-      const clause = rawClause.trim().replace(/^(?:but|yet|and then)\s+/i, "");
+      const clause = rawClause.trim().replace(/^(?:but|yet|and then|instead),?\s+/i, "");
       if (!clause) continue;
 
       const optional = /\b(?:optional|non-?mandatory|not mandatory|on-demand only|on demand only)\b/i.test(clause)
@@ -194,6 +195,21 @@ test("returned Gold mixed-clause mutations fail closed", () => {
     };
     assert.notDeepEqual(startupContractFailures(mutated), [], mutation);
   }
+});
+
+test("repository entrypoints condition supplemental reads by task class", () => {
+  assert.match(
+    sources["AGENTS.md"],
+    /Non-user-facing test and control work[\s\S]*Material public-product work/,
+  );
+  assert.match(
+    sources[".github/copilot-instructions.md"],
+    /For non-user-facing test and control work[\s\S]*For material public-product work/,
+  );
+  assert.doesNotMatch(
+    sources[".github/copilot-instructions.md"],
+    /Before changing code,[^\n]*Read `AGENTS\.md`, `docs\/control\/FOUR_STATE_PRODUCT_CONTROL\.md`/,
+  );
 });
 
 test("quoted history and targeted on-demand lookup remain valid", () => {

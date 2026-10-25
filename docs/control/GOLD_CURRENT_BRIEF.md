@@ -1,3 +1,25 @@
+# ONE-LEAN COLD START — TASK-CLASS READ BOUNDARY — 25 OCTOBER 2026
+
+**STATUS:** CODE FIXED / ENTRYPOINT CONTROL HEIR CORRECTION / INDEPENDENT RE-GOLD AND REAL FRESH-AGENT TRACE REQUIRED / NO PRODUCT, MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER VALUE:** a memoryless 4PLANET agent should load the minimum current authority required for its task. Test/control work must not consume unrelated product, Brand, lineage and Gold context, while a material public-product change must still receive every applicable product, rights, Brand, lineage, Gold and release gate.
+
+**ROOT CAUSE:** the two repository entrypoints expressed product-grade supplemental reads as universal pre-code prerequisites. The deterministic guard also treated `instead` after a prohibited first clause as part of that prohibited clause, allowing an unsafe later 02-before-00 mandate to escape.
+
+**FAILING-FIRST:** on exact base `6b21865a89de848c1731f523df0382576fe210c5`, the owning suite passed 6/8. Gold's exact `Do not load 01 Project Lead; instead, read 02 Active Tasks before 00.` mutation was falsely accepted, and the new source contract confirmed both entrypoints lacked explicit task-class read boundaries.
+
+**CORRECTION:** the existing AGENTS and Copilot entrypoints now share two explicit paths. Non-user-facing test/control work uses 00 → targeted owner/original → exact source and necessary gate without an automatic product bundle. Material public-product work retains the existing four-state, Brand, rights, lineage, Gold, Founder-release and rollback requirements before its affected mutation. The same owning guard recognises `instead` as an instruction boundary.
+
+**PERMANENT REGRESSION:** retain the finite unsafe/benign matrix, Gold's exact new ordering mutation, and source assertions that both entrypoints explicitly distinguish non-user-facing control work from material public-product work.
+
+**TRUTH BOUNDARY:** passing proves the repository instructions and deterministic evaluator encode task-class conditional reads. It does not prove actual memoryless-agent retrieval behaviour, GraphRAG/zero-loss health, runtime context cost, user value, merge, deployment or LIVE operation.
+
+**BASE / ROLLBACK:** `king/test@6b21865a89de848c1731f523df0382576fe210c5`; revert the bounded four-file commit if independent Gold finds a source-isolation or protected public-product gate regression.
+
+**MAKER ≠ JUDGE:** Factory returns source and evidence. Independent Gold must replay the finite matrix and execute real fresh-agent task-class traces before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # ANALYTICS PRIVACY — UNICODE NORMALISATION GUARD — 25 OCTOBER 2026
 
 **STATUS:** CODE FIXED / P0 BOUNDED HEIR CORRECTION / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.

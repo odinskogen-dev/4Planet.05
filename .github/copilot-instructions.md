@@ -46,7 +46,11 @@ If the current runtime cannot physically read the BRAIN/Drive authorities, stop 
 
 This routing adds no public-release authority and creates no repository-local parallel Brand OS.
 
-Before changing code, inspect the assigned task/PR, exact branch, recent relevant git history and existing components/contracts. Read `AGENTS.md`, `docs/control/FOUR_STATE_PRODUCT_CONTROL.md`, `docs/control/PRODUCT_SURFACE_REGISTRY.json`, `docs/control/PROJECT_CANDIDATE_AUTHORITY.json`, `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/CODE_LINEAGE_REGISTER.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and `docs/control/GOLD_CURRENT_BRIEF.md`. Do not create parallel architecture when an existing implementation can be extended.
+Before changing code, inspect the assigned task/PR, exact branch and revision, recent relevant history and existing owning components/contracts. Read `AGENTS.md` and the applicable elite doctrine; do not create parallel architecture when an existing implementation can be extended.
+
+For non-user-facing test and control work, start from the sole derived 00 router, then read the targeted owning original/PR, exact source and only the necessary control or gate. Do not automatically load the product four-state, Brand, lineage or complete Gold document bundle.
+
+For material public-product work, additionally read `docs/control/FOUR_STATE_PRODUCT_CONTROL.md`, `docs/control/PRODUCT_SURFACE_REGISTRY.json`, `docs/control/PROJECT_CANDIDATE_AUTHORITY.json`, `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/CODE_LINEAGE_REGISTER.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and `docs/control/GOLD_CURRENT_BRIEF.md` before the affected user-facing mutation. Material brand/UI work also requires the current Brand OS preflight. Preserve all applicable rights, Founder-release and rollback gates.
 
 For any material user-facing mutation, resolve the affected product's four authority states before writing code: `LIVE`, the sole `HEIR`, the single registered `SANDBOX` or explicit NONE, and `ARCHIVED` history/donors. Resolve exact HEIR branch/SHA, current registered sandbox branch/SHA/review URL, parent SHA, allowed donors, return path to HEIR and rollback identity. If any required authority state is unresolved, stop user-facing mutation with `PRODUCT AUTHORITY CONTEXT UNRESOLVED`.
 

@@ -147,19 +147,17 @@ If the current runtime cannot physically read the BRAIN/Drive authorities, stop 
 
 This routing adds no public-release authority and creates no repository-local parallel Brand OS.
 
-## Mandatory start-of-task bootstrap
+## Mandatory task-class bootstrap
 
-Before material work:
-1. Read this file.
-2. Read `docs/control/ELITE_OPERATING_DOCTRINE.md` and resolve the applicable elite-contract fields before mutation.
-3. Inspect the assigned task/issue/PR and exact branch.
-4. For public-product work, complete the FOUR-STATE PRODUCT AUTHORITY bootstrap above.
-5. Read `docs/control/CODE_LINEAGE_REGISTER.md` and resolve the affected project's current `ACTIVE DEVELOPMENT`, `FIXED REVIEW`, `DONOR`, `PRODUCTION` and recovery identities.
-6. Read `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and the current `docs/control/GOLD_CURRENT_BRIEF.md` before any user-facing product/design change.
-7. Inspect recent git history for the affected area.
-8. Search for existing components/contracts before creating new architecture.
-9. Run a baseline check appropriate to the task before changing code.
-10. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+Before material work, every task class must:
+1. Read this file and `docs/control/ELITE_OPERATING_DOCTRINE.md`, then resolve the applicable elite-contract fields.
+2. Inspect the assigned task/issue/PR, exact branch and revision, recent relevant history, and the existing owning components/contracts.
+3. Run a baseline check appropriate to the task before changing code.
+4. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+
+**Non-user-facing test and control work:** after the sole derived 00 router, retrieve the targeted owning original/PR, exact source and only the control or gate needed for the bounded change. Do not automatically load the product four-state, Brand, lineage or complete Gold document bundle. Historical 01 Project Lead, 02 Active Tasks and private ODIN sources remain on-demand only when the assigned task requires that specific original.
+
+**Material public-product work:** additionally complete the FOUR-STATE PRODUCT AUTHORITY bootstrap above; read `docs/control/CODE_LINEAGE_REGISTER.md`; and read the applicable `docs/GOLD_WORLD_CLASS_QUALITY_GATE.md`, `docs/control/GOLD_ENFORCEMENT_MATRIX.md`, `docs/control/GOLD_PRIMITIVE_REGISTRY.md` and current `docs/control/GOLD_CURRENT_BRIEF.md` before the affected user-facing mutation. Material brand/UI work must also complete the current Brand OS preflight. These product, rights, lineage, Gold and release gates remain mandatory when applicable.
 
 If current BRAIN context is required but unavailable, state `CURRENT BRAIN READ REQUIRED` and continue only with bounded repository-local work that does not depend on the missing state. Never ask the Founder to repeat information merely because the agent failed to retrieve it.
 
