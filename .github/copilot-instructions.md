@@ -1,6 +1,8 @@
 # 4PLANET repository instructions
 
-Treat this repository as an execution surface, not the authoritative source for current 4PLANET programme state. Programme priorities, Founder decisions, cross-project status and current authority must come from a fresh AXE / GPT Project Lead BRAIN handoff when they matter to the task.
+Treat this repository as an execution surface, not the authoritative source for current 4PLANET programme state. For current programme priorities, Founder decisions, cross-project status or authority, start only with the short derived 00 router below, then retrieve the exact relevant original Founder / Project Home / OKF / WBS / Atomic source and fresh runtime evidence for the assigned task.
+
+**Current Founder 22 Oct 2026 cold start:** Read only [00_ 4PLANET — ONE LEAN CONTEXT / ONLY BOOT](https://docs.google.com/document/d/15XcZ7FQqAZnoxVe74YNlfh4MccYRcPPTYYFQ1XNbQVo/edit) as the default organisational router. It is derived, not canonical authority. Use current existing OKF/Source Inventory to fetch the exact relevant original Founder decision, Project Home, WBS/Atomic item, owner, rights and live branch/SHA for the assigned task. Historical 01/02, huge Project Lead/Programme/Agent Ledger and private packets are ON-DEMAND ONLY. A disagreement holds only the affected unsafe mutation; continue safely independent work. Do not create another boot file or treat stale chat summaries as current project state.
 
 ## ELITE OPERATING DOCTRINE / SYSTEM 2.0 — mandatory
 

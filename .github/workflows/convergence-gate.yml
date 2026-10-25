@@ -53,6 +53,9 @@ jobs:
       - name: BrainBench Round 02 — authority Context Pack + Delta
         run: node --test scripts/authority-context-compiler.test.mjs
 
+      - name: One lean context cold-start contract
+        run: node --test scripts/one-lean-context-contract.test.mjs
+
       - name: Elite operating doctrine control
         run: node scripts/elite-operating-doctrine-gate.mjs
 
