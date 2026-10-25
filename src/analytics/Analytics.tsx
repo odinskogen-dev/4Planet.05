@@ -453,7 +453,7 @@ export function resetAnalyticsConsent() {
 }
 
 export function isEmbeddedAnalyticsSurface(pathname: string, search: string): boolean {
-  const normalizedPath = pathname.replace(/\/+$/, "") || "/";
+  const normalizedPath = (pathname.replace(/\/+$/, "") || "/").toLowerCase();
   if (normalizedPath !== "/atlas" && normalizedPath !== "/embed/atlas") return false;
   return isAtlasEmbedKind(new URLSearchParams(search).get("embed"));
 }

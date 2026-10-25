@@ -50,6 +50,8 @@
 
 **TRAILING-SLASH ROUTE CORRECTION:** Source-derived reproduction on exact parent `7afa18763720dd6865845667722e5142369cd481` confirmed that React Router serves `/atlas/` and `/embed/atlas/`, while the shared embed predicate accepted only the non-trailing forms. The existing predicate now normalises trailing slashes before applying the same two-path allowlist. The owning source-to-both-sinks regression covers both path forms with `product_entry`, `return_visit` and `meaningful_use`; independent Gold must replay the trailing-slash routes in browser/mobile before QA acceptance. No merge, deployment, LIVE release or user-use claim.
 
+**CASE-INSENSITIVE ROUTE CORRECTION:** Independent Gold replay on exact parent `d373066da7f7839f273ece17dc94c38f2cf65df5` confirmed that React Router serves mixed-case Atlas embed paths while the shared privacy predicate compared them case-sensitively. The existing predicate now ASCII case-folds the normalised pathname before applying the same two-path allowlist. The owning source-to-both-sinks regression covers `/ATLAS`, `/ATLAS/`, `/EMBED/ATLAS` and `/embed/ATLAS/` with `product_entry`, `return_visit` and `meaningful_use`; independent Gold must replay those routes in browser/mobile before QA acceptance. No merge, deployment, LIVE release or user-use claim.
+
 **STATUS:** CODE FIXED / BOUNDED ISSUE #503 HEIR CANDIDATE / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
 
 **USER DEFECT:** production Earth Now renders a second analytics-preferences bar inside its Atlas iframe, covering the bottom of the map fallback even though the parent page owns the visitor journey.
