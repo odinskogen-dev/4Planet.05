@@ -79,6 +79,15 @@ if (localMissionRecords.length) {
 }
 for (const m of localMissionRecords) {
   const pathName = "/missions/" + m.slug;
+  // Only verified/high-confidence canonical background references become server anchors.
+  const backgroundSources = m.sources.filter((source) => source.confidence === "high");
+  const referenceHtml = backgroundSources.length
+    ? "<section aria-label='Mission background sources'><h2>Background sources</h2><ul>" +
+        backgroundSources.map((source) =>
+          "<li><a href='" + esc(source.url) + "' rel='noopener noreferrer'>" +
+          esc(source.title) + "</a></li>").join("") +
+        "</ul><p>These background sources describe the wider topic; they do not verify 4PLANET delivery or impact.</p></section>"
+    : "<p>Background references for this mission are still being reviewed.</p>";
   // Reuse the approved mission domain and slug: no parallel topic register.
   const relatedMissions = localMissionRecords.filter((candidate) =>
     candidate.domain === m.domain && candidate.slug !== m.slug);
@@ -99,6 +108,7 @@ for (const m of localMissionRecords) {
     "<h2>What could help</h2><p>" + esc(m.whatCanHelp) + "</p>" +
     "<h2>4PLANET's role</h2><p>" + esc(m.fourPlanetRole) + "</p>" +
     "<h2>Current development status</h2><p>" + esc(m.currentStatus) + "</p>" +
+    referenceHtml +
     "<p>A development status is not proof that an ecological outcome has been delivered.</p>" +
     relatedMissionHtml +
     "<p>Explore the <a href='/domains/" + esc(m.domain.replace("_", "").toLowerCase()) +
@@ -108,7 +118,9 @@ for (const m of localMissionRecords) {
     pathName, title, description: m.hero, body,
     jsonLd: { "@context": "https://schema.org", "@type": "WebPage",
       name: m.name, description: m.hero, url: origin + pathName,
-      inLanguage: "en-GB", isPartOf: { "@type": "CollectionPage", name: "4PLANET Missions", url: origin + "/missions" } },
+      inLanguage: "en-GB",
+      citation: backgroundSources.map((source) => source.url),
+      isPartOf: { "@type": "CollectionPage", name: "4PLANET Missions", url: origin + "/missions" } },
   }));
 }
 
