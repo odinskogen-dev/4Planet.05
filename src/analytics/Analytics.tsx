@@ -160,7 +160,7 @@ function decodeForAnalyticsInspection(value: string): string {
       break;
     }
   }
-  return decoded;
+  return decoded.normalize("NFC");
 }
 
 function hasUnsupportedNestedAnalyticsEncoding(value: string): boolean {
@@ -176,7 +176,7 @@ function containsSensitiveAnalyticsMaterial(value: string): boolean {
   if (hasUnsupportedNestedAnalyticsEncoding(value)) return true;
   const inspected = decodeForAnalyticsInspection(value);
   return /(?:^|[/?#&])(?:access_token|refresh_token|id_token|token_hash|authorization_code|authorization_id|code|state|client_secret|session_token|auth_return)=/i.test(inspected)
-    || /[\p{L}\p{N}._%+-]+@(?:[\p{L}\p{N}-]+\.)+[\p{L}]{2,}/u.test(inspected)
+    || /[\p{L}\p{M}\p{N}._%+-]+@(?:[\p{L}\p{M}\p{N}-]+\.)+[\p{L}\p{M}]{2,}/u.test(inspected)
     || /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/.test(inspected)
     || /\bbearer[\s_:.-]+[A-Za-z0-9._~-]{8,}/i.test(inspected)
     || /(?:\p{Nd}[^\p{L}\p{N}]*){7}/u.test(inspected);

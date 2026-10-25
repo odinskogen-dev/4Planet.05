@@ -281,6 +281,15 @@ const unicodeIdentityPaths = [
   "/profile/person@例子.org",
 ].map((path) => encodeURI(path));
 
+const decomposedUnicodeIdentityPaths = [
+  "/profile/person\u0301@example.org",
+  "/profile/person@examp\u0301le.org",
+  "/profile/person@example.o\u0301rg",
+  "/profile/e\u0301@example.org",
+  "/profile/cafe\u0301@example.org",
+  "/profile/user@cafe\u0301.org",
+].map((path) => encodeURI(path));
+
 test("rejects encoded identity-shaped values in every path field", () => {
   const raw = "/profile/11029912345";
   const encoded = "/profile/%31%31%30%32%39%39%31%32%33%34%35";
@@ -327,6 +336,16 @@ test("rejects Gold-returned Unicode identities in every path field", () => {
   }
 });
 
+test("rejects decomposed Unicode email identities in every path field", () => {
+  for (const path of decomposedUnicodeIdentityPaths) {
+    assert.deepEqual(privacySafeEventParameters({
+      page_path: path,
+      entry_path: path,
+      landing_path: path,
+    }), {}, path);
+  }
+});
+
 test("unsafe current pathname suppresses BOTH sinks without caller path properties", async () => {
   const paths = [
     "/profile/11029912345",
@@ -355,6 +374,15 @@ test("unsafe current pathname suppresses BOTH sinks without caller path properti
 
 test("Unicode identity pathnames suppress BOTH sinks and page_location", async () => {
   for (const path of unicodeIdentityPaths) {
+    const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime(path);
+    assert.equal(trackEvent("audit_test", { product_area: "impact" }), false, path);
+    assert.equal(ga4Events.length, 0, path);
+    assert.equal(postHogEvents.length, 0, path);
+  }
+});
+
+test("decomposed Unicode email pathnames suppress BOTH sinks and page_location", async () => {
+  for (const path of decomposedUnicodeIdentityPaths) {
     const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime(path);
     assert.equal(trackEvent("audit_test", { product_area: "impact" }), false, path);
     assert.equal(ga4Events.length, 0, path);

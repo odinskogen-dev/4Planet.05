@@ -1,3 +1,27 @@
+# ANALYTICS PRIVACY — UNICODE NORMALISATION GUARD — 25 OCTOBER 2026
+
+**STATUS:** CODE FIXED / P0 BOUNDED HEIR CORRECTION / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
+
+**USER RISK:** a consented visit to a path containing an email-like identity written with decomposed Unicode combining marks could bypass the shared privacy boundary and reach GA4 `page_location` and PostHog.
+
+**ROOT CAUSE:** bounded percent-decoding returned an unnormalised Unicode string, while the email detector admitted letters and numbers but omitted combining marks. Canonically equivalent composed and decomposed identity forms therefore received different privacy treatment.
+
+**FAILING-FIRST:** the owning contract added Gold's six exact decomposed paths across all three path fields and current navigation. On exact base `ff0eb3439a048b883306ea0aab4f562f4b4207bf`, 20/22 tests passed; both new negative contracts failed first on `/profile/person%CC%81@example.org`, while all twenty prior cases remained green.
+
+**CORRECTION:** the existing bounded decoder normalises inspected text to NFC, and the existing email detector recognises Unicode marks in local, domain and top-level-domain components. No second decoder, guard, sink policy or helper was added.
+
+**PERMANENT REGRESSION:** all six decomposed paths must be removed from `page_path`, `entry_path` and `landing_path`; current navigation must stop both mocked sinks before `page_location` is emitted. The prior twelve Unicode negatives, seven multilingual public routes, consent/host gates and bounded numeric/public identifiers remain protected.
+
+**WHAT MUST BE REUSED:** PR #476 as the QA/evidence thread, TEST KING `king/test` / PR #131 as physical receiver, the shared bounded decoder and sensitive-material predicate, existing consent/host controls, GA4/PostHog adapters and the owning privacy contract.
+
+**TRUTH BOUNDARY:** passing proves rejection of the exact synthetic decomposed-Unicode matrix at the source and mocked sinks. It does not prove actual leakage, production deployment, historical-data deletion, live telemetry safety or user use.
+
+**BASE / ROLLBACK:** `king/test@ff0eb3439a048b883306ea0aab4f562f4b4207bf`; revert the bounded three-file commit if independent Gold finds a multilingual route, encoding, consent, host, identifier or sink regression.
+
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the six decomposed negatives, all prior Unicode controls, multilingual positives and both sinks on the returned SHA before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # ANALYTICS PRIVACY — UNICODE PATH IDENTITY GUARD — 25 OCTOBER 2026
 
 **STATUS:** CODE FIXED / P0 BOUNDED HEIR CORRECTION / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
