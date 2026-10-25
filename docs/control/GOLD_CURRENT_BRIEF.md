@@ -2653,3 +2653,19 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 **DOOR CLASS / ROLLBACK:** reversible HEIR-only test/brief correction. Base and rollback are `king/test@94d2e02aba07e5f67ed948a69abf2ce0dca39165`.
 
 **MAKER ≠ JUDGE:** Factory repairs and verifies the guard. Independent Gold judges the exact returned SHA; merge, deployment and LIVE release remain separately authorised.
+
+# ONE LEAN CONTEXT — TASK-CLASS SUPPLEMENTAL-READ GUARD — 25 OCTOBER 2026
+
+**STATUS:** INDEPENDENT GOLD QA_CORRECT / BOUNDED REGRESSION-GUARD REPAIR / RELEASE HOLD.
+
+**USER PROBLEM:** non-user-facing test and control work must stay lean; a future entrypoint must not silently restore mandatory four-state, Gold, Brand OS or lineage bundle loading for every edit.
+
+**ROOT CAUSE / FAILED TEST:** the semantic startup guard covered historical 01/02 archives, private ODIN boot and derived-authority promotion, but did not model task class plus broad supplemental product authority. Gold demonstrated five false accepts at `king/test@5560e1c6c11ecaae7f40dc943face90416bb1972`; the new owning-path test failed 8/9 before the predicate correction.
+
+**BOUNDED CORRECTION:** at the existing per-clause boundary, reject only a sentence that combines global non-user-facing/control scope, an affirmative mandate, and a named broad four-state/Gold/Brand/lineage bundle without an explicit prohibition. The exact five returned sentences and five legitimate task-conditional/prohibitive controls are permanent fixtures.
+
+**TRUTH BOUNDARY:** this proves the repository entrypoint contract rejects the returned instruction class. It does not prove a fresh agent followed the entrypoint, Gold acceptance, merge, deployment or user use.
+
+**ROLLBACK:** revert the bounded test/brief commit to `king/test@5560e1c6c11ecaae7f40dc943face90416bb1972` if independent Gold finds a false reject or another escaped form.
+
+**MAKER ≠ JUDGE:** Factory repairs and verifies the guard. Independent Gold must judge the exact returned SHA; merge, deployment and LIVE release remain separately authorised.

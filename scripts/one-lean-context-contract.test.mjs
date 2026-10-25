@@ -46,6 +46,13 @@ const GOLD_RETURN_04_MUTATIONS = [
   "Do not read 02 Active Tasks, yet MUST load 01 Project Lead at boot.",
   "Do not load 01 Project Lead; instead, read 02 Active Tasks before 00.",
 ];
+const GOLD_RETURN_05_TASK_CLASS_MUTATIONS = [
+  "Non-user-facing control tasks: before every edit, load the complete FOUR_STATE_PRODUCT_CONTROL.md, PRODUCT_SURFACE_REGISTRY.json, CODE_LINEAGE_REGISTER.md, GOLD_CURRENT_BRIEF.md and BRAND OS.",
+  "Before any non-user-facing test change, read the full Gold document bundle and all four-state product authority files.",
+  "Control-only edits require the complete Brand OS and all product lineage files as mandatory bootstrap.",
+  "Before changing any code, first fetch all nine global Gold and Brand control documents.",
+  "Every non-user-facing test task must preload the entire project lineage archive before starting.",
+];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
   "Use the 01 Project Lead or 02 Active Tasks archives on-demand only when a targeted original-source lookup requires them.",
@@ -56,6 +63,13 @@ const SAFE_STARTUP_REFERENCES = [
   "Consult 02 Active Tasks if a targeted original-source lookup is needed; otherwise start with 00.",
   "Historical example for audit: \"MUST load 02 Active Tasks before any task.\"",
   "The derived router overrides nothing; original Founder decisions remain authoritative.",
+];
+const SAFE_TASK_CLASS_REFERENCES = [
+  "For non-user-facing control work, do not automatically load the full four-state, Gold, Brand OS or lineage bundle.",
+  "Material public-product work must read the applicable four-state, Brand OS, rights, lineage and Gold sources before the affected mutation.",
+  "If a material public UI task changes a governed surface, read the applicable four-state and Brand OS sources.",
+  "Targeted Gold or lineage sources are read only when required by the assigned task.",
+  "Control-only edits must not preload the complete Brand OS and product lineage bundle.",
 ];
 
 const sources = {
@@ -91,6 +105,18 @@ function semanticStartupConflicts(name, content) {
         && !/\b(?:must|always|required before|required at|mandatory for|do not skip)\b/i.test(clause);
       const explicitProhibition = /^(?:never|do not|must not)\s+(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
         && !/\bdo not skip\b/i.test(clause);
+
+      // Non-user-facing control work must not acquire public-product authority
+      // bundles as a universal bootstrap. Keep this finite: require a global
+      // control scope, a mandate, and a named broad supplemental bundle in the
+      // same clause. An explicit prohibition remains valid guidance.
+      const globalControlScope = /\b(?:non-user-facing|control-only|before changing any code|before every edit)\b/i.test(clause);
+      const mandatorySupplementalRead = /\b(?:must\s+(?:read|load|fetch|preload)|requires?|mandatory bootstrap|before (?:any|each|every|changing)[^.!?]*(?:read|load|fetch|preload)|first\s+(?:read|load|fetch|preload))\b/i.test(clause);
+      const broadSupplementalBundle = /\b(?:four[- ]state(?: product authority)?|FOUR_STATE_PRODUCT_CONTROL|PRODUCT_SURFACE_REGISTRY|Gold(?: document| control)? bundle|GOLD_CURRENT_BRIEF|Brand OS|Brand control documents?|CODE_LINEAGE_REGISTER|product lineage files?|project lineage archive)\b/i.test(clause);
+      const scopedSupplementalProhibition = /\b(?:do not|never|must not)\s+(?:automatically\s+)?(?:read|load|fetch|preload|require)\b/i.test(clause);
+      if (globalControlScope && mandatorySupplementalRead && broadSupplementalBundle && !scopedSupplementalProhibition) {
+        failures.push(`${name}: broad supplemental product/Gold/Brand/lineage preload required for control work`);
+      }
       if (optionalWithoutMandate || explicitProhibition) continue;
 
       const mandatory = /\b(?:must|required|mandatory|before (?:any|each|every|starting)|for every|always|first|start only|read only|default|startup|at boot|before beginning)\b/i.test(clause)
@@ -197,6 +223,16 @@ test("returned Gold mixed-clause mutations fail closed", () => {
   }
 });
 
+test("returned Gold task-class preload mutations fail closed", () => {
+  for (const mutation of GOLD_RETURN_05_TASK_CLASS_MUTATIONS) {
+    const mutated = {
+      ...sources,
+      ".github/copilot-instructions.md": `${mutation}\n${sources[".github/copilot-instructions.md"]}`,
+    };
+    assert.notDeepEqual(startupContractFailures(mutated), [], mutation);
+  }
+});
+
 test("repository entrypoints condition supplemental reads by task class", () => {
   assert.match(
     sources["AGENTS.md"],
@@ -214,6 +250,16 @@ test("repository entrypoints condition supplemental reads by task class", () => 
 
 test("quoted history and targeted on-demand lookup remain valid", () => {
   for (const reference of SAFE_STARTUP_REFERENCES) {
+    const mutated = {
+      ...sources,
+      ".github/copilot-instructions.md": `${sources[".github/copilot-instructions.md"]}\n${reference}`,
+    };
+    assert.deepEqual(startupContractFailures(mutated), [], reference);
+  }
+});
+
+test("task-conditional and prohibitive supplemental guidance remains valid", () => {
+  for (const reference of SAFE_TASK_CLASS_REFERENCES) {
     const mutated = {
       ...sources,
       ".github/copilot-instructions.md": `${sources[".github/copilot-instructions.md"]}\n${reference}`,
