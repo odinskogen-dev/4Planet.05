@@ -369,3 +369,25 @@ test("Mission discovery is present in server HTML and hydrated client metadata",
   assert.match(missionClient, /<Seo title=\{m\.name/);
   assert.match(missionClient, /isPartOf: \{ "@type": "CollectionPage"/);
 });
+
+
+test("mission pages generate crawlable same-domain related links without external hand-off aliases", () => {
+  const source = read("src/content/missions.ts");
+  const slugs = [...source.matchAll(/^\s*slug:\s*"([a-z0-9-]+)",\s*domain:\s*"([^"]+)"/gm)];
+  assert.equal(slugs.length, 16);
+  const local = slugs.filter((item) => !["m4gazine", "4film"].includes(item[1]));
+  assert.equal(local.length, 14);
+  for (const entry of local) {
+    assert.ok(local.some((item) => item[1] !== entry[1] && item[2] === entry[2]),
+      "Every local mission has at least one same-domain canonical sibling");
+  }
+  const html = read("scripts/prerender-discovery-seo.mjs");
+  assert.match(html, /candidate\.domain === m\.domain && candidate\.slug !== m\.slug/);
+  assert.match(html, /data-4planet-prerender-content='mission-related'/);
+  assert.match(html, /relatedMissions\.map\(\(candidate\)/);
+  assert.match(html, /esc\(candidate\.slug\)/);
+  assert.match(html, /esc\(candidate\.hero\)/);
+  assert.match(html, /aria-label='Related missions'/);
+  assert.match(html, /m\.domain\.replace\("_", ""\)\.toLowerCase\(\)/);
+  assert.doesNotMatch(html, /relatedMissions = STORIES/);
+});
