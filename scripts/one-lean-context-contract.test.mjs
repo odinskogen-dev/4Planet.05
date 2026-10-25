@@ -4,11 +4,50 @@ import test from "node:test";
 
 const ROUTER_ID = "15XcZ7FQqAZnoxVe74YNlfh4MccYRcPPTYYFQ1XNbQVo";
 const STALE_HANDOFF = "must come from a fresh AXE / GPT Project Lead BRAIN handoff";
+const GOLD_SEMANTIC_MUTATIONS = [
+  "Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.",
+  "MANDATORY FIRST: read 02 ACTIVE TASKS then 01 PROJECT LEAD, only afterwards the short 00 router.",
+  "For every task, first load the ODIN BRAIN private root pointer to obtain context.",
+  "This derived router is the final Founder decision authority and overrides original sources.",
+];
 
 const sources = {
   "AGENTS.md": fs.readFileSync(new URL("../AGENTS.md", import.meta.url), "utf8"),
   ".github/copilot-instructions.md": fs.readFileSync(new URL("../.github/copilot-instructions.md", import.meta.url), "utf8"),
 };
+
+function semanticStartupConflicts(name, content) {
+  const failures = [];
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    const quotedHistorical = /^(?:historical (?:quote|note)|quoted (?:historical )?(?:example|text))\b/i.test(line)
+      && /["`]/.test(line);
+    if (!line || line.startsWith(">") || quotedHistorical
+      || /\b(?:non-?mandatory|on-demand only|on demand only|never|do not|must not)\b/i.test(line)) {
+      continue;
+    }
+
+    const mandatory = /\b(?:must|required|mandatory|before any|for every|always|first|start only|read only)\b/i.test(line);
+    const requiresProjectArchives = /\b01[ _-]*project lead\b/i.test(line)
+      && /\b02[ _-]*active tasks?\b/i.test(line);
+    if (mandatory && requiresProjectArchives) {
+      failures.push(`${name}: historical 01/02 required before sole 00 startup`);
+    }
+
+    const requiresPrivateOdinBoot = /\b(?:odin brain|private (?:root )?pointer)\b/i.test(line)
+      && /\b(?:load|read|boot|context)\b/i.test(line);
+    if (mandatory && requiresPrivateOdinBoot) {
+      failures.push(`${name}: private ODIN context required as organisational startup`);
+    }
+
+    const promotesDerivedAuthority = /\bderived (?:00 )?router\b/i.test(line)
+      && /\b(?:final founder decision authority|canonical authority|overrides? original sources?)\b/i.test(line);
+    if (promotesDerivedAuthority) {
+      failures.push(`${name}: derived router promoted over original authority`);
+    }
+  }
+  return failures;
+}
 
 function startupContractFailures(entries) {
   const failures = [];
@@ -19,6 +58,7 @@ function startupContractFailures(entries) {
       failures.push(`${name}: targeted original authority path missing`);
     }
     if (content.includes(STALE_HANDOFF)) failures.push(`${name}: stale generic Project Lead handoff remains mandatory`);
+    failures.push(...semanticStartupConflicts(name, content));
   }
 
   const combined = Object.values(entries).join("\n");
@@ -47,4 +87,26 @@ test("old Project Lead mandatory-handoff sentence is a failing regression fixtur
     startupContractFailures(mutated).filter((failure) => failure.includes("stale generic Project Lead")),
     [".github/copilot-instructions.md: stale generic Project Lead handoff remains mandatory"],
   );
+});
+
+test("semantically equivalent cold-start authority violations fail closed", () => {
+  for (const mutation of GOLD_SEMANTIC_MUTATIONS) {
+    const mutated = {
+      ...sources,
+      ".github/copilot-instructions.md": `${mutation}\n${sources[".github/copilot-instructions.md"]}`,
+    };
+    assert.notDeepEqual(startupContractFailures(mutated), [], mutation);
+  }
+});
+
+test("quoted history and targeted on-demand lookup remain valid", () => {
+  const safeContext = [
+    "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
+    "Use the 01 Project Lead or 02 Active Tasks archives on-demand only when a targeted original-source lookup requires them.",
+  ].join("\n");
+  const mutated = {
+    ...sources,
+    ".github/copilot-instructions.md": `${sources[".github/copilot-instructions.md"]}\n${safeContext}`,
+  };
+  assert.deepEqual(startupContractFailures(mutated), []);
 });
