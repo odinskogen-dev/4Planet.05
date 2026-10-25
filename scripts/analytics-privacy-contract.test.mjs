@@ -67,7 +67,9 @@ test("keeps consent UI and analytics out of valid first-party Atlas embeds", asy
   const { isEmbeddedAnalyticsSurface } = await embeddedSurfaceRuntime();
 
   assert.equal(isEmbeddedAnalyticsSurface("/embed/atlas", "?embed=news&surface=discovery"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/embed/atlas/", "?embed=news&surface=discovery"), true);
   assert.equal(isEmbeddedAnalyticsSurface("/atlas", "?embed=species"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/atlas/", "?embed=species"), true);
   assert.equal(isEmbeddedAnalyticsSurface("/embed/atlas", "?embed=unknown"), false);
   assert.equal(isEmbeddedAnalyticsSurface("/now/", "?embed=news"), false);
 
@@ -154,7 +156,9 @@ function routeAnalyticsRuntime({
 test("route analytics cannot bypass the valid Atlas embed boundary", async () => {
   for (const [pathname, search] of [
     ["/embed/atlas", "?embed=news&surface=discovery"],
+    ["/embed/atlas/", "?embed=news&surface=discovery"],
     ["/atlas", "?embed=species"],
+    ["/atlas/", "?embed=species"],
   ]) {
     const runtime = await routeAnalyticsRuntime({ pathname, search });
     assert.equal(runtime.trackProductEntry("atlas", pathname, "internal"), false);
