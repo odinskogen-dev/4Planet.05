@@ -26,7 +26,7 @@ jobs:
           set -euo pipefail
           BASE=f3392550d5d6e7b360a80fb530debf23184699ab
           git merge-base --is-ancestor "$BASE" HEAD
-          test "$(git ls-files -s src/impact/ui/HomeTemplate.tsx | awk '{print $2}')" = "013c7ebaa6b7bcf958db3afe8680343fc2bde5c2"
+          test "$(git ls-files -s src/impact/ui/HomeTemplate.tsx | awk '{print $2}')" = "1315bff8a32c6caed1ed39a557e8285a33e1ea09"
           test "$(git ls-files -s src/impact/ui/ProjectTemplate.tsx | awk '{print $2}')" = "3c46f27cab71e3389a0ad5399503d3acd14e667b"
           test "$(git ls-files -s src/impact/ui/ActorTemplate.tsx | awk '{print $2}')" = "826494e5347c92f2f5f0861933fc495c48b9fca8"
           test "$(git ls-files -s src/impact/ui/IssueTemplate.tsx | awk '{print $2}')" = "7566bc6956c13ff2cbc6f010b852398fbdbe8296"
