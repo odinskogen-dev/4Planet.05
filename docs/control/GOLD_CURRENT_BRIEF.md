@@ -1,3 +1,15 @@
+# MAX EXPOSURE CI — UNUSED ESLINT DIRECTIVE IMMUNITY — 25 OCTOBER 2026
+
+**STATUS:** BOUNDED BUILD-PIPELINE REMEDIATION / NO PUBLIC FEATURE OR LIVE RELEASE.
+**ROOT CAUSE (REAL CI LOG):** Same-SHA 25 October GitHub workflow runs report 527/527 Node smoke tests and 0 TypeScript errors but five ESLint `unused eslint-disable` warnings in `src/earth/Boundary.tsx` (one) and `src/earth/World.tsx` (four), making shared lint/QA fail despite mission tests passing.
+**SMALLEST DELTA:** Delete exactly the five unused ESLint suppression directives that ESLint itself reports as ineffective. No executable JSX/React/MapLibre logic, browser styling, source claims, routes or analytics changed.
+**MUST PRESERVE:** Existing MapLibre map, mobile Safari resize, source states, error boundary console logging and every other protected Atlas behaviour. No global eslint configuration change or disabling the lint gate.
+**VERIFY:** lint warning count on same current HEIR SHA should drop from 5 to 0 with no new lint errors; typecheck, smoke, ATLAS contracts, production build, browser QA, independent Gold. This does not solve previously detected unrelated Oslofjord browser assertions.
+**ROLLBACK:** exact previous blobs/commits; if removal exposes a legitimate unhandled lint rule restore the specific necessary suppression with recorded justification, not blanket disable.
+**AUTHORITY:** Bounded sole HEIR king/test / existing MAX EXPOSURE #483, no live deployment.
+
+---
+
 # MISSION SCIENTIFIC SOURCE COVERAGE 12/12 — 25 OCTOBER 2026
 
 **STATUS:** ADDITIVE SOURCE-LINK STAGING, NOT PUBLISHED, NOT INDEPENDENT GOLD.
