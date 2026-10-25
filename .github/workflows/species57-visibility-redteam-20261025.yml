@@ -1,0 +1,202 @@
+name: 4SPECIES 57 - independent visibility red-team (READ-ONLY)
+on:
+  push:
+    branches: [audit/species57-visibility-redteam-20261025]
+    paths: [.github/workflows/species57-visibility-redteam-20261025.yml]
+permissions: {contents: read}
+jobs:
+  deep-crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 1, persist-credentials: false}
+      - name: Crawl every live species / homepage / sitemap / source link as crawlers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p species57-redteam
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json,collections,concurrent.futures,hashlib,html.parser,datetime,statistics,re,xml.etree.ElementTree as ET,pathlib,time,urllib.parse,csv
+          SITE="https://4species.com"
+          OLD="https://e17e1392.4planet-05.pages.dev"
+          NEW="https://de9e3e0e.4planet-05.pages.dev"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          expected=old39+new18
+          assert len(old39)==39 and len(new18)==18 and len(set(expected))==57
+          def fetch(url,agent="4SPECIES-REDTEAM-CRAWLER/20261025",method="GET",maxBytes=2000000):
+            request=urllib.request.Request(url,headers={"User-Agent":agent,"Accept":"text/html,application/json,application/xml,image/*;q=0.9,*/*;q=0.6","Cache-Control":"no-cache"},method=method)
+            begin=time.monotonic()
+            try:
+              with urllib.request.urlopen(request,timeout=35) as r:
+                return (r.read(maxBytes),dict(r.headers),r.status,round((time.monotonic()-begin)*1000))
+            except urllib.error.HTTPError as e:
+              return (e.read(4000),dict(e.headers),e.code,round((time.monotonic()-begin)*1000))
+          def recSources(x,found):
+            if isinstance(x,dict):
+              if isinstance(x.get("source"),dict) and x["source"].get("url"):found.append(x["source"]["url"])
+              for v in x.values():recSources(v,found)
+            elif isinstance(x,list):
+              for v in x:recSources(v,found)
+          class H(html.parser.HTMLParser):
+            def __init__(self):
+              super().__init__();self.title="";self.intitle=False;self.h1=0;self.h2=0;self.links=[];self.img=[];self.meta={};self.can=[];self.ld=[];self.inLD=False;self.jsonTmp="";self.captureText=True;self.rawText=[]
+            def handle_starttag(self,t,attrs):
+              d=dict(attrs)
+              if t=="title":self.intitle=True
+              if t=="h1":self.h1+=1
+              if t=="h2":self.h2+=1
+              if t=="link" and d.get("rel")=="canonical":self.can.append(d.get("href"))
+              if t=="a":self.links.append(d)
+              if t=="meta":self.meta[d.get("name") or d.get("property") or ""]=d.get("content")
+              if t=="img":self.img.append(d)
+              if t=="script":self.inLD=d.get("type")=="application/ld+json";self.captureText=False;self.jsonTmp=""
+              if t=="style":self.captureText=False
+            def handle_endtag(self,t):
+              if t=="title":self.intitle=False
+              if t=="script":
+                if self.inLD:self.ld.append(self.jsonTmp)
+                self.inLD=False;self.captureText=True
+              if t=="style":self.captureText=True
+            def handle_data(self,s):
+              if self.intitle:self.title+=s
+              if self.inLD:self.jsonTmp+=s
+              if self.captureText:self.rawText.append(s)
+          def crawl(slug):
+            p={"slug":slug,"cohort":"original39" if slug in old39 else "previously_new18","sourceURL":SITE+"/species-data/v1/"+slug+".json"}
+            try:
+              bytesHtml,heads,code,ms=fetch(SITE+"/"+slug)
+              p.update({"http":code,"htmlBytes":len(bytesHtml),"responseMs":ms,"xRobots":heads.get("X-Robots-Tag"),"contentEncoding":heads.get("Content-Encoding"),"cacheControl":heads.get("Cache-Control")})
+              doc=H();doc.feed(bytesHtml.decode(errors="replace"))
+              p.update({"title":doc.title.strip(),"titleLength":len(doc.title.strip()),"metaDescription":doc.meta.get("description",""),"descriptionLength":len(doc.meta.get("description") or ""),"canonical":doc.can,"h1Count":doc.h1,"h2Count":doc.h2,"htmlTextWords":len(re.findall(r"\b[\w-]+\b"," ".join(doc.rawText))),"ogImage":doc.meta.get("og:image",""),"ogImageHttps":str(doc.meta.get("og:image","")).startswith("https://"),"ogType":doc.meta.get("og:type"),"robotsMeta":doc.meta.get("robots"),"serverImageTags":len(doc.img),"htmlAnchors":[a.get("href") for a in doc.links if a.get("href")],"schemaKinds":[],"schemaMalformed":0})
+              for block in doc.ld:
+                try:
+                  d=json.loads(block)
+                  arr=d.get("@graph",[d]) if isinstance(d,dict) else d if isinstance(d,list) else []
+                  for t in arr:
+                    if not isinstance(t,dict):continue
+                    k=t.get("@type",[])
+                    p["schemaKinds"].extend(k if isinstance(k,list) else [k] if k else [])
+                except Exception:p["schemaMalformed"]+=1
+              ownDirect=[l for l in p["htmlAnchors"] if l and re.fullmatch(r"https://4species\.com/[a-z0-9-]+/?|/[a-z0-9-]+/?",l)]
+              p["otherSpeciesLinks"]=[l for l in ownDirect if l.strip("/").split("/")[-1] in expected and l.strip("/").split("/")[-1]!=slug]
+              b,_,status,_=fetch(p["sourceURL"])
+              assert status==200
+              page=json.loads(b)
+              original=json.loads(fetch((OLD if slug in old39 else NEW)+"/species-data/v1/"+slug+".json")[0])
+              sources=[];recSources(page.get("facts",{}),sources)
+              p["dataImmutable"]=page==original
+              p["uniqueFactSourceURLs"]=len(set(sources))
+              p["factSourceCitations"]=len(sources)
+              p["sourceDomains"]=sorted({urllib.parse.urlsplit(u).hostname for u in sources})
+              p["claimCount"]=sum(len(v) for v in page.get("facts",{}).values() if isinstance(v,list))
+              p["authorshipPending"]="Pending authority citation" in str(page.get("identity",{}).get("authorship",""))
+              p["scientificName"]=page.get("identity",{}).get("scientificName")
+              p["sourceReview"]=page.get("provenance",{}).get("review")
+              p["imageType"]="auto" if isinstance(page.get("hero"),str) else "record"
+              p["photoIsFirstParty"]=str(page.get("hero",{}).get("url","")).startswith(SITE+"/") if isinstance(page.get("hero"),dict) else False
+              p["limits"]=len(page.get("limits",[]))
+              p["warnings"]=[]
+              if code!=200:p["warnings"].append("HTTP_NOT200")
+              if p["schemaMalformed"]:p["warnings"].append("INVALID_JSONLD")
+              if not p["dataImmutable"]:p["warnings"].append("ORIGINAL_DATA_CHANGED")
+              if p["authorshipPending"]:p["warnings"].append("TAXON_AUTHORITY_PLACEHOLDER")
+              if p["uniqueFactSourceURLs"]<=1:p["warnings"].append("FACTS_ONE_UNIQUE_SOURCE")
+              if not p["otherSpeciesLinks"]:p["warnings"].append("NO_DIRECT_RELATED_SPECIES_SERVER_LINK")
+              if not p["ogImageHttps"]:p["warnings"].append("SOCIAL_IMAGE_NOT_ABSOLUTE_HTTPS")
+              if "ImageObject" not in p["schemaKinds"]:p["warnings"].append("NO_IMAGEOBJECT")
+              if p["htmlTextWords"]<250:p["warnings"].append("LOW_SERVER_VISIBLE_WORD_COUNT_LT250")
+              if "noindex" in str(p["robotsMeta"] or "")+str(p["xRobots"] or ""):p["warnings"].append("NOINDEX")
+            except Exception as ex:
+              p.setdefault("warnings",[]).append("EXCEPTION:"+repr(ex)[:180])
+            return p
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:pages=list(pool.map(crawl,expected))
+          stats=collections.Counter(w for p in pages for w in p["warnings"])
+          xml=ET.fromstring(fetch(SITE+"/sitemap.xml")[0])
+          ns={"sm":"http://www.sitemaps.org/schemas/sitemap/0.9"}
+          urls=[]
+          for entry in xml.findall("sm:url",ns):
+            loc=entry.find("sm:loc",ns)
+            if loc is None:continue
+            lastmod=entry.find("sm:lastmod",ns)
+            urls.append({"loc":loc.text,"lastmod":lastmod.text if lastmod is not None else None,"imageRefs":len([x for x in entry.iter() if x.tag.endswith("}image")])})
+          speciesEntries=[x for x in urls if x["loc"] in [SITE+"/"+n for n in expected]]
+          shared={"urlElementsTotal":len(urls),"speciesUrlElements":len(speciesEntries),"imageReferences":sum(x["imageRefs"] for x in urls),"speciesWithoutLastmod":[x["loc"] for x in speciesEntries if not x["lastmod"]],"directoryInSitemap":any(x["loc"]==SITE+"/species-directory" for x in urls),"sitemapOffsitePageUrls":[x["loc"] for x in urls if not x["loc"].startswith(SITE+"/")],"titleTemplates":dict(collections.Counter(p["title"].split(" — ",1)[1] if " — " in p["title"] else "other" for p in pages))}
+          serviceAgents=["Googlebot","bingbot","OAI-SearchBot","ChatGPT-User","GPTBot","Mozilla/5.0 (compatible; 4SPECIES-REDTEAM)"]
+          bots=[]
+          for agent in serviceAgents:
+            try:
+              _,h,s,ms=fetch(SITE+"/orca",agent)
+              bots.append({"userAgent":agent,"http":s,"ms":ms,"robots":h.get("X-Robots-Tag"),"server":h.get("Server")})
+            except Exception as exc:bots.append({"userAgent":agent,"error":str(exc)[:160]})
+          robots=fetch(SITE+"/robots.txt")[0].decode(errors="replace")
+          llms=fetch(SITE+"/llms.txt")[0].decode(errors="replace")
+          shared.update({"robotsTxt":robots[:4000],"llmsHasAll57":all(SITE+"/"+s in llms for s in expected),"userAgentResults":bots})
+          # Check one unique source URL per species, but distinguish bot-protection from real broken sources.
+          probes=[]
+          sourceList=[]
+          for p in pages:
+            slug=p["slug"]
+            try:
+              d=json.loads(fetch(p["sourceURL"])[0]);found=[];recSources(d.get("facts",{}),found)
+              if found:sourceList.append((slug,found[0]))
+            except Exception:pass
+          def checkSource(s):
+            slug,url=s
+            try:
+              b,h,code,ms=fetch(url,maxBytes=20000)
+              return {"slug":slug,"url":url,"status":code,"ms":ms,"contentType":h.get("Content-Type")}
+            except Exception as e:return {"slug":slug,"url":url,"error":str(e)[:160]}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:probes=list(pool.map(checkSource,sourceList))
+          shared["sampledPrimaryCitationUrls"]=len(probes)
+          shared["citationProbeStatuses"]=dict(collections.Counter(str(x.get("status","ERROR")) for x in probes))
+          report={"generatedUTC":datetime.datetime.now(datetime.timezone.utc).isoformat(),"readOnly":True,"total":57,"old39IdentityUnchanged":all(p.get("dataImmutable") for p in pages if p["cohort"]=="original39"),"all57DataUnchanged":all(p.get("dataImmutable") for p in pages),"all57HTTP200":all(p.get("http")==200 for p in pages),"warnings":dict(stats),"pages":pages,"shared":shared,"citationProbes":probes,"limitations":["Robots user-agent strings simulate headers; they do NOT prove verified search bot IPs or inclusion.","The outbound source sample uses 57 GETs; some 403/429 can be bot blocking, not dead sources.","Technical crawlability does not prove Google/Bing/AI indexing or citations."]}
+          pathlib.Path("species57-redteam/report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          with open("species57-redteam/matrix.csv","w",newline="") as output:
+            keys=["slug","cohort","http","titleLength","htmlTextWords","uniqueFactSourceURLs","claimCount","otherSpeciesLinks","authorshipPending","ogImageHttps","schemaKinds","warnings"]
+            w=csv.DictWriter(output,fieldnames=keys);w.writeheader()
+            for p in pages:w.writerow({k:json.dumps(p.get(k)) if isinstance(p.get(k),(list,dict)) else p.get(k) for k in keys})
+          print("SPECIES57_REDTEAM_SUMMARY",json.dumps({"total":report["total"],"sourceDataPass":report["all57DataUnchanged"],"http200":report["all57HTTP200"],"warningCounts":report["warnings"],"shared":{k:v for k,v in shared.items() if k not in ("robotsTxt","titleTemplates")}},ensure_ascii=False),flush=True)
+          if not report["all57DataUnchanged"] or not report["all57HTTP200"]:raise SystemExit("Production baseline mutated/unavailable; stop audit")
+          PY
+      - name: Probe public visual browser render on eight representative pages (desktop and mobile)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/species57-redteam-browser playwright@1.56.0 --no-audit --no-fund
+          /tmp/species57-redteam-browser/node_modules/.bin/playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import {chromium} from "/tmp/species57-redteam-browser/node_modules/playwright/index.mjs";
+          const ids=["orca","lion","english-oak","blue-whale","koala","giant-sequoia","giant-manta-ray","venus-flytrap"];
+          const cases=[];
+          const browser=await chromium.launch({headless:true});
+          for(const [mode,viewport] of [["desktop",{width:1380,height:900}],["mobile",{width:390,height:844}]]){
+            const ctx=await browser.newContext({viewport,userAgent:mode==="mobile"?"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",deviceScaleFactor:1});
+            for(const slug of ids){
+              const page=await ctx.newPage();
+              const errors=[];
+              page.on("pageerror",e=>errors.push(String(e).slice(0,200)));
+              try{
+                const response=await page.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+                await page.waitForTimeout(1450);
+                const data=await page.evaluate(()=>({title:document.title,h1:[...document.querySelectorAll("h1")].map(x=>x.textContent.trim()),bodyText:document.body.innerText.slice(0,250),bodyWords:document.body.innerText.split(/\s+/).length,overflow:document.documentElement.scrollWidth>innerWidth+4,visibleImages:[...document.images].filter(x=>x.complete&&x.naturalWidth>0).length,brokenImgs:[...document.images].filter(x=>x.complete&&x.naturalWidth===0).length,linksToSpecies:[...document.querySelectorAll("a[href]")].filter(x=>/^https:\/\/4species\.com\/[a-z-]+$/.test(x.href)||/^\/[a-z-]+$/.test(x.getAttribute("href")||"")).length,performance:performance.getEntriesByType("navigation").map(x=>({domContentLoaded:Math.round(x.domContentLoadedEventEnd),transfer:Math.round(x.transferSize)}))}));
+                cases.push({slug,mode,status:response?.status(),errors,...data});
+                await page.screenshot({path:"species57-redteam/"+slug+"-"+mode+".png",animations:"disabled",fullPage:false});
+                console.log("SPECIES_REDTEAM_BROWSER",JSON.stringify(cases.at(-1)),flush=true);
+              }catch(e){cases.push({slug,mode,failed:String(e)})}finally{await page.close()}
+            }
+            await ctx.close();
+          }
+          await browser.close();
+          fs.writeFileSync("species57-redteam/browser.json",JSON.stringify(cases,null,2));
+          console.log("SPECIES57_BROWSER_16_CASES_COMPLETED",cases.length);
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 4species57-independent-visibility-redteam-report-20261025
+          path: species57-redteam/
+          retention-days: 30
+          if-no-files-found: error
