@@ -22,25 +22,27 @@
 
 ---
 
-# ONE-LEAN COLD START — SEMANTIC REGRESSION IMMUNITY — 25 OCTOBER 2026
+# ONE-LEAN COLD START — SEMANTIC REGRESSION IMMUNITY RETURN 02 — 25 OCTOBER 2026
 
 **STATUS:** INDEPENDENT GOLD QA_CORRECT / TEST-ONLY HEIR REPAIR / RE-GOLD REQUIRED / NO INSTRUCTION, PRODUCT, RUNTIME OR RELEASE CHANGE.
 
 **USER VALUE:** memoryless 4PLANET agents must begin with the sole short derived 00 router, then retrieve only one task's exact original authority. The guard must prevent bulk historical or private ODIN context from silently returning as mandatory startup.
 
-**ROOT CAUSE:** the corrected instruction text was sound, but its permanent regression matched one obsolete sentence and one narrow ordered phrase. Semantically equivalent precedence, tenant-isolation and derived-authority violations therefore passed.
+**ROOT CAUSE:** the first semantic repair still required both historical archives on one line, recognised too few private-memory and derived-authority synonyms, and skipped every line containing `do not` even when the phrase was `do not skip` inside an unsafe mandate. Seven semantically equivalent regressions therefore still passed.
 
-**FAILING-FIRST:** independent Gold supplied four false-negative mutations. After adding them to the owning contract without changing the guard, the suite failed 3/4 tests because the first mandatory 01/02 mutation returned no contract failure.
+**FAILING-FIRST:** independent Gold supplied seven new false-negative mutations. After adding them to the owning contract without changing the guard, the owning suite passed 4/5 test cases; the returned-mutation case failed first because `Before starting any task, MUST load the entire 01 Project Lead document.` returned no contract failure.
 
-**CORRECTION:** the existing deterministic guard now classifies mandatory 01+02 startup chains, mandatory private ODIN default boot and derived-router-over-original authority claims line by line. Quoted history, explicit prohibitions and targeted on-demand archive lookup remain valid.
+**CORRECTION:** the same deterministic guard now rejects mandatory use of either historical archive, including split-line mandates; private ODIN memory synonyms; derived 00/context authority and supersession synonyms; and mixed `do not skip` mandates. It distinguishes genuine explicit prohibitions and negated authority from unsafe instructions. Current corrected instructions remain byte-for-byte unchanged.
+
+**PERMANENT REGRESSION:** retain the original four mutations and all seven returned mutations as exact negative fixtures. Prove independently that unmodified instructions, quoted historical text and explicitly optional targeted on-demand lookup remain valid.
 
 **WHAT MUST BE REUSED:** PR #511, the sole derived router, original Founder/Project Home/OKF/WBS/Atomic authority, current corrected `AGENTS.md` and Copilot instructions, the existing convergence workflow and the same owning contract.
 
 **TRUTH BOUNDARY:** passing proves deterministic source-guard coverage for the exact fixtures. It does not prove native GraphRAG retrieval, blind agent behaviour, full BRAIN health, LIVE operation or user use.
 
-**BASE / ROLLBACK:** `king/test@4a050f66225a3acf30f6662968573b0645db8448`; revert the bounded test/brief commit if independent Gold finds a legitimate instruction or quoted-history false positive.
+**BASE / ROLLBACK:** `king/test@d60da51a9ef584679224a9dced9bfdeb7f03bfa4`; revert the bounded test/brief commit if independent Gold finds a legitimate instruction, explicit-prohibition or quoted-history false positive.
 
-**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay all four mutations, the positive on-demand fixture and a fresh cold start on the returned SHA.
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the complete eleven-mutation matrix, three positive controls and a fresh cold start on the returned SHA.
 
 ---
 
