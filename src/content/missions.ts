@@ -85,7 +85,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A pathway to support restoration of degraded coastal and marine habitat through approved local models. 4PLANET is not currently delivering marine restoration itself.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK RE:WILD_ Marine",
     visualDirection: "Deep water, kelp and seagrass texture, shellfish reefs, tidal field notes, restraint and marine scale.",
-    sources: [],
+    sources: [{ title: "UNEP — Out of the Blue: The Value of Seagrasses to the Environment and to People (2020)", url: "https://www.unep.org/resources/report/out-blue-value-seagrasses-environment-and-people", confidence: "high" }],
   },
   {
     slug: "clim4te", domain: "E4RTH_", code: "E4RTH_ / 01", name: "CLIM4TE_",
@@ -166,7 +166,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain for energy intelligence and public explanation — making complex system choices more legible without reducing them to slogans.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK EN4RGY_",
     visualDirection: "Infrastructure, grids, geothermal, hydro, solar, materials, architecture, technical diagrams and restrained system photography.",
-    sources: [],
+    sources: [{ title: "IEA — World Energy Outlook 2025", url: "https://www.iea.org/reports/world-energy-outlook-2025", confidence: "high" }],
   },
   {
     slug: "circular-city", domain: "S4PIENS_", code: "S4PIENS_ / 03", name: "CIRCULAR CITY_",
@@ -179,7 +179,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain for circular urban systems, visible pilots, public understanding and future city-based partnerships.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK CIRCULAR CITY_",
     visualDirection: "Urban grids, material archives, infrastructure diagrams, architecture, repair details, public-space systems.",
-    sources: [],
+    sources: [{ title: "UNEP — Circular Economy in Cities: Key Messages (2024)", url: "https://wedocs.unep.org/items/7d8c1196-71cb-4f3b-9f9d-62cdf4d52bdb", confidence: "high" }],
   },
   {
     slug: "f4shion", domain: "S4PIENS_", code: "S4PIENS_ / 04", name: "F4SHION_",
@@ -192,7 +192,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain for material intelligence, circular fashion, small-scale proof projects and cultural formats that make lower-impact choices more desirable.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK F4SHION_",
     visualDirection: "Material swatches, repair detail, garment architecture, studio light, restrained editorial fashion, no generic eco-fashion imagery.",
-    sources: [],
+    sources: [{ title: "UNEP — Sustainable and Circular Textiles", url: "https://www.unep.org/topics/chemicals-and-pollution-action/circularity-sectors/sustainable-and-circular-textiles", confidence: "high" }],
   },
   {
     slug: "m4gazine", domain: "4CULTURE_", code: "4CULTURE_ / 01", name: "4PLANET MAGAZINE",
