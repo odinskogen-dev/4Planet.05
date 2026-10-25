@@ -79,6 +79,17 @@ if (localMissionRecords.length) {
 }
 for (const m of localMissionRecords) {
   const pathName = "/missions/" + m.slug;
+  // Reuse the approved mission domain and slug: no parallel topic register.
+  const relatedMissions = localMissionRecords.filter((candidate) =>
+    candidate.domain === m.domain && candidate.slug !== m.slug);
+  const relatedMissionHtml = relatedMissions.length
+    ? "<nav data-4planet-prerender-content='mission-related' aria-label='Related missions'>" +
+        "<h2>Explore related " + esc(m.domain) + " missions</h2><ul>" +
+        relatedMissions.map((candidate) =>
+          "<li><a href='/missions/" + esc(candidate.slug) + "'>" +
+          esc(candidate.name) + " — " + esc(candidate.hero) + "</a></li>").join("") +
+        "</ul></nav>"
+    : "";
   const title = m.name + " — " + m.hero + " | 4PLANET";
   const body = "<main data-4planet-prerender-content='mission'><p>4PLANET / " + esc(m.domain) + " / MISSION</p>" +
     "<h1>" + esc(m.name) + "</h1><p>" + esc(m.hero) + "</p>" +
@@ -89,6 +100,9 @@ for (const m of localMissionRecords) {
     "<h2>4PLANET's role</h2><p>" + esc(m.fourPlanetRole) + "</p>" +
     "<h2>Current development status</h2><p>" + esc(m.currentStatus) + "</p>" +
     "<p>A development status is not proof that an ecological outcome has been delivered.</p>" +
+    relatedMissionHtml +
+    "<p>Explore the <a href='/domains/" + esc(m.domain.replace("_", "").toLowerCase()) +
+      "'>" + esc(m.domain) + " domain</a> and related living systems.</p>" +
     "<p><a href='/missions'>All missions</a> · <a href='/livingsystems/'>Explore living systems</a></p></main>";
   writeRoute(pathName, pageHtml({
     pathName, title, description: m.hero, body,
