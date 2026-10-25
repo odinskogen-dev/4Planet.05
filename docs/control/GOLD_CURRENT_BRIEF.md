@@ -1,3 +1,15 @@
+# MISSION DISCOVERY — HYDRATED USER CONTINUATION — 25 OCTOBER 2026
+
+**STATUS:** BOUNDED HEIR SOURCE CANDIDATE / INDEPENDENT GOLD REQUIRED / NO LIVE.
+**ROOT CAUSE:** Server-only mission sibling anchors disappear when React hydrates the page, so the Google-readable navigation could diverge from what a person sees. The first bounded mission prerender change was real but insufficient for the human outcome.
+**FIX:** Mirror the same canonical same-domain mission relationships in the existing MissionDetail using content.getMissionsByDomain, excluding the two external cultural hand-offs. Reuse existing typography, accent and link primitives, no new style system.
+**PRIMARY ACTION:** Click one relevant sibling mission after reading the present mission.
+**MUST PRESERVE:** Existing mission hero, CTA, mobile navigation, source-state warning, URL ownership, page metadata, and anti-index preview policy.
+**PROOF:** Existing discovery source contract must assert HTML and hydrated runtime route parity. Typecheck, Node test, full build, preview desktop/mobile and independent Gold required. This is not a measured SEO or LIVE result.
+**ROLLBACK:** Revert this bounded Gold/client/test change if rendered, navigational or canonical QA fails. Founder external release remains blocked.
+
+---
+
 # MAX EXPOSURE — MISSION DISCOVERY INTERNAL LINKS — 25 OCTOBER 2026
 
 **STATE:** BOUNDED HEIR CANDIDATE / INDEPENDENT GOLD REQUIRED / NO LIVE OR INDEXATION CLAIM.
