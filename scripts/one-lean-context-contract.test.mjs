@@ -36,12 +36,25 @@ const GOLD_RETURN_03_MUTATIONS = [
   "Never read 01 Project Lead first; ALWAYS consult 02 Active Tasks before 00.",
   "Historical quote: \"Read 01 Project Lead first.\"; MUST load 02 Active Tasks before each task.",
 ];
+const GOLD_RETURN_04_MUTATIONS = [
+  "Do not load 01 Project Lead, but MUST read 02 Active Tasks before each task.",
+  "Never load ODIN BRAIN, but always read 02 Active Tasks before 00.",
+  "Do not read 01 Project Lead. MUST read 02 Active Tasks before any task.",
+  "Do not treat the derived router as final authority, but this derived router overrides all original Founder decisions.",
+  "Do not load ODIN private memory, but before beginning fetch the private ODIN BRAIN root.",
+  "Do not read 01 Project Lead, and then read 02 Active Tasks before 00.",
+  "Do not read 02 Active Tasks, yet MUST load 01 Project Lead at boot.",
+];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
   "Use the 01 Project Lead or 02 Active Tasks archives on-demand only when a targeted original-source lookup requires them.",
   "Targeted lookup of 02 Active Tasks is optional, not mandatory.",
   "Do not load the ODIN BRAIN private root pointer at startup.",
   "This derived router is not the final Founder decision authority.",
+  "Read 01 Project Lead only when the assigned task requires that original source.",
+  "Consult 02 Active Tasks if a targeted original-source lookup is needed; otherwise start with 00.",
+  "Historical example for audit: \"MUST load 02 Active Tasks before any task.\"",
+  "The derived router overrides nothing; original Founder decisions remain authoritative.",
 ];
 
 const sources = {
@@ -58,19 +71,26 @@ function semanticStartupConflicts(name, content) {
     // Historical examples may quote an unsafe instruction. Remove only that
     // labelled quotation so a later real directive on the same line is still
     // evaluated (for example: `Historical quote: "..."; MUST load 02 ...`).
-    if (/^(?:historical (?:quote|note)|quoted (?:historical )?(?:example|text))\b/i.test(line)) {
-      line = line.replace(/^(?:historical (?:quote|note)|quoted (?:historical )?(?:example|text))[^"`]*(["`]).*?\1\s*/i, "");
+    if (/^(?:historical (?:quote|note|example)(?: for audit)?|quoted (?:historical )?(?:example|text))\b/i.test(line)) {
+      line = line.replace(/^(?:historical (?:quote|note|example)(?: for audit)?|quoted (?:historical )?(?:example|text))[^"`]*(["`]).*?\1\s*/i, "");
     }
 
-    for (const rawClause of line.split(/\s*;\s*/)) {
-      const clause = rawClause.trim();
+    // Split only at explicit instruction boundaries. This keeps ordinary
+    // prose intact while preventing a safe first clause from masking a later
+    // mandate separated by punctuation or a contrastive conjunction.
+    const clauses = line.split(/\s*;\s*|(?<=[.!?])\s+|,\s*(?:but|yet|and then)\s+/i);
+    for (const rawClause of clauses) {
+      const clause = rawClause.trim().replace(/^(?:but|yet|and then)\s+/i, "");
       if (!clause) continue;
 
       const optional = /\b(?:optional|non-?mandatory|not mandatory|on-demand only|on demand only)\b/i.test(clause)
-        && !/\b(?:must|always|required|mandatory for|do not skip)\b/i.test(clause);
-      const explicitProhibition = /\b(?:never|do not|must not)\s+(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
+          || /\bonly when\b.*\b(?:requires?|needs?)\b/i.test(clause)
+          || /\bif\b.*\b(?:needed|required)\b/i.test(clause);
+      const optionalWithoutMandate = optional
+        && !/\b(?:must|always|required before|required at|mandatory for|do not skip)\b/i.test(clause);
+      const explicitProhibition = /^(?:never|do not|must not)\s+(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
         && !/\bdo not skip\b/i.test(clause);
-      if (optional || explicitProhibition) continue;
+      if (optionalWithoutMandate || explicitProhibition) continue;
 
       const mandatory = /\b(?:must|required|mandatory|before (?:any|each|every|starting)|for every|always|first|start only|read only|default|startup|at boot|before beginning)\b/i.test(clause)
         || /^(?:read|load|consult|fetch|boot|treat|use)\b/i.test(clause);
@@ -87,7 +107,7 @@ function semanticStartupConflicts(name, content) {
 
       const promotesDerivedAuthority = /\b(?:this )?derived(?: 00)?(?: router| context)?\b/i.test(clause)
         && /\b(?:authoritative|final founder decision|canonical authority|overrides?|supersedes?|outranks?|primary truth|ignore conflicting originals?)\b/i.test(clause)
-        && !/\bnot (?:the |an? )?(?:authoritative(?: source)?|canonical authority|final founder decision|primary truth)\b/i.test(clause);
+        && !/\b(?:not (?:the |an? )?(?:authoritative(?: source)?|canonical authority|final founder decision|primary truth)|overrides? nothing)\b/i.test(clause);
       if (promotesDerivedAuthority) {
         failures.push(`${name}: derived router promoted over original authority`);
       }
@@ -158,6 +178,16 @@ test("returned Gold semantic startup mutations fail closed", () => {
 
 test("returned Gold clause and ordering mutations fail closed", () => {
   for (const mutation of GOLD_RETURN_03_MUTATIONS) {
+    const mutated = {
+      ...sources,
+      ".github/copilot-instructions.md": `${mutation}\n${sources[".github/copilot-instructions.md"]}`,
+    };
+    assert.notDeepEqual(startupContractFailures(mutated), [], mutation);
+  }
+});
+
+test("returned Gold mixed-clause mutations fail closed", () => {
+  for (const mutation of GOLD_RETURN_04_MUTATIONS) {
     const mutated = {
       ...sources,
       ".github/copilot-instructions.md": `${mutation}\n${sources[".github/copilot-instructions.md"]}`,

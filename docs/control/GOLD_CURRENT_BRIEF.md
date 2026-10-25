@@ -22,27 +22,27 @@
 
 ---
 
-# ONE-LEAN COLD START — CLAUSE-SCOPED REGRESSION IMMUNITY RETURN 03 — 25 OCTOBER 2026
+# ONE-LEAN COLD START — MIXED-CLAUSE REGRESSION IMMUNITY RETURN 04 — 25 OCTOBER 2026
 
 **STATUS:** INDEPENDENT GOLD QA_CORRECT / TEST-ONLY HEIR REPAIR / RE-GOLD REQUIRED / NO INSTRUCTION, PRODUCT, RUNTIME OR RELEASE CHANGE.
 
 **USER VALUE:** memoryless 4PLANET agents must begin with the sole short derived 00 router, then retrieve only one task's exact original authority. The guard must prevent bulk historical or private ODIN context from silently returning as mandatory startup.
 
-**ROOT CAUSE:** the guard evaluated whole lines. A single `do not`, `on-demand only` or historical-quote marker suppressed a later unsafe clause, while imperative/default/step-order forms were outside the mandatory vocabulary. It also treated benign `optional, not mandatory` text as mandatory. Independent Gold therefore found twelve new false accepts and one false reject.
+**ROOT CAUSE:** the clause-scoped guard split only at semicolons. A safe `do not` or `never` clause still suppressed a later unsafe mandate joined by a comma, contrastive conjunction or sentence boundary. Conditional targeted source lookups, `historical example` labels and `overrides nothing` were also misclassified. Independent Gold therefore found seven new false accepts and four false rejects.
 
-**FAILING-FIRST:** Gold's twelve unsafe directives and the benign `Targeted lookup of 02 Active Tasks is optional, not mandatory.` control were added before changing the guard. The owning suite passed 4/6 test cases: the new unsafe-mutation case failed first on `Before each task, consult the complete 01 Project Lead archive.`, and the safe-reference case falsely rejected the optional control.
+**FAILING-FIRST:** Gold's exact seven unsafe mixed-clause directives and four benign controls were added before changing the guard. The owning suite passed 5/7 test cases: the new unsafe case failed first on `Do not load 01 Project Lead, but MUST read 02 Active Tasks before each task.`, and the safe-reference case falsely rejected `Read 01 Project Lead only when the assigned task requires that original source.`
 
-**CORRECTION:** the same deterministic guard now removes only a labelled historical quotation, evaluates each remaining semicolon-delimited instruction clause, scopes optionality and prohibition to that clause, and recognises imperative/default/startup/boot/step-order directives plus private-memory and derived-authority synonyms. Current corrected instructions remain byte-for-byte unchanged.
+**CORRECTION:** the same deterministic guard now uses a finite instruction boundary at semicolons, sentence endings and the contrastive `but`, `yet` and `and then` conjunctions. Optionality, conditional targeted lookup, explicit prohibition and authority negation apply only to their clause. Labelled historical examples are removed without hiding a later real directive. Current corrected instructions remain byte-for-byte unchanged.
 
-**PERMANENT REGRESSION:** retain the original four, prior seven and new twelve unsafe mutations as exact negative fixtures. Prove that unmodified instructions, quoted history, explicit prohibitions, negated derived authority and optional targeted on-demand lookup remain valid, including a historical quote followed by a real mandate on the same line.
+**PERMANENT REGRESSION:** retain all thirty finite unsafe fixtures and nine benign controls, including mixed comma/period directives, conditional targeted original lookups, historical examples and `overrides nothing`. The matrix is a bounded risk-based evaluator, not proof that arbitrary English or a real agent cold start is safe.
 
 **WHAT MUST BE REUSED:** PR #511, the sole derived router, original Founder/Project Home/OKF/WBS/Atomic authority, current corrected `AGENTS.md` and Copilot instructions, the existing convergence workflow and the same owning contract.
 
 **TRUTH BOUNDARY:** passing proves deterministic source-guard coverage for the exact fixtures. It does not prove native GraphRAG retrieval, blind agent behaviour, full BRAIN health, LIVE operation or user use.
 
-**BASE / ROLLBACK:** `king/test@f7ed0d8b4bb50095227174a40e30f1a497926800`; revert the bounded test/brief commit if independent Gold finds a legitimate instruction, explicit-prohibition, optional-lookup or quoted-history false positive.
+**BASE / ROLLBACK:** `king/test@ee8f5b99036f47a76e436b04f42fd70c3d409808`; revert the bounded test/brief commit if independent Gold finds a legitimate conditional lookup, prohibition, negated-authority or historical-example false positive.
 
-**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the complete twenty-three-mutation matrix, five positive controls and a fresh cold start on the returned SHA.
+**MAKER ≠ JUDGE:** Factory returns code and evidence. Independent Gold must replay the finite thirty-negative/nine-benign matrix on the exact SHA. A separate real fresh-agent cold start remains required before broader BRAIN or runtime Gold.
 
 ---
 
