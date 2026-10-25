@@ -226,17 +226,27 @@ jobs:
             sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
             echo "LIVE probe $i: ${sha:-unresolved}"
             if [ "$sha" = "$GITHUB_SHA" ]; then
-              home=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact?v=$GITHUB_SHA")
-              project=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA")
-              actor=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA")
-              sitemap=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/sitemap.xml?v=$GITHUB_SHA")
-              robots=$(curl -LfsS -H 'Cache-Control: no-cache' "https://4planet.org/robots.txt?v=$GITHUB_SHA")
-              grep -q 'Find people bringing life back' <<<"$home"
-              grep -q 'Namami Gange' <<<"$project"
-              grep -q 'National Mission for Clean Ganga' <<<"$actor"
-              grep -q '/impact/project/namami-gange' <<<"$sitemap"
-              grep -q 'User-agent: Googlebot' <<<"$robots"
-              grep -q 'User-agent: OAI-SearchBot' <<<"$robots"
+              for spec in                 "impact|https://4planet.org/impact?v=$GITHUB_SHA"                 "project|https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA"                 "actor|https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA"                 "sitemap|https://4planet.org/sitemap.xml?v=$GITHUB_SHA"                 "robots|https://4planet.org/robots.txt?v=$GITHUB_SHA"; do
+                name="${spec%%|*}"; url="${spec#*|}"
+                code=$(curl -Lso "/tmp/$name" -w '%{http_code}' -H 'Cache-Control: no-cache' --max-time 25 "$url")
+                echo "$name HTTP $code bytes=$(wc -c < "/tmp/$name")"
+                test "$code" = "200"
+              done
+
+              grep -qi '<link rel="canonical"' /tmp/project
+              grep -qi 'application/ld+json' /tmp/project
+              ! grep -Eqi 'name=["'"']robots["'"'][^>]*content=["'"'][^"'"']*noindex' /tmp/project
+              grep -qi 'Namami Gange' /tmp/project
+
+              grep -qi '<link rel="canonical"' /tmp/actor
+              grep -qi 'National Mission for Clean Ganga' /tmp/actor
+
+              grep -q '/impact/project/namami-gange' /tmp/sitemap
+              grep -q '/impact/project/trinational-atlantic-forest-pact' /tmp/sitemap
+              grep -q '/impact/actors/national-mission-clean-ganga' /tmp/sitemap
+              grep -q '/impact/issue/habitat-destruction' /tmp/sitemap
+              grep -q 'User-agent: Googlebot' /tmp/robots
+              grep -q 'User-agent: OAI-SearchBot' /tmp/robots
               echo "Canonical LIVE + crawlability verified."
               exit 0
             fi
@@ -244,7 +254,6 @@ jobs:
           done
           echo "Canonical LIVE verification failed. Immutable artifact remains at $DEPLOYMENT_URL" >&2
           exit 1
-
       - name: Browser proof — Claude design, desktop + mobile
         shell: bash
         run: |
