@@ -28,8 +28,13 @@ export function impactAtlasView(input: {
     return { kind: "IMPACT", title: input.title, description: input.description, placeId: registered, entityId: input.entityId, limitation };
   }
   if (pointPlace?.referencePoint) {
-    const { lng, lat, zoom } = pointPlace.referencePoint;
-    return { kind: "IMPACT", title: input.title, description: input.description, camera: { lng, lat, zoom }, entityId: input.entityId, limitation };
+    return {
+      kind: "IMPACT",
+      title: input.title,
+      description: input.description,
+      entityId: input.entityId,
+      limitation: limitation + " A source reference point exists in NATUREBRAIN, but the current ATLAS embed contract does not accept free camera coordinates; no parallel camera state is created.",
+    };
   }
   return null;
 }
