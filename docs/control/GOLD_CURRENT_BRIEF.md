@@ -1,3 +1,17 @@
+# MISSION SOURCE REFERENCES — CANONICAL VERIFIED BACKGROUND — 25 OCTOBER 2026
+
+**STATUS:** 8 SOURCE-BACKGROUND POINTERS / BOUNDED HEIR CODE CANDIDATE / INDEPENDENT GOLD REQUIRED / NO PUBLIC RELEASE.
+**USER PROBLEM:** Local Mission pages had 0 scientific source links across 16 canonical records; a visitor cannot inspect material basis for core background context.
+**EXECUTION:** Add eight carefully matched primary authoritative-source references to existing canonical mission objects: UNEP/CLE4N, NOAA/WH4LES, NOAA/COR4L, IPCC/CLIM4TE, NASA/AM4ZONIA, IPBES/SPECIES, IUCN/RE:WILD land, FAO/FOOD. Other 8 missions stay unverified, do not fake sources.
+**ONE SOURCE:** Canonical mission content remains the only source record. The existing build-time TypeScript AST reader projects citation title/URL/trust state into existing static HTML; the hydrated MissionDetail already uses m.sources.
+**BOUNDARY:** These are background/topic assessments, NOT evidence of specific proposed 4PLANET project delivery, partner clearance, proof or impact. Citation confidence relates to source trust, not full fact-by-fact Gold approval.
+**HTML:** Accessible background sources list using actual HTTPS anchors, safe escaping, and factual source titles; honest fallback for source-free missions. Match article structured data with actual citations only.
+**MUST PRESERVE:** 16/14 mission policy, same-domain sibling links, no external culture duplicates, existing visual design, previews noindex, brand, security and editorial gates.
+**QA:** Full build + source/extractor tests + mission schema + actual HTML + client hydration + optional preview & mobile; independently adjudicated Gold before any Founder review, exact-artifact release separately.
+**ROLLBACK:** Revert only bounded Gold/missions/extractor/prerender/discovery-contract changes from the exact resulting commit.
+
+---
+
 # MISSION DISCOVERY — HYDRATED USER CONTINUATION — 25 OCTOBER 2026
 
 **STATUS:** BOUNDED HEIR SOURCE CANDIDATE / INDEPENDENT GOLD REQUIRED / NO LIVE.
