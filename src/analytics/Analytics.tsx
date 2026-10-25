@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { capturePostHog } from "@/analytics/PostHogSink";
+import { isAtlasEmbedKind } from "@/earth/atlasViewContract";
 
 export const ANALYTICS_STORAGE_KEY = "4planet.analytics.consent.v1";
 export const INTERNAL_ANALYTICS_STORAGE_KEY = "4planet.analytics.internal.v1";
@@ -450,21 +451,30 @@ export function resetAnalyticsConsent() {
   window.location.reload();
 }
 
+export function isEmbeddedAnalyticsSurface(pathname: string, search: string): boolean {
+  if (pathname !== "/atlas" && pathname !== "/embed/atlas") return false;
+  return isAtlasEmbedKind(new URLSearchParams(search).get("embed"));
+}
+
 export function Analytics() {
   const location = useLocation();
   const id = measurementId();
   const allowedHost = useMemo(() => isAnalyticsHostAllowed(window.location.hostname), []);
+  const embeddedSurface = useMemo(
+    () => isEmbeddedAnalyticsSurface(location.pathname, location.search),
+    [location.pathname, location.search],
+  );
   const [internalTraffic] = useState(() => applyInternalAnalyticsControl());
   const [consent, setConsent] = useState<ConsentState>(() => readConsent());
 
   useEffect(() => {
-    if (!allowedHost || !id || internalTraffic) return;
+    if (!allowedHost || !id || internalTraffic || embeddedSurface) return;
     setConsentDefaultDenied();
     if (consent === "denied") updateConsent("denied");
-  }, [allowedHost, consent, id, internalTraffic]);
+  }, [allowedHost, consent, embeddedSurface, id, internalTraffic]);
 
   useEffect(() => {
-    if (!allowedHost || !id || internalTraffic || consent !== "granted" || isSensitiveAnalyticsNavigation()) return;
+    if (!allowedHost || !id || internalTraffic || embeddedSurface || consent !== "granted" || isSensitiveAnalyticsNavigation()) return;
     installGoogleTag(id, configuredDomains());
 
     // Deliberately exclude query strings and fragments from analytics. OAuth
@@ -483,9 +493,9 @@ export function Analytics() {
     });
     capturePostHog("$pageview", sharedPageProperties);
     trackDiscoveryEntryOnce(location.pathname);
-  }, [allowedHost, consent, id, internalTraffic, location.pathname]);
+  }, [allowedHost, consent, embeddedSurface, id, internalTraffic, location.pathname]);
 
-  if (!allowedHost || !id || internalTraffic || consent !== null || isSensitiveAnalyticsNavigation()) return null;
+  if (!allowedHost || !id || internalTraffic || embeddedSurface || consent !== null || isSensitiveAnalyticsNavigation()) return null;
 
   const decide = (next: Exclude<ConsentState, null>) => {
     window.localStorage.setItem(ANALYTICS_STORAGE_KEY, next);

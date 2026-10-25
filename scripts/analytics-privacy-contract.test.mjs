@@ -35,6 +35,32 @@ const { privacySafeEventParameters } = await import(
   "data:text/javascript;base64," + Buffer.from(transpiled).toString("base64")
 );
 
+function embeddedSurfaceRuntime() {
+  const runtimeSource = [
+    "function isAtlasEmbedKind(value) { return ['news', 'species', 'place', 'impact', 'nation', 'brands', 'personal', 'solutions', 's4piens'].includes(value); }",
+    functionSource("isEmbeddedAnalyticsSurface"),
+    "export { isEmbeddedAnalyticsSurface };",
+  ].join("\n\n");
+  const runtimeTranspiled = ts.transpileModule(runtimeSource, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
+  }).outputText;
+  return import("data:text/javascript;base64," + Buffer.from(runtimeTranspiled).toString("base64"));
+}
+
+test("keeps consent UI and analytics out of valid first-party Atlas embeds", async () => {
+  const { isEmbeddedAnalyticsSurface } = await embeddedSurfaceRuntime();
+
+  assert.equal(isEmbeddedAnalyticsSurface("/embed/atlas", "?embed=news&surface=discovery"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/atlas", "?embed=species"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/embed/atlas", "?embed=unknown"), false);
+  assert.equal(isEmbeddedAnalyticsSurface("/now/", "?embed=news"), false);
+
+  const analyticsComponent = functionSource("Analytics");
+  assert.match(analyticsComponent, /isEmbeddedAnalyticsSurface\(location\.pathname, location\.search\)/);
+  assert.match(analyticsComponent, /if \(!allowedHost \|\| !id \|\| internalTraffic \|\| embeddedSurface\) return;/);
+  assert.match(analyticsComponent, /if \(!allowedHost \|\| !id \|\| internalTraffic \|\| embeddedSurface \|\| consent !== null/);
+});
+
 function analyticsRuntime(pathname = "/species/orca") {
   const runtimeSource = [
     "const ga4Events = [];",

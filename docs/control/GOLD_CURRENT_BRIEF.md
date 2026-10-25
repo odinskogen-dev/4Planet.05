@@ -44,6 +44,26 @@
 
 ---
 
+# EARTH NOW — EMBEDDED ANALYTICS CONSENT CLUTTER — 25 OCTOBER 2026
+
+**STATUS:** CODE FIXED / BOUNDED ISSUE #503 HEIR CANDIDATE / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER DEFECT:** production Earth Now renders a second analytics-preferences bar inside its Atlas iframe, covering the bottom of the map fallback even though the parent page owns the visitor journey.
+
+**ROOT CAUSE:** the shared `Analytics` component is mounted by `StandardApp` on `/embed/atlas`, so a valid first-party Atlas embed independently prompts and can independently install analytics when stored consent is granted.
+
+**CORRECTION:** recognise only the two existing Atlas embed paths with a valid canonical embed kind, then suppress both consent UI and analytics installation in that child document. The parent document remains the sole consent and measurement surface; standalone routes retain the existing prompt and default-denied policy.
+
+**FAILING-FIRST / REGRESSION:** the owning analytics contract failed 22/23 on base `66760fb050cc531fdd9b2abb0cf31f951d4daa78` because the embed predicate did not exist. It must prove suppression for `/embed/atlas?embed=news&surface=discovery` and `/atlas?embed=species`, while rejecting unknown embed kinds and query spoofing on `/now/`.
+
+**TRUTH BOUNDARY:** passing proves the bounded source contract and no child-document analytics work on the candidate. Production was reproduced before the fix; no candidate deployment or post-fix LIVE verification is claimed.
+
+**ROLLBACK:** revert only this three-file candidate if Gold finds loss of standalone consent, parent analytics, Atlas navigation or privacy-default behaviour.
+
+**MAKER ≠ JUDGE:** Factory returns exact code and evidence. Independent Gold must replay desktop and mobile Earth Now, standalone consent, stored granted/denied states and both valid/invalid embed routes before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # ANALYTICS PRIVACY — UNICODE PATH IDENTITY GUARD — 25 OCTOBER 2026
 
 **STATUS:** CODE FIXED / P0 BOUNDED HEIR CORRECTION / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
