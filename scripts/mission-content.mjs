@@ -24,10 +24,32 @@ export function readLocalMissionRecords(root = process.cwd()) {
         (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) && prop.name.text === key);
       return field && ts.isStringLiteralLike(field.initializer) ? field.initializer.text : null;
     };
+    // Source pointers are projected from canonical MISSION_CONTENT, never re-authored.
+    const sourceProperty = entry.properties.find((prop) =>
+      ts.isPropertyAssignment(prop) &&
+      (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) && prop.name.text === "sources");
+    if (!sourceProperty || !ts.isArrayLiteralExpression(sourceProperty.initializer)) {
+      throw new Error("Missing canonical mission source list");
+    }
+    const sources = sourceProperty.initializer.elements.map((source) => {
+      if (!ts.isObjectLiteralExpression(source)) throw new Error("Invalid mission source entry");
+      const field = (key) => {
+        const prop = source.properties.find((value) =>
+          ts.isPropertyAssignment(value) &&
+          (ts.isIdentifier(value.name) || ts.isStringLiteral(value.name)) && value.name.text === key);
+        return prop && ts.isStringLiteralLike(prop.initializer) ? prop.initializer.text : null;
+      };
+      const title = field("title"), url = field("url"), confidence = field("confidence");
+      if (!title || !url || !/^https:\/\//.test(url) ||
+          !["high", "medium", "needs-review"].includes(confidence)) {
+        throw new Error("Mission source must have a title, HTTPS URL and confidence state");
+      }
+      return { title, url, confidence };
+    });
     const record = Object.fromEntries(required.map((key) => [key, read(key)]));
     if (required.some((key) => !record[key])) throw new Error("Mission content is missing a required field");
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.slug)) throw new Error("Invalid mission slug");
-    return record;
+    return { ...record, sources };
   });
   const slugs = records.map((record) => record.slug);
   if (slugs.length !== 16 || new Set(slugs).size !== slugs.length) {
