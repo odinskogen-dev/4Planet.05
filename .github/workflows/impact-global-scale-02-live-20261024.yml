@@ -235,7 +235,7 @@ jobs:
 
               grep -qi '<link rel="canonical"' /tmp/project
               grep -qi 'application/ld+json' /tmp/project
-              ! grep -Eqi 'name=["'"']robots["'"'][^>]*content=["'"'][^"'"']*noindex' /tmp/project
+              ! grep -Eqi 'content="[^"]*noindex' /tmp/project
               grep -qi 'Namami Gange' /tmp/project
 
               grep -qi '<link rel="canonical"' /tmp/actor
