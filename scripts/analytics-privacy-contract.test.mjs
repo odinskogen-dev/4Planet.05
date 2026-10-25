@@ -250,6 +250,22 @@ test("admits only bounded non-negative integer counters", () => {
   }), {});
 });
 
+const remainingUrlPunctuationSeparators = [
+  ["!", "%21"],
+  ["$", "%24"],
+  ["'", "%27"],
+  ["(", "%28"],
+  [")", "%29"],
+  ["*", "%2A"],
+  ["=", "%3D"],
+];
+
+const remainingUrlPunctuationPaths = remainingUrlPunctuationSeparators.flatMap(([literal, encoded]) => [
+  `/profile/11${literal}02${literal}99${literal}12345`,
+  `/profile/11${encoded}02${encoded}99${encoded}12345`,
+  `/profile/11%25${encoded.slice(1)}02%25${encoded.slice(1)}99%25${encoded.slice(1)}12345`,
+]);
+
 test("rejects encoded identity-shaped values in every path field", () => {
   const raw = "/profile/11029912345";
   const encoded = "/profile/%31%31%30%32%39%39%31%32%33%34%35";
@@ -267,7 +283,7 @@ test("rejects encoded identity-shaped values in every path field", () => {
     "/profile/11@02@99@12345",
   ];
 
-  for (const path of [raw, encoded, doubleEncoded, punctuated, ...separatorVariants]) {
+  for (const path of [raw, encoded, doubleEncoded, punctuated, ...separatorVariants, ...remainingUrlPunctuationPaths]) {
     assert.deepEqual(privacySafeEventParameters({
       page_path: path,
       entry_path: path,
@@ -301,6 +317,7 @@ test("unsafe current pathname suppresses BOTH sinks without caller path properti
     "/profile/11;02;99;12345",
     "/profile/11,02,99,12345",
     "/profile/11@02@99@12345",
+    ...remainingUrlPunctuationPaths,
   ];
 
   for (const path of paths) {
