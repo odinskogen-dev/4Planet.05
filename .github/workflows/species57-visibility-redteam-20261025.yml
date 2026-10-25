@@ -184,7 +184,7 @@ jobs:
                 const data=await page.evaluate(()=>({title:document.title,h1:[...document.querySelectorAll("h1")].map(x=>x.textContent.trim()),bodyText:document.body.innerText.slice(0,250),bodyWords:document.body.innerText.split(/\s+/).length,overflow:document.documentElement.scrollWidth>innerWidth+4,visibleImages:[...document.images].filter(x=>x.complete&&x.naturalWidth>0).length,brokenImgs:[...document.images].filter(x=>x.complete&&x.naturalWidth===0).length,linksToSpecies:[...document.querySelectorAll("a[href]")].filter(x=>/^https:\/\/4species\.com\/[a-z-]+$/.test(x.href)||/^\/[a-z-]+$/.test(x.getAttribute("href")||"")).length,performance:performance.getEntriesByType("navigation").map(x=>({domContentLoaded:Math.round(x.domContentLoadedEventEnd),transfer:Math.round(x.transferSize)}))}));
                 cases.push({slug,mode,status:response?.status(),errors,...data});
                 await page.screenshot({path:"species57-redteam/"+slug+"-"+mode+".png",animations:"disabled",fullPage:false});
-                console.log("SPECIES_REDTEAM_BROWSER",JSON.stringify(cases.at(-1)),flush=true);
+                console.log("SPECIES_REDTEAM_BROWSER",JSON.stringify(cases.at(-1)));
               }catch(e){cases.push({slug,mode,failed:String(e)})}finally{await page.close()}
             }
             await ctx.close();
