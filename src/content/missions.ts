@@ -46,7 +46,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "1 KG OCEAN WASTE_", impactPathwaySlug: "ocean-waste",
     publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK CLE4N_",
     visualDirection: "Deep blue, rough coastlines, boats, material close-ups, recovery teams, clean white reporting overlays.",
-    sources: [],
+    sources: [{ title: "UNEP — From Pollution to Solution (2021)", url: "https://www.unep.org/en/publications/report/pollution-solution-global-assessment-marine-litter-and-plastic-pollution", confidence: "high" }],
   },
   {
     slug: "wh4les", domain: "OCE4N_", code: "OCE4N_ / 02", name: "WH4LES_",
@@ -59,7 +59,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A public mission domain for whale intelligence, storytelling and credible future partner pathways — connecting ecological understanding, evidence, field documentation and cultural reach.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK WH4LES_",
     visualDirection: "Deep ocean blue, storm seas, sonar lines, hydrophone interfaces, migration traces, whale silhouettes, cinematic documentary gravity.",
-    sources: [],
+    sources: [{ title: "NOAA Fisheries — Killer Whale: ecology and threats", url: "https://www.fisheries.noaa.gov/species/killer-whale", confidence: "high" }],
   },
   {
     slug: "cor4l", domain: "OCE4N_", code: "OCE4N_ / 03", name: "COR4L_",
@@ -72,7 +72,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain for reef intelligence, restoration pathways and cultural communication that makes reef systems emotionally and scientifically legible.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK COR4L_",
     visualDirection: "Reef macro photography, underwater light, scientific fragments, blue-white overlays, fragile but powerful atmosphere.",
-    sources: [],
+    sources: [{ title: "NOAA Ocean Service — What is coral bleaching?", url: "https://oceanservice.noaa.gov/facts/coral_bleach.html", confidence: "high" }],
   },
   {
     slug: "rewild-marine", domain: "OCE4N_", code: "OCE4N_ / 04", name: "RE:WILD_ Marine",
@@ -99,7 +99,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     currentStatus: "PARTNER VALIDATION PENDING", impactPathway: "TREE UNIT_", impactPathwaySlug: "tree-unit",
     publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK CLIM4TE_",
     visualDirection: "Nordic landscapes, seedlings, soil, fog, slow restoration, quiet optimism, no generic green brand treatment.",
-    sources: [],
+    sources: [{ title: "IPCC — AR6 Synthesis Report: Summary for Policymakers (2023)", url: "https://www.ipcc.ch/report/ar6/syr/summary-for-policymakers/", confidence: "high" }],
   },
   {
     slug: "am4zonia", domain: "E4RTH_", code: "E4RTH_ / 02", name: "AM4ZONIA_",
@@ -113,7 +113,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "PROTECT 1 M² OF AMAZON RAINFOREST_", impactPathwaySlug: "amazon-square",
     publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK AM4ZONIA_",
     visualDirection: "Aerial rainforest, river systems, mist, canopy texture, respectful stewardship, ecological cartography, restrained technical green only inside this mission domain.",
-    sources: [],
+    sources: [{ title: "NASA Earth Observatory — Human Activities Are Drying Out the Amazon (2019)", url: "https://science.nasa.gov/earth/earth-observatory/human-activities-are-drying-out-the-amazon-145834/", confidence: "high" }],
   },
   {
     slug: "species", domain: "E4RTH_", code: "E4RTH_ / 03", name: "SPECIES_",
@@ -126,7 +126,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain that connects species intelligence, field protection pathways, public education and cultural storytelling.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK SPECIES_",
     visualDirection: "Technical species drawings, documentary wildlife, tracking maps, field notebooks, elegant science communication.",
-    sources: [],
+    sources: [{ title: "IPBES — Global Assessment of Biodiversity and Ecosystem Services (2019)", url: "https://www.ipbes.net/document-library-catalogue/summary-policymakers-global-assessment-plain-text", confidence: "high" }],
   },
   {
     slug: "rewild-land", domain: "E4RTH_", code: "E4RTH_ / 04", name: "RE:WILD_ Land",
@@ -140,7 +140,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     currentStatus: "PARTNER PATHWAY IN DEVELOPMENT", impactPathway: "1 M² HABITAT RECOVERY_", impactPathwaySlug: "habitat-recovery",
     publicStatus: "PUBLIC SUPPORT CLOSED", joinLabel: "TRACK RE:WILD_",
     visualDirection: "Soil textures, wild grass, topographic markers, restoration field notes, long-term ecological atmosphere.",
-    sources: [],
+    sources: [{ title: "IUCN — Guidelines for Rewilding (2025)", url: "https://iucn.org/resources/publication/guidelines-rewilding", confidence: "high" }],
   },
   {
     slug: "food", domain: "S4PIENS_", code: "S4PIENS_ / 01", name: "FOOD_",
@@ -153,7 +153,7 @@ export const MISSION_CONTENT: MissionContent[] = [
     fourPlanetRole: "A mission domain for food-system intelligence, practical partnerships and cultural communication around the systems that feed people and shape landscapes.",
     currentStatus: "STRATEGIC CONCEPT", joinLabel: "TRACK FOOD_",
     visualDirection: "Soil, farms, ingredients, kitchens, land-use maps, editorial food systems rather than lifestyle food photography.",
-    sources: [],
+    sources: [{ title: "FAO — The State of the World's Biodiversity for Food and Agriculture (2019)", url: "https://www.fao.org/cgrfa/topics/biodiversity/SOWBFA/", confidence: "high" }],
   },
   {
     slug: "en4rgy", domain: "S4PIENS_", code: "S4PIENS_ / 02", name: "EN4RGY_",
