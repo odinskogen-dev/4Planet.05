@@ -72,7 +72,7 @@ jobs:
           git diff --name-only "$BASE"...HEAD | tee /tmp/changed.txt
           while IFS= read -r f; do
             case "$f" in
-              .github/workflows/impact-global-scale-02-live-20261024.yml) ;;
+              .github/workflows/impact-global-scale-02-live-20261024.yml|scripts/impact-graph-snapshot.mjs|scripts/prerender-impact-seo.mjs) ;;
               "") ;;
               *) echo "Design/code drift forbidden in this release delta: $f" >&2; exit 1 ;;
             esac
@@ -103,6 +103,9 @@ jobs:
           test "$projects" -ge "$MIN_PROJECTS"
           test "$actors" -ge "$MIN_ACTORS"
           test "$solutions" -ge "$MIN_SOLUTIONS"
+          public_solutions=$(jq '[.solutions[] | select(.profile.publication=="public")] | length' /tmp/impact-v02.json)
+          echo "Public evidence-bearing solutions: $public_solutions"
+          test "$public_solutions" -ge 24
           test "$places" -ge "$MIN_PLACES"
           test "$actions" -ge "$MIN_PROJECTS"
 
@@ -141,6 +144,10 @@ jobs:
           if(d.projects.length<32) throw new Error(`expected >=32 projects, got ${d.projects.length}`);
           if(d.actors.length<32) throw new Error(`expected >=32 actors, got ${d.actors.length}`);
           if(d.solutions.length<27) throw new Error(`expected >=27 solutions, got ${d.solutions.length}`);
+          const indexableSolutions=d.solutions.filter((s)=>s.indexable===true);
+          if(indexableSolutions.length<24) throw new Error(`expected >=24 evidence-bearing indexable solutions, got ${indexableSolutions.length}`);
+          const basin=d.solutions.find((s)=>s.slug==='basin-scale-nature-based-restoration');
+          if(!basin || !basin.claims?.length || !basin.citations?.length || !basin.projects?.length || !basin.issues?.length) throw new Error('solution discovery graph incomplete');
           for (const slug of ['namami-gange','trinational-atlantic-forest-pact','ksa-national-greening-program']) {
             const p=d.projects.find(x=>x.slug===slug);
             if(!p || p.claims.length<2 || !p.actors.length || !p.solutions.length || !p.issues.length || !p.citations.length)
@@ -149,7 +156,8 @@ jobs:
           console.log(`Snapshot PASS: ${d.projects.length} projects / ${d.actors.length} actors / ${d.solutions.length} solutions / ${d.issues.length} issues / ${env.length} ENV63`);
           NODE
 
-          for path in             dist/impact/project/namami-gange/index.html             dist/impact/project/trinational-atlantic-forest-pact/index.html             dist/impact/project/ksa-national-greening-program/index.html             dist/impact/actors/national-mission-clean-ganga/index.html             dist/impact/issue/habitat-destruction/index.html; do
+          for path in             dist/impact/project/namami-gange/index.html             dist/impact/project/trinational-atlantic-forest-pact/index.html             dist/impact/project/ksa-national-greening-program/index.html             dist/impact/actors/national-mission-clean-ganga/index.html             dist/impact/issue/habitat-destruction/index.html \
+            dist/impact/solution/basin-scale-nature-based-restoration/index.html; do
             test -f "$path"
             grep -qi '<link rel="canonical"' "$path"
             grep -qi 'application/ld+json' "$path"
@@ -161,10 +169,13 @@ jobs:
           grep -q '/impact/project/ksa-national-greening-program' dist/sitemap.xml
           grep -q '/impact/actors/national-mission-clean-ganga' dist/sitemap.xml
           grep -q '/impact/issue/habitat-destruction' dist/sitemap.xml
+          grep -q '/impact/solution/basin-scale-nature-based-restoration' dist/sitemap.xml
+          grep -q 'What the sources establish' dist/impact/solution/basin-scale-nature-based-restoration/index.html
+          grep -q 'Projects using this method' dist/impact/solution/basin-scale-nature-based-restoration/index.html
 
           impact_urls=$(grep -Eo '<loc>https://4planet\.org/impact/[^<]+' dist/sitemap.xml | wc -l | tr -d ' ')
           echo "Dynamic IMPACT sitemap URLs: $impact_urls"
-          test "$impact_urls" -ge 130
+          test "$impact_urls" -ge 155
 
       - name: Deploy isolated production artifact
         shell: bash
@@ -226,7 +237,8 @@ jobs:
             sha=$(jq -r '.sha // empty' <<<"$body" 2>/dev/null || true)
             echo "LIVE probe $i: ${sha:-unresolved}"
             if [ "$sha" = "$GITHUB_SHA" ]; then
-              for spec in                 "impact|https://4planet.org/impact?v=$GITHUB_SHA"                 "project|https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA"                 "actor|https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA"                 "sitemap|https://4planet.org/sitemap.xml?v=$GITHUB_SHA"                 "robots|https://4planet.org/robots.txt?v=$GITHUB_SHA"; do
+              for spec in                 "impact|https://4planet.org/impact?v=$GITHUB_SHA"                 "project|https://4planet.org/impact/project/namami-gange/?v=$GITHUB_SHA"                 "actor|https://4planet.org/impact/actors/national-mission-clean-ganga/?v=$GITHUB_SHA"                 "sitemap|https://4planet.org/sitemap.xml?v=$GITHUB_SHA"                 "solution|https://4planet.org/impact/solution/basin-scale-nature-based-restoration/?v=$GITHUB_SHA" \
+                "robots|https://4planet.org/robots.txt?v=$GITHUB_SHA"; do
                 name="${spec%%|*}"; url="${spec#*|}"
                 code=$(curl -Lso "/tmp/$name" -w '%{http_code}' -H 'Cache-Control: no-cache' --max-time 25 "$url")
                 echo "$name HTTP $code bytes=$(wc -c < "/tmp/$name")"
@@ -245,6 +257,8 @@ jobs:
               grep -q '/impact/project/trinational-atlantic-forest-pact' /tmp/sitemap
               grep -q '/impact/actors/national-mission-clean-ganga' /tmp/sitemap
               grep -q '/impact/issue/habitat-destruction' /tmp/sitemap
+              grep -q '/impact/solution/basin-scale-nature-based-restoration' /tmp/sitemap
+              grep -qi 'What the sources establish' /tmp/solution
               grep -q 'User-agent: Googlebot' /tmp/robots
               grep -q 'User-agent: OAI-SearchBot' /tmp/robots
               echo "Canonical LIVE + crawlability verified."
