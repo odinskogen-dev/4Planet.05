@@ -6,7 +6,8 @@ import { DomainsIndex, DomainWorld } from "@/pages/v5/Domains";
 import { MissionDetail } from "@/pages/v5/Missions";
 import { MissionsIndex } from "@/pages/v5/AllMissions";
 import { ImpactLabIndex, ImpactTestJourney, PersonalImpactRecordPage } from "@/pages/integrated/ImpactPrototype";
-import { ImpactPublicHome, ImpactStory } from "@/pages/integrated/ImpactPremium";
+import { ImpactStory } from "@/pages/integrated/ImpactPremium";
+import { ImpactLivingActionNetwork, ImpactProjectProfilePage, ImpactActorProfilePage, ImpactIssuePage, ImpactSolutionPage } from "@/pages/integrated/ImpactLivingActionNetwork";
 import { BayActionProof } from "@/pages/integrated/ImpactActionProof";
 import CheckoutReturn from "@/pages/integrated/CheckoutReturn";
 import CommerceStripeLab from "@/pages/integrated/CommerceStripeLab";
@@ -123,7 +124,11 @@ export function AppRoutes() {
       <Route path="/4sapien/food/choose" element={<Suspense fallback={MagazineFallback}><EmblaFoodChoice /></Suspense>} />
       <Route path="/4sapien/finance" element={<FourFinanceHome />} />
       <Route path="/food/pick" element={<PickPrototype />} />
-      <Route path="/impact" element={<ImpactPublicHome />} />
+      <Route path="/impact" element={<ImpactLivingActionNetwork />} />
+      <Route path="/impact/project/:slug" element={<ImpactProjectProfilePage />} />
+      <Route path="/impact/actors/:slug" element={<ImpactActorProfilePage />} />
+      <Route path="/impact/issue/:slug" element={<ImpactIssuePage />} />
+      <Route path="/impact/solution/:slug" element={<ImpactSolutionPage />} />
       <Route path="/impact/lab" element={<ImpactLabIndex />} />
       <Route path="/impact/lab/:unit" element={<ImpactTestJourney />} />
       <Route path="/impact/lab/records/:recordId" element={<PersonalImpactRecordPage />} />

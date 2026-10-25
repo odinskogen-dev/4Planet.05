@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { readStories, absoluteUrl } from "./magazine-content.mjs";
 import { livingSystemsPublicRoutes } from "./living-systems-search-surfaces.mjs";
+import { impactSitemapRoutes } from "./prerender-impact-seo.mjs";
 
 const root = process.cwd();
 const publicDir = path.join(root, "public");
@@ -10,6 +11,7 @@ const stories = readStories();
 const discoveryInventory = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryInventory.json"), "utf8"));
 const atlasDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/atlasDiscovery.json"), "utf8"));
 const discoveryTopics = JSON.parse(fs.readFileSync(path.join(root, "src/data/discoveryTopics.json"), "utf8"));
+const impactDiscovery = JSON.parse(fs.readFileSync(path.join(root, "src/data/impactDiscovery.json"), "utf8"));
 
 const missionRoutes = ["/missions/cle4n", "/missions/wh4les", "/missions/cor4l", "/missions/rewild-marine", "/missions/clim4te", "/missions/am4zonia", "/missions/species", "/missions/rewild-land", "/missions/food", "/missions/en4rgy", "/missions/circular-city", "/missions/f4shion", "/missions/m4gazine", "/missions/4film", "/missions/4rt", "/missions/4play"];
 
@@ -45,6 +47,7 @@ const staticRoutes = [
 const discoveryRoutes = [
   "/now",
   ...(discoveryTopics.topics ?? []).filter((item) => item.indexable === true).map((item) => `/${item.slug}`),
+  ...impactSitemapRoutes(impactDiscovery),
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 

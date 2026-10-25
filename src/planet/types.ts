@@ -33,6 +33,9 @@ export type EntityType =
   | "OBSERVATION"
   | "PRESSURE"
   | "SOLUTION"
+  | "PROJECT"
+  | "ACTOR"
+  | "ISSUE"
   | "MISSION"
   | "COORDINATE"
   | "UNKNOWN";
