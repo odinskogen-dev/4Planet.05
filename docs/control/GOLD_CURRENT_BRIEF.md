@@ -2664,6 +2664,8 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 
 **BOUNDED CORRECTION:** at the existing per-clause boundary, reject only a sentence that combines global non-user-facing/control scope, an affirmative mandate, and a named broad four-state/Gold/Brand/lineage bundle without an explicit prohibition. The exact five returned sentences and five legitimate task-conditional/prohibitive controls are permanent fixtures.
 
+**RETURN CORRECTION — 25 OCTOBER 2026:** Independent Gold replayed the exact returned SHA and found one remaining false allow: `For a control-only task, always preload the complete product lineage archive before editing.` The owning-path test failed 9/10 before correction. The same finite predicate now recognises only the missing `always` read/load/fetch/preload mandate form and `product lineage archive` bundle phrase; all earlier unsafe and legitimate controls remain the regression boundary. Base and rollback are `king/test@b9064c573bb46c9a68ae9be52f2527af3b909e4e`; independent re-Gold remains required.
+
 **TRUTH BOUNDARY:** this proves the repository entrypoint contract rejects the returned instruction class. It does not prove a fresh agent followed the entrypoint, Gold acceptance, merge, deployment or user use.
 
 **ROLLBACK:** revert the bounded test/brief commit to `king/test@5560e1c6c11ecaae7f40dc943face90416bb1972` if independent Gold finds a false reject or another escaped form.

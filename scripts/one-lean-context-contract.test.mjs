@@ -52,6 +52,7 @@ const GOLD_RETURN_05_TASK_CLASS_MUTATIONS = [
   "Control-only edits require the complete Brand OS and all product lineage files as mandatory bootstrap.",
   "Before changing any code, first fetch all nine global Gold and Brand control documents.",
   "Every non-user-facing test task must preload the entire project lineage archive before starting.",
+  "For a control-only task, always preload the complete product lineage archive before editing.",
 ];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
@@ -111,8 +112,8 @@ function semanticStartupConflicts(name, content) {
       // control scope, a mandate, and a named broad supplemental bundle in the
       // same clause. An explicit prohibition remains valid guidance.
       const globalControlScope = /\b(?:non-user-facing|control-only|before changing any code|before every edit)\b/i.test(clause);
-      const mandatorySupplementalRead = /\b(?:must\s+(?:read|load|fetch|preload)|requires?|mandatory bootstrap|before (?:any|each|every|changing)[^.!?]*(?:read|load|fetch|preload)|first\s+(?:read|load|fetch|preload))\b/i.test(clause);
-      const broadSupplementalBundle = /\b(?:four[- ]state(?: product authority)?|FOUR_STATE_PRODUCT_CONTROL|PRODUCT_SURFACE_REGISTRY|Gold(?: document| control)? bundle|GOLD_CURRENT_BRIEF|Brand OS|Brand control documents?|CODE_LINEAGE_REGISTER|product lineage files?|project lineage archive)\b/i.test(clause);
+      const mandatorySupplementalRead = /\b(?:must\s+(?:read|load|fetch|preload)|requires?|mandatory bootstrap|before (?:any|each|every|changing)[^.!?]*(?:read|load|fetch|preload)|first\s+(?:read|load|fetch|preload)|always\s+(?:read|load|fetch|preload))\b/i.test(clause);
+      const broadSupplementalBundle = /\b(?:four[- ]state(?: product authority)?|FOUR_STATE_PRODUCT_CONTROL|PRODUCT_SURFACE_REGISTRY|Gold(?: document| control)? bundle|GOLD_CURRENT_BRIEF|Brand OS|Brand control documents?|CODE_LINEAGE_REGISTER|product lineage files?|(?:project|product) lineage archive)\b/i.test(clause);
       const scopedSupplementalProhibition = /\b(?:do not|never|must not)\s+(?:automatically\s+)?(?:read|load|fetch|preload|require)\b/i.test(clause);
       if (globalControlScope && mandatorySupplementalRead && broadSupplementalBundle && !scopedSupplementalProhibition) {
         failures.push(`${name}: broad supplemental product/Gold/Brand/lineage preload required for control work`);
