@@ -1,0 +1,124 @@
+name: 4SPECIES 57 — independent final SEO & AI discovery live verification
+on:
+  push:
+    branches: [ops/species57-search-discovery-20261025]
+    paths: [.github/workflows/species57-search-final-independent-qa-20261025.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Inspect 57 public URLs for crawlability, schema taxonomy, indexable metadata, images, and links
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p species57-final-seo-proof
+          python3 - <<'PY'
+          from concurrent.futures import ThreadPoolExecutor
+          from urllib.request import Request,urlopen
+          from pathlib import Path
+          from hashlib import sha256
+          from html.parser import HTMLParser
+          from datetime import datetime,timezone
+          import json,re,csv,xml.etree.ElementTree as ET
+          SITE="https://4species.com"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(old39)==39 and len(new18)==18
+          profiles=old39+new18
+          def fetch(url):
+            req=Request(url,headers={"User-Agent":"4SPECIES-57-INDEPENDENT-SEARCH-QA/20261025","Cache-Control":"no-cache"})
+            with urlopen(req,timeout=40) as r:return r.read(),dict(r.headers),r.status
+          class Meta(HTMLParser):
+            def __init__(self):super().__init__();self.tags=[];self.headings=0;self.inH1=False;self.anchorHrefs=[];self.title="";self.titleOn=False;self.meta={};self.canon=[];self.imageCount=0
+            def handle_starttag(self,t,attrs):
+              a=dict(attrs)
+              if t=="title":self.titleOn=True
+              if t=="h1":self.headings+=1;self.inH1=True
+              if t=="meta":self.meta[a.get("name") or a.get("property") or ""]=a.get("content","")
+              if t=="link" and a.get("rel")=="canonical":self.canon.append(a.get("href"))
+              if t=="a":self.anchorHrefs.append(a.get("href"))
+              if t=="img":self.imageCount+=1
+            def handle_endtag(self,t):
+              if t=="title":self.titleOn=False
+              if t=="h1":self.inH1=False
+            def handle_data(self,d):
+              if self.titleOn:self.title+=d
+          def inspect(slug):
+            row={"slug":slug,"cohort":"original39" if slug in old39 else "new18","errors":[]}
+            try:
+              content,head,status=fetch(SITE+"/"+slug)
+              text=content.decode("utf-8","replace")
+              p=Meta();p.feed(text)
+              scripts=re.findall(r'<script\b[^>]*type=["\']application/ld\+json["\'][^>]*>([\s\S]*?)</script\s*>',text,re.I)
+              graphs=[];bad=[]
+              for i,s in enumerate(scripts):
+                try:
+                  ld=json.loads(s)
+                  graphs.extend(ld.get("@graph",[]) if isinstance(ld,dict) and "@graph" in ld else [ld])
+                except Exception as err:bad.append(str(err)[:100])
+              kinds=set()
+              for node in graphs:
+                if isinstance(node,dict):
+                  k=node.get("@type",[])
+                  kinds.update(k if isinstance(k,list) else [k] if k else [])
+              js,_,_=fetch(SITE+"/species-data/v1/"+slug+".json")
+              data=json.loads(js)
+              immutable="https://e17e1392.4planet-05.pages.dev" if slug in old39 else "https://de9e3e0e.4planet-05.pages.dev"
+              prior=json.loads(fetch(immutable+"/species-data/v1/"+slug+".json")[0])
+              row.update({"http":status,"title":p.title.strip(),"description":p.meta.get("description",""),"canonical":p.canon,"robotsHeader":head.get("X-Robots-Tag",""),"robotsMeta":p.meta.get("robots",""),"ogTitle":p.meta.get("og:title",""),"ogImage":p.meta.get("og:image",""),"h1Count":p.headings,"jsonldCount":len(scripts),"schemaTypes":sorted(kinds),"scientificName":data.get("identity",{}).get("scientificName"),"imageUrl":(data.get("hero") or {}).get("url"),"imageCredit":(data.get("hero") or {}).get("credit"),"imageLicense":(data.get("hero") or {}).get("licence"),"imageSource":(data.get("hero") or {}).get("sourcePage"),"dataUnchanged":data==prior,"htmlHash":sha256(content).hexdigest()})
+              if status!=200:row["errors"].append("HTTP_NOT_200")
+              if not row["title"]:row["errors"].append("MISSING_TITLE")
+              if not row["description"]:row["errors"].append("MISSING_DESCRIPTION")
+              if row["canonical"]!=[SITE+"/"+slug]:row["errors"].append("INCORRECT_CANONICAL")
+              if "noindex" in (row["robotsMeta"]+" "+row["robotsHeader"]).lower():row["errors"].append("BLOCKED_INDEX")
+              if bad:row["errors"].append("JSON_LD_PARSE_FAIL")
+              if "Taxon" not in kinds or "WebPage" not in kinds:row["errors"].append("TAXON_SCHEMA_MISSING")
+              if not all(row.get(x) for x in ("imageUrl","imageCredit","imageLicense","imageSource")):row["errors"].append("HERO_PROVENANCE_INCOMPLETE")
+              if not row["dataUnchanged"]:row["errors"].append("IMMUTABLE_ARTICLE_CHANGED")
+              if "editorial-card" in str(row["imageUrl"]):row["errors"].append("PROHIBITED_ILLUSTRATION")
+              if slug in new18:
+                img=(data.get("hero") or {}).get("url","")
+                if not img.startswith(SITE+"/assets/species/next61/"):row["errors"].append("NEW_IMAGE_NOT_FIRST_PARTY")
+                else:
+                  image,_,code=fetch(img)
+                  if code!=200 or sha256(image).hexdigest()!=data.get("provenance",{}).get("photoSha256"):row["errors"].append("NEW_IMAGE_SHA_INVALID")
+            except Exception as err:row["errors"].append(type(err).__name__+":"+str(err)[:160])
+            return row
+          with ThreadPoolExecutor(max_workers=5) as pool: rows=list(pool.map(inspect,profiles))
+          sitemap=fetch(SITE+"/sitemap.xml")[0]
+          locs={x.text for x in ET.fromstring(sitemap).iter() if x.tag.endswith("loc") and x.text}
+          directoryHtml=fetch(SITE+"/species-directory")[0].decode()
+          directory=json.loads(fetch(SITE+"/species-directory.json")[0])
+          explore=fetch(SITE+"/explore")[0].decode()
+          llms=fetch(SITE+"/llms.txt")[0].decode()
+          robots=fetch(SITE+"/robots.txt")[0].decode()
+          imageSitemap=fetch(SITE+"/species-v1-images.xml")[0]
+          shared={
+            "sitemapAll57":all(SITE+"/"+s in locs for s in profiles),
+            "sitemapDirectory":SITE+"/species-directory" in locs,
+            "noUnpublishedInSitemap":SITE+"/red-panda" not in locs and SITE+"/orchid-mantis" not in locs,
+            "directory57Links":directoryHtml.count('class="card"')==57,
+            "directoryJson57":directory["total"]==57 and len(directory["profiles"])==57,
+            "exploreNew18ServerLinks":all(('href="/'+s+'"') in explore for s in new18),
+            "publicLlmsAll57":all(SITE+"/"+s in llms for s in profiles),
+            "robotsCrawlable":("User-agent: *" in robots and "Allow: /" in robots and "Disallow: /api/" in robots),
+            "robotsSitemapReference":"Sitemap: https://4species.com/sitemap.xml" in robots,
+            "imageSitemap18":imageSitemap.count(b"<image:image>")==18,
+          }
+          report={"observedUTC":datetime.now(timezone.utc).isoformat(),"total":len(rows),"good":sum(not r["errors"] for r in rows),"bad":[{"slug":r["slug"],"errors":r["errors"]} for r in rows if r["errors"]],"shared":shared,"profiles":rows,"indexingEvidence":"Technical eligibility and IndexNow acceptance are NOT independent Google/Bing inclusion confirmation."}
+          Path("species57-final-seo-proof/report.json").write_text(json.dumps(report,indent=2,ensure_ascii=False))
+          with open("species57-final-seo-proof/all57.csv","w",newline="") as handle:
+            writer=csv.DictWriter(handle,fieldnames=["slug","cohort","http","title","scientificName","canonical","jsonldCount","schemaTypes","dataUnchanged","errors"])
+            writer.writeheader()
+            for p in rows:writer.writerow({k:json.dumps(p[k]) if isinstance(p.get(k),(list,dict)) else p.get(k) for k in writer.fieldnames})
+          print("SPECIES57_FINAL_SEARCH_QA",json.dumps({"total":len(rows),"good":report["good"],"bad":report["bad"],"shared":shared},ensure_ascii=False),flush=True)
+          if report["good"]!=57 or not all(shared.values()):raise SystemExit("FAIL: SEO or preservation issue")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-complete-independent-search-seo-final-pass
+          path: species57-final-seo-proof/
+          retention-days: 30
