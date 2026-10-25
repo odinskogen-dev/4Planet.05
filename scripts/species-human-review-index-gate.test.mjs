@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import {
   CURRENT_PUBLIC_SPECIES_SLUGS,
@@ -7,6 +8,7 @@ import {
   NON_PROFILE_REVIEW_STATE,
   permitsSpeciesIndexing,
   profileReviewState,
+  verifyApprovedNewSpeciesPhoto,
 } from "../ops/discovery/4species-router.js";
 
 const router = readFileSync(new URL("../ops/discovery/4species-router.js", import.meta.url), "utf8");
@@ -23,6 +25,18 @@ const signedPhoto = {
   sourcePage: "https://example.org/photos/test-animal",
   credit: "Field photographer",
   licence: "CC BY 4.0",
+};
+const trustedPhotoBytes = new TextEncoder().encode("independently-approved-photo-bytes");
+const trustedPhotoSha256 = createHash("sha256").update(trustedPhotoBytes).digest("hex");
+const trustedPhotoApproval = {
+  slug: "test-animal",
+  imageUrl: signedPhoto.url,
+  sourcePage: signedPhoto.sourcePage,
+  creator: signedPhoto.credit,
+  licence: signedPhoto.licence,
+  photoSha256: trustedPhotoSha256,
+  photoReviewEvidence: "https://github.com/4planet/gold/photo-review",
+  rightsReviewEvidence: "https://github.com/4planet/gold/rights-review",
 };
 
 test("founder 17 Oct: DRAFT is publicly discoverable ONLY when original Claude profile has taxon identity and a real source", async () => {
@@ -64,7 +78,7 @@ test("founder 24 Oct: a new DRAFT or REVIEWED profile cannot publish without a s
   }
 });
 
-test("new-profile photo approval requires photograph, creator, licence, source, immutable SHA and independent Gold", () => {
+test("new-profile photo approval rejects page-declared rights, hashes and Gold labels", async () => {
   const page = {
     ...sourcedProfile("test-animal", "REVIEWED"),
     hero: signedPhoto,
@@ -75,12 +89,37 @@ test("new-profile photo approval requires photograph, creator, licence, source, 
       sourceReview: "GOLD",
     },
   };
-  assert.equal(hasApprovedNewSpeciesPhoto(page), true);
+  assert.equal(hasApprovedNewSpeciesPhoto(page), false, "page-level Gold cannot approve its own photo");
+  assert.equal(hasApprovedNewSpeciesPhoto({
+    ...page,
+    hero: { ...signedPhoto, licence: "All rights reserved" },
+  }), false, "nonempty rights text is not a reuse grant");
+  assert.equal(hasApprovedNewSpeciesPhoto({
+    ...page,
+    provenance: { ...page.provenance, photoSha256: "b".repeat(64) },
+  }), false, "a second digest for the same URL cannot self-attest different bytes");
   assert.equal(hasApprovedNewSpeciesPhoto({ ...page, hero: { ...signedPhoto, url: "https://4species.com/assets/species/test-animal.svg" } }), false);
   assert.equal(hasApprovedNewSpeciesPhoto({ ...page, hero: { ...signedPhoto, credit: "" } }), false);
   assert.equal(hasApprovedNewSpeciesPhoto({ ...page, hero: { ...signedPhoto, licence: "" } }), false);
   assert.equal(hasApprovedNewSpeciesPhoto({ ...page, provenance: { ...page.provenance, photoSha256: "unpinned" } }), false);
   assert.equal(hasApprovedNewSpeciesPhoto({ ...page, provenance: { ...page.provenance, photoVisualReview: "PENDING" } }), false);
+
+  assert.equal(hasApprovedNewSpeciesPhoto(page, trustedPhotoApproval, trustedPhotoSha256), true, "external approval and actual bytes agree");
+  assert.equal(hasApprovedNewSpeciesPhoto(page, {
+    ...trustedPhotoApproval,
+    licence: "All rights reserved",
+  }, trustedPhotoSha256), false, "external record still requires a reuse grant");
+  assert.equal(hasApprovedNewSpeciesPhoto(page, trustedPhotoApproval, "b".repeat(64)), false, "same image URL cannot pass with incompatible bytes");
+
+  const approvedPhotos = new Map([["test-animal", trustedPhotoApproval]]);
+  const verified = await verifyApprovedNewSpeciesPhoto("test-animal", page, async () => new Response(trustedPhotoBytes, {
+    headers: { "content-type": "image/jpeg" },
+  }), approvedPhotos);
+  assert.equal(verified, true, "admission hashes the fetched photo bytes against the external record");
+  const incompatible = await verifyApprovedNewSpeciesPhoto("test-animal", page, async () => new Response(new TextEncoder().encode("different-photo-bytes"), {
+    headers: { "content-type": "image/jpeg" },
+  }), approvedPhotos);
+  assert.equal(incompatible, false, "different bytes at the approved URL fail closed");
 });
 
 test("enumerated public non-profile routes remain eligible without profile JSON", async () => {

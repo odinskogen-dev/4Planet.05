@@ -8,6 +8,8 @@ const ORIGIN = "https://4planet-05.pages.dev";
 const SPECIES_V53_ORIGIN = "https://72494005.4planet-05.pages.dev";
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
+const PHOTO_REVIEW_TIMEOUT_MS = 5000;
+const MAX_APPROVED_PHOTO_BYTES = 15 * 1024 * 1024;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
 const PUBLIC_NON_PROFILE_PATHS = new Set(["/", "/explore", "/quiz", "/about"]);
 // Production rollback baseline verified on 24 Oct 2026. These 57 profiles are
@@ -34,23 +36,64 @@ export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([
 // change after independent science, photograph, rights and byte verification.
 const FOUNDER_AUTHORISED_NEW_PROFILE_BATCH = new Set([]);
 
-export function hasApprovedNewSpeciesPhoto(page) {
+// Trusted admission records live outside mutable species-page JSON. This map
+// remains empty until an exact Founder batch and independent rights/photo
+// review add the same slug, URL, licence, creator, source and byte digest.
+export const APPROVED_NEW_SPECIES_PHOTOS = new Map([]);
+
+function permitsPhotoReuse(licence) {
+  return /^(?:CC0 1\.0|CC BY(?:-SA)? (?:2\.0|2\.5|3\.0|4\.0)|PUBLIC DOMAIN(?: \([^)]+\))?|USED WITH PERMISSION)$/i.test(licence);
+}
+
+export function hasApprovedNewSpeciesPhoto(page, approval, actualPhotoSha256) {
   const hero = page?.hero;
-  const provenance = page?.provenance;
-  if (!hero || typeof hero !== "object" || !provenance || typeof provenance !== "object") return false;
+  if (!hero || typeof hero !== "object" || !approval || typeof approval !== "object") return false;
   let photo;
   let source;
+  let photoReviewEvidence;
+  let rightsReviewEvidence;
   try {
     photo = new URL(hero.url);
     source = new URL(hero.sourcePage);
+    photoReviewEvidence = new URL(approval.photoReviewEvidence);
+    rightsReviewEvidence = new URL(approval.rightsReviewEvidence);
   } catch {
     return false;
   }
+  const licence = String(approval.licence || "").trim();
   return photo.protocol === "https:" && /\.(?:avif|jpe?g|png|webp)$/i.test(photo.pathname) &&
-    source.protocol === "https:" && Boolean(String(hero.credit || "").trim()) &&
-    Boolean(String(hero.licence || "").trim()) &&
-    /^[a-f0-9]{64}$/i.test(String(provenance.photoSha256 || "")) &&
-    provenance.photoVisualReview === "GOLD" && provenance.sourceReview === "GOLD";
+    source.protocol === "https:" && photoReviewEvidence.protocol === "https:" && rightsReviewEvidence.protocol === "https:" &&
+    page.slug === approval.slug && hero.url === approval.imageUrl && hero.sourcePage === approval.sourcePage &&
+    String(hero.credit || "").trim() === String(approval.creator || "").trim() &&
+    String(hero.licence || "").trim() === licence && permitsPhotoReuse(licence) &&
+    /^[a-f0-9]{64}$/i.test(String(approval.photoSha256 || "")) &&
+    String(actualPhotoSha256 || "").toLowerCase() === String(approval.photoSha256).toLowerCase();
+}
+
+export async function verifyApprovedNewSpeciesPhoto(
+  slug,
+  page,
+  fetchImpl = fetch,
+  approvedPhotos = APPROVED_NEW_SPECIES_PHOTOS,
+) {
+  const approval = approvedPhotos.get(slug);
+  if (!approval || approval.slug !== slug) return false;
+  try {
+    const response = await fetchImpl(approval.imageUrl, {
+      headers: { accept: "image/avif,image/jpeg,image/png,image/webp" },
+      signal: AbortSignal.timeout(PHOTO_REVIEW_TIMEOUT_MS),
+    });
+    if (!response.ok || !/^image\/(?:avif|jpeg|png|webp)(?:;|$)/i.test(response.headers.get("content-type") || "")) return false;
+    const declaredLength = Number(response.headers.get("content-length") || 0);
+    if (declaredLength > MAX_APPROVED_PHOTO_BYTES) return false;
+    const bytes = await response.arrayBuffer();
+    if (!bytes.byteLength || bytes.byteLength > MAX_APPROVED_PHOTO_BYTES) return false;
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const actualPhotoSha256 = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, "0")).join("");
+    return hasApprovedNewSpeciesPhoto(page, approval, actualPhotoSha256);
+  } catch {
+    return false;
+  }
 }
 
 function isProfilePathCandidate(pathname) {
@@ -109,7 +152,8 @@ export async function profileReviewState(pathname, fetchImpl = fetch) {
     };
     if (!containsSource(page)) return "UNREVIEWED";
     if (!CURRENT_PUBLIC_SPECIES_SLUGS.has(slug) &&
-        (!FOUNDER_AUTHORISED_NEW_PROFILE_BATCH.has(slug) || !hasApprovedNewSpeciesPhoto(page))) {
+        (!FOUNDER_AUTHORISED_NEW_PROFILE_BATCH.has(slug) ||
+          !await verifyApprovedNewSpeciesPhoto(slug, page, fetchImpl))) {
       return "UNREVIEWED";
     }
     return page.provenance?.review === "REVIEWED" ? "REVIEWED" : "DRAFT";

@@ -1,3 +1,25 @@
+# 4SPECIES — NEW-PROFILE PHOTO ATTESTATION — 25 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO NEW PROFILE, MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a future Founder-authorised species profile must not display a photograph unless the exact admitted bytes have independently recorded reuse rights and provenance.
+
+**ROOT CAUSE:** the new-profile predicate trusted mutable page JSON to declare its own Gold review state, licence and 64-character provenance value. It neither rejected `All rights reserved` nor bound the claimed digest to fetched image bytes, so forged Gold labels and competing digests could satisfy the source-function gate.
+
+**CORRECTION:** require an external, in-code approved-photo record keyed by slug, with exact image URL, source URL, creator, reuse-grant licence, review-evidence URL and SHA-256. Fetch the admitted image, require an image response within the bounded size, hash the actual bytes, and compare that digest with the trusted record. Page-level Gold labels and page-declared digests confer no authority. The Founder-authorised new-profile batch remains empty and the existing 39 reviewed plus 18 draft profiles remain unchanged.
+
+**REGRESSION EVIDENCE:** the owning test first failed because page-declared Gold still returned true. It now rejects self-declared Gold, `All rights reserved`, a competing page digest, a trusted record with incompatible rights, and fetched bytes whose digest differs; matching externally approved metadata and actual bytes pass. Existing route, review-state and sitemap cases remain in the same owning suite.
+
+**WHAT MUST BE REUSED:** issue #145, SPEC-GS-11, the existing `profileReviewState` publication gate, canonical species JSON source path, PR #131 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** passing proves the fail-closed admission contract on the exact candidate code only. The trusted approval map is intentionally empty. It does not approve a photograph, populate the Founder batch, publish a new profile, prove production deployment, user use or ecological impact.
+
+**BASE / ROLLBACK:** `king/test@b48bafa18bd219efc3cac0ad1b29dd7eac7a6f23`; revert this bounded router, owning-test and Gold-brief correction if independent Gold finds a rights, source, byte-integrity, route or existing-profile regression.
+
+**MAKER ≠ JUDGE:** Factory returns failing-first and corrected evidence. Independent Gold must rerun the exact self-certification, all-rights-reserved, competing-digest and byte-mismatch negatives on the returned SHA before QA_ACCEPT. Founder release remains a separate gate.
+
+---
+
 # SOURCE MEDIA RIGHTS — LINT / INITIALISATION CORRECTION — 24 OCTOBER 2026
 
 **STATUS:** BOUNDED HEIR DEFECT REPAIR / GOLD REQUESTED / NO LIVE OR PUBLIC CONTENT RELEASE.
