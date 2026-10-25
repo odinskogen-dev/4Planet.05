@@ -15,7 +15,7 @@
  *   --from <payload.json>        normalise a saved projection payload (fixtures / AXE dry-run)
  *   --check                      validate the committed snapshot and exit
  *
- * Result: once AXE publishes a project in NATUREBRAIN, the next Pages build prerenders
+ * Scale batches are publication-gated in NATUREBRAIN; counts are never hard-coded here.\n * Result: once AXE publishes a project in NATUREBRAIN, the next Pages build prerenders
  * /impact/project/<slug>, its actor and issue pages, and lists them in sitemap.xml —
  * with no code change.
  */
