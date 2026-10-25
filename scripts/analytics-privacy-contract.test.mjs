@@ -216,6 +216,40 @@ test("preserves legitimate public values while rejecting punctuation-separated d
   });
 });
 
+test("admits only bounded non-negative integer counters", () => {
+  assert.deepEqual(privacySafeEventParameters({
+    attempts: 0,
+    evidence_ready_items: 2,
+    item_count: 12,
+    opportunity_count: 3,
+    option_count: 4,
+    result_count: 5,
+    source_count: 6,
+    unsupported_items: 7,
+    decision_states: 8,
+  }), {
+    attempts: 0,
+    evidence_ready_items: 2,
+    item_count: 12,
+    opportunity_count: 3,
+    option_count: 4,
+    result_count: 5,
+    source_count: 6,
+    unsupported_items: 7,
+    decision_states: 8,
+  });
+
+  assert.deepEqual(privacySafeEventParameters({
+    attempts: 479876543,
+    source_count: 110299123,
+    item_count: 411111111,
+    destination: 12345,
+    result_count: -1,
+    option_count: 1.5,
+    unsupported_items: 100001,
+  }), {});
+});
+
 test("drops identity-shaped values before BOTH analytics sinks", async () => {
   const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
   assert.equal(trackEvent("test_event", {
@@ -287,6 +321,32 @@ test("drops all Gold-returned generic and formatted values before BOTH analytics
     page_location: "https://4planet.org/species/orca",
   });
   assert.deepEqual(postHogEvents[0][1], {
+    site_host: "4planet.org",
+  });
+});
+
+test("drops oversized numeric values before BOTH analytics sinks", async () => {
+  const { trackEvent, ga4Events, postHogEvents } = await analyticsRuntime();
+  assert.equal(trackEvent("audit_test", {
+    attempts: 479876543,
+    source_count: 110299123,
+    item_count: 411111111,
+    destination: 12345,
+    result_count: -1,
+    option_count: 1.5,
+    unsupported_items: 100001,
+    product_area: "impact",
+  }), true);
+
+  assert.equal(ga4Events.length, 1);
+  assert.equal(postHogEvents.length, 1);
+  assert.deepEqual(ga4Events[0][2], {
+    product_area: "impact",
+    site_host: "4planet.org",
+    page_location: "https://4planet.org/species/orca",
+  });
+  assert.deepEqual(postHogEvents[0][1], {
+    product_area: "impact",
     site_host: "4planet.org",
   });
 });

@@ -1,3 +1,25 @@
+# ANALYTICS PRIVACY — BOUNDED NUMERIC COUNTER ADMISSION — 25 OCTOBER 2026
+
+**STATUS:** RETURNED INDEPENDENT QA_CORRECT / P0 BOUNDED HEIR CORRECTION / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT, TELEMETRY OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** consented public analytics must retain useful anonymous aggregate counts without forwarding phone-, identity- or payment-shaped numbers to GA4 or PostHog.
+
+**ROOT CAUSE:** the shared sanitizer admitted every finite number up to one billion on any allowlisted key. Gold reproduced three synthetic 9-digit values in documented counter fields and propagation to both sinks. A generic key allowlist did not establish numeric semantics or a safe range.
+
+**CORRECTION:** admit numbers only for the nine counter fields evidenced by current array/object-length producers and existing retry contracts: `attempts`, `decision_states`, `evidence_ready_items`, `item_count`, `opportunity_count`, `option_count`, `result_count`, `source_count`, and `unsupported_items`. Require non-negative safe integers no greater than 100,000. Drop numbers on all other keys; never stringify unsafe values.
+
+**REGRESSION EVIDENCE:** the owning contract first fails on the exact Gold trio, a numeric non-counter, negative, fraction and upper-bound violation, including both mocked sinks. It protects zero and small counters for every documented field plus the complete existing string/public-ID/privacy matrix.
+
+**WHAT MUST BE REUSED:** PR #476, lawful `king/test` HEIR, existing analytics privacy contract, shared sanitizer, consent/host/navigation controls and both analytics sinks.
+
+**TRUTH BOUNDARY:** passing proves only the bounded synthetic source-and-sink contract on the exact candidate. It does not prove a real data leak, production deployment, live telemetry safety, user use or impact.
+
+**BASE / ROLLBACK:** `king/test@818a1c06b4b4852189d3dc9a471eb0450af86b38`; revert this three-file correction if independent Gold finds a legitimate counter, consent, dispatch or sink regression.
+
+**MAKER ≠ JUDGE:** Factory supplies failing-first and corrected evidence. Independent Gold must replay the numeric source and both-sink controls on the returned SHA before QA_ACCEPT. Founder release remains separate.
+
+---
+
 # MAX EXPOSURE CI — UNUSED ESLINT DIRECTIVE IMMUNITY — 25 OCTOBER 2026
 
 **STATUS:** BOUNDED BUILD-PIPELINE REMEDIATION / NO PUBLIC FEATURE OR LIVE RELEASE.
@@ -57,7 +79,6 @@
 **TRUTH:** Source relationships are determined solely by the canonical mission domain; the cultural external hand-offs m4gazine and 4film remain excluded. The 16 mission source lists are empty; do not fabricate citations, claimed achievements or impact.
 **PROOF:** Validate same-domain relations, escaping, server HTML, link integrity, existing sitemap and production build, independent Gold and preview proof. Source changes are not live SEO outcomes.
 **ROLLBACK:** Restore exact previous file blobs / revert this bounded patch by verified GitHub commit. Founder promotion remains separate.
-
 ---
 
 # ANALYTICS PRIVACY — COMPLETE STRING VALUE-SHAPE GUARD — 25 OCTOBER 2026

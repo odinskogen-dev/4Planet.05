@@ -320,6 +320,10 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
   ]);
   const pathKeys = new Set(["entry_path", "landing_path", "page_path"]);
   const hostKeys = new Set(["site_host", "source_host", "target_host"]);
+  const numericCounterKeys = new Set([
+    "attempts", "decision_states", "evidence_ready_items", "item_count", "opportunity_count",
+    "option_count", "result_count", "source_count", "unsupported_items",
+  ]);
   const lifecycleEnumValues: Record<string, ReadonlySet<string>> = {
     actor_type: new Set(["PERSON", "COMPANY"]),
     lifecycle_stage: new Set(["STATE", "DECISION", "ACTION", "OUTCOME", "PROOF", "RETURN"]),
@@ -375,7 +379,12 @@ export function privacySafeEventParameters(parameters: Record<string, string | n
       continue;
     }
     if (typeof value === "number") {
-      if (Number.isFinite(value) && Math.abs(value) <= 1_000_000_000) safe[key] = value;
+      // Numbers are admitted only where current producers define aggregate counts.
+      // A generic allowlisted key is not permission to forward numeric identifiers.
+      if (numericCounterKeys.has(key)
+        && Number.isSafeInteger(value)
+        && value >= 0
+        && value <= 100_000) safe[key] = value;
       continue;
     }
     if (typeof value === "boolean") {
