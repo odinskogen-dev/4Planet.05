@@ -78,7 +78,15 @@ export function normalise(payload) {
         };
         if (kind === "actor") actors.set(base.id, { ...base, type: text(row.actor_type) || null, website: https(profile.website) });
         if (kind === "issue") issues.set(base.id, { ...base, domain: text(profile.domain) || null });
-        if (kind === "solution") solutions.set(base.id, { ...base, type: text(row.solution_type) || null, maturity: text(profile.maturity) || null });
+        if (kind === "solution") solutions.set(base.id, {
+          ...base,
+          type: text(row.solution_type) || null,
+          maturity: text(profile.maturity) || null,
+          mechanism: text(profile.mechanism) || null,
+          applicability: list(profile.applicability).map(text).filter(Boolean),
+          risks: list(profile.risks).map(text).filter(Boolean),
+          issueIds: list(row.issues).map((edge) => isRow(edge) ? text(edge.id) : "").filter(Boolean),
+        });
         if (kind === "place") places.set(base.id, base);
       }
     };
@@ -166,7 +174,16 @@ export function normalise(payload) {
   const outSolutions = Array.from(solutions.values()).sort(byName).map((s) => ({
     id: s.id, slug: s.slug, name: s.name, description: s.description, type: s.type, maturity: s.maturity,
     publication: s.publication, indexable: s.publication === "public",
+    reviewState: s.publication === "public" ? "SOURCE-CHECKED" : null,
+    lastReviewed: s.lastReviewed || null,
+    mechanism: s.mechanism || null,
+    applicability: s.applicability || [],
+    risks: s.risks || [],
+    claims: s.claims || [],
+    citations: citationsOf(s.claims || []),
+    issues: (s.issueIds || []).map((id) => ref(issues, id)).filter(Boolean),
     projects: projectsFor("solutions", s.id),
+    projectRefs: outProjects.filter((p) => p.solutions.some((n) => n.id === s.id)).map((p) => ({ id: p.id, slug: p.slug, name: p.name })),
   }));
   return {
     version: text(payload.version) || (isV02 ? "impact-lan-v02" : "impact-lan-gold-v01"),
