@@ -391,3 +391,19 @@ test("mission pages generate crawlable same-domain related links without externa
   assert.match(html, /m\.domain\.replace\("_", ""\)\.toLowerCase\(\)/);
   assert.doesNotMatch(html, /relatedMissions = STORIES/);
 });
+
+
+test("mission links survive SPA hydration with the same canonical siblings as server HTML", () => {
+  const client = read("src/pages/v5/Missions.tsx");
+  const html = read("scripts/prerender-discovery-seo.mjs");
+  const repo = read("src/content/contentRepository.ts");
+  assert.match(repo, /getMissionsByDomain:\s*\(key: DomainKey\) => MISSION_CONTENT\.filter/);
+  assert.match(client, /content\.getMissionsByDomain\(m\.domain\)/);
+  assert.match(client, /candidate\.slug !== m\.slug/);
+  assert.match(client, /candidate\.slug !== "m4gazine"/);
+  assert.match(client, /candidate\.slug !== "4film"/);
+  assert.match(client, /aria-label="Related missions"/);
+  assert.match(client, /to=\{",?\/missions\/"? \+ candidate\.slug\}/);
+  assert.match(client, /candidate\.hero/);
+  assert.match(html, /relatedMissions\.map\(\(candidate\)/);
+});
