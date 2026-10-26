@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
 /* A public projection of 4PLANET's approved product boundaries. This is not a CRM,
    an opportunity register or an access-control system. No partner-specific data here. */
@@ -112,15 +112,27 @@ export function EnquirePage() {
   const [feedback, setFeedback] = useState("");
   const [channel, setChannel] = useState<"CHECKING" | "AVAILABLE" | "UNAVAILABLE">("CHECKING");
   const [companyHp, setCompanyHp] = useState("");
-  useEffect(() => {
-    document.title = "Partner enquiry — 4PLANET"; signal("intake_started");
-    let active = true;
-    fetch("/api/leads", { method: "GET", cache: "no-store" })
-      .then(async (res) => { if (!res.ok) throw new Error("Intake unavailable"); return res.json() as Promise<{ acceptingEnquiries?: boolean }>; })
-      .then((result) => { if (active) setChannel(result.acceptingEnquiries ? "AVAILABLE" : "UNAVAILABLE"); })
-      .catch(() => { if (active) setChannel("UNAVAILABLE"); });
-    return () => { active = false; };
+  const mounted = useRef(true);
+  const checkChannel = useCallback(async () => {
+    if (mounted.current) {
+      setChannel("CHECKING");
+      setFeedback("");
+    }
+    try {
+      const response = await fetch("/api/leads", { method: "GET", cache: "no-store" });
+      if (!response.ok) throw new Error("Intake unavailable");
+      const result = await response.json() as { acceptingEnquiries?: boolean };
+      if (mounted.current) setChannel(result.acceptingEnquiries ? "AVAILABLE" : "UNAVAILABLE");
+    } catch {
+      if (mounted.current) setChannel("UNAVAILABLE");
+    }
   }, []);
+  useEffect(() => {
+    mounted.current = true;
+    document.title = "Partner enquiry — 4PLANET"; signal("intake_started");
+    void checkChannel();
+    return () => { mounted.current = false; };
+  }, [checkChannel]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || !consent || channel !== "AVAILABLE") return;
@@ -151,9 +163,14 @@ export function EnquirePage() {
     <header className="pd-hero"><Meta label="STRUCTURED PARTNER ENQUIRY" /><h1>Bring a specific question.</h1><p>Tell us your role, the relevant object and what you would like to examine. This is an expression of interest, not a contract or approval to publish your organisation as a partner.</p></header>
     <section className="pd-form-wrap">
     <p className="pd-small">How your details are handled: <a href="/privacy">Partner privacy and intake notice ↗</a></p>
-    {channel === "UNAVAILABLE" ? <p className="pd-channel-notice" role="status">The enquiry channel is not yet collecting submissions. No information will be sent or stored here.</p> : null}
-    {channel === "CHECKING" ? <p className="pd-channel-notice" role="status">Checking whether the enquiry channel is available…</p> : null}
-    <form className="pd-form" onSubmit={submit}>
+    {channel !== "AVAILABLE" ? <div className="pd-channel-recovery">
+      <p className="pd-channel-notice" role="status" aria-live="polite">{channel === "CHECKING" ? "Checking whether the enquiry channel is available…" : "The enquiry channel is not yet collecting submissions. No information will be sent or stored here."}</p>
+      <button type="button" disabled={channel === "CHECKING"} onClick={() => { signal("intake_recheck"); void checkChannel(); }}>Check again</button>
+      <div className="pd-channel-links">
+        <a href={role && roles.some((item) => item.slug === role) ? `/for/${role}` : "/for"}>Back to {role && roles.some((item) => item.slug === role) ? "your partner route" : "partner roles"} ↗</a>
+        <a href={opportunity && opportunities.some((item) => item.slug === opportunity) ? `/opportunities/${opportunity}` : "/opportunities"}>View {opportunity && opportunities.some((item) => item.slug === opportunity) ? "this opportunity" : "current opportunities"} ↗</a>
+      </div>
+    </div> : <form className="pd-form" onSubmit={submit}>
       <label className="pd-honeypot" aria-hidden="true">Leave blank <input tabIndex={-1} autoComplete="off" value={companyHp} onChange={(e) => setCompanyHp(e.target.value)} /></label>
       <label>Your role <select value={role} onChange={(e) => setRole(e.target.value)} required><option value="">Choose a role</option>{roles.map((item) => <option value={item.slug} key={item.slug}>{item.name}</option>)}</select></label>
       <label>Relevant opportunity <select value={opportunity} onChange={(e) => setOpportunity(e.target.value)}><option value="">General enquiry</option>{opportunities.map((item) => <option value={item.slug} key={item.slug}>{item.name}</option>)}</select></label>
@@ -165,7 +182,7 @@ export function EnquirePage() {
       <button type="submit" disabled={busy || !consent || channel !== "AVAILABLE"}>{channel !== "AVAILABLE" ? "Enquiries not available" : busy ? "Submitting…" : "Submit enquiry"}</button>
       <p className="pd-feedback" role="status" aria-live="polite">{feedback}</p>
       <p className="pd-small">No subscription or commitment is created. If the intake integration is unavailable, the form will explicitly say that no receipt is confirmed.</p>
-    </form></section>
+    </form>}</section>
   </main>;
 }
 

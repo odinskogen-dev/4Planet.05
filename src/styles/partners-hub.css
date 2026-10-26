@@ -412,6 +412,13 @@ a:hover .ph-arrow { transform: translate(2px,-2px); }
 }
 
 .partners-hub .pd-channel-notice { max-width:760px; padding:22px 26px; border-left:3px solid var(--blue); background:var(--paper); font-size:1.1rem; line-height:1.4; margin-bottom:30px; }
+.partners-hub .pd-channel-recovery { max-width:780px; display:grid; gap:22px; }
+.partners-hub .pd-channel-recovery .pd-channel-notice { margin-bottom:0; }
+.partners-hub .pd-channel-recovery>button { justify-self:start; min-height:54px; border:1px solid var(--ink); color:white; background:var(--ink); padding:0 26px; font-weight:650; cursor:pointer; }
+.partners-hub .pd-channel-recovery>button:disabled { cursor:wait; opacity:.5; }
+.partners-hub .pd-channel-links { display:flex; flex-wrap:wrap; gap:18px 28px; }
+.partners-hub .pd-channel-links a { border-bottom:1px solid currentColor; font-weight:600; padding-bottom:5px; }
+.partners-hub .pd-channel-recovery>button:focus-visible, .partners-hub .pd-channel-links a:focus-visible { outline:3px solid var(--blue); outline-offset:4px; }
 .partners-hub .pd-form .pd-honeypot { position:absolute!important; width:1px!important; height:1px!important; left:-10000px!important; overflow:hidden!important; opacity:0; pointer-events:none; }
 
 

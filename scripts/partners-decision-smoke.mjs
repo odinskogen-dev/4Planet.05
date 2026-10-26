@@ -83,10 +83,33 @@ try {
   await unavailablePage.route("**/api/leads", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, acceptingEnquiries: false }) });
   });
-  await unavailablePage.goto(base + "/enquire");
+  await unavailablePage.goto(base + "/enquire?role=field&opportunity=plastic-proof");
   await unavailablePage.getByText("The enquiry channel is not yet collecting submissions.", { exact: false }).waitFor();
-  if (await unavailablePage.getByRole("button", { name: "Enquiries not available" }).isEnabled()) throw Error("unconfigured channel must disable submission");
+  if (await unavailablePage.locator('input[autocomplete="name"]').count()) throw Error("unavailable intake must not expose personal-data controls");
+  if (await unavailablePage.locator('input[autocomplete="email"]').count()) throw Error("unavailable intake must not expose email control");
+  if (await unavailablePage.locator("textarea").count()) throw Error("unavailable intake must not expose message control");
+  if (await unavailablePage.locator('input[type="checkbox"]').count()) throw Error("unavailable intake must not expose consent control");
+  await unavailablePage.getByRole("button", { name: "Check again" }).waitFor();
+  if (await unavailablePage.getByRole("link", { name: /Back to your partner route/ }).getAttribute("href") !== "/for/field") throw Error("role recovery link lost query context");
+  if (await unavailablePage.getByRole("link", { name: /View this opportunity/ }).getAttribute("href") !== "/opportunities/plastic-proof") throw Error("opportunity recovery link lost query context");
   await unavailablePage.close();
+  const failedPage = await browser.newPage();
+  let failedChecks = 0;
+  await failedPage.route("**/api/leads", async (route) => {
+    failedChecks += 1;
+    if (failedChecks === 1) {
+      await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ ok: false }) });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, acceptingEnquiries: true }) });
+  });
+  await failedPage.goto(base + "/enquire?role=field");
+  await failedPage.getByText("The enquiry channel is not yet collecting submissions.", { exact: false }).waitFor();
+  if (await failedPage.locator('input[autocomplete="name"]').count()) throw Error("failed availability request must fail closed before collecting personal data");
+  await failedPage.getByRole("button", { name: "Check again" }).click();
+  await failedPage.locator('input[autocomplete="name"]').waitFor();
+  if (await failedPage.locator("select").first().inputValue() !== "field") throw Error("role context lost after successful recheck");
+  await failedPage.close();
   const page = await browser.newPage();
   await page.route("**/api/leads", async (route) => {
     if (route.request().method() === "GET") {
