@@ -1,0 +1,70 @@
+name: SPECIES 57 P1 - offline worker preview for 18 taxon placeholders (NO LIVE)
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p1-authority-preview-only.yml]
+permissions: {contents: read}
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Rebuild exact Worker sources without touching 4species production
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          mkdir -p ops/discovery ops/species57 public/species-data/v1
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js > ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json > public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py > ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js > ops/discovery/species57-search-directory.js
+          test "$(git hash-object ops/discovery/4species-router.js)" = "140d6854b34609e537a016068543c8bf44a6e7cf"
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
+          node --check ops/discovery/4species-router-p1.js
+          echo SPECIES_P1_PREVIEW_CODE_CHECK_PASS
+      - name: Launch local workerd and probe new18 HTML+JSON; only read live upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          npx --yes wrangler@4.128.0 dev ops/discovery/4species-router-p1.js --local --ip 127.0.0.1 --port 8787 --compatibility-date 2026-10-05 --log-level error > /tmp/workerd-p1.log 2>&1 &
+          workerd=$!
+          trap 'kill $workerd || true' EXIT
+          for i in $(seq 1 40); do
+            if curl -s --max-time 2 http://127.0.0.1:8787/robots.txt >/dev/null;then break;fi
+            sleep 1
+          done
+          set +e
+          curl -sS --max-time 45 -D /tmp/koala.headers http://127.0.0.1:8787/koala -o /tmp/koala.html
+          ch=$?
+          curl -sS --max-time 45 -D /tmp/koala-data.headers http://127.0.0.1:8787/species-data/v1/koala.json -o /tmp/koala.json
+          cj=$?
+          set -e
+          test "$ch" = 0 && test "$cj" = 0
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          html=Path("/tmp/koala.html").read_text(errors="replace")
+          page=json.loads(Path("/tmp/koala.json").read_text())
+          assert page["slug"]=="koala" and page["identity"]["authorship"]==""
+          assert "Pending authority citation" not in html
+          assert '<h1>Koala</h1>' in html
+          print("SPECIES_P1_LOCAL_WORKER_KOALA_HTML_JSON_PLACEHOLDER_REMOVED_PASS")
+          PY
+          cp /tmp/koala.headers evidence/headers.txt
+          cp /tmp/koala-data.headers evidence/data-headers.txt
+          echo "SPECIES_P1_PREVIEW_ONLY_NO_LIVE" > evidence/NOTICE.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-taxonomic-authority-18-omission-local-preview
+          path: evidence/
+          retention-days: 30
