@@ -198,7 +198,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for host in heir-render.4planet.org atlas-sandbox-render.4planet.org magazine-sandbox-render.4planet.org; do
+          node <<'NODE' > "$RUNNER_TEMP/render-proxy-hosts.txt"
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          const hosts=new Set([new URL(r.heir.render_origin).hostname]);
+          for(const sandbox of Object.values(r.sandboxes||{})) hosts.add(new URL(sandbox.render_origin).hostname);
+          for(const host of hosts) console.log(host);
+          NODE
+          while IFS= read -r host; do
+            [ -z "$host" ] && continue
             ok=0
             for attempt in $(seq 1 24); do
               headers=$(curl -fsSI --connect-timeout 10 --max-time 30 "https://$host/" | tr -d '\r' || true)
@@ -206,7 +214,7 @@ jobs:
               sleep 5
             done
             [ "$ok" -eq 1 ] || { echo "Render proxy not healthy: $host"; exit 6; }
-          done
+          done < "$RUNNER_TEMP/render-proxy-hosts.txt"
 
       - name: Build isolated review/archive Worker
         run: node scripts/build-four-state-review-worker.mjs docs/control/PRODUCT_SURFACE_REGISTRY.json artifacts/four-state-runtime.json artifacts/four-state-worker.mjs
@@ -244,14 +252,45 @@ jobs:
           [ "$ok" -eq 1 ] || { echo 'Control domains did not become healthy'; exit 7; }
           test_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/_control')
           atlas_heir=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas')
-          atlas_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/atlas/sandbox')
-          mag_sandbox=$(curl -fsS --connect-timeout 10 --max-time 30 'https://test.4planet.org/magazine/sandbox')
           archive_html=$(curl -fsS --connect-timeout 10 --max-time 30 'https://archive.4planet.org/')
           grep -q '4PLANET_ PRODUCT CONTROL' <<<"$test_html"
           grep -q 'heir-render.4planet.org/atlas' <<<"$atlas_heir"
-          grep -q 'atlas-sandbox-render.4planet.org/atlas' <<<"$atlas_sandbox"
-          grep -q 'magazine-sandbox-render.4planet.org/magazine' <<<"$mag_sandbox"
           grep -q '4PLANET_ VISUAL ARCHIVE' <<<"$archive_html"
+
+          node <<'NODE' > "$RUNNER_TEMP/registered-sandboxes.tsv"
+          const fs=require('fs');
+          const registry=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const runtime=JSON.parse(fs.readFileSync('artifacts/four-state-runtime.json','utf8'));
+          for(const [product,item] of Object.entries(registry.products||{})) {
+            if(!item.sandbox) continue;
+            const render=runtime.sandboxes?.[product]?.render_origin;
+            if(!render) throw new Error(`missing runtime sandbox for ${product}`);
+            console.log([product,item.sandbox.review_path,render+item.sandbox.origin_path].join('\t'));
+          }
+          NODE
+          while IFS=$'\t' read -r product path expected; do
+            [ -z "$product" ] && continue
+            html=$(curl -fsS --connect-timeout 10 --max-time 30 "https://test.4planet.org$path")
+            grep -Fq "$expected" <<<"$html" || { echo "Registered sandbox readback failed: $product $path"; exit 8; }
+          done < "$RUNNER_TEMP/registered-sandboxes.tsv"
+
+          node <<'NODE' > "$RUNNER_TEMP/unregistered-sandboxes.tsv"
+          const fs=require('fs');
+          const registry=JSON.parse(fs.readFileSync('docs/control/PRODUCT_SURFACE_REGISTRY.json','utf8'));
+          const normalise=p=>p.length>1&&p.endsWith('/')?p.slice(0,-1):(p||'/');
+          for(const [product,item] of Object.entries(registry.products||{})) {
+            if(item.sandbox) continue;
+            const heir=normalise(item.heir.review_path);
+            console.log([product,heir==='/'?'/sandbox':`${heir}/sandbox`].join('\t'));
+          }
+          NODE
+          while IFS=$'\t' read -r product path; do
+            [ -z "$product" ] && continue
+            body="$RUNNER_TEMP/unregistered-${product}.txt"
+            status=$(curl -sS --connect-timeout 10 --max-time 30 -o "$body" -w '%{http_code}' "https://test.4planet.org$path")
+            [ "$status" = 404 ] || { echo "Unregistered sandbox did not fail closed: $product $path ($status)"; exit 9; }
+            grep -q '^UNREGISTERED SANDBOX:' "$body" || { echo "Unregistered sandbox marker missing: $product $path"; exit 9; }
+          done < "$RUNNER_TEMP/unregistered-sandboxes.tsv"
           echo 'FOUR STATE public readback PASS' | tee artifacts/four-state/public-readback.txt
 
       - name: Upload control-plane evidence

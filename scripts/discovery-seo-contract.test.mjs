@@ -224,6 +224,35 @@ test("ATLAS discovery routes execute through the real four-state worker registry
   }
 });
 
+test("four-state worker fails closed for unregistered product sandboxes",async()=>{
+  const registry=JSON.parse(read("docs/control/PRODUCT_SURFACE_REGISTRY.json"));
+  const currentHead=execFileSync("git",["rev-parse","HEAD"],{cwd:ROOT,encoding:"utf8"}).trim();
+  const actual=await buildReviewWorker(registry,currentHead);
+  const originalFetch=globalThis.fetch;
+  try{
+    const upstream=[];
+    globalThis.fetch=async(request)=>{upstream.push(new URL(request.url).pathname);return new Response("HEIR",{status:200})};
+
+    for(const path of ["/atlas/sandbox","/atlas/sandbox/deep","/oslofjord/sandbox"]){
+      const response=await actual.worker.fetch(new Request(`https://test.4planet.org${path}`));
+      assert.equal(response.status,404,`${path} must fail closed when its sandbox is unregistered`);
+      assert.match(await response.text(),/UNREGISTERED SANDBOX/);
+    }
+    assert.deepEqual(upstream,[],"unregistered sandbox paths must never fall through to HEIR");
+
+    const registered=await actual.worker.fetch(new Request("https://test.4planet.org/magazine/sandbox"));
+    assert.equal(registered.status,200);
+    assert.match(await registered.text(),/sandbox-render\.example/);
+
+    const heir=await actual.worker.fetch(new Request("https://test.4planet.org/atlas/fires"));
+    assert.equal(heir.status,200);
+    assert.deepEqual(upstream,["/atlas/fires"],"ordinary ATLAS HEIR routes must remain available");
+  }finally{
+    globalThis.fetch=originalFetch;
+    actual.cleanup();
+  }
+});
+
 test("public product-host attribution includes 4NATION, SPECIES and MAGAZINE",()=>{
   for(const host of ["4nation.org","4species.com","4planetmagazine.com"]) assert.ok(analytics.includes(`"${host}"`));
   assert.ok(analytics.includes('host === "4nation.org"'));

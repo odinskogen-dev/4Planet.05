@@ -77,6 +77,9 @@ function archive() {
 
 function normalise(pathname) { if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0,-1); return pathname || '/'; }
 function isGoldAsset(path) { return path.startsWith('/assets/') || /\.(?:css|js|mjs|png|jpe?g|webp|avif|svg|woff2?|ico|json|webmanifest)$/i.test(path); }
+function unregisteredSandbox(product) {
+  return new Response("UNREGISTERED SANDBOX: " + product, {status:404, headers:{"content-type":"text/plain; charset=utf-8","cache-control":"no-store","x-robots-tag":"noindex, nofollow","x-4planet-control-plane":"four-state-v1"}});
+}
 
 export default { async fetch(request) {
   const url = new URL(request.url);
@@ -91,6 +94,16 @@ export default { async fetch(request) {
   // Static assets are proxied from the same exact HEIR origin so the SPA remains visually intact.
   if (path === '/sandbox/gold' || path.startsWith('/sandbox/gold/') || isGoldAsset(path)) {
     return proxyHeir(request, url, path);
+  }
+
+  // A sandbox-looking URL is valid only when the registry grants that product
+  // an exact sandbox receiver. Never let an unregistered sandbox namespace fall
+  // through to the broader HEIR product prefix below.
+  for (const [product,p] of Object.entries(CONFIG.products)) {
+    if (p.sandbox) continue;
+    const reviewPath = normalise(p.heir.review_path);
+    const sandboxPath = reviewPath === '/' ? '/sandbox' : reviewPath + '/sandbox';
+    if (path === sandboxPath || path.startsWith(sandboxPath + '/')) return unregisteredSandbox(product);
   }
 
   for (const [product,p] of Object.entries(CONFIG.products)) {
