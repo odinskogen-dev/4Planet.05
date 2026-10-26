@@ -42,6 +42,12 @@ jobs:
             if curl -s --max-time 2 http://127.0.0.1:8787/robots.txt >/dev/null;then break;fi
             sleep 1
           done
+          if ! kill -0 "$workerd" 2>/dev/null; then
+            echo "SPECIES_P1_LOCAL_WORKER_BOOT_ERROR"
+            tail -100 /tmp/workerd-p1.log
+            exit 1
+          fi
+          tail -12 /tmp/workerd-p1.log || true
           set +e
           curl -sS --max-time 45 -D /tmp/koala.headers http://127.0.0.1:8787/koala -o /tmp/koala.html
           ch=$?
