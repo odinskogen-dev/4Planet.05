@@ -1,0 +1,61 @@
+name: SPECIES 57 - read-only search audit of 12 topical group hubs
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-group-seo-eligibility-audit.yml]
+permissions: {contents: read}
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Inspect HTTP, unique content, canonical, robots, rendered link graph, sitemap status
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          python3 - <<'PY'
+          from urllib.request import Request,urlopen
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import json,re,xml.etree.ElementTree as ET
+          SITE="https://4species.com"
+          groups="whales seals mammals birds fish sharks reptiles amphibians insects invertebrates plants fungi".split()
+          def get(url):
+            req=Request(url,headers={"User-Agent":"4SPECIES-57-SEO-GROUP-READONLY/20261026","Cache-Control":"no-cache"})
+            with urlopen(req,timeout=35) as r:return r.read(),dict(r.headers),r.status
+          class Scan(HTMLParser):
+            def __init__(self):super().__init__();self.canon=[];self.meta={};self.href=[];self.h1=0;self.title="";self.intitle=False;self.text=[]
+            def handle_starttag(self,t,attrs):
+              d=dict(attrs)
+              if t=="link" and d.get("rel")=="canonical":self.canon.append(d.get("href"))
+              if t=="meta":self.meta[d.get("name") or d.get("property") or ""]=d.get("content")
+              if t=="a":self.href.append(d.get("href"))
+              if t=="h1":self.h1+=1
+              if t=="title":self.intitle=True
+            def handle_endtag(self,t):
+              if t=="title":self.intitle=False
+            def handle_data(self,x):
+              if self.intitle:self.title+=x
+              self.text.append(x)
+          xml=ET.fromstring(get(SITE+"/sitemap.xml")[0])
+          locs={e.text for e in xml.iter() if e.tag.endswith("loc") and e.text}
+          results=[]
+          for group in groups:
+            route="/group/"+group
+            d,h,status=get(SITE+route)
+            p=Scan();p.feed(d.decode(errors="replace"))
+            text=" ".join(p.text)
+            slugs=[a for a in p.href if a and re.fullmatch(r"(?:https://4species\.com)?/[a-z0-9-]+",a)]
+            row={"group":group,"status":status,"canonical":p.canon,"metaRobots":p.meta.get("robots"),"robotsHeader":h.get("X-Robots-Tag"),"title":p.title.strip(),"description":p.meta.get("description"),"wordCount":len(text.split()),"h1":p.h1,"speciesLinks":len(slugs),"linksSample":slugs[:8],"inSitemap":SITE+route in locs,"bodySHA":__import__("hashlib").sha256(d).hexdigest()}
+            results.append(row)
+            print("SPECIES_GROUP_SEO",json.dumps(row))
+          Path("evidence/group-report.json").write_text(json.dumps(results,indent=2))
+          print("SPECIES_GROUP_READONLY_QA_COMPLETE",len(results))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-group-seo-eligibility-12-groups
+          path: evidence/
+          retention-days: 30
