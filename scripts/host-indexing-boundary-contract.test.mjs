@@ -249,6 +249,24 @@ for (const [url, robots] of [
   });
 }
 
+for (const [url, robots] of [
+  ["https://4planet.org/", "nosnippet"],
+  ["https://s4piens.com/system/food", "noimageindex"],
+  ["https://4brands.org/", "max-snippet:0"],
+  ["https://4planet.org/", "max-image-preview:none"],
+  ["https://s4piens.com/system/food", "unavailable_after: 25 Oct 2026 12:00:00 GMT"],
+]) {
+  test(`approved public route preserves restrictive upstream meta robots: ${robots}`, async () => {
+    const harness = request(url, htmlResponse({ robots }));
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200, url);
+    assert.ok(html.includes(`<meta name="robots" content="${robots}">`), url);
+    assert.doesNotMatch(html, /content="index,follow,max-image-preview:large"/i, url);
+  });
+}
+
 for (const [url, policy] of [
   ["https://4planet.org/", "none"],
   ["https://s4piens.com/system/food", "NONE"],
