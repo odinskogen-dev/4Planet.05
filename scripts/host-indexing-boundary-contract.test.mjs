@@ -5,6 +5,25 @@ import { onRequest } from "../functions/_middleware.js";
 
 const PRIVATE_POLICY = "noindex, nofollow, noarchive";
 
+class PassthroughHTMLRewriter {
+  on() { return this; }
+  transform(response) { return response; }
+}
+
+globalThis.HTMLRewriter = PassthroughHTMLRewriter;
+
+function htmlResponse({ robots = "index,follow", xRobotsTag, status = 200 } = {}) {
+  const headers = {
+    "content-type": "text/html; charset=utf-8",
+    "cache-control": "public, max-age=300",
+  };
+  if (xRobotsTag) headers["x-robots-tag"] = xRobotsTag;
+  return new Response(`<!doctype html><html><head><meta name="robots" content="${robots}"></head><body>Upstream</body></html>`, {
+    status,
+    headers,
+  });
+}
+
 function request(url, response = new Response("edge body", {
   status: 200,
   headers: {
@@ -76,6 +95,75 @@ test("public roots remain indexable and preserve their upstream cache policy", a
     assert.equal(response.headers.get("x-robots-tag"), null, url);
     assert.equal(response.headers.get("cache-control"), "public, max-age=300", url);
     assert.equal(harness.nextCalls(), 1, url);
+  }
+});
+
+test("explicit upstream noindex survives public-host middleware", async () => {
+  for (const [url, policy] of [
+    ["https://4planet.org/unreleased-test", "noindex, nofollow"],
+    ["https://4planet.org/unreleased-test", "noindex, nofollow, noarchive"],
+    ["https://s4piens.com/unreleased-test", "noindex, nofollow"],
+  ]) {
+    const upstream = htmlResponse({ robots: "noindex,nofollow", xRobotsTag: policy });
+    const upstreamBody = await upstream.clone().text();
+    const harness = request(url, upstream);
+    const response = await onRequest(harness.context);
+
+    assert.equal(response.headers.get("x-robots-tag"), policy, url);
+    assert.equal(await response.text(), upstreamBody, url);
+    assert.equal(harness.nextCalls(), 1, url);
+  }
+});
+
+test("unknown public-host routes preserve upstream meta-only noindex without normalisation", async () => {
+  const originalRewriter = globalThis.HTMLRewriter;
+  globalThis.HTMLRewriter = class {
+    constructor() { throw new Error("unknown S4PIENS route reached SEO normalisation"); }
+  };
+  try {
+    for (const url of [
+      "https://4planet.org/unreleased-test",
+      "https://s4piens.com/unreleased-test",
+      "https://4brands.org/unreleased-test",
+    ]) {
+      const upstream = htmlResponse({ robots: "noindex,nofollow" });
+      const upstreamBody = await upstream.clone().text();
+      const harness = request(url, upstream);
+      const response = await onRequest(harness.context);
+
+      assert.equal(response.status, 200, url);
+      assert.equal(response.headers.get("x-robots-tag"), null, url);
+      assert.equal(await response.text(), upstreamBody, url);
+    }
+  } finally {
+    globalThis.HTMLRewriter = originalRewriter;
+  }
+});
+
+test("unknown 404 routes are not promoted into indexable success responses", async () => {
+  const originalRewriter = globalThis.HTMLRewriter;
+  globalThis.HTMLRewriter = class {
+    constructor() { throw new Error("unknown 404 route reached SEO normalisation"); }
+  };
+  try {
+    const upstream = htmlResponse({ robots: "noindex,nofollow", xRobotsTag: "noindex, nofollow", status: 404 });
+    const harness = request("https://s4piens.com/missing-object", upstream);
+    const response = await onRequest(harness.context);
+
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
+  } finally {
+    globalThis.HTMLRewriter = originalRewriter;
+  }
+});
+
+test("approved public routes remain indexable", async () => {
+  for (const url of ["https://4planet.org/", "https://s4piens.com/system/food", "https://4brands.org/"]) {
+    const harness = request(url, htmlResponse());
+    const response = await onRequest(harness.context);
+
+    assert.equal(response.status, 200, url);
+    assert.equal(response.headers.get("x-robots-tag"), null, url);
   }
 });
 

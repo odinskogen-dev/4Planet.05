@@ -1,3 +1,21 @@
+# MAX EXPOSURE — UPSTREAM NOINDEX PUBLICATION BOUNDARY — 26 OCTOBER 2026
+
+**STATUS:** CODE CORRECTION IN PROGRESS / ISSUE #483 / SOLE HEIR `king/test` / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE / ONE THING TO UNDERSTAND:** Public search results should expose only approved 4PLANET routes. An unreleased or unknown route carrying upstream `noindex` must remain excluded even when served on a public hostname.
+
+**PRIMARY ACTION / SECONDARY DEPTH:** Preserve explicit upstream crawler policy and pass unknown standalone-product paths through unchanged; continue the existing SEO enrichment only for the already approved public-route allowlists.
+
+**P1 / P2 / P3 / P4:** P1 publication safety; P2 approved-route identity; P3 source-grounded discovery on released routes; P4 existing metadata and structured-data enrichment.
+
+**REMOVE / REUSE:** Remove no routes and create no new registry. Reuse `PUBLIC_HOSTS`, each product's existing sitemap allowlist, the sole middleware and the owning host-indexing contract.
+
+**TRUTH BOUNDARY / MOBILE RISK / HUMAN SUCCESS:** Source fixtures prove only that explicit noindex, upstream HTML and 404 status survive the exact middleware path while approved roots remain indexable. They do not prove crawler exposure, indexation, traffic, deployment or use. The correction is server metadata only, so mobile layout is unchanged. Success is independent Gold replay plus immutable native-preview header and rendered-HTML evidence.
+
+**DONOR / ROLLBACK:** No donor adopted. Exact parent `3e2419834a838a321817b5fca32058c3f4a4b77f`; revert the bounded middleware/test/brief commit if an approved route loses its intended metadata.
+
+---
+
 # ONE-LEAN COLD START — TASK-CLASS READ BOUNDARY — 25 OCTOBER 2026
 
 **STATUS:** CODE FIXED / ENTRYPOINT CONTROL HEIR CORRECTION / INDEPENDENT RE-GOLD AND REAL FRESH-AGENT TRACE REQUIRED / NO PRODUCT, MERGE, DEPLOYMENT OR LIVE RELEASE.
