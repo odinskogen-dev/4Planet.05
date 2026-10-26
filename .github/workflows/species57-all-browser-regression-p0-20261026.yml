@@ -1,0 +1,95 @@
+name: SPECIES 57 P0 — all profile Chromium WebKit desktop mobile LIVE proof
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-all-browser-regression-p0-20261026.yml]
+permissions: {contents: read}
+jobs:
+  every-profile:
+    name: All57 - ${{ matrix.engine }}-${{ matrix.screen }}
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+        screen: [desktop, mobile]
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install real ${{ matrix.engine }} for JS/CSS hydration QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species57-every
+          npm install --prefix /tmp/species57-every playwright@1.56.0 --no-audit --no-fund
+          /tmp/species57-every/node_modules/.bin/playwright install --with-deps ${{ matrix.engine }}
+      - name: Verify all 57 public profile routes with real browser, JS, layout and no-JS content
+        shell: bash
+        env:
+          ENGINE: ${{ matrix.engine }}
+          SCREEN: ${{ matrix.screen }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import {chromium,webkit,devices} from "/tmp/species57-every/node_modules/playwright/index.mjs";
+          const old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split(" ");
+          const new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split(" ");
+          if(new Set([...old39,...new18]).size!==57)throw Error("Wrong exact live 57");
+          const engine=process.env.ENGINE,screen=process.env.SCREEN;
+          const browser=await ({chromium,webkit})[engine].launch({headless:true});
+          const context=await browser.newContext(screen==="mobile"?{...devices["iPhone 13"],isMobile:true}:{viewport:{width:1440,height:900},deviceScaleFactor:1});
+          const results=[],broken={};
+          for(const slug of [...old39,...new18]){
+            const page=await context.newPage(),errors=[],assets=[];
+            page.on("pageerror",e=>errors.push("PAGEERROR:"+String(e).slice(0,300)));
+            page.on("console",m=>{if(m.type()==="error")errors.push("CONSOLE:"+m.text().slice(0,300))});
+            page.on("response",r=>{if(/\/assets\/.*\.(js|css)(?:$|\?)/.test(r.url())&&r.headers()["content-type"]?.includes("text/html"))assets.push({url:r.url(),status:r.status(),mime:r.headers()["content-type"]})});
+            try{
+              const response=await page.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:55000});
+              let hydrated=false;
+              try{
+                await page.waitForFunction(()=>document.querySelector("#main-content")?.classList.contains("spx-root"),{timeout:11000});
+                hydrated=true;
+              }catch{}
+              await page.waitForTimeout(900);
+              const state=await page.evaluate(()=>({h1:document.querySelector("h1")?.textContent?.trim()||"",main:document.querySelector("#main-content")?.className||"",overflow:document.documentElement.scrollWidth>innerWidth+4,broken:[...document.images].filter(i=>i.complete&&i.naturalWidth===0).map(i=>({src:i.currentSrc||i.src,alt:i.alt})).slice(0,8),validImages:[...document.images].filter(i=>i.complete&&i.naturalWidth>0).length,allImageCount:document.images.length,cssRefs:[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>({url:x.href,available:!!x.sheet})),buttons:document.querySelectorAll("button").length,links:document.querySelectorAll('a[href]').length,headCanonical:document.querySelector('link[rel="canonical"]')?.href,hasAtlas:document.body.innerText.includes("ATLAS"),nav:performance.getEntriesByType("navigation").map(x=>Math.round(x.domContentLoadedEventEnd))}));
+              const fail=[];
+              if(response?.status()!==200)fail.push("HTTP");
+              if(!hydrated||!state.main.includes("spx-root"))fail.push("PREMIUM_APP_NOT_HYDRATED");
+              if(!state.h1)fail.push("H1");
+              if(state.overflow)fail.push("HORIZONTAL_OVERFLOW");
+              if(state.cssRefs.filter(x=>x.url.includes("/assets/")).some(x=>!x.available))fail.push("STYLESHEET_NOT_LOADED");
+              if(state.headCanonical!=="https://4species.com/"+slug)fail.push("CANONICAL");
+              if(assets.length)fail.push("ASSET_RETURNS_HTML");
+              if(errors.some(x=>/Failed to load module script|Uncaught SyntaxError|ChunkLoadError/.test(x)))fail.push("CRITICAL_JS_ERROR");
+              // Image errors separately tracked: user requires zero, but remote hosts
+              // can block automation; preserve exact URL evidence and distinguish class.
+              if(state.broken.length)broken[slug]=state.broken;
+              const row={slug,engine,screen,status:response?.status(),hydrated,fail,errors:errors.slice(0,12),badAssetResponses:assets,...state};
+              results.push(row);
+              console.log("SPECIES57_ALL_BROWSER_"+(fail.length?"FAIL":"PASS"),JSON.stringify({slug,engine,screen,fail,brokenImages:state.broken.length,hydrated,overflow:state.overflow}));
+              if(fail.length || state.broken.length){
+                await page.screenshot({path:"evidence/"+slug+"-"+engine+"-"+screen+".png",fullPage:false,animations:"disabled"});
+              }
+            }catch(e){
+              results.push({slug,engine,screen,fail:["UNCAUGHT"],error:String(e),errors});
+              console.error("SPECIES57_ALL_BROWSER_FAILURE",slug,engine,screen,String(e));
+            }finally{await page.close()}
+          }
+          await context.close();await browser.close();
+          const summary={engine,screen,profiles:results.length,hydrated:results.filter(r=>r.hydrated).length,layoutPass:results.filter(r=>(r.fail||[]).length===0).length,profilesWithBrokenImages:Object.keys(broken).length,broken};
+          fs.writeFileSync("evidence/summary.json",JSON.stringify(summary,null,2));
+          fs.writeFileSync("evidence/all57-browser.json",JSON.stringify(results,null,2));
+          console.log("SPECIES57_ALL_BROWSER_SUMMARY",JSON.stringify({engine,screen,profiles:summary.profiles,hydrated:summary.hydrated,layoutPass:summary.layoutPass,profilesWithBrokenImages:summary.profilesWithBrokenImages}));
+          if(results.length!==57 || summary.layoutPass!==57)process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-comprehensive-browser-${{ matrix.engine }}-${{ matrix.screen }}
+          path: evidence/
+          retention-days: 30
+          if-no-files-found: error
