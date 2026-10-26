@@ -1,0 +1,188 @@
+name: SPECIES 57 P0 - isolated MIME asset hotfix with zero original39 diffs
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p0-asset-mime-guarded-release.yml]
+permissions: {contents: read}
+concurrency: {group: species57-live-p0-mime, cancel-in-progress: false}
+jobs:
+  gated-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 37
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Reconstruct exact already-live discovery Worker and isolated P0 patch from frozen sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          mkdir -p ops/discovery ops/species57 evidence/species57
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+          test "$(git hash-object ops/discovery/4species-router.js)" = "140d6854b34609e537a016068543c8bf44a6e7cf"
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js > ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json > /tmp/species57-oak.json
+          mkdir -p public/species-data/v1
+          cp /tmp/species57-oak.json public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py > ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js > ops/discovery/species57-search-directory.js
+          test "$(git hash-object ops/species57/patch-57-discovery.py)" = "2f86cae9a08ad8fbfd66166de06780876b07ccda"
+          test "$(git hash-object ops/discovery/species57-search-directory.js)" = "abc40b76e0775b3616e387c1a743781c9da0badc"
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          node --check ops/discovery/4species-router-p0.js
+          node --check ops/discovery/species57-search-directory.js
+          python3 - <<'PY'
+          from pathlib import Path
+          base=Path("ops/discovery/4species-router-seo57.js").read_text()
+          new=Path("ops/discovery/4species-router-p0.js").read_text()
+          assert len(base)>10000 and "isHashedModule" in new and new.count("isHashedModule")==3
+          assert "publicSpeciesDirectoryCatalog" in new and "exploreWithAll57Links" in new
+          assert 'SPECIES_V1_RELEASED = new Set("koala quokka' in new
+          print("SPECIES_P0_SAFE_PATCH_REBUILT_EXACT_SEO_WORKER")
+          PY
+      - name: Baseline old39/new18 immutable HTML and data + exact MIME before deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import concurrent.futures,urllib.request,json,hashlib,pathlib
+          root="https://4species.com"
+          old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(old39)==39 and len(new18)==18
+          def get(url):
+            r=urllib.request.Request(url,headers={"User-Agent":"4SPECIES-P0-FOUNDER-RELEASE-20261026","Cache-Control":"no-cache"})
+            with urllib.request.urlopen(r,timeout=40) as response:return response.read(),dict(response.headers),response.status
+          def check(slug):
+            raw,headers,status=get(root+"/"+slug)
+            js,_,_=get(root+"/species-data/v1/"+slug+".json")
+            frozen="https://e17e1392.4planet-05.pages.dev" if slug in old39 else "https://de9e3e0e.4planet-05.pages.dev"
+            prev=json.loads(get(frozen+"/species-data/v1/"+slug+".json")[0])
+            assert status==200 and json.loads(js)==prev,("MUTATED_OLD_PROFILE",slug)
+            return {"slug":slug,"html_sha256":hashlib.sha256(raw).hexdigest(),"json_sha256":hashlib.sha256(js).hexdigest()}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:profiles=list(pool.map(check,old39+new18))
+          assert len(profiles)==57
+          for source,path in [
+              ("https://e17e1392.4planet-05.pages.dev","/assets/index-DJRRK0k4.js"),
+              ("https://de9e3e0e.4planet-05.pages.dev","/assets/index-DLiHR8tZ.js")]:
+            body,headers,status=get(source+path)
+            assert status==200 and "javascript" in headers.get("Content-Type","").lower()
+          data,headers,code=get(root+"/assets/index-DLiHR8tZ.js")
+          # Only run this live deployment if the known exact bug still exists.
+          assert code==200 and "text/html" in headers.get("Content-Type","").lower(),"Current runtime already fixed or drifted: no deployment"
+          pathlib.Path("evidence/species57/before.json").write_text(json.dumps(profiles,indent=2))
+          print("SPECIES_P0_PRECHECK_57_UNCHANGED_AND_NEW18_MODULE_WRONG_MIME_CONFIRMED")
+          PY
+      - name: Cloudflare production version identity and latest concurrency guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" > /tmp/zones.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/zones.json)
+          test -n "$account"
+          echo "SPECIES_CF_ACCOUNT=$account" >> "$GITHUB_ENV"
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" > /tmp/d.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/d.json)
+          test -n "$current" && test "$current" != "c13f2334-bb70-4f79-b3a4-41222100f287"
+          echo "SPECIES_P0_ROLLBACK_VERSION=$current" >> "$GITHUB_ENV"
+          echo "SPECIES_P0_CURRENT_RELEASE_VERSION=$current"
+      - name: Publish exact bounded P0 patch, then full57 bytewise live verify, rollback upon any regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "SPECIES_P0_VERIFY_FAIL_ROLLING_BACK $SPECIES_P0_ROLLBACK_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$SPECIES_P0_ROLLBACK_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$SPECIES_CF_ACCOUNT/workers/scripts/4species-router/deployments" > /tmp/d2.json
+          now=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/d2.json)
+          test "$now" = "$SPECIES_P0_ROLLBACK_VERSION" || { echo "SPECIES_P0_CONCURRENT_WORKER_CHANGE_STOP"; exit 1; }
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router-p0.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/deploy-species-p0.log
+          python3 - <<'PY'
+          import urllib.request,json,hashlib,concurrent.futures,xml.etree.ElementTree as ET,pathlib
+          SITE="https://4species.com"
+          earlier={p["slug"]:p for p in json.loads(pathlib.Path("evidence/species57/before.json").read_text())}
+          assert len(earlier)==57
+          def get(url):
+            r=urllib.request.Request(url,headers={"User-Agent":"4SPECIES-P0-GOLD-VERIFY/20261026","Cache-Control":"no-cache"})
+            with urllib.request.urlopen(r,timeout=40) as response:return response.read(),dict(response.headers),response.status
+          # Critical: if wrong MIME remains, fail with immediate rollback.
+          checks=[("/assets/index-DJRRK0k4.js","https://e17e1392.4planet-05.pages.dev"),("/assets/index-DLiHR8tZ.js","https://de9e3e0e.4planet-05.pages.dev")]
+          for asset,origin in checks:
+            raw,h,code=get(SITE+asset)
+            reference,_,_=get(origin+asset)
+            assert code==200 and "javascript" in h.get("Content-Type","").lower(),("STILL_WRONG_MIME",asset,h.get("Content-Type"))
+            assert hashlib.sha256(raw).hexdigest()==hashlib.sha256(reference).hexdigest(),("ASSET_ORIGIN_DRIFT",asset)
+            print("SPECIES_P0_HASHED_JS_DELIVERY_PASS",asset)
+          def check(slug):
+            html,h,status=get(SITE+"/"+slug)
+            data,_,_=get(SITE+"/species-data/v1/"+slug+".json")
+            p=earlier[slug]
+            assert status==200 and hashlib.sha256(html).hexdigest()==p["html_sha256"],("HTML_REGRESSION",slug)
+            assert hashlib.sha256(data).hexdigest()==p["json_sha256"],("JSON_REGRESSION",slug)
+            assert "noindex" not in h.get("X-Robots-Tag","").lower(),("NOINDEX",slug)
+            assert b"editorial-card.svg" not in html
+            return slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:done=list(ex.map(check,earlier))
+          assert len(done)==57
+          directory=get(SITE+"/species-directory")[0]
+          assert directory.count(b'class="card"')==57
+          index=json.loads(get(SITE+"/species-data/v1/index.json")[0])
+          assert len(index["pages"])==57
+          explore=get(SITE+"/explore")[0]
+          assert b'id="species57-search-discovery"' in explore
+          xml=get(SITE+"/sitemap.xml")[0]
+          urls={item.text for item in ET.fromstring(xml).iter() if item.tag.endswith("loc") and item.text}
+          assert all(SITE+"/"+slug in urls for slug in earlier)
+          assert SITE+"/species-directory" in urls
+          assert SITE+"/red-panda" not in urls
+          print("SPECIES_P0_LIVE57_ARTICLE_HTML_JSON_BYTEWISE_IDENTICAL_NEW18_BUNDLE_FIXED")
+          pathlib.Path("evidence/species57/live.json").write_text(json.dumps({"existing57Unmodified":57,"original39Unmodified":39,"new18Unmodified":18,"new18EntryJsMIMEFixed":True,"seoDirectoryPreserved":True},indent=2))
+          PY
+          trap - ERR
+      - name: Browser smoke - verify hydrated mobile & desktop premium on representative original39/new18
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/species57-p0 playwright@1.56.0 --no-audit --no-fund
+          /tmp/species57-p0/node_modules/.bin/playwright install --with-deps chromium webkit
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import {chromium,webkit,devices} from "/tmp/species57-p0/node_modules/playwright/index.mjs";
+          const samples=["orca","lion","english-oak","blue-whale","koala","giant-sequoia","giant-manta-ray","venus-flytrap"];
+          const rows=[];
+          for(const [name,engine,mobile] of [["Chromium",chromium,false],["WebKit",webkit,true]]){
+            const browser=await engine.launch({headless:true});
+            const ctx=await browser.newContext(mobile?devices["iPhone 13"]:{viewport:{width:1440,height:900}});
+            for(const slug of samples){
+              const page=await ctx.newPage(),issues=[];
+              page.on("pageerror",e=>issues.push(String(e)));
+              page.on("console",m=>{if(m.type()==="error")issues.push(m.text())});
+              const response=await page.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+              await page.waitForTimeout(2300);
+              const ui=await page.evaluate(()=>({root:document.querySelector("#main-content")?.className||"",h1:document.querySelector("h1")?.textContent||"",overflow:document.documentElement.scrollWidth>innerWidth+4,brokenImages:[...document.images].filter(i=>i.complete&&i.naturalWidth===0).length}));
+              const ok=response?.status()===200&&ui.root.includes("spx-root")&&!ui.root.includes("spx-prerender")&&ui.h1.length>2&&!ui.overflow&&!issues.some(x=>x.includes("Failed to load module script"));
+              rows.push({slug,browser:name,mobile,status:response?.status(),...ui,issues:issues.slice(0,5),pass:ok});
+              await page.screenshot({path:"evidence/species57/"+slug+"-"+name+(mobile?"-mobile":"-desktop")+".png",fullPage:false});
+              console.log("SPECIES_P0_BROWSER_VERIFY",JSON.stringify(rows.at(-1)));
+              await page.close();
+            }
+            await ctx.close();await browser.close();
+          }
+          fs.writeFileSync("evidence/species57/browser.json",JSON.stringify(rows,null,2));
+          if(rows.some(x=>!x.pass))process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-p0-asset-mime-production-57-unchanged-and-browser-proof
+          path: evidence/species57
+          retention-days: 30
