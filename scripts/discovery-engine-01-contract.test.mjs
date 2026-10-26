@@ -13,6 +13,29 @@ const css = read("src/styles/human-first-public.css");
 const deferredRoutes = read("src/routes/deferredRoutes.tsx");
 const redirects = read("public/_redirects");
 
+const REDIRECT_STATUSES = new Set(["301", "302", "303", "307", "308"]);
+
+const parseRedirects = (source) => source
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith("#"))
+  .map((line) => {
+    const [from, to, status] = line.split(/\s+/);
+    return { from, to, status };
+  });
+
+const assertNoInverseNowRedirect = (source) => {
+  for (const { from, to, status } of parseRedirects(source)) {
+    const isInverseNowPair =
+      (from === "/now/" && to === "/now") ||
+      (from === "/now" && to === "/now/");
+    assert.ok(
+      !isInverseNowPair || !REDIRECT_STATUSES.has(status),
+      `Earth Now inverse redirect can loop on the static host: ${from} -> ${to} ${status}`,
+    );
+  }
+};
+
 const REQUIRED = [
   "wildfires",
   "earthquakes",
@@ -97,8 +120,15 @@ test("routes, sitemap and prerender all consume the same canonical discovery reg
 });
 
 test("Earth Now canonical cannot form an inverse redirect loop with its prerender directory", () => {
-  assert.doesNotMatch(redirects, /^\/now\/\s+\/now\s+30[18]$/m);
-  assert.doesNotMatch(redirects, /^\/now\s+\/now\/\s+30[18]$/m);
+  assertNoInverseNowRedirect(redirects);
+  assert.throws(
+    () => assertNoInverseNowRedirect(`${redirects}\n/now/ /now 302`),
+    /Earth Now inverse redirect/,
+  );
+  assert.throws(
+    () => assertNoInverseNowRedirect(`${redirects}\n/now /now/ 307`),
+    /Earth Now inverse redirect/,
+  );
   assert.match(sitemap, /"\/now\/"/);
   assert.match(prerender, /writeRoute\("\/now"/);
   assert.match(prerender, /writeRoute\("\/now", pageHtml\(\{\s*pathName: "\/now\/"/);
