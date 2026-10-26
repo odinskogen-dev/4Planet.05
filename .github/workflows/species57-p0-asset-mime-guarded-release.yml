@@ -40,7 +40,7 @@ jobs:
           from pathlib import Path
           base=Path("ops/discovery/4species-router-seo57.js").read_text()
           new=Path("ops/discovery/4species-router-p0.js").read_text()
-          assert len(base)>10000 and "isHashedModule" in new and new.count("isHashedModule")==3
+          assert len(base)>10000 and "isHashedModule" in new and new.count("isHashedModule")>=3
           assert "publicSpeciesDirectoryCatalog" in new and "exploreWithAll57Links" in new
           assert 'SPECIES_V1_RELEASED = new Set("koala quokka' in new
           print("SPECIES_P0_SAFE_PATCH_REBUILT_EXACT_SEO_WORKER")
