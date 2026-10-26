@@ -2225,14 +2225,13 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
 
   // Upstream publication controls are authoritative. Public-host SEO defaults
   // must never promote an explicitly unreleased response into indexability.
-  if (/\bnoindex\b/i.test(response.headers.get("X-Robots-Tag") || "")) return response;
+  if (/(?:^|[\s,])(?:noindex|none)(?:$|[\s,])/i.test(response.headers.get("X-Robots-Tag") || "")) return response;
 
   // Standalone products declare their approved public paths in their existing
   // sitemap allowlist. Unknown paths retain the upstream status and metadata.
   if (Array.isArray(config.sitemap) && !config.sitemap.includes(normalisedPath)) return response;
 
   const headers = new Headers(response.headers);
-  headers.delete("X-Robots-Tag");
 
   const contentType = headers.get("content-type") || "";
   if (!contentType.toLowerCase().includes("text/html")) {
@@ -2285,7 +2284,7 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
     .on('meta[name="robots"]', {
       element(element) {
         const upstreamPolicy = element.getAttribute("content") || "";
-        if (/(?:^|[\s,])noindex(?:$|[\s,])/i.test(upstreamPolicy)) return;
+        if (/(?:^|[\s,])(?:noindex|none)(?:$|[\s,])/i.test(upstreamPolicy)) return;
         element.setAttribute("content", "index,follow,max-image-preview:large");
       },
     })

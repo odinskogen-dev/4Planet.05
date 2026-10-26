@@ -233,6 +233,46 @@ test("approved public routes normalise index-eligible upstream robots metadata",
   }
 });
 
+for (const [url, robots] of [
+  ["https://4planet.org/", "none"],
+  ["https://s4piens.com/system/food", "NONE"],
+  ["https://4brands.org/", "nofollow,none"],
+]) {
+  test(`approved public route preserves upstream meta robots none: ${url}`, async () => {
+    const harness = request(url, htmlResponse({ robots }));
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200, url);
+    assert.match(html, new RegExp(`<meta\\s+name="robots"\\s+content="${robots}">`, "i"), url);
+    assert.doesNotMatch(html, /content="index,follow,max-image-preview:large"/i, url);
+  });
+}
+
+for (const [url, policy] of [
+  ["https://4planet.org/", "none"],
+  ["https://s4piens.com/system/food", "NONE"],
+  ["https://4brands.org/", "nosnippet"],
+  ["https://s4piens.com/system/food", "noimageindex"],
+  ["https://4planet.org/", "max-snippet:0"],
+]) {
+  test(`approved public route preserves restrictive X-Robots-Tag: ${policy}`, async () => {
+    const upstream = htmlResponse({ xRobotsTag: policy });
+    const upstreamBody = await upstream.clone().text();
+    const harness = request(url, upstream);
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200, url);
+    assert.equal(response.headers.get("x-robots-tag"), policy, url);
+    if (/^none$/i.test(policy)) {
+      assert.equal(html, upstreamBody, url);
+    } else {
+      assert.match(html, /<meta\s+name="robots"\s+content="index,follow,max-image-preview:large">/i, url);
+    }
+  });
+}
+
 test("About Story raw response is indexable only on the production host", async () => {
   const storyHtml = '<!doctype html><html><head><meta name="robots" content="index,follow,max-image-preview:large"></head><body>Story</body></html>';
   const upstream = () => new Response(storyHtml, {
