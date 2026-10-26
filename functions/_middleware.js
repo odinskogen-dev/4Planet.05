@@ -2284,6 +2284,8 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
     })
     .on('meta[name="robots"]', {
       element(element) {
+        const upstreamPolicy = element.getAttribute("content") || "";
+        if (/(?:^|[\s,])noindex(?:$|[\s,])/i.test(upstreamPolicy)) return;
         element.setAttribute("content", "index,follow,max-image-preview:large");
       },
     })

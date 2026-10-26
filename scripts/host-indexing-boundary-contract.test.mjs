@@ -5,12 +5,51 @@ import { onRequest } from "../functions/_middleware.js";
 
 const PRIVATE_POLICY = "noindex, nofollow, noarchive";
 
-class PassthroughHTMLRewriter {
-  on() { return this; }
-  transform(response) { return response; }
+class CallbackHTMLRewriter {
+  constructor() {
+    this.handlers = new Map();
+  }
+
+  on(selector, handler) {
+    this.handlers.set(selector, handler);
+    return this;
+  }
+
+  transform(response) {
+    const robotsHandler = this.handlers.get('meta[name="robots"]');
+    const body = new ReadableStream({
+      async start(controller) {
+        let html = await response.text();
+        html = html.replace(/<meta\b[^>]*\bname=["']robots["'][^>]*>/gi, (tag) => {
+          let rewritten = tag;
+          robotsHandler?.element?.({
+            getAttribute(name) {
+              const match = rewritten.match(new RegExp(`\\b${name}=["']([^"']*)["']`, "i"));
+              return match?.[1] ?? null;
+            },
+            setAttribute(name, value) {
+              const attribute = new RegExp(`\\b${name}=["'][^"']*["']`, "i");
+              rewritten = attribute.test(rewritten)
+                ? rewritten.replace(attribute, `${name}="${value}"`)
+                : rewritten.replace(/\s*\/>$|>$/, ` ${name}="${value}">`);
+            },
+          });
+          return rewritten;
+        });
+        controller.enqueue(new TextEncoder().encode(html));
+        controller.close();
+      },
+    });
+
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  }
 }
 
-globalThis.HTMLRewriter = PassthroughHTMLRewriter;
+globalThis.HTMLRewriter = CallbackHTMLRewriter;
 
 function htmlResponse({ robots = "index,follow", xRobotsTag, status = 200 } = {}) {
   const headers = {
@@ -164,6 +203,33 @@ test("approved public routes remain indexable", async () => {
 
     assert.equal(response.status, 200, url);
     assert.equal(response.headers.get("x-robots-tag"), null, url);
+  }
+});
+
+for (const [url, robots] of [
+  ["https://4planet.org/", "NoIndex, nofollow"],
+  ["https://s4piens.com/system/food", "nofollow NOINDEX"],
+  ["https://4brands.org/", "max-image-preview:large,NOINDEX"],
+]) {
+  test(`approved public route preserves upstream meta-only noindex: ${url}`, async () => {
+    const harness = request(url, htmlResponse({ robots }));
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200, url);
+    assert.match(html, new RegExp(`<meta\\s+name="robots"\\s+content="${robots}">`, "i"), url);
+    assert.doesNotMatch(html, /content="index,follow,max-image-preview:large"/i, url);
+  });
+}
+
+test("approved public routes normalise index-eligible upstream robots metadata", async () => {
+  for (const url of ["https://4planet.org/", "https://s4piens.com/system/food", "https://4brands.org/"]) {
+    const harness = request(url, htmlResponse({ robots: "index,follow" }));
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200, url);
+    assert.match(html, /<meta\s+name="robots"\s+content="index,follow,max-image-preview:large">/i, url);
   }
 });
 

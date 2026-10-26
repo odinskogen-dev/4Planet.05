@@ -14,6 +14,8 @@
 
 **DONOR / ROLLBACK:** No donor adopted. Exact parent `3e2419834a838a321817b5fca32058c3f4a4b77f`; revert the bounded middleware/test/brief commit if an approved route loses its intended metadata.
 
+**GOLD RETURN CORRECTION — 26 OCTOBER 2026:** Independent Gold replayed `king/test@a78e27eea6cc260cc3b64e34690299354ad15a05` and found three approved routes whose upstream HTML-only `noindex` was still overwritten. The header guard did not inspect the robots element, and the owning `PassthroughHTMLRewriter` never executed its callback. The corrected contract uses a callback-executing double and fails first on 4PLANET home, S4PIENS Food and 4BRANDS home (10/13 pass, 3/13 fail). The existing element handler now leaves a case-insensitive, comma/whitespace-delimited `noindex` token unchanged and normalises only index-eligible metadata. Normal approved routes plus all prior header, unknown-route, private-host and 404 controls remain protected. Exact parent/rollback is `a78e27eea6cc260cc3b64e34690299354ad15a05`; independent re-Gold and immutable native-preview HTTP/rendered evidence remain required.
+
 ---
 
 # ONE-LEAN COLD START — TASK-CLASS READ BOUNDARY — 25 OCTOBER 2026
