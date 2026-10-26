@@ -1,0 +1,70 @@
+name: SPECIES 57 - independent GBIF and Catalogue of Life taxonomy evidence, 18 newer only
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-gbif-col-taxonomy-source-audit.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Read exact 18 published science identities and cross-check two authoritative taxonomy backbones
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          python3 - <<'PY'
+          import urllib.request,urllib.parse,json,concurrent.futures,datetime,re
+          from pathlib import Path
+          domain="https://4species.com"
+          slugs="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(slugs)==18
+          COL="7ddf754f-d193-4cc9-b351-99906754a03b"
+          def get(url):
+            req=urllib.request.Request(url,headers={"User-Agent":"4SPECIES-57-BOTANICAL-ZOOLOGICAL-RESEARCH-20261026","Accept":"application/json"})
+            with urllib.request.urlopen(req,timeout=40) as r:return json.load(r)
+          def investigate(slug):
+            result={"slug":slug,"checks":[],"highConfidence":False}
+            try:
+              existing=get(domain+"/species-data/v1/"+slug+".json")
+              name=existing["identity"]["scientificName"]
+              result["name"]=name
+              result["currentAuthorship"]=existing["identity"]["authorship"]
+              assert result["currentAuthorship"]=="Pending authority citation"
+              for label,config in [("GBIF",{}),("COL_XR",{"checklistKey":COL})]:
+                qs=urllib.parse.urlencode({"scientificName":name,**config})
+                url="https://api.gbif.org/v2/species/match?"+qs
+                payload=get(url)
+                usage=payload.get("usage") or {}
+                exact=usage.get("canonicalName","").casefold().strip()==name.casefold().strip()
+                good=exact and usage.get("rank")=="SPECIES" and usage.get("status")=="ACCEPTED" and bool(usage.get("authorship"))
+                record={"database":label,"requestUrl":url,"matchType":payload.get("match",{}).get("type") if isinstance(payload.get("match"),dict) else payload.get("match"),"canonical":usage.get("canonicalName"),"authorship":usage.get("authorship"),"status":usage.get("status"),"rank":usage.get("rank"),"usageKey":usage.get("key"),"exact":exact,"acceptedSpeciesAuthor":good,"alternatives":len(payload.get("alternatives") or [])}
+                result["checks"].append(record)
+              a,b=result["checks"]
+              def normalize(x):return re.sub(r"[\s,().&]+","",str(x or "")).lower()
+              result["agreeOnAuthorship"]=bool(a["authorship"] and b["authorship"] and normalize(a["authorship"])==normalize(b["authorship"]))
+              result["highConfidence"]=a["acceptedSpeciesAuthor"] and b["acceptedSpeciesAuthor"] and result["agreeOnAuthorship"]
+              if result["highConfidence"]:
+                result["suggestedAuthorship"]=a["authorship"]
+                result["sourceCitation"]=a["requestUrl"]
+                result["independentCrossCheck"]=b["requestUrl"]
+              else:
+                result["blockers"]=[x["database"]+":INCONCLUSIVE" for x in result["checks"] if not x["acceptedSpeciesAuthor"]]
+                if not result["agreeOnAuthorship"]:result["blockers"].append("INDEPENDENT_BACKBONE_AUTHORSHIP_DISAGREEMENT")
+            except Exception as e:
+              result["blockers"]=[type(e).__name__+":"+str(e)[:160]]
+            return result
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:rows=list(pool.map(investigate,slugs))
+          report={"generatedUTC":datetime.datetime.now(datetime.timezone.utc).isoformat(),"source":"Public exact source JSON (read only); GBIF v2 matching against default and Catalogue of Life XR checklist","total":18,"highConfidence":sum(bool(x.get("highConfidence")) for x in rows),"requiresReview":[x["slug"] for x in rows if not x.get("highConfidence")],"noLiveWrites":True,"records":rows}
+          Path("evidence/gbif-col-taxonomy18.json").write_text(json.dumps(report,indent=2,ensure_ascii=False))
+          print("SPECIES57_GBIF_COL_TAXONOMY_REPORT",json.dumps({"total":18,"highConfidence":report["highConfidence"],"requiresReview":report["requiresReview"]}))
+          for x in rows:print("SPECIES_TAXONOMY_SOURCE_CHECK",json.dumps(x))
+          if len(rows)!=18:raise SystemExit("Incomplete source audit")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-new18-gbif-col-independent-authority-evidence
+          path: evidence/
+          retention-days: 30
