@@ -1,0 +1,45 @@
+name: SPECIES 28 Restored Pages — IndexNow Submit and Crawl Signals
+on:
+  push:
+    branches: [audit/species-live-truth-20261017]
+    paths: [.github/workflows/species-restored-28-indexnow.yml]
+permissions: {contents: read}
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Verify public IndexNow key and 28 full canonical pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error
+          base="https://4species.com"
+          key="8f4c2d91a7b64e3fa1c9d0b6e5274a83"
+          slugs=["orca","african-savanna-elephant","asian-elephant","bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan","cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe","gray-wolf","great-white-shark","green-sea-turtle","hippopotamus","jaguar","lion","monarch-butterfly","polar-bear","tiger","english-oak","western-honey-bee","fly-agaric","common-octopus","atlantic-puffin","sei-whale","eurasian-lynx"]
+          def get(path):
+            with urllib.request.urlopen(urllib.request.Request(base+path,headers={"User-Agent":"4PLANET-SPECIES-PostRestore-1.0"}),timeout=15) as r:
+              return r.status,r.read().decode()
+          try:
+            status,raw=get("/"+key+".txt")
+            assert status==200 and raw.strip()==key,(status,raw[:150])
+            status,xml=get("/sitemap.xml")
+            assert status==200 and all("<loc>"+base+"/"+s+"</loc>" in xml for s in slugs),"Not all 28 canonical URLs in sitemap"
+            for s in slugs:
+              status,raw=get("/species-data/v1/"+s+".json")
+              data=json.loads(raw)
+              assert status==200 and data["slug"]==s,(s,status)
+          except Exception as ex:
+            print("SPECIES_INDEXNOW_PRECHECK_BLOCKED",type(ex).__name__,str(ex)[:180]);raise
+          urls=[base+"/"+s for s in slugs]
+          payload=json.dumps({"host":"4species.com","key":key,"keyLocation":base+"/"+key+".txt","urlList":urls}).encode()
+          req=urllib.request.Request("https://api.indexnow.org/indexnow",data=payload,headers={"Content-Type":"application/json; charset=utf-8"},method="POST")
+          try:
+            with urllib.request.urlopen(req,timeout=25) as r:
+              print("SPECIES_INDEXNOW_POST_RESTORE",r.status,len(urls),r.read()[:180])
+              assert r.status in (200,202)
+          except urllib.error.HTTPError as ex:
+            print("SPECIES_INDEXNOW_POST_RESTORE_HTTP",ex.code,ex.read()[:240]);raise
+          print("GOOGLE_INDEXING_NOT_CLAIMED: sitemap publicly reachable; native Search Console API still access blocked.")
+          PY
