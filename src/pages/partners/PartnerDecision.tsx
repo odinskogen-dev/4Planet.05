@@ -111,12 +111,14 @@ export function EnquirePage() {
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [channel, setChannel] = useState<"CHECKING" | "AVAILABLE" | "UNAVAILABLE">("CHECKING");
+  const [recoveryReason, setRecoveryReason] = useState<"AVAILABILITY" | "NOT_CONFIGURED" | "DELIVERY_UNCERTAIN">("AVAILABILITY");
   const [companyHp, setCompanyHp] = useState("");
   const mounted = useRef(true);
   const checkChannel = useCallback(async () => {
     if (mounted.current) {
       setChannel("CHECKING");
       setFeedback("");
+      setRecoveryReason("AVAILABILITY");
     }
     try {
       const response = await fetch("/api/leads", { method: "GET", cache: "no-store" });
@@ -154,10 +156,17 @@ export function EnquirePage() {
         setName(""); setEmail(""); setOrganisation(""); setMessage(""); setConsent(false);
       } else {
         setChannel("UNAVAILABLE");
-        setFeedback("The enquiry channel is not collecting submissions yet. Your information has not been stored or forwarded.");
+        if (result.reason === "not_configured") {
+          setRecoveryReason("NOT_CONFIGURED");
+          setFeedback("The enquiry channel is not collecting submissions yet. Your information has not been stored or forwarded.");
+        } else {
+          setRecoveryReason("DELIVERY_UNCERTAIN");
+          setFeedback("Your information has not been confirmed as received.");
+        }
       }
     } catch {
       setChannel("UNAVAILABLE");
+      setRecoveryReason("DELIVERY_UNCERTAIN");
       setFeedback("The enquiry channel is unavailable. Your information has not been confirmed as received.");
     } finally { setBusy(false); }
   }
@@ -166,7 +175,7 @@ export function EnquirePage() {
     <section className="pd-form-wrap">
     <p className="pd-small">How your details are handled: <a href="/privacy">Partner privacy and intake notice ↗</a></p>
     {channel !== "AVAILABLE" ? <div className="pd-channel-recovery">
-      <p className="pd-channel-notice" role="status" aria-live="polite">{channel === "CHECKING" ? "Checking whether the enquiry channel is available…" : "The enquiry channel is not yet collecting submissions. No information will be sent or stored here."}</p>
+      <p className="pd-channel-notice" role="status" aria-live="polite">{channel === "CHECKING" ? "Checking whether the enquiry channel is available…" : recoveryReason === "DELIVERY_UNCERTAIN" ? "Further submission is disabled until the enquiry channel is checked again." : "The enquiry channel is not yet collecting submissions. No information will be sent or stored here."}</p>
       {feedback ? <p className="pd-feedback" role="status" aria-live="polite">{feedback}</p> : null}
       <button type="button" disabled={channel === "CHECKING"} onClick={() => { signal("intake_recheck"); void checkChannel(); }}>Check again</button>
       <div className="pd-channel-links">

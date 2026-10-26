@@ -154,8 +154,12 @@ try {
   await fill();
   await page.getByRole("button", { name: "Submit enquiry" }).click();
   await page.getByText("Your information has not been confirmed as received.").waitFor();
+  await page.getByText("Further submission is disabled until the enquiry channel is checked again.").waitFor();
+  if (await page.getByText("No information will be sent or stored here.", { exact: false }).count()) throw Error("failed POST must not claim the attempted submission was never sent or stored");
   if (await page.locator('input[autocomplete="name"]').count()) throw Error("failed POST must hide personal-data controls");
   await page.getByRole("button", { name: "Check again" }).waitFor();
+  if (await page.getByRole("link", { name: /Back to your partner route/ }).getAttribute("href") !== "/for/company") throw Error("failed POST lost role recovery context");
+  if (await page.getByRole("link", { name: /View this opportunity/ }).getAttribute("href") !== "/opportunities/brands-proof") throw Error("failed POST lost opportunity recovery context");
 
   postOutcome = "delivered";
   await page.getByRole("button", { name: "Check again" }).click();
