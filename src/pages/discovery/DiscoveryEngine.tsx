@@ -282,7 +282,7 @@ export function EarthNowPage() {
 
   return (
     <PublicShell>
-      <Seo title={now.title} description={now.description} path="/now" imageAlt="Earth Now — 4PLANET"
+      <Seo title={now.title} description={now.description} path="/now/" imageAlt="Earth Now — 4PLANET"
         jsonLd={({ canonicalUrl }) => ({
           "@context": "https://schema.org", "@type": "CollectionPage", name: now.title,
           description: now.description, url: canonicalUrl, dateModified: discovery.updatedAt,

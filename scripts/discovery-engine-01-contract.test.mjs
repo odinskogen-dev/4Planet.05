@@ -102,6 +102,7 @@ test("Earth Now canonical cannot form an inverse redirect loop with its prerende
   assert.match(sitemap, /"\/now\/"/);
   assert.match(prerender, /writeRoute\("\/now"/);
   assert.match(prerender, /writeRoute\("\/now", pageHtml\(\{\s*pathName: "\/now\/"/);
+  assert.match(page, /<Seo[^>]*path="\/now\/"/s);
   assert.match(prerender, /const canonical = origin \+ pathName;/);
 });
 

@@ -54,6 +54,8 @@
 
 **ENCODED-SEGMENT ROUTE CORRECTION:** Independent Gold replay on exact parent `c5d9fe7fda20df875993f24307c00bdc7201c333` confirmed that React Router decodes percent-encoded static path segments before matching while the shared privacy predicate compared the encoded pathname. The existing predicate now mirrors React Router's safe per-segment decode, preserves decoded slashes as `%2F`, fails closed on malformed encoding, then applies the existing slash/case normalisation and two-route allowlist. The owning source-to-both-sinks regression covers four exact encoded Atlas paths with all three governed events, plus encoded-slash and malformed controls; independent Gold must replay them in browser/mobile before QA acceptance. No merge, deployment, LIVE release or user-use claim.
 
+**IMMUTABLE-PREVIEW REDIRECT CORRECTION:** Physical Chromium and raw HTTP checks on exact preview `b9421294.4planet-05.pages.dev` reproduced a two-response loop: Pages redirected the prerender directory `/now` to `/now/`, while `_redirects` sent `/now/` back to `/now`. The inverse rule is removed and Earth Now's server sitemap/prerender plus hydrated `Seo` canonical now agree on `/now/`. The owning regression rejects either explicit inverse rule and requires both canonical layers. Exact preview/browser recheck and independent Gold remain required; no merge, LIVE release or user-use claim.
+
 **STATUS:** CODE FIXED / BOUNDED ISSUE #503 HEIR CANDIDATE / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
 
 **USER DEFECT:** production Earth Now renders a second analytics-preferences bar inside its Atlas iframe, covering the bottom of the map fallback even though the parent page owns the visitor journey.
