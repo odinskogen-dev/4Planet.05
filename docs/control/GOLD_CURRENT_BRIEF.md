@@ -1,3 +1,25 @@
+# OSLOFJORD — MAP-OWNED STATUS ORACLE — 26 OCTOBER 2026
+
+**STATUS:** CODE FIXED / ISSUE #157 / SOLE HEIR `king/test` / SELECTOR-ONLY GOLD BRIEF CORRECTION / INDEPENDENT FULL PRODUCT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE / ONE THING TO UNDERSTAND:** A visitor opening the Oslofjord Living System must receive the sourced reading even when WebGL2 is unavailable. The product proof must judge the map-owned status, not fail on the shared empty global live region.
+
+**PRIMARY ACTION / SECONDARY DEPTH:** Scope the existing Playwright status locator to the map's `MAP ·` text contract and require exactly one matching node; retain the existing desktop/mobile, canonical-alias, evidence, controls, sources and no-WebGL2 assertions without weakening them.
+
+**P1 / P2 / P3 / P4:** P1 readable Oslofjord content and accessible fallback; P2 map status and disabled-control orientation; P3 source disclosure and continuation; P4 map evidence depth when WebGL2 is available.
+
+**REMOVE / REUSE:** Remove no product surface, source, assertion or workflow. Reuse issue #157, draft PR #131, sole HEIR `king/test`, the existing `PlanetProof` status contract, shared live region, Oslofjord browser journey and Browser Product Proof workflow.
+
+**TRUTH BOUNDARY:** Exact candidate `2b71a67088461fb8cee31e5c61d7ba03c130bf4a` changes only `tests/e2e/oslofjord-planet-proof.spec.ts`; product source is unchanged. Native Browser Product Proof run 40387676345, job 121800185586, step 10 passed all 8/8 actual Oslofjord Playwright cases across desktop-1440 and mobile-390, including canonical alias and no-WebGL2 fallback. The overall workflow still fails later on the separately owned structured-data runtime step and is not globally green.
+
+**MOBILE-FIRST RISK / HUMAN SUCCESS:** Mobile-390 is covered by the exact-head 8/8 browser receipt; WebKit 390/430 and immutable-preview deployment binding remain open. Human success is a readable sourced Oslofjord journey with one map-owned status and no uncaught WebGL2 failure. The moving branch preview demonstrated that fallback; production still rendered an empty root and `GPUInitializationError` in the observed no-WebGL2 Chromium browser.
+
+**DONOR / ROLLBACK:** No donor adopted. Exact parent and rollback is `e247f921e3ee72272750335637cb59aa174decdf`; revert the selector/brief commits if independent Gold finds a product-proof or policy regression.
+
+**GOLD / FOUNDER HOLD:** Independent Gold accepted only the bounded selector correction. Full product Gold, immutable preview binding, WebKit/mobile completion, merge, deployment and LIVE repair remain HOLD. Founder retains release authority. The separate structured-data runtime failure stays with its existing owner and must not be concealed or bypassed.
+
+---
+
 # MAX EXPOSURE — UPSTREAM NOINDEX PUBLICATION BOUNDARY — 26 OCTOBER 2026
 
 **STATUS:** CODE CORRECTION IN PROGRESS / ISSUE #483 / SOLE HEIR `king/test` / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
