@@ -1,0 +1,53 @@
+name: SPECIES 57 - Cloudflare AI crawler bot management read-only policy audit
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-cloudflare-ai-bot-audit-20261026.yml]
+permissions: {contents: read}
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Inspect current zone-level AI bot policy; no WAF or DNS mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          api=https://api.cloudflare.com/client/v4
+          curl -sS --fail-with-body -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" > /tmp/species-bots-zone.json
+          zone=$(jq -r '.result[0].id // empty' /tmp/species-bots-zone.json)
+          test -n "$zone"
+          for route in bot_management rulesets/phases/http_request_firewall_custom/entrypoint; do
+            key=$(printf '%s' "$route" | tr '/' '_')
+            code=$(curl -sS -o "/tmp/$key.json" -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones/$zone/$route")
+            echo "$code" > "/tmp/$key.status"
+            echo "SPECIES57_CLOUDFLARE_POLICY_READ $route HTTP $code"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          names=["bot_management","rulesets_phases_http_request_firewall_custom_entrypoint"]
+          out={"scope":"read-only","zone":"4species.com","readPermissions":{},"aiCrawlerDisclosure":{},"wafRules":[]}
+          for name in names:
+            code=int(Path("/tmp/"+name+".status").read_text())
+            out["readPermissions"][name]=code
+            obj=json.loads(Path("/tmp/"+name+".json").read_text() or "{}")
+            if name=="bot_management" and code==200:
+              x=obj.get("result") or {}
+              for field in ("ai_search","ai_training","ai_user","ai_bots_protection","bot_preference_sync_enabled","is_robots_txt_managed","sbfm_verified_bots","sbfm_definitely_automated","sbfm_likely_automated","fight_mode","crawler_protection","content_bots_protection"):
+                if field in x:out["aiCrawlerDisclosure"][field]=x[field]
+            elif name!="bot_management" and code==200:
+              for rule in (obj.get("result") or {}).get("rules",[]):
+                out["wafRules"].append({"id":rule.get("id"),"action":rule.get("action"),"enabled":rule.get("enabled"),"description":rule.get("description"),"expression":rule.get("expression")})
+          Path("evidence/cf-policy.json").write_text(json.dumps(out,indent=2))
+          print("SPECIES57_CLOUDFLARE_AI_BOT_READONLY_FINDINGS",json.dumps(out))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-ai-searchbot-cloudflare-policy-read-only
+          path: evidence/
+          retention-days: 30
