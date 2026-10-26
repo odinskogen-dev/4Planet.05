@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 const OWNED_JSON_LD = [
   'script[id="4planet-page-jsonld"]',
@@ -6,9 +7,40 @@ const OWNED_JSON_LD = [
   'script[type="application/ld+json"][data-4planet-atlas-prerender="true"]',
 ].join(",");
 
-const RAW_ROUTES = ["/species/orca/", "/place/kenya/", "/atlas/"] as const;
+const RAW_ROUTES = ["/species/orca/", "/atlas/"] as const;
+const PUBLIC_ORIGIN = "https://4planet.org";
+const KENYA_PATH = "/place/kenya";
 const PRODUCTION_ROBOTS = "index,follow,max-image-preview:large";
 const PRIVATE_ROBOTS = "noindex,nofollow,noarchive";
+
+type PlaceReleaseFixture = {
+  slug?: string;
+  indexable: boolean;
+  publicationState: string;
+  canonicalOrigin: string | null;
+};
+
+const discoveryInventory = JSON.parse(
+  readFileSync(new URL("../../src/data/discoveryInventory.json", import.meta.url), "utf8"),
+) as { places: PlaceReleaseFixture[] };
+
+function placeIsReleasedForOrigin(place: PlaceReleaseFixture) {
+  return place.indexable === true
+    && place.publicationState === "READY_FOR_FOUNDER_RELEASE"
+    && place.canonicalOrigin === PUBLIC_ORIGIN;
+}
+
+function expectedRobotsForHost(hostname: string, routeRobots: string) {
+  const host = hostname.trim().toLowerCase().replace(/^www\./, "");
+  const preview = host === "test.4planet.org"
+    || host === "labs.4planet.org"
+    || host === "os.4planet.org"
+    || host === "id.4planet.org"
+    || host === "localhost"
+    || host.endsWith(".localhost")
+    || host.endsWith(".pages.dev");
+  return preview ? PRIVATE_ROBOTS : routeRobots;
+}
 
 function normalisePath(pathname: string) {
   return pathname === "/" ? pathname : pathname.replace(/\/$/, "");
@@ -53,6 +85,13 @@ async function expectCurrentGraph(page: Page, expectedPath: string) {
   expect(graph.mainEntity).toBeTruthy();
 }
 
+async function expectNonPublicPlace(page: Page, expectedPath: string) {
+  await expect(page).toHaveURL(new RegExp(`${expectedPath.replace("/", "\\/")}\\/?$`));
+  await expect(page.locator(OWNED_JSON_LD)).toHaveCount(0);
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+}
+
 async function navigateSpa(page: Page, path: string) {
   await page.evaluate((nextPath) => {
     window.history.pushState({}, "", nextPath);
@@ -61,6 +100,17 @@ async function navigateSpa(page: Page, path: string) {
 }
 
 test.describe("structured-data runtime ownership", () => {
+  test("PLACE release fixtures require exact canonical authority", () => {
+    const kenya = discoveryInventory.places.find((place) => place.slug === "kenya");
+    expect(kenya).toBeTruthy();
+    expect(kenya!.publicationState).toBe("READY_FOR_FOUNDER_RELEASE");
+    expect(kenya!.canonicalOrigin).toBeNull();
+    expect(placeIsReleasedForOrigin(kenya!)).toBe(false);
+
+    const authorisedFixture = { ...kenya!, canonicalOrigin: PUBLIC_ORIGIN };
+    expect(placeIsReleasedForOrigin(authorisedFixture)).toBe(true);
+  });
+
   test("raw HTML has one owned prerender graph with canonical identity", async ({ request }) => {
     for (const route of RAW_ROUTES) {
       const response = await request.get(route);
@@ -76,7 +126,20 @@ test.describe("structured-data runtime ownership", () => {
     }
   });
 
-  test("hydration keeps one current graph across A to B to A and preserves third-party JSON-LD", async ({ page }) => {
+  test("unreleased Kenya has no public raw graph and fails closed after hydration", async ({ page, request }) => {
+    const response = await request.get(`${KENYA_PATH}/`);
+    expect(response.ok()).toBeTruthy();
+    const html = await response.text();
+    expect(canonicalFromRawHtml(html)).toBeUndefined();
+    expect(prerenderGraphsFromRawHtml(html)).toHaveLength(0);
+
+    await page.goto("/species/orca");
+    await expectCurrentGraph(page, "/species/orca");
+    await navigateSpa(page, KENYA_PATH);
+    await expectNonPublicPlace(page, KENYA_PATH);
+  });
+
+  test("hydration removes the graph for unreleased Kenya and restores it on return", async ({ page }) => {
     await page.goto("/species/orca");
     await expectCurrentGraph(page, "/species/orca");
 
@@ -92,22 +155,16 @@ test.describe("structured-data runtime ownership", () => {
       document.head.appendChild(script);
     });
 
-    await navigateSpa(page, "/place/kenya");
-    await expectCurrentGraph(page, "/place/kenya");
+    await navigateSpa(page, KENYA_PATH);
+    await expectNonPublicPlace(page, KENYA_PATH);
     await expect(page.locator("#third-party-jsonld-proof")).toHaveCount(1);
-
-    const placeGraph = JSON.parse(
-      (await page.locator('script[id="4planet-page-jsonld"]').textContent()) || "{}",
-    ) as { mainEntity?: { "@type"?: string }; about?: { name?: string } };
-    expect(placeGraph.mainEntity?.["@type"]).toBe("Place");
-    expect(placeGraph.about?.name).toBeTruthy();
 
     await navigateSpa(page, "/species/orca");
     await expectCurrentGraph(page, "/species/orca");
     await expect(page.locator("#third-party-jsonld-proof")).toHaveCount(1);
   });
 
-  test("About Story keeps metadata while preview hydration fails closed", async ({ page, request }) => {
+  test("About Story keeps metadata with the current host-specific robots policy", async ({ page, request }) => {
     const response = await request.get("/about/story/");
     expect(response.ok()).toBeTruthy();
     const raw = headMetadataFromRawHtml(await response.text());
@@ -115,29 +172,30 @@ test.describe("structured-data runtime ownership", () => {
 
     await page.goto("/about/story");
     await expectCurrentGraph(page, "/about/story");
+    const hydratedRobots = expectedRobotsForHost(new URL(page.url()).hostname, raw.robots!);
     await expect(page).toHaveTitle(raw.title!);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", raw.description!);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", PRIVATE_ROBOTS);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", hydratedRobots);
     expect(normalisePath(new URL((await page.locator('link[rel="canonical"]').getAttribute("href"))!).pathname))
       .toBe(normalisePath(new URL(raw.canonical!).pathname));
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "The living planet is not an abstract issue.",
     );
 
-    await navigateSpa(page, "/place/kenya");
-    await expectCurrentGraph(page, "/place/kenya");
+    await navigateSpa(page, KENYA_PATH);
+    await expectNonPublicPlace(page, KENYA_PATH);
     await navigateSpa(page, "/about/story");
     await expectCurrentGraph(page, "/about/story");
     await expect(page).toHaveTitle(raw.title!);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", raw.description!);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", PRIVATE_ROBOTS);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", hydratedRobots);
     expect(normalisePath(new URL((await page.locator('link[rel="canonical"]').getAttribute("href"))!).pathname))
       .toBe(normalisePath(new URL(raw.canonical!).pathname));
   });
 
   test("an unknown route removes owned ghost graphs but preserves third-party JSON-LD", async ({ page }) => {
-    await page.goto("/place/kenya");
-    await expectCurrentGraph(page, "/place/kenya");
+    await page.goto("/species/orca");
+    await expectCurrentGraph(page, "/species/orca");
 
     await page.evaluate(() => {
       const script = document.createElement("script");
