@@ -29,6 +29,9 @@ jobs:
           python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
           python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
           node --check ops/discovery/4species-router-p1.js
+          # Local Wrangler runtime disallows export of a constant; remove only
+          # for isolated local emulation. Production source remains unchanged.
+          sed -i 's/export const NON_PROFILE_REVIEW_STATE/const NON_PROFILE_REVIEW_STATE/' ops/discovery/4species-router-p1.js
           echo SPECIES_P1_PREVIEW_CODE_CHECK_PASS
       - name: Launch local workerd and probe new18 HTML+JSON; only read live upstream
         shell: bash
