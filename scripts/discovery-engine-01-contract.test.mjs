@@ -90,17 +90,18 @@ test("routes, sitemap and prerender all consume the same canonical discovery reg
   assert.match(router, /path="\/now"/);
   assert.match(router, /DISCOVERY_TOPIC_SLUGS\.map/);
   assert.match(sitemap, /discoveryTopics/);
-  assert.match(sitemap, /"\/now"/);
+  assert.match(sitemap, /"\/now\/"/);
   assert.match(prerender, /discoveryTopics\.json/);
   assert.match(prerender, /writeRoute\("\/now"/);
   assert.match(prerender, /for \(const topic of discoveryTopics\)/);
 });
 
-test("Earth Now has one preferred URL matching its canonical", () => {
-  assert.match(redirects, /^\/now\/\s+\/now\s+301$/m);
+test("Earth Now canonical cannot form an inverse redirect loop with its prerender directory", () => {
+  assert.doesNotMatch(redirects, /^\/now\/\s+\/now\s+30[18]$/m);
   assert.doesNotMatch(redirects, /^\/now\s+\/now\/\s+30[18]$/m);
+  assert.match(sitemap, /"\/now\/"/);
   assert.match(prerender, /writeRoute\("\/now"/);
-  assert.match(prerender, /writeRoute\("\/now", pageHtml\(\{\s*pathName: "\/now"/);
+  assert.match(prerender, /writeRoute\("\/now", pageHtml\(\{\s*pathName: "\/now\/"/);
   assert.match(prerender, /const canonical = origin \+ pathName;/);
 });
 

@@ -67,7 +67,7 @@ const staticRoutes = [
   "/domains/4culture",
   "/missions",
   "/livingsystems/",
-  "/now",
+  "/now/",
   "/atlas",
   "/places",
   "/species",

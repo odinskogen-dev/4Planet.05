@@ -343,7 +343,7 @@ for (const actor of impactActors) {
 
 const earthNow = discovery.earthNow;
 writeRoute("/now", pageHtml({
-  pathName: "/now",
+  pathName: "/now/",
   title: earthNow.title,
   description: earthNow.description,
   body: `<main><p>4PLANET / EARTH NOW</p><h1>What is happening on Earth right now?</h1><p>${esc(earthNow.answer)}</p><p><strong>LATEST AVAILABLE — NOT ONE LIVE CLOCK.</strong> ${esc(earthNow.truthBoundary)}</p><h2>Signals</h2><ul>${earthNow.signals.map((signal) => `<li><a href="${esc(signal.href)}">${esc(signal.label)}</a> — ${esc(signal.detail)} <small>${esc(signal.layers)}</small></li>`).join("")}</ul><h2>Permanent guides</h2><ul>${discoveryTopics.map((topic) => `<li><a href="/${esc(topic.slug)}">${esc(topic.name)}</a></li>`).join("")}</ul><p><a href="${esc(earthNow.atlasHref)}">Open Earth in 4PLANET ATLAS</a></p></main>`,
@@ -354,7 +354,7 @@ writeRoute("/now", pageHtml({
         "@type": "CollectionPage",
         name: earthNow.title,
         description: earthNow.description,
-        url: origin + "/now",
+        url: origin + "/now/",
         dateModified: discovery.updatedAt,
         inLanguage: "en-GB",
         publisher: { "@type": "Organization", name: "4PLANET", url: origin + "/" },
