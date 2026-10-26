@@ -2755,3 +2755,33 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 **DOOR CLASS / ROLLBACK:** reversible HEIR-only correction. Base and rollback are `king/test@56ebef86243d89760fb4ce504ceff6faee3bd9aa`; source callback candidate is `98a96184185717519781a0395eeab2240c3b3cff`. Revert the bounded callback/test/brief sequence if independent exact-SHA runtime evidence finds a publication-policy regression.
 
 **MAKER ≠ JUDGE:** Factory may repair the missing brief and rerun exact-SHA gates. Independent Gold judges runtime release readiness; Founder retains merge/deployment/LIVE authority. The separate transitive `zod <4.6.6` audit finding remains with the existing dependency/security owner and is not bypassed here.
+
+# MAX EXPOSURE — TRANSITIVE ZOD SECURITY GATE — 26 OCTOBER 2026
+
+**STATUS:** CODE FIXED ON HEIR / EXACT-SHA CI RECHECK REQUIRED / NATIVE PREVIEW AND LIVE HOLD.
+
+**USER ARRIVES BECAUSE:** public 4PLANET routes must pass the existing high-severity dependency gate before any release-readiness claim.
+
+**ONE THING TO UNDERSTAND:** the accepted robots-policy source repair is not release-ready while the repository lockfile resolves a dependency version covered by a current high-severity advisory.
+
+**PRIMARY ACTION:** preserve the accepted robots callback and move only the transitive development dependency from Zod `4.4.3` to a registry-resolved patched 4.x version accepted by its existing consumers.
+
+**SECONDARY DEPTH:** retain the exact lockfile provenance, clean-install determinism, high-severity audit, 26-case robots contract, typecheck and full build as the security-correction proof set.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** release safety / exact dependency provenance / keep the candidate on HOLD until gates pass / immutable preview and browser evidence remain separate.
+
+**WHAT CAN BE REMOVED:** no package, product code, route, layout or root dependency declaration; only the vulnerable transitive lock resolution is replaced.
+
+**WHAT MUST BE REUSED:** issue #483, draft PR #131, sole `king/test` HEIR, existing package manifests, mandatory `npm audit --audit-level=high`, host-indexing contract and prior Gold source acceptance.
+
+**TRUTH BOUNDARY:** the resolver-generated lockfile now selects Zod `4.6.7`; clean install and local high-severity audit report zero vulnerabilities, and the 26 robots fixtures remain green. This proves the bounded repository dependency gate locally. It does not prove exact-SHA CI, native preview, production exploitability or absence of every security defect.
+
+**MOBILE-FIRST RISK:** none from this lockfile-only development-dependency correction; rendered mobile and desktop proof is still required for the unchanged public candidate.
+
+**HUMAN SUCCESS:** the accepted robots-policy repair can proceed to independent release-readiness review without bypassing the repository's high-severity audit gate.
+
+**SIMPLEST CAPABLE EXECUTION:** resolver-generated three-line lock entry update plus this existing Gold brief; no direct Zod declaration, integrity hand-edit, audit disablement or unrelated upgrade.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only correction. Base and rollback are `king/test@9d1bb9c5018a1eb2811f2c281f64f6b4cd267b0d`; revert the bounded lockfile/brief sequence if independent Gold or exact-SHA CI finds incompatibility.
+
+**MAKER ≠ JUDGE:** Factory verifies the bounded correction and returns exact evidence. Independent Gold judges security and runtime release readiness; Founder retains merge, deployment and LIVE authority.
