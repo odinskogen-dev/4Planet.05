@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p evidence
-          npx --yes wrangler@4.128.0 dev ops/discovery/4species-router-p1.js --local --ip 127.0.0.1 --port 8787 --compatibility-date 2026-10-05 --log-level error > /tmp/workerd-p1.log 2>&1 &
+          npx --yes wrangler@4.128.0 dev ops/discovery/4species-router-p1.js --local --ip 127.0.0.1 --port 8787 --compatibility-date 2026-09-07 --log-level error > /tmp/workerd-p1.log 2>&1 &
           workerd=$!
           trap 'kill $workerd || true' EXIT
           for i in $(seq 1 40); do
