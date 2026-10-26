@@ -1,0 +1,59 @@
+name: SPECIES 57 - no-JS humans and AI crawling all 57 quality audit
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-nojs-accessibility-20261026.yml]
+permissions: {contents: read}
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Browser with JavaScript explicitly disabled, all57 canonical articles
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/species57-nojs playwright@1.56.0 --no-audit --no-fund
+          /tmp/species57-nojs/node_modules/.bin/playwright install --with-deps chromium
+          mkdir -p evidence
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import {chromium} from "/tmp/species57-nojs/node_modules/playwright/index.mjs";
+          const old39="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split(" ");
+          const new18="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split(" ");
+          if(new Set(old39.concat(new18)).size!==57)throw Error("57 distinct required");
+          const browser=await chromium.launch({headless:true});
+          const context=await browser.newContext({viewport:{width:390,height:844},javaScriptEnabled:false});
+          const records=[];
+          for(const slug of old39.concat(new18)){
+            const page=await context.newPage();
+            try{
+              const res=await page.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+              const r=await page.evaluate(()=>({h1:document.querySelector("h1")?.textContent?.trim(),bodyWords:document.body.innerText.trim().split(/\s+/).length,hasScientificName:document.querySelector("i")!==null||document.querySelector("em")!==null,main:document.querySelector("#main-content")?.className,anchors:[...document.querySelectorAll('a[href]')].map(a=>a.href),canonical:document.querySelector('link[rel="canonical"]')?.href,overflow:document.documentElement.scrollWidth>innerWidth+4,images:document.images.length}));
+              const failures=[];
+              if(res?.status()!==200)failures.push("HTTP");
+              if(!r.h1)failures.push("MISSING_H1");
+              if(r.bodyWords<90)failures.push("LITTLE_VISIBLE_CONTENT");
+              if(!r.hasScientificName)failures.push("MISSING_SCIENTIFIC_NAME");
+              if(r.canonical!=="https://4species.com/"+slug)failures.push("CANONICAL");
+              if(r.overflow)failures.push("MOBILE_OVERFLOW");
+              records.push({slug,failures,...r,navLinks:r.anchors.filter(x=>x.startsWith("https://4species.com")).length,anchors:undefined});
+              if(failures.length)await page.screenshot({path:"evidence/"+slug+"-nojs.png"});
+              console.log("SPECIES57_NOJS_"+(failures.length?"WARNING":"PASS"),slug,"visibleWords",r.bodyWords,"failures",JSON.stringify(failures));
+            }catch(e){
+              records.push({slug,failures:["EXCEPTION"],error:String(e)});
+            }finally{await page.close()}
+          }
+          await context.close();await browser.close();
+          fs.writeFileSync("evidence/nojs57.json",JSON.stringify(records,null,2));
+          console.log("SPECIES57_NOJS_SUMMARY",JSON.stringify({total:records.length,pass:records.filter(x=>x.failures.length===0).length,warnings:records.filter(x=>x.failures.length).map(x=>({slug:x.slug,failures:x.failures}))}));
+          if(records.length!==57)process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-all57-nojs-visible-text-mobile-crawl
+          path: evidence/
+          retention-days: 30
