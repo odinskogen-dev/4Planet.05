@@ -2723,3 +2723,35 @@ STATUS: SOURCE QA DEFECT CORRECTED IN THE EXISTING IMPACT HEIR; INDEPENDENT GOLD
 **ROLLBACK:** revert the bounded test/brief commit to `king/test@5560e1c6c11ecaae7f40dc943face90416bb1972` if independent Gold finds a false reject or another escaped form.
 
 **MAKER ≠ JUDGE:** Factory repairs and verifies the guard. Independent Gold must judge the exact returned SHA; merge, deployment and LIVE release remain separately authorised.
+
+# MAX EXPOSURE — RESTRICTIVE ROBOTS METADATA PRESERVATION — 26 OCTOBER 2026
+
+**STATUS:** INDEPENDENT GOLD `QA_ACCEPT` FOR THE SOURCE CALLBACK ONLY / EXACT-SHA CI AND NATIVE PREVIEW HOLD / NO LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a visitor or crawler follows an existing approved public 4PLANET, S4PIENS or 4BRANDS route whose upstream page may deliberately restrict search presentation or availability.
+
+**ONE THING TO UNDERSTAND:** shared SEO defaults must improve explicitly indexable pages without weakening any upstream publication restriction.
+
+**PRIMARY ACTION:** preserve the existing public route and its upstream robots policy exactly when that policy contains any directive beyond the benign `index` / `follow` baseline.
+
+**SECONDARY DEPTH:** continue applying the existing `index,follow,max-image-preview:large` default only when robots metadata is empty or consists solely of `index` and `follow`.
+
+**P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH:** upstream publication control / existing route identity / retain the page's intended crawler policy / existing search metadata normalisation.
+
+**WHAT CAN BE REMOVED:** lossy enumeration of only known `noindex` aliases as the boundary for preserving upstream HTML robots metadata.
+
+**WHAT MUST BE REUSED:** issue #483, draft PR #131, the shared middleware callback, the owning host-indexing contract and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** the callback and owning contract preserve `nosnippet`, `noimageindex`, `max-snippet:0`, `max-image-preview:none` and `unavailable_after` at source. Independent Gold accepted the exact callback behaviour at `98a96184185717519781a0395eeab2240c3b3cff` with 20/20 cases. This does not prove native Cloudflare HTMLRewriter behaviour, an immutable preview, production deployment, indexation, traffic or user use.
+
+**MOBILE-FIRST RISK:** no rendered layout, navigation or interaction changed. Mobile and desktop browser evidence remains required only to prove final metadata and route behaviour on an exact-SHA preview.
+
+**HUMAN SUCCESS:** approved public pages retain deliberate search restrictions while ordinary indexable pages keep the existing useful SEO default, with no visible journey change.
+
+**QUESTION / DELETE / SIMPLIFY / REUSE:** do not add routes, pages or another policy layer. Replace directive-by-directive exceptions with one conservative rule: only an explicit benign baseline may be normalised.
+
+**SIMPLEST CAPABLE EXECUTION:** one shared callback predicate plus five permanent callback-executing negative fixtures in the existing owning contract.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only correction. Base and rollback are `king/test@56ebef86243d89760fb4ce504ceff6faee3bd9aa`; source callback candidate is `98a96184185717519781a0395eeab2240c3b3cff`. Revert the bounded callback/test/brief sequence if independent exact-SHA runtime evidence finds a publication-policy regression.
+
+**MAKER ≠ JUDGE:** Factory may repair the missing brief and rerun exact-SHA gates. Independent Gold judges runtime release readiness; Founder retains merge/deployment/LIVE authority. The separate transitive `zod <4.6.6` audit finding remains with the existing dependency/security owner and is not bypassed here.
