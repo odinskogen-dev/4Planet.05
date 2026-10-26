@@ -623,7 +623,7 @@ jobs:
             curl -fsSL --max-time 45 "$host/rome/" -o /tmp/roma-v17-index.html
             grep -Fq 'ROMA: The Republic' /tmp/roma-v17-index.html
             curl -fsSL --max-time 45 "$host/rome/index.html" -o /tmp/live-roma-v17.html
-            echo 'c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8  /tmp/live-roma-v17.html' | sha256sum -c -
+            echo 'c2fd5cf171f873cd48a772732cba78b684adab3612d18816e864af162ff44164  /tmp/live-roma-v17.html' | sha256sum -c -
             curl -fsSL --max-time 30 "$host/rome/tiles/r0c0.jpg" -o /tmp/live-roma-v17-tile.jpg
             echo '521acd746e0108cda164ea04cfe1c5b4f6f3898c11bc8f867cb79a4cc0cc6aab  /tmp/live-roma-v17-tile.jpg' | sha256sum -c -
             grep -Fq 'Play ROMA · Iteration 54' /tmp/roma-version-page.html
