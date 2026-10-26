@@ -112,11 +112,18 @@ try {
   await failedPage.close();
   const page = await browser.newPage();
   let postOutcome = "not_configured";
+  let getOutcome = "available";
+  let postRequests = 0;
   await page.route("**/api/leads", async (route) => {
     if (route.request().method() === "GET") {
+      if (getOutcome === "failed") {
+        await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ ok: false }) });
+        return;
+      }
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, acceptingEnquiries: true }) });
       return;
     }
+    postRequests += 1;
     const data = route.request().postDataJSON();
     if (data.type !== "4partners" || data.role !== "company" || data.workArea !== "brands-proof" || data.consent !== true)
       throw Error("intake mapping failed");
@@ -153,18 +160,34 @@ try {
   if (await page.locator("select").first().inputValue() !== "company" || await page.locator("select").nth(1).inputValue() !== "brands-proof") throw Error("context lost after not-configured recheck");
   await fill();
   await page.getByRole("button", { name: "Submit enquiry" }).click();
-  await page.getByText("Your information has not been confirmed as received.").waitFor();
-  await page.getByText("Further submission is disabled until the enquiry channel is checked again.").waitFor();
+  await page.getByText("Previous enquiry not confirmed as received; retrying could duplicate it.").waitFor();
+  await page.getByText("Further submission is disabled until you choose to start a new enquiry.").waitFor();
   if (await page.getByText("No information will be sent or stored here.", { exact: false }).count()) throw Error("failed POST must not claim the attempted submission was never sent or stored");
   if (await page.locator('input[autocomplete="name"]').count()) throw Error("failed POST must hide personal-data controls");
   await page.getByRole("button", { name: "Check again" }).waitFor();
   if (await page.getByRole("link", { name: /Back to your partner route/ }).getAttribute("href") !== "/for/company") throw Error("failed POST lost role recovery context");
   if (await page.getByRole("link", { name: /View this opportunity/ }).getAttribute("href") !== "/opportunities/brands-proof") throw Error("failed POST lost opportunity recovery context");
 
-  postOutcome = "delivered";
+  getOutcome = "failed";
   await page.getByRole("button", { name: "Check again" }).click();
+  await page.getByText("Previous enquiry not confirmed as received; retrying could duplicate it.").waitFor();
+  if (await page.locator('input[autocomplete="name"]').count()) throw Error("failed recheck must preserve non-PII recovery");
+  if (await page.getByText("No information will be sent or stored here.", { exact: false }).count()) throw Error("failed recheck must preserve delivery uncertainty");
+
+  getOutcome = "available";
+  await page.getByRole("button", { name: "Check again" }).click();
+  await page.getByRole("button", { name: "Start a new enquiry" }).waitFor();
+  await page.getByText("Previous enquiry not confirmed as received; retrying could duplicate it.").waitFor();
+  if (await page.locator('input[autocomplete="name"]').count()) throw Error("available recheck must not silently restore uncertain draft");
+  if (postRequests !== 2) throw Error("recheck must not submit another enquiry");
+  await page.getByRole("button", { name: "Start a new enquiry" }).click();
   await page.locator('input[autocomplete="name"]').waitFor();
   if (await page.locator("select").first().inputValue() !== "company" || await page.locator("select").nth(1).inputValue() !== "brands-proof") throw Error("context lost after failed POST recheck");
+  if (await page.locator('input[autocomplete="name"]').inputValue()) throw Error("new enquiry acknowledgement must clear name");
+  if (await page.locator('input[autocomplete="email"]').inputValue()) throw Error("new enquiry acknowledgement must clear email");
+  if (await page.locator("textarea").inputValue()) throw Error("new enquiry acknowledgement must clear message");
+  if (await page.locator('input[type="checkbox"]').isChecked()) throw Error("new enquiry acknowledgement must clear consent");
+  postOutcome = "delivered";
   await fill();
   await page.getByRole("button", { name: "Submit enquiry" }).click();
   await page.getByText("Your enquiry was received by the configured 4PLANET intake.", { exact: false }).waitFor();

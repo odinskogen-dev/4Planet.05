@@ -112,13 +112,17 @@ export function EnquirePage() {
   const [feedback, setFeedback] = useState("");
   const [channel, setChannel] = useState<"CHECKING" | "AVAILABLE" | "UNAVAILABLE">("CHECKING");
   const [recoveryReason, setRecoveryReason] = useState<"AVAILABILITY" | "NOT_CONFIGURED" | "DELIVERY_UNCERTAIN">("AVAILABILITY");
+  const [deliveryUncertain, setDeliveryUncertain] = useState(false);
+  const deliveryUncertainRef = useRef(false);
   const [companyHp, setCompanyHp] = useState("");
   const mounted = useRef(true);
   const checkChannel = useCallback(async () => {
     if (mounted.current) {
       setChannel("CHECKING");
-      setFeedback("");
-      setRecoveryReason("AVAILABILITY");
+      if (!deliveryUncertainRef.current) {
+        setFeedback("");
+        setRecoveryReason("AVAILABILITY");
+      }
     }
     try {
       const response = await fetch("/api/leads", { method: "GET", cache: "no-store" });
@@ -151,33 +155,46 @@ export function EnquirePage() {
       const result = await response.json() as { ok?: boolean; delivered?: boolean; reason?: string };
       if (!response.ok || !result.ok) throw new Error("We could not submit this enquiry. Please try again later.");
       if (result.delivered === true) {
+        deliveryUncertainRef.current = false;
+        setDeliveryUncertain(false);
         signal("intake_submitted");
         setFeedback("Your enquiry was received by the configured 4PLANET intake. No agreement or reply time is implied.");
         setName(""); setEmail(""); setOrganisation(""); setMessage(""); setConsent(false);
       } else {
         setChannel("UNAVAILABLE");
         if (result.reason === "not_configured") {
+          deliveryUncertainRef.current = false;
+          setDeliveryUncertain(false);
           setRecoveryReason("NOT_CONFIGURED");
           setFeedback("The enquiry channel is not collecting submissions yet. Your information has not been stored or forwarded.");
         } else {
+          deliveryUncertainRef.current = true;
+          setDeliveryUncertain(true);
           setRecoveryReason("DELIVERY_UNCERTAIN");
-          setFeedback("Your information has not been confirmed as received.");
+          setFeedback("Previous enquiry not confirmed as received; retrying could duplicate it.");
         }
       }
     } catch {
       setChannel("UNAVAILABLE");
+      deliveryUncertainRef.current = true;
+      setDeliveryUncertain(true);
       setRecoveryReason("DELIVERY_UNCERTAIN");
-      setFeedback("The enquiry channel is unavailable. Your information has not been confirmed as received.");
+      setFeedback("Previous enquiry not confirmed as received; retrying could duplicate it.");
     } finally { setBusy(false); }
   }
   return <main className="pd-page">
     <header className="pd-hero"><Meta label="STRUCTURED PARTNER ENQUIRY" /><h1>Bring a specific question.</h1><p>Tell us your role, the relevant object and what you would like to examine. This is an expression of interest, not a contract or approval to publish your organisation as a partner.</p></header>
     <section className="pd-form-wrap">
     <p className="pd-small">How your details are handled: <a href="/privacy">Partner privacy and intake notice ↗</a></p>
-    {channel !== "AVAILABLE" ? <div className="pd-channel-recovery">
-      <p className="pd-channel-notice" role="status" aria-live="polite">{channel === "CHECKING" ? "Checking whether the enquiry channel is available…" : recoveryReason === "DELIVERY_UNCERTAIN" ? "Further submission is disabled until the enquiry channel is checked again." : "The enquiry channel is not yet collecting submissions. No information will be sent or stored here."}</p>
+    {channel !== "AVAILABLE" || deliveryUncertain ? <div className="pd-channel-recovery">
+      <p className="pd-channel-notice" role="status" aria-live="polite">{deliveryUncertain ? "Further submission is disabled until you choose to start a new enquiry." : channel === "CHECKING" ? "Checking whether the enquiry channel is available…" : recoveryReason === "DELIVERY_UNCERTAIN" ? "Further submission is disabled until the enquiry channel is checked again." : "The enquiry channel is not yet collecting submissions. No information will be sent or stored here."}</p>
       {feedback ? <p className="pd-feedback" role="status" aria-live="polite">{feedback}</p> : null}
       <button type="button" disabled={channel === "CHECKING"} onClick={() => { signal("intake_recheck"); void checkChannel(); }}>Check again</button>
+      {deliveryUncertain && channel === "AVAILABLE" ? <button type="button" onClick={() => {
+        setName(""); setEmail(""); setOrganisation(""); setMessage(""); setConsent(false);
+        deliveryUncertainRef.current = false; setDeliveryUncertain(false);
+        setRecoveryReason("AVAILABILITY"); setFeedback(""); signal("intake_new_after_uncertain");
+      }}>Start a new enquiry</button> : null}
       <div className="pd-channel-links">
         <a href={role && roles.some((item) => item.slug === role) ? `/for/${role}` : "/for"}>Back to {role && roles.some((item) => item.slug === role) ? "your partner route" : "partner roles"} ↗</a>
         <a href={opportunity && opportunities.some((item) => item.slug === opportunity) ? `/opportunities/${opportunity}` : "/opportunities"}>View {opportunity && opportunities.some((item) => item.slug === opportunity) ? "this opportunity" : "current opportunities"} ↗</a>
