@@ -1,13 +1,9 @@
-# ROMA CHALLENGER V17 — RELEASE ASSET VERIFICATION 2026-10-24
+# CUB LAB — ROMA iteration 54 release gate (26 October 2026)
 
-Authoritative binary is a permanent GitHub release, tag `roma-cub-v17-20261024`, file `roma-v17-web.zip`, ZIP SHA256 `e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288`, index SHA256 `c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8`.
+Production assembly target: /rome/ on cub-lab-p4nther Cloudflare Worker, via existing GitHub Actions branch cub-roma-republic-v12-release-20261023.
 
-This release is based on user-uploaded `ROMA_CHALLENGER_01 17.zip` and `HANDOFF TO GPT AXE 7.md`. This is V17 **package naming**; its included development history reaches Iteration 38. It has exactly 242 static publication files (one `index.html`, 240 NASA Blue Marble terrain JPEGs with verified dimensions and SHA256s, plus tile MANIFEST.json). Each tile is a relative path `tiles/rRcC.jpg` and must deploy to `/rome/tiles` alongside `/rome/index.html`.
+Authoritative single-file game: ROMA_CHALLENGER_01_iter54(1).zip, publish/web/index.html, length 9864877 bytes, SHA256 c2fd5cf171f873cd48a772732cba78b684adab3612d18816e864af162ff44164. Gzip length 4920646, SHA256 a7f1f398e3ccfbb8d8fc0c33a5a242c32fcabb82224255cb9150fd4d10e6804a. Base64 in 19 verified chunks (6560864 characters). This archive has no public/tiles payload: it reuses the 240 unchanged verified NASA terrain tiles from the immutable ROMA V17 GitHub release. The build script verifies them before publishing.
 
-Production from this branch proceeds by merging to `cub-roma-republic-v12-release-20261023`, which triggers existing Cloudflare workflow to download the immutable ZIP (with SHA lock) and overwrite only the `site/rome` runtime fallback; existing Cannae `/roma/`, Challenger08 `/roma/challenger-08/` and Challenger12 `/roma/challenger-12/` are preserved.
+Only target site/rome runtime and entry labels in site/index.html and site/games/roma/index.html. Preserve /roma/ original Cannae, /roma/challenger-08/, retired /roma/challenger-12/ redirect, other games, static assets, domain bindings, and existing cloud worker. Existing site/rome/index.html in Git is the fallback; production reconstructs the game during the GitHub Action. Do NOT deploy raw site/ without workflow assembly.
 
-The Git source `site/rome/index.html` is a fallback redirect until build-time extraction, not representative of deployed content; any deployment MUST use the locked Cloudflare release workflow (not raw `site` folder alone).
-
-Cross-checks: 240 tiles, valid per-file hash, exact index, both hostnames, homepage CTA and game page, old game hashes and browser saves. Do not report live before Cloudflare job success.
-
-No separate paid service, new spend or unrelated game edits. Physical iPhone Safari testing still pending even if automated mobile emulation succeeds.
+Production success requires GitHub Action success AND both lab.p4nther.com and labs.p4nther.com responding with exact SHA, game index, map tile, homepage and ROMA page. iPhone Safari physical FPS check and independent licensing review remain separate release risks.

@@ -311,6 +311,31 @@ jobs:
           grep -Fq '/rome/' site/roma/challenger-12/index.html
           echo 'ROMA_CH12_OLD_GAME_RETIRED_FROM_PUBLIC_SITE'
           rm -rf site/roma/challenger-12/source
+      - name: Reconstruct byte-exact ROMA Iteration 54 and retain independently verified NASA tiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, gzip, hashlib, json
+          root=Path('site/rome')
+          chunks=sorted((root/'source/iter54').glob('chunk-*.txt'))
+          assert len(chunks)==19, f'ROMA54_CHUNK_COUNT {len(chunks)}'
+          encoded=b''.join(b''.join(p.read_bytes().split()) for p in chunks)
+          assert len(encoded)==6560864, 'ROMA54_BASE64_LENGTH'
+          compressed=base64.b64decode(encoded,validate=True)
+          assert hashlib.sha256(compressed).hexdigest()=='a7f1f398e3ccfbb8d8fc0c33a5a242c32fcabb82224255cb9150fd4d10e6804a', 'ROMA54_COMPRESSED_HASH'
+          game=gzip.decompress(compressed)
+          assert len(game)==9864877, 'ROMA54_GAME_SIZE'
+          assert hashlib.sha256(game).hexdigest()=='c2fd5cf171f873cd48a772732cba78b684adab3612d18816e864af162ff44164', 'ROMA54_GAME_HASH'
+          assert b'iteration 54' in game.lower() and b'tiles/' in game and b'<canvas' in game, 'ROMA54_GAME_IDENTITY'
+          manifest=json.loads((root/'tiles/MANIFEST.json').read_text())
+          assert manifest['count']==240 and len(list((root/'tiles').glob('r*c*.jpg')))==240,'ROMA54_TILES_MISSING'
+          (root/'index.html').write_bytes(game)
+          print('ROMA54_EXACT_PAYLOAD_AND_240_TILES_PASS')
+          PY
+          rm -rf site/rome/source
+          echo 'c2fd5cf171f873cd48a772732cba78b684adab3612d18816e864af162ff44164  site/rome/index.html' | sha256sum -c -
       - name: Deploy exact static files to existing isolated CUB worker
         shell: bash
         run: |
@@ -356,7 +381,7 @@ jobs:
             curl -fsSL --max-time 30 "$host/roma/" -o /tmp/live-cannae-protected.html
             echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/live-cannae-protected.html' | sha256sum -c -
             curl -fsSL --max-time 30 "$host/games/roma/" -o /tmp/live-roma-product-page.html
-            grep -Fq 'Play ROMA · Challenger V17' /tmp/live-roma-product-page.html
+            grep -Fq 'Play ROMA · Iteration 54' /tmp/live-roma-product-page.html
             grep -Fq 'Play Cannae' /tmp/live-roma-product-page.html
             curl -fsSL --max-time 30 "$host/" -o /tmp/live-cub-roma-list.html
             grep -Fq 'href="/roma/challenger-08/"' /tmp/live-cub-roma-list.html
@@ -601,6 +626,26 @@ jobs:
             echo 'c405047771b7d79da9f10080668ba85db78701ca57224b7024fe23976a096af8  /tmp/live-roma-v17.html' | sha256sum -c -
             curl -fsSL --max-time 30 "$host/rome/tiles/r0c0.jpg" -o /tmp/live-roma-v17-tile.jpg
             echo '521acd746e0108cda164ea04cfe1c5b4f6f3898c11bc8f867cb79a4cc0cc6aab  /tmp/live-roma-v17-tile.jpg' | sha256sum -c -
-            grep -Fq 'Play ROMA · Challenger V17' /tmp/roma-version-page.html
+            grep -Fq 'Play ROMA · Iteration 54' /tmp/roma-version-page.html
             echo "ROMA_CH12_REMOVED_FROM_PUBLIC_GAME_LIST_AND_REDIRECTS_TO_V17=$host/roma/challenger-12/"
+          done
+
+      - name: Verify published ROMA Iteration 54, CUB entry points and native tiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          for host in "https://cub-lab-p4nther.odin-skogen.workers.dev" "https://lab.p4nther.com" "https://labs.p4nther.com"; do
+            passed=0
+            for attempt in $(seq 1 12); do
+              if curl -fsSL --max-time 35 "$host/rome/index.html" -o /tmp/roma54-live.html && echo 'c2fd5cf171f873cd48a772732cba78b684adab3612d18816e864af162ff44164  /tmp/roma54-live.html' | sha256sum -c - >/dev/null; then passed=1; break; fi
+              sleep 4
+            done
+            test "$passed" -eq 1 || { echo "ROMA54_LIVE_HASH_FAILED=$host"; exit 1; }
+            curl -fsSL --max-time 30 "$host/rome/tiles/r0c0.jpg" -o /tmp/roma54-tile.jpg
+            test "$(wc -c < /tmp/roma54-tile.jpg)" -gt 20000
+            curl -fsSL --max-time 30 "$host/" | grep -Fq 'Play ROMA · Iteration 54'
+            curl -fsSL --max-time 30 "$host/games/roma/" | grep -Fq 'Play ROMA · Iteration 54'
+            curl -fsSL --max-time 30 "$host/roma/index.html" -o /tmp/roma54-cannae.html
+            echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma54-cannae.html' | sha256sum -c -
+            echo "CUB_ROMA54_LIVE_PASS=$host/rome/"
           done
