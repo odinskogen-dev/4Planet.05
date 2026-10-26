@@ -453,7 +453,16 @@ export function resetAnalyticsConsent() {
 }
 
 export function isEmbeddedAnalyticsSurface(pathname: string, search: string): boolean {
-  const normalizedPath = (pathname.replace(/\/+$/, "") || "/").toLowerCase();
+  let decodedPath: string;
+  try {
+    decodedPath = pathname
+      .split("/")
+      .map((segment) => decodeURIComponent(segment).replace(/\//g, "%2F"))
+      .join("/");
+  } catch {
+    return true;
+  }
+  const normalizedPath = (decodedPath.replace(/\/+$/, "") || "/").toLowerCase();
   if (normalizedPath !== "/atlas" && normalizedPath !== "/embed/atlas") return false;
   return isAtlasEmbedKind(new URLSearchParams(search).get("embed"));
 }

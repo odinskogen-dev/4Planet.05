@@ -74,6 +74,13 @@ test("keeps consent UI and analytics out of valid first-party Atlas embeds", asy
   assert.equal(isEmbeddedAnalyticsSurface("/ATLAS/", "?embed=species"), true);
   assert.equal(isEmbeddedAnalyticsSurface("/EMBED/ATLAS", "?embed=news"), true);
   assert.equal(isEmbeddedAnalyticsSurface("/embed/ATLAS/", "?embed=news"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/%61tlas", "?embed=species"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/atl%61s", "?embed=species"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/embed/atl%61s", "?embed=news"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/%65mbed/atlas", "?embed=news"), true);
+  assert.equal(isEmbeddedAnalyticsSurface("/atlas%2Fextra", "?embed=species"), false);
+  assert.equal(isEmbeddedAnalyticsSurface("/embed%2Fatlas", "?embed=news"), false);
+  assert.equal(isEmbeddedAnalyticsSurface("/atlas%ZZ", "?embed=species"), true);
   assert.equal(isEmbeddedAnalyticsSurface("/embed/atlas", "?embed=unknown"), false);
   assert.equal(isEmbeddedAnalyticsSurface("/now/", "?embed=news"), false);
 
@@ -167,6 +174,10 @@ test("route analytics cannot bypass the valid Atlas embed boundary", async () =>
     ["/ATLAS/", "?embed=species"],
     ["/EMBED/ATLAS", "?embed=news&surface=discovery"],
     ["/embed/ATLAS/", "?embed=news&surface=discovery"],
+    ["/%61tlas", "?embed=species"],
+    ["/atl%61s", "?embed=species"],
+    ["/embed/atl%61s", "?embed=news&surface=discovery"],
+    ["/%65mbed/atlas", "?embed=news&surface=discovery"],
   ]) {
     const runtime = await routeAnalyticsRuntime({ pathname, search });
     assert.equal(runtime.trackProductEntry("atlas", pathname, "internal"), false);
@@ -180,6 +191,8 @@ test("route analytics cannot bypass the valid Atlas embed boundary", async () =>
     { pathname: "/species/orca", search: "" },
     { pathname: "/embed/atlas", search: "?embed=unknown" },
     { pathname: "/now/", search: "?embed=news" },
+    { pathname: "/atlas%2Fextra", search: "?embed=species" },
+    { pathname: "/embed%2Fatlas", search: "?embed=news" },
   ]) {
     const runtime = await routeAnalyticsRuntime(control);
     assert.equal(runtime.trackProductEntry("species", control.pathname, "direct"), true);
@@ -195,6 +208,7 @@ test("route analytics cannot bypass the valid Atlas embed boundary", async () =>
     { pathname: "/species/orca", internal: true },
     { pathname: "/species/orca", allowedHost: false },
     { pathname: "/auth/4planet/callback", search: "?code=TEST_CREDENTIAL" },
+    { pathname: "/atlas%ZZ", search: "?embed=species" },
   ]) {
     const runtime = await routeAnalyticsRuntime(control);
     assert.equal(runtime.trackProductEntry("species", control.pathname, "direct"), false);
