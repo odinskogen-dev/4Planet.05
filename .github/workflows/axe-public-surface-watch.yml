@@ -1,0 +1,46 @@
+name: AXE — Public Surface + SEO Watch (read-only)
+on:
+  schedule:
+    - cron: '7 6 * * *'
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - scripts/axe-public-surface-watch.mjs
+      - scripts/axe-public-surface-watch.test.mjs
+      - .github/workflows/axe-public-surface-watch.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/axe-public-surface-watch.mjs
+      - scripts/axe-public-surface-watch.test.mjs
+      - .github/workflows/axe-public-surface-watch.yml
+permissions:
+  contents: read
+concurrency:
+  group: axe-public-surface-watch
+  cancel-in-progress: false
+jobs:
+  public-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test watchdog offline
+        run: node --test scripts/axe-public-surface-watch.test.mjs
+      - name: Read-only check four production URLs and three sitemaps
+        id: scan
+        run: node scripts/axe-public-surface-watch.mjs
+      - name: Route confirmed public incident to existing Oppie and Monnie
+        if: failure() && steps.scan.outcome == 'failure' && github.event_name != 'pull_request'
+        env:
+          SLACK_AXE_WEBHOOK_URL: ${{ secrets.SLACK_AXE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          test -n "${SLACK_AXE_WEBHOOK_URL:-}"
+          TEXT="$(node scripts/axe-public-surface-watch.mjs --alert-text)"
+          jq -n --arg text "$TEXT" '{text:$text}' > /tmp/axe-alert.json
+          curl --proto '=https' --tlsv1.2 --fail-with-body --silent --show-error --max-time 20 -H 'Content-Type: application/json' --data-binary @/tmp/axe-alert.json "$SLACK_AXE_WEBHOOK_URL"
