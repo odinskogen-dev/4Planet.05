@@ -14,6 +14,10 @@ async function settle(page: import("@playwright/test").Page) {
   await page.waitForTimeout(1200);
 }
 
+function mapStatus(page: import("@playwright/test").Page) {
+  return page.getByRole("status").filter({ hasText: /^MAP ·/ });
+}
+
 async function waitForEvidenceMap(page: import("@playwright/test").Page) {
   await expect(page.locator(".maplibregl-canvas")).toBeVisible({ timeout: 20_000 });
   await page.waitForFunction(() => {
@@ -21,7 +25,8 @@ async function waitForEvidenceMap(page: import("@playwright/test").Page) {
     return Boolean(canvas && canvas.width > 100 && canvas.height > 100);
   });
 
-  const status = page.getByRole("status");
+  const status = mapStatus(page);
+  await expect(status).toHaveCount(1);
   await expect(status).toHaveText("MAP · EVIDENCE READY", { timeout: 20_000 });
   await expect(status).not.toHaveText(/MAP · (?:LOADING|BASE READY · EVIDENCE LOADING|EVIDENCE DEGRADED|UNAVAILABLE)/);
 }
@@ -47,7 +52,7 @@ test("Oslofjord preserves its sourced reading without WebGL2", async ({ page }) 
   await page.goto(`${BASE}/living-systems/oslofjord`, { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "Oslofjorden", exact: true })).toBeVisible();
-  await expect(page.getByRole("status")).toHaveText("MAP · UNAVAILABLE");
+  await expect(mapStatus(page)).toHaveText("MAP · UNAVAILABLE");
   await expect(page.getByText(/interactive map is unavailable in this browser/i)).toBeVisible();
   await expect(page.locator(".maplibregl-canvas")).toHaveCount(0);
   await expect(page.locator(".proof-map-canvas")).toHaveCount(0);
