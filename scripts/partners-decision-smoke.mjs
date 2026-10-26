@@ -111,6 +111,7 @@ try {
   if (await failedPage.locator("select").first().inputValue() !== "field") throw Error("role context lost after successful recheck");
   await failedPage.close();
   const page = await browser.newPage();
+  let postOutcome = "not_configured";
   await page.route("**/api/leads", async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, acceptingEnquiries: true }) });
@@ -119,7 +120,15 @@ try {
     const data = route.request().postDataJSON();
     if (data.type !== "4partners" || data.role !== "company" || data.workArea !== "brands-proof" || data.consent !== true)
       throw Error("intake mapping failed");
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: false, reason: "not_configured" }) });
+    if (postOutcome === "not_configured") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: false, reason: "not_configured" }) });
+      return;
+    }
+    if (postOutcome === "forward_failed") {
+      await route.fulfill({ status: 502, contentType: "application/json", body: JSON.stringify({ ok: false, error: "forward_failed" }) });
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: true }) });
   });
   await page.goto(base + "/enquire?role=company&opportunity=brands-proof");
   if (await page.locator("select").first().inputValue() !== "company") throw Error("role query hydration failed");
@@ -133,9 +142,26 @@ try {
   await fill();
   await page.getByRole("button", { name: "Submit enquiry" }).click();
   await page.getByText("Your information has not been stored or forwarded.").waitFor();
-  await page.unroute("**/api/leads");
-  await page.route("**/api/leads", async (route) =>
-    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, delivered: true }) }));
+  if (await page.locator('input[autocomplete="name"]').count()) throw Error("not-configured POST must hide personal-data controls");
+  await page.getByRole("button", { name: "Check again" }).waitFor();
+  if (await page.getByRole("link", { name: /Back to your partner route/ }).getAttribute("href") !== "/for/company") throw Error("POST failure lost role recovery context");
+  if (await page.getByRole("link", { name: /View this opportunity/ }).getAttribute("href") !== "/opportunities/brands-proof") throw Error("POST failure lost opportunity recovery context");
+
+  postOutcome = "forward_failed";
+  await page.getByRole("button", { name: "Check again" }).click();
+  await page.locator('input[autocomplete="name"]').waitFor();
+  if (await page.locator("select").first().inputValue() !== "company" || await page.locator("select").nth(1).inputValue() !== "brands-proof") throw Error("context lost after not-configured recheck");
+  await fill();
+  await page.getByRole("button", { name: "Submit enquiry" }).click();
+  await page.getByText("Your information has not been confirmed as received.").waitFor();
+  if (await page.locator('input[autocomplete="name"]').count()) throw Error("failed POST must hide personal-data controls");
+  await page.getByRole("button", { name: "Check again" }).waitFor();
+
+  postOutcome = "delivered";
+  await page.getByRole("button", { name: "Check again" }).click();
+  await page.locator('input[autocomplete="name"]').waitFor();
+  if (await page.locator("select").first().inputValue() !== "company" || await page.locator("select").nth(1).inputValue() !== "brands-proof") throw Error("context lost after failed POST recheck");
+  await fill();
   await page.getByRole("button", { name: "Submit enquiry" }).click();
   await page.getByText("Your enquiry was received by the configured 4PLANET intake.", { exact: false }).waitFor();
   console.log("PARTNERS_INTAKE_AVAILABILITY_MAPPING_AND_FAIL_CLOSED=PASS");

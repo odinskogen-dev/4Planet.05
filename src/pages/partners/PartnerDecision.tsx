@@ -153,9 +153,11 @@ export function EnquirePage() {
         setFeedback("Your enquiry was received by the configured 4PLANET intake. No agreement or reply time is implied.");
         setName(""); setEmail(""); setOrganisation(""); setMessage(""); setConsent(false);
       } else {
+        setChannel("UNAVAILABLE");
         setFeedback("The enquiry channel is not collecting submissions yet. Your information has not been stored or forwarded.");
       }
     } catch {
+      setChannel("UNAVAILABLE");
       setFeedback("The enquiry channel is unavailable. Your information has not been confirmed as received.");
     } finally { setBusy(false); }
   }
@@ -165,6 +167,7 @@ export function EnquirePage() {
     <p className="pd-small">How your details are handled: <a href="/privacy">Partner privacy and intake notice ↗</a></p>
     {channel !== "AVAILABLE" ? <div className="pd-channel-recovery">
       <p className="pd-channel-notice" role="status" aria-live="polite">{channel === "CHECKING" ? "Checking whether the enquiry channel is available…" : "The enquiry channel is not yet collecting submissions. No information will be sent or stored here."}</p>
+      {feedback ? <p className="pd-feedback" role="status" aria-live="polite">{feedback}</p> : null}
       <button type="button" disabled={channel === "CHECKING"} onClick={() => { signal("intake_recheck"); void checkChannel(); }}>Check again</button>
       <div className="pd-channel-links">
         <a href={role && roles.some((item) => item.slug === role) ? `/for/${role}` : "/for"}>Back to {role && roles.some((item) => item.slug === role) ? "your partner route" : "partner roles"} ↗</a>
