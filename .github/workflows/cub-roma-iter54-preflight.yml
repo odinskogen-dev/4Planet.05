@@ -1,0 +1,58 @@
+name: CUB ROMA iteration 54 isolated preflight
+on:
+  push:
+    branches:
+      - cub-roma-iter54-20261026
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble exact uploaded build and verify entry links
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,gzip,hashlib
+          p=Path('site/rome/source/iter54')
+          files=sorted(p.glob('chunk-*.txt'))
+          assert len(files)==19,f'part count: {len(files)}'
+          encoded=b''.join(b''.join(f.read_bytes().split()) for f in files)
+          assert len(encoded)==6560864,len(encoded)
+          compressed=base64.b64decode(encoded,validate=True)
+          assert hashlib.sha256(compressed).hexdigest()=='a7f1f398e3ccfbb8d8fc0c33a5a242c32fcabb82224255cb9150fd4d10e6804a'
+          game=gzip.decompress(compressed)
+          assert len(game)==9864877,len(game)
+          assert hashlib.sha256(game).hexdigest()=='c2fd5cf171f873cd48a772732cba78b684adab3612d18816e864af162ff44164'
+          assert b'iteration 54' in game.lower() and b'tiles/' in game and b'<canvas' in game
+          assert 'Play ROMA · Iteration 54' in Path('site/index.html').read_text()
+          assert 'Play ROMA · Iteration 54' in Path('site/games/roma/index.html').read_text()
+          Path('/tmp/roma54-release.html').write_bytes(game)
+          print('ROMA54_RECONSTRUCT_EXACT_SOURCE_PASS')
+          PY
+      - name: Verify referenced immutable NASA terrain release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/cub-roma-v17
+          gh release download roma-cub-v17-20261024 --repo "$GITHUB_REPOSITORY" --pattern roma-v17-web.zip --dir /tmp/cub-roma-v17
+          echo 'e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288  /tmp/cub-roma-v17/roma-v17-web.zip' | sha256sum -c -
+          python3 - <<'PY'
+          import zipfile,hashlib,json
+          z=zipfile.ZipFile('/tmp/cub-roma-v17/roma-v17-web.zip')
+          manifest=json.loads(z.read('tiles/MANIFEST.json'))
+          assert manifest['count']==240 and len(manifest['tiles'])==240
+          for entry in manifest['tiles']:
+              blob=z.read(entry['file'])
+              assert hashlib.sha256(blob).hexdigest()==entry['sha256']
+          print('ROMA54_TILES_240_IMMUTABLE_RELEASE_PASS')
+          PY
+      - name: Show deploy readiness result
+        run: echo CUB_ROMA54_STAGING_PREFLIGHT_PASS
