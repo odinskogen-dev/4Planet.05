@@ -96,7 +96,14 @@ jobs:
             assert data["provenance"]["taxonAuthorityEvidence"]["status"]==("ACCEPTED_TWO_AUTHORITIES" if slug in ev["authors"] else "NOT_YET_RECONCILED")
             print("SPECIES57_P1_LOCAL_V1_CONFIRMED",slug)
           for slug in originals:
-            assert get(origin+"/"+slug)==get(live+"/"+slug),("ORIGINAL39_HTML_CHANGED",slug)
+            localHtml=get(origin+"/"+slug);liveHtml=get(live+"/"+slug)
+            immutableHtml=get("https://e17e1392.4planet-05.pages.dev/"+slug)
+            if localHtml!=liveHtml:
+              import hashlib
+              aa=localHtml.decode(errors="replace");bb=liveHtml.decode(errors="replace")
+              pos=next((j for j in range(min(len(aa),len(bb))) if aa[j]!=bb[j]),-1)
+              print("SPECIES_P1_ORIGINAL39_DIAGNOSTIC",slug,{"localSha":hashlib.sha256(localHtml).hexdigest(),"liveSha":hashlib.sha256(liveHtml).hexdigest(),"frozenSha":hashlib.sha256(immutableHtml).hexdigest(),"localEqualsFrozen":localHtml==immutableHtml,"liveEqualsFrozen":liveHtml==immutableHtml,"firstDiff":pos,"localText":aa[max(0,pos-90):pos+160],"liveText":bb[max(0,pos-90):pos+160]},flush=True)
+            assert localHtml==liveHtml,("ORIGINAL39_HTML_CHANGED",slug)
             assert get(origin+"/species-data/v1/"+slug+".json")==get(live+"/species-data/v1/"+slug+".json"),("ORIGINAL39_JSON_CHANGED",slug)
           tree=ET.fromstring(get(origin+"/sitemap.xml"))
           locs={e.text for e in tree.iter() if e.tag.endswith("loc") and e.text}
