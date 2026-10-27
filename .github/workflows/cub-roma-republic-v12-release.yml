@@ -570,7 +570,8 @@ jobs:
           set -euo pipefail
           if curl -fsSL --max-time 25 "https://labs.p4nther.com/roma/index.html" -o /tmp/labs-roma.html; then
             echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/labs-roma.html' | sha256sum -c -
-            curl -fsSL "https://labs.p4nther.com/" | grep -Fq 'WILD:'
+            curl -fsSL --max-time 25 "https://labs.p4nther.com/" -o /tmp/labs-cub-home.html
+  grep -Fq 'WILD:' /tmp/labs-cub-home.html
             echo 'LABS_P4NTHER_EXACT_PASS=https://labs.p4nther.com/roma/'
           else
             echo 'LABS_P4NTHER_DNS_PENDING; lab.p4nther.com remains verified'
