@@ -1,0 +1,194 @@
+name: 4PLANET 107 Dead IMPACT Sitemap Surgical LIVE 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-dead-impact-sitemap-surgical-live-20261027.yml]
+permissions: {contents: read}
+concurrency: {group: 4planet-sitemap-one-path-p0, cancel-in-progress: false}
+jobs:
+  exact-filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      CFT1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CFT2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CFT3: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Prove all 107 submitted IMPACT URLs truly 404; exact public/source match; preserve 57 SPECIES
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,hashlib,xml.etree.ElementTree as ET,re,concurrent.futures,sys
+          candidates=[]
+          for n in ('CFT1','CFT2','CFT3'):
+            t=os.environ.get(n,'').strip().replace('\r','').replace('\n','')
+            for prefix in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if t.startswith(prefix):t=t[len(prefix):]
+            t=t.strip().strip('"').strip("'")
+            if t and t not in candidates:candidates.append(t)
+          ua={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-LIVE-sitemap-guard/1.0)'}
+          def web(url,limit=500000):
+            req=urllib.request.Request(url,headers=ua)
+            try:
+              with urllib.request.urlopen(req,timeout=29) as f:return f.status,f.read(limit),f.headers
+            except urllib.error.HTTPError as e:return e.code,e.read(min(limit,10000)),e.headers
+            except:return 0,b'',{}
+          code,public,_=web('https://4planet.org/sitemap.xml')
+          original=public
+          ocode,origin,_=web('https://4planet-05.pages.dev/sitemap.xml')
+          if code!=200 or ocode!=200 or public!=origin:
+            sys.exit('FAIL_CLOSED: exact root sitemap source/origin drift or unavailable')
+          xml=ET.fromstring(public)
+          urls=[n.text for n in xml.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if n.text]
+          impact=[u for u in urls if '/impact/project/' in u or '/impact/actors/' in u]
+          if len(urls)!=278 or len(impact)!=107 or len(set(impact))!=107:
+            sys.exit('FAIL_CLOSED: sitemap inventory changed; needs new independent classification')
+          if any(not x.startswith('https://4planet.org/impact/') for x in impact):
+            sys.exit('FAIL_CLOSED: unexpected exclusion origin')
+          with concurrent.futures.ThreadPoolExecutor(max_workers=9) as pool:
+            states=list(pool.map(lambda u:(u,web(u,10000)[0]),impact))
+          if any(code!=404 for _,code in states):
+            sys.exit('FAIL_CLOSED: actor/project endpoint not precisely HTTP 404 '+str([r for r in states if r[1]!=404][:5]))
+          if any(web(u)[0]!=200 for u in ('https://4planet.org/','https://4planet.org/now','https://4planet.org/news-sitemap.xml','https://4planetmagazine.com/news-sitemap.xml')):
+            sys.exit('FAIL_CLOSED: previously repaired LIVE surfaces unavailable')
+          src=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+          species=re.findall(r'"([a-z0-9-]+)"',src)
+          if len(species)!=57 or len(set(species))!=57:sys.exit('FAIL_CLOSED: species register changed')
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+            spec=list(pool.map(lambda s:(s,web('https://4species.com/'+s,3000)[0]),species))
+          if any(code!=200 for _,code in spec):sys.exit('FAIL_CLOSED: 57 species not all public 200')
+          api='https://api.cloudflare.com/client/v4'
+          def getapi(t,path):
+            req=urllib.request.Request(api+path,headers={'Authorization':'Bearer '+t,'Content-Type':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=20) as r:return r.status,json.load(r)
+            except urllib.error.HTTPError as e:
+              try:data=json.load(e)
+              except:data={}
+              return e.code,data
+          token=None;zone=None
+          for t in candidates:
+            s,d=getapi(t,'/zones?name=4planet.org')
+            z=[v for v in d.get('result',[]) if v.get('name')=='4planet.org' and v.get('status')=='active']
+            if s==200 and d.get('success') and len(z)==1:token=t;zone=z[0];break
+          if not zone:sys.exit('FAIL_CLOSED: cannot verify owner zone')
+          c,routes=getapi(token,f'/zones/{zone["id"]}/workers/routes')
+          if c!=200 or not routes.get('success') or any(r.get('pattern')=='4planet.org/sitemap.xml' for r in routes.get('result',[])):
+            sys.exit('FAIL_CLOSED: route conflict or no route authority')
+          acc=(zone.get('account') or {}).get('id')
+          if not acc:sys.exit('FAIL_CLOSED: account unresolved')
+          template=open('ops/exposure/4planet-sitemap-filter-p0.template.js').read()
+          if template.count('/*__EXACT_404_LOC_LIST__*/')!=1:sys.exit('FAIL_CLOSED: source template mismatch')
+          generated=template.replace('/*__EXACT_404_LOC_LIST__*/',json.dumps(sorted(impact)))
+          open('ops/exposure/4planet-sitemap-filter-p0.generated.mjs','w').write(generated)
+          open('/tmp/4planet-original-sitemap.xml','wb').write(public)
+          open('/tmp/4planet-dead-impact.json','w').write(json.dumps(sorted(impact)))
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+            f.write(f'CLOUDFLARE_API_TOKEN={token}\nCLOUDFLARE_ACCOUNT_ID={acc}\nCF_ZONE_ID={zone["id"]}\nCF_SCRIPT_NAME=4planet-sitemap-107-dead-impact-p0-20261027\n')
+          print('::add-mask::'+token)
+          print('PRE_DEPLOY_ALL_PASS: existing sitemap 278, 107/107 exact IMPACT final HTTP 404, 171 retained; Pages upstream identical by SHA256',hashlib.sha256(public).hexdigest())
+          print('GENERATED_SCRIPT_SHA256',hashlib.sha256(generated.encode()).hexdigest(),'57/57 SPECIES HTTP 200; no other active route owner mutated')
+          PY
+      - name: Independently test exact generated URL exclusions, preserved order, method boundary
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import worker from './ops/exposure/4planet-sitemap-filter-p0.generated.mjs';
+          const xml=fs.readFileSync('/tmp/4planet-original-sitemap.xml','utf8');
+          const ban=JSON.parse(fs.readFileSync('/tmp/4planet-dead-impact.json','utf8'));
+          const originalFetch=globalThis.fetch;
+          const fetchUrls=[];
+          globalThis.fetch=async (url)=>{fetchUrls.push(url);return new Response(xml,{status:200,headers:{'content-type':'application/xml'}})};
+          try {
+            const res=await worker.fetch(new Request('https://4planet.org/sitemap.xml'));
+            assert.equal(res.status,200);
+            const result=await res.text();
+            const locs=s=>[...s.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+            assert.equal(ban.length,107);
+            assert.deepEqual(locs(result),locs(xml).filter(u=>!ban.includes(u)));
+            assert.equal(locs(result).length,171);
+            assert.equal(fetchUrls[0],'https://4planet-05.pages.dev/sitemap.xml');
+            assert.equal((await worker.fetch(new Request('https://4planet.org/sitemap.xml',{method:'HEAD'}))).status,200);
+            assert.equal((await worker.fetch(new Request('https://4planet.org/sitemap.xml',{method:'POST'}))).status,405);
+            for (const bad of ['https://4planet.org/','https://4species.com/sitemap.xml','https://4planet.org/news-sitemap.xml']) assert.equal((await worker.fetch(new Request(bad))).status,404);
+            console.log('PROVEN_EXACT_107_BLOCK_FILTER_AND_171_PRESERVATION_PASS');
+          } finally {globalThis.fetch=originalFetch}
+          NODE
+      - name: Upload standalone filter Worker — unattached until exact live gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/exposure/4planet-sitemap-filter-p0.generated.mjs \
+            --name "$CF_SCRIPT_NAME" --compatibility-date 2026-10-27 --keep-vars > /tmp/4planet-impact-sitemap-deploy.log 2>&1 || {
+              echo 'Script upload failed, no live route mutation.'
+              tail -n 16 /tmp/4planet-impact-sitemap-deploy.log | sed -E 's/(token|Bearer)[[:space:]:=]+[^ ]+/\1 [REDACTED]/Ig'
+              exit 1
+            }
+          echo 'EXACT_FILTER_UPLOADED_UNATTACHED'
+      - name: Attach only sitemap.xml route, verify full 171 retained + 57 SPECIES, rollback on any failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,concurrent.futures,xml.etree.ElementTree as ET,re,time,hashlib,sys
+          api='https://api.cloudflare.com/client/v4'; token=os.environ['CLOUDFLARE_API_TOKEN']; zone=os.environ['CF_ZONE_ID']; worker=os.environ['CF_SCRIPT_NAME']
+          route_id=None;okay=False
+          def cf(method,path,payload=None):
+            req=urllib.request.Request(api+path,data=json.dumps(payload).encode() if payload is not None else None,method=method,headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=25) as r:return r.status,json.load(r)
+            except urllib.error.HTTPError as e:
+              try:v=json.load(e)
+              except:v={}
+              return e.code,v
+          def web(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4PLANET-sitemap-GOLD)' ,'Cache-Control':'no-cache'})
+            try:
+              with urllib.request.urlopen(req,timeout=26) as r:return r.status,r.read(400000),r.headers
+            except urllib.error.HTTPError as e:return e.code,e.read(20000),e.headers
+            except Exception:return 0,b'',{}
+          try:
+            c,routes=cf('GET',f'/zones/{zone}/workers/routes')
+            if c!=200 or not routes.get('success') or any(v.get('pattern')=='4planet.org/sitemap.xml' for v in routes.get('result',[])):raise RuntimeError('Route ownership changed')
+            c,added=cf('POST',f'/zones/{zone}/workers/routes',{'pattern':'4planet.org/sitemap.xml','script':worker})
+            if c not in (200,201) or not added.get('success'):raise RuntimeError('Scoped Cloudflare route rejected HTTP '+str(c))
+            route_id=(added.get('result') or {}).get('id')
+            if not route_id:raise RuntimeError('Missing rollback identity')
+            baseline=ET.fromstring(open('/tmp/4planet-original-sitemap.xml','rb').read())
+            before=[n.text for n in baseline.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if n.text]
+            excluded=set(json.load(open('/tmp/4planet-dead-impact.json')))
+            target=[u for u in before if u not in excluded]
+            for attempt in range(9):
+              st,body,head=web('https://4planet.org/sitemap.xml')
+              if st==200 and head.get('x-4planet-seo-p0','')=='2026-10-27-dead-impact-sitemap-urls-removed':
+                try:
+                  root=ET.fromstring(body)
+                  locs=[n.text for n in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if n.text]
+                  if locs==target and len(locs)==171:break
+                except ET.ParseError:pass
+              time.sleep(3)
+            else:raise RuntimeError('Live sitemap exact 171/278 URL preservation gate failed')
+            urls=['https://4planet.org/','https://4planet.org/now','https://4planet.org/news-sitemap.xml','https://4planet.org/atlas','https://4planetmagazine.com/','https://4planetmagazine.com/news-sitemap.xml','https://4species.com/orca']
+            with concurrent.futures.ThreadPoolExecutor(max_workers=7) as ex:others=list(ex.map(web,urls))
+            if any(v[0]!=200 for v in others):raise RuntimeError('Other LIVE surface regression '+str([(u,v[0]) for u,v in zip(urls,others)]))
+            src=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+            slugs=re.findall(r'"([a-z0-9-]+)"',src)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:species=list(ex.map(lambda slug:(slug,web('https://4species.com/'+slug)[0]),slugs))
+            if len(species)!=57 or any(st!=200 for _,st in species):raise RuntimeError('57 live SPECIES preservation violation')
+            okay=True
+            result=f'MAIN_SITEMAP_LIVE_PASS: 278 original URLs, 107/107 verified 404 IMPACT objects excluded, all other 171 URLs preserved identically in order, valid XML HTTP 200; 57/57 SPECIES still HTTP 200. source SHA {os.environ["GITHUB_SHA"]} route ID {route_id} worker {worker}'
+            print(result)
+            with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## LIVE 4planet.org/sitemap.xml correction\n\n'+result+'\n')
+          finally:
+            if not okay and route_id:
+              c,r=cf('DELETE',f'/zones/{zone}/workers/routes/{route_id}')
+              print('AUTOMATIC_ROLLBACK_ROUTE_REMOVED' if c==200 and r.get('success') else 'CRITICAL_ROLLBACK_ROUTE_FAILED '+route_id)
+          if not okay:sys.exit(1)
+          PY
