@@ -15,6 +15,7 @@ const REQUIRED_FILES = [
   "docs/control/CODE_LINEAGE_REGISTER.md",
   "docs/control/TEST_KING_DONOR_LEDGER.md",
   "docs/control/REPOSITORY_AUTHORITY_REGISTER.md",
+  "scripts/gold-policy-check-contract.test.mjs",
   "AGENTS.md",
   ".github/pull_request_template.md",
 ];
@@ -35,6 +36,7 @@ const REQUIRED_BRIEF_HEADINGS = [
   "## HUMAN SUCCESS",
 ];
 const GOLD_BRIEF_PATH = "docs/control/GOLD_CURRENT_BRIEF.md";
+const GOLD_BRIEF_HISTORY_CONTRACT_PATH = "scripts/gold-policy-check-contract.test.mjs";
 const GOLD_BRIEF_SECTION_SEPARATOR = /\r?\n---\r?\n/;
 
 const PRODUCT_PREFIXES = ["src/", "public/", "functions/", "supabase/", "tests/e2e/"];
@@ -65,6 +67,15 @@ function gitRaw(args, fallback = "") {
   }
 }
 
+function gitSucceeds(args) {
+  try {
+    execFileSync("git", args, { stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function changedFiles() {
   const explicit = process.env.GOLD_CHANGED_FILES;
   if (explicit) return explicit.split("\n").map((s) => s.trim()).filter(Boolean);
@@ -92,30 +103,53 @@ function newestGoldBriefSection(brief) {
   return separator < 0 ? brief : brief.slice(0, separator);
 }
 
-function validateGoldBriefHistory(brief, files) {
-  if (!files.includes(GOLD_BRIEF_PATH)) return;
+function trustedGoldBriefCheckpoint() {
+  const introduction = git([
+    "log",
+    "--diff-filter=A",
+    "--format=%H",
+    "--reverse",
+    "--",
+    GOLD_BRIEF_HISTORY_CONTRACT_PATH,
+  ]).split("\n").filter(Boolean)[0];
+  if (!introduction) {
+    fail("GOLD brief history contract has no Git introduction point for a trusted TEST KING checkpoint");
+    return null;
+  }
 
-  const priorRef = process.env.GOLD_BRIEF_BASE_REF || git(["rev-parse", "HEAD^"]);
-  if (!priorRef) {
-    fail("modified GOLD brief has no prior Git revision for history-preservation validation");
+  const checkpoint = git(["rev-parse", `${introduction}^`]);
+  if (!checkpoint) {
+    fail("GOLD brief history contract introduction has no parent checkpoint");
+    return null;
+  }
+  if (!gitSucceeds(["merge-base", "--is-ancestor", checkpoint, "HEAD"])) {
+    fail(`trusted GOLD brief checkpoint ${checkpoint} is not an ancestor of HEAD`);
+    return null;
+  }
+
+  const checkpointBrief = gitRaw(["show", `${checkpoint}:${GOLD_BRIEF_PATH}`]);
+  if (!checkpointBrief) {
+    fail(`trusted GOLD brief checkpoint ${checkpoint} has no readable brief history`);
+    return null;
+  }
+  return { checkpoint, checkpointBrief };
+}
+
+function validateGoldBriefHistory(brief) {
+  const trusted = trustedGoldBriefCheckpoint();
+  if (!trusted) {
     return;
   }
 
-  const priorBrief = gitRaw(["show", `${priorRef}:${GOLD_BRIEF_PATH}`]);
-  if (!priorBrief) {
-    fail(`modified GOLD brief cannot read prior history from ${priorRef}`);
+  if (!brief.endsWith(trusted.checkpointBrief)) {
+    fail(`GOLD brief must preserve trusted intact TEST KING checkpoint ${trusted.checkpoint} as an exact unchanged suffix across the full candidate history; destructive edits require separately verified Founder authority outside the changed brief`);
     return;
   }
 
-  if (!brief.endsWith(priorBrief)) {
-    fail("modified GOLD brief must preserve its exact prior Git revision as an unchanged suffix; destructive history edits require separately verified Founder authority outside the changed brief");
-    return;
-  }
-
-  if (brief !== priorBrief) {
-    const prefix = brief.slice(0, brief.length - priorBrief.length);
+  if (brief !== trusted.checkpointBrief) {
+    const prefix = brief.slice(0, brief.length - trusted.checkpointBrief.length);
     if (!/\r?\n---\r?\n\r?\n$/.test(prefix)) {
-      fail("modified GOLD brief must bound the newest contract before the exact preserved history with the canonical section separator");
+      fail("GOLD brief additions after the trusted TEST KING checkpoint must end with the canonical section separator before the exact preserved history");
     }
   }
 }
@@ -127,7 +161,7 @@ function validateAuthorityFiles(files) {
 
   if (!fs.existsSync(GOLD_BRIEF_PATH)) return;
   const brief = fs.readFileSync(GOLD_BRIEF_PATH, "utf8");
-  validateGoldBriefHistory(brief, files);
+  validateGoldBriefHistory(brief);
   const current = newestGoldBriefSection(brief);
   for (const heading of REQUIRED_BRIEF_HEADINGS) {
     const idx = current.indexOf(heading);

@@ -14,6 +14,7 @@ import { spawnSync } from "node:child_process";
 
 const BRIEF = "docs/control/GOLD_CURRENT_BRIEF.md";
 const POLICY = "scripts/gold-policy-check.mjs";
+const CONTRACT_TEST = "scripts/gold-policy-check-contract.test.mjs";
 const REQUIRED = [
   "docs/GOLD_WORLD_CLASS_QUALITY_GATE.md",
   "docs/control/GOLD_ENFORCEMENT_MATRIX.md",
@@ -35,6 +36,12 @@ assert.notEqual(separator, -1, "current brief must separate its newest contract 
 const newestContractOnly = `${currentBrief.slice(0, separator).trimEnd()}\n`;
 const preservedHistoryOnly = currentBrief.slice(separator + "\n---\n".length).replace(/^\n/, "");
 
+const nextContract = newestContractOnly.replace(
+  "# EARTH NOW + ABOUT — CANONICAL ACCEPTANCE CONTRACT — 27 OCTOBER 2026",
+  "# NEXT BOUNDED GOLD CONTRACT — FIXTURE",
+);
+const legitimatePrepend = `${nextContract.trimEnd()}\n\n---\n\n${currentBrief}`;
+
 const run = (mutateBrief, { changed = true } = {}) => {
   const directory = mkdtempSync(join(tmpdir(), "gold-policy-history-"));
   try {
@@ -55,6 +62,11 @@ const run = (mutateBrief, { changed = true } = {}) => {
     git("add", ".");
     git("commit", "-qm", "baseline");
 
+    mkdirSync(dirname(join(directory, CONTRACT_TEST)), { recursive: true });
+    copyFileSync(new URL(`../${CONTRACT_TEST}`, import.meta.url), join(directory, CONTRACT_TEST));
+    git("add", CONTRACT_TEST);
+    git("commit", "-qm", "install history contract");
+
     if (mutateBrief !== null) {
       writeFileSync(join(directory, BRIEF), mutateBrief, "utf8");
       git("add", BRIEF);
@@ -66,6 +78,68 @@ const run = (mutateBrief, { changed = true } = {}) => {
       env: {
         ...process.env,
         GOLD_CHANGED_FILES: changed ? BRIEF : "README.md",
+      },
+      encoding: "utf8",
+    });
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+};
+
+const runTwoCommitCandidate = ({
+  firstBrief,
+  mode = "king-push",
+  mainBrief = currentBrief,
+  establishTestKingCheckpoint = false,
+}) => {
+  const directory = mkdtempSync(join(tmpdir(), "gold-policy-history-range-"));
+  try {
+    for (const relative of REQUIRED) {
+      const source = new URL(`../${relative}`, import.meta.url);
+      const destination = join(directory, relative);
+      mkdirSync(dirname(destination), { recursive: true });
+      copyFileSync(source, destination);
+    }
+
+    writeFileSync(join(directory, BRIEF), mainBrief, "utf8");
+    const git = (...args) => {
+      const result = spawnSync("git", args, { cwd: directory, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr);
+    };
+    git("init", "-q");
+    git("config", "user.email", "gold-contract@example.invalid");
+    git("config", "user.name", "Gold contract fixture");
+    git("add", ".");
+    git("commit", "-qm", "main baseline");
+    git("branch", "-M", "main");
+    git("checkout", "-qb", "king/test");
+
+    if (establishTestKingCheckpoint) {
+      writeFileSync(join(directory, BRIEF), currentBrief, "utf8");
+      git("add", BRIEF);
+      git("commit", "-qm", "trusted TEST KING checkpoint");
+    }
+
+    mkdirSync(dirname(join(directory, CONTRACT_TEST)), { recursive: true });
+    copyFileSync(new URL(`../${CONTRACT_TEST}`, import.meta.url), join(directory, CONTRACT_TEST));
+    git("add", CONTRACT_TEST);
+    git("commit", "-qm", "install history contract");
+
+    writeFileSync(join(directory, BRIEF), firstBrief, "utf8");
+    git("add", BRIEF);
+    git("commit", "-qm", "brief candidate");
+    writeFileSync(join(directory, "README.md"), "unrelated final commit\n", "utf8");
+    git("add", "README.md");
+    git("commit", "-qm", "unrelated final commit");
+
+    return spawnSync(process.execPath, [POLICY, `--mode=${mode}`], {
+      cwd: directory,
+      env: {
+        ...process.env,
+        GITHUB_EVENT_NAME: mode === "pr-main" ? "pull_request" : "push",
+        GOLD_BASE_REF: "main",
+        GOLD_HEAD_REF: "king/test",
+        GOLD_PR_DRAFT: "true",
       },
       encoding: "utf8",
     });
@@ -98,10 +172,33 @@ test("accepts the unchanged current document", () => {
 });
 
 test("accepts a substantive newest contract prepended to exact preserved history", () => {
-  const nextContract = newestContractOnly.replace(
-    "# EARTH NOW + ABOUT — CANONICAL ACCEPTANCE CONTRACT — 27 OCTOBER 2026",
-    "# NEXT BOUNDED GOLD CONTRACT — FIXTURE",
-  );
-  const result = run(`${nextContract.trimEnd()}\n\n---\n\n${currentBrief}`);
+  const result = run(legitimatePrepend);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test("rejects destructive brief loss followed by an unrelated king-push commit", () => {
+  const result = runTwoCommitCandidate({ firstBrief: newestContractOnly });
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /GOLD brief.*history/i);
+});
+
+test("rejects destructive brief loss followed by an unrelated pr-main commit", () => {
+  const result = runTwoCommitCandidate({ firstBrief: newestContractOnly, mode: "pr-main" });
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /GOLD brief.*history/i);
+});
+
+test("accepts a legitimate multi-commit prepend when the final commit is unrelated", () => {
+  const result = runTwoCommitCandidate({ firstBrief: legitimatePrepend });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test("accepts TEST KING lineage when main has a divergent shorter brief", () => {
+  const result = runTwoCommitCandidate({
+    firstBrief: legitimatePrepend,
+    mode: "pr-main",
+    mainBrief: newestContractOnly,
+    establishTestKingCheckpoint: true,
+  });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
