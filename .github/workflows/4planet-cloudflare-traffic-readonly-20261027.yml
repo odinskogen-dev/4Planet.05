@@ -85,3 +85,38 @@ jobs:
           print(out)
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(out+'\n')
           PY
+
+      - name: Public LIVE sitemap and canonical diagnostics (read only)
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,xml.etree.ElementTree as ET,re,os
+          urls=['https://4planet.org/sitemap.xml','https://4planet.org/news-sitemap.xml','https://4planetmagazine.com/news-sitemap.xml','https://4planetmagazine.com/magazine-sitemap.xml','https://4species.com/sitemap.xml','https://4planetatlas.com/sitemap.xml','https://4planet.org/now','https://4planet.org/now/','https://4planet.org/about','https://4planet.org/about/','https://4species.com/orca','https://4species.com/species/orca','https://4species.com/this-species-must-not-exist']
+          out=['## Public LIVE SEO read-only check','| URL | HTTP | Final URL | XML / canonical | Robots |','|---|---:|---|---|---|']
+          for url in urls:
+            try:
+              request=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-SEOAudit/1.0)'})
+              with urllib.request.urlopen(request,timeout=25) as resp:
+                raw=resp.read(250000);status=resp.status;final=resp.geturl();headers=resp.headers
+            except urllib.error.HTTPError as e:
+              raw=e.read(20000);status=e.code;final=e.geturl();headers=e.headers
+            except Exception as e:
+              out.append(f'| {url} | ERROR | - | {type(e).__name__} | - |')
+              continue
+            body=raw.decode('utf-8','replace')
+            robots=headers.get('X-Robots-Tag','')[:60]
+            if url.endswith('.xml'):
+              try:
+                tree=ET.fromstring(raw)
+                info=f'XML valid, {len(tree)} entries, {len(raw)} bytes'
+              except Exception as e:
+                info=f'XML INVALID: {type(e).__name__}; {len(raw)} bytes'
+            else:
+              match=re.search(r'<link[^>]+rel="canonical"[^>]+href="([^"]+)"',body,re.I)
+              info='canonical='+match.group(1) if match else 'canonical not found in fetched HTML'
+            out.append(f'| {url} | {status} | {final} | {info.replace("|","/")} | {robots.replace("|","/")} |')
+          report='\n'.join(out)
+          print(report)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'+report+'\n')
+          PY
