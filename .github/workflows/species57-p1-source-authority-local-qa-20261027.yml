@@ -103,7 +103,11 @@ jobs:
               aa=localHtml.decode(errors="replace");bb=liveHtml.decode(errors="replace")
               pos=next((j for j in range(min(len(aa),len(bb))) if aa[j]!=bb[j]),-1)
               print("SPECIES_P1_ORIGINAL39_DIAGNOSTIC",slug,{"localSha":hashlib.sha256(localHtml).hexdigest(),"liveSha":hashlib.sha256(liveHtml).hexdigest(),"frozenSha":hashlib.sha256(immutableHtml).hexdigest(),"localEqualsFrozen":localHtml==immutableHtml,"liveEqualsFrozen":liveHtml==immutableHtml,"firstDiff":pos,"localText":aa[max(0,pos-90):pos+160],"liveText":bb[max(0,pos-90):pos+160]},flush=True)
-            assert localHtml==liveHtml,("ORIGINAL39_HTML_CHANGED",slug)
+            assert localHtml==immutableHtml,("ORIGINAL39_ORIGIN_CONTENT_CHANGED",slug)
+            # Production injects its own Cloudflare Analytics beacon after the Worker. Compare
+            # exact LIVE responses before/after release, not live vs frozen Pages here.
+            if liveHtml!=localHtml:
+              assert b"static.cloudflareinsights.com/beacon.min.js" in liveHtml,("UNEXPLAINED_LIVE_OVERLAY",slug)
             assert get(origin+"/species-data/v1/"+slug+".json")==get(live+"/species-data/v1/"+slug+".json"),("ORIGINAL39_JSON_CHANGED",slug)
           tree=ET.fromstring(get(origin+"/sitemap.xml"))
           locs={e.text for e in tree.iter() if e.tag.endswith("loc") and e.text}
