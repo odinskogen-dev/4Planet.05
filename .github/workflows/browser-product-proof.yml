@@ -54,10 +54,13 @@ jobs:
       - name: Build the exact current source
         run: npm run build
 
+      - name: Verify built-preview route resolution
+        run: node --test scripts/serve-built-preview.test.mjs
+
       - name: Start exact-head local preview
         shell: bash
         run: |
-          nohup npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/4planet-preview.log 2>&1 &
+          nohup env PREVIEW_HOST=127.0.0.1 PREVIEW_PORT=4173 node scripts/serve-built-preview.mjs > /tmp/4planet-preview.log 2>&1 &
           echo $! > /tmp/4planet-preview.pid
           for attempt in {1..60}; do
             if curl --fail --silent http://127.0.0.1:4173/ >/dev/null; then
