@@ -1,0 +1,80 @@
+name: 4PLANET Portfolio Sitemap URL Indexability 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-sitemap-live-indexability-20261027.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Read-only check real sitemap routes / redirects / noindex / canonicals
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,urllib.parse,xml.etree.ElementTree as ET,html.parser,concurrent.futures,collections,os,re
+          sitemaps={'Main':'https://4planet.org/sitemap.xml','SPECIES':'https://4species.com/sitemap.xml','ATLAS':'https://4planetatlas.com/sitemap.xml','Magazine':'https://4planetmagazine.com/magazine-sitemap.xml'}
+          headers={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-SEOIndexabilityAudit/1.0)'}
+          class NoFollow(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self,*args,**kwargs):return None
+          opener=urllib.request.build_opener(NoFollow)
+          urls=[]
+          for label,uri in sitemaps.items():
+            req=urllib.request.Request(uri,headers=headers)
+            try:
+              with urllib.request.urlopen(req,timeout=28) as r:root=ET.fromstring(r.read(300000))
+              entries=[x.text for x in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if x.text]
+              urls.extend((label,url) for url in entries)
+              print('SITEMAP',label,'count',len(entries),'unique',len(set(entries)))
+            except Exception as e:
+              print('SITEMAP FETCH FAIL',label,type(e).__name__);raise
+          class Tags(html.parser.HTMLParser):
+            def __init__(self):super().__init__();self.canonical=[];self.robots=[];self.title=False;self.titles=[];self.in_title=False
+            def handle_starttag(self,tag,attrs):
+              a=dict(attrs)
+              if tag=='title':self.in_title=True
+              if tag=='link' and a.get('rel','').lower()=='canonical':self.canonical.append(a.get('href',''))
+              if tag=='meta' and a.get('name','').lower()=='robots':self.robots.append(a.get('content',''))
+            def handle_endtag(self,tag):
+              if tag=='title':self.in_title=False
+            def handle_data(self,d):
+              if self.in_title:self.titles.append(d)
+          def inspect(row):
+            label,url=row
+            req=urllib.request.Request(url,headers=headers)
+            try:
+              with opener.open(req,timeout=30) as r:status=r.status;body=r.read(240000);hs=r.headers;location=''
+            except urllib.error.HTTPError as e:
+              status=e.code;hs=e.headers;location=hs.get('Location','');body=b'' if status in (301,302,303,307,308) else e.read(100000)
+            except Exception as e:return label,url,0,'',type(e).__name__,'',''
+            kind=hs.get('Content-Type','')
+            if 'html' not in kind.lower():return label,url,status,location,'non-HTML:'+kind[:35],hs.get('X-Robots-Tag','')[:70],''
+            p=Tags()
+            try:p.feed(body.decode('utf-8','replace'))
+            except:pass
+            can=p.canonical[0] if p.canonical else ''
+            robots=(' '.join(p.robots)+' '+hs.get('X-Robots-Tag','')).strip()
+            return label,url,status,location,can,robots,(''.join(p.titles)[:75])
+          with concurrent.futures.ThreadPoolExecutor(max_workers=9) as ex:rows=list(ex.map(inspect,urls))
+          grouped=collections.defaultdict(list)
+          for row in rows:
+            label,url,st,location,canonical,robots,title=row
+            issue=[]
+            if st!=200:issue.append('HTTP_'+str(st))
+            if 'noindex' in robots.lower():issue.append('NOINDEX')
+            if st==200 and canonical.startswith('https://') and canonical.rstrip('/')!=url.rstrip('/'):issue.append('CANONICAL_OTHER')
+            if st==200 and not canonical and 'html' not in canonical:issue.append('CANONICAL_NOT_FOUND')
+            if issue:grouped[label].append((url,st,','.join(issue),location or canonical,robots))
+          lines=['# 4PLANET public sitemap real URL indexability','',f'Checked {len(rows)} sitemap URL entries (bounded 9-way GET, no mutations).','']
+          for label in sitemaps:
+            grp=[r for r in rows if r[0]==label]
+            failures=grouped[label]
+            lines += [f'## {label} — {len(grp)} URLs, {len(failures)} flagged','| URL | HTTP | Reason | Redirect or declared canonical | Robots |','|---|---:|---|---|---|']
+            for u,st,issue,redir,robots in failures[:100]: lines.append(f'| {u} | {st} | {issue} | {redir[:140]} | {robots[:65]} |')
+            if len(failures)>100:lines.append(f'... {len(failures)-100} additional flagged URLs omitted from this summary')
+            lines.append('')
+          text='\n'.join(lines)
+          print(text)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(text+'\n')
+          PY
