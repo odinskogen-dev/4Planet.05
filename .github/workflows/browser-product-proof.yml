@@ -12,7 +12,9 @@ permissions:
 
 concurrency:
   group: browser-product-proof-${{ github.ref }}
-  cancel-in-progress: true
+  # Keep the immutable SHA already under proof running. GitHub concurrency
+  # still limits this group to one running and one pending branch candidate.
+  cancel-in-progress: false
 
 jobs:
   test-critical-journeys:

@@ -1,10 +1,20 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
 import { resolveBuiltPreviewFile } from "./serve-built-preview.mjs";
+
+test("browser proof preserves the active immutable-SHA run", async () => {
+  const workflow = await readFile(
+    new URL("../.github/workflows/browser-product-proof.yml", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(workflow, /group: browser-product-proof-\$\{\{ github\.ref \}\}/);
+  assert.match(workflow, /cancel-in-progress: false/);
+});
 
 test("built preview prefers prerendered route HTML and preserves SPA fallback", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "4planet-built-preview-"));
