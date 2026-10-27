@@ -1,0 +1,50 @@
+name: 4PLANET OS — repair Founder OAuth return URL
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/os-auth-redirect-repair.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Read, minimally repair and verify Supabase Auth redirect list
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          node --input-type=module <<'NODE'
+          const api="https://api.supabase.com/v1/projects/ghvdzetmplqkdtfqiror/config/auth";
+          const exact="https://labs.4planet.org/os";
+          const header={Authorization:"Bearer "+process.env.SUPABASE_ACCESS_TOKEN,Accept:"application/json"};
+          const get=async()=>{
+            const r=await fetch(api,{headers:header,signal:AbortSignal.timeout(25000)});
+            if(!r.ok)throw Error("AUTH_CONFIG_GET_HTTP_"+r.status);
+            return await r.json();
+          };
+          const before=await get();
+          if(typeof before.uri_allow_list!=="string")throw Error("AUTH_CONFIG_ALLOW_LIST_SCHEMA_UNEXPECTED");
+          const list=before.uri_allow_list.split(",").map(x=>x.trim()).filter(Boolean);
+          const already=list.includes(exact);
+          console.log("AUTH_CONFIGURATION_READ: exact OS callback="+(already?"PRESENT":"ABSENT")+
+           "; entries="+list.length+"; public_site_preserved="+(typeof before.site_url==="string"));
+          if(!already){
+            const newList=[...list,exact].join(",");
+            const patched=await fetch(api,{
+              method:"PATCH",headers:{...header,"Content-Type":"application/json"},
+              body:JSON.stringify({uri_allow_list:newList}),signal:AbortSignal.timeout(25000)
+            });
+            if(!patched.ok)throw Error("AUTH_CONFIG_PATCH_HTTP_"+patched.status);
+            console.log("SCOPED_PATCH_OK: added only the exact private OS redirect, no Site URL or providers changed.");
+          }
+          const after=await get();
+          const matches=after.uri_allow_list.split(",").map(x=>x.trim()).includes(exact);
+          if(!matches)throw Error("AUTH_REDIRECT_READBACK_MISSING");
+          if(after.site_url!==before.site_url)throw Error("AUTH_SITE_URL_CHANGED_UNEXPECTEDLY");
+          console.log("PASS: exact https://labs.4planet.org/os allow-listed; public Site URL unchanged; do not print tokens or full config.");
+          NODE

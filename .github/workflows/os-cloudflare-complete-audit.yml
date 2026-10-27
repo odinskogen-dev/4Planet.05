@@ -1,0 +1,94 @@
+name: 4PLANET OS — exhaustive scoped Cloudflare access capability audit
+on:
+  push:
+    branches: [labs/overview-v1]
+    paths: [.github/workflows/os-cloudflare-complete-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: os-cloudflare-complete-audit
+  cancel-in-progress: true
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_FACTORY: ${{ secrets.CLOUDFLARE_FACTORY_API_TOKEN }}
+      CF_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCESS: ${{ secrets.CLOUDFLARE_ACCESS_API_TOKEN }}
+      CF_ACCESS_ALT: ${{ secrets.CLOUDFLARE_ACCESS_TOKEN }}
+      CF_ZERO_TRUST: ${{ secrets.CLOUDFLARE_ZERO_TRUST_API_TOKEN }}
+      CF_DNS: ${{ secrets.CLOUDFLARE_DNS_API_TOKEN }}
+      CF_DNS_ALT: ${{ secrets.CLOUDFLARE_DNS_TOKEN }}
+      CF_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_TOKEN_ALT: ${{ secrets.CF_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_FACTORY_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Audit existing secrets by scope and existing hostname configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          account="${CF_ACCOUNT:-d53c17b06219066a0325eec01c21729e}"
+          report=/tmp/os-cf-scope-report.md
+          printf '# 4PLANET OS — real Cloudflare token capability / existing domain audit\n\nSource SHA: `%s`\n\n' "$GITHUB_SHA" > "$report"
+          printf 'Tested only the existing GitHub secrets; no secret contents, private email addresses or data are disclosed.\n\n' >> "$report"
+          probe() {
+            local label="$1" token="$2" endpoint="$3"
+            curl -sS --connect-timeout 6 --max-time 22 -o "/tmp/os-audit-$label.json" -w '%{http_code}' -H "Authorization: Bearer $token" "$api$endpoint" 2>/dev/null || true
+          }
+          printf '| Secret name | Token verify | Account Access | Zone | OS DNS | Pages | OS Pages domain | Worker domains | Worker routes |\n|---|---|---|---|---|---|---|---|---|\n' >> "$report"
+          for label in FACTORY PRIMARY ACCESS ACCESS_ALT ZERO_TRUST DNS DNS_ALT TOKEN TOKEN_ALT; do
+            env="CF_$label"
+            token="${!env:-}"
+            if [[ -z "$token" ]]; then
+              printf '| %s | NOT CONFIGURED | — | — | — | — | — | — | — |\n' "$env" >> "$report"
+              continue
+            fi
+            token="${token#Bearer }"
+            echo "::add-mask::$token"
+            verify="$(probe "$label-verify" "$token" /user/tokens/verify)"
+            access="$(probe "$label-access" "$token" "/accounts/$account/access/apps?per_page=100")"
+            zone="$(probe "$label-zone" "$token" "/zones?name=4planet.org")"
+            zone_id=''
+            [[ "$zone" == 200 ]] && zone_id="$(jq -r '.result[0].id // empty' "/tmp/os-audit-$label-zone.json")"
+            dns='n/a'
+            routes='n/a'
+            [[ -n "$zone_id" ]] && dns="$(probe "$label-dns" "$token" "/zones/$zone_id/dns_records?name=os.4planet.org")"
+            [[ -n "$zone_id" ]] && routes="$(probe "$label-routes" "$token" "/zones/$zone_id/workers/routes")"
+            pages="$(probe "$label-pages" "$token" "/accounts/$account/pages/projects/4planet-05")"
+            pages_domain="$(probe "$label-os-pages" "$token" "/accounts/$account/pages/projects/4planet-05/domains/os.4planet.org")"
+            worker_domains="$(probe "$label-worker-domains" "$token" "/accounts/$account/workers/domains")"
+            printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' "$env" "$verify" "$access" "$zone" "$dns" "$pages" "$pages_domain" "$worker_domains" "$routes" >> "$report"
+            if [[ "$access" == 200 ]]; then
+              printf '\n## Existing Access applications visible through %s (OS hostname only)\n\n' "$env" >> "$report"
+              jq -r '.result[]? | select((.domain // "" | ascii_downcase) == "os.4planet.org" or ([.destinations[]?.uri // ""]|join(" ")|contains("os.4planet.org"))) | "- Application ID: " + .id + " ; domain: " + (.domain // "UNKNOWN") + " ; policies: " + ([.policies[]?]|length|tostring)' "/tmp/os-audit-$label-access.json" >> "$report" || true
+            fi
+            if [[ "$dns" == 200 ]]; then
+              printf '\n## Existing OS DNS visible through %s\n\n' "$env" >> "$report"
+              jq -r 'if (.result|length)==0 then "- No exact OS DNS record" else .result[] | "- " + .type + " " + .name + " => " + (.content // "") + " proxied=" + (.proxied|tostring) end' "/tmp/os-audit-$label-dns.json" >> "$report"
+            fi
+            if [[ "$worker_domains" == 200 ]]; then
+              jq -r '.result[]? | select(.hostname == "os.4planet.org") | "- Existing OS Worker custom domain: " + (.service // "UNKNOWN")' "/tmp/os-audit-$label-worker-domains.json" >> "$report"
+            fi
+            if [[ "$routes" == 200 ]]; then
+              jq -r '.result[]? | select((.pattern // "") | contains("os.4planet.org")) | "- Existing OS Worker route: " + .pattern + " => " + (.script // "UNKNOWN")' "/tmp/os-audit-$label-routes.json" >> "$report"
+            fi
+          done
+          printf '\n## Observed live HTTPS (outside any credentials)\n\n' >> "$report"
+          for host in os.4planet.org labs.4planet.org 4planet.org; do
+            status="$(curl -sSL --connect-timeout 6 --max-time 22 -o /dev/null -w '%{http_code}' "https://$host/" 2>/dev/null || true)"
+            printf -- '- %s: HTTP %s\n' "$host" "${status:-000}" >> "$report"
+          done
+          printf '\nRead-only capability audit: zero Cloudflare mutations, zero changes to LABS or other domains.\n' >> "$report"
+          cat "$report"
+      - name: Record audit in the existing LABS-to-OS handoff
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/os-cf-scope-report.md ]]; then
+            gh issue comment 329 --repo "$GITHUB_REPOSITORY" --body-file /tmp/os-cf-scope-report.md
+          fi
