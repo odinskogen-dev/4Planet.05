@@ -1,0 +1,84 @@
+name: 4PLANET Exposure LIVE Preflight 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-exposure-live-preflight-20261027.yml]
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_FALLBACK: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CF_ALT: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - name: Inventory exact Cloudflare routing, access and all public species (READ ONLY)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,urllib.parse,concurrent.futures,hashlib,time
+          raw=[os.environ.get(k,'') for k in ('CF_PRIMARY','CF_FALLBACK','CF_ALT')]
+          tokens=[]
+          for t in raw:
+            t=t.strip().replace('\r','').replace('\n','')
+            for prefix in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if t.startswith(prefix):t=t[len(prefix):]
+            t=t.strip().strip('"').strip("'")
+            if t and t not in tokens:tokens.append(t)
+          api='https://api.cloudflare.com/client/v4'
+          def getapi(t,p):
+            req=urllib.request.Request(api+p,headers={'Authorization':'Bearer '+t,'Accept':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=18) as f:return f.status,json.load(f)
+            except urllib.error.HTTPError as e:
+              try:v=json.load(e)
+              except:v={}
+              return e.code,v
+            except:return 0,{}
+          token=None
+          for t in tokens:
+            code,obj=getapi(t,'/zones?name=4planet.org')
+            if code==200 and obj.get('success') and obj.get('result'):
+              token=t
+              break
+          output=['# 4PLANET Exact LIVE preflight (read-only)','']
+          output.append(f'Cloudflare zone access: {"PASS" if token else "NO VERIFIED ACCESS"}')
+          if token:
+            for dom in ('4planet.org','4planetmagazine.com','4species.com'):
+              code,obj=getapi(token,'/zones?name='+dom)
+              zone=next((z for z in obj.get('result',[]) if z.get('name')==dom),None)
+              if not zone:
+                output.append(f'{dom}: zone unreadable HTTP {code}')
+                continue
+              zid=zone['id']
+              rc,rs=getapi(token,f'/zones/{zid}/workers/routes')
+              entries=rs.get('result',[]) if isinstance(rs.get('result'),list) else []
+              output.append(f'{dom}: status={zone.get("status")}; routes_access={rc}; count={len(entries)}; routes='+', '.join(f'{r.get("pattern")} => {r.get("script")}' for r in entries)[:1500])
+              acc=(zone.get('account') or {}).get('id')
+              if acc:
+                ac,apps=getapi(token,f'/accounts/{acc}/workers/domains')
+                matching=[(d.get('hostname'),d.get('service')) for d in apps.get('result',[]) if dom in str(d.get('hostname',''))]
+                output.append(f'  worker_custom_domains HTTP {ac}: {matching[:8]}')
+          slugs="""orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia""".split()
+          def check(slug):
+            url='https://4species.com/'+slug
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4PLANET controlled species-preservation audit)'})
+            try:
+              with urllib.request.urlopen(req,timeout=28) as f:
+                status=f.status;body=f.read(240000);final=f.geturl();headers=f.headers
+                return slug,status,final,headers.get('X-Robots-Tag',''),len(body)
+            except urllib.error.HTTPError as e:return slug,e.code,e.geturl(),e.headers.get('X-Robots-Tag',''),0
+            except Exception as e:return slug,0,type(e).__name__,'',0
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+            data=list(pool.map(check,slugs))
+          output+=['','### Immutable public SPECIES baseline',f'Enumerated {len(slugs)} previously published slugs; HTTP 200: {sum(x[1]==200 for x in data)}; missing/error: {sum(x[1]!=200 for x in data)}']
+          for x in data:
+            output.append(f'{x[0]} | HTTP {x[1]} | {x[2]} | robots={x[3]} | bytes={x[4]}')
+          output.append('No Worker, Pages, DNS, route, sitemap, source, or production setting changed.')
+          result='\n'.join(output)
+          print(result)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(result+'\n')
+          if not token:raise SystemExit(2)
+          PY
