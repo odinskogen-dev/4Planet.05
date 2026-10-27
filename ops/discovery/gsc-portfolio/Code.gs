@@ -107,6 +107,45 @@ function setup4PlanetGSC() {
   return report;
 }
 
+// On API failure, old snapshots must not retain private properties or unsafe
+// queries/pages. Keep only verified organisation rows; never label them fresh.
+function gsc4pSanitiseExisting_(workbook, tabNames) {
+  tabNames.forEach(function(name) {
+    const tab = workbook.getSheetByName(name);
+    const headers = GSC4P_TAB_HEADERS[name];
+    const last = tab.getLastRow();
+    if (last <= 1) return;
+    const rows = tab.getRange(2, 1, last - 1, headers.length).getValues();
+    let changed = false;
+    const safe = [];
+    rows.forEach(function(original) {
+      if (!original.some(function(v) { return v !== "" && v !== null; })) return;
+      const row = original.slice();
+      const property = name === "Diagnostics" ? row[1] : row[0];
+      if (!(name === "Diagnostics" && property === "*") && !gsc4pOrgProperty_(property)) {
+        changed = true; return;
+      }
+      if ((name === "Pages" || name === "PageQueries" || name === "URLInspections") &&
+          !gsc4pPublicPage_(row[1], property)) { changed = true; return; }
+      if (name === "Queries" && !gsc4pSafeQuery_(row[1])) { changed = true; return; }
+      if (name === "PageQueries" && !gsc4pSafeQuery_(row[2])) { changed = true; return; }
+      if (name === "Sitemaps" && row[1] && !gsc4pPublicPage_(row[1], property)) {
+        changed = true; return;
+      }
+      if (name === "URLInspections") {
+        [5, 6].forEach(function(i) {
+          if (row[i] && !gsc4pPublicPage_(row[i], null)) { row[i] = ""; changed = true; }
+        });
+      }
+      if (name === "Diagnostics" && row[4] && !gsc4pSafeQuery_(row[4])) {
+        row[4] = "[REDACTED]"; changed = true;
+      }
+      safe.push(row);
+    });
+    if (changed) gsc4pWriteRows_(tab, headers, safe);
+  });
+}
+
 function sync4PlanetGSC() {
   const boundWorkbook = SpreadsheetApp.getActiveSpreadsheet();
   const spreadsheetId = boundWorkbook ? null : PropertiesService.getScriptProperties().getProperty("GSC4P_SHEET_ID");
@@ -121,9 +160,16 @@ function sync4PlanetGSC() {
 
   // This call is intentionally before ANY clear/write: never lose the previous
   // successful snapshot due to expired consent, disabled API or lost access.
-  const sites = gsc4pFetch_("/webmasters/v3/sites", "get");
+  let sites;
+  try {
+    sites = gsc4pFetch_("/webmasters/v3/sites", "get");
+  } catch (error) {
+    gsc4pSanitiseExisting_(workbook, Object.keys(GSC4P_TAB_HEADERS));
+    throw error;
+  }
   if (!sites || !Array.isArray(sites.siteEntry) || !sites.siteEntry.length) {
-    throw new Error("Google Search Console returned no properties. Kept previous snapshot.");
+    gsc4pSanitiseExisting_(workbook, Object.keys(GSC4P_TAB_HEADERS));
+    throw new Error("Google Search Console returned no properties. Kept only privacy-safe prior rows.");
   }
 
   const stamp = new Date().toISOString();
@@ -290,6 +336,9 @@ function sync4PlanetGSC() {
     diagnostics.push([stamp, "*", "snapshot-write", "HELD",
       "Preserved prior " + name + " tab because one or more Google API calls failed"]);
   });
+  // A failed API tab may contain an older, pre-allowlist snapshot. Scrub it
+  // before preserving historical data; do not publish partial new metrics.
+  gsc4pSanitiseExisting_(workbook, staleTabs);
   output.Diagnostics = diagnostics;
 
   // Each owned tab is an export-only readback surface. Preserve format, headers
