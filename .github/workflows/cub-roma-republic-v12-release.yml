@@ -646,8 +646,10 @@ jobs:
             test "$passed" -eq 1 || { echo "ROMA59_LIVE_HASH_FAILED=$host"; exit 1; }
             curl -fsSL --max-time 30 "$host/rome/tiles/r0c0.jpg" -o /tmp/roma59-tile.jpg
             test "$(wc -c < /tmp/roma59-tile.jpg)" -gt 20000
-            curl -fsSL --max-time 30 "$host/" | grep -Fq 'Play ROMA · Iteration 59'
-            curl -fsSL --max-time 30 "$host/games/roma/" | grep -Fq 'Play ROMA · Iteration 59'
+            curl -fsSL --max-time 30 "$host/" -o /tmp/roma59-home.html
+            grep -Fq 'Play ROMA · Iteration 59' /tmp/roma59-home.html
+            curl -fsSL --max-time 30 "$host/games/roma/" -o /tmp/roma59-product.html
+            grep -Fq 'Play ROMA · Iteration 59' /tmp/roma59-product.html
             curl -fsSL --max-time 30 "$host/roma/index.html" -o /tmp/roma59-cannae.html
             echo '3135d7a68083a013e90735266240a05d1a15dceb87cde2002520832cf9b42ae3  /tmp/roma59-cannae.html' | sha256sum -c -
             echo "CUB_ROMA59_LIVE_PASS=$host/rome/"
