@@ -1,0 +1,70 @@
+name: 4PLANET 20 Existing Public SPECIES IndexNow Verified Submission 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-species-indexnow-submission-20261027.yml]
+permissions: {contents: read}
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate 20 public canonical profiles and key before IndexNow notification
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re,os,urllib.request,urllib.error,xml.etree.ElementTree as ET,concurrent.futures,json,html.parser,sys
+          src=open('ops/discovery/4species-router.js').read()
+          k=re.search(r'const INDEXNOW_KEY = "([a-zA-Z0-9-]{8,128})";',src)
+          if not k:sys.exit('SOURCE_KEY_MISSING')
+          key=k.group(1)
+          block=src.split('const INDEXABLE_SPECIES = [',1)[1].split('];',1)[0]
+          slugs=re.findall(r'"([a-z0-9-]+)"',block)
+          if len(slugs)!=20 or len(set(slugs))!=20:sys.exit('SPECIES_FIRST20_NOT_EXACT')
+          base='https://4species.com/'
+          class Meta(html.parser.HTMLParser):
+            def __init__(self):super().__init__();self.canonical=[];self.robots=[];self.h1=0
+            def handle_starttag(self,tag,attrs):
+              d=dict(attrs)
+              if tag=='link' and d.get('rel','').lower()=='canonical':self.canonical.append(d.get('href',''))
+              if tag=='meta' and d.get('name','').lower()=='robots':self.robots.append(d.get('content',''))
+              if tag=='h1':self.h1+=1
+          def read(u):
+            req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 (4PLANET-IndexNow-source-verified)'})
+            try:
+              with urllib.request.urlopen(req,timeout=25) as r:
+                return r.status,r.read(350000).decode('utf-8','replace'),r.headers.get('X-Robots-Tag','')
+            except urllib.error.HTTPError as e:return e.code,e.read(5000).decode('utf-8','replace'),e.headers.get('X-Robots-Tag','')
+            except:return 0,'',''
+          status,body,_=read(base+key+'.txt')
+          if status!=200 or body.strip()!=key:sys.exit(f'INDEXNOW_OWNERSHIP_KEY_NOT_VERIFIED HTTP {status}')
+          status,xml,_=read(base+'sitemap.xml')
+          if status!=200:sys.exit('LIVE_SPECIES_SITEMAP_UNAVAILABLE')
+          root=ET.fromstring(xml)
+          locs={e.text for e in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if e.text}
+          urls=[base+s for s in slugs]
+          if not all(u in locs for u in urls):sys.exit('CURRENT_SITEMAP_MISSING_FIRST20')
+          def inspect(u):
+            status,body,xrobots=read(u)
+            p=Meta()
+            try:p.feed(body)
+            except:pass
+            valid=(status==200 and p.canonical==[u] and 'noindex' not in (' '.join(p.robots)+' '+xrobots).lower() and p.h1>=1)
+            return u,valid,status,p.canonical[:1]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=7) as e:verified=list(e.map(inspect,urls))
+          failures=[r for r in verified if not r[1]]
+          if failures:sys.exit('INDEXNOW_SCOPE_GUARD_FAILED '+str(failures[:8]))
+          print('INDEXNOW_PRECHECK_PASS: key exists, 20/20 live sitemap URLs 200, H1, self-canonical, index allowed')
+          payload={'host':'4species.com','key':key,'keyLocation':base+key+'.txt','urlList':urls}
+          req=urllib.request.Request('https://api.indexnow.org/indexnow',data=json.dumps(payload).encode('utf-8'),
+            headers={'Content-Type':'application/json; charset=utf-8','User-Agent':'4PLANET-Search-Discovery/1.0'},method='POST')
+          try:
+            with urllib.request.urlopen(req,timeout=28) as f:code=f.status;reply=f.read(1000).decode('utf-8','replace')
+          except urllib.error.HTTPError as e:
+            code=e.code;reply=e.read(1500).decode('utf-8','replace')
+          print('INDEXNOW_BULK_SUBMISSION_STATUS',code,'HOST 4species.com','COUNT',len(urls),'RESPONSE',reply[:400])
+          if code not in (200,202):sys.exit('INDEXNOW_SUBMISSION_REJECTED')
+          report=f'## Verified IndexNow dispatch\n\nHTTP {code} for 20 published, self-canonical \`4species.com\` profiles; ownership key verified. Google indexing not implied. Exact source \`{os.environ["GITHUB_SHA"]}\`. No production code or sitemap mutation.\n'
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(report)
+          PY
