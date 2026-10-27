@@ -1,0 +1,180 @@
+name: SPECIES57 P1 - 18 taxon source-backed author corrections LIVE with 39 immutable
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p1-taxonomy-controlled-live-20261027.yml]
+permissions: {contents: read}
+concurrency: {group: species57-taxonomy-founder-live-20261027, cancel-in-progress: false}
+jobs:
+  guarded:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      EXPECTED_WORKER_VERSION: 353abccb-cffb-4c8a-9544-2f161d3b74dd
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0,persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Rebuild exact current P0+SEO Worker and reviewed authorship, verify frozen source versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ops/discovery ops/species57 public/species-data/v1 evidence/taxon27
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js >ops/discovery/4species-router.js
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js >ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json >public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py >ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js >ops/discovery/species57-search-directory.js
+          test "$(git hash-object ops/discovery/4species-router.js)" = 140d6854b34609e537a016068543c8bf44a6e7cf
+          test "$(git hash-object ops/species57/patch-57-discovery.py)" = 2f86cae9a08ad8fbfd66166de06780876b07ccda
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
+          python3 ops/species57/p1-add-source-verified-authors.py ops/discovery/4species-router-p1.js ops/species57/p1-taxonomy-evidence.json ops/discovery/4species-router-p1-reviewed.js
+          node --check ops/discovery/4species-router-p1-reviewed.js
+          echo SPECIES57_P1_LOCAL_PROVEN_CANDIDATE_PINNED
+      - name: Snapshot exact 39 original HTML+JSON and 18 existing media/science; verify versions and source evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import concurrent.futures,urllib.request,json,hashlib
+          from pathlib import Path
+          site="https://4species.com"
+          original="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          extra="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(original)==39 and len(extra)==18
+          def get(uri):
+            request=urllib.request.Request(uri,headers={"Cache-Control":"no-cache","User-Agent":"4SPECIES57-AUTHOR-DEPLOY-QA/20261027"})
+            with urllib.request.urlopen(request,timeout=40) as r:return r.read(),r.status
+          def check(slug):
+            body,status=get(site+"/"+slug)
+            raw,_=get(site+"/species-data/v1/"+slug+".json")
+            frozen="https://e17e1392.4planet-05.pages.dev" if slug in original else "https://de9e3e0e.4planet-05.pages.dev"
+            assert json.loads(raw)==json.loads(get(frozen+"/species-data/v1/"+slug+".json")[0]),("SOURCE_PROFILE_DRIFT",slug)
+            assert status==200 and ("https://4species.com/"+slug).encode() in body
+            return {"slug":slug,"htmlSha":hashlib.sha256(body).hexdigest(),"jsonSha":hashlib.sha256(raw).hexdigest(),"json":json.loads(raw) if slug in extra else None}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:rows=list(pool.map(check,original+extra))
+          Path("evidence/taxon27/before.json").write_text(json.dumps(rows,ensure_ascii=False))
+          print("SPECIES57_P1_PRELIVE_39_ORIGINAL_BYTE_HASH_AND18_FACTS_LOCKED")
+          PY
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" > /tmp/zones.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/zones.json)
+          test -n "$account"
+          echo "SPECIES_CF_ACCOUNT=$account" >> "$GITHUB_ENV"
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" >/tmp/current.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/current.json)
+          test "$current" = "$EXPECTED_WORKER_VERSION" || { echo "SPECIES_P1_STOP_CONCURRENT_WORKER $current"; exit 1; }
+          echo "ROLLBACK_WORKER=$current" >> "$GITHUB_ENV"
+          echo "SPECIES57_P1_PRE_DEPLOY_WORKER_VERSION_MATCH $current"
+      - name: Promote only 18 author metadata plus truthful sitemap changes, rollback on any breach
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback() {
+            echo "SPECIES_P1_RELEASE_FAILED_ROLLBACK_TO $ROLLBACK_WORKER"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_WORKER" --name 4species-router || true
+          }
+          trap rollback ERR
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$SPECIES_CF_ACCOUNT/workers/scripts/4species-router/deployments" >/tmp/check.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/check.json)
+          test "$current" = "$ROLLBACK_WORKER" || { echo "SPECIES_P1_STOP_CONCURRENT_CHANGE"; trap - ERR; exit 1; }
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router-p1-reviewed.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/taxon27-deploy.log
+          python3 - <<'PY'
+          import urllib.request,json,hashlib,xml.etree.ElementTree as ET,concurrent.futures
+          from pathlib import Path
+          base="https://4species.com"
+          before=json.loads(Path("evidence/taxon27/before.json").read_text())
+          docs=json.loads(Path("ops/species57/p1-taxonomy-evidence.json").read_text())
+          def get(u):
+            with urllib.request.urlopen(urllib.request.Request(u,headers={"User-Agent":"4SPECIES-57-P1-POSTLIVE-20261027","Cache-Control":"no-cache"}),timeout=35) as r:return r.read()
+          def verify(p):
+            slug=p["slug"]
+            html=get(base+"/"+slug)
+            raw=get(base+"/species-data/v1/"+slug+".json")
+            assert html and raw
+            if p["json"] is None:
+              assert hashlib.sha256(html).hexdigest()==p["htmlSha"],("ORIGINAL_39_HTML_CHANGED",slug)
+              assert hashlib.sha256(raw).hexdigest()==p["jsonSha"],("ORIGINAL_39_JSON_CHANGED",slug)
+              return "ORIGINAL"
+            old=p["json"];new=json.loads(raw)
+            assert new["identity"]["authorship"]==docs["authors"].get(slug,""),("AUTHORSHIP_DIFF",slug)
+            assert new["facts"]==old["facts"] and new["hero"]==old["hero"] and new["gallery"]==old["gallery"],("FACTS_MEDIA_DRIFT",slug)
+            assert new["identity"]["scientificName"]==old["identity"]["scientificName"]
+            assert new["provenance"]["review"]==old["provenance"]["review"]=="DRAFT"
+            assert new["provenance"]["taxonAuthorityEvidence"]["status"]==("ACCEPTED_TWO_AUTHORITIES" if slug in docs["authors"] else "NOT_YET_RECONCILED")
+            assert b"Pending authority citation" not in html,("HTML_STILL_UNVERIFIED_PLACEHOLDER",slug)
+            assert (base+"/"+slug).encode() in html
+            return "NEW"
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:r=list(pool.map(verify,before))
+          assert r.count("ORIGINAL")==39 and r.count("NEW")==18
+          sitemap=get(base+"/sitemap.xml")
+          root=ET.fromstring(sitemap)
+          for slug in docs["authors"].keys() | docs["unresolved"].keys():
+            loc=base+"/"+slug
+            row=next((e for e in root if any(c.tag.endswith("loc") and c.text==loc for c in e)),None)
+            assert row is not None and any(e.tag.endswith("lastmod") and e.text=="2026-10-27" for e in row),(slug,"NO_TRUTHFUL_LASTMOD")
+          directory=get(base+"/species-directory")
+          assert directory.count(b'class="card"')==57
+          js=get(base+"/assets/index-DLiHR8tZ.js")
+          assert not js.startswith(b"<!doctype html>")
+          print("SPECIES57_P1_LIVE_CLOSURE_PASS_39_IMMUTABLE_18_CORRECTED_15_VERIFIED_3_UNRESOLVED")
+          Path("evidence/taxon27/live-verified.json").write_text(json.dumps({"original39HTMLJSONIdentical":39,"new18ScientificFactsMediaUnchanged":18,"verifiedAuthors":15,"heldUnresolved":3,"sitemapNew18Lastmod":"2026-10-27"},indent=2))
+          PY
+          trap - ERR
+      - name: Browser proof of hydrated scientific authority and no placeholders, in mobile WebKit and desktop Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/species-p1-live playwright@1.56.0 --no-audit --no-fund
+          /tmp/species-p1-live/node_modules/.bin/playwright install --with-deps chromium webkit
+          node --input-type=module <<'NODE'
+          import {chromium,webkit,devices} from "/tmp/species-p1-live/node_modules/playwright/index.mjs";
+          import fs from "node:fs";
+          const items=["koala","quokka","giant-otter","secretary-bird","giant-manta-ray","venus-flytrap","giant-sequoia","titan-arum","orca","lion"];
+          const out=[];
+          for(const [n,eng,mobile] of [["Chromium",chromium,false],["WebKit",webkit,true]]){
+            const b=await eng.launch({headless:true});
+            const context=await b.newContext(mobile?devices["iPhone 13"]:{viewport:{width:1440,height:900}});
+            for(const slug of items){
+              const p=await context.newPage(),jsErrors=[];
+              p.on("pageerror",e=>jsErrors.push(String(e)));
+              const res=await p.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+              await p.waitForTimeout(2100);
+              const obj=await p.evaluate(()=>({main:document.querySelector("#main-content")?.className||"",body:document.body.innerText.slice(0,15000),overflow:document.documentElement.scrollWidth>innerWidth+3}));
+              const pass=res?.status()===200&&obj.main.includes("spx-root")&&!obj.body.includes("Pending authority citation")&&!obj.overflow&&!jsErrors.length;
+              out.push({slug,browser:n,mobile,pass,jsErrors,main:obj.main,containsPlaceholder:obj.body.includes("Pending authority citation")});
+              console.log("SPECIES57_P1_BROWSER",JSON.stringify(out.at(-1)));
+              await p.close();
+            }
+            await context.close();await b.close();
+          }
+          fs.writeFileSync("evidence/taxon27/browser.json",JSON.stringify(out,null,2));
+          if(out.some(x=>!x.pass))process.exitCode=1;
+          NODE
+      - name: Send only modified 18 canonical URLs to IndexNow
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          evidence=json.load(open("ops/species57/p1-taxonomy-evidence.json"))
+          names=list(evidence["authors"])+list(evidence["unresolved"])
+          assert len(names)==18
+          payload={"host":"4species.com","key":"8f4c2d91a7b64e3fa1c9d0b6e5274a83","keyLocation":"https://4species.com/8f4c2d91a7b64e3fa1c9d0b6e5274a83.txt","urlList":["https://4species.com/"+n for n in names]}
+          open("/tmp/taxon-indexnow.json","w").write(json.dumps(payload))
+          PY
+          status=$(curl -sS --max-time 35 -o /tmp/indexnowreply -w '%{http_code}' -X POST https://api.indexnow.org/indexnow -H "Content-Type: application/json" --data-binary @/tmp/taxon-indexnow.json)
+          echo "SPECIES57_P1_INDEXNOW_STATUS=$status"
+          test "$status" = "200" || test "$status" = "202"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-taxonomy-p1-15-gbif-col-authors-18-live-39-immutable-proof
+          path: evidence/taxon27
+          retention-days: 30
