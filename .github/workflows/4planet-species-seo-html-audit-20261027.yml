@@ -1,0 +1,75 @@
+name: 4PLANET SPECIES First 20 Search HTML Audit 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-species-seo-html-audit-20261027.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prove production crawler-visible HTML for first 20 approved species (no mutations)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re,concurrent.futures,urllib.request,urllib.error,html,os
+          from html.parser import HTMLParser
+          s=open('ops/discovery/4species-router.js').read()
+          data=s.split('const INDEXABLE_SPECIES = [',1)[1].split('];',1)[0]
+          slugs=re.findall(r'"([a-z0-9-]+)"',data)
+          assert len(slugs)==20 and len(set(slugs))==20
+          class P(HTMLParser):
+            def __init__(self):
+              super().__init__();self.title='';self.meta={};self.canonical=[];self.h1=[];self.in_title=False;self.in_h1=False;self.in_script=False;self.in_style=False;self.visible=[];self.anchors=[];self.ldjson=0
+            def handle_starttag(self,tag,attrs):
+              a=dict(attrs)
+              if tag=='title':self.in_title=True
+              if tag=='h1':self.in_h1=True
+              if tag=='script':
+                self.in_script=True
+                if a.get('type')=='application/ld+json':self.ldjson+=1
+              if tag=='style':self.in_style=True
+              if tag=='meta':
+                k=a.get('name') or a.get('property')
+                if k:self.meta.setdefault(k.lower(),[]).append(a.get('content',''))
+              if tag=='link' and a.get('rel','').lower()=='canonical':self.canonical.append(a.get('href',''))
+              if tag=='a':self.anchors.append(a.get('href',''))
+            def handle_endtag(self,tag):
+              if tag=='title':self.in_title=False
+              if tag=='h1':self.in_h1=False
+              if tag=='script':self.in_script=False
+              if tag=='style':self.in_style=False
+            def handle_data(self,data):
+              if self.in_title:self.title+=data
+              elif self.in_h1:self.h1.append(data)
+              if not (self.in_script or self.in_style):self.visible.append(data)
+          def audit(slug):
+            u='https://4species.com/'+slug
+            req=urllib.request.Request(u,headers={'User-Agent':'Googlebot/2.1 (+http://www.google.com/bot.html)'})
+            try:
+              with urllib.request.urlopen(req,timeout=28) as r:status=r.status;body=r.read(500000).decode('utf-8','replace');robots=r.headers.get('X-Robots-Tag','')
+            except urllib.error.HTTPError as e:return slug,e.code,'ERR','','',0,0,'no','no',''
+            except:return slug,0,'ERR','','',0,0,'no','no',''
+            p=P();p.feed(body)
+            desc=(p.meta.get('description') or [''])[0]
+            visible=' '.join(p.visible)
+            words=len(visible.split())
+            canonical=p.canonical[0] if p.canonical else ''
+            good=canonical==u
+            structured=p.ldjson
+            atlas=any('atlas' in a.lower() for a in p.anchors if a)
+            return slug,status,p.title[:67].replace('|','/'),str(len(desc)),('yes' if good else (canonical[:75] or 'MISSING')),words,structured,'yes' if p.h1 else 'no','yes' if atlas else 'no',robots[:70]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=7) as pool:rows=list(pool.map(audit,slugs))
+          out=['# 4SPECIES crawler-visible HTML diagnostic (LIVE, read-only)','',
+            '| Species | HTTP | Title | Description chars | Canonical exact? | HTML visible words | JSON-LD blocks | H1 | Atlas HTML link | X-Robots |',
+            '|---|---:|---|---:|---|---:|---:|---|---|---|']
+          for r in rows:out.append('| '+' | '.join(map(str,r))+' |')
+          out.append('')
+          out.append('Scope: 20 exact source-listed INDEXABLE_SPECIES slugs; no document, route, Worker, Pages, GitHub source, or analytics setting changed.')
+          out.append('HTML visible word count includes header/navigation boilerplate; does not imply unique factual content. JS-rendered text is not counted.')
+          print('\n'.join(out))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(out)+'\n')
+          if len(rows)!=20 or any(r[1]!=200 for r in rows):raise SystemExit('LIVE 20 species HTTP gate failed')
+          PY
