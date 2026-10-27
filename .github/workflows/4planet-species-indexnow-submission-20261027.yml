@@ -1,16 +1,14 @@
-name: 4PLANET 20 Existing Public SPECIES IndexNow Verified Submission 20261027
+name: 4PLANET SPECIES IndexNow READ-ONLY Preflight — Founder release HOLD
 on:
-  push:
-    branches: [king/test]
-    paths: [.github/workflows/4planet-species-indexnow-submission-20261027.yml]
+  workflow_dispatch:
 permissions: {contents: read}
 jobs:
-  submit:
+  preflight:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Validate 20 public canonical profiles and key before IndexNow notification
+      - name: READ-ONLY validate 20 public canonical profiles and ownership key
         shell: bash
         run: |
           python3 - <<'PY'
@@ -56,15 +54,7 @@ jobs:
           failures=[r for r in verified if not r[1]]
           if failures:sys.exit('INDEXNOW_SCOPE_GUARD_FAILED '+str(failures[:8]))
           print('INDEXNOW_PRECHECK_PASS: key exists, 20/20 live sitemap URLs 200, H1, self-canonical, index allowed')
-          payload={'host':'4species.com','key':key,'keyLocation':base+key+'.txt','urlList':urls}
-          req=urllib.request.Request('https://api.indexnow.org/indexnow',data=json.dumps(payload).encode('utf-8'),
-            headers={'Content-Type':'application/json; charset=utf-8','User-Agent':'4PLANET-Search-Discovery/1.0'},method='POST')
-          try:
-            with urllib.request.urlopen(req,timeout=28) as f:code=f.status;reply=f.read(1000).decode('utf-8','replace')
-          except urllib.error.HTTPError as e:
-            code=e.code;reply=e.read(1500).decode('utf-8','replace')
-          print('INDEXNOW_BULK_SUBMISSION_STATUS',code,'HOST 4species.com','COUNT',len(urls),'RESPONSE',reply[:400])
-          if code not in (200,202):sys.exit('INDEXNOW_SUBMISSION_REJECTED')
-          report=f'## Verified IndexNow dispatch\n\nHTTP {code} for 20 published, self-canonical \`4species.com\` profiles; ownership key verified. Google indexing not implied. Exact source \`{os.environ["GITHUB_SHA"]}\`. No production code or sitemap mutation.\n'
-          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(report)
+          print('INDEXNOW_READ_ONLY_PRECHECK_COMPLETE; no outbound notification sent')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+            f.write('## Read-only SPECIES preflight\\n\\n20 public URLs checked. **No IndexNow notification sent.** Future external dispatch requires action-specific Founder consent, exact URL list and SHA, and independent Gold approval.\\n')
           PY
