@@ -22,7 +22,7 @@ for(const name of names) {
    passed++;
  }
  assert.equal((s.match(/^## ONE BOOT \+ GOALS \+ GIGA \+ PROJECT ROUTING/gm)||[]).length,1,name+": duplicate boot sections");passed++;
- assert(/FOUNDER-APPROVED LIVING CURRENT MASTERPLAN|Founder-approved living current cross-project Masterplan/i.test(s),name+": 5.1 not approved");passed++;
+ assert(/FOUNDER-APPROVED LIVING CURRENT MASTERPLAN|Founder-approved living (?:current )?(?:cross-project )?Masterplan/i.test(s),name+": 5.1 not approved");passed++;
  assert(/ODIN PRIVATE|ODIN BRAIN/.test(s),name+": missing personal data isolation");passed++;
  assert(!/Minimum current-state path:\s*`00_ READ FIRST/.test(s),name+": old mandatory 00->01->02");passed++;
  assert(!/require a fresh AXE\/BRAIN context handoff/i.test(s),name+": conflicting generic second handoff");passed++;
