@@ -146,7 +146,7 @@ Before material work:
 7. Inspect recent git history for the affected area.
 8. Search for existing components/contracts before creating new architecture.
 9. Run a baseline check appropriate to the task before changing code.
-10. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, require a fresh AXE/BRAIN context handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
+10. If the task depends on current programme state, goals, Founder decisions, project priority, partner status, capital status or another product's current candidate, retrieve the relevant ORIGINAL Project Home/Atomic source via the ONE 00 boot already read; do not demand a second generic handoff. Do **not** infer those facts from old chat text, branch names, stale docs or repository history alone.
 
 If current BRAIN context is required but unavailable, state `CURRENT BRAIN READ REQUIRED` and continue only with bounded repository-local work that does not depend on the missing state. Never ask the Founder to repeat information merely because the agent failed to retrieve it.
 
