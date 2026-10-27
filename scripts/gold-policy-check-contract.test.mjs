@@ -262,6 +262,14 @@ test("accepts visible headings after a same-line case-insensitive raw HTML block
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
+test("rejects newest contract headings hidden inside CommonMark raw HTML containers", () => {
+  for (const tag of ["div", "section", "details", "table", "article"]) {
+    const result = run(hiddenRawHtmlPrepend(tag));
+    assert.notEqual(result.status, 0, `${tag}: ${result.stdout}${result.stderr}`);
+    assert.match(result.stderr, /newest GOLD brief contract missing heading/i, tag);
+  }
+});
+
 test("rejects destructive brief loss followed by an unrelated king-push commit", () => {
   const result = runTwoCommitCandidate({ firstBrief: newestContractOnly });
   assert.notEqual(result.status, 0, result.stdout + result.stderr);

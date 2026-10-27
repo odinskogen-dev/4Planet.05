@@ -103,8 +103,8 @@ function newestGoldBriefSection(brief) {
   return separator < 0 ? brief : brief.slice(0, separator);
 }
 
-function visibleMarkdownLines(markdown) {
-  const visible = [];
+function markdownContractTokens(markdown) {
+  const tokens = [];
   let inHtmlComment = false;
   let fence = null;
   let rawHtmlBlock = null;
@@ -155,33 +155,52 @@ function visibleMarkdownLines(markdown) {
       continue;
     }
 
-    const rawHtmlOpener = rendered.match(/^ {0,3}<(pre|script|style|textarea)(?:\s|>|$)/i);
+    // A CommonMark raw-HTML block is not Markdown content. Treat any block-level
+    // opening tag at line start as opaque until its matching close, rather than
+    // maintaining an incomplete allowlist of tags. This deliberately fails
+    // closed on malformed/unclosed containers. A self-contained same-line block
+    // remains opaque for that line only, allowing later Markdown to be tokenised.
+    const rawHtmlOpener = rendered.match(/^ {0,3}<([A-Za-z][A-Za-z0-9-]*)(?:\s|>|\/>|$)/);
     if (rawHtmlOpener) {
       const tag = rawHtmlOpener[1].toLowerCase();
-      if (!new RegExp(`</${tag}\\s*>`, "i").test(rendered)) {
+      const selfClosing = /\/\>\s*$/.test(rendered);
+      if (!selfClosing && !new RegExp(`</${tag}\\s*>`, "i").test(rendered)) {
         rawHtmlBlock = tag;
       }
       continue;
     }
-    visible.push(rendered);
+
+    const heading = rendered.match(/^ {0,3}(#{1,6})(?:[ \t]+|$)(.*)$/);
+    if (heading) {
+      tokens.push({
+        type: "heading_open",
+        depth: heading[1].length,
+        text: heading[2].replace(/[ \t]+#+[ \t]*$/, "").trim(),
+      });
+      continue;
+    }
+    tokens.push({ type: "text", text: rendered });
   }
 
-  return visible;
+  return tokens;
 }
 
 function validateRequiredBriefContract(current) {
-  const lines = visibleMarkdownLines(current);
+  const tokens = markdownContractTokens(current);
   for (const heading of REQUIRED_BRIEF_HEADINGS) {
-    const index = lines.findIndex((line) => line === heading);
+    const expectedText = heading.slice(3);
+    const index = tokens.findIndex((token) =>
+      token.type === "heading_open" && token.depth === 2 && token.text === expectedText
+    );
     if (index < 0) {
       fail(`newest GOLD brief contract missing heading: ${heading}`);
       continue;
     }
 
     const answer = [];
-    for (let lineIndex = index + 1; lineIndex < lines.length; lineIndex += 1) {
-      if (lines[lineIndex].startsWith("## ")) break;
-      answer.push(lines[lineIndex]);
+    for (let tokenIndex = index + 1; tokenIndex < tokens.length; tokenIndex += 1) {
+      if (tokens[tokenIndex].type === "heading_open") break;
+      answer.push(tokens[tokenIndex].text);
     }
     if (!answer.some((line) => /[\p{L}\p{N}]/u.test(line))) {
       fail(`newest GOLD brief contract has no answer under: ${heading}`);
