@@ -63,7 +63,9 @@ jobs:
           GOLD_HEAD_REF: ${{ github.head_ref }}
           GOLD_BASE_REF: origin/main
           GOLD_PR_DRAFT: ${{ github.event.pull_request.draft }}
-        run: node scripts/gold-policy-check.mjs --mode=${{ steps.mode.outputs.mode }}
+        run: |
+          node --test scripts/gold-policy-check-contract.test.mjs
+          node scripts/gold-policy-check.mjs --mode=${{ steps.mode.outputs.mode }}
 
       - name: Record enforcement evidence
         if: always()

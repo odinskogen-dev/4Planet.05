@@ -34,6 +34,8 @@ const REQUIRED_BRIEF_HEADINGS = [
   "## MOBILE-FIRST RISK",
   "## HUMAN SUCCESS",
 ];
+const GOLD_BRIEF_PATH = "docs/control/GOLD_CURRENT_BRIEF.md";
+const GOLD_BRIEF_SECTION_SEPARATOR = /\r?\n---\r?\n/;
 
 const PRODUCT_PREFIXES = ["src/", "public/", "functions/", "supabase/", "tests/e2e/"];
 const PRODUCT_FILES = new Set(["package.json", "package-lock.json", "vite.config.ts", "vite.config.js"]);
@@ -50,6 +52,14 @@ function fail(message) {
 function git(args, fallback = "") {
   try {
     return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  } catch {
+    return fallback;
+  }
+}
+
+function gitRaw(args, fallback = "") {
+  try {
+    return execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   } catch {
     return fallback;
   }
@@ -77,21 +87,56 @@ function isProductFacing(file) {
   return PRODUCT_FILES.has(file) || PRODUCT_PREFIXES.some((prefix) => file.startsWith(prefix));
 }
 
-function validateAuthorityFiles() {
+function newestGoldBriefSection(brief) {
+  const separator = brief.search(GOLD_BRIEF_SECTION_SEPARATOR);
+  return separator < 0 ? brief : brief.slice(0, separator);
+}
+
+function validateGoldBriefHistory(brief, files) {
+  if (!files.includes(GOLD_BRIEF_PATH)) return;
+
+  const priorRef = process.env.GOLD_BRIEF_BASE_REF || git(["rev-parse", "HEAD^"]);
+  if (!priorRef) {
+    fail("modified GOLD brief has no prior Git revision for history-preservation validation");
+    return;
+  }
+
+  const priorBrief = gitRaw(["show", `${priorRef}:${GOLD_BRIEF_PATH}`]);
+  if (!priorBrief) {
+    fail(`modified GOLD brief cannot read prior history from ${priorRef}`);
+    return;
+  }
+
+  if (!brief.endsWith(priorBrief)) {
+    fail("modified GOLD brief must preserve its exact prior Git revision as an unchanged suffix; destructive history edits require separately verified Founder authority outside the changed brief");
+    return;
+  }
+
+  if (brief !== priorBrief) {
+    const prefix = brief.slice(0, brief.length - priorBrief.length);
+    if (!/\r?\n---\r?\n\r?\n$/.test(prefix)) {
+      fail("modified GOLD brief must bound the newest contract before the exact preserved history with the canonical section separator");
+    }
+  }
+}
+
+function validateAuthorityFiles(files) {
   for (const file of REQUIRED_FILES) {
     if (!fs.existsSync(file)) fail(`missing canonical enforcement file: ${file}`);
   }
 
-  if (!fs.existsSync("docs/control/GOLD_CURRENT_BRIEF.md")) return;
-  const brief = fs.readFileSync("docs/control/GOLD_CURRENT_BRIEF.md", "utf8");
+  if (!fs.existsSync(GOLD_BRIEF_PATH)) return;
+  const brief = fs.readFileSync(GOLD_BRIEF_PATH, "utf8");
+  validateGoldBriefHistory(brief, files);
+  const current = newestGoldBriefSection(brief);
   for (const heading of REQUIRED_BRIEF_HEADINGS) {
-    const idx = brief.indexOf(heading);
+    const idx = current.indexOf(heading);
     if (idx < 0) {
-      fail(`current GOLD brief missing heading: ${heading}`);
+      fail(`newest GOLD brief contract missing heading: ${heading}`);
       continue;
     }
-    const after = brief.slice(idx + heading.length).split(/^## /m)[0].trim();
-    if (!after) fail(`current GOLD brief has no answer under: ${heading}`);
+    const after = current.slice(idx + heading.length).split(/^## /m)[0].trim();
+    if (!after) fail(`newest GOLD brief contract has no answer under: ${heading}`);
   }
 
   const registry = JSON.parse(fs.readFileSync("docs/control/GOLD_VISUAL_BASELINES.json", "utf8"));
@@ -159,8 +204,8 @@ function validateLivePromotion() {
   if (manifest.priorLiveSha && !/^[a-f0-9]{40}$/i.test(manifest.priorLiveSha)) fail("LIVE promotion priorLiveSha must be an exact 40-character commit SHA");
 }
 
-validateAuthorityFiles();
 const files = changedFiles();
+validateAuthorityFiles(files);
 
 if (["king-push", "pr-main", "main-push"].includes(mode)) validateUserFacingChange(files);
 
