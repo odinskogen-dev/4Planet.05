@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Exact repository-local static guard. No network, no Drive reads, no permissions granted.
 // Complements, NEVER replaces independent blind-cold-agent Gold and source/runtime readback.
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
 import { strict as assert } from "node:assert";
 const names = ["AGENTS.md", ".github/copilot-instructions.md"];
 const BOOT = "15XcZ7FQqAZnoxVe74YNlfh4MccYRcPPTYYFQ1XNbQVo";
@@ -104,7 +106,30 @@ const positive=[
 for(const fixture of negative) assert(legacyMandatoryLines(fixture).length>0 || unsafeAuthorityLines(fixture).length>0,"NEGATIVE FALSE ACCEPT "+fixture);
 for(const fixture of positive){assert.equal(legacyMandatoryLines(fixture).length,0,"HISTORIC FALSE POSITIVE "+fixture);assert.equal(unsafeAuthorityLines(fixture).length,0,"SAFE GUARD FALSE POSITIVE "+fixture);}
 
-let passed=negative.length+positive.length;
+let passed=negative.length+(positive.length*2);
+const mutationRoot=mkdtempSync(join(tmpdir(),"one-boot-authority-"));
+try {
+ for(const name of names) {
+  const original=readFileSync(name,"utf8");
+  assert.deepEqual(legacyMandatoryLines(original),[],name+": mutation baseline mandatory boot");passed++;
+  assert.deepEqual(unsafeAuthorityLines(original),[],name+": mutation baseline authority bypass");passed++;
+  for(const [index,fixture] of negative.entries()) {
+   const mutationPath=join(mutationRoot,index+"-"+basename(name));
+   writeFileSync(mutationPath,original+"\n"+fixture+"\n","utf8");
+   const mutated=readFileSync(mutationPath,"utf8");
+   assert(legacyMandatoryLines(mutated).length>0 || unsafeAuthorityLines(mutated).length>0,name+": ACTUAL FILE MUTATION FALSE ACCEPT "+fixture);passed++;
+  }
+  for(const [index,fixture] of positive.entries()) {
+   const mutationPath=join(mutationRoot,"safe-"+index+"-"+basename(name));
+   writeFileSync(mutationPath,original+"\n"+fixture+"\n","utf8");
+   const mutated=readFileSync(mutationPath,"utf8");
+   assert.deepEqual(legacyMandatoryLines(mutated),[],name+": ACTUAL FILE MUTATION SAFE BOOT REJECT "+fixture);
+   assert.deepEqual(unsafeAuthorityLines(mutated),[],name+": ACTUAL FILE MUTATION SAFE AUTHORITY REJECT "+fixture);passed+=2;
+  }
+ }
+} finally {
+ rmSync(mutationRoot,{recursive:true,force:true});
+}
 for(const name of names) {
  const s=readFileSync(name,"utf8");
  for(const token of checks) {
