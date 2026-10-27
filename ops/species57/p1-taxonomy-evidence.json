@@ -1,0 +1,29 @@
+{
+  "schema": "4SPECIES_TAXONOMIC_AUTHORITY_EVIDENCE_V1",
+  "checkedAt": "2026-10-26",
+  "status": "Source-verified editorial correction for 18 existing V1 pages only, not a new taxonomy authority",
+  "policy": "Do not invent author; match exact accepted species names in GBIF and Catalogue of Life; hold punctuation/abbreviation disputes",
+  "sourceRun": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/40302151740",
+  "authors": {
+    "koala": "(Goldfuss, 1817)",
+    "quokka": "(Quoy & Gaimard, 1830)",
+    "capybara": "(Linnaeus, 1766)",
+    "red-fox": "(Linnaeus, 1758)",
+    "giant-anteater": "Linnaeus, 1758",
+    "walrus": "(Linnaeus, 1758)",
+    "common-kingfisher": "(Linnaeus, 1758)",
+    "secretary-bird": "(J.F.Miller, 1779)",
+    "scarlet-macaw": "(Linnaeus, 1758)",
+    "peregrine-falcon": "Tunstall, 1771",
+    "ocean-sunfish": "(Linnaeus, 1758)",
+    "giant-manta-ray": "(Walbaum, 1792)",
+    "greater-blue-ringed-octopus": "(Quoy & Gaimard, 1832)",
+    "peacock-mantis-shrimp": "(Linnaeus, 1758)",
+    "titan-arum": "(Becc.) Becc."
+  },
+  "unresolved": {
+    "giant-otter": "GBIF Zimmermann, 1780 versus Catalogue of Life (Zimmermann, 1780): parentheses reflect nomenclatural combinations; do not silently normalize.",
+    "venus-flytrap": "GBIF Ellis versus Catalogue of Life J.Ellis: bibliographic author abbreviation requires source-specific determination.",
+    "giant-sequoia": "GBIF (Lindl.) J.T.Buchholz versus Catalogue of Life (Lindl.) J.Buchholz: author initials need independent nomenclatural review."
+  }
+}
