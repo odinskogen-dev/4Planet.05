@@ -1,0 +1,111 @@
+name: SPECIES57 P1 — independent taxonomic authorities 18, local worker test ONLY
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p1-source-authority-local-qa-20261027.yml]
+permissions: {contents: read}
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Recreate frozen original39 & current P0 + directory worker, and 15+3 P1 source authority patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          mkdir -p ops/discovery ops/species57 public/species-data/v1 evidence
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js > ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json > public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py > ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js > ops/discovery/species57-search-directory.js
+          test "$(git hash-object ops/discovery/4species-router.js)" = 140d6854b34609e537a016068543c8bf44a6e7cf
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
+          python3 ops/species57/p1-add-source-verified-authors.py ops/discovery/4species-router-p1.js ops/species57/p1-taxonomy-evidence.json ops/discovery/4species-router-p1-reviewed.js
+          node --check ops/discovery/4species-router-p1-reviewed.js
+          python3 -m json.tool ops/species57/p1-taxonomy-evidence.json >/dev/null
+          echo SPECIES57_P1_15_AUTHORS_3_UNRESOLVED_LOCAL_CODE_PASS
+      - name: Verify original taxonomy authority records still match GBIF and Catalogue of Life independently
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,re,urllib.parse,urllib.request
+          from pathlib import Path
+          report=json.loads(Path("ops/species57/p1-taxonomy-evidence.json").read_text())
+          catalog=json.loads(urllib.request.urlopen(urllib.request.Request("https://4species.com/species-data/v1/index.json",headers={"User-Agent":"4SPECIES-TAXONOMY-EVIDENCE-QA"}),timeout=25).read())
+          science={x["slug"]:x["scientificName"] for x in catalog["pages"]}
+          assert len(report["authors"])==15 and len(report["unresolved"])==3 and len(science)==57
+          checked=[]
+          def get(url):
+            with urllib.request.urlopen(urllib.request.Request(url,headers={"User-Agent":"4SPECIES-INDEPENDENT-TAXONOMY-REVIEW-20261027"}),timeout=30) as r:return json.load(r)
+          for slug,author in report["authors"].items():
+            name=science[slug]
+            params=urllib.parse.urlencode({"scientificName":name})
+            gbif=get("https://api.gbif.org/v2/species/match?"+params)
+            col=get("https://api.gbif.org/v2/species/match?"+params+"&checklistKey=7ddf754f-d193-4cc9-b351-99906754a03b")
+            a=gbif["usage"];b=col["usage"]
+            assert a["canonicalName"]==name==b["canonicalName"] and a["rank"]=="SPECIES"==b["rank"] and a["status"]=="ACCEPTED"==b["status"],slug
+            assert a["authorship"]==author,slug
+            assert re.sub(r"\s+","",a["authorship"])==re.sub(r"\s+","",b["authorship"]),(slug,a["authorship"],b["authorship"])
+            checked.append({"slug":slug,"scientific":name,"author":author,"verifiedBy":["GBIF","Catalogue of Life"],"status":"ACCEPTED"})
+          Path("evidence/author-source-verified.json").write_text(json.dumps({"total":len(checked),"verified":checked,"held":report["unresolved"]},indent=2))
+          print("SPECIES57_P1_INDEPENDENT_TAXON_AUTHORS_VERIFIED",len(checked),"HOLD",len(report["unresolved"]))
+          PY
+      - name: Local runtime verify HTML and JSON of all 18, original39 exactly retained
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/export const NON_PROFILE_REVIEW_STATE/const NON_PROFILE_REVIEW_STATE/' ops/discovery/4species-router-p1-reviewed.js
+          npx --yes wrangler@4.128.0 dev ops/discovery/4species-router-p1-reviewed.js --local --ip 127.0.0.1 --port 8787 --compatibility-date 2026-09-07 --log-level error >/tmp/species-p1-reviewed-workerd.log 2>&1 &
+          workerd=$!
+          trap 'kill $workerd 2>/dev/null || true' EXIT
+          ready=0
+          for i in $(seq 1 35); do
+            if curl -fsS --max-time 2 http://127.0.0.1:8787/robots.txt >/dev/null 2>&1; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" != 1 ]; then tail -65 /tmp/species-p1-reviewed-workerd.log; exit 1; fi
+          python3 - <<'PY'
+          import concurrent.futures,urllib.request,json,hashlib,xml.etree.ElementTree as ET
+          from pathlib import Path
+          origin="http://127.0.0.1:8787"
+          live="https://4species.com"
+          names="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          originals="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          ev=json.loads(Path("ops/species57/p1-taxonomy-evidence.json").read_text())
+          def get(url):
+            req=urllib.request.Request(url,headers={"User-Agent":"SPECIES57-P1-PREVIEW-ONLY"})
+            with urllib.request.urlopen(req,timeout=30) as r:return r.read()
+          for slug in names:
+            data=json.loads(get(origin+"/species-data/v1/"+slug+".json"))
+            html=get(origin+"/"+slug).decode()
+            previous=json.loads(get(live+"/species-data/v1/"+slug+".json"))
+            assert "Pending authority citation" not in html
+            assert data["identity"]["authorship"]==ev["authors"].get(slug,""),slug
+            assert data["provenance"]["review"]==previous["provenance"]["review"]=="DRAFT"
+            assert data["hero"]==previous["hero"],("MEDIA_CHANGED",slug)
+            assert data["facts"]==previous["facts"],("SCIENCE_CHANGED",slug)
+            assert data["identity"]["scientificName"]==previous["identity"]["scientificName"]
+            assert data["provenance"]["taxonAuthorityEvidence"]["status"]==("ACCEPTED_TWO_AUTHORITIES" if slug in ev["authors"] else "NOT_YET_RECONCILED")
+            print("SPECIES57_P1_LOCAL_V1_CONFIRMED",slug)
+          for slug in originals:
+            assert get(origin+"/"+slug)==get(live+"/"+slug),("ORIGINAL39_HTML_CHANGED",slug)
+            assert get(origin+"/species-data/v1/"+slug+".json")==get(live+"/species-data/v1/"+slug+".json"),("ORIGINAL39_JSON_CHANGED",slug)
+          tree=ET.fromstring(get(origin+"/sitemap.xml"))
+          locs={e.text for e in tree.iter() if e.tag.endswith("loc") and e.text}
+          for slug in names:assert live+"/"+slug in locs
+          print("SPECIES57_P1_LOCAL_CANDIDATE_PASS",len(names),"verified source15,held3",len(originals),"ORIGINALS_UNCHANGED")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-p1-source-verified-authority-18-local-preview-39-immutable
+          path: evidence/
+          retention-days: 30
