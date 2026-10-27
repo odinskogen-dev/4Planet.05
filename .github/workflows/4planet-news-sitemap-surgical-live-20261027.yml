@@ -1,0 +1,174 @@
+name: 4PLANET News Sitemap Surgical LIVE P0 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-news-sitemap-surgical-live-20261027.yml]
+permissions:
+  contents: read
+concurrency:
+  group: 4planet-news-sitemap-p0-live
+  cancel-in-progress: false
+jobs:
+  bounded-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      RAW_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      RAW_FALLBACK: ${{ secrets.CLOUDFLARE_TOKEN }}
+      RAW_ALT: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Prove exact source scope and offline Worker contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -f ops/exposure/4planet-news-sitemap-p0.js
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import worker from './ops/exposure/4planet-news-sitemap-p0.js';
+          const request=(url,method='GET')=>worker.fetch(new Request(url,{method}));
+          const normal=await request('https://4planet.org/news-sitemap.xml');
+          assert.equal(normal.status,200);
+          assert.match(normal.headers.get('content-type'),/application\/xml/);
+          assert.match(await normal.text(),/xmlns:news=.*google.com\/schemas\/sitemap-news/);
+          assert.equal((await request('https://4planet.org/news-sitemap.xml','HEAD')).status,200);
+          assert.equal((await request('https://4planet.org/news-sitemap.xml','POST')).status,405);
+          for (const url of ['https://4planet.org/','https://4planet.org/now','https://4planet.org/news-sitemap.xml/','https://4species.com/news-sitemap.xml']) assert.equal((await request(url)).status,404,url);
+          console.log('BOUNDED_WORKER_CONTRACT_PASS');
+          NODE
+      - name: Authenticate, resolve exact zone, verify no existing route, lock all 57 published species
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,re,concurrent.futures,sys
+          raw=[os.environ.get(n,'') for n in ('RAW_PRIMARY','RAW_FALLBACK','RAW_ALT')]
+          tokens=[]
+          for t in raw:
+            t=t.strip().replace('\r','').replace('\n','')
+            for pre in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if t.startswith(pre): t=t[len(pre):]
+            t=t.strip().strip('"').strip("'")
+            if t and t not in tokens: tokens.append(t)
+          api='https://api.cloudflare.com/client/v4'
+          def get(t,path):
+            req=urllib.request.Request(api+path,headers={'Authorization':'Bearer '+t,'Content-Type':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=20) as f: return f.status,json.load(f)
+            except urllib.error.HTTPError as e:
+              try:d=json.load(e)
+              except:d={}
+              return e.code,d
+          token=None; zone=None
+          for t in tokens:
+            code,data=get(t,'/zones?name=4planet.org')
+            zs=[z for z in data.get('result',[]) if z.get('name')=='4planet.org' and z.get('status')=='active']
+            if code==200 and data.get('success') and len(zs)==1: token=t;zone=zs[0];break
+          if not token:sys.exit('FAIL_CLOSED: 4planet.org active Cloudflare zone inaccessible')
+          code,routes=get(token,f'/zones/{zone["id"]}/workers/routes')
+          if code!=200 or not routes.get('success'):sys.exit('FAIL_CLOSED: cannot inventory exact Worker routes')
+          exact=[r for r in routes.get('result',[]) if r.get('pattern')=='4planet.org/news-sitemap.xml']
+          if exact:sys.exit('FAIL_CLOSED: existing exact production route is already owned')
+          acc=(zone.get('account') or {}).get('id')
+          if not acc:sys.exit('FAIL_CLOSED: account unresolved')
+          def live(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'4PLANET-safe-release-gate'})
+            try:
+              with urllib.request.urlopen(req,timeout=25) as f:return f.status
+            except urllib.error.HTTPError as e:return e.code
+            except:return 0
+          baseline=live('https://4planet.org/news-sitemap.xml')
+          if baseline!=404:sys.exit(f'FAIL_CLOSED: target expected LIVE 404, observed HTTP {baseline}; no mutation')
+          s=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+          slugs=re.findall(r'"([a-z0-9-]+)"',s)
+          if len(slugs)!=57 or len(set(slugs))!=57:sys.exit('FAIL_CLOSED: 57 released species invariant changed')
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:
+            observed=list(ex.map(lambda x:(x,live('https://4species.com/'+x)),slugs))
+          non200=[x for x in observed if x[1]!=200]
+          if non200:sys.exit('FAIL_CLOSED: existing species LIVE baseline is not healthy: '+str(non200[:8]))
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+            f.write(f'CLOUDFLARE_ACCOUNT_ID={acc}\nCF_ZONE_ID={zone["id"]}\nCF_SCRIPT_NAME=4planet-news-sitemap-p0-20261027\n')
+            f.write('CLOUDFLARE_API_TOKEN='+token+'\n')
+          print('::add-mask::'+token)
+          print('PRE_DEPLOY_PASS: known LIVE target 404; no conflicting route; exact active zone and 57/57 existing species PASS')
+          PY
+      - name: Deploy one newly named, previously unattached Worker only
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/exposure/4planet-news-sitemap-p0.js \
+            --name "$CF_SCRIPT_NAME" --compatibility-date 2026-10-27 --keep-vars \
+            > /tmp/4planet-news-sitemap-deploy.log 2>&1 || {
+              echo 'Worker upload failed; no route was changed.'
+              tail -n 18 /tmp/4planet-news-sitemap-deploy.log | sed -E 's/(token|Bearer)[[:space:]:=]+[^ ]+/\1 [REDACTED]/Ig'
+              exit 1
+            }
+          echo 'SCOPED_WORKER_UPLOADED_NOT_YET_ROUTED'
+      - name: Create only exact path route, live verification, automatic route rollback on any failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,xml.etree.ElementTree as ET,concurrent.futures,re,time,sys
+          api='https://api.cloudflare.com/client/v4'
+          zid=os.environ['CF_ZONE_ID']; token=os.environ['CLOUDFLARE_API_TOKEN']; worker=os.environ['CF_SCRIPT_NAME']
+          route_id=None
+          def call(method,path,body=None):
+            request=urllib.request.Request(api+path,data=None if body is None else json.dumps(body).encode(),headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'},method=method)
+            try:
+              with urllib.request.urlopen(request,timeout=25) as f:return f.status,json.load(f)
+            except urllib.error.HTTPError as e:
+              try:d=json.load(e)
+              except:d={}
+              return e.code,d
+          def live(url):
+            request=urllib.request.Request(url,headers={'User-Agent':'4PLANET-bounded-live-verification','Cache-Control':'no-cache'})
+            try:
+              with urllib.request.urlopen(request,timeout=25) as f:return f.status, f.read(260000),f.headers.get('content-type','')
+            except urllib.error.HTTPError as e:return e.code,e.read(20000),e.headers.get('content-type','')
+            except Exception as e:return 0,b'',type(e).__name__
+          ok=False
+          try:
+            c,existing=call('GET',f'/zones/{zid}/workers/routes')
+            if c!=200 or not existing.get('success'):raise RuntimeError('Route inventory permission unavailable')
+            if any(r.get('pattern')=='4planet.org/news-sitemap.xml' for r in existing.get('result',[])):raise RuntimeError('Exact live route changed concurrently; refusing mutation')
+            c,r=call('POST',f'/zones/{zid}/workers/routes',{'pattern':'4planet.org/news-sitemap.xml','script':worker})
+            if c not in (200,201) or not r.get('success'):raise RuntimeError('Cloudflare route POST rejected HTTP '+str(c)+' '+str([e.get('code') for e in r.get('errors',[])][:3]))
+            route_id=(r.get('result') or {}).get('id')
+            if not route_id:raise RuntimeError('Creation response omitted rollback route ID')
+            print('EXACT_ROUTE_CREATED; rollback identity obtained')
+            for i in range(9):
+              status,body,ctype=live('https://4planet.org/news-sitemap.xml')
+              if status==200 and 'xml' in ctype.lower():
+                try:
+                  root=ET.fromstring(body)
+                  if root.tag=='{http://www.sitemaps.org/schemas/sitemap/0.9}urlset' and b'sitemap-news' in body:break
+                except ET.ParseError:pass
+              time.sleep(3)
+            else:raise RuntimeError('LIVE 4planet.org/news-sitemap.xml never returned expected valid News XML')
+            important=['https://4planet.org/','https://4planet.org/now/','https://4planet.org/about','https://4planet.org/atlas','https://4planetmagazine.com/','https://4species.com/orca']
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex: statuses=list(ex.map(live,important))
+            broken=[(u,s[0]) for u,s in zip(important,statuses) if s[0]!=200]
+            if broken:raise RuntimeError('Unrelated LIVE routes degraded: '+str(broken))
+            s=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+            slugs=re.findall(r'"([a-z0-9-]+)"',s)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex: species=list(ex.map(lambda slug:(slug,live('https://4species.com/'+slug)[0]),slugs))
+            failures=[x for x in species if x[1]!=200]
+            if len(species)!=57 or failures:raise RuntimeError('57 SPECIES preservation gate failed '+str(failures[:6]))
+            ok=True
+            proof=f'EXACT_PATH_LIVE_PASS https://4planet.org/news-sitemap.xml HTTP 200 valid XML; 57/57 species remain HTTP 200; unrelated sites preserved; route id {route_id}; worker {worker}; SHA '+os.environ['GITHUB_SHA']
+            print(proof)
+            with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## BOUNDED LIVE PRODUCTION RECEIPT\n\n'+proof+'\n\nOnly exact 4planet.org/news-sitemap.xml route was added; no SPECIES release, Pages deploy or DNS edit.\n')
+          finally:
+            if not ok and route_id:
+              c,deleted=call('DELETE',f'/zones/{zid}/workers/routes/{route_id}')
+              print('ROLLBACK_ROUTE_DELETED' if c==200 and deleted.get('success') else 'CRITICAL: AUTOMATIC_ROUTE_ROLLBACK_FAILED; exact route id '+route_id)
+              if c!=200 or not deleted.get('success'):
+                with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('CRITICAL rollback failed for exact route id '+route_id+'\n')
+          if not ok:sys.exit(1)
+          PY
