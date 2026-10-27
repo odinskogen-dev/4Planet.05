@@ -1,3 +1,51 @@
+# ABOUT STORY — EDGE-TO-HYDRATION SCHEMA OWNERSHIP — 27 OCTOBER 2026
+
+**STATUS:** CODE FIXED ON HEIR / QA_READY / INDEPENDENT GOLD, EXACT-SHA BROWSER AND RELEASE HOLD.
+
+## USER ARRIVES BECAUSE
+
+A visitor or crawler opening `/about/story` should receive one stable `AboutPage` identity in raw HTML and still have exactly one after the React page hydrates or the visitor navigates away and back.
+
+## ONE THING TO UNDERSTAND
+
+The edge graph and client graph describe the same page; they must use the existing ownership lifecycle rather than accumulate as competing structured identities.
+
+## PRIMARY ACTION
+
+Mark only the canonical edge-appended JSON-LD as `data-4planet-prerender="true"` so the existing client cleanup removes it before installing the hydrated page graph.
+
+## SECONDARY DEPTH
+
+Keep the valid raw-response deduplication, canonical Story copy, private-preview noindex policy and all unmarked third-party JSON-LD unchanged.
+
+## P1 DOMINANT / P2 ORIENTATION / P3 ACTION / P4 DEPTH
+
+One raw `AboutPage` graph / existing ownership marker / client replaces rather than duplicates / independent production-host and mobile browser verification remains the release proof.
+
+## WHAT CAN BE REMOVED
+
+Remove only the unowned state of the newly appended edge graph; do not remove third-party graphs or add another renderer or cleanup system.
+
+## WHAT MUST BE REUSED
+
+Reuse issue #483, draft PR #131, sole `king/test` HEIR, `structuredData`, `removeOwnedJsonLd`, the owning host-indexing and schema-ownership contracts, and the exact rollback `a7962c7a060ef7999b530eb1225945a7853e5fe7`.
+
+## TRUTH BOUNDARY
+
+The bounded production-host replay now proves raw→hydrated→repeat-navigation graph ownership in the repository model: host boundary 28/28, shared ownership 4/4 and discovery 31/31 pass, alongside typecheck, lint, build, doctrine, authority, Gold policy and zero-vulnerability audit. It cannot prove a deployed Cloudflare runtime, immutable preview behaviour, indexing, traffic or user use.
+
+## MOBILE-FIRST RISK
+
+No visible layout changes. Chromium desktop/390 and WebKit 390 remain required to verify hydration without metadata or visible-page regression.
+
+## HUMAN SUCCESS
+
+The Story stays readable before JavaScript and retains one consistent machine-readable page identity after hydration and repeat navigation, without deleting third-party structured data.
+
+**ROOT CAUSE / FAILED TEST / IMMUNITY:** The prior repair removed the built prerender graph but appended a new unmarked edge graph. The client removes only marked/ID-owned graphs, so hydration could add a second `AboutPage`. The built-page-shaped edge→client lifecycle regression failed first at 27/28, then passed 28/28 after the one-attribute correction; it locks raw count 1, hydrated count 1, repeat-navigation count 1 and third-party preservation.
+
+**DOOR / ROLLBACK / JUDGE:** Reversible HEIR-only correction. Roll back to `king/test@a7962c7a060ef7999b530eb1225945a7853e5fe7` if independent Gold finds schema, canonical, third-party or route regression. Maker returns CODE FIXED evidence only; independent Gold judges exact SHA and Founder retains merge/deploy/LIVE authority.
+
 # ABOUT STORY — OWNED SCHEMA DEDUPLICATION — 27 OCTOBER 2026
 
 **STATUS:** CODE FIXED ON HEIR / INDEPENDENT GOLD AND EXACT-SHA RUNTIME HOLD / NO MERGE OR LIVE RELEASE.

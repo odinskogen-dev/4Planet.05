@@ -1,7 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
 
 import { onRequest } from "../functions/_middleware.js";
+
+const jsonLdOwnerSource = fs.readFileSync(new URL("../src/components/seoJsonLd.ts", import.meta.url), "utf8");
+const jsonLdOwnerCompiled = ts.transpileModule(jsonLdOwnerSource, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+}).outputText;
+const jsonLdOwnerSandbox = { exports: {}, module: { exports: {} } };
+jsonLdOwnerSandbox.exports = jsonLdOwnerSandbox.module.exports;
+vm.runInNewContext(jsonLdOwnerCompiled, jsonLdOwnerSandbox);
+const { OWNED_JSON_LD_SELECTOR, removeOwnedJsonLd } = jsonLdOwnerSandbox.module.exports;
 
 const PRIVATE_POLICY = "noindex, nofollow, noarchive";
 
@@ -163,6 +175,42 @@ function request(url, response = new Response("edge body", {
     },
     nextCalls: () => nextCalls,
   };
+}
+
+function jsonLdScripts(html) {
+  return [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .filter(([, attributes]) => /\btype=["']application\/ld\+json["']/i.test(attributes))
+    .map(([, attributes, text]) => ({
+      id: attributes.match(/\bid=["']([^"']*)["']/i)?.[1] ?? "",
+      prerender: /\bdata-4planet-prerender=["']true["']/i.test(attributes),
+      atlasPrerender: /\bdata-4planet-atlas-prerender=["']true["']/i.test(attributes),
+      text,
+      removed: false,
+      remove() { this.removed = true; },
+    }));
+}
+
+function hydrateAboutPage(scripts) {
+  removeOwnedJsonLd({
+    querySelectorAll(selector) {
+      assert.equal(selector, OWNED_JSON_LD_SELECTOR);
+      return scripts.filter((script) => !script.removed && (
+        script.id === "4planet-page-jsonld" || script.prerender || script.atlasPrerender
+      ));
+    },
+  });
+  scripts.push({
+    id: "4planet-page-jsonld",
+    prerender: false,
+    atlasPrerender: false,
+    text: JSON.stringify({ "@context": "https://schema.org", "@type": "AboutPage" }),
+    removed: false,
+    remove() { this.removed = true; },
+  });
+}
+
+function liveGraphCount(scripts, type) {
+  return scripts.filter((script) => !script.removed && script.text.includes(`"@type":"${type}"`)).length;
 }
 
 test("private hosts emit fail-closed HTTP crawler and cache headers", async () => {
@@ -445,7 +493,8 @@ test("About Story production response has one owned AboutPage graph", async () =
       name: "The living planet is not an abstract issue.",
       url: "https://4planet.org/about/story",
     });
-    const upstream = new Response('<!doctype html><html><head><title>4PLANET</title><meta name="description" content="Shell"><meta name="robots" content="index,follow"><link rel="canonical" href="https://4planet.org/"><script type="application/ld+json" data-4planet-prerender="true">' + prerendered + '</script></head><body><div id="root"><main><h1>The living planet is not an abstract issue.</h1></main></div></body></html>', {
+    const thirdParty = JSON.stringify({ "@context": "https://schema.org", "@type": "Thing", name: "External graph" });
+    const upstream = new Response('<!doctype html><html><head><title>4PLANET</title><meta name="description" content="Shell"><meta name="robots" content="index,follow"><link rel="canonical" href="https://4planet.org/"><script type="application/ld+json" data-4planet-prerender="true">' + prerendered + '</script><script type="application/ld+json">' + thirdParty + '</script></head><body><div id="root"><main><h1>The living planet is not an abstract issue.</h1></main></div></body></html>', {
       status: 200,
       headers: { "content-type": "text/html; charset=utf-8" },
     });
@@ -456,7 +505,20 @@ test("About Story production response has one owned AboutPage graph", async () =
     assert.equal(response.status, 200);
     assert.equal(harness.nextCalls(), 1);
     assert.equal((html.match(/"@type":"AboutPage"/g) || []).length, 1);
-    assert.equal((html.match(/data-4planet-prerender=["']true["']/g) || []).length, 0);
+    assert.equal((html.match(/data-4planet-prerender=["']true["']/g) || []).length, 1);
+    assert.equal((html.match(/"@type":"Thing"/g) || []).length, 1);
+
+    const scripts = jsonLdScripts(html);
+    assert.equal(liveGraphCount(scripts, "AboutPage"), 1, "raw response has one AboutPage graph");
+    assert.equal(liveGraphCount(scripts, "Thing"), 1, "raw response preserves third-party JSON-LD");
+
+    hydrateAboutPage(scripts);
+    assert.equal(liveGraphCount(scripts, "AboutPage"), 1, "hydration replaces the edge-owned graph");
+    assert.equal(liveGraphCount(scripts, "Thing"), 1, "hydration preserves third-party JSON-LD");
+
+    hydrateAboutPage(scripts);
+    assert.equal(liveGraphCount(scripts, "AboutPage"), 1, "repeat navigation does not accumulate graphs");
+    assert.equal(liveGraphCount(scripts, "Thing"), 1, "repeat navigation preserves third-party JSON-LD");
   } finally {
     globalThis.HTMLRewriter = originalRewriter;
   }

@@ -1781,7 +1781,7 @@ function structuredData(config, canonical) {
       url: "https://4planet.org/",
     };
   }
-  return `<script type="application/ld+json">${JSON.stringify(data).replaceAll("<", "\\u003c")}</script>`;
+  return `<script type="application/ld+json" data-4planet-prerender="true">${JSON.stringify(data).replaceAll("<", "\\u003c")}</script>`;
 }
 
 function withSecurityHeaders(response, privateSurface = false) {
