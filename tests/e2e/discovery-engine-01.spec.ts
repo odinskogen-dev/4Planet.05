@@ -77,7 +77,19 @@ test("Discovery Engine 01 reaches the slash-canonical Earth Now page without a r
   expect(new URL(page.url()).pathname).toBe("/now");
 
   await expect(page.getByRole("heading", { level: 1, name: /A living planet\.\s*A clearer view\./ })).toBeVisible();
-  await expect(page.getByText("Latest available from each source", { exact: false })).toBeVisible();
+  const caption = page.locator("p.earth-now-caption");
+  await expect(caption).toHaveCount(1);
+  await expect(caption).toContainText("Latest available from each source");
+  await expect(caption).toBeVisible();
+
+  // Keep the separate explanatory paragraph in the proof. A broad text
+  // locator matches both legitimate elements and creates a strict-mode false
+  // negative instead of testing the caption's semantic owner.
+  await page.getByText("About the data", { exact: true }).click();
+  await expect(
+    page.getByText("Earth Now means latest available from each source", { exact: false }),
+  ).toBeVisible();
+  await expect(caption).toHaveCount(1);
 
   const iframe = page.locator('iframe[title^="Interactive Earth map:"]').first();
   await expect(iframe).toBeVisible();
