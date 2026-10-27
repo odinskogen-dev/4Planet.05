@@ -1,0 +1,51 @@
+name: 4PLANET IMPACT Sitemap Dead URL Classification 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-impact-sitemap-dead-url-classify-20261027.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Classify all current public sitemap IMPACT objects by true final HTTP (read only)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,urllib.parse,xml.etree.ElementTree as ET,collections,concurrent.futures,hashlib,os
+          hdr={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-SEO-Source-Validation/1.0)'}
+          def get(url,limit=300000):
+            req=urllib.request.Request(url,headers=hdr)
+            try:
+              with urllib.request.urlopen(req,timeout=27) as r:return r.status,r.geturl(),r.read(limit),r.headers
+            except urllib.error.HTTPError as e:return e.code,e.geturl(),e.read(min(limit,15000)),e.headers
+            except Exception as e:return 0,str(type(e).__name__),b'',{}
+          s,b,_,_=0,None,None,None
+          c,urlbody,body,head=get('https://4planet.org/sitemap.xml')
+          if c!=200:raise SystemExit('MAIN_SITEMAP_UNREADABLE')
+          root=ET.fromstring(body)
+          urls=[el.text for el in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if el.text]
+          impact=[u for u in urls if '/impact/project/' in u or '/impact/actors/' in u]
+          def check(u):
+            code,end,data,headers=get(u,180000)
+            robots=(headers.get('X-Robots-Tag','') if headers else '')
+            noindex=('noindex' in (robots+' '+data.decode('utf-8','replace')[:14000]).lower())
+            return u,code,end,noindex
+          with concurrent.futures.ThreadPoolExecutor(max_workers=9) as pool: rows=list(pool.map(check,impact))
+          counter=collections.Counter(r[1] for r in rows)
+          failure=[r for r in rows if r[1] not in (200,404,410,301,302,307,308)]
+          ok=[r for r in rows if r[1]==200 and not r[3]]
+          output=['# 4PLANET IMPACT current sitemap URL audit — LIVE','',
+                  f'All sitemap URLs: {len(urls)} | IMPACT project/actor URLs: {len(impact)} | Final HTTP distribution: {dict(counter)} | 200 index-eligible: {len(ok)}',
+                  '',
+                  '### Index-eligible IMPACT samples']
+          output += [f'{r[0]} | HTTP {r[1]} | {r[2]}' for r in ok[:30]]
+          output+=['','### Other / failed response samples']
+          output += [f'{r[0]} | HTTP {r[1]} | destination {r[2]} | noindex={r[3]}' for r in rows if r[1]!=200][:50]
+          output+=['',f'Unexpected transport/error responses: {len(failure)}; FAIL CLOSED on sitemap manipulation if any ambiguous.','No source, sitemap, live routing, IMPACT or SPECIES changed.']
+          summary='\n'.join(output)
+          print(summary)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(summary+'\n')
+          if failure:raise SystemExit('AMBIGUOUS_RESPONSES_FAIL_CLOSED')
+          PY
