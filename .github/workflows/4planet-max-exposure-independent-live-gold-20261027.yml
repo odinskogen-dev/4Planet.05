@@ -1,0 +1,108 @@
+name: 4PLANET MAX EXPOSURE Independent LIVE GOLD 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-max-exposure-independent-live-gold-20261027.yml]
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CFT1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CFT2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CFT3: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Independently re-read public deployed state and Cloudflare exact-route owners
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,re,urllib.request,urllib.error,xml.etree.ElementTree as ET,concurrent.futures,collections,sys
+          UA={'User-Agent':'Mozilla/5.0 (4PLANET-independent-LIVE-GOLD/1.0)','Cache-Control':'no-cache'}
+          errors=[];notes=['# 4PLANET independent production readback 2026-10-27','']
+          def get(url):
+            req=urllib.request.Request(url,headers=UA)
+            try:
+              with urllib.request.urlopen(req,timeout=28) as r:return r.status,r.read(400000),r.headers,r.geturl()
+            except urllib.error.HTTPError as e:return e.code,e.read(14000),e.headers,e.geturl()
+            except Exception as e:return 0,b'',{},str(type(e).__name__)
+          for site,expected in [('https://4planet.org/sitemap.xml',171),('https://4species.com/sitemap.xml',62),('https://4planetatlas.com/sitemap.xml',252),('https://4planetmagazine.com/magazine-sitemap.xml',92)]:
+            status,body,headers,final=get(site)
+            try:
+              root=ET.fromstring(body)
+              urls=[n.text for n in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if n.text]
+            except:urls=[]
+            ok=(status==200 and len(urls)==expected and len(set(urls))==expected)
+            if site=='https://4planet.org/sitemap.xml':
+              bad=[u for u in urls if '/impact/project/' in u or '/impact/actors/' in u]
+              if bad:ok=False;errors.append('Main sitemap still submits IMPACT known 404s')
+              if headers.get('x-4planet-seo-p0')!='2026-10-27-dead-impact-sitemap-urls-removed':ok=False
+            notes.append(f'{site}: HTTP {status}, {len(urls)} unique URLs (expected {expected}), '+('PASS' if ok else 'FAIL'))
+            if not ok:errors.append(site)
+          for site in ['https://4planet.org/news-sitemap.xml','https://4planetmagazine.com/news-sitemap.xml']:
+            st,body,_,_=get(site)
+            try:tag=ET.fromstring(body).tag
+            except:tag=''
+            ok=(st==200 and tag=='{http://www.sitemaps.org/schemas/sitemap/0.9}urlset')
+            notes.append(f'{site}: HTTP {st}, valid News XML = {ok}')
+            if not ok:errors.append(site)
+          st,body,hs,url=get('https://4planet.org/now')
+          page=body.decode('utf-8','replace')
+          ok=(st==200 and url=='https://4planet.org/now' and 'href="https://4planet.org/now"' in page and '<h1' in page.lower())
+          notes.append(f'Earth Now: direct HTTP {st}, canonical /now, H1: {ok}')
+          if not ok:errors.append('/now')
+          raw=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+          slugs=re.findall(r'"([a-z0-9-]+)"',raw)
+          if len(slugs)!=57:errors.append('SPECIES registry unexpectedly changed')
+          with concurrent.futures.ThreadPoolExecutor(max_workers=9) as ex:
+            states=list(ex.map(lambda slug:(slug,get('https://4species.com/'+slug)[0]),slugs))
+          missing=[x for x in states if x[1]!=200]
+          notes.append(f'Protected public SPECIES: HTTP 200 {len(states)-len(missing)}/{len(states)}, '+('PASS' if not missing and len(states)==57 else 'FAIL'))
+          if missing:errors.append('SPECIES:'+str(missing[:5]))
+          for site in ['https://4planet.org/','https://4planet.org/atlas','https://4planetmagazine.com/','https://4species.com/orca']:
+            st,_,_,_=get(site)
+            notes.append(f'Core surface {site}: HTTP {st}')
+            if st!=200:errors.append(site)
+          tokens=[]
+          for n in ('CFT1','CFT2','CFT3'):
+            t=os.environ.get(n,'').strip().replace('\r','').replace('\n','')
+            for prefix in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if t.startswith(prefix):t=t[len(prefix):]
+            t=t.strip().strip('"').strip("'")
+            if t and t not in tokens:tokens.append(t)
+          def api(t,path):
+            r=urllib.request.Request('https://api.cloudflare.com/client/v4'+path,headers={'Authorization':'Bearer '+t})
+            try:
+              with urllib.request.urlopen(r,timeout=18) as p:return p.status,json.load(p)
+            except urllib.error.HTTPError as e:
+              try:d=json.load(e)
+              except:d={}
+              return e.code,d
+          t=None
+          for candidate in tokens:
+            code,j=api(candidate,'/zones?name=4planet.org')
+            if code==200 and j.get('success') and j.get('result'):t=candidate;break
+          if not t:errors.append('Cloudflare route read unavailable')
+          else:
+            expected=[
+              ('4planet.org',{'4planet.org/news-sitemap.xml':'4planet-news-sitemap-p0-20261027','4planet.org/now':'4planet-now-canonical-p0-20261027','4planet.org/sitemap.xml':'4planet-sitemap-107-dead-impact-p0-20261027'}),
+              ('4planetmagazine.com',{'4planetmagazine.com/news-sitemap.xml':'4planetmagazine-news-sitemap-p0-20261027'}),
+            ]
+            for dom,wanted in expected:
+              code,z=api(t,'/zones?name='+dom)
+              zz=[x for x in z.get('result',[]) if x.get('name')==dom]
+              if code!=200 or len(zz)!=1:errors.append(dom+' zone missing');continue
+              rc,r=api(t,'/zones/'+zz[0]['id']+'/workers/routes')
+              got={x.get('pattern'):x.get('script') for x in r.get('result',[])}
+              passed=rc==200 and all(got.get(k)==v for k,v in wanted.items())
+              notes.append(f'{dom}: exact intended SEO routes ownership '+('PASS' if passed else 'FAIL'))
+              if not passed:errors.append(dom+' route owner drift')
+          notes+=['','Known remaining debt: 4SPECIES soft-404, main non-IMPACT slash redirects, content quality/ATLAS HTML links, automatic fresh News content, analytics API read permissions. Read-only Gold audit did not fix or hide them.']
+          print('\n'.join(notes))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(notes)+'\n')
+          if errors:
+            print('INDEPENDENT_LIVE_GOLD_FAIL',errors)
+            raise SystemExit(1)
+          print('INDEPENDENT_LIVE_GOLD_PASS protected products and exact intended SEO routes')
+          PY
