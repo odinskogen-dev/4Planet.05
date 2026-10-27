@@ -1,3 +1,19 @@
+# ABOUT STORY — OWNED SCHEMA DEDUPLICATION — 27 OCTOBER 2026
+
+**STATUS:** CODE FIXED ON HEIR / INDEPENDENT GOLD AND EXACT-SHA RUNTIME HOLD / NO MERGE OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a visitor or crawler opens the accepted public `/about/story` route and should receive one clear page identity rather than two competing owned `AboutPage` graphs.
+
+**ROOT CAUSE / FAILED TEST:** the built page already contains the marked prerender `AboutPage` graph, while production-host middleware appended the canonical edge graph without removing the prerender owner. The old empty-shell fixture could not reproduce that overlap. The new built-page-shaped fixture failed 27/28 with two owned `AboutPage` graphs.
+
+**BOUNDED CORRECTION:** before appending the canonical edge graph, remove only `script[type="application/ld+json"][data-4planet-prerender="true"]`. Unmarked and third-party JSON-LD remains untouched; layout, homepage, `/about` and `/now` are unchanged.
+
+**TRUTH BOUNDARY:** the owning host-indexing contract passes 28/28, schema ownership 4/4, discovery 31/31, typecheck, lint, build and zero-vulnerability audit locally. Exact-base HEIR proved the visible desktop journey, but the preview proxy does not execute the `4planet.org` production-host branch. Exact-candidate native preview, production-host replay and 390px Chromium/WebKit evidence remain required.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only correction. Base and rollback are `king/test@2f8fa03117c25898085411d760624e0548bfa32e`; revert this middleware/test/brief sequence if independent Gold finds schema loss or third-party graph damage.
+
+**MAKER ≠ JUDGE:** Factory provides CODE FIXED evidence only. Independent Gold must judge the exact returned SHA; Founder retains merge, deployment and LIVE authority.
+
 # ABOUT STORY — EDGE SERVER-READABLE ENTRY — 27 OCTOBER 2026
 
 **STATUS:** CODE FIXED / ISSUE #483 / DRAFT PR #131 / SOLE HEIR `king/test` / EXACT BASE `dff4c514554f9498408e823d5617b4ca898b9b9a` / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
