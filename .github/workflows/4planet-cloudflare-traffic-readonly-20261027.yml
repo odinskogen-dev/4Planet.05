@@ -13,6 +13,8 @@ jobs:
     env:
       CF_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CF_FALLBACK: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CF_ALT1: ${{ secrets.CF_API_TOKEN }}
+      CF_ALT2: ${{ secrets.CF_TOKEN }}
     steps:
       - name: Secure read only Cloudflare traffic summary
         shell: bash
@@ -20,7 +22,15 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import os,json,urllib.request,urllib.parse,urllib.error
-          token=(os.environ.get('CF_PRIMARY') or os.environ.get('CF_FALLBACK') or '').strip()
+          raw_candidates=[os.environ.get(k,'') for k in ('CF_PRIMARY','CF_FALLBACK','CF_ALT1','CF_ALT2')]
+          candidates=[]
+          for raw in raw_candidates:
+            val=raw.strip().replace('\r','').replace('\n','')
+            for prefix in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if val.startswith(prefix): val=val[len(prefix):]
+            val=val.strip().strip("\"'")
+            if val and val not in candidates: candidates.append(val)
+          token=candidates[0] if candidates else ''
           if not token:
             print('CLOUDFLARE_SECRET_ABSENT')
             raise SystemExit(2)
@@ -34,12 +44,22 @@ jobs:
               try: x=json.load(e)
               except: x={}
               return e.code,x
+          probes=[]
+          zone_auth=False
+          for candidate in candidates:
+            token=candidate
+            rc,probe=req(root+'/zones?name=4planet.org')
+            probes.append((rc, bool(probe.get('success'))))
+            if rc==200 and probe.get('success'):
+              zone_auth=True
+              break
           code,check=req(root+'/user/tokens/verify')
+          print('AUTH_DIAGNOSTIC:', 'candidate_count',len(candidates),'zone_probes',probes,'token_verify_http',code,'verify_success',bool(check.get('success')))
           report=['# 4PLANET Cloudflare read-only traffic audit','','No client IPs, raw paths, visitor identifiers or token values are printed.','',f'Token verification: HTTP {code} success={bool(check.get("success"))}','',
             '| Domain | Period | HTTP requests | Page views | Daily-unique-IP sum* | Cache requests | Days | Note |',
             '|---|---|---:|---:|---:|---:|---:|---|']
-          if code!=200 or not check.get('success'):
-            print('TOKEN_VERIFY_FAILED')
+          if not zone_auth:
+            print('CLOUDFLARE_ZONE_API_ACCESS_NOT_CONFIRMED')
             raise SystemExit(1)
           domains=['4planet.org','4species.com','4planetatlas.com','4planetmagazine.com','4brain.app','4brands.org','4nation.org','4sapien.com','s4piens.com','4planetmarket.com','oce4n.com','cre4tors.com','n4turetech.com','p4nther.com','p4nther.org','pl4net.org','supersapien.org']
           query='query($z: string,$s: Date,$e: Date){viewer{zones(filter:{zoneTag:$z}){httpRequests1dGroups(limit:100,filter:{date_geq:$s,date_lt:$e},orderBy:[date_ASC]){dimensions{date}sum{requests pageViews cachedRequests}uniq{uniques}}}}}'
