@@ -103,6 +103,75 @@ function newestGoldBriefSection(brief) {
   return separator < 0 ? brief : brief.slice(0, separator);
 }
 
+function visibleMarkdownLines(markdown) {
+  const visible = [];
+  let inHtmlComment = false;
+  let fence = null;
+
+  for (const rawLine of markdown.split(/\r?\n/)) {
+    if (fence) {
+      const closing = rawLine.match(/^ {0,3}(`+|~+)\s*$/);
+      if (closing && closing[1][0] === fence.character && closing[1].length >= fence.length) {
+        fence = null;
+      }
+      continue;
+    }
+
+    let line = rawLine;
+    let rendered = "";
+    while (line) {
+      if (inHtmlComment) {
+        const end = line.indexOf("-->");
+        if (end < 0) {
+          line = "";
+          break;
+        }
+        inHtmlComment = false;
+        line = line.slice(end + 3);
+        continue;
+      }
+
+      const start = line.indexOf("<!--");
+      if (start < 0) {
+        rendered += line;
+        break;
+      }
+      rendered += line.slice(0, start);
+      inHtmlComment = true;
+      line = line.slice(start + 4);
+    }
+
+    const opener = rendered.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (opener) {
+      fence = { character: opener[1][0], length: opener[1].length };
+      continue;
+    }
+    visible.push(rendered);
+  }
+
+  return visible;
+}
+
+function validateRequiredBriefContract(current) {
+  const lines = visibleMarkdownLines(current);
+  for (const heading of REQUIRED_BRIEF_HEADINGS) {
+    const index = lines.findIndex((line) => line === heading);
+    if (index < 0) {
+      fail(`newest GOLD brief contract missing heading: ${heading}`);
+      continue;
+    }
+
+    const answer = [];
+    for (let lineIndex = index + 1; lineIndex < lines.length; lineIndex += 1) {
+      if (lines[lineIndex].startsWith("## ")) break;
+      answer.push(lines[lineIndex]);
+    }
+    if (!answer.some((line) => /[\p{L}\p{N}]/u.test(line))) {
+      fail(`newest GOLD brief contract has no answer under: ${heading}`);
+    }
+  }
+}
+
 function trustedGoldBriefCheckpoint() {
   const introduction = git([
     "log",
@@ -163,15 +232,7 @@ function validateAuthorityFiles(files) {
   const brief = fs.readFileSync(GOLD_BRIEF_PATH, "utf8");
   validateGoldBriefHistory(brief);
   const current = newestGoldBriefSection(brief);
-  for (const heading of REQUIRED_BRIEF_HEADINGS) {
-    const idx = current.indexOf(heading);
-    if (idx < 0) {
-      fail(`newest GOLD brief contract missing heading: ${heading}`);
-      continue;
-    }
-    const after = current.slice(idx + heading.length).split(/^## /m)[0].trim();
-    if (!after) fail(`newest GOLD brief contract has no answer under: ${heading}`);
-  }
+  validateRequiredBriefContract(current);
 
   const registry = JSON.parse(fs.readFileSync("docs/control/GOLD_VISUAL_BASELINES.json", "utf8"));
   if (!Array.isArray(registry.screens)) fail("visual baseline registry must contain screens[]");

@@ -41,6 +41,35 @@ const nextContract = newestContractOnly.replace(
   "# NEXT BOUNDED GOLD CONTRACT — FIXTURE",
 );
 const legitimatePrepend = `${nextContract.trimEnd()}\n\n---\n\n${currentBrief}`;
+const requiredHeadings = [
+  "## USER ARRIVES BECAUSE",
+  "## ONE THING TO UNDERSTAND",
+  "## PRIMARY ACTION",
+  "## SECONDARY DEPTH",
+  "## P1 DOMINANT",
+  "## P2 ORIENTATION",
+  "## P3 ACTION / NEXT",
+  "## P4 DEPTH",
+  "## WHAT CAN BE REMOVED",
+  "## WHAT MUST BE REUSED",
+  "## TRUTH BOUNDARY",
+  "## MOBILE-FIRST RISK",
+  "## HUMAN SUCCESS",
+];
+const hiddenAnswers = requiredHeadings.map((heading) => `${heading}\nHidden fixture answer.`).join("\n\n");
+const hiddenHtmlCommentPrepend = `# HIDDEN HTML COMMENT CONTRACT\n\n<!--\n${hiddenAnswers}\n-->\n\n---\n\n${currentBrief}`;
+const hiddenFencedCodePrepend = [
+  "# HIDDEN FENCED CODE CONTRACT",
+  "",
+  "```markdown",
+  hiddenAnswers,
+  "```",
+  "",
+  "---",
+  "",
+  currentBrief,
+].join("\n");
+const renderedHeadingPrepend = `# VISIBLE MARKDOWN CONTRACT\n\n${requiredHeadings.map((heading) => `${heading}\nVisible fixture answer.`).join("\n\n")}\n\n---\n\n${currentBrief}`;
 
 const run = (mutateBrief, { changed = true } = {}) => {
   const directory = mkdtempSync(join(tmpdir(), "gold-policy-history-"));
@@ -173,6 +202,23 @@ test("accepts the unchanged current document", () => {
 
 test("accepts a substantive newest contract prepended to exact preserved history", () => {
   const result = run(legitimatePrepend);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test("rejects newest contract headings hidden inside an HTML comment", () => {
+  const result = run(hiddenHtmlCommentPrepend);
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /newest GOLD brief contract missing heading/i);
+});
+
+test("rejects newest contract headings hidden inside fenced Markdown code", () => {
+  const result = run(hiddenFencedCodePrepend);
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /newest GOLD brief contract missing heading/i);
+});
+
+test("accepts all required rendered headings with substantive answers", () => {
+  const result = run(renderedHeadingPrepend);
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
