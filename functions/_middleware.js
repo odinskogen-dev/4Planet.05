@@ -1420,6 +1420,19 @@ const FOURPLANET_ROUTES = {
     fallbackLinks: [["Impact","https://4planet.org/impact"],["ATLAS","https://4planetatlas.com/atlas/"],["SPECIES","https://4species.com/species/"],["MAGAZINE","https://4planetmagazine.com/magazine/"]],
     schemaType: "AboutPage",
   },
+  "/about/story": {
+    title: "The living planet is not an abstract issue. | 4PLANET",
+    description: "It is the system beneath food, water, health, prosperity, freedom and almost everything people care about.",
+    fallbackTitle: "The living planet is not an abstract issue.",
+    fallbackParagraphs: [
+      "It is the system beneath food, water, health, prosperity, freedom and almost everything people care about.",
+      "Human life sits inside living systems. Forests move water. Oceans move heat and nutrients. Soil, insects, fungi, plants and animals make food systems possible. The separation between ‘people’ and ‘nature’ is useful on an organisation chart, but false in the world itself.",
+      "Care is everywhere. Connection is not. Science, field organisations, communities, companies, funders and millions of people already care about the living world. Yet understanding, participation, delivery and proof are often fragmented across different systems. 4PLANET is being built to connect those parts without weakening scientific truth.",
+      "Make the living planet easier to see, understand and help. 4PLANET combines Living Planet Intelligence, public products, Missions, cultural storytelling and evidence-aware action pathways. The aim is not to make ecological complexity disappear. It is to make complexity navigable enough that more people can act intelligently inside it."
+    ],
+    fallbackLinks: [["Explore the 4PLANET system","https://4planet.org/about/system"],["What we believe","https://4planet.org/about/what-we-believe"],["Find your part","https://4planet.org/join"]],
+    schemaType: "AboutPage",
+  },
   "/impact": {
     title: "4PLANET Impact — From Understanding to Credible Action",
     description: "4PLANET Impact is an early public platform direction for connecting people and companies with credible expert-led action and proof.",

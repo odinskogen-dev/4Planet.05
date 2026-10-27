@@ -51,6 +51,87 @@ class CallbackHTMLRewriter {
 
 globalThis.HTMLRewriter = CallbackHTMLRewriter;
 
+class DiscoveryHTMLRewriter {
+  constructor() {
+    this.handlers = new Map();
+  }
+
+  on(selector, handler) {
+    this.handlers.set(selector, handler);
+    return this;
+  }
+
+  transform(response) {
+    const handlers = this.handlers;
+    const body = new ReadableStream({
+      async start(controller) {
+        let html = await response.text();
+        const mutateElement = (tag, handler, inner = "") => {
+          let rewritten = tag;
+          let removed = false;
+          handler?.element?.({
+            getAttribute(name) {
+              const match = rewritten.match(new RegExp("\\b" + name + "=[\"']([^\"']*)[\"']", "i"));
+              return match?.[1] ?? null;
+            },
+            setAttribute(name, value) {
+              const attribute = new RegExp("\\b" + name + "=[\"'][^\"']*[\"']", "i");
+              rewritten = attribute.test(rewritten)
+                ? rewritten.replace(attribute, name + "=\"" + value + "\"")
+                : rewritten.replace(/\s*\/>$|>$/, " " + name + "=\"" + value + "\">");
+            },
+            setInnerContent(value) {
+              inner = value;
+            },
+            append(value) {
+              inner += value;
+            },
+            remove() {
+              removed = true;
+            },
+          });
+          return { rewritten, inner, removed };
+        };
+        const replaceContainer = (selector, expression) => {
+          const handler = handlers.get(selector);
+          if (!handler) return;
+          html = html.replace(expression, (tag, opening, inner, closing) => {
+            const result = mutateElement(opening, handler, inner);
+            return result.removed ? "" : result.rewritten + result.inner + closing;
+          });
+        };
+        const replaceVoid = (selector, expression) => {
+          const handler = handlers.get(selector);
+          if (!handler) return;
+          html = html.replace(expression, (tag) => {
+            const result = mutateElement(tag, handler);
+            return result.removed ? "" : result.rewritten;
+          });
+        };
+
+        replaceContainer("title", /(<title\b[^>]*>)([\s\S]*?)(<\/title>)/gi);
+        replaceVoid('meta[name="description"]', /<meta\b(?=[^>]*\bname=["']description["'])[^>]*>/gi);
+        replaceVoid('meta[name="robots"]', /<meta\b(?=[^>]*\bname=["']robots["'])[^>]*>/gi);
+        replaceVoid('meta[property="og:title"]', /<meta\b(?=[^>]*\bproperty=["']og:title["'])[^>]*>/gi);
+        replaceVoid('meta[property="og:description"]', /<meta\b(?=[^>]*\bproperty=["']og:description["'])[^>]*>/gi);
+        replaceVoid('meta[property="og:url"]', /<meta\b(?=[^>]*\bproperty=["']og:url["'])[^>]*>/gi);
+        replaceVoid('meta[name="twitter:title"]', /<meta\b(?=[^>]*\bname=["']twitter:title["'])[^>]*>/gi);
+        replaceVoid('meta[name="twitter:description"]', /<meta\b(?=[^>]*\bname=["']twitter:description["'])[^>]*>/gi);
+        replaceVoid('link[rel="canonical"]', /<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>/gi);
+        replaceContainer("head", /(<head\b[^>]*>)([\s\S]*?)(<\/head>)/gi);
+        replaceContainer("#root", /(<[^>]+\bid=["']root["'][^>]*>)([\s\S]*?)(<\/[^>]+>)/gi);
+        controller.enqueue(new TextEncoder().encode(html));
+        controller.close();
+      },
+    });
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  }
+}
+
 function htmlResponse({ robots = "index,follow", xRobotsTag, status = 200 } = {}) {
   const headers = {
     "content-type": "text/html; charset=utf-8",
@@ -318,6 +399,39 @@ test("About Story raw response is indexable only on the production host", async 
   assert.equal(response.headers.get("cache-control"), "public, max-age=300");
   assert.equal(await response.text(), storyHtml);
   assert.equal(production.nextCalls(), 1);
+});
+
+test("About Story production response contains the existing Story before JavaScript", async () => {
+  const originalRewriter = globalThis.HTMLRewriter;
+  globalThis.HTMLRewriter = DiscoveryHTMLRewriter;
+  try {
+    const upstream = new Response('<!doctype html><html><head><title>4PLANET</title><meta name="description" content="Shell"><meta name="robots" content="index,follow"><link rel="canonical" href="https://4planet.org/"></head><body><div id="root"></div></body></html>', {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+    const harness = request("https://4planet.org/about/story", upstream);
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.equal(harness.nextCalls(), 1);
+    assert.match(html, /<title>The living planet is not an abstract issue\. \| 4PLANET<\/title>/);
+    assert.match(html, /<meta name="description" content="It is the system beneath food, water, health, prosperity, freedom and almost everything people care about\.">/);
+    assert.match(html, /<link rel="canonical" href="https:\/\/4planet\.org\/about\/story">/);
+    assert.equal((html.match(/<h1\b/g) || []).length, 1);
+    for (const phrase of [
+      "The living planet is not an abstract issue.",
+      "Human life sits inside living systems.",
+      "Care is everywhere. Connection is not.",
+      "Make the living planet easier to see, understand and help.",
+    ]) assert.ok(html.includes(phrase), phrase);
+    for (const href of ["/about/system", "/about/what-we-believe", "/join"]) {
+      assert.ok(html.includes('href="https://4planet.org' + href + '"'), href);
+    }
+    assert.match(html, /"@type":"AboutPage"/);
+  } finally {
+    globalThis.HTMLRewriter = originalRewriter;
+  }
 });
 
 test("private robots policy fails closed before the application response", async () => {

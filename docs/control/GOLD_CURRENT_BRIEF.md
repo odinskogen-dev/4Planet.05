@@ -1,3 +1,65 @@
+# ABOUT STORY — EDGE SERVER-READABLE ENTRY — 27 OCTOBER 2026
+
+**STATUS:** CODE FIXED / ISSUE #483 / DRAFT PR #131 / SOLE HEIR `king/test` / EXACT BASE `dff4c514554f9498408e823d5617b4ca898b9b9a` / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A search result or shared link can land directly on `/about/story`; the first HTTP response must explain why 4PLANET exists before JavaScript runs.
+
+## ONE THING TO UNDERSTAND
+
+The living planet is the system beneath human life, and the existing Story explains why 4PLANET is being built to make that system easier to see, understand and help.
+
+## PRIMARY ACTION
+
+Add only `/about/story` to the existing `FOURPLANET_ROUTES` edge registry so the shared `discoveryFallback` emits the already-approved Story title, description, H1, body and internal continuations.
+
+## SECONDARY DEPTH
+
+Retain the existing self-canonical metadata, `AboutPage` structured data, preview-host noindex policy and hydrated React Story without adding a renderer, page, content store or new copy.
+
+## P1 DOMINANT
+
+The raw production-host response contains one substantive Story H1 and body instead of an empty app shell.
+
+## P2 ORIENTATION
+
+The response keeps the exact existing Story title and description and links to the existing System, beliefs and Join routes.
+
+## P3 ACTION / NEXT
+
+Independent Gold must judge the exact returned SHA and verify raw HTTP plus hydrated desktop, Chromium 390 and WebKit 390 evidence on an immutable preview.
+
+## P4 DEPTH
+
+After independent acceptance and a separately authorised release, the existing SEO owner may verify indexing and matched-period entry behaviour; source success does not imply traffic or user use.
+
+## WHAT CAN BE REMOVED
+
+Remove only the unknown-route fall-through that leaves this approved Story as the generic app shell at the edge.
+
+## WHAT MUST BE REUSED
+
+Reuse issue #483, draft PR #131, sole HEIR `king/test`, existing Story wording, `discoveryFallback`, `structuredData`, preview-host protections, prerender output and owning middleware contract.
+
+## TRUTH BOUNDARY
+
+This repair makes an existing organisational Story readable in raw HTML. It claims no ecological outcome, partner relationship, deployment, indexation, traffic, Gold acceptance or user use.
+
+## MOBILE-FIRST RISK
+
+No visual component or layout changes. Browser/mobile checks remain required to prove the existing hydrated Story has no duplicate H1 or metadata drift.
+
+## HUMAN SUCCESS
+
+Without JavaScript, a visitor or crawler can understand why 4PLANET exists and continue through valid About links; with JavaScript, the current visual Story remains unchanged.
+
+**ROOT CAUSE / FAILED TEST / REGRESSION:** The shared middleware had no `/about/story` entry, so it deliberately returned the upstream shell unchanged. The new owning-path HTTP test failed first with 26/27 passing, then passed 27/27 after the single route configuration was added. It locks exact title, description, self-canonical, one H1, substantive existing body, three internal links and `AboutPage` schema.
+
+**ROLLBACK / GOLD HOLD:** Roll back to `king/test@dff4c514554f9498408e823d5617b4ca898b9b9a` if independent Gold finds metadata, body, link, layout or publication-policy regression. `/about`, `/now`, the homepage, merge, deployment, LIVE verification and USER USED remain unchanged or HOLD.
+
+---
+
 # EARTH NOW + ABOUT — CANONICAL ACCEPTANCE CONTRACT — 27 OCTOBER 2026
 
 **STATUS:** CONTROL BRIEF REPAIRED / ISSUE #483 / DRAFT PR #131 / SOLE HEIR `king/test` / EXACT PARENT `10e0d881278e397d68d32258768918cf5f682d11` / INDEPENDENT RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
