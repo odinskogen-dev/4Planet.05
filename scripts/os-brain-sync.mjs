@@ -18,9 +18,9 @@ const SAFE_ROOTS=Object.freeze([
  {id:"1Ko8WAzrc9uo4uhBIoqb8zu_EjX6Ghr9o",name:"01_ SHARED KNOWLEDGE KERNEL",
   path:"01_ 4PLANET KNOWLEDGE OS/02_ BRAIN SYSTEM/01_ SHARED KNOWLEDGE KERNEL"}
 ]);
+// Founder 27 Oct: only the 00 organisational source is mandatory in machine cold start.
 const MUST_READ=Object.freeze([
- "14XladRgIy9vCGMCWvuPw37MnCGsa0iJcafyTd2tYKww", // Current Project Lead
- "1dqh16Im3owXVLfT2rUyCFPWal86DEGxlvyeYvh3OvQs" // Active Tasks
+ "15XcZ7FQqAZnoxVe74YNlfh4MccYRcPPTYYFQ1XNbQVo" // ONLY BOOT
 ]);
 const SCOPE_VERSION="ORG_SOURCE_ALLOWLIST_V2";
 const EXPECTED_EMAIL="id-planet-brain-reader@planet-brain-sync.iam.gserviceaccount.com";
@@ -218,6 +218,8 @@ function uri(item){
  return "https://drive.google.com/file/d/"+item.id+"/view";
 }
 function rank(f){
+ // Source review authority: current one boot before historical source candidates.
+ if(f.id===MUST_READ[0])return 0;
  const t=(f.name+" "+f.path).toLowerCase();
  if(/01_ project lead current|02_ active tasks|read first/.test(t))return 1;
  if(/programme control|program control|atomic programme register|founder control register/.test(t))return 2;
