@@ -70,6 +70,28 @@ const hiddenFencedCodePrepend = [
   currentBrief,
 ].join("\n");
 const renderedHeadingPrepend = `# VISIBLE MARKDOWN CONTRACT\n\n${requiredHeadings.map((heading) => `${heading}\nVisible fixture answer.`).join("\n\n")}\n\n---\n\n${currentBrief}`;
+const hiddenRawHtmlPrepend = (tag, attributes = "", { close = true } = {}) => [
+  `# HIDDEN RAW HTML ${tag.toUpperCase()} CONTRACT`,
+  "",
+  `<${tag}${attributes}>`,
+  hiddenAnswers,
+  ...(close ? [`</${tag}>`] : []),
+  "",
+  "---",
+  "",
+  currentBrief,
+].join("\n");
+const renderedHeadingAfterClosedRawHtmlPrepend = [
+  "# VISIBLE MARKDOWN AFTER RAW HTML CONTRACT",
+  "",
+  '<PRE data-fixture="same-line">## USER ARRIVES BECAUSE\nHidden fixture answer.</PRE>',
+  "",
+  requiredHeadings.map((heading) => `${heading}\nVisible fixture answer.`).join("\n\n"),
+  "",
+  "---",
+  "",
+  currentBrief,
+].join("\n");
 
 const run = (mutateBrief, { changed = true } = {}) => {
   const directory = mkdtempSync(join(tmpdir(), "gold-policy-history-"));
@@ -219,6 +241,24 @@ test("rejects newest contract headings hidden inside fenced Markdown code", () =
 
 test("accepts all required rendered headings with substantive answers", () => {
   const result = run(renderedHeadingPrepend);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+for (const [tag, attributes, options] of [
+  ["pre", "", {}],
+  ["script", ' type="text/plain"', {}],
+  ["style", "", {}],
+  ["textarea", "", { close: false }],
+]) {
+  test(`rejects newest contract headings hidden inside a raw HTML ${tag} block`, () => {
+    const result = run(hiddenRawHtmlPrepend(tag, attributes, options));
+    assert.notEqual(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stderr, /newest GOLD brief contract missing heading/i);
+  });
+}
+
+test("accepts visible headings after a same-line case-insensitive raw HTML block", () => {
+  const result = run(renderedHeadingAfterClosedRawHtmlPrepend);
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 

@@ -107,8 +107,16 @@ function visibleMarkdownLines(markdown) {
   const visible = [];
   let inHtmlComment = false;
   let fence = null;
+  let rawHtmlBlock = null;
 
   for (const rawLine of markdown.split(/\r?\n/)) {
+    if (rawHtmlBlock) {
+      if (new RegExp(`</${rawHtmlBlock}\\s*>`, "i").test(rawLine)) {
+        rawHtmlBlock = null;
+      }
+      continue;
+    }
+
     if (fence) {
       const closing = rawLine.match(/^ {0,3}(`+|~+)\s*$/);
       if (closing && closing[1][0] === fence.character && closing[1].length >= fence.length) {
@@ -144,6 +152,15 @@ function visibleMarkdownLines(markdown) {
     const opener = rendered.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
     if (opener) {
       fence = { character: opener[1][0], length: opener[1].length };
+      continue;
+    }
+
+    const rawHtmlOpener = rendered.match(/^ {0,3}<(pre|script|style|textarea)(?:\s|>|$)/i);
+    if (rawHtmlOpener) {
+      const tag = rawHtmlOpener[1].toLowerCase();
+      if (!new RegExp(`</${tag}\\s*>`, "i").test(rendered)) {
+        rawHtmlBlock = tag;
+      }
       continue;
     }
     visible.push(rendered);
