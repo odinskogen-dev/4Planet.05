@@ -1,0 +1,44 @@
+name: 4PLANET IMPACT Public Search Crawl Diagnostic 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-impact-public-crawl-qa-20261027.yml]
+permissions: {contents: read}
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Verify exact existing IMPACT and topic URLs are crawlable, source-bearing and not errors
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,re,html,concurrent.futures,os
+          paths=[
+            '/impact/project/accion-andina','/impact/project/great-green-wall','/impact/project/florida-coral-restoration',
+            '/impact/project/abu-dhabi-marine-restoration','/impact/actors/iucn',
+            '/impact/actors/accion-andina','/impact/actors/borneo-nature-foundation',
+            '/impact/actors/coral-restoration-foundation','/impact','/now','/wildfires']
+          def check(p):
+            u='https://4planet.org'+p
+            req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-public-index-audit/1.0)'})
+            try:
+              with urllib.request.urlopen(req,timeout=25) as r:
+                code=r.status;data=r.read(250000).decode('utf-8','replace');final=r.geturl();ctype=r.headers.get('Content-Type','');rob=r.headers.get('X-Robots-Tag','')
+            except urllib.error.HTTPError as e:
+              code=e.code;data=e.read(20000).decode('utf-8','replace');final=e.geturl();ctype=e.headers.get('Content-Type','');rob=e.headers.get('X-Robots-Tag','')
+            except Exception as e:return p,0,type(e).__name__,'','','','',0
+            def clean(x):
+              return html.unescape(re.sub('<[^>]+>',' ',x)).strip().replace('|','/')
+            h1=re.search(r'<h1[^>]*>(.*?)</h1>',data,re.I|re.S)
+            title=re.search(r'<title[^>]*>(.*?)</title>',data,re.I|re.S)
+            canon=re.search(r'<link[^>]+rel="canonical"[^>]+href="([^"]+)"',data,re.I)
+            links=len(re.findall(r'<a\s+[^>]*href=',data,re.I))
+            return p,code,final,(clean(h1.group(1))[:70] if h1 else 'NO_SERVER_H1'),(clean(title.group(1))[:90] if title else 'NO_TITLE'),(canon.group(1) if canon else ''),rob,links
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:rows=list(ex.map(check,paths))
+          out=['# 4PLANET IMPACT published-intent live crawl QA','','| Route | HTTP | Final URL | Server H1 | Title | Canonical | Robots | HTML links |','|---|---:|---|---|---|---|---|---:|']
+          for x in rows:out.append('| '+' | '.join(map(str,x))+' |')
+          out+=['','Read-only; no existing public actors, projects, Workers, or sitemap edited.']
+          report='\n'.join(out);print(report)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(report+'\n')
+          PY
