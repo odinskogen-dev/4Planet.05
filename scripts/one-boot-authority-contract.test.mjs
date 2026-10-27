@@ -26,7 +26,7 @@ function legacyMandatoryLines(text) {
    const router=/(?:\b00\b|one lean context|short 00|00 router|agent start here)/.test(l);
    const oldSource=/(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here)/.test(l);
    const oldPair=/(?:project lead.{0,120}active tasks|active tasks.{0,120}project lead)/.test(l);
-   const explicitDenial=/(?:\b(?:never|do not|don't|must not|cannot)\b.{0,80}\b(?:read|load|consult|open)\b.{0,100}(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here))|(?:(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here).{0,80}\b(?:historical|superseded|on-demand|on demand|not routine|not mandatory)\b)/.test(l);
+   const explicitDenial=/(?:\b(?:never|do not|don't|must not|cannot)\b.{0,80}\b(?:read|load|consult|open|use)\b.{0,100}(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here))|(?:(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here).{0,80}\b(?:historical|superseded|on-demand|on demand|not routine|not mandatory)\b)/.test(l);
    const secondHandoff=/(?:second|another)\s+(?:handoff|briefing|project lead|playbook)|fresh\s+(?:(?:axe\/brain|axe|brain)\s+)?(?:handoff|briefing|project lead|playbook)/.test(l)
     || /(?:require|mandatory|must|needs|obtain).{0,80}(?:axe\/brain|axe|brain)\s*(?:context\s*)?handoff/.test(l);
    return !explicitDenial&&((instruction&&oldSource&&(router||oldPair||/\b(?:startup|boot)\b/.test(l)))||secondHandoff);
@@ -98,7 +98,8 @@ const positive=[
  "Never allow agents to access ODIN PRIVATE.",
  "ODIN PRIVATE must not be ingested into the organisation knowledge base.",
  "Founder consent remains required for production release.",
- "Passing CI is insufficient to go live; Gold and Founder approval remain required."
+ "Passing CI is insufficient to go live; Gold and Founder approval remain required.",
+ "Current, mandatory routine context: the short ONLY BOOT link above. Do NOT use historical 00→01→02 multi-document startup."
 ];
 for(const fixture of negative) assert(legacyMandatoryLines(fixture).length>0 || unsafeAuthorityLines(fixture).length>0,"NEGATIVE FALSE ACCEPT "+fixture);
 for(const fixture of positive){assert.equal(legacyMandatoryLines(fixture).length,0,"HISTORIC FALSE POSITIVE "+fixture);assert.equal(unsafeAuthorityLines(fixture).length,0,"SAFE GUARD FALSE POSITIVE "+fixture);}
