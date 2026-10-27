@@ -1,0 +1,171 @@
+name: 4PLANET Earth Now Canonical Surgical LIVE 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-now-canonical-surgical-live-20261027.yml]
+permissions: {contents: read}
+concurrency: {group: 4planet-now-one-path-release, cancel-in-progress: false}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CFT1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CFT2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CFT3: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Exact source and isolated offline HTTP contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import worker from './ops/exposure/4planet-now-canonical-p0.js';
+          const oldFetch=globalThis.fetch;
+          const queried=[];
+          globalThis.fetch=async (url, init) => {
+            queried.push(url);
+            return new Response('<!doctype html><html><head><link rel="canonical" href="https://4planet.org/now"></head><body><h1>Earth Now</h1></body></html>',{
+              status:200, headers:{'content-type':'text/html; charset=utf-8','content-length':'120'}
+            });
+          };
+          try {
+            const good=await worker.fetch(new Request('https://4planet.org/now?view=earth'));
+            assert.equal(good.status,200);
+            assert.equal(good.headers.get('x-4planet-seo-p0'),'canonical-now-2026-10-27');
+            assert.equal(good.headers.get('content-length'),null);
+            assert.equal(queried[0],'https://4planet.org/now/?view=earth');
+            assert.match(await good.text(),/rel="canonical" href="https:\/\/4planet.org\/now"/);
+            assert.equal((await worker.fetch(new Request('https://4planet.org/now',{method:'HEAD'}))).status,200);
+            assert.equal((await worker.fetch(new Request('https://4planet.org/now',{method:'POST'}))).status,405);
+            for (const u of ['https://4planet.org/now/','https://4planet.org/','https://4species.com/now','https://4planet.org/wildfires']) assert.equal((await worker.fetch(new Request(u))).status,404,u);
+            console.log('NOW_SCOPE_AND_BODY_CONTRACT_PASS');
+          }finally{globalThis.fetch=oldFetch}
+          NODE
+      - name: Check actual current redirect, canonical target, Cloudflare routing and 57 immutable species
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,re,json,urllib.request,urllib.error,concurrent.futures,sys
+          candidates=[]
+          for name in ('CFT1','CFT2','CFT3'):
+            t=os.environ.get(name,'').strip().replace('\r','').replace('\n','')
+            for p in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if t.startswith(p):t=t[len(p):]
+            t=t.strip().strip('"').strip("'")
+            if t and t not in candidates:candidates.append(t)
+          root='https://api.cloudflare.com/client/v4'
+          def api(token,path):
+            req=urllib.request.Request(root+path,headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=20) as r:return r.status,json.load(r)
+            except urllib.error.HTTPError as e:
+              try:obj=json.load(e)
+              except:obj={}
+              return e.code,obj
+          token=None;zone=None
+          for t in candidates:
+            st,j=api(t,'/zones?name=4planet.org')
+            z=[v for v in j.get('result',[]) if v.get('name')=='4planet.org' and v.get('status')=='active']
+            if st==200 and j.get('success') and len(z)==1:token=t;zone=z[0];break
+          if not zone:sys.exit('BLOCKED: no authorised zone')
+          st,r=api(token,f'/zones/{zone["id"]}/workers/routes')
+          if st!=200 or not r.get('success'):sys.exit('BLOCKED: cannot read existing routes')
+          if any(v.get('pattern')=='4planet.org/now' for v in r.get('result',[])):sys.exit('BLOCKED: path already bound')
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self,*a,**kw):return None
+          opener=urllib.request.build_opener(NoRedirect)
+          def get(u,redirect=True):
+            req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 (4PLANET-GOLD-exact-route)'})
+            try:
+              op=urllib.request.urlopen if redirect else opener.open
+              with op(req,timeout=25) as res:return res.status,res.read(240000).decode('utf-8','replace'),res.headers.get('Location','')
+            except urllib.error.HTTPError as e:return e.code,'',e.headers.get('Location','')
+            except:return 0,'',''
+          st,_,loc=get('https://4planet.org/now',False)
+          if st not in (301,308) or not loc.endswith('/now/'):sys.exit(f'BLOCKED: original /now unexpected {st} {loc}')
+          code,html,_=get('https://4planet.org/now/')
+          if code!=200 or '<h1' not in html.lower() or 'href="https://4planet.org/now"' not in html:sys.exit('BLOCKED: slash destination HTML/canonical not proven')
+          if get('https://4planet.org/news-sitemap.xml')[0]!=200:sys.exit('BLOCKED: prior News repair not preserved')
+          src=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+          slugs=re.findall(r'"([a-z0-9-]+)"',src)
+          if len(slugs)!=57:sys.exit('BLOCKED: 57 source baseline changed')
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:results=list(pool.map(lambda s:(s,get('https://4species.com/'+s)[0]),slugs))
+          if any(st!=200 for _,st in results):sys.exit('BLOCKED: species baseline degraded '+str([r for r in results if r[1]!=200][:4]))
+          acc=(zone.get('account') or {}).get('id')
+          if not acc:sys.exit('BLOCKED: no account')
+          print('::add-mask::'+token)
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+            f.write(f'CLOUDFLARE_API_TOKEN={token}\nCLOUDFLARE_ACCOUNT_ID={acc}\nZONE_ID={zone["id"]}\nWORKER_NAME=4planet-now-canonical-p0-20261027\n')
+          print('NOW_PREFLIGHT_PASS /now 308->/now/ with canonical /now; 57/57 species 200; current News 200; no route conflict')
+          PY
+      - name: Upload isolated Worker, without modifying routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/exposure/4planet-now-canonical-p0.js \
+            --name "$WORKER_NAME" --compatibility-date 2026-10-27 --keep-vars > /tmp/4planet-now-deploy.log 2>&1 || {
+              echo 'Worker upload failed. Existing public routes not changed.'
+              tail -n 20 /tmp/4planet-now-deploy.log | sed -E 's/(token|Bearer)[[:space:]:=]+[^ ]+/\1 [REDACTED]/Ig'
+              exit 1
+            }
+          echo 'NOW_ISOLATED_WORKER_UPLOADED_UNROUTED'
+      - name: Attach exact /now route with automatic rollback if any invariant fails
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,json,re,time,urllib.request,urllib.error,concurrent.futures,sys
+          api='https://api.cloudflare.com/client/v4';token=os.environ['CLOUDFLARE_API_TOKEN'];zid=os.environ['ZONE_ID'];worker=os.environ['WORKER_NAME']
+          route_id=None;verified=False
+          def c(method,path,body=None):
+            req=urllib.request.Request(api+path,data=json.dumps(body).encode() if body is not None else None,method=method,headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=23) as r:return r.status,json.load(r)
+            except urllib.error.HTTPError as e:
+              try:j=json.load(e)
+              except:j={}
+              return e.code,j
+          def live(path):
+            req=urllib.request.Request(path,headers={'User-Agent':'Mozilla/5.0 (4PLANET-GOLD-exact-route)','Cache-Control':'no-cache'})
+            try:
+              with urllib.request.urlopen(req,timeout=24) as r:return r.status,r.read(260000).decode('utf-8','replace'),r.headers.get('x-4planet-seo-p0','')
+            except urllib.error.HTTPError as e:return e.code,'',''
+            except Exception:return 0,'',''
+          try:
+            st,r=c('GET',f'/zones/{zid}/workers/routes')
+            if st!=200 or not r.get('success') or any(x.get('pattern')=='4planet.org/now' for x in r.get('result',[])):
+              raise RuntimeError('Route authority conflict')
+            st,result=c('POST',f'/zones/{zid}/workers/routes',{'pattern':'4planet.org/now','script':worker})
+            if st not in (200,201) or not result.get('success'):raise RuntimeError('Cloudflare route rejected '+str(st))
+            route_id=(result.get('result') or {}).get('id')
+            if not route_id:raise RuntimeError('No exact rollback ID')
+            print('NOW_EXACT_ROUTE_CREATED')
+            for attempt in range(8):
+              status,html,marker=live('https://4planet.org/now')
+              if status==200 and marker=='canonical-now-2026-10-27' and '<h1' in html.lower() and 'href="https://4planet.org/now"' in html:break
+              time.sleep(3)
+            else:raise RuntimeError('LIVE /now 200 + canonical + marker not reached')
+            urls=['https://4planet.org/now/','https://4planet.org/','https://4planet.org/news-sitemap.xml','https://4planet.org/atlas','https://4planetmagazine.com/','https://4planetmagazine.com/news-sitemap.xml','https://4species.com/orca']
+            with concurrent.futures.ThreadPoolExecutor(max_workers=7) as ex:base=list(ex.map(live,urls))
+            if any(row[0]!=200 for row in base):raise RuntimeError('Other public routes degraded '+str([(u,v[0]) for u,v in zip(urls,base)]))
+            src=open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]
+            slugs=re.findall(r'"([a-z0-9-]+)"',src)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:rows=list(ex.map(lambda s:(s,live('https://4species.com/'+s)[0]),slugs))
+            if len(rows)!=57 or any(status!=200 for _,status in rows):raise RuntimeError('Protected 57 species regression '+str([r for r in rows if r[1]!=200][:5]))
+            verified=True
+            receipt=f'NOW_LIVE_PASS /now HTTP 200 self-canonical HTML and H1; old /now/ + News sitemaps 200; 57/57 SPECIES HTTP 200. Worker {worker}; route {route_id}; source {os.environ["GITHUB_SHA"]}'
+            print(receipt)
+            with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## Live exact-route SEO fix\n\n'+receipt+'\n')
+          finally:
+            if not verified and route_id:
+              st,res=c('DELETE',f'/zones/{zid}/workers/routes/{route_id}')
+              if st==200 and res.get('success'):print('NOW_ROLLBACK_ROUTE_REMOVED')
+              else:print('CRITICAL_ROLLBACK_FAILED route_id='+route_id)
+          if not verified:sys.exit(1)
+          PY
