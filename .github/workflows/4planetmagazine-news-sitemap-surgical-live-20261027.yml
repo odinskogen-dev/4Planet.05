@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: 4planet-news-sitemap-p0-live
+  group: 4planetmagazine-news-sitemap-p0-live
   cancel-in-progress: false
 jobs:
   bounded-release:
@@ -66,7 +66,7 @@ jobs:
               return e.code,d
           token=None; zone=None
           for t in tokens:
-            code,data=get(t,'/zones?name=4planet.org')
+            code,data=get(t,'/zones?name=4planetmagazine.com')
             zs=[z for z in data.get('result',[]) if z.get('name')=='4planetmagazine.com' and z.get('status')=='active']
             if code==200 and data.get('success') and len(zs)==1: token=t;zone=zs[0];break
           if not token:sys.exit('FAIL_CLOSED: 4planetmagazine.com active Cloudflare zone inaccessible')
@@ -115,9 +115,9 @@ jobs:
           set -euo pipefail
           npx --yes wrangler@4.128.0 deploy ops/exposure/4planetmagazine-news-sitemap-p0.js \
             --name "$CF_SCRIPT_NAME" --compatibility-date 2026-10-27 --keep-vars \
-            > /tmp/4planet-news-sitemap-deploy.log 2>&1 || {
+            > /tmp/4planetmagazine-news-sitemap-deploy.log 2>&1 || {
               echo 'Worker upload failed; no route was changed.'
-              tail -n 18 /tmp/4planet-news-sitemap-deploy.log | sed -E 's/(token|Bearer)[[:space:]:=]+[^ ]+/\1 [REDACTED]/Ig'
+              tail -n 18 /tmp/4planetmagazine-news-sitemap-deploy.log | sed -E 's/(token|Bearer)[[:space:]:=]+[^ ]+/\1 [REDACTED]/Ig'
               exit 1
             }
           echo 'SCOPED_WORKER_UPLOADED_NOT_YET_ROUTED'
