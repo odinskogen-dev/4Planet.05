@@ -28,7 +28,14 @@ async function openProductNavigation(page: Page) {
     await expect(dialog.getByRole("button", { name: "Close navigation" })).toBeFocused();
     await expect(dialog.getByText("EXPLORE_", { exact: true })).toBeVisible();
     await expect(dialog.getByText("CULTURE_", { exact: true })).toBeVisible();
-    await expect(dialog.getByRole("link", { name: /^4PLANET MAGAZINE/ })).toBeVisible();
+    const magazineMission = dialog.getByRole("link", { name: "4PLANET MAGAZINE", exact: true });
+    const magazineEditorial = dialog.getByRole("link", { name: "4PLANET MAGAZINE Editorial", exact: true });
+    await expect(magazineMission).toHaveCount(1);
+    await expect(magazineMission).toBeVisible();
+    await expect(magazineMission).toHaveAttribute("href", "/missions/m4gazine");
+    await expect(magazineEditorial).toHaveCount(1);
+    await expect(magazineEditorial).toBeVisible();
+    await expect(magazineEditorial).toHaveAttribute("href", "/magazine");
     for (const name of ["ATLAS", "SPECIES", "LIVING SYSTEMS", "IMPACT"]) {
       await expect(dialog.getByRole("link", { name: new RegExp(`^${name}`) }).first()).toBeVisible();
     }
