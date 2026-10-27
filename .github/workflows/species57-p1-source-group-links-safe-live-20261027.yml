@@ -1,0 +1,155 @@
+name: SPECIES57 P1 - add source-linked group exploration to 18 LIVE, protect original39
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p1-source-group-links-safe-live-20261027.yml]
+permissions: {contents: read}
+concurrency: {group: species57-20261027-group-links, cancel-in-progress: false}
+jobs:
+  guarded:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      EXPECTED_WORKER: 9e6ac5a9-9909-4178-8d3d-9f375df35a4d
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0,persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Recreate exact current P1 Worker and derive only new18 navigation from live 57 authoritative index
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ops/discovery ops/species57 public/species-data/v1 evidence/group-links
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js >ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json >public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py >ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js >ops/discovery/species57-search-directory.js
+          test "$(git hash-object ops/discovery/4species-router.js)" = 140d6854b34609e537a016068543c8bf44a6e7cf
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
+          python3 ops/species57/p1-add-source-verified-authors.py ops/discovery/4species-router-p1.js ops/species57/p1-taxonomy-evidence.json ops/discovery/4species-router-p1-reviewed.js
+          curl --fail-with-body -fsSL --retry 2 https://4species.com/species-data/v1/index.json -o /tmp/species57-live-catalog.json
+          python3 ops/species57/p1-source-group-crosslinks.py ops/discovery/4species-router-p1-reviewed.js /tmp/species57-live-catalog.json ops/discovery/4species-router-p1-nav.js evidence/group-links/nav-evidence.json
+          node --check ops/discovery/4species-router-p1-nav.js
+          echo SPECIES57_P1_CATALOG_SOURCE_GROUP_NAV_18_EXACT_GENERATED
+      - name: Snapshot 57 live pages; require current exact Worker version before any change
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import urllib.request,hashlib,json,concurrent.futures
+          from pathlib import Path
+          old="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          recent="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(old)==39 and len(recent)==18
+          def get(uri):
+            with urllib.request.urlopen(urllib.request.Request(uri,headers={"User-Agent":"SPECIES57-NEW18-HTML-LINK-SNAPSHOT","Cache-Control":"no-cache"}),timeout=35) as r:return r.read()
+          def check(slug):
+            h=get("https://4species.com/"+slug)
+            j=get("https://4species.com/species-data/v1/"+slug+".json")
+            assert ("https://4species.com/"+slug).encode() in h
+            if slug in old:
+              p=json.loads(j)
+              frozen=json.loads(get("https://e17e1392.4planet-05.pages.dev/species-data/v1/"+slug+".json"))
+              assert p==frozen,("OLD39_DRIFT",slug)
+            return {"slug":slug,"htmlSha":hashlib.sha256(h).hexdigest(),"jsonSha":hashlib.sha256(j).hexdigest()}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool: rows=list(pool.map(check,old+recent))
+          assert len(rows)==57
+          Path("evidence/group-links/previous.json").write_text(json.dumps(rows,indent=2))
+          print("SPECIES57_GROUP_LINK_57_LIVE_SNAPSHOT_EXACT")
+          PY
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" > /tmp/zone.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/zone.json)
+          test -n "$account"
+          echo "CF_ACCOUNT=$account" >> "$GITHUB_ENV"
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" > /tmp/deploy.json
+          version=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/deploy.json)
+          test "$version" = "$EXPECTED_WORKER" || { echo "UNEXPECTED_WORKER_LIVE_VERSION $version"; exit 1; }
+          echo "ROLLBACK_VERSION=$version" >> "$GITHUB_ENV"
+      - name: Add crosslinks to 18 only, verify all 39 immutable HTML+JSON and 18 science/photos
+        shell: bash
+        run: |
+          set -euo pipefail
+          rollback(){
+            echo "SPECIES57_NAV_REGRESSION_ROLLBACK $ROLLBACK_VERSION"
+            npx --yes wrangler@4.128.0 rollback "$ROLLBACK_VERSION" --name 4species-router || true
+          }
+          trap rollback ERR
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$CF_ACCOUNT/workers/scripts/4species-router/deployments" >/tmp/reverify.json
+          current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/reverify.json)
+          if [ "$current" != "$ROLLBACK_VERSION" ]; then echo "Concurrent release stopped"; trap - ERR; exit 1; fi
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router-p1-nav.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-nav-deploy.log
+          python3 - <<'PY'
+          import urllib.request,json,hashlib,concurrent.futures
+          from pathlib import Path
+          before=json.loads(Path("evidence/group-links/previous.json").read_text())
+          graph=json.loads(Path("evidence/group-links/nav-evidence.json").read_text())["navigation"]
+          def get(uri):
+            with urllib.request.urlopen(urllib.request.Request(uri,headers={"User-Agent":"SPECIES57-NAV-LIVE-QA","Cache-Control":"no-cache"}),timeout=35) as r:return r.read()
+          def inspect(p):
+            slug=p["slug"]
+            html=get("https://4species.com/"+slug)
+            data=get("https://4species.com/species-data/v1/"+slug+".json")
+            assert hashlib.sha256(data).hexdigest()==p["jsonSha"],("UNCHANGED_SCIENCE_JSON_CHANGED",slug)
+            if slug not in graph:
+              assert hashlib.sha256(html).hexdigest()==p["htmlSha"],("OLD39_HTML_CHANGED",slug)
+            else:
+              assert b'id="species-57-inline-discovery"' in html,("DISCOVERY_NOT_RENDERED",slug)
+              for target in graph[slug]["links"]:
+                assert ('href="/'+target+'"').encode() in html,("MISSING_GROUP_LINK",slug,target)
+              assert ("https://4species.com/"+slug).encode() in html
+              assert b"Pending authority citation" not in html
+            return slug
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as ex:done=list(ex.map(inspect,before))
+          assert len(done)==57 and len(graph)==18
+          idx=json.loads(get("https://4species.com/species-data/v1/index.json"))
+          assert len(idx["pages"])==57 and len({x["slug"] for x in idx["pages"]})==57
+          assert b'class="card"' in get("https://4species.com/species-directory")
+          print("SPECIES57_NAV_LIVE_PROOF_39_ORIGINAL_HTML_JSON_IDENTICAL_18_ARTICLES_GROUP_LINKS_JSON_IDENTICAL")
+          Path("evidence/group-links/closure.json").write_text(json.dumps({"original39HTMLAndJSONUnchanged":39,"new18ScientificJSONUnchanged":18,"new18GroupLinksVisible":18,"newSpeciesPublished":0},indent=2))
+          PY
+          trap - ERR
+      - name: Real Chrome mobile and Safari desktop verify navigation survives React hydration on representative newer18
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix /tmp/species-links playwright@1.56.0 --no-audit --no-fund
+          /tmp/species-links/node_modules/.bin/playwright install --with-deps chromium webkit
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import {chromium,webkit,devices} from "/tmp/species-links/node_modules/playwright/index.mjs";
+          const samples="koala quokka red-fox walrus secretary-bird giant-manta-ray greater-blue-ringed-octopus venus-flytrap giant-sequoia orca".split(" ");
+          const out=[];
+          for(const [name,engine,mobile] of [["Chromium",chromium,true],["WebKit",webkit,false]]){
+            const browser=await engine.launch({headless:true});
+            const ctx=await browser.newContext(mobile?devices["iPhone 13"]:{viewport:{width:1440,height:900}});
+            for(const slug of samples){
+              const page=await ctx.newPage(),errors=[];
+              page.on("pageerror",e=>errors.push(String(e)));
+              const response=await page.goto("https://4species.com/"+slug,{waitUntil:"domcontentloaded",timeout:45000});
+              await page.waitForTimeout(1350);
+              const state=await page.evaluate(()=>({main:document.querySelector("#main-content")?.className||"",nav:document.querySelector("#species-57-inline-discovery"),count:document.querySelectorAll('#species-57-inline-discovery a[href]').length,overflow:document.documentElement.scrollWidth>innerWidth+4}));
+              const navExpected=slug!=="orca";
+              const pass=response?.status()===200&&state.main.includes("spx-root")&&(!navExpected||state.count>=4)&&(!navExpected||!!state.nav)&&!state.overflow&&!errors.length;
+              out.push({slug,browser:name,mobile,navExpected,navLinks:state.count,hydrated:state.main.includes("spx-root"),errors,pass});
+              console.log("SPECIES57_NAV_BROWSER",JSON.stringify(out.at(-1)));
+              await page.close();
+            }
+            await ctx.close();await browser.close();
+          }
+          fs.writeFileSync("evidence/group-links/browser.json",JSON.stringify(out,null,2));
+          if(out.some(x=>!x.pass))process.exitCode=1;
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-additive-new18-HTML-group-links-39-immutable-20261027
+          path: evidence/group-links/
+          retention-days: 30
