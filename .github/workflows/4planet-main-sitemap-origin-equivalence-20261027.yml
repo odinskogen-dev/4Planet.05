@@ -1,0 +1,35 @@
+name: 4PLANET Main Sitemap Exact Source Equivalence Audit 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-main-sitemap-origin-equivalence-20261027.yml]
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Verify immutable and canonical Pages origin sitemap identities without mutations
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,xml.etree.ElementTree as ET,hashlib,os
+          origins=['https://4planet.org/sitemap.xml','https://4planet-05.pages.dev/sitemap.xml','https://d3d3fae0.4planet-05.pages.dev/sitemap.xml']
+          results=[]
+          for u in origins:
+            req=urllib.request.Request(u,headers={'User-Agent':'Mozilla/5.0 (4PLANET-controlled-origin-proof)'})
+            try:
+              with urllib.request.urlopen(req,timeout=28) as f:code=f.status;buf=f.read(500000);final=f.geturl()
+              root=ET.fromstring(buf)
+              locs=[x.text for x in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if x.text]
+              result=(u,code,final,hashlib.sha256(buf).hexdigest(),len(locs),sum('/impact/project/' in x or '/impact/actors/' in x for x in locs),'VALID_XML')
+            except Exception as e:result=(u,0,'ERROR:'+type(e).__name__,'',0,0,'UNAVAILABLE')
+            results.append(result)
+          out=['# Sitemap LIVE and Cloudflare Pages origin equivalence (READ ONLY)','',
+               '| URL | HTTP | Final URL | SHA256 | Entries | IMPACT items | XML |','|---|---:|---|---|---:|---:|---|']
+          for row in results:out.append('| '+' | '.join(map(str,row))+' |')
+          same=(results[0][3]!='' and results[0][3]==results[1][3])
+          out+=['',f'PUBLIC_APEX_AND_DEFAULT_PAGES_EXACT_BYTES_MATCH: {same}','No production mutatation. An origin cannot be used as a surgical replacement unless its identity and surface content are proven.']
+          print('\n'.join(out))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(out)+'\n')
+          PY
