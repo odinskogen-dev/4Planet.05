@@ -18,9 +18,11 @@ function setup({ failList = false, failPerformance = "" } = {}) {
       getName() { return name; },
       getLastColumn() { return headers[name]; },
       getMaxRows() { return 1200; },
+      getLastRow() { let n = data.length; while (n && (!data[n - 1] || !data[n - 1].some(v => v !== "" && v != null))) n--; return n + 1; },
       insertRowsAfter() {},
       getRange(row, col, rowCount, columnCount) {
         return {
+          getValues() { return Array.from({length:rowCount}, (_,i) => (data[row - 2 + i] || Array(columnCount).fill("")).slice()); },
           clearContent() { for (let i = row - 2; i < data.length; i++) if (i >= 0) data[i] = []; },
           setValues(rows) { rows.forEach((v, i) => { data[row - 2 + i] = v; }); }
         };
@@ -152,9 +154,11 @@ test("all query exports use the same privacy filter and formula guard", () => {
 
 test("failed property listing does not erase previous Sheets snapshot or create trigger", () => {
   const o=setup({failList:true});
-  o.tabs.get("Properties").data.push(["existing-property","siteOwner","yesterday","OK"]);
+  o.tabs.get("Properties").data.push(["sc-domain:4planet.org","siteOwner","yesterday","OK"]);
+  o.tabs.get("Properties").data.push(["sc-domain:ammkunst.com","siteOwner","yesterday","OK"]);
   assert.throws(() => o.mock.setup4PlanetGSC(),/GSC HTTP 403/);
-  assert.equal(o.tabs.get("Properties").data[0][0],"existing-property");
+  assert.equal(o.tabs.get("Properties").data[0][0],"sc-domain:4planet.org");
+  assert.ok(!JSON.stringify(o.tabs.get("Properties").data).includes("ammkunst.com"));
   assert.equal(o.triggers.length,0);
 });
 
@@ -162,12 +166,18 @@ test("one property failing preserves the previous complete tab snapshot and expo
   const o=setup({failPerformance:"sc-domain:4planet.org"});
   const prior=["sc-domain:4planet.org","yesterday","yesterday",5,80,0.0625,8.5,"OK","yesterday"];
   o.tabs.get("Performance").data.push(prior);
+  o.tabs.get("Performance").data.push(["sc-domain:ammkunst.com","yesterday","yesterday",4,30,0.1,9,"OK","yesterday"]);
+  o.tabs.get("PageQueries").data.push(["sc-domain:4planet.org","https://4planet.org/now","founder@example.com",1,5,0.2,8,"old","old","old"]);
+  o.tabs.get("PageQueries").data.push(["sc-domain:4planet.org","https://4planet.org/now","living planet",1,5,0.2,8,"old","old","old"]);
   const report=o.mock.sync4PlanetGSC();
   assert.equal(report.properties,2);
   assert.ok(report.staleTabs.includes("Performance"));
   assert.ok(report.staleTabs.includes("Pages"));
   assert.ok(report.staleTabs.includes("PageQueries"));
   assert.deepEqual(o.tabs.get("Performance").data[0], prior);
+  assert.ok(!JSON.stringify(o.tabs.get("Performance").data).includes("ammkunst.com"));
+  assert.ok(!JSON.stringify(o.tabs.get("PageQueries").data).includes("founder@example.com"));
+  assert.ok(o.tabs.get("PageQueries").data.some(r => r[2] === "living planet"));
   assert.ok(o.tabs.get("Sitemaps").data.some(r=>r[0]==="sc-domain:4species.com"&&r[6]==="WARNINGS"));
   assert.ok(o.tabs.get("Diagnostics").data.some(r=>r[1]==="sc-domain:4planet.org"&&r[3]==="ERROR"));
   assert.ok(o.tabs.get("Diagnostics").data.some(r=>r[2]==="snapshot-write"&&r[3]==="HELD"));
