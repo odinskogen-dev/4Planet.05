@@ -14,6 +14,12 @@ test("browser proof preserves the active immutable-SHA run", async () => {
 
   assert.match(workflow, /group: browser-product-proof-\$\{\{ github\.ref \}\}/);
   assert.match(workflow, /cancel-in-progress: false/);
+
+  const timeoutMinutes = Number(workflow.match(/timeout-minutes:\s*(\d+)/)?.[1]);
+  assert.ok(
+    timeoutMinutes >= 60,
+    `browser proof timeout must preserve enough budget for browser provisioning and product QA; got ${timeoutMinutes}`,
+  );
 });
 
 test("built preview prefers prerendered route HTML and preserves SPA fallback", async (t) => {
