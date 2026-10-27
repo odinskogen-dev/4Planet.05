@@ -91,8 +91,7 @@ export default { async fetch(request) {
   if (path === '/_control') return dashboard();
 
   // Founder-approved review namespace: direct, read-only HEIR projection at a stable test.4planet.org URL.
-  // Static assets are proxied from the same exact HEIR origin so the SPA remains visually intact.
-  if (path === '/sandbox/gold' || path.startsWith('/sandbox/gold/') || isGoldAsset(path)) {
+  if (path === '/sandbox/gold' || path.startsWith('/sandbox/gold/')) {
     return proxyHeir(request, url, path);
   }
 
@@ -105,6 +104,10 @@ export default { async fetch(request) {
     const sandboxPath = reviewPath === '/' ? '/sandbox' : reviewPath + '/sandbox';
     if (path === sandboxPath || path.startsWith(sandboxPath + '/')) return unregisteredSandbox(product);
   }
+
+  // Static assets are proxied from the same exact HEIR origin so the SPA remains visually intact,
+  // but only after authority-bearing sandbox namespaces have been denied above.
+  if (isGoldAsset(path)) return proxyHeir(request, url, path);
 
   for (const [product,p] of Object.entries(CONFIG.products)) {
     if (p.sandbox && path === normalise(p.sandbox.review_path)) {

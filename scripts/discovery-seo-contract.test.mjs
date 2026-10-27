@@ -233,9 +233,20 @@ test("four-state worker fails closed for unregistered product sandboxes",async()
     const upstream=[];
     globalThis.fetch=async(request)=>{upstream.push(new URL(request.url).pathname);return new Response("HEIR",{status:200})};
 
-    for(const path of ["/atlas/sandbox","/atlas/sandbox/deep","/oslofjord/sandbox"]){
+    for(const path of [
+      "/atlas/sandbox",
+      "/atlas/sandbox/deep",
+      "/atlas/sandbox/deep.js",
+      "/atlas/sandbox/data.json",
+      "/oslofjord/sandbox",
+      "/oslofjord/sandbox/logo.svg",
+      "/sandbox/secret.css",
+    ]){
       const response=await actual.worker.fetch(new Request(`https://test.4planet.org${path}`));
       assert.equal(response.status,404,`${path} must fail closed when its sandbox is unregistered`);
+      assert.equal(response.headers.get("cache-control"),"no-store");
+      assert.match(response.headers.get("x-robots-tag")||"",/noindex/);
+      assert.match(response.headers.get("x-robots-tag")||"",/nofollow/);
       assert.match(await response.text(),/UNREGISTERED SANDBOX/);
     }
     assert.deepEqual(upstream,[],"unregistered sandbox paths must never fall through to HEIR");
@@ -244,9 +255,14 @@ test("four-state worker fails closed for unregistered product sandboxes",async()
     assert.equal(registered.status,200);
     assert.match(await registered.text(),/sandbox-render\.example/);
 
+    for(const path of ["/sandbox/gold","/assets/review.css"]){
+      const response=await actual.worker.fetch(new Request(`https://test.4planet.org${path}`));
+      assert.equal(response.status,200,`${path} must retain its deliberate HEIR projection`);
+    }
+
     const heir=await actual.worker.fetch(new Request("https://test.4planet.org/atlas/fires"));
     assert.equal(heir.status,200);
-    assert.deepEqual(upstream,["/atlas/fires"],"ordinary ATLAS HEIR routes must remain available");
+    assert.deepEqual(upstream,["/sandbox/gold","/assets/review.css","/atlas/fires"],"deliberate Gold/assets and ordinary ATLAS HEIR routes must remain available");
   }finally{
     globalThis.fetch=originalFetch;
     actual.cleanup();
