@@ -1,0 +1,71 @@
+name: 4PLANET Google Analytics 4 Read Only Traffic 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-ga4-traffic-readonly-20261027.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      GA4_CREDENTIAL: ${{ secrets.GA4_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q --disable-pip-version-check google-auth requests
+      - name: Read property-level traffic by allowlisted public hosts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          raw=os.environ.get('GA4_CREDENTIAL','')
+          if not raw:
+            print('GA4_SERVICE_ACCOUNT_NOT_CONFIGURED')
+            raise SystemExit(2)
+          try:
+            cred=service_account.Credentials.from_service_account_info(json.loads(raw),scopes=['https://www.googleapis.com/auth/analytics.readonly'])
+            cred.refresh(Request())
+          except Exception as e:
+            print('GA4_CREDENTIAL_ACCESS_FAILED',type(e).__name__)
+            raise SystemExit(2)
+          allowed=['4planet.org','4species.com','4planetatlas.com','4planetmagazine.com','4brain.app','4brands.org','4nation.org','4sapien.com','s4piens.com','4planetmarket.com','oce4n.com','cre4tors.com','n4turetech.com','p4nther.com','p4nther.org','pl4net.org','supersapien.org','www.4planet.org','www.4species.com','www.4planetatlas.com','www.4planetmagazine.com','www.4sapien.com']
+          endpoint='https://analyticsdata.googleapis.com/v1beta/properties/551422989:runReport'
+          output=['# 4PLANET — read-only Google Analytics traffic','','Only public organisational hostnames. No identities, URLs with user parameters or raw referrers are exposed.','']
+          def report(label,start,end,breakdown):
+            dimensions=[{'name':'hostName'}] + ([{'name':'sessionDefaultChannelGroup'}] if breakdown else [])
+            payload={'dateRanges':[{'startDate':start,'endDate':end}],'dimensions':dimensions,'metrics':[{'name':x} for x in ['sessions','totalUsers','screenPageViews','engagedSessions','newUsers']],'dimensionFilter':{'filter':{'fieldName':'hostName','inListFilter':{'values':allowed}}},'limit':'250'}
+            try:
+              r=requests.post(endpoint,json=payload,headers={'Authorization':'Bearer '+cred.token},timeout=28)
+              body=r.json()
+            except Exception as e:
+              output.append(f'GA4 {label}: connection error {type(e).__name__}')
+              return
+            if r.status_code!=200:
+              err=(body.get('error') or {})
+              output.append(f'GA4 {label}: HTTP {r.status_code}, {str(err.get("status","NO_ACCESS"))[:70]}')
+              return
+            output.append(f'### {label} ({start} – {end})')
+            output.append('| Domain | Channel | Sessions | Users* | Views | Engaged sessions | New users |')
+            output.append('|---|---|---:|---:|---:|---:|---:|')
+            for x in body.get('rows',[]):
+              ds=[z['value'] for z in x.get('dimensionValues',[])]
+              v=[z['value'] for z in x.get('metricValues',[])]
+              if len(v)<5:continue
+              domain=ds[0]
+              if domain not in allowed:continue
+              channel=ds[1] if len(ds)>1 else 'all'
+              output.append(f'| {domain} | {channel} | {v[0]} | {v[1]} | {v[2]} | {v[3]} | {v[4]} |')
+            output.append('')
+          report('CURRENT','2026-09-27','2026-10-26',True)
+          report('PRIOR','2026-08-28','2026-09-26',False)
+          output.append('*Users shown per domain/channel cannot be summed as unique people across channels or domains. GA4 depends on consent and installed tracking.')
+          text='\n'.join(output)
+          print(text)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(text+'\n')
+          PY
