@@ -2335,6 +2335,11 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
         element.remove();
       },
     })
+    .on('script[type="application/ld+json"][data-4planet-prerender="true"]', {
+      element(element) {
+        element.remove();
+      },
+    })
     .on("head", {
       element(element) {
         element.append(`<link rel="canonical" href="${canonical}">`, { html: true });

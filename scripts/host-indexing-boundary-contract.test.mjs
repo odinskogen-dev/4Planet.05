@@ -118,6 +118,7 @@ class DiscoveryHTMLRewriter {
         replaceVoid('meta[name="twitter:title"]', /<meta\b(?=[^>]*\bname=["']twitter:title["'])[^>]*>/gi);
         replaceVoid('meta[name="twitter:description"]', /<meta\b(?=[^>]*\bname=["']twitter:description["'])[^>]*>/gi);
         replaceVoid('link[rel="canonical"]', /<link\b(?=[^>]*\brel=["']canonical["'])[^>]*>/gi);
+        replaceContainer('script[type="application/ld+json"][data-4planet-prerender="true"]', /(<script\b(?=[^>]*\btype=["']application\/ld\+json["'])(?=[^>]*\bdata-4planet-prerender=["']true["'])[^>]*>)([\s\S]*?)(<\/script>)/gi);
         replaceContainer("head", /(<head\b[^>]*>)([\s\S]*?)(<\/head>)/gi);
         replaceContainer("#root", /(<[^>]+\bid=["']root["'][^>]*>)([\s\S]*?)(<\/[^>]+>)/gi);
         controller.enqueue(new TextEncoder().encode(html));
@@ -429,6 +430,33 @@ test("About Story production response contains the existing Story before JavaScr
       assert.ok(html.includes('href="https://4planet.org' + href + '"'), href);
     }
     assert.match(html, /"@type":"AboutPage"/);
+  } finally {
+    globalThis.HTMLRewriter = originalRewriter;
+  }
+});
+
+test("About Story production response has one owned AboutPage graph", async () => {
+  const originalRewriter = globalThis.HTMLRewriter;
+  globalThis.HTMLRewriter = DiscoveryHTMLRewriter;
+  try {
+    const prerendered = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "AboutPage",
+      name: "The living planet is not an abstract issue.",
+      url: "https://4planet.org/about/story",
+    });
+    const upstream = new Response('<!doctype html><html><head><title>4PLANET</title><meta name="description" content="Shell"><meta name="robots" content="index,follow"><link rel="canonical" href="https://4planet.org/"><script type="application/ld+json" data-4planet-prerender="true">' + prerendered + '</script></head><body><div id="root"><main><h1>The living planet is not an abstract issue.</h1></main></div></body></html>', {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+    const harness = request("https://4planet.org/about/story", upstream);
+    const response = await onRequest(harness.context);
+    const html = await response.text();
+
+    assert.equal(response.status, 200);
+    assert.equal(harness.nextCalls(), 1);
+    assert.equal((html.match(/"@type":"AboutPage"/g) || []).length, 1);
+    assert.equal((html.match(/data-4planet-prerender=["']true["']/g) || []).length, 0);
   } finally {
     globalThis.HTMLRewriter = originalRewriter;
   }
