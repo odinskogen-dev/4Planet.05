@@ -1,0 +1,72 @@
+name: SPECIES57 - local-only diagnostic of new18 crosslink HTMLRewriter (NO LIVE)
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p1-links-local-preview-20261027.yml]
+permissions: {contents: read}
+jobs:
+  local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0,persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Build isolated current Worker + group links from exact live source, no production changes
+        run: |
+          set -euo pipefail
+          mkdir -p ops/discovery ops/species57 public/species-data/v1 evidence
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js >ops/discovery/4species-router.js
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js >ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json >public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py >ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js >ops/discovery/species57-search-directory.js
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
+          python3 ops/species57/p1-add-source-verified-authors.py ops/discovery/4species-router-p1.js ops/species57/p1-taxonomy-evidence.json ops/discovery/4species-router-p1-reviewed.js
+          curl -fsSL --retry 2 https://4species.com/species-data/v1/index.json -o /tmp/index.json
+          python3 ops/species57/p1-source-group-crosslinks.py ops/discovery/4species-router-p1-reviewed.js /tmp/index.json ops/discovery/4species-router-p1-nav.js evidence/group-nav-map.json
+          node --check ops/discovery/4species-router-p1-nav.js
+          sed -i 's/export const NON_PROFILE_REVIEW_STATE/const NON_PROFILE_REVIEW_STATE/' ops/discovery/4species-router-p1-nav.js
+      - name: Local Wrangler HTTP proof for 18 new pages and immutable old39
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 dev ops/discovery/4species-router-p1-nav.js --local --ip 127.0.0.1 --port 8787 --compatibility-date 2026-09-07 --log-level error > /tmp/workerd-links.log 2>&1 &
+          worker=$!
+          trap 'kill "$worker" 2>/dev/null || true' EXIT
+          okay=0
+          for i in $(seq 1 35); do
+            if curl -fsS --max-time 2 http://127.0.0.1:8787/robots.txt >/dev/null 2>&1;then okay=1;break;fi
+            sleep 1
+          done
+          if [ "$okay" != 1 ]; then tail -100 /tmp/workerd-links.log;exit 1;fi
+          python3 - <<'PY'
+          import urllib.request,re,json,hashlib
+          from pathlib import Path
+          slugs="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          graph=json.loads(Path("evidence/group-nav-map.json").read_text())["navigation"]
+          def get(url):
+            with urllib.request.urlopen(urllib.request.Request(url,headers={"User-Agent":"SPECIES57-NAV-LOCAL-QA"}),timeout=35) as r:return r.read()
+          for slug in slugs:
+            raw=get("http://127.0.0.1:8787/"+slug)
+            text=raw.decode(errors="replace")
+            nav=text.count('id="species-57-inline-discovery"')
+            print("SPECIES57_LOCAL_BROWSE_HTML",slug,"navCount",nav,"sourceAnchors",sum(text.count('href="/'+t+'"') for t in graph[slug]["links"]),"htmlBytes",len(raw),flush=True)
+            if slug=="koala":Path("evidence/koala-local.html").write_text(text)
+            assert nav==1,("NAV_NOT_PRESENT_LOCAL",slug)
+            assert sum(text.count('href="/'+t+'"') for t in graph[slug]["links"])>=3
+          for slug in ["orca","lion","blue-whale"]:
+            live=json.loads(get("https://4species.com/species-data/v1/"+slug+".json"))
+            dev=json.loads(get("http://127.0.0.1:8787/species-data/v1/"+slug+".json"))
+            assert live==dev
+          print("SPECIES57_NAV_LOCAL_TEST_PASS_18_HTML_3_ORIGINAL_JSON")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: species57-crosslink-new18-local-worker-debug
+          path: evidence/
+          retention-days: 30
