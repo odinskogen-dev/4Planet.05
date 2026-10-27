@@ -1,0 +1,67 @@
+name: 4PLANET Cloudflare Analytics Read Only 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-cloudflare-traffic-readonly-20261027.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_FALLBACK: ${{ secrets.CLOUDFLARE_TOKEN }}
+    steps:
+      - name: Secure read only Cloudflare traffic summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.parse,urllib.error
+          token=(os.environ.get('CF_PRIMARY') or os.environ.get('CF_FALLBACK') or '').strip()
+          if not token:
+            print('CLOUDFLARE_SECRET_ABSENT')
+            raise SystemExit(2)
+          root='https://api.cloudflare.com/client/v4'
+          def req(url,body=None):
+            payload=json.dumps(body).encode() if body is not None else None
+            r=urllib.request.Request(url,data=payload,headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+            try:
+              with urllib.request.urlopen(r,timeout=20) as f: return f.status,json.load(f)
+            except urllib.error.HTTPError as e:
+              try: x=json.load(e)
+              except: x={}
+              return e.code,x
+          code,check=req(root+'/user/tokens/verify')
+          report=['# 4PLANET Cloudflare read-only traffic audit','','No client IPs, raw paths, visitor identifiers or token values are printed.','',f'Token verification: HTTP {code} success={bool(check.get("success"))}','',
+            '| Domain | Period | HTTP requests | Page views | Daily-unique-IP sum* | Cache requests | Days | Note |',
+            '|---|---|---:|---:|---:|---:|---:|---|']
+          if code!=200 or not check.get('success'):
+            print('TOKEN_VERIFY_FAILED')
+            raise SystemExit(1)
+          domains=['4planet.org','4species.com','4planetatlas.com','4planetmagazine.com','4brain.app','4brands.org','4nation.org','4sapien.com','s4piens.com','4planetmarket.com','oce4n.com','cre4tors.com','n4turetech.com','p4nther.com','p4nther.org','pl4net.org','supersapien.org']
+          query='query($z: string,$s: Date,$e: Date){viewer{zones(filter:{zoneTag:$z}){httpRequests1dGroups(limit:100,filter:{date_geq:$s,date_lt:$e},orderBy:[date_ASC]){dimensions{date}sum{requests pageViews cachedRequests}uniq{uniques}}}}}'
+          for domain in domains:
+            rc,r=req(root+'/zones?name='+urllib.parse.quote(domain))
+            zones=[x for x in r.get('result',[]) if x.get('name')==domain] if isinstance(r.get('result'),list) else []
+            if not zones:
+              report.append(f'| {domain} | — | — | — | — | — | — | Zone unavailable (HTTP {rc}); not zero traffic |')
+              continue
+            for label,start,end in [('current','2026-09-27','2026-10-27'),('previous','2026-08-28','2026-09-27')]:
+              rc,r=req(root+'/graphql',{'query':query,'variables':{'z':zones[0]['id'],'s':start,'e':end}})
+              zz=(((r.get('data') or {}).get('viewer') or {}).get('zones') or [])
+              rows=zz[0].get('httpRequests1dGroups',[]) if zz else []
+              if rc!=200 or r.get('errors') or not zz:
+                errors=';'.join(x.get('message','error')[:90] for x in r.get('errors',[])[:2]).replace('|','/')
+                report.append(f'| {domain} | {label} | — | — | — | — | — | HTTP {rc}, {errors or "no access/data"} |')
+                continue
+              totals=lambda field:sum(int((x.get('sum') or {}).get(field) or 0) for x in rows)
+              daily_uniq=sum(int((x.get('uniq') or {}).get('uniques') or 0) for x in rows)
+              report.append(f'| {domain} | {label} | {totals("requests")} | {totals("pageViews")} | {daily_uniq} | {totals("cachedRequests")} | {len(rows)} | Edge HTTP requests, not human sessions |')
+          report.extend(['','*Daily-unique-IP sums must not be treated as period unique humans. Missing data is not zero.','No Cloudflare changes were made.'])
+          out='\n'.join(report)
+          print(out)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(out+'\n')
+          PY
