@@ -1,0 +1,62 @@
+name: 4PLANET Main Sitemap Redirect Canonical RCA 20261027
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4planet-main-canonical-after-redirect-20261027.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Compare 308 sitemap source versus final HTML canonicals and page content (read only)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,urllib.parse,xml.etree.ElementTree as ET,html.parser,concurrent.futures,os,collections
+          ua={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-SEOAudit/1.0)'}
+          opener=urllib.request.build_opener(type('NoRedirect',(urllib.request.HTTPRedirectHandler,),{'redirect_request':lambda self,*a,**k:None})())
+          with urllib.request.urlopen(urllib.request.Request('https://4planet.org/sitemap.xml',headers=ua),timeout=26) as f:
+            root=ET.fromstring(f.read(300000))
+          loc=[x.text for x in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if x.text]
+          source=[]
+          for u in loc:
+            if len(source)>=70:break
+            if any(part in u for part in ['/now','/wildfires','/earthquakes','/impact/project/','/impact/actors/','/missions/','/atlas/','/magazine/','/orca','/bees','/climate-change','/impact']):
+              source.append(u)
+          class P(html.parser.HTMLParser):
+            def __init__(self):super().__init__();self.can='';self.robot='';self.h1=0;self.title=False
+            def handle_starttag(self,t,a):
+              d=dict(a)
+              if t=='h1':self.h1+=1
+              if t=='link' and d.get('rel','').lower()=='canonical':self.can=d.get('href','')
+              if t=='meta' and d.get('name','').lower()=='robots':self.robot=d.get('content','')
+          def inspect(u):
+            req=urllib.request.Request(u,headers=ua)
+            try:
+              with opener.open(req,timeout=20) as f:st=f.status;location=f.headers.get('Location','')
+            except urllib.error.HTTPError as e:st=e.code;location=e.headers.get('Location','')
+            except:return u,0,'ERROR',0,'',0
+            final=urllib.parse.urljoin(u,location) if location else u
+            try:
+              with urllib.request.urlopen(urllib.request.Request(final,headers=ua),timeout=25) as f:
+                fs=f.status;html=f.read(240000).decode('utf-8','replace')
+              p=P();p.feed(html)
+              return u,st,final,fs,p.can,p.h1
+            except:return u,st,final,0,'',0
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:results=list(ex.map(inspect,source))
+          output=['# Canonical destination test for 4planet.org sitemap (LIVE, read-only)','',
+          '| Sitemap URL | HTTP | Redirect destination | Destination HTTP | HTML declared canonical | H1 count |','|---|---:|---|---:|---|---:|']
+          counts=collections.Counter()
+          for u,st,v,fs,can,h1 in results:
+            if st==308:counts['308']+=1
+            if fs==200:counts['final200']+=1
+            if can==v:counts['selfcanon']+=1
+            if can==u:counts['sourcecanon']+=1
+            if can and can not in (v,u):counts['othercanon']+=1
+            output.append(f'| {u} | {st} | {v} | {fs} | {can} | {h1} |')
+          output+=['',str(dict(counts)),'Read only; no public origin, Worker, or sitemap mutated.']
+          text='\n'.join(output)
+          print(text)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(text+'\n')
+          PY
