@@ -18,39 +18,39 @@ const checks = [BOOT,MASTER,GOALS,ATOMIC,CONST,SOTP,IMPACT,GIGA2800,ECON];
 function clauses(line) {
  return line.split(/\s*(?:;|\bbut\b|\binstead\b|\bhowever\b)\s*/i).filter(Boolean);
 }
-function isSafeClause(text) {
- return /\b(?:never|do not|don't|must not|cannot|forbidden|historical|superseded|on-demand|on demand|not routine|not mandatory|not permitted|not allowed)\b/i.test(text)
-  || /^no (?:public|external|release|access|merges?)\b/i.test(text);
-}
 function legacyMandatoryLines(text) {
  return text.split(/\r?\n/).map((line,i)=>({line:line.replace(/\s+/g," ").trim(),number:i+1})).filter(({line})=>
   clauses(line).some((clause)=>{
-   if(isSafeClause(clause)) return false;
    const l=clause.toLowerCase();
    const instruction=/\b(?:mandatory|required|must|always|every\s+(?:agent|boot|startup)|all\s+agents|before\s+(?:work|material|starting)|after\s+(?:reading|the\s+(?:short\s+)?00|the\s+router)|on\s+(?:every\s+)?(?:boot|startup)|load|read|consult|open|obtain|second)\b/.test(l);
    const router=/(?:\b00\b|one lean context|short 00|00 router|agent start here)/.test(l);
    const oldSource=/(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here)/.test(l);
    const oldPair=/(?:project lead.{0,120}active tasks|active tasks.{0,120}project lead)/.test(l);
+   const explicitDenial=/(?:\b(?:never|do not|don't|must not|cannot)\b.{0,80}\b(?:read|load|consult|open)\b.{0,100}(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here))|(?:(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here).{0,80}\b(?:historical|superseded|on-demand|on demand|not routine|not mandatory)\b)/.test(l);
    const secondHandoff=/(?:second|another)\s+(?:handoff|briefing|project lead|playbook)|fresh\s+(?:(?:axe\/brain|axe|brain)\s+)?(?:handoff|briefing|project lead|playbook)/.test(l)
     || /(?:require|mandatory|must|needs|obtain).{0,80}(?:axe\/brain|axe|brain)\s*(?:context\s*)?handoff/.test(l);
-   return (instruction&&oldSource&&(router||oldPair))||secondHandoff;
+   return !explicitDenial&&((instruction&&oldSource&&(router||oldPair||/\b(?:startup|boot)\b/.test(l)))||secondHandoff);
   })
  ).map(x=>x.number+": "+x.line);
 }
 function unsafeAuthorityLines(text) {
  return text.split(/\r?\n/).map((line,i)=>({line:line.trim(),number:i+1})).filter(({line})=>
   clauses(line).some((clause)=>{
-   if(isSafeClause(clause)) return false;
    const l=clause.toLowerCase();
-   const privateSource=/(?:odin private|odin brain|odin personal finance|private personal|tenant private)/.test(l);
+   const lineLower=line.toLowerCase();
+   const privateSource=/(?:odin private|odin brain|odin personal finance|personal odin finance|private personal|tenant private)/.test(lineLower);
    const privateAccess=/\b(?:all agents|every agent|everyone|an agent|agents?)\b/.test(l)
-    && /\b(?:may|can|should|allow|permit|grant|full access|read|retrieve|fetch|share|expose|load|consult)\b/.test(l);
-   const person=privateSource&&privateAccess;
+    && /\b(?:may|can|should|allow|permit|grant|full access|free to use|access|read|retrieve|fetch|share|expose|load|consult)\b/.test(l);
+   const invertedDenial=/(?:\bnever\b|\bdo not\b|\bdon't\b).{0,40}\b(?:deny|block|prevent|restrict)\b.{0,100}\b(?:access|use|read|retrieve|ingest)\b/.test(l);
+   const organisationIngest=/\b(?:can|may|should|must)\b.{0,40}\b(?:ingest|load|copy|import|add)\w*\b.{0,100}\b(?:organi[sz]ation|knowledge base|brain)\b/.test(l);
+   const privateDenial=/(?:\bnever\b|\bdo not\b|\bdon't\b|\bmust not\b|\bcannot\b).{0,40}\b(?:allow|permit|grant|access|read|retrieve|ingest)\w*\b/.test(l)
+    && !/\b(?:deny|block|prevent|restrict)\b/.test(l);
+   const person=privateSource&&!privateDenial&&(privateAccess||invertedDenial||organisationIngest);
    const releaseActor=/(?:founder|gold)(?:\s+(?:approval|release|sign-off|verification|review))?/.test(l);
-   const releaseAction=/\b(?:publish(?:ing|ed)?|publication|send|spend|deploy(?:ment|ed)?|production|merge|submit|release)\b/.test(l);
-   const optional=/(?:\boptional\b|\bnot required\b|\bunnecessary\b|\bno approval\b|\bwithout\s+(?:founder|gold|approval|authori[sz]ation|review|consent|sign-off))/.test(l);
-   const automatic=/(?:automatically|automatic).{0,80}(?:authori[sz]es?|allows?|triggers?|deploy|publish|release)/.test(l);
-   const bypass=/(?:\b(?:skip|bypass|ignore)\b.{0,80}\b(?:gold|founder|approval|review|sign-off)\b)|(?:\b(?:may|can|allow)\b.{0,120}\b(?:publish|send|spend|deploy|merge|submit|release)\b.{0,100}\bwithout\s+(?:founder|gold|approval|authori[sz]ation|review|consent|sign-off)\b)/.test(l);
+   const releaseAction=/\b(?:publish(?:ing|ed)?|publication|send|spend|deploy(?:ment|ed)?|production|merge|submit|releases?)\b/.test(l);
+   const optional=/(?:\boptional\b|\bnot required\b|\bnot necessary\b|\bunnecessary\b|\bdiscretionary\b|\bno approval\b|\bcan be skipped\b|\bmay be skipped\b|\bwithout\s+(?:founder|gold|approval|authori[sz]ation|review|consent|sign-off))/.test(l);
+   const automatic=/(?:(?:automatically|automatic|straight to production).{0,80}(?:authori[sz]es?|allows?|triggers?|deploy|publish|release))|\b(?:passing|green)\s+ci\b.{0,40}\b(?:sufficient|enough|can|may|will|automatically)\b.{0,80}\b(?:go live|deploy|production)\b|\bdeploy\w*\b.{0,80}\bstraight to production\b.{0,100}\bchecks?\s+turn\s+green\b/.test(l);
+   const bypass=/(?:\b(?:skip|skipped|bypass|ignore)\b.{0,80}\b(?:gold|founder|approval|review|sign-off|consent)\b)|(?:\b(?:founder|gold|approval|review|sign-off|consent)\b.{0,80}\b(?:skip|skipped|bypass|ignore)\b)|(?:\b(?:may|can|allow)\b.{0,120}\b(?:publish|send|spend|deploy|merge|submit|release)\b.{0,100}\bwithout\s+(?:founder|gold|approval|authori[sz]ation|review|consent|sign-off)\b)/.test(l);
    return person||(releaseAction&&((releaseActor&&optional)||automatic||bypass));
   })
  ).map(x=>x.number+": "+x.line);
@@ -74,7 +74,19 @@ const negative=[
  "All agents should load ODIN PRIVATE before starting tasks.",
  "An agent is permitted to retrieve ODIN personal finance for convenience.",
  "On every startup, consult the Playbook plus 00 context.",
- "Never use old 00 to 01 to 02; instead every agent must read 00, 01, 02 on startup."
+ "Never use old 00 to 01 to 02; instead every agent must read 00, 01, 02 on startup.",
+ "Every startup begins by reading the Project Lead file before selecting a task.",
+ "The 01 Project Lead is a required second startup source.",
+ "Never deny all agents access to ODIN PRIVATE.",
+ "All agents are free to use ODIN PRIVATE records for context.",
+ "Personal ODIN finance data can be ingested into the organisation knowledge base.",
+ "Founder consent is not necessary for a production release.",
+ "Gold review is discretionary before public publication.",
+ "Passing CI is sufficient to go live in production.",
+ "GitHub Actions deploys straight to production when checks turn green.",
+ "Founder sign-off can be skipped for public releases only.",
+ "Every agent must open the historical Playbook on startup.",
+ "Do not block access to ODIN BRAIN; all agents may retrieve it."
 ];
 const positive=[
  "Never routinely read old 00 READ FIRST → 01 Project Lead → 02 Tasks.",
@@ -82,7 +94,11 @@ const positive=[
  "Read only 00 ONLY BOOT, then retrieve relevant Project Home/Atomic.",
  "A pull request can merge without destabilising other work, but still requires approval.",
  "Green CI is not production authorisation.",
- "Founder and Gold approval remain required before public deployment."
+ "Founder and Gold approval remain required before public deployment.",
+ "Never allow agents to access ODIN PRIVATE.",
+ "ODIN PRIVATE must not be ingested into the organisation knowledge base.",
+ "Founder consent remains required for production release.",
+ "Passing CI is insufficient to go live; Gold and Founder approval remain required."
 ];
 for(const fixture of negative) assert(legacyMandatoryLines(fixture).length>0 || unsafeAuthorityLines(fixture).length>0,"NEGATIVE FALSE ACCEPT "+fixture);
 for(const fixture of positive){assert.equal(legacyMandatoryLines(fixture).length,0,"HISTORIC FALSE POSITIVE "+fixture);assert.equal(unsafeAuthorityLines(fixture).length,0,"SAFE GUARD FALSE POSITIVE "+fixture);}
