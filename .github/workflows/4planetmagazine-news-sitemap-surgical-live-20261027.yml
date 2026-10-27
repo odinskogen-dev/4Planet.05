@@ -87,7 +87,7 @@ jobs:
               with urllib.request.urlopen(req,timeout=25) as f:return f.status
             except urllib.error.HTTPError as e:return e.code
             except:return 0
-          normal_sitemap_req=urllib.request.Request('https://4planetmagazine.com/magazine-sitemap.xml')
+          normal_sitemap_req=urllib.request.Request('https://4planetmagazine.com/magazine-sitemap.xml', headers={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-SEOAudit/1.0)'})
           import xml.etree.ElementTree as ET
           with urllib.request.urlopen(normal_sitemap_req,timeout=20) as page:
             normal_xml=ET.fromstring(page.read(260000))
