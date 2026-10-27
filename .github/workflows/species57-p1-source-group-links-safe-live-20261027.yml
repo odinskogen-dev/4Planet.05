@@ -86,6 +86,20 @@ jobs:
           current=$(jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id' /tmp/reverify.json)
           if [ "$current" != "$ROLLBACK_VERSION" ]; then echo "Concurrent release stopped"; trap - ERR; exit 1; fi
           npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router-p1-nav.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars 2>&1 | tee /tmp/species-nav-deploy.log
+          # Cloudflare Worker deployments may take several seconds to propagate.
+          # Verify that a NEW worker instance serves actual navigation before
+          # running full live regressions; never interpret an old edge as code failure.
+          seen=0
+          for attempt in $(seq 1 20); do
+            if curl -fsS --max-time 25 -H 'Cache-Control: no-cache' "https://4species.com/koala?species_group_live_probe=$attempt"               | grep -q 'id="species-57-inline-discovery"'; then
+              seen=1
+              break
+            fi
+            sleep 3
+          done
+          if [ "$seen" != 1 ]; then echo "SPECIES57_LIVE_PROPAGATION_FAILED_18_LINKS"; exit 1; fi
+          echo "SPECIES57_NEW18_LINK_WORKER_EDGE_PROPAGATION_CONFIRMED"
+
           python3 - <<'PY'
           import urllib.request,json,hashlib,concurrent.futures
           from pathlib import Path
