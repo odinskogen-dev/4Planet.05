@@ -38,6 +38,13 @@ const REQUIRED_BRIEF_HEADINGS = [
 const GOLD_BRIEF_PATH = "docs/control/GOLD_CURRENT_BRIEF.md";
 const GOLD_BRIEF_HISTORY_CONTRACT_PATH = "scripts/gold-policy-check-contract.test.mjs";
 const GOLD_BRIEF_SECTION_SEPARATOR = /\r?\n---\r?\n/;
+// HTML void elements never have end tags. A bare `<br>` or `<img>` is therefore
+// a complete raw-HTML block, not the start of a container that can hide later
+// rendered Markdown. Keep this aligned with the standard HTML void category.
+const HTML_VOID_ELEMENTS = new Set([
+  "area", "base", "br", "col", "embed", "hr", "img", "input",
+  "link", "meta", "param", "source", "track", "wbr",
+]);
 
 const PRODUCT_PREFIXES = ["src/", "public/", "functions/", "supabase/", "tests/e2e/"];
 const PRODUCT_FILES = new Set(["package.json", "package-lock.json", "vite.config.ts", "vite.config.js"]);
@@ -163,7 +170,7 @@ function markdownContractTokens(markdown) {
     const rawHtmlOpener = rendered.match(/^ {0,3}<([A-Za-z][A-Za-z0-9-]*)(?:\s|>|\/>|$)/);
     if (rawHtmlOpener) {
       const tag = rawHtmlOpener[1].toLowerCase();
-      const selfClosing = /\/\>\s*$/.test(rendered);
+      const selfClosing = HTML_VOID_ELEMENTS.has(tag) || /\/\>\s*$/.test(rendered);
       if (!selfClosing && !new RegExp(`</${tag}\\s*>`, "i").test(rendered)) {
         rawHtmlBlock = tag;
       }

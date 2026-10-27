@@ -92,6 +92,17 @@ const renderedHeadingAfterClosedRawHtmlPrepend = [
   "",
   currentBrief,
 ].join("\n");
+const renderedHeadingAfterVoidHtmlPrepend = (element) => [
+  "# VISIBLE MARKDOWN AFTER VOID HTML CONTRACT",
+  "",
+  element,
+  "",
+  requiredHeadings.map((heading) => `${heading}\nVisible fixture answer.`).join("\n\n"),
+  "",
+  "---",
+  "",
+  currentBrief,
+].join("\n");
 
 const run = (mutateBrief, { changed = true } = {}) => {
   const directory = mkdtempSync(join(tmpdir(), "gold-policy-history-"));
@@ -267,6 +278,19 @@ test("rejects newest contract headings hidden inside CommonMark raw HTML contain
     const result = run(hiddenRawHtmlPrepend(tag));
     assert.notEqual(result.status, 0, `${tag}: ${result.stdout}${result.stderr}`);
     assert.match(result.stderr, /newest GOLD brief contract missing heading/i, tag);
+  }
+});
+
+test("accepts visible headings after standard HTML void elements", () => {
+  for (const element of [
+    '<img src="asset.png">',
+    "<br>",
+    "<hr>",
+    '<input type="text">',
+    '<meta charset="utf-8">',
+  ]) {
+    const result = run(renderedHeadingAfterVoidHtmlPrepend(element));
+    assert.equal(result.status, 0, `${element}: ${result.stdout}${result.stderr}`);
   }
 });
 
