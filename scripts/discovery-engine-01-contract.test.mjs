@@ -24,14 +24,12 @@ const parseRedirects = (source) => source
     return { from, to, status };
   });
 
-const assertNoInverseNowRedirect = (source) => {
+const assertNoNowCanonicalReversal = (source) => {
   for (const { from, to, status } of parseRedirects(source)) {
-    const isInverseNowPair =
-      (from === "/now/" && to === "/now") ||
-      (from === "/now" && to === "/now/");
+    const reversesCanonical = from === "/now/" && to === "/now";
     assert.ok(
-      !isInverseNowPair || !REDIRECT_STATUSES.has(status),
-      `Earth Now inverse redirect can loop on the static host: ${from} -> ${to} ${status}`,
+      !reversesCanonical || !REDIRECT_STATUSES.has(status),
+      `Earth Now canonical redirect is reversed: ${from} -> ${to} ${status}`,
     );
   }
 };
@@ -120,14 +118,14 @@ test("routes, sitemap and prerender all consume the same canonical discovery reg
 });
 
 test("Earth Now canonical cannot form an inverse redirect loop with its prerender directory", () => {
-  assertNoInverseNowRedirect(redirects);
-  assert.throws(
-    () => assertNoInverseNowRedirect(`${redirects}\n/now/ /now 302`),
-    /Earth Now inverse redirect/,
+  assertNoNowCanonicalReversal(redirects);
+  assert.deepEqual(
+    parseRedirects(redirects).find(({ from }) => from === "/now"),
+    { from: "/now", to: "/now/", status: "301" },
   );
   assert.throws(
-    () => assertNoInverseNowRedirect(`${redirects}\n/now /now/ 307`),
-    /Earth Now inverse redirect/,
+    () => assertNoNowCanonicalReversal(`${redirects}\n/now/ /now 302`),
+    /Earth Now canonical redirect is reversed/,
   );
   assert.match(sitemap, /"\/now\/"/);
   assert.match(prerender, /writeRoute\("\/now"/);
@@ -159,7 +157,7 @@ test("discovery embeds the first-party ATLAS renderer instead of a blocked cross
 });
 
 test("Earth Now is discoverable through the existing Master Brand OS navigation", () => {
-  assert.match(shell, /\["EARTH NOW", "WHAT IS HAPPENING", "\/now"\]/);
+  assert.match(shell, /\["EARTH NOW", "WHAT IS HAPPENING", "\/now\/"\]/);
   assert.doesNotMatch(shell.match(/function topIsDark[\s\S]*?\n\}/)?.[0] ?? "", /pathname === "\/now"/);
   assert.match(css, /DISCOVERY ENGINE 01/);
   assert.match(css, /--discovery-accent:#2E2EFF/);

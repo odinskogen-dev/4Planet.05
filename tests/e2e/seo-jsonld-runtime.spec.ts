@@ -126,6 +126,25 @@ test.describe("structured-data runtime ownership", () => {
     }
   });
 
+  test("Earth Now and About keep their canonical slash policy in raw HTML and hydration", async ({ page, request }) => {
+    for (const { route, canonicalPath } of [
+      { route: "/now/", canonicalPath: "/now/" },
+      { route: "/about", canonicalPath: "/about" },
+    ]) {
+      const response = await request.get(route);
+      expect(response.ok(), `raw response for ${route}`).toBeTruthy();
+      const rawCanonical = canonicalFromRawHtml(await response.text());
+      expect(new URL(rawCanonical!).pathname).toBe(canonicalPath);
+
+      await page.goto(route);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        "href",
+        new RegExp(`${canonicalPath.replaceAll("/", "\\/")}$`),
+      );
+      await expect(page.locator(OWNED_JSON_LD)).toHaveCount(1);
+    }
+  });
+
   test("unreleased Kenya has no public raw graph and fails closed after hydration", async ({ page, request }) => {
     const response = await request.get(`${KENYA_PATH}/`);
     expect(response.ok()).toBeTruthy();

@@ -350,7 +350,23 @@ test("generated robots artifact stays byte-identical to the checked-in crawler p
 test("IndexNow canonical sitemap source",()=>{const indexNow=read("scripts/submit-indexnow.mjs");assert.ok(indexNow.includes("public"));assert.ok(indexNow.includes("sitemap.xml"));assert.ok(indexNow.includes("matchAll"));});
 
 
-test("about trailing slash canonical",()=>{const redirects=read("public/_redirects");assert.ok(redirects.includes("/about/  /about  301"));});
+test("Earth Now and About expose one canonical slash policy across redirects, prerender and navigation",()=>{
+  const redirects=read("public/_redirects");
+  const shell=read("src/components/layout/PublicShell.tsx");
+  const discoveryPage=read("src/pages/discovery/DiscoveryEngine.tsx");
+  const aboutPage=read("src/pages/v5/About.tsx");
+  assert.ok(redirects.includes("/now  /now/  301"));
+  assert.ok(redirects.includes("/about/  /about  301"));
+  assert.doesNotMatch(redirects,/^\/now\/\s+\/now\s+30[18]$/m);
+  assert.match(map,/"\/now\/"/);
+  assert.match(map,/"\/about"/);
+  assert.match(pre,/writeRoute\("\/now", pageHtml\(\{\s*pathName: "\/now\/"/);
+  assert.match(pre,/writeRoute\(aboutPath, pageHtml\(\{\s*pathName: aboutPath/);
+  assert.match(shell,/\["EARTH NOW", "WHAT IS HAPPENING", "\/now\/"\]/);
+  assert.match(discoveryPage,/<Link to="\/now\/" className="editorial-secondary">EARTH NOW<\/Link>/);
+  assert.match(aboutPage,/<Seo[\s\S]*path="\/about"/);
+  assert.match(aboutPage,/"@type": "AboutPage"/);
+});
 
 test("About Story organic entry is server-readable, canonical and discoverable", () => {
   const about = read("src/pages/v5/AboutPages.tsx");

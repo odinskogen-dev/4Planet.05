@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import { T } from "@/styles/tokens";
 import { PublicShell } from "@/components/layout/PublicShell";
 import { Section, Label, Button } from "@/components/ui";
+import { Seo } from "@/components/Seo";
+
+const ABOUT_TITLE = "About 4PLANET — Living Planet Intelligence";
+const ABOUT_DESCRIPTION = "What 4PLANET is building, why it exists and how its public products connect understanding, action, proof and learning.";
 
 export function About() {
   const CH: [string, string[]][] = [
@@ -16,6 +20,19 @@ export function About() {
   ];
   return (
     <PublicShell>
+      <Seo
+        title={ABOUT_TITLE}
+        description={ABOUT_DESCRIPTION}
+        path="/about"
+        jsonLd={({ canonicalUrl }) => ({
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "About 4PLANET",
+          description: ABOUT_DESCRIPTION,
+          url: canonicalUrl,
+          mainEntity: { "@type": "Organization", name: "4PLANET", url: "https://4planet.org/" },
+        })}
+      />
       {/* v26: fullscreen story/founder hero */}
       <section style={{ position: "relative", height: "clamp(72vh, 88vh, 920px)", overflow: "hidden", background: T.ink }}>
         <img src="/assets/brand/story-hero.jpg" alt="A single figure walking across vast desert dunes, footprints trailing behind" loading="eager" decoding="async" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%" }} />

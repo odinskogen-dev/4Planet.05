@@ -132,7 +132,7 @@ export function AppRoutes() {
       <Route path="/embed/atlas" element={<Suspense fallback={WorldFallback}><PublicWorld /></Suspense>} />
       <Route path="/atlas/:objectSlug" element={<AtlasDiscoveryPage />} />
       <Route path="/now" element={<EarthNowPage />} />
-      <Route path="/earth-now" element={<Navigate to="/now" replace />} />
+      <Route path="/earth-now" element={<Navigate to="/now/" replace />} />
       {DISCOVERY_TOPIC_SLUGS.map((slug) => (
         <Route key={slug} path={`/${slug}`} element={<DiscoveryTopicPage slug={slug} />} />
       ))}

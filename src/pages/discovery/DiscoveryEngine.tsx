@@ -180,7 +180,7 @@ export function DiscoveryTopicPage({ slug }: { slug: string }) {
               >
                 EXPLORE IN ATLAS →
               </a>
-              <Link to="/now" className="editorial-secondary">EARTH NOW</Link>
+              <Link to="/now/" className="editorial-secondary">EARTH NOW</Link>
             </div>
           </header>
 

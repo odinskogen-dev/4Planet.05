@@ -26,7 +26,7 @@ const TOP: { key: PanelKey; to: string }[] = [
 ];
 
 const LENSES = [
-  ["EARTH NOW", "WHAT IS HAPPENING", "/now"],
+  ["EARTH NOW", "WHAT IS HAPPENING", "/now/"],
   ["ATLAS", "SEE THE PLANET", "/atlas"],
   ["SPECIES", "MEET LIFE", "/species"],
   ["LIVING SYSTEMS", "UNDERSTAND CONNECTIONS", "/living-systems"],

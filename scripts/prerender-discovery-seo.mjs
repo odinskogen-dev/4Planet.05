@@ -162,6 +162,24 @@ writeRoute("/places", pageHtml({
 }));
 
 
+const aboutPath = "/about";
+const aboutTitle = "About 4PLANET — Living Planet Intelligence";
+const aboutDescription = "What 4PLANET is building, why it exists and how its public products connect understanding, action, proof and learning.";
+writeRoute(aboutPath, pageHtml({
+  pathName: aboutPath,
+  title: aboutTitle,
+  description: aboutDescription,
+  body: `<main><p>4PLANET_ / THE STORY</p><h1>Everything we depend on is alive.</h1><p>Human life is inseparable from forests, oceans, species and the living systems around us.</p><h2>Why 4PLANET exists</h2><p>4PLANET is being built to make environmental challenges easier to understand, credible action easier to join, and progress easier to follow.</p><h2>How the system works</h2><p>4PLANET connects public understanding, mission development, cultural work, participation and practical action, supported by evidence and reporting.</p><p><a href="/about/story">Read the full story</a> · <a href="/domains">Enter the domains</a> · <a href="/join">Join 4PLANET</a></p></main>`,
+  jsonLd: {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About 4PLANET",
+    description: aboutDescription,
+    url: origin + aboutPath,
+    mainEntity: { "@type": "Organization", name: "4PLANET", url: origin + "/" },
+  },
+}));
+
 const aboutStoryPath = "/about/story";
 const aboutStoryTitle = "The living planet is not an abstract issue.";
 const aboutStoryDescription = "It is the system beneath food, water, health, prosperity, freedom and almost everything people care about.";
