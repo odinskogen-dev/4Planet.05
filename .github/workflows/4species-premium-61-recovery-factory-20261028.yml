@@ -75,6 +75,12 @@ jobs:
           git cat-file -e b18b811addb23a2095d9ce2f69cd32ad9b633c2c^{commit} || git fetch --no-tags --depth=1 origin b18b811addb23a2095d9ce2f69cd32ad9b633c2c
           git worktree add --detach "$GITHUB_WORKSPACE/../species-61-science-donor" b18b811addb23a2095d9ce2f69cd32ad9b633c2c
           cd "$GITHUB_WORKSPACE"
+          SPECIES_V53_TREE_ROOT="$GITHUB_WORKSPACE/../species-premium-v53" node ops/species/premium-61/patch-claude-candidate-safety.mjs --apply
+          cd ../species-premium-v53
+          npm ci --no-audit --no-fund
+          npm run typecheck
+          echo CLAUDE_V53_CANDIDATE_ONLY_PATCH_TYPECHECK_PASS
+          cd "$GITHUB_WORKSPACE"
           echo "## Exact source proof, no LIVE edits" >> "$GITHUB_STEP_SUMMARY"
           echo "- Claude v53 patch SHA, worktree tree and original species source identities verified" >> "$GITHUB_STEP_SUMMARY"
       - name: Audit all 61 donor evidence packs and approved photo batch for publication blockers
