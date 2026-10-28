@@ -186,6 +186,7 @@ jobs:
           node "$GITHUB_WORKSPACE/ops/species/next61/science-stage1-qa.mjs"
           node "$GITHUB_WORKSPACE/ops/species/next61/science-all-packs-qa.mjs"
           git show "$GITHUB_SHA:ops/species/premium-61/append-five-v53-signed-20261028.mjs" > "$GITHUB_WORKSPACE/ops/species/next61/append-five-v53-signed-20261028.mjs"
+          git show "$GITHUB_SHA:ops/species/next61/visual-selected-next8-20261028.json" > "$GITHUB_WORKSPACE/ops/species/next61/visual-selected-next8-20261028.json"
           SPECIES_V53_TREE_ROOT="$GITHUB_WORKSPACE/../species-v53-build" node "$GITHUB_WORKSPACE/ops/species/next61/append-five-v53-signed-20261028.mjs" --snapshot
           node "$GITHUB_WORKSPACE/ops/species/next61/assemble-v1-signed.mjs"
           SPECIES_V53_TREE_ROOT="$GITHUB_WORKSPACE/../species-v53-build" node "$GITHUB_WORKSPACE/ops/species/next61/append-five-v53-signed-20261028.mjs" --restore
