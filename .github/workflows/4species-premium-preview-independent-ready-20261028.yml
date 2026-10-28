@@ -1,0 +1,31 @@
+name: 4SPECIES New Four Immutable 57-preserving Gold PRE-RELEASE 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-premium-preview-independent-ready-20261028.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      SPECIES_IMMUTABLE_PREVIEW: https://b0951128.4planet-05.pages.dev
+      SPECIES_PREVIEW_SHA: f31d2c871e6352bb70cbd03a14523f2be6f498eb
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify final immutable build and all 57 existing live identities, four signed photos / rights / NOINDEX
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 28 "$SPECIES_IMMUTABLE_PREVIEW/release-identity.json" -o /tmp/4species-source.json
+          jq -e --arg sha "$SPECIES_PREVIEW_SHA" '.triggerSha==$sha and (.payloadDigest|length)==64 and (.builtTree|length)==40' /tmp/4species-source.json >/dev/null
+          python3 -m py_compile ops/species/premium-61/additive-live-release-20261028.py
+          python3 ops/species/premium-61/additive-live-release-20261028.py preflight
+          echo 'INDEPENDENT_PREMIUM_57_PLUS_FOUR_GOLD_PRE_RELEASE_PASS'
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: 4species-57-preservation-and-four-photo-sha-preflight
+          path: /tmp/4species-additive-preflight.json
+          retention-days: 14
