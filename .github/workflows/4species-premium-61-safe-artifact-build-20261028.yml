@@ -280,16 +280,34 @@ jobs:
           # to alter visitor-facing text/metadata or JSON without review.
           python3 - <<'PY'
           from pathlib import Path
-          import urllib.request,json,hashlib
+          import urllib.request,urllib.error,json,hashlib,time
+          def fetch_exact(url,agent):
+           # Immutable Pages origin can intermittently stall mid-response.
+           # Retry intact retrieval, never substitute mutable or generated data.
+           last=None
+           for attempt in range(5):
+            try:
+             req=urllib.request.Request(url,headers={"User-Agent":agent,"Accept-Encoding":"identity"})
+             with urllib.request.urlopen(req,timeout=65) as response:
+              payload=response.read()
+              if not payload or response.status!=200:
+               raise RuntimeError("Empty or non-200 exact snapshot")
+              declared=response.headers.get("Content-Length")
+              if declared is not None and len(payload)!=int(declared):
+               raise RuntimeError("Truncated exact immutable blob")
+              return payload
+            except (urllib.error.URLError,TimeoutError,ConnectionError,OSError,RuntimeError) as exc:
+             last=exc
+             print("RETRY_EXACT_IMMUTABLE_SOURCE",attempt+1,"URL",url,"error",type(exc).__name__,flush=True)
+             time.sleep(min(2**attempt,8))
+           raise RuntimeError("Fail closed: immutable 57-preservation source unavailable "+url) from last
           old="https://de9e3e0e.4planet-05.pages.dev"
           previous="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
           for slug in previous:
            for relative,target in [(slug,"dist/"+slug+"/index.html"),
                                    ("species-data/v1/"+slug+".json","dist/species-data/v1/"+slug+".json"),
                                    ("species-data/v1/"+slug+".json","public/species-data/v1/"+slug+".json")]:
-            req=urllib.request.Request(old+"/"+relative,headers={"User-Agent":"4SPECIES-IMMUTABLE-PRIOR-57/1.0"})
-            with urllib.request.urlopen(req,timeout=35) as response:
-             source=response.read()
+            source=fetch_exact(old+"/"+relative,"4SPECIES-IMMUTABLE-PRIOR-57/1.0")
             f=Path(target);f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(source)
            profile=json.loads(Path("dist/species-data/v1/"+slug+".json").read_text())
            assert profile["slug"]==slug and profile["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22"
@@ -297,9 +315,7 @@ jobs:
            # The source refresh can change a photo while retaining its local filename.
            # Restore the exact previously published photograph bytes too.
            assert asset.startswith("/assets/species/next61/"),slug
-           request=urllib.request.Request(old+asset,headers={"User-Agent":"4SPECIES-IMMUTABLE-PREVIOUS-MEDIA/1.0"})
-           with urllib.request.urlopen(request,timeout=35) as response:
-            exact_image=response.read()
+           exact_image=fetch_exact(old+asset,"4SPECIES-IMMUTABLE-PREVIOUS-MEDIA/1.0")
            for loc in ("dist"+asset,"public"+asset):
             output=Path(loc);output.parent.mkdir(parents=True,exist_ok=True);output.write_bytes(exact_image)
            media=Path("dist"+asset)
