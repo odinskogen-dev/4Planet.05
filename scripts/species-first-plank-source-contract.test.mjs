@@ -146,7 +146,7 @@ test('SOURCE REFRESH state is visible through progressive public evidence disclo
   ]) assert.ok(evidenceSeam.includes(required), `missing refresh presentation: ${required}`);
 });
 
-test('SPECIES compact first read keeps the active editorial hero clear without deleting its credit', () => {
+test('SPECIES compact first read moves licensed-media credit below the hero without deleting it', () => {
   assert.ok(
     speciesEditorialRoute.includes('className="species-editorial-hero__credit"'),
     'active editorial hero credit needs a stable presentation hook',
@@ -159,5 +159,21 @@ test('SPECIES compact first read keeps the active editorial hero clear without d
   assert.ok(
     speciesEditorialRoute.includes('{media.attribution}{media.licence ? ` · ${media.licence}` : ""}'),
     'rights and source credit must remain in the active source path',
+  );
+  for (const required of [
+    'data-testid="species-editorial-media-credit"',
+    'aria-label="Image credit and licence"',
+    'href={media.sourcePage}',
+    'href={media.licenceUrl}',
+  ]) assert.ok(speciesEditorialRoute.includes(required), `missing compact media-credit contract: ${required}`);
+  assert.match(
+    firstReadStyles,
+    /\.species-editorial-media-credit\s*\{[\s\S]*display: none;/,
+    'the below-hero duplicate must stay out of the desktop reading order',
+  );
+  assert.match(
+    firstReadStyles,
+    /@media \(max-width: 620px\)[\s\S]*\.species-editorial-media-credit\s*\{[\s\S]*display: flex;/,
+    'compact first read must expose the below-hero media credit',
   );
 });

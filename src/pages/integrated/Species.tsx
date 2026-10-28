@@ -360,6 +360,28 @@ function SpeciesEditorialProfile({
           )}
         </section>
 
+        {media?.attribution && (
+          <aside
+            className="species-editorial-media-credit"
+            data-testid="species-editorial-media-credit"
+            aria-label="Image credit and licence"
+          >
+            <span>{media.attribution}</span>
+            {media.sourcePage && (
+              <a href={media.sourcePage} target="_blank" rel="noreferrer" aria-label={`Open image source for ${profile.commonName}`}>
+                IMAGE SOURCE ↗
+              </a>
+            )}
+            {media.licenceUrl ? (
+              <a href={media.licenceUrl} target="_blank" rel="noreferrer" aria-label={`Open image licence for ${profile.commonName}`}>
+                {media.licence || "IMAGE LICENCE"} ↗
+              </a>
+            ) : media.licence ? (
+              <span>{media.licence}</span>
+            ) : null}
+          </aside>
+        )}
+
         {profile.slug === "orca" && (
           <section id="asset-family" data-species-section="asset-family" data-asset-family={ORCA_ASSET_FAMILY.id} style={{ maxWidth: 980, margin: "0 auto", padding: "clamp(36px,6vw,72px) clamp(20px,5vw,64px)", borderTop: `1px solid ${T.line}` }}>
             <div style={{ ...mono, color: T.blue }}>SHARED DIGITAL ASSET FAMILY</div>

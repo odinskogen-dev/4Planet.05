@@ -1,3 +1,65 @@
+# SPECIES — COMPACT MEDIA CREDIT OUTSIDE HERO — 28 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED SOURCE CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor opens a licensed SPECIES photograph on a compact screen and needs to identify its creator, source and licence without obscuring the animal.
+
+## ONE THING TO UNDERSTAND
+
+The animal remains the first read; its media credit remains visibly and accessibly attached immediately below the hero.
+
+## PRIMARY ACTION
+
+Keep the compact hero clear and expose the exact recorded attribution plus source and licence links outside it.
+
+## SECONDARY DEPTH
+
+Keep the existing desktop overlay and full evidence/source records; do not create another rights store or infer a missing licence URL.
+
+## P1 DOMINANT
+
+The animal and species identity remain visually dominant.
+
+## P2 ORIENTATION
+
+A compact attribution strip immediately below the hero identifies the image record.
+
+## P3 ACTION / NEXT
+
+The visitor can open the recorded image source or licence; independent Gold must judge the exact returned SHA.
+
+## P4 DEPTH
+
+The existing evidence records remain the source of rights detail and limitations.
+
+## WHAT CAN BE REMOVED
+
+Nothing from the rights record. Only the inaccessible compact presentation state is replaced.
+
+## WHAT MUST BE REUSED
+
+Reuse issue #145, Atomic `SPEC-GS-09`, sole `king/test` HEIR, `speciesMedia`, the existing compact first-read stylesheet and owning source/browser regressions.
+
+## TRUTH BOUNDARY
+
+This correction can prove that compact source code and exact-SHA browser checks expose recorded attribution and links. It does not prove licence ownership beyond the existing record, Gold acceptance, deployment, LIVE visibility or user use.
+
+## MOBILE-FIRST RISK
+
+A hidden hero overlay without an outside replacement erases required attribution at 390/430 widths. The returned regression must cover that exact state and preserve no horizontal overflow.
+
+## HUMAN SUCCESS
+
+At 390 and 430 pixels a visitor can read the credit and keyboard-open the recorded image source or licence; at 1440 the existing subtle hero credit remains and no duplicate appears.
+
+**ROOT CAUSE / FAILED TEST / IMMUNITY:** the prior contract proved only that the credit string remained in JSX while compact CSS hid its sole rendered location. The new source regression failed first at 10/11, then requires the semantic outside-hero block, exact media source/licence bindings and inverse compact/desktop visibility. The browser regression verifies visibility, link target and no horizontal overflow.
+
+**DOOR / ROLLBACK / JUDGE:** Reversible HEIR-only correction. Base and rollback are `king/test@ddcbb0836d04d5bee65021fcd29492b83da4c9f3`. Factory returns CODE FIXED evidence only; independent Gold judges the exact SHA and Founder retains merge/deploy/LIVE authority.
+
+---
+
 # ABOUT STORY — EDGE-TO-HYDRATION SCHEMA OWNERSHIP — 27 OCTOBER 2026
 
 **STATUS:** CODE FIXED ON HEIR / QA_READY / INDEPENDENT GOLD, EXACT-SHA BROWSER AND RELEASE HOLD.

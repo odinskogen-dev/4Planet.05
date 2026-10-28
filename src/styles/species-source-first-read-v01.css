@@ -22,6 +22,12 @@
   text-align: right;
 }
 
+/* The compact replacement is outside the hero so required rights context never
+   covers the animal. Desktop retains the existing subtle in-hero credit. */
+.species-editorial-media-credit {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .sp-hero {
     min-height: auto;
@@ -73,6 +79,31 @@
   .sp-hero__media > div[style*="bottom: 34px"],
   .species-editorial-hero__credit {
     display: none !important;
+  }
+
+  .species-editorial-media-credit {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 5px 14px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: #FFFFFF;
+    color: #53606d;
+    font-family: "DM Mono", ui-monospace, monospace;
+    font-size: 9px;
+    line-height: 1.5;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .species-editorial-media-credit a {
+    color: #0066ff;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
   }
 
   .sp-hero__media {

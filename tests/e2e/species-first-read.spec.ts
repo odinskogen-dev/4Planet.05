@@ -20,6 +20,12 @@ test.describe("SPECIES first-read hierarchy", () => {
     if (viewport && viewport.width <= 620) {
       await expect(hero.getByText(/founder-supplied/i)).toBeHidden();
       await expect(hero.getByText(/commercial-rights claim/i)).toBeHidden();
+      const mediaCredit = page.getByTestId("species-editorial-media-credit");
+      await expect(mediaCredit).toBeVisible();
+      await expect(mediaCredit.getByRole("link", { name: /image source/i })).toHaveAttribute("href", "https://www.gbif.org/species/2440483");
+      await expect(mediaCredit).toContainText("4PLANET — founder-supplied");
+    } else {
+      await expect(page.getByTestId("species-editorial-media-credit")).toBeHidden();
     }
   });
 });
