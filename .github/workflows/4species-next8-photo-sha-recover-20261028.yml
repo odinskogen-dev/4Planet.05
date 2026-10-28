@@ -26,9 +26,9 @@ jobs:
              sources.extend([host+str(x)+'/original.jpg',host+str(x)+'/original.png'])
            else:
             # Commons author/license file metadata directly from target source Page.
-            import urllib.parse
+            from urllib.parse import urlencode
             title=rec['sourcePage'].split('File:')[-1]
-            params=urllib.parse.urlencode({'action':'query','format':'json','prop':'imageinfo','iiprop':'url|size|mime|extmetadata','titles':'File:'+title})
+            params=urlencode({'action':'query','format':'json','prop':'imageinfo','iiprop':'url|size|mime|extmetadata','titles':'File:'+title})
             try:
              req=urllib.request.Request('https://commons.wikimedia.org/w/api.php?'+params,headers={'User-Agent':'4PLANET-SPECIES-image-rights-check/1.0'})
              with urllib.request.urlopen(req,timeout=24) as r:
