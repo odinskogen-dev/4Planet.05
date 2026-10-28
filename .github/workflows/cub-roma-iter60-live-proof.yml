@@ -37,3 +37,5 @@ jobs:
             echo 'fc5d999bf0099ab0e99523f76019f0f8b1089da678558c1d0f2c7d8c78ba949e  /tmp/roma60-ch08.html' | sha256sum -c -
             echo "ITER59_EXACT_LIVE_AND_LEGACY_PRESERVED=$host"
           done
+
+# Rechecked against Cloudflare production release run 40780007591.
