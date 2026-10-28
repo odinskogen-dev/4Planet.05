@@ -36,7 +36,7 @@ jobs:
             const photos=(r.pictures||[]).filter(p=>p.artist&&p.license&&p.licenceUrl&&p.sourcePage&&
               String(p.sourcePage).startsWith('https://')&&/^[0-9a-f]{64}$/i.test(p.sha256||'')&&
               (p.photoId==null||!rejectIds.has(Number(p.photoId)))&&p.local&&
-              fs.existsSync(path.join('/tmp/species-next43-media-root',p.local.replace(/^\//,''))));
+              fs.existsSync(path.join('/tmp/species-next43-media-root/public',p.local.replace(/^\//,''))));
             // Candidate only; human photo identity/captive/quality and rights still need Gold.
             const best=photos[0];
             const fallback=best?{
