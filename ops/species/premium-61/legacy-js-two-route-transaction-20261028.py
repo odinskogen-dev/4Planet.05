@@ -84,9 +84,9 @@ def check_sitemap():
  return sha(b)
 
 def preflight():
- url='https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/40763716483'
+ url='https://api.github.com/repos/odinskogen-dev/4Planet.05/actions/runs/40764210207'
  r=json.loads(web(url)[1])
- if r.get('status')!='completed' or r.get('conclusion')!='success' or not r.get('head_sha','').startswith('23bcf196d13165c591ae'):
+ if r.get('status')!='completed' or r.get('conclusion')!='success' or not r.get('head_sha','').startswith('04d06310e6abd7aac027'):
   raise RuntimeError('Independent two JS route browser proof not ACCEPTED; no LIVE action')
  acc,zone=get_live_owner()
  baseline=snap()
