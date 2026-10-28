@@ -1,0 +1,54 @@
+name: CUB ROMA Iteration 60 isolated source and tile preflight
+on:
+  push:
+    branches: [cub-roma-iter60-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble exact Iter60 without touching production
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,lzma,hashlib
+          files=sorted(Path('site/rome/source/iter60').glob('part-*.txt'))
+          assert len(files)==17 and [x.name for x in files]==[f'part-{i:03d}.txt' for i in range(17)]
+          payload=b''.join(b''.join(x.read_bytes().split()) for x in files)
+          assert len(payload)==5943808
+          compressed=base64.b64decode(payload,validate=True)
+          assert len(compressed)==4457856
+          assert hashlib.sha256(compressed).hexdigest()=='0e21b345024f20e5fbc8b11341af40fffbb60555195e486c3d95d4cf7490c900'
+          game=lzma.decompress(compressed)
+          assert len(game)==9974603
+          assert hashlib.sha256(game).hexdigest()=='67c2c496982f646e4b2f2f1d4f4c78f09970c57a2a7a1177855d0628a74a3582'
+          assert b'iteration 59' in game.lower() and b'tiles/' in game and b'<canvas' in game
+          assert 'Play ROMA · Iteration 60' in Path('site/index.html').read_text()
+          assert 'Play ROMA · Iteration 60' in Path('site/games/roma/index.html').read_text()
+          print('ROMA60_EXACT_SOURCE_PASS')
+          PY
+      - name: Verify immutable NASA 240-tile release exists and matches manifest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/roma60-tiles
+          gh release download roma-cub-v17-20261024 --repo "$GITHUB_REPOSITORY" --pattern roma-v17-web.zip --dir /tmp/roma60-tiles
+          echo 'e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288  /tmp/roma60-tiles/roma-v17-web.zip' | sha256sum -c -
+          python3 - <<'PY'
+          import json,zipfile,hashlib
+          z=zipfile.ZipFile('/tmp/roma60-tiles/roma-v17-web.zip')
+          m=json.loads(z.read('tiles/MANIFEST.json'))
+          assert m['count']==240 and len(m['tiles'])==240
+          for t in m['tiles']:
+              data=z.read(t['file'])
+              assert len(data)==t['bytes'] and hashlib.sha256(data).hexdigest()==t['sha256']
+          print('ROMA60_ALL_240_NATIVE_TILES_PASS')
+          PY

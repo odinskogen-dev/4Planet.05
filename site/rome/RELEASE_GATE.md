@@ -1,12 +1,15 @@
-# ROMA: THE REPUBLIC — ITERATION 59 / CUB production
-Date: 27 October 2026.
+# CUB ROMA ITERATION 60 — exact release gate
 
-Requested source: user-uploaded ROMA_CHALLENGER_01_iter59 2.zip, single-file ready-to-publish HTML from ROMA_CHALLENGER_01/publish/web/index.html. Exact bytes: 9,968,709. SHA-256: 4f07165fe3bc21f557e547d7eb349b16ccb38965619c1eba0e4c65b311d53811.
+Source: uploaded ROMA_CHALLENGER_01_iter60.zip; ROMA_CHALLENGER_01/publish/web/index.html.
+HTML size: 9974603 bytes
+HTML SHA256: 67c2c496982f646e4b2f2f1d4f4c78f09970c57a2a7a1177855d0628a74a3582
+Transport: site/rome/source/iter60/part-000.txt to part-016.txt (17 base64 XZ/LZMA9 parts)
+Combined base64 bytes: 5943808
+Compressed bytes: 4457856
+Compressed SHA256: 0e21b345024f20e5fbc8b11341af40fffbb60555195e486c3d95d4cf7490c900
 
-Source transport: 17 base64-encoded LZMA segments under site/rome/source/iter59; concatenated length 5,939,496; LZMA binary length 4,454,620, SHA-256 20619ec76b98eeb9e960dee2df1f48e169e978eb98d1a770344de632a2ea2f68. GitHub Action reconstructs source exactly with hash checking; strips transport from released static worker bundle.
-
-Existing immutable ROMA V17 NASA terrain release is reused without changing art: roma-cub-v17-20261024 / roma-v17-web.zip, sha e9b8cb9dc0e5d5dc294ad3ea681626a5393672b330f51a8c408db75e2651f288, manifest 240 files with individual SHA verification. The Iter59 archive itself contains no tiles. Game references relative tiles/rNcN.jpg, matching this layout.
-
-The existing cub-lab-p4nther Cloudflare Worker is the ONLY production target. The existing /rome/ URL replaces Iter54; /roma/ Cannae, /roma/challenger-08/, the retired Challenger12 redirect, and all other games remain untouched. Both / and /games/roma/ link to /rome/, now labelled Iteration 59.
-
-Release requires green isolated preflight then green pre-existing full CUB production workflow, successful Cloudflare deployment, exact SHA proof on worker plus singular and plural domains, links check and original-games checksum. Automated browser smoke is a minimum, not physical iPhone Safari QA; commercial asset rights are a separate approval gate.
+Production action reconstructs byte-exact HTML, verifies individual SHA256 on unchanged 240 NASA map tiles from pinned V17 terrain release, and strips source segments before static Cloudflare worker deployment.
+Only /rome/ replaced. Home and /games/roma/ play links retitled to Iteration 60.
+Existing /roma/ Cannae, Challenger 08, all medieval titles and other CUB pages remain unchanged.
+Release acceptance: isolated preflight success, CUB deploy workflow success, and independent live proof success across workers.dev, lab.p4nther.com and labs.p4nther.com.
+Commercial rights review and physical iOS Safari FPS are separate acceptance tests.
