@@ -1,0 +1,73 @@
+name: 4SPECIES Four Claude Premium Additive LIVE Release 20261028
+# This starts as a manual-only dormant template. After independently verified
+# NOINDEX preview, pin its immutable URL and transition to a one-shot push.
+on:
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency: {group: species-premium-additive-live, cancel-in-progress: false}
+jobs:
+  ship:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      SPECIES_IMMUTABLE_PREVIEW: "__IMMUTABLE_ORIGIN__"
+      SPECIES_PREVIEW_SHA: "__PREVIEW_COMMIT__"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Independent release prerequisites — custom domain, 57 identities, 4 immutable NOINDEX + rights
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$SPECIES_PREVIEW_SHA"
+          case "$SPECIES_IMMUTABLE_PREVIEW" in
+            https://*.4planet-05.pages.dev) ;;
+            *) echo 'UNVERIFIED_PREVIEW_ORIGIN, NO LIVE' >&2; exit 1 ;;
+          esac
+          curl -fsS --max-time 25 "$SPECIES_IMMUTABLE_PREVIEW/release-identity.json" >/tmp/4species-stage-identity.json
+          jq -e --arg sha "$SPECIES_PREVIEW_SHA" '.triggerSha==$sha and (.payloadDigest|length)==64 and (.builtTree|length)==40' /tmp/4species-stage-identity.json >/dev/null
+          python3 ops/species/premium-61/additive-live-release-20261028.py preflight
+          python3 - <<'PY'
+          from pathlib import Path
+          import os,re
+          p=Path('ops/species/premium-61/additive-live-edge-template-20261028.mjs')
+          src=p.read_text()
+          value=os.environ['SPECIES_IMMUTABLE_PREVIEW']
+          assert src.count('__IMMUTABLE_PAGES_PREVIEW__')==1
+          assert re.fullmatch(r'https://[a-zA-Z0-9-]+\.4planet-05\.pages\.dev',value)
+          Path('/tmp/4species-verified-additive-release.mjs').write_text(src.replace('__IMMUTABLE_PAGES_PREVIEW__',value))
+          PY
+          node --check /tmp/4species-verified-additive-release.mjs
+      - name: Upload independent sidecar Worker only — no route activation yet
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy /tmp/4species-verified-additive-release.mjs \
+            --name 4species-premium-61-additive-20261028 \
+            --compatibility-date 2026-10-27 --keep-vars \
+            2>&1 | tee /tmp/4species-sidecar-upload.log
+          echo 'ADDITIVE_WORKER_UPLOADED_UNATTACHED'
+      - name: Attach ten exact Routes, GOLD public readback of 57 + 4 and auto rollback if ANY mismatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ops/species/premium-61/additive-live-release-20261028.py attach
+      - name: Search notification only after independent LIVE proof (IndexNow acceptance, not Google indexing)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,re
+          url=os.environ['SPECIES_IMMUTABLE_PREVIEW']
+          key_source=open('ops/discovery/4species-router.js').read()
+          key=re.search(r'const INDEXNOW_KEY = "([a-zA-Z0-9-]{8,128})";',key_source)
+          if not key:raise SystemExit('SEARCH_NOTICE_BLOCKED_NO_OWNER_KEY; LIVE STATE STILL CONFIRMED')
+          payload={'host':'4species.com','key':key.group(1),'keyLocation':'https://4species.com/'+key.group(1)+'.txt',
+            'urlList':['https://4species.com/'+s for s in ('atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree')]}
+          req=urllib.request.Request('https://api.indexnow.org/indexnow',data=json.dumps(payload).encode(),headers={'content-type':'application/json; charset=utf-8'},method='POST')
+          try:
+           with urllib.request.urlopen(req,timeout=20) as r:print('INDEXNOW_FOUR_NEW_ACCEPTED_HTTP',r.status)
+          except urllib.error.HTTPError as e:print('INDEXNOW_FOUR_NEW_REJECTED_HTTP',e.code)
+          PY
