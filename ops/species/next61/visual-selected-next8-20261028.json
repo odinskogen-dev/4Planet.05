@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-28",
+  "status": "VISUALLY_SCREENED_CONTACT_SHEET; SOURCE_AND_LICENSE_CANDIDATE; NOT INDEPENDENT SCIENTIFIC_GOLD",
+  "evidence": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/40719793401",
+  "rules": [
+    "Exactly same independently photographed original image SHA/ID as previous donor research report",
+    "Reject all 91 photographic reject IDs and unsupported captivity/handling",
+    "Exactly one local full-credit hero and empty gallery for new premium pages",
+    "Every released species must have 8 scientific source claims and cite real documents",
+    "Preserve existing 61 published users and sources byte-identical"
+  ],
+  "approved": {
+    "red-panda": {
+      "photoId": null,
+      "sha256": "f5eab498216939ded1ce55ceccd2950ca13e92d8e64de9ad39face54c15d4c1f",
+      "artist": "Sunuwargr",
+      "licence": "CC BY-SA 4.0",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Curious_Red_Panda_in_Langtang_National_Park.jpg",
+      "assetTitle": "red-panda — photograph by Sunuwargr — CC BY-SA 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "clouded-leopard": {
+      "photoId": 544317503,
+      "sha256": "a387d02df3a1926aa5f88be40a919b76f7ef76892cf061ddaf453f85bfcad030",
+      "artist": "Ian Dugdale",
+      "licence": "CC BY 4.0",
+      "sourcePage": "https://www.inaturalist.org/photos/544317503",
+      "assetTitle": "clouded-leopard — photograph by Ian Dugdale — CC BY 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "meerkat": {
+      "photoId": 392989244,
+      "sha256": "57fa053474d7fdfd20dc30207a3c5625fcee4e0e7248c830d20ea2fe18158d4a",
+      "artist": "Jakob Horz",
+      "licence": "CC BY 4.0",
+      "sourcePage": "https://www.inaturalist.org/photos/392989244",
+      "assetTitle": "meerkat — photograph by Jakob Horz — CC BY 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "sea-otter": {
+      "photoId": 599942815,
+      "sha256": "7e8d47d75154d930819b37f09684fd7ef7f7c6aee52323c575634e8eb56ecab4",
+      "artist": "Devon Bradley",
+      "licence": "CC BY 4.0",
+      "sourcePage": "https://www.inaturalist.org/photos/599942815",
+      "assetTitle": "sea-otter — photograph by Devon Bradley — CC BY 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "dugong": {
+      "photoId": 335161470,
+      "sha256": "7b620c53090691a6ca59e0fafec4a34a566f54b4305df942d9f482ec097b0320",
+      "artist": "Gergely Nigg",
+      "licence": "CC BY 4.0",
+      "sourcePage": "https://www.inaturalist.org/photos/335161470",
+      "assetTitle": "dugong — photograph by Gergely Nigg — CC BY 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "snowy-owl": {
+      "photoId": 343832881,
+      "sha256": "51a23360ec6dcb01145e1642f6d19151992a78fc2396b07b9ec166c0bee43332",
+      "artist": "Dustin Snider",
+      "licence": "CC BY 4.0",
+      "sourcePage": "https://www.inaturalist.org/photos/343832881",
+      "assetTitle": "snowy-owl — photograph by Dustin Snider — CC BY 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "indian-peafowl": {
+      "photoId": 81532360,
+      "sha256": "c7bb2a3b1d124e8fd753722b56a0263828453cc16cd242ba2d845e6fb32c0bda",
+      "artist": "Rights waived (CC0)",
+      "licence": "CC0 1.0",
+      "sourcePage": "https://www.inaturalist.org/photos/81532360",
+      "assetTitle": "indian-peafowl — photograph by Rights waived (CC0) — CC0 1.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    },
+    "coconut-crab": {
+      "photoId": 3898,
+      "sha256": "7893884cc3e3df4066a382bf29ac3224d5a24b60f53e1e00c15de98efddeccff",
+      "artist": "Drew Avery",
+      "licence": "CC BY 4.0",
+      "sourcePage": "https://www.inaturalist.org/photos/3898",
+      "assetTitle": "coconut-crab — photograph by Drew Avery — CC BY 4.0",
+      "visuallyCheckedOnContactSheet": true,
+      "oneHeroOnly": true
+    }
+  }
+}
