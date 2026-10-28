@@ -1,0 +1,63 @@
+name: 4SPECIES P0 Two-URL LIVE Hydration Restore 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-p0-restore-57-legacy-browser-live-20261028.yml]
+permissions: {contents: read}
+concurrency: {group: four-species-original57-ui-repair, cancel-in-progress: false}
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Validate exact immutable two-URL adapter source and no broad route changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ops/species/premium-61/legacy-js-two-route-repair-20261028.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('ops/species/premium-61/legacy-js-two-route-repair-20261028.mjs').read_text()
+          assert src.count('/assets/index-DLiHR8tZ.js')==1
+          assert src.count('/assets/index-DJRRK0k4.js')==1
+          assert 'document.querySelector("#root")?.replaceChildren(); import("/assets/index-B-Sfe1QA.js");' in src
+          assert 'fetch(request)' not in src
+          print('TWO_URL_SCOPE_ONLY_NO_ORIGINAL_WORKER_MUTATION')
+          PY
+      - name: Strict independent browser GOLD and current Cloudflare version preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ops/species/premium-61/legacy-js-two-route-transaction-20261028.py preflight
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install real browser test before any production route activation
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium webkit
+      - name: Upload standalone verified legacy-JS Worker (no public route attached)
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy ops/species/premium-61/legacy-js-two-route-repair-20261028.mjs \
+            --name 4species-legacy-js-exact-two-p0-20261028 \
+            --compatibility-date 2026-10-27 --keep-vars \
+            > /tmp/species-two-js-upload.txt 2>&1 || {
+              echo 'Worker upload rejected; NO public route attached.'
+              tail -n 20 /tmp/species-two-js-upload.txt | sed -E 's/(token|Bearer)[[:space:]:=]+[^ ]+/\1 [REDACTED]/Ig'
+              exit 1
+            }
+          echo 'EXACT_TWO_URL_WORKER_UPLOADED_NOT_ATTACHED'
+      - name: Attach EXACT two old broken JS URLs; test 57+4 production+16 browsers and rollback if any gate fails
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ops/species/premium-61/legacy-js-two-route-transaction-20261028.py attach
+      - name: Final evidence no change to protected public content
+        run: |
+          echo 'FOUR_SPECIES_TWO_JS_ROUTES_PRODUCTION_GOLD_VERIFIED; original protected HTML/JSON SHA exact'
