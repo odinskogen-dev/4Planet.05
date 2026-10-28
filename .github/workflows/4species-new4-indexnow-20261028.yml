@@ -1,0 +1,63 @@
+name: 4SPECIES Four Just-LIVE Premium IndexNow 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-new4-indexnow-20261028.yml]
+permissions: {contents: read}
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exact four true-LIVE profile indexability and first-party picture sha; single IndexNow post
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,xml.etree.ElementTree as ET,html.parser,re,json,hashlib,concurrent.futures,os
+          base='https://4species.com/'
+          slugs='atlas-moth peacock-spider emperor-scorpion dragon-blood-tree'.split()
+          src=open('ops/discovery/4species-router.js').read()
+          key=re.search(r'const INDEXNOW_KEY = "([a-zA-Z0-9-]{8,128})";',src)
+          if not key:raise SystemExit('INDEXNOW_OWNER_KEY_MISSING')
+          key=key.group(1)
+          def get(url,cap=17000000):
+           req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4SPECIES-Founder-Approved-IndexNow-20261028)'})
+           try:
+            with urllib.request.urlopen(req,timeout=26) as r:return r.status,r.read(cap),r.headers,r.geturl()
+           except urllib.error.HTTPError as e:return e.code,e.read(12000),e.headers,e.geturl()
+          k,kb,_,_=get(base+key+'.txt')
+          if k!=200 or kb.decode().strip()!=key:raise SystemExit('INVALID_OWNER_KEY')
+          code,sitemap,_,_=get(base+'sitemap.xml')
+          if code!=200:raise SystemExit('NO_LIVE_SITEMAP')
+          locs=[x.text for x in ET.fromstring(sitemap).findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if x.text]
+          if len(locs)!=66:raise SystemExit('SITEMAP_DRIFT')
+          class H(html.parser.HTMLParser):
+           def __init__(self):super().__init__();self.canonical=[];self.robots=[];self.h1=0
+           def handle_starttag(self,t,attrs):
+            d=dict(attrs)
+            if t=='link' and d.get('rel')=='canonical':self.canonical.append(d.get('href'))
+            if t=='meta' and d.get('name')=='robots':self.robots.append(d.get('content',''))
+            if t=='h1':self.h1+=1
+          def check(slug):
+           url=base+slug
+           st,body,h,end=get(url,550000)
+           meta=H();meta.feed(body.decode('utf-8','replace'))
+           j,raw,_,_=get(base+'species-data/v1/'+slug+'.json')
+           try:
+            p=json.loads(raw);hero=p['hero']['url'];sha=p['provenance']['photoSha256']
+           except:return (slug,False,'PROFILE_JSON_INVALID')
+           pic,blob,hh,_=get(hero,16000000)
+           valid=(st==200 and end==url and j==200 and p.get('slug')==slug and p.get('schema')=='4PLANET_SPECIES_PAGE_01' and bool(p.get('identity',{}).get('scientificName')) and meta.canonical==[url] and meta.h1>=1 and not any('noindex' in v.lower() for v in meta.robots+[h.get('X-Robots-Tag','')]) and url in locs and pic==200 and hashlib.sha256(blob).hexdigest()==sha)
+           return slug,valid,f'{st}/{j}/{pic}'
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:checks=list(ex.map(check,slugs))
+          if any(not c[1] for c in checks):raise SystemExit('BLOCKED_UNPUBLISHED_OR_BAD_PHOTO '+str(checks))
+          payload={'host':'4species.com','key':key,'keyLocation':base+key+'.txt','urlList':[base+s for s in slugs]}
+          req=urllib.request.Request('https://api.indexnow.org/indexnow',data=json.dumps(payload).encode(),headers={'Content-Type':'application/json; charset=utf-8','User-Agent':'4PLANET-Source-Validated-Search-Discovery'},method='POST')
+          try:
+           with urllib.request.urlopen(req,timeout=30) as r:code=r.status
+          except urllib.error.HTTPError as e:code=e.code
+          print('FOUR_NEW_PREMIUM_INDEXNOW_HTTP',code,'count',len(slugs),'checks',checks)
+          if code not in (200,202):raise SystemExit('INDEXNOW_NOT_ACCEPTED')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## IndexNow — FOUR new Claude premium LIVE species\n\n4/4 actual canonical HTML+JSON+SHA-photo+live sitemap inspected; ownership key valid, IndexNow HTTP '+str(code)+' accepted. Not Google indexing proof, and no page/code mutation.\n')
+          PY
