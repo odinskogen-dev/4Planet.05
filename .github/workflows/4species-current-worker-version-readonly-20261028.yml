@@ -42,18 +42,20 @@ jobs:
           token=None;zone=None
           for t in tokens:
             c,v=call(t,'/zones?name=4species.com')
-            z=[x for x in v.get('result',[]) if x.get('name')=='4species.com' and x.get('status')=='active']
+            z=[x for x in (v.get('result') or []) if x.get('name')=='4species.com' and x.get('status')=='active']
             if c==200 and len(z)==1:token=t;zone=z[0];break
-          if not token:raise SystemExit('READONLY_WORKER_ZONE_ACCESS_NOT_GRANTED')
+          if not token:
+            print('READONLY_4SPECIES_ZONE_ACCESS_DENIED: Cloudflare token can read 4planet.org but not necessarily 4species.com zone')
+            raise SystemExit(2)
           zid=zone['id'];acc=(zone.get('account') or {}).get('id')
           results=['# 4SPECIES actual Cloudflare LIVE version (read only)','',f'Zone status: {zone.get("status")}']
           if not acc:raise SystemExit('READONLY_ACCOUNT_ID_MISSING')
           c,v=call(token,f'/zones/{zid}/workers/routes')
-          binding=[{'pattern':x.get('pattern'),'script':x.get('script')} for x in v.get('result',[]) if x.get('script')=='4species-router']
+          binding=[{'pattern':x.get('pattern'),'script':x.get('script')} for x in (v.get('result') or []) if x.get('script')=='4species-router']
           results.append(f'Zone routes HTTP {c}: {binding}')
           if not binding:
             c,v=call(token,f'/accounts/{acc}/workers/domains')
-            binding=[{'hostname':x.get('hostname'),'service':x.get('service')} for x in v.get('result',[]) if x.get('hostname')=='4species.com']
+            binding=[{'hostname':x.get('hostname'),'service':x.get('service')} for x in (v.get('result') or []) if x.get('hostname')=='4species.com']
             results.append(f'Worker custom domain HTTP {c}: {binding}')
           if not binding:raise SystemExit('UNKNOWN_LIVE_ROUTER_OWNER_FAIL_CLOSED')
           candidates=[
