@@ -1,4 +1,4 @@
-name: CUB LAB — Exact ROMA Release 2026-10-19
+name: CUB LAB — Exact ROMA Iteration 60 Production Release
 on:
   push:
     branches: [cub-roma-republic-v12-release-20261023]
@@ -8,6 +8,8 @@ on:
       - 'site/roma/challenger-08/**'
       - 'site/roma/challenger-12/**'
       - 'site/index.html'
+      - 'site/rome/source/**'
+      - 'site/rome/RELEASE_GATE.md'
       - 'site/games/**'
       - 'site/medieval/**'
       - 'site/medievalkingdoms/**'
