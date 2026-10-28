@@ -1,0 +1,56 @@
+name: 4SPECIES 57 LIVE Browser JS Bundle Census P0 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-57-runtime-script-census-p0-20261028.yml]
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Discover which of 57 public scripts are actually JS, identify original immutable source, zero writes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,html.parser,re,concurrent.futures,collections,os,json
+          src=open('ops/discovery/4species-router.js').read()
+          slugs=re.findall(r'"([a-z0-9-]+)"',src.split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0])
+          assert len(slugs)==57
+          def read(url):
+           req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4SPECIES P0 source JS bundle census)'})
+           try:
+            with urllib.request.urlopen(req,timeout=27) as r:return r.status,r.read(2000000),r.headers.get('Content-Type','')
+           except urllib.error.HTTPError as e:return e.code,e.read(1000),e.headers.get('Content-Type','')
+           except Exception as e:return 0,b'',type(e).__name__
+          class P(html.parser.HTMLParser):
+           def __init__(self):super().__init__();self.scripts=[]
+           def handle_starttag(self,t,a):
+            d=dict(a)
+            if t=='script' and d.get('src','').startswith('/assets/'):self.scripts.append(d['src'])
+          def page(slug):
+           st,b,m=read('https://4species.com/'+slug)
+           parser=P();parser.feed(b.decode('utf-8','replace'))
+           return (slug,st,parser.scripts)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=12) as ex:pages=list(ex.map(page,slugs))
+          scripts=sorted({x for _,_,paths in pages for x in paths})
+          origins=['https://4species.com','https://72494005.4planet-05.pages.dev','https://de9e3e0e.4planet-05.pages.dev','https://b0951128.4planet-05.pages.dev']
+          def js(path):
+           ret={}
+           for o in origins:
+            st,b,ct=read(o+path)
+            ret[o]={'status':st,'mime':ct,'bytes':len(b),'JS':st==200 and ('javascript' in ct.lower())}
+           return path,ret
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as ex:statuses=dict(ex.map(js,scripts))
+          out=['# 4SPECIES 57 public page runtime JS source census','',f'Original URLs checked: {len(pages)}; distinct module asset paths {len(scripts)}','','| JS Asset | LIVE MIME valid | V53 origin | V1 prior | New 4 origin | Referenced species count |','|---|---|---|---|---|---:|']
+          errors=[]
+          for name,data in statuses.items():
+           users=[slug for slug,st,paths in pages if name in paths]
+           vals=[data[o]['JS'] for o in origins]
+           out.append('| '+name+' | '+' | '.join('OK' if v else 'BAD' for v in vals)+' | '+str(len(users))+' |')
+           if not vals[0]:errors.append({'asset':name,'usedBy':users,'sourceVerdicts':vals})
+          out+=['','### HTML scripts broken in public production',json.dumps(errors),'','Read-only, no production changes.']
+          print('\n'.join(out))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(out)+'\n')
+          PY
