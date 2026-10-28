@@ -1,0 +1,90 @@
+name: 4SPECIES 61 LIVE Emergency Independent Readback 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-live-61-emergency-readback-20261028.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify existing 57 plus four claimed new profiles, sitemap and exact Cloudflare route owners
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,html.parser,xml.etree.ElementTree as ET,json,re,os,concurrent.futures
+          base='https://4species.com'
+          add=['atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree']
+          src=open('ops/discovery/4species-router.js').read()
+          old=re.findall(r'"([a-z0-9-]+)"',src.split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0])
+          assert len(old)==57 and len(set(old))==57
+          def fetch(url,cap=400000):
+           req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4SPECIES-public-live-independent-GOLD)','Cache-Control':'no-cache'})
+           try:
+            with urllib.request.urlopen(req,timeout=29) as r:return r.status,r.geturl(),r.read(cap),r.headers
+           except urllib.error.HTTPError as e:return e.code,e.geturl(),e.read(15000),e.headers
+           except Exception as e:return 0,str(type(e).__name__),b'',{}
+          class Meta(html.parser.HTMLParser):
+           def __init__(self):super().__init__();self.canonical=[];self.robots=[];self.h1=0;self.scripts=[]
+           def handle_starttag(self,t,a):
+            d=dict(a)
+            if t=='link' and d.get('rel','')=='canonical':self.canonical.append(d.get('href',''))
+            if t=='meta' and d.get('name','')=='robots':self.robots.append(d.get('content',''))
+            if t=='h1':self.h1+=1
+            if t=='script' and d.get('src','').startswith('/assets/'):self.scripts.append(d['src'])
+          st,final,xml,h=fetch(base+'/sitemap.xml')
+          try:locs=[n.text for n in ET.fromstring(xml).findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if n.text]
+          except:locs=[]
+          def check(slug):
+           url=base+'/'+slug
+           st,end,body,headers=fetch(url)
+           p=Meta()
+           try:p.feed(body.decode('utf-8','replace'))
+           except:pass
+           js,jend,jbody,jheaders=fetch(base+'/species-data/v1/'+slug+'.json')
+           try:
+            data=json.loads(jbody);correct=data.get('slug')==slug and data.get('schema')=='4PLANET_SPECIES_PAGE_01' and bool(data.get('identity',{}).get('scientificName'))
+           except:correct=False;data={}
+           noindex='noindex' in (' '.join(p.robots)+' '+headers.get('X-Robots-Tag','')).lower()
+           ok=st==200 and end==url and js==200 and correct and p.canonical==[url] and p.h1>=1 and url in locs and not noindex
+           photo='NA'
+           if slug in add and correct:
+            hero=(data.get('hero') or {}).get('url','')
+            if hero.startswith(base+'/assets/species/next61/'):
+             import hashlib
+             ps,_,img,ih=fetch(hero,15000000)
+             photo='shaPASS' if ps==200 and hashlib.sha256(img).hexdigest()==data.get('provenance',{}).get('photoSha256') else 'BAD'
+            else:photo='BAD'
+            ok=ok and photo=='shaPASS'
+           return (slug,ok,st,js,p.h1,p.canonical[0] if p.canonical else '',noindex,url in locs,photo)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:rows=list(ex.map(check,old+add))
+          live=sum(r[1] for r in rows)
+          owner=[]
+          token=os.getenv('CF_TOKEN','').strip()
+          if token:
+           def cf(u):
+            req=urllib.request.Request('https://api.cloudflare.com/client/v4'+u,headers={'Authorization':'Bearer '+token})
+            with urllib.request.urlopen(req,timeout=20) as f:return json.load(f)
+           try:
+            z=cf('/zones?name=4species.com');zone=next(x for x in z['result'] if x['name']=='4species.com')
+            routes=cf('/zones/'+zone['id']+'/workers/routes')['result']
+            owner=[(r.get('pattern'),r.get('script'),r.get('id')) for r in routes if r.get('pattern','').startswith('4species.com')]
+           except Exception as e:owner=['CLOUDFLARE_READ_ERROR '+str(type(e).__name__)]
+          summary=['# 4SPECIES actual LIVE emergency independent evidence','',
+            f'Sitemap HTTP {st} entries {len(locs)} unique {len(set(locs))}',
+            f'Original 57: {sum(r[1] for r in rows[:57])}/57 valid live; four next: {sum(r[1] for r in rows[57:])}/4; total {live}/61','',
+            '| Slug | Public certified | HTTP HTML | HTTP JSON | H1 | Canonical | Noindex | Sitemap | Hero SHA |',
+            '|---|---|---:|---:|---:|---|---|---|---|']
+          for r in rows[57:]:summary.append('| '+' | '.join(map(str,r))+' |')
+          summary+=['','Cloudflare routes + owners: '+json.dumps(owner),'','Read only. No mutation or fake Google indexing claim.']
+          print('\n'.join(summary))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(summary)+'\n')
+          if sum(r[1] for r in rows[:57])!=57:raise SystemExit('P0_PROTECTED_57_NOT_FULLY_LIVE')
+          if sum(r[1] for r in rows[57:])!=4:raise SystemExit('NEW_FOUR_NOT_READY_OR_NOT_INDEXABLE')
+          if len(locs)!=66:raise SystemExit('SITEMAP_NOT_57_PLUS_FOUR_WITH_NONPROFILE')
+          print('LIVE_61_ZERO_LOSS_FULL_PASS')
+          PY
