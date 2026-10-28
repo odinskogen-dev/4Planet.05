@@ -209,6 +209,12 @@ jobs:
           fresh='  const signedCandidate = (["atlas-moth", "peacock-spider", "emperor-scorpion", "dragon-blood-tree"].includes(page.slug) && (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-22") || (["clouded-leopard", "sea-otter", "snowy-owl", "indian-peafowl", "coconut-crab"].includes(page.slug) && (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-28_CANDIDATE_ONLY");'
           assert source.count(old)==1
           t.write_text(source.replace(old,fresh))
+          search=Path('ops/species/next61/v1-search-release.mjs')
+          lookup=search.read_text()
+          before='if(pages.size!==39+selected.length)'
+          assert lookup.count(before)==1
+          search.write_text(lookup.replace(before,'if(pages.size!==39+selected.length+5)'))
+          print('EXACT_V1_DISCOVERY_GATE_PRESERVES_ORIGINAL22_AND_ALLOWS_FIVE_STAGED_EXTRA')
           print('ZERO_LOSS_SIGNED_GUARD_INCLUDES_FIVE_NEW_ONLY')
           PY
           echo CLAUDE_NEW_ONLY_PHOTO_PROTECTION_COMPILATION_READY
