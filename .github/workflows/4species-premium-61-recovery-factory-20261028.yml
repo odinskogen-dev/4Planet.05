@@ -52,6 +52,21 @@ jobs:
             target[key]=found
           print('SPECIES_V53_COMPONENT_MARKER_AUDIT '+json.dumps(target))
           PY
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,re
+          paths=[Path('src/pages/integrated/SpeciesTemplate.tsx'),Path('src/species/pageFromProfile.ts'),Path('src/species/pageModel.ts')]
+          markers=('authority','citation','gallery','images','photo','commons','wikimedia','picture','provider','image')
+          excerpts={}
+          for p in paths:
+            if not p.exists():continue
+            rows=p.read_text().splitlines()
+            match=[i for i,line in enumerate(rows) if any(x in line.lower() for x in markers)]
+            excerpts[str(p)]=[{'line':i+1,'text':rows[i][:240]} for i in match[:120]]
+          print('SPECIES_CLAUDE_PREMIUM_UI_BLOCKER_SOURCE '+json.dumps(excerpts))
+          PY
+          git cat-file -e b18b811addb23a2095d9ce2f69cd32ad9b633c2c^{commit} || git fetch --no-tags --depth=1 origin b18b811addb23a2095d9ce2f69cd32ad9b633c2c
+          git worktree add --detach "$GITHUB_WORKSPACE/../species-61-science-donor" b18b811addb23a2095d9ce2f69cd32ad9b633c2c
           cd "$GITHUB_WORKSPACE"
           echo "## Exact source proof, no LIVE edits" >> "$GITHUB_STEP_SUMMARY"
           echo "- Claude v53 patch SHA, worktree tree and original species source identities verified" >> "$GITHUB_STEP_SUMMARY"
@@ -71,8 +86,12 @@ jobs:
             arr.push(...Object.values(o).flat());
           }
           const packs={};
+          // Candidate science contracts come from the later full 61 source donor;
+          // the initial V1 5-image donor is older, incomplete and MUST NOT be
+          // mistaken for the definitive science source-of-truth.
+          const fullDonor=path.resolve('../species-61-science-donor/ops/species/next61');
           for (let n=1;n<=9;n++){
-            const obj=await imported('science-claims-stage'+n+'.mjs');
+            const obj=await import(pathToFileURL(path.join(fullDonor,'science-claims-stage'+n+'.mjs')).href);
             for(const v of Object.values(obj)){
               for(const [slug,p] of Object.entries(v)){
                 if(packs[slug])throw new Error('DUPLICATE_PUBLISHER_PACK '+slug);
