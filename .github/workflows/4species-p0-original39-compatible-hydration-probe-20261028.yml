@@ -1,0 +1,63 @@
+name: 4SPECIES P0 SSR-preserving Original39 Hydration Repair Browser Proof 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-p0-original39-compatible-hydration-probe-20261028.yml]
+permissions: {contents: read}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Virtual browser HTML SSR-preserving compatibility probe; never modify public route
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from '@playwright/test';
+          const browser=await chromium.launch({headless:true});
+          const src='https://b0951128.4planet-05.pages.dev';
+          const old='https://72494005.4planet-05.pages.dev';
+          const prior='https://de9e3e0e.4planet-05.pages.dev';
+          const expected={'orca':'Orca','lion':'Lion','koala':'Koala','quokka':'Quokka'};
+          for(const slug of Object.keys(expected)){
+           const page=await browser.newPage(),consoleErrors=[],failed=[];
+           page.on('pageerror',e=>consoleErrors.push(String(e).slice(0,240)));
+           page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text().slice(0,240))});
+           await page.route('https://4species.com/'+slug,async route=>{
+             const response=await fetch(route.request().url());
+             let html=await response.text();
+             // Retain full original crawlable server HTML! Remove SSR root only at browser's
+             // synchronous end-of-body stage, before deferred module scripts execute.
+             const needsOld39=['orca','lion'].includes(slug);
+             const before=needsOld39?'index-DJRRK0k4.js':'index-DLiHR8tZ.js';
+             html=html.replace(before,'index-B-Sfe1QA.js');
+             html=html.replace('</body>','<script data-4species-hydration-fix>document.querySelector("#root")?.replaceChildren();</script></body>');
+             await route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:html});
+           });
+           await page.route('https://4species.com/assets/**',async route=>{
+             const path=new URL(route.request().url()).pathname;
+             for(const origin of [src,old,prior]){
+               try {
+                 const res=await fetch(origin+path,{signal:AbortSignal.timeout(12000)});
+                 const mime=(res.headers.get('content-type')||'').toLowerCase();
+                 const extension=path.split('.').at(-1);
+                 const allowed=res.ok&&(extension==='js'&&mime.includes('javascript')||extension==='css'&&mime.includes('text/css')||['jpg','jpeg','webp','png','svg','woff2','woff'].includes(extension)&&!mime.includes('text/html'));
+                 if(allowed){await route.fulfill({status:200,contentType:res.headers.get('content-type')||'application/octet-stream',body:Buffer.from(await res.arrayBuffer())});return}
+               } catch{}
+             }
+             await route.continue();
+           });
+           let response;
+           try{response=await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:28000});await page.waitForTimeout(6500)}catch(e){failed.push(String(e))}
+           const ui=await page.evaluate(()=>({h1:document.querySelector('h1.spx-name')?.textContent?.trim(),ssr:!!document.querySelector('.spx-prerender'),hero:!!document.querySelector('[data-spx-section="hero"]'),title:document.title,body:document.body.innerText.slice(0,90)}));
+           const ok=response?.status()===200&&ui.h1===expected[slug]&&ui.hero&&!ui.ssr&&consoleErrors.length===0;
+           console.log('SSR_PRESERVING_BROKEN_HYDRATION_VIRTUAL',JSON.stringify({slug,ok,...ui,consoleErrors:consoleErrors.slice(0,5),failed}));
+           await page.close();
+          }
+          await browser.close();
+          NODE
