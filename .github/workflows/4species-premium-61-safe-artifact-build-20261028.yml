@@ -2,7 +2,7 @@ name: 4SPECIES Claude Premium 61 Safe Artifact Build 20261028
 on:
   push:
     branches: [king/test]
-    paths: [.github/workflows/4species-premium-61-safe-artifact-build-20261028.yml]
+    paths: [.github/workflows/4species-premium-61-safe-artifact-build-20261028.yml, ops/species/premium-61/browser-qa-virtual-live.mjs]
 permissions: {contents: read}
 
 concurrency:
