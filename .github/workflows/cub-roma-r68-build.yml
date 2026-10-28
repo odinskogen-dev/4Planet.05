@@ -1,0 +1,55 @@
+name: CUB ROMA R68 isolated build proof
+on:
+  push:
+    branches: [cub-roma-r68-quickbattle-20261028]
+    paths:
+      - '.github/workflows/cub-roma-r68-build.yml'
+      - 'site/rome/r68-source/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reassemble exact R68 source and verify SHA256
+        run: |
+          set -euo pipefail
+          cat site/rome/r68-source/part-*.txt | base64 --decode > /tmp/ROMA_R68_BUILD_INPUT.tar.xz
+          echo '78c977fcb76dc6dbf944eb673dea84643f7190c93cdf8c140c1f819fc9c8005c  /tmp/ROMA_R68_BUILD_INPUT.tar.xz' | sha256sum -c -
+          test "$(stat -c%s /tmp/ROMA_R68_BUILD_INPUT.tar.xz)" -eq 4810148
+          mkdir -p /tmp/roma-r68-src
+          tar -xJf /tmp/ROMA_R68_BUILD_INPUT.tar.xz -C /tmp/roma-r68-src
+          test -f /tmp/roma-r68-src/src/campaign/quickBattle.js
+          test -f /tmp/roma-r68-src/src/client/controlGuard.js
+          test -f /tmp/roma-r68-src/src/campaign/battleMonuments.js
+          test -f /tmp/roma-r68-src/src/render/bowPose.js
+      - name: R68 runtime and baseline unit tests
+        working-directory: /tmp/roma-r68-src
+        run: |
+          set -euo pipefail
+          node --test tests/unit/axe_r68_quick_battle.test.mjs
+          npm run test:unit
+      - name: Install pinned dependencies, build actual singlefile WebGL
+        working-directory: /tmp/roma-r68-src
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm run build
+          test -s publish/web/index.html
+          grep -Fq 'Quick Battle' publish/web/index.html
+          grep -Fq 'Hangu Pass' publish/web/index.html
+          echo "R68_COMPILED_BYTES=$(wc -c <publish/web/index.html)"
+          sha256sum publish/web/index.html
+      - name: Retain verified build artifact, no production deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: roma-r68-webgl-build
+          path: /tmp/roma-r68-src/publish/web/
+          retention-days: 7
+          if-no-files-found: error

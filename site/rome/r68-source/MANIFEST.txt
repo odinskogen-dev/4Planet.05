@@ -1,0 +1,5 @@
+ROMA R68 source archive, exact original iter60 plus R68 full patch.
+sha256=78c977fcb76dc6dbf944eb673dea84643f7190c93cdf8c140c1f819fc9c8005c
+rawbytes=4810148
+base64chars=6413532
+parts=36
