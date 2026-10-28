@@ -28,7 +28,7 @@ jobs:
           game=lzma.decompress(compressed)
           assert len(game)==9974603
           assert hashlib.sha256(game).hexdigest()=='67c2c496982f646e4b2f2f1d4f4c78f09970c57a2a7a1177855d0628a74a3582'
-          assert b'iteration 59' in game.lower() and b'tiles/' in game and b'<canvas' in game
+          assert b'iteration 60' in game.lower() and b'tiles/' in game and b'<canvas' in game
           assert 'Play ROMA · Iteration 60' in Path('site/index.html').read_text()
           assert 'Play ROMA · Iteration 60' in Path('site/games/roma/index.html').read_text()
           print('ROMA60_EXACT_SOURCE_PASS')
