@@ -197,3 +197,20 @@ test('SPECIES media source labels distinguish a taxon reference from a verified 
     'TAXON SOURCE ↗',
   ]) assert.ok(speciesEditorialRoute.includes(required), `missing source-label truth boundary: ${required}`);
 });
+
+test('SPEC-GS-09 fails canonical CUR-ORCA-01 BLOCK closed at the owning media path', () => {
+  assert.match(
+    speciesMediaRegistry,
+    /orca:\s*\{[\s\S]*?rightsAssetId:\s*"CUR-ORCA-01"[\s\S]*?publicWebAllowed:\s*false[\s\S]*?commercialAllowed:\s*false[\s\S]*?rightsStatus:\s*"PENDING"/,
+    'canonical CUR-ORCA-01 BLOCK must remain non-public, non-commercial and non-showable',
+  );
+  assert.match(
+    speciesMediaRegistry,
+    /assetBlocker:\s*"CUR-ORCA-01[^\n]*canonical rights bank BLOCK/,
+    'the source-of-truth blocker must stay bound to the Orca record',
+  );
+  assert.ok(
+    speciesEditorialRoute.includes('{show && media?.attribution && ('),
+    'a blocked image must not render its presentation credit',
+  );
+});

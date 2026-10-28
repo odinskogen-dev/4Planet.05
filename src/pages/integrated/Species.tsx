@@ -353,14 +353,14 @@ function SpeciesEditorialProfile({
               </dl>
             </div>
           </div>
-          {media?.attribution && (
+          {show && media?.attribution && (
             <div className="species-editorial-hero__credit" style={{ position: "absolute", right: 14, bottom: 10, ...mono, color: "rgba(255,255,255,.72)", fontSize: 8 }}>
               {media.attribution}{media.licence ? ` · ${media.licence}` : ""}
             </div>
           )}
         </section>
 
-        {media?.attribution && (
+        {show && media?.attribution && (
           <aside
             className="species-editorial-media-credit"
             data-testid="species-editorial-media-credit"

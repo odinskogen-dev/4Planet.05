@@ -17,6 +17,8 @@ export type MediaSourceKind = "IMAGE" | "TAXON";
 
 export interface MediaRecord {
   localPath: string;
+  /** Canonical rights-bank asset identity when this file is governed there. */
+  rightsAssetId?: string;
   sourcePage: string;
   /** What the linked source actually identifies; never infer image provenance from a taxon page. */
   sourceKind: MediaSourceKind;
@@ -104,15 +106,17 @@ function fromManifest(assetId: string): MediaRecord {
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   orca: {
     localPath: "/assets/species/orca/hero.jpg",
+    rightsAssetId: "CUR-ORCA-01",
     sourcePage: "https://www.gbif.org/species/2440483",
     sourceKind: "TAXON",
     photographer: "Founder-supplied (provenance only)", owner: "Not asserted — founder-supplied does not transfer ownership",
-    licence: "Founder-supplied for 4PLANET use; not an ownership or commercial-rights claim", licenceUrl: "",
+    licence: "", licenceUrl: "",
     attribution: "4PLANET — founder-supplied", checkedDate: "2026-08-11",
-    cropAllowed: true, modificationAllowed: true, publicWebAllowed: true, commercialAllowed: true,
-    supportedUse: "Public web, hero + detail, crop/resize permitted.",
-    limitations: "Illustrative species media. Source and rights details are available in the evidence record.",
-    rightsStatus: "LICENCE_VERIFIED", assetBlocker: "",
+    cropAllowed: false, modificationAllowed: false, publicWebAllowed: false, commercialAllowed: false,
+    supportedUse: "Blocked from public presentation until exact source and licence are recovered.",
+    limitations: "Canonical rights bank records the source and licence as unresolved.",
+    rightsStatus: "PENDING",
+    assetBlocker: "CUR-ORCA-01 — canonical rights bank BLOCK; recover the exact original source page and licence before showing this photo.",
   },
   "humpback-whale": fromManifest("SP-001"),
   "sperm-whale": fromManifest("SP-002"),

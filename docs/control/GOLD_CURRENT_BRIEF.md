@@ -1,3 +1,65 @@
+# SPECIES — CANONICAL ORCA RIGHTS FAIL-CLOSED — 28 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED P0 RIGHTS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor opening the Orca profile must not be shown a photograph whose exact source and public/commercial rights remain unresolved.
+
+## ONE THING TO UNDERSTAND
+
+The factual species profile remains available while the blocked photograph remains unavailable.
+
+## PRIMARY ACTION
+
+Bind the Orca hero record to canonical asset `CUR-ORCA-01`, mark it `PENDING`, and fail closed to the existing no-photo state.
+
+## SECONDARY DEPTH
+
+Preserve the taxon, evidence, ATLAS handoff and existing verified-media behaviour for other species.
+
+## P1 DOMINANT
+
+The species identity remains dominant; no blocked photo or misleading photo credit is rendered.
+
+## P2 ORIENTATION
+
+The existing honest message states that a rights-cleared photograph is not available.
+
+## P3 ACTION / NEXT
+
+Visitors can continue into the factual profile and ATLAS; independent Gold judges the exact returned SHA.
+
+## P4 DEPTH
+
+The canonical rights bank remains authoritative for the asset block and any future licence recovery.
+
+## WHAT CAN BE REMOVED
+
+Remove only the blocked Orca photograph and its presentation credit from the rendered profile.
+
+## WHAT MUST BE REUSED
+
+Reuse issue #145, Atomic `SPEC-GS-09`, sole `king/test` HEIR, `speciesMedia`, the existing no-photo state, and the owning source/browser regressions.
+
+## TRUTH BOUNDARY
+
+This correction proves only that canonical `CUR-ORCA-01` BLOCK state prevents the photo from rendering. It does not establish the missing source/licence, Gold acceptance, deployment, LIVE visibility or user use.
+
+## MOBILE-FIRST RISK
+
+The compact profile previously made the blocked photograph and its unsupported founder-supplied rights statement especially prominent.
+
+## HUMAN SUCCESS
+
+At compact and desktop widths Orca renders no blocked hero image or image-credit strip, keeps the factual profile usable, and Jaguar retains its verified Commons image and source.
+
+**ROOT CAUSE / FAILED TEST / IMMUNITY:** the repository-local media record asserted `LICENCE_VERIFIED`, public and commercial permission without reconciling canonical asset `CUR-ORCA-01`, whose source and licence are unresolved and explicitly BLOCK. The new canonical-ID negative regression fails first, then requires `PENDING` plus false public/commercial flags and route-level no-photo/no-credit browser proof while preserving Jaguar's positive verified path.
+
+**DOOR / ROLLBACK / JUDGE:** Reversible HEIR-only correction. Base and rollback are `king/test@3608b2dc56cde8bf1bd0c65f0d3d594cd2c05b78`. Factory returns CODE FIXED evidence only; independent Gold judges the exact SHA and Founder retains merge/deploy/LIVE authority.
+
+---
+
 # SPECIES — MEDIA SOURCE SEMANTICS — 28 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED PROVENANCE CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
