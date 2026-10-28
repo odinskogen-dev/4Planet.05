@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/living-systems-v142-zero-loss.test.mjs && node scripts/build-living-systems-v142.mjs && node scripts/actor-quality-gate.mjs && node scripts/magazine-quality-gate.mjs && node scripts/build-xr-canonical-data.mjs && node scripts/generate-sitemap.mjs",
-    "build": "tsc -b && vite build && node scripts/prerender-magazine-seo.mjs && node scripts/prerender-discovery-seo.mjs && node scripts/prerender-atlas-seo.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender-magazine-seo.mjs && node scripts/prerender-discovery-seo.mjs && node scripts/prerender-atlas-seo.mjs && node scripts/species-blocked-public-asset-gate.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test:company-brain": "node --test scripts/company-brain-boundary-contract.test.mjs",

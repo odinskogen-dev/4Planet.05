@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 
 const file = await readFile(new URL('../src/data/speciesSourceEnvelope.ts', import.meta.url), 'utf8');
 const refreshContract = await readFile(new URL('../src/data/sourceRefresh.ts', import.meta.url), 'utf8');
@@ -9,6 +9,9 @@ const speciesRoute = await readFile(new URL('../src/pages/integrated/SpeciesRout
 const speciesEditorialRoute = await readFile(new URL('../src/pages/integrated/Species.tsx', import.meta.url), 'utf8');
 const speciesMediaRegistry = await readFile(new URL('../src/data/speciesMedia.ts', import.meta.url), 'utf8');
 const firstReadStyles = await readFile(new URL('../src/styles/species-source-first-read-v01.css', import.meta.url), 'utf8');
+const discoveryInventory = await readFile(new URL('../src/data/discoveryInventory.json', import.meta.url), 'utf8');
+const orcaAssetManifest = await readFile(new URL('../public/assets/species/orca/ASSET-MANIFEST.json', import.meta.url), 'utf8');
+const viteConfig = await readFile(new URL('../vite.config.ts', import.meta.url), 'utf8');
 
 test('SPEC-FP-01 preserves source/provenance/uncertainty/update semantics for Orca', () => {
   for (const required of [
@@ -213,4 +216,30 @@ test('SPEC-GS-09 fails canonical CUR-ORCA-01 BLOCK closed at the owning media pa
     speciesEditorialRoute.includes('{show && media?.attribution && ('),
     'a blocked image must not render its presentation credit',
   );
+});
+
+test('SPEC-GS-09 keeps blocked Orca photo bytes out of public source and social metadata', async () => {
+  await assert.rejects(access(new URL('../public/assets/species/orca/hero.jpg', import.meta.url)));
+  await assert.rejects(access(new URL('../public/assets/species/orca/hero-mobile.jpg', import.meta.url)));
+  await access(new URL('../public/assets/species/orca/illustration.jpg', import.meta.url));
+
+  assert.match(
+    speciesMediaRegistry,
+    /orca:\s*\{[\s\S]*?localPath:\s*""[\s\S]*?rightsAssetId:\s*"CUR-ORCA-01"/,
+    'blocked media record must preserve canonical identity without a public path',
+  );
+  assert.doesNotMatch(discoveryInventory, /"image":\s*"\/assets\/species\/orca\/hero(?:-mobile)?\.jpg"/);
+  assert.match(discoveryInventory, /"image":\s*"\/assets\/species\/orca\/illustration\.jpg"/);
+  assert.match(discoveryInventory, /"imageAlt":\s*"4PLANET-owned Orca illustration — not a photograph"/);
+
+  for (const [blob, formerPath] of [
+    ['595c1b9cf1917faf3b4cfbd55d754df41b6cfb25', '/assets/species/orca/hero.jpg'],
+    ['98b7cc9dccd527a1e1c43f00cf78c3ff63ffacf0', '/assets/species/orca/hero-mobile.jpg'],
+  ]) {
+    assert.ok(orcaAssetManifest.includes(blob), `missing immutable blocked-asset blob: ${blob}`);
+    assert.ok(orcaAssetManifest.includes(formerPath), `missing former public path evidence: ${formerPath}`);
+  }
+  assert.match(orcaAssetManifest, /"state":\s*"RIGHTS_BLOCKED_WITHHELD_FROM_PUBLIC_ARTIFACT"/);
+  assert.match(viteConfig, /4planet-blocked-public-asset-preview-guard/);
+  assert.match(viteConfig, /response\.statusCode = 404/);
 });

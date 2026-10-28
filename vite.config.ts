@@ -42,7 +42,28 @@ const partnersIsolation = {
   },
 };
 
+const blockedPublicAssetPaths = new Set([
+  "/assets/species/orca/hero.jpg",
+  "/assets/species/orca/hero-mobile.jpg",
+]);
+
+const blockedPublicAssetPreviewGuard = {
+  name: "4planet-blocked-public-asset-preview-guard",
+  configurePreviewServer(server: any) {
+    server.middlewares.use((request: any, response: any, next: () => void) => {
+      const pathname = new URL(request.url ?? "/", "http://preview.local").pathname;
+      if (!blockedPublicAssetPaths.has(pathname)) {
+        next();
+        return;
+      }
+      response.statusCode = 404;
+      response.setHeader("Cache-Control", "no-store");
+      response.end("Not found");
+    });
+  },
+};
+
 export default defineConfig({
-  plugins: [react(), partnersIsolation],
+  plugins: [react(), partnersIsolation, blockedPublicAssetPreviewGuard],
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
 });

@@ -674,8 +674,8 @@
       "state": "CURATED",
       "description": "Explore the orca (Orcinus orca): identity, habitat, behaviour, source-grounded evidence, reported observations and context in 4PLANET ATLAS.",
       "title": "Orca (Orcinus orca) — Killer whale profile | 4PLANET",
-      "image": "/assets/species/orca/hero.jpg",
-      "imageAlt": "Orca — 4PLANET SPECIES",
+      "image": "/assets/species/orca/illustration.jpg",
+      "imageAlt": "4PLANET-owned Orca illustration — not a photograph",
       "atlasHref": "/atlas/whales",
       "sourceUrls": [
         "https://www.gbif.org/species/2440483",

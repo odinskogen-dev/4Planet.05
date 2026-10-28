@@ -6,6 +6,18 @@ const assertNoHorizontalOverflow = async (page: import("@playwright/test").Page)
 };
 
 test.describe("SPECIES first-read hierarchy", () => {
+  test("blocked Orca photo paths are absent from the preview artifact", async ({ request }) => {
+    for (const path of [
+      "/assets/species/orca/hero.jpg",
+      "/assets/species/orca/hero-mobile.jpg",
+    ]) {
+      const response = await request.get(path);
+      expect(response.status(), `${path} must fail closed`).toBe(404);
+    }
+    const illustration = await request.get("/assets/species/orca/illustration.jpg");
+    expect(illustration.status()).toBe(200);
+  });
+
   test("Orca fails canonical blocked media closed while keeping the factual profile usable", async ({ page }) => {
     await page.goto("/species/orca");
     const hero = page.locator('[data-species-section="hero"]');

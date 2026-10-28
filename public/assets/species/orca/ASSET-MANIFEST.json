@@ -8,16 +8,6 @@
   "truthBoundary": "This pack mixes production media, evidence/reference assets and candidate source records. A source record is not automatically a reusable image or a scientifically measured 3D model.",
   "localAssets": [
     {
-      "path": "/assets/species/orca/hero.jpg",
-      "class": "production_media",
-      "rights": "SEE_EXISTING_SOURCE_PROVENANCE"
-    },
-    {
-      "path": "/assets/species/orca/hero-mobile.jpg",
-      "class": "production_media",
-      "rights": "SEE_EXISTING_SOURCE_PROVENANCE"
-    },
-    {
       "path": "/assets/species/orca/lume-orca-v1.png",
       "class": "illustrative",
       "rights": "SEE_EXISTING_SOURCE_PROVENANCE"
@@ -26,6 +16,20 @@
       "path": "/assets/species/orca/audio/nps-glacier-bay-orca-echolocation.mp3",
       "class": "real_audio_evidence_reference",
       "rights": "NPS_SOURCE_PROVENANCE_REQUIRED"
+    }
+  ],
+  "withheldAssets": [
+    {
+      "formerPublicPath": "/assets/species/orca/hero.jpg",
+      "gitBlobSha": "595c1b9cf1917faf3b4cfbd55d754df41b6cfb25",
+      "rightsAssetId": "CUR-ORCA-01",
+      "state": "RIGHTS_BLOCKED_WITHHELD_FROM_PUBLIC_ARTIFACT"
+    },
+    {
+      "formerPublicPath": "/assets/species/orca/hero-mobile.jpg",
+      "gitBlobSha": "98b7cc9dccd527a1e1c43f00cf78c3ff63ffacf0",
+      "rightsAssetId": "CUR-ORCA-01",
+      "state": "RIGHTS_BLOCKED_WITHHELD_FROM_PUBLIC_ARTIFACT"
     }
   ],
   "openReferenceAssets": [

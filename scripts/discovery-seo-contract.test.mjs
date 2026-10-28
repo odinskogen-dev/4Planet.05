@@ -286,7 +286,8 @@ test("Orca discovery object carries a reusable search, share and AI-retrieval pr
   assert.equal(orca?.state,"CURATED");
   assert.match(orca?.title||"",/Orca \(Orcinus orca\).*Killer whale/i);
   assert.match(orca?.description||"",/source-grounded evidence/i);
-  assert.equal(orca?.image,"/assets/species/orca/hero.jpg");
+  assert.equal(orca?.image,"/assets/species/orca/illustration.jpg");
+  assert.equal(orca?.imageAlt,"4PLANET-owned Orca illustration — not a photograph");
   assert.equal(orca?.atlasHref,"/atlas/whales");
   assert.deepEqual(orca?.sourceUrls,[
     "https://www.gbif.org/species/2440483",
@@ -295,8 +296,8 @@ test("Orca discovery object carries a reusable search, share and AI-retrieval pr
   ]);
   assert.ok((orca?.limitations||[]).some((item)=>/not live animal positions/i.test(item)));
   for(const url of orca?.sourceUrls||[]) assert.ok(sourceEnvelopes.includes(url), `Orca discovery source must exist in canonical source envelope: ${url}`);
-  assert.match(speciesMedia,/localPath: "\/assets\/species\/orca\/hero\.jpg"/);
-  assert.match(speciesMedia,/rightsStatus: "LICENCE_VERIFIED"/);
+  assert.match(speciesMedia,/orca:\s*\{[\s\S]*?localPath: ""[\s\S]*?rightsAssetId: "CUR-ORCA-01"/);
+  assert.match(speciesMedia,/orca:\s*\{[\s\S]*?rightsStatus: "PENDING"/);
 });
 
 test("Orca discovery metadata preserves citations, Taxon identity, limits and ATLAS journey in client and prerender",()=>{

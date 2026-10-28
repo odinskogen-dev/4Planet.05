@@ -105,7 +105,7 @@ function fromManifest(assetId: string): MediaRecord {
  */
 export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   orca: {
-    localPath: "/assets/species/orca/hero.jpg",
+    localPath: "",
     rightsAssetId: "CUR-ORCA-01",
     sourcePage: "https://www.gbif.org/species/2440483",
     sourceKind: "TAXON",
