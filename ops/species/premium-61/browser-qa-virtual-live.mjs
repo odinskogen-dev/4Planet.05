@@ -17,7 +17,12 @@ const fresh=[
   ['emperor-scorpion','Pandinus imperator'],
   ['dragon-blood-tree','Dracaena cinnabari'],
 ];
-const existing=[['orca','Orcinus orca'],['koala','Phascolarctos cinereus']];
+// 18 prior V1 pages are deliberately restored as immutable standalone HTML,
+// whereas the new preview uses newly compiled JS. Mixing those artifacts in a
+// synthetic local browser gives false failures for existing Koala. The existing
+// V1 cohort is therefore checked against the ACTUAL existing LIVE Worker,
+// while newly compiled candidates and old Orca are tested virtually.
+const existing=[['orca','Orcinus orca']];
 const ctype={'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.xml':'application/xml','.txt':'text/plain'};
 const requested={};
 
@@ -87,6 +92,29 @@ for(const [browserName,browserType] of [['chromium',chromium],['webkit',webkit]]
         }finally{await page.close()}
       }
       await context.close();
+      // Independent true-LIVE baseline: Koala's original already-published
+      // HTML must be tested with the actual immutable JS it currently serves,
+      // NOT with this staged new bundle. No modification or route activation.
+      const realContext=await browser.newContext(screen==='mobile'?
+        {viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:browserName==='webkit',hasTouch:true}:
+        {viewport:{width:1440,height:900},deviceScaleFactor:1});
+      const real=await realContext.newPage();
+      try{
+        const response=await real.goto('https://4species.com/koala',{waitUntil:'domcontentloaded',timeout:35000});
+        assert.equal(response?.status(),200,'LIVE Koala original HTTP');
+        await real.locator('h1.spx-name').waitFor({state:'visible',timeout:22000});
+        const actual=await real.evaluate(()=>({
+          name:document.querySelector('h1.spx-name')?.textContent?.trim(),
+          sci:document.body.innerText.includes('Phascolarctos cinereus'),
+          canonical:document.querySelector('link[rel="canonical"]')?.getAttribute('href')
+        }));
+        assert.ok(actual.name?.length>2&&actual.sci&&actual.canonical==='https://4species.com/koala','LIVE Koala UI provenance');
+        console.log('CLAUDE_LIVE_BASELINE_PASS',browserName,screen,'koala');
+      }catch(e){
+        failures.push(browserName+'/'+screen+'/LIVE-koala: '+e.message);
+        console.log('CLAUDE_LIVE_BASELINE_FAIL',browserName,screen,'koala',e.message);
+      }finally{await realContext.close()}
+
     }
   }finally{await browser.close()}
 }
