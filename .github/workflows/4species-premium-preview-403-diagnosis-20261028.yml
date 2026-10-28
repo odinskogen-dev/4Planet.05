@@ -1,0 +1,41 @@
+name: 4SPECIES Premium Immutable Preview 403 Diagnosis 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-premium-preview-403-diagnosis-20261028.yml]
+permissions: {contents: read}
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only classify Cloudflare Pages 403 and benchmark prior working origin
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,time,os,json
+          hosts=[
+           'https://b0951128.4planet-05.pages.dev',
+           'https://species-premium-61-20261028.4planet-05.pages.dev',
+           'https://0debcf00.4planet-05.pages.dev',
+           'https://de9e3e0e.4planet-05.pages.dev',
+           'https://72494005.4planet-05.pages.dev']
+          paths=['/atlas-moth','/species-data/v1/atlas-moth.json','/']
+          rows=['# 4SPECIES 403 READ ONLY','', '| Host | Path | HTTP | Redirect URL | X-Robots | Security/CF diagnostics | Body first 180 |', '|---|---|---:|---|---|---|---|']
+          for host in hosts:
+           for path in paths:
+            req=urllib.request.Request(host+path,headers={'User-Agent':'Mozilla/5.0 (4SPECIES owner controlled preview audit)','Accept':'text/html,application/json'})
+            try:
+             with urllib.request.urlopen(req,timeout=20) as r:
+              st=r.status;body=r.read(900).decode('utf-8','replace');headers=r.headers;end=r.geturl()
+            except urllib.error.HTTPError as e:
+             st=e.code;body=e.read(900).decode('utf-8','replace');headers=e.headers;end=e.geturl()
+            except Exception as e:
+             st=0;body=str(type(e).__name__);headers={};end=''
+            meta={k:headers.get(k,'') for k in ['cf-mitigated','server','cf-cache-status','location','www-authenticate','x-robots-tag','x-powered-by']}
+            meta={k:v for k,v in meta.items() if v}
+            short=body.replace('|','/').replace('\n',' ')[:180]
+            rows.append('| '+ ' | '.join([host.replace('https://',''),path,str(st),end,headers.get('x-robots-tag',''),str(meta).replace('|','/'),short])+' |')
+          output='\n'.join(rows)
+          print(output)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(output+'\n')
+          PY
