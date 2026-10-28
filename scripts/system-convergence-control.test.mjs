@@ -72,12 +72,65 @@ test('candidate world has exactly one HEIR and no newest-wins/third-king path', 
   assert.match(lineage, /sole moving|single.*moving|permanent TEST KING/i);
 });
 
-test('LIVE remains fail-closed and Founder-gated', () => {
-  assert.equal(liveManifest.status, 'NOT_AUTHORISED');
-  assert.equal(liveManifest.sourceBranch, 'king/test');
-  assert.equal(liveManifest.founderDecisionRef, null);
+// A historical, specifically authorised CSP hotfix must not make later releases
+// automatically authorised. This assertion only recognises the exact 8–9 Oct
+// Founder-approved release-control record; it grants no promotion authority.
+function assertFounderGatedLiveManifest(manifest) {
+  assert.equal(manifest.sourceBranch, 'king/test');
+  if (manifest.status === 'NOT_AUTHORISED') {
+    assert.equal(manifest.founderDecisionRef, null);
+    return;
+  }
+  assert.equal(manifest.status, 'FOUNDER_ACCEPTED');
+  assert.equal(manifest.schemaVersion, 4);
+  assert.equal(manifest.boundedRelease, true);
+  assert.equal(manifest.releaseKind, 'P0_ID_CLOUDFLARE_CSP_AUTH');
+  assert.equal(manifest.hotfixBranch, 'release/p0-id-cloudflare-csp-20261009');
+  assert.deepEqual(manifest.hotfixPaths, ['public/_headers']);
+  assert.match(manifest.testKingSha, /^[a-f0-9]{40}$/);
+  assert.match(manifest.priorLiveSha, /^[a-f0-9]{40}$/);
+  assert.equal(manifest.rollbackRef, `main@${manifest.priorLiveSha}`);
+  assert.equal(manifest.evidenceRef, 'https://github.com/odinskogen-dev/4Planet.05/pull/427');
+  assert.match(manifest.founderDecisionRef, /Founder 2026-10-08/);
+  assert.match(manifest.founderDecisionRef, /Founder 2026-10-09/);
+  assert.equal(manifest.releaseControlCommit, true);
+  // The historical control document did not record a releaseCommitSha. This
+  // is NOT a runtime deployment receipt or authorisation for any new PR.
+  assert.equal(manifest.releaseCommitSha, null);
+}
+
+test('LIVE is fail-closed; only the exact historical bounded Founder CSP approval is recognised', () => {
+  assertFounderGatedLiveManifest(liveManifest);
   assert.equal(candidate.safety.no_live_or_main_development_by_this_register, true);
   assert.match(candidate.promotion_contract.live_promotion, /FOUNDER_AUTHORITY_REQUIRED/);
+});
+
+test('LIVE manifest rejects forged, widened or retrospectively approved release state', () => {
+  const safeNotAuthorised = { ...liveManifest, status: 'NOT_AUTHORISED', founderDecisionRef: null };
+  assert.doesNotThrow(() => assertFounderGatedLiveManifest(safeNotAuthorised));
+  const changes = [
+    { status: 'LIVE' },
+    { boundedRelease: false },
+    { hotfixPaths: ['public/_headers', 'src/App.tsx'] },
+    { hotfixPaths: ['src/App.tsx'] },
+    { founderDecisionRef: 'Founder consent assumed unless objection' },
+    { founderDecisionRef: null },
+    { evidenceRef: 'https://github.com/odinskogen-dev/4Planet.05/pull/512' },
+    { releaseKind: 'GENERAL_DEPLOYMENT' },
+    { releaseControlCommit: false },
+    { rollbackRef: 'main@unknown' },
+    { priorLiveSha: 'unknown' },
+    { testKingSha: 'unknown' },
+    { hotfixBranch: 'main' },
+    { releaseCommitSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' },
+  ];
+  for (const change of changes) {
+    assert.throws(
+      () => assertFounderGatedLiveManifest({ ...liveManifest, ...change }),
+      undefined,
+      `unsafe manifest must fail: ${JSON.stringify(change)}`,
+    );
+  }
 });
 
 test('minimal semantic BRAIN contract is stable and cutover is evidence-gated', () => {
