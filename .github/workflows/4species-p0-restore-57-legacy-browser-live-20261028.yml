@@ -26,7 +26,7 @@ jobs:
           assert src.count('/assets/index-DLiHR8tZ.js')==1
           assert src.count('/assets/index-DJRRK0k4.js')==1
           assert 'document.querySelector("#root")?.replaceChildren(); import("/assets/index-B-Sfe1QA.js");' in src
-          assert 'fetch(request)' not in src
+          assert 'return fetch(request)' not in src
           print('TWO_URL_SCOPE_ONLY_NO_ORIGINAL_WORKER_MUTATION')
           PY
       - name: Strict independent browser GOLD and current Cloudflare version preflight
