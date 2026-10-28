@@ -328,7 +328,7 @@ jobs:
           assert len(compressed)==4457856 and hashlib.sha256(compressed).hexdigest()=='0e21b345024f20e5fbc8b11341af40fffbb60555195e486c3d95d4cf7490c900', 'ROMA60_XZ_HASH'
           game=lzma.decompress(compressed)
           assert len(game)==9974603 and hashlib.sha256(game).hexdigest()=='67c2c496982f646e4b2f2f1d4f4c78f09970c57a2a7a1177855d0628a74a3582', 'ROMA60_HTML_SHA'
-          assert b'iteration 59' in game.lower() and b'tiles/' in game and b'<canvas' in game, 'ROMA60_IDENTITY'
+          assert b'iteration 60' in game.lower() and b'tiles/' in game and b'<canvas' in game, 'ROMA60_IDENTITY'
           manifest=json.loads((root/'tiles/MANIFEST.json').read_text())
           assert manifest['count']==240 and len(manifest['tiles'])==240, 'ROMA60_TILES_COUNT'
           for tile in manifest['tiles']:
