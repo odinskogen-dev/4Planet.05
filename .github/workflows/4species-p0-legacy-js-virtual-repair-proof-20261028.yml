@@ -1,0 +1,65 @@
+name: 4SPECIES P0 Legacy JS Virtual Repair Proof 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-p0-legacy-js-virtual-repair-proof-20261028.yml]
+permissions: {contents: read}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Prove missing Koala and Orca legacy JS chunk repair by virtual route interception; read-only
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from '@playwright/test';
+          const chromiumBrowser=await chromium.launch({headless:true});
+          const sources={
+            '/assets/index-DLiHR8tZ.js':'https://72494005.4planet-05.pages.dev/assets/index-DLiHR8tZ.js',
+            '/assets/index-DJRRK0k4.js':'https://b0951128.4planet-05.pages.dev/assets/index-B-Sfe1QA.js',
+          };
+          const old={};
+          for(const [missing,url] of Object.entries(sources)){
+            const r=await fetch(url,{signal:AbortSignal.timeout(28000)});
+            const mime=r.headers.get('content-type')||'';
+            if(!r.ok||!mime.includes('javascript'))throw Error('Not JS '+missing+' from '+url);
+            old[missing]=Buffer.from(await r.arrayBuffer());
+          }
+          let fails=[];
+          for(const slug of ['orca','koala','lion','quokka','hyacinth-macaw','giant-sequoia']){
+            const context=await chromiumBrowser.newContext({viewport:{width:390,height:844},hasTouch:true});
+            const page=await context.newPage(),errors=[],missing=[];
+            await page.route(/https:\/\/4species\.com\/assets\/index-(?:DJRRK0k4|DLiHR8tZ)\.js/,async route=>{
+              const path=new URL(route.request().url()).pathname;
+              await route.fulfill({status:200,contentType:'application/javascript; charset=utf-8',body:old[path]});
+            });
+            page.on('pageerror',e=>errors.push('JS '+String(e).slice(0,220)));
+            page.on('console',m=>{if(m.type()==='error')errors.push('Console '+m.text().slice(0,220))});
+            page.on('requestfailed',q=>missing.push(q.url()));
+            try{
+              const response=await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:35000});
+              await page.waitForTimeout(6500);
+              const v=await page.evaluate(()=>({
+                h1:document.querySelector('h1.spx-name')?.textContent?.trim(),
+                originalPrerender:!!document.querySelector('.spx-prerender'),
+                rendered:!!document.querySelector('[data-spx-section="hero"]'),
+                app:!!document.querySelector('.spx-hero-slide img'),
+                title:document.title,
+                text:document.body.innerText.slice(0,140)
+              }));
+              const ok=response?.status()===200&&!v.originalPrerender&&v.rendered&&!!v.h1&&errors.length===0;
+              console.log('SPECIES_ORIGINAL_JS_FIX_VIRTUAL',JSON.stringify({slug,ok,...v,errors,missing:missing.slice(0,7)}));
+              if(!ok)fails.push(slug+': '+JSON.stringify({v,errors}));
+            }catch(e){fails.push(slug+': '+String(e));console.log('SPECIES_ORIGINAL_JS_VIRTUAL_FAIL '+slug+' '+String(e))}
+            await context.close();
+          }
+          await chromiumBrowser.close();
+          if(fails.length)throw Error('VIRTUAL_P0_REPAIR_NOT_GOLD '+fails.join(' | ').slice(0,3500));
+          console.log('OLD_57_JS_VIRTUAL_REPAIR_BROWSER_EXEMPLARS_PASS');
+          NODE
