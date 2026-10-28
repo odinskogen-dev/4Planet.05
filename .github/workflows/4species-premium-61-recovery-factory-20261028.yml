@@ -97,8 +97,9 @@ jobs:
           // the initial V1 5-image donor is older, incomplete and MUST NOT be
           // mistaken for the definitive science source-of-truth.
           const fullDonor=path.resolve('../species-61-science-donor/ops/species/next61');
-          for (let n=1;n<=9;n++){
-            const obj=await import(pathToFileURL(path.join(fullDonor,'science-claims-stage'+n+'.mjs')).href);
+          for (let n=1;n<=10;n++){
+            const from=n===10?donor:fullDonor;
+            const obj=await import(pathToFileURL(path.join(from,'science-claims-stage'+n+'.mjs')).href);
             for(const v of Object.values(obj)){
               for(const [slug,p] of Object.entries(v)){
                 if(packs[slug])throw new Error('DUPLICATE_PUBLISHER_PACK '+slug);
