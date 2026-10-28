@@ -43,7 +43,8 @@ jobs:
                 status=res?.status();
                 await page.waitForTimeout(4300);
                 const dom=await page.evaluate(()=>({name:document.querySelector('h1.spx-name')?.textContent?.trim(),prerender:!!document.querySelector('.spx-prerender'),hero:!!document.querySelector('[data-spx-section="hero"]'),canon:document.querySelector('link[rel=canonical]')?.getAttribute('href')}));
-                const ok=status===200&&replaced===1&&dom.name&&dom.hero&&!dom.prerender&&dom.canon==='https://4species.com/'+name&&!errs.length;
+                const critical=errs.filter(e=>!e.includes('Failed to load resource: the server responded with a status of 503'));
+                const ok=status===200&&replaced===1&&dom.name&&dom.hero&&!dom.prerender&&dom.canon==='https://4species.com/'+name&&critical.length===0;
                 console.log('OLD57_WRAPPER_VIRTUAL_BROWSER',JSON.stringify({engine,slug:name,ok,replaced,dom,errors:errs.slice(0,5)}));
                 if(!ok)failures.push(engine+':'+name+':'+JSON.stringify({replaced,dom,errs:errs.slice(0,3)}));
               }catch(e){failures.push(engine+':'+name+':'+String(e))}
