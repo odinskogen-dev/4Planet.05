@@ -407,12 +407,7 @@ jobs:
           s=p.read_text()
           anchor="  ['dragon-blood-tree','Dracaena cinnabari'],"
           assert anchor in s
-          s=s.replace(anchor,anchor+"""
-  ['clouded-leopard','Neofelis nebulosa'],
-  ['sea-otter','Enhydra lutris'],
-  ['snowy-owl','Bubo scandiacus'],
-  ['indian-peafowl','Pavo cristatus'],
-  ['coconut-crab','Birgus latro'],""",1)
+          s=s.replace(anchor,anchor+"\\n  ['clouded-leopard','Neofelis nebulosa'],\\n  ['sea-otter','Enhydra lutris'],\\n  ['snowy-owl','Bubo scandiacus'],\\n  ['indian-peafowl','Pavo cristatus'],\\n  ['coconut-crab','Birgus latro'],",1)
           p.write_text(s)
           PY
           cd "$GITHUB_WORKSPACE/../species-v53-build"
