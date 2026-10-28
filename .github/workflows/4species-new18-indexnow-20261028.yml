@@ -1,0 +1,70 @@
+name: 4SPECIES New 18 LIVE Profiles One-shot IndexNow 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-new18-indexnow-20261028.yml]
+permissions: {contents: read}
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 18 already LIVE from the 61, send one authentic IndexNow notice (NO deploy)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re,os,urllib.request,urllib.error,xml.etree.ElementTree as ET,concurrent.futures,json,html.parser,sys
+          src=open('ops/discovery/4species-router.js').read()
+          k=re.search(r'const INDEXNOW_KEY = "([a-zA-Z0-9-]{8,128})";',src)
+          if not k:sys.exit('INDEXNOW_KEY_MISSING')
+          key=k.group(1)
+          slugs="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          if len(slugs)!=18 or len(set(slugs))!=18:sys.exit('FAIL_CLOSED_COHORT')
+          protected=set(re.findall(r'"([a-z0-9-]+)"',src.split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0]))
+          if len(protected)!=57 or not set(slugs)<=protected:sys.exit('FAIL_CLOSED_PUBLIC_REGISTER')
+          base='https://4species.com/'
+          def get(url):
+            req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4SPECIES-source-verified-IndexNow)'})
+            try:
+              with urllib.request.urlopen(req,timeout=26) as r:return r.status,r.read(360000),r.headers
+            except urllib.error.HTTPError as e:return e.code,e.read(13000),e.headers
+            except Exception:return 0,b'',{}
+          status,body,_=get(base+key+'.txt')
+          if status!=200 or body.decode().strip()!=key:sys.exit('NO_VALID_KEY_OR_OWNERSHIP')
+          status,xml,_=get(base+'sitemap.xml')
+          if status!=200:sys.exit('NO_LIVE_SPECIES_SITEMAP')
+          root=ET.fromstring(xml)
+          locs={e.text for e in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if e.text}
+          class Html(html.parser.HTMLParser):
+            def __init__(self):super().__init__();self.canonical=[];self.robot=[];self.h1=0
+            def handle_starttag(self,t,a):
+              d=dict(a)
+              if t=='link' and d.get('rel','').lower()=='canonical':self.canonical.append(d.get('href',''))
+              if t=='meta' and d.get('name','').lower()=='robots':self.robot.append(d.get('content',''))
+              if t=='h1':self.h1+=1
+          def check(slug):
+            uri=base+slug
+            st,body,headers=get(uri)
+            html=Html()
+            try:html.feed(body.decode('utf-8','replace'))
+            except:pass
+            jst,jbody,_=get(base+'species-data/v1/'+slug+'.json')
+            try:
+              data=json.loads(jbody)
+              proper=data.get('schema')=='4PLANET_SPECIES_PAGE_01' and data.get('slug')==slug and bool(data.get('identity',{}).get('scientificName'))
+            except:proper=False
+            valid=(st==200 and jst==200 and proper and uri in locs and html.canonical==[uri] and html.h1>=1 and 'noindex' not in (' '.join(html.robot)+' '+headers.get('X-Robots-Tag','')).lower())
+            return slug,valid,st,jst
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as e:result=list(e.map(check,slugs))
+          failed=[r for r in result if not r[1]]
+          if failed:sys.exit('FAIL_CLOSED_INDEXNOW_INVALID_PROFILE '+str(failed))
+          payload={'host':'4species.com','key':key,'keyLocation':base+key+'.txt','urlList':[base+s for s in slugs]}
+          req=urllib.request.Request('https://api.indexnow.org/indexnow',data=json.dumps(payload).encode(),headers={'Content-Type':'application/json; charset=utf-8','User-Agent':'4PLANET-Source-Validated-Search-Discovery'},method='POST')
+          try:
+            with urllib.request.urlopen(req,timeout=25) as r:code=r.status;response=r.read(1000).decode('utf-8','replace')
+          except urllib.error.HTTPError as e:code=e.code;response=e.read(1000).decode('utf-8','replace')
+          print('NEW18_INDEXNOW_RECEIPT',code,'count',len(slugs),'response',response[:180])
+          if code not in (200,202):sys.exit('INDEXNOW_NOT_ACCEPTED')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## New 18 released SPECIES discovery receipt\n\n18/18 real published source-backed public species, owner key and canonical sitemap validated. IndexNow HTTP '+str(code)+' accepted. **Not** proof of Google indexation, crawler visit or ranking. No production edits.\n')
+          PY
