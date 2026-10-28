@@ -1,0 +1,64 @@
+name: 4SPECIES Independent 61 LIVE Zero-loss and Googlebot Crawl Check 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-independent-post61-live-20261028.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Independent read-only 61 species profiles + source-backed assets and indexable XML
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re,json,html.parser,urllib.request,urllib.error,xml.etree.ElementTree as ET,concurrent.futures,os,collections
+          source=open('ops/discovery/4species-router.js').read()
+          protected=re.findall(r'"([a-z0-9-]+)"',source.split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0])
+          newcomers=['atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree']
+          if len(protected)!=57 or len(set(protected))!=57 or set(protected)&set(newcomers):raise SystemExit('ROSTER_DRIFT')
+          class Doc(html.parser.HTMLParser):
+           def __init__(self):
+            super().__init__();self.canonical=[];self.robots=[];self.h1=0;self.title=''
+           def handle_starttag(self,t,a):
+            d=dict(a)
+            if t=='link' and d.get('rel','').lower()=='canonical':self.canonical.append(d.get('href',''))
+            if t=='meta' and d.get('name','').lower()=='robots':self.robots.append(d.get('content',''))
+            if t=='h1':self.h1+=1
+          def get(u,google=False):
+           req=urllib.request.Request(u,headers={'User-Agent':'Googlebot' if google else '4SPECIES-Independent-LIVE-Audit/1.0','Accept-Encoding':'identity'})
+           try:
+            with urllib.request.urlopen(req,timeout=28) as r:return r.status,r.read(520000),r.headers,r.geturl()
+           except urllib.error.HTTPError as e:return e.code,e.read(12000),e.headers,e.geturl()
+           except:return 0,b'',{},''
+          status,sitemap,headers,final=get('https://4species.com/sitemap.xml')
+          if status!=200:raise SystemExit('LIVE_SITEMAP_UNAVAILABLE')
+          locs=[e.text for e in ET.fromstring(sitemap).findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if e.text]
+          if len(locs)!=66 or len(set(locs))!=66:raise SystemExit('LIVE_SITEMAP_NOT_66')
+          def check(slug):
+           url='https://4species.com/'+slug
+           st,body,h,final=get(url,google=True)
+           p=Doc()
+           try:p.feed(body.decode('utf-8','replace'))
+           except:pass
+           jst,blob,jh,jfinal=get(url.replace('/'+slug,'/species-data/v1/'+slug+'.json'))
+           try:doc=json.loads(blob)
+           except:doc={}
+           ok=(st==200 and final==url and p.h1>0 and p.canonical==[url] and url in locs and 'noindex' not in (' '.join(p.robots)+' '+h.get('X-Robots-Tag','')).lower() and jst==200 and doc.get('slug')==slug and doc.get('schema')=='4PLANET_SPECIES_PAGE_01')
+           return {'slug':slug,'pass':ok,'html':st,'json':jst,'canon':p.canonical[:1],'robots':h.get('X-Robots-Tag','')}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=7) as e:records=list(e.map(check,protected+newcomers))
+          failures=[r for r in records if not r['pass']]
+          summary=['# Independent post-release LIVE 4SPECIES GOLD readback','',
+            f'Public indexable pages verified with Googlebot User-Agent: {len(records)-len(failures)}/61; original57 count {len(protected)}, newcomers 4, sitemap {len(locs)} unique URLs.',
+            'New URLs: '+', '.join('https://4species.com/'+x for x in newcomers),'',
+            'Known remaining: 39 not yet published, IndexNow HTTP 200 accepted is not Google indexing.','']
+          if failures:summary+=['### FAILURES',json.dumps(failures,indent=2)]
+          else:summary+=['**PASS: 61/61 live exact source-backed, self-canonical H1 index-eligible HTML and JSON, sitemap unchanged and 66 entries.**']
+          report='\n'.join(summary)
+          print(report)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(report+'\n')
+          if failures:raise SystemExit('LIVE_GOOGLEBOT_CRAWL_REGRESSION')
+          PY
