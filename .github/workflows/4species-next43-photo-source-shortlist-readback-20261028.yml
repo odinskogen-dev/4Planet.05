@@ -1,0 +1,43 @@
+name: 4SPECIES Next43 Candidate Photo Metadata + Claim Readiness 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-next43-photo-source-shortlist-readback-20261028.yml]
+permissions: {contents: read, actions: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: 4species-next43-source-photo-credits-rights-shortlist
+          run-id: 40717576296
+          github-token: ${{ github.token }}
+          path: /tmp/photo-candidate-source
+      - name: Match sourced taxonomy with photo provenance and credit titles
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,os
+          source=json.load(open('/tmp/photo-candidate-source/asset-bank-attribution-candidates.json'))
+          records=source['records']
+          assert len(records)==43
+          report=['# 4SPECIES Next43 — original licensed photo shortlist and attribution','',
+            'Research-grade source candidates; a photo rights record is NOT final photo identity/visual Gold.','',
+            '| Slug | Photo ID | Photographer credit | License | Original source | Captive? | Quality | Original SHA | Asset Bank title |',
+            '|---|---:|---|---|---|---|---|---|---|']
+          for r in records:
+           s=r.get('shortlisted')
+           if s:
+            report.append('| '+' | '.join([
+             r['slug'],str(s.get('photoId','')),str(s.get('artist','')).replace('|','/'),s.get('license',''),
+             s.get('sourcePage',''),str(s.get('captive','')),str(s.get('observationQuality','')),
+             s.get('sha256','')[:16],s.get('candidateTitle','').replace('|','/')])+' |')
+           else:report.append('| '+r['slug']+' | NO ELIGIBLE FILE | | | | | | | |')
+          output='\n'.join(report)
+          print(output)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(output+'\n')
+          print('MATCHED_43_PHOTO_CANDIDATES',sum(bool(r.get('shortlisted')) for r in records))
+          PY
