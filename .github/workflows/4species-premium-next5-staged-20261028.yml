@@ -1,0 +1,466 @@
+# FOUNDER REQUEST 2026-10-28: run full independent Chrome/WebKit + true NOINDEX preview to prepare exact LIVE additive release.
+name: 4SPECIES Premium Next Five 66-Page Preview Gold 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-premium-next5-staged-20261028.yml]
+permissions: {contents: read}
+
+concurrency:
+  group: 4species-premium-next5-isolated-preview
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 748addeabfe7aa2641a8cbd672b9ca4c8aa6b1c9
+          fetch-depth: 0
+      - name: Bind checkout to immutable trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "748addeabfe7aa2641a8cbd672b9ca4c8aa6b1c9"
+          workflow_blob=$(git rev-parse "$GITHUB_SHA:.github/workflows/species-v53-canonical-deploy.yml")
+          echo "PREVIEW_WORKFLOW_BLOB=$workflow_blob" >> "$GITHUB_ENV"
+          {
+            echo "### Immutable SPECIES v53 preview carrier"
+            echo "- trigger_sha: \`$GITHUB_SHA\`"
+            echo "- workflow_blob: \`$workflow_blob\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Restore Claude exact cumulative v53, fail closed on mismatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat ops/species/v53/patch/chunk-*.txt | base64 -d | gzip -d > /tmp/species-v53.patch
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/species-v53.patch' | sha256sum -c -
+          git worktree add --detach ../species-v53-build 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd ../species-v53-build
+          git apply --check /tmp/species-v53.patch
+          git apply /tmp/species-v53.patch
+          git add -A
+          test "$(git write-tree)" = 818b4ff766d4423cafc1709bda38d164da2b9731
+          echo CLAUDE_V53_EXACT_BASE_PASS
+      - name: Recover EXACT original 39-profile donor files from pinned successful build
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE=af8c714233dcd002f28f4e1079cdb477ab0a9049
+          git cat-file -e "$SOURCE^{commit}"
+          for f in ops/species/v53/batch-20-original-json.gz.b64 ops/species/v53/batch-11-premium-claude-candidates.json ops/species/v53/premium-wildlife-hotfix.py; do
+            mkdir -p "$(dirname "$f")"
+            git show "$SOURCE:$f" > "$f"
+            test -s "$f"
+          done
+          echo SPECIES_39_PINNED_SOURCE_RECOVERED
+      - name: Reconcile AXE proof species and founder-approved wording
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          for slug in english-oak western-honey-bee fly-agaric common-octopus; do
+            cp -v "$GITHUB_WORKSPACE/public/species-data/v1/$slug.json" "public/species-data/v1/$slug.json"
+          done
+          if [ -d "$GITHUB_WORKSPACE/public/species-media" ]; then
+            cp -a "$GITHUB_WORKSPACE/public/species-media" public/species-media
+          fi
+          python3 - <<'PY'
+          import base64, gzip, json, os
+          from pathlib import Path
+          original = Path(os.environ["GITHUB_WORKSPACE"]) / "ops/species/v53/batch-20-original-json.gz.b64"
+          pages = json.loads(gzip.decompress(base64.b64decode(original.read_text().strip(), validate=True)))
+          assert len(pages) == 20, "exactly twenty distinct original species"
+          assert len({page["slug"] for page in pages.values()}) == 20
+          dest = Path("public/species-data/v1")
+          dest.mkdir(parents=True, exist_ok=True)
+          for filename, page in sorted(pages.items()):
+              assert filename == page["slug"] + ".json", filename
+              assert page["schema"] == "4PLANET_SPECIES_PAGE_01", filename
+              assert page["slug"] != "orca", "never overwrite original Orca"
+              assert page["identity"]["scientificName"] and page["identity"]["commonName"], filename
+              assert page["provenance"]["review"] == "DRAFT", filename
+              assert not (dest / filename).exists(), "candidate collision: " + filename
+              (dest / filename).write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n")
+          print("SPECIES_20_EXACT_INDIVIDUAL_PROFILES_STAGED", len(pages))
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('src/pages/integrated/SpeciesTemplate.tsx')
+          s=p.read_text()
+          p.write_text(s)
+          p=Path('src/pages/integrated/SpeciesHome.tsx')
+          home=p.read_text()
+          before='  const photo = today?.photo;'
+          after='  const photo = { url: "/assets/species/orca/hero.jpg", alt: "An orca seen from directly above in deep dark-blue ocean", credit: "Founder-supplied to 4PLANET", licence: "Rights record pending independent verification", sourcePage: "" };'
+          assert before in home, 'v53 homepage hero anchor changed'
+          home=home.replace(before,after,1)
+          credit='{photo && <a className="spx-credit spx-u-credit" href={photo.sourcePage} target="_blank" rel="noopener noreferrer">Photo {photo.credit} · {photo.licence}</a>}'
+          assert credit in home, 'v53 photo credit anchor changed'
+          home=home.replace(credit,'{photo && <span className="spx-credit spx-u-credit" role="note">Photo {photo.credit}</span>}',1)
+          p.write_text(home)
+          assert Path('public/assets/species/orca/hero.jpg').is_file(), 'Founder photo missing'
+          p=Path('src/species/universe/links.ts')
+          s=p.read_text().replace('"www.4species.com"]', '"www.4species.com", "species-v53.4planet-05.pages.dev"]')
+          p.write_text(s)
+          PY
+          # Add ONLY the 11 missing species to the SAME Claude v53 page model;
+          # preserve every original 28 JSON file and template byte-for-byte.
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("ops/species/v53/batch-11-premium-claude-candidates.json")
+          p=Path(__import__("os").environ["GITHUB_WORKSPACE"])/p
+          batch=json.loads(p.read_text())
+          assert batch["count"]==11 and len(batch["pages"])==11
+          dest=Path("public/species-data/v1")
+          for file,record in batch["pages"].items():
+              assert file==record["slug"]+".json" and record["schema"]=="4PLANET_SPECIES_PAGE_01"
+              assert record["provenance"]["review"]=="DRAFT"
+              assert not (dest/file).exists(), "Never override existing Claude profile "+file
+              assert len(record["intro"])>=3 and len(record["story"])>=4 and len(record["glance"])>=4
+              assert record["hero"] not in ("auto",None)
+              assert all(record["hero"].get(k) for k in ("url","sourcePage","licence","credit","alt","focus"))
+              assert record["hero"]["sourcePage"].startswith("https://commons.wikimedia.org/wiki/File:")
+              (dest/file).write_text(json.dumps(record,ensure_ascii=False,indent=2)+"\n")
+          print("SPECIES_PREVIEW_11_CLAUDE_PAGES_STAGED",len(batch["pages"]))
+          PY
+          python3 "$GITHUB_WORKSPACE/ops/species/v53/premium-wildlife-hotfix.py"
+          # Audit Claude's EXISTING per-claim citation records; do not create a source system.
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          files=[p for p in Path('public/species-data/v1').glob('*.json') if p.stem not in ('index','orca','english-oak','western-honey-bee','fly-agaric','common-octopus','sei-whale','atlantic-puffin','eurasian-lynx')]
+          checked=set()
+          for f in files:
+              d=json.loads(f.read_text())
+              if d.get('provenance',{}).get('writtenBy','').startswith('GPT draft'):
+                  checked.add(d['slug'])
+                  assert d['provenance']['review']=='DRAFT',f
+                  sources=[]
+                  def walk(node):
+                      if isinstance(node,dict):
+                          if 'source' in node and isinstance(node['source'],dict):
+                              sources.append(node['source'])
+                          for v in node.values():walk(v)
+                      elif isinstance(node,list):
+                          for v in node:walk(v)
+                  walk(d)
+                  assert len(sources)>=8, (f,len(sources))
+                  for source in sources:
+                      assert source.get('url','').startswith('https://'),(f,source)
+                      assert source.get('label',''),(f,source)
+                  hero=d.get('hero')
+                  if isinstance(hero,dict):
+                      for key in ('url','sourcePage','credit','licence','focus','alt'):
+                          assert hero.get(key),(f,key)
+                  print('SOURCE_CLAUDE_REFERENCE_INTEGRITY', d['slug'],len(sources),'references;',len(set(s['url'] for s in sources)),'distinct document(s)')
+          assert len(checked)==20,('missing individual species or wrong branch',len(checked))
+          print('CLAUDE_20_SOURCE_LINK_STRUCTURE_AND_DRAFT_PROVENANCE_PASS')
+          PY
+          # Fail if the compiled runtime restores noindex after JS.
+          python3 - <<'PY'
+          from pathlib import Path
+          required=['SpeciesHome','SpeciesExplore','SpeciesAbout','SpeciesQuiz']
+          for component in required:
+              p=Path("src/pages/integrated")/(component+".tsx")
+              code=p.read_text()
+              assert "<Seo" in code, component
+              assert 'robots="noindex,nofollow"' not in code, "public SEO hydration on "+component
+              assert "4species.com" in code or "robots=" not in code, component
+              print("SEO_HYDRATION_COMPONENT_PUBLIC_OK",component)
+          t=Path("src/pages/integrated/SpeciesTemplate.tsx").read_text()
+          assert "origin !== \"LIVE_ONLY\"" in t, "unknown taxa must stay noindex"
+          assert "4species.com" in t, "indexed known species must be indexable"
+          assert "pageSources(page)" in t, "Claude sources must remain"
+          print("SEO_KNOWN_SPECIES_INDEXABLE_LIVE_ONLY_NOINDEX_PASS")
+          PY
+          # Add only the independent 61 working data objects; never touch Claude's 39.
+          SPECIES_MEDIA_BASE_URL=https://4species.com node "$GITHUB_WORKSPACE/ops/species/next61/build-cohort.mjs" --build
+          node "$GITHUB_WORKSPACE/ops/species/next61/science-stage1-qa.mjs"
+          node "$GITHUB_WORKSPACE/ops/species/next61/science-all-packs-qa.mjs"
+          git show "$GITHUB_SHA:ops/species/premium-61/append-five-v53-signed-20261028.mjs" > "$GITHUB_WORKSPACE/ops/species/next61/append-five-v53-signed-20261028.mjs"
+          SPECIES_V53_TREE_ROOT="$GITHUB_WORKSPACE/../species-v53-build" node "$GITHUB_WORKSPACE/ops/species/next61/append-five-v53-signed-20261028.mjs" --snapshot
+          node "$GITHUB_WORKSPACE/ops/species/next61/assemble-v1-signed.mjs"
+          SPECIES_V53_TREE_ROOT="$GITHUB_WORKSPACE/../species-v53-build" node "$GITHUB_WORKSPACE/ops/species/next61/append-five-v53-signed-20261028.mjs" --restore
+
+          node scripts/species-page-validate.mjs --write-index
+          node scripts/species-page-validate.mjs
+          echo SPECIES_V53_RECONCILED
+      - name: Preserve the 57 and fix candidate-only unvetted photo injection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$GITHUB_SHA"
+          git show "$GITHUB_SHA:ops/species/premium-61/patch-claude-candidate-safety.mjs" > /tmp/4species-safe-candidates.mjs
+          cp /tmp/4species-safe-candidates.mjs "$GITHUB_WORKSPACE/ops/species/next61/candidate-guard.mjs"
+          SPECIES_V53_TREE_ROOT="$GITHUB_WORKSPACE/../species-v53-build" node "$GITHUB_WORKSPACE/ops/species/next61/candidate-guard.mjs" --apply
+          python3 - <<'PY'
+          from pathlib import Path
+          t=Path('../species-v53-build/src/pages/integrated/SpeciesTemplate.tsx')
+          source=t.read_text()
+          old='  const signedCandidate = ["atlas-moth", "peacock-spider", "emperor-scorpion", "dragon-blood-tree"].includes(page.slug) && (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-22";'
+          fresh='  const signedCandidate = (["atlas-moth", "peacock-spider", "emperor-scorpion", "dragon-blood-tree"].includes(page.slug) && (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-22") || (["clouded-leopard", "sea-otter", "snowy-owl", "indian-peafowl", "coconut-crab"].includes(page.slug) && (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-28_CANDIDATE_ONLY");'
+          assert source.count(old)==1
+          t.write_text(source.replace(old,fresh))
+          print('ZERO_LOSS_SIGNED_GUARD_INCLUDES_FIVE_NEW_ONLY')
+          PY
+          echo CLAUDE_NEW_ONLY_PHOTO_PROTECTION_COMPILATION_READY
+
+      - name: Build full v53 site and emit immutable identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          npm ci
+          npm run typecheck
+          npm run species:validate
+          SPECIES_INDEX=1 SPECIES_CANONICAL_BASE=https://4species.com npm run build
+          test -f dist/index.html
+          grep -Eiq 'species|Meet life' dist/index.html
+          test -f dist/quiz/index.html
+          test -f dist/explore/index.html
+          test -f dist/species-data/v1/english-oak.json
+          # The Claude v52 renderer writes /labs/species/{slug}; the standalone
+          # public host MUST serve species-specific static HTML at /{slug}.
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, shutil, re
+          dist = Path("dist")
+          pages = json.loads(Path("public/species-data/v1/index.json").read_text())["pages"]
+          slugs = {p["slug"] for p in pages}
+          expected = {
+            "orca","lion","tiger","african-savanna-elephant","asian-elephant",
+            "bald-eagle","black-rhinoceros","blue-whale","bornean-orangutan",
+            "cheetah","chimpanzee","emperor-penguin","giant-panda","giraffe",
+            "gray-wolf","great-white-shark","green-sea-turtle","hippopotamus",
+            "jaguar","monarch-butterfly","polar-bear",
+          }
+          assert expected <= slugs, "missing Orca or one of the twenty new species"
+          extra = {"humpback-whale","sperm-whale","harbour-porpoise","bottlenose-dolphin","atlantic-cod","blue-mussel","whale-shark","leopard","eastern-gorilla","acropora-palmata","hyacinth-macaw"}
+          assert extra <= slugs, "Missing new Claude profile in static prerender: "+str(sorted(extra-slugs))
+          signed=json.loads(Path("reports/species-next61/v1-release-selection.json").read_text())
+          approved=len(signed["selected"])
+          assert approved == 22, f"Photo-verified cohort must be exactly 22 (18 original + 4 new), got {approved}; orchid mantis remains quarantined"
+          assert len(slugs)==39+approved+5, f"Exact original39+selected+five mismatch: {len(slugs)} vs {39+approved+5}"
+          print("SPECIES_V1_EXACT_CLAUDE_SITES",len(slugs),"new_published_candidates",approved,"original39",39)
+          for slug in sorted(slugs):
+              dst = dist / slug / "index.html"
+              legacy = dist / "labs/species" / slug / "index.html"
+              if not dst.is_file() and legacy.is_file():
+                  dst.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copyfile(legacy, dst)
+              assert dst.is_file(), "missing v53 canonical HTML for " + slug
+              html = dst.read_text()
+              assert "https://4species.com/" + slug in html, "wrong canonical: " + slug
+              assert "noindex" not in html.lower(), "unindexable page: " + slug
+          for slug in ["", "explore", "quiz", "about"]:
+              path = dist / slug / "index.html" if slug else dist / "index.html"
+              if not path.is_file(): continue
+              html = path.read_text()
+              html = re.sub(r'<meta\s+name=["\']robots["\'][^>]*>', '<meta name="robots" content="index,follow,max-image-preview:large" />', html, flags=re.I)
+              path.write_text(html)
+          assert (dist/"species-sitemap.xml").is_file()
+          print("SPECIES_CANONICAL_HTML_READY", len(slugs))
+          PY
+          git add -A
+          built_tree=$(git write-tree)
+          payload_digest=$(find dist -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')
+          jq -n \
+            --arg triggerSha "$GITHUB_SHA" \
+            --arg workflowBlob "$PREVIEW_WORKFLOW_BLOB" \
+            --arg reconstructedPatchSha256 "2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0" \
+            --arg expectedBaseTree "818b4ff766d4423cafc1709bda38d164da2b9731" \
+            --arg builtTree "$built_tree" \
+            --arg payloadDigest "$payload_digest" \
+            '{triggerSha:$triggerSha,workflowBlob:$workflowBlob,reconstructedPatchSha256:$reconstructedPatchSha256,expectedBaseTree:$expectedBaseTree,builtTree:$builtTree,payloadDigest:$payloadDigest}' \
+            > dist/release-identity.json
+          echo "V53_BUILT_TREE=$built_tree" >> "$GITHUB_ENV"
+          echo "V53_PAYLOAD_DIGEST=$payload_digest" >> "$GITHUB_ENV"
+          # Noindex is mandatory for every static review origin, never allow
+          # this preview to compete with the 39 original public URLs.
+          printf '/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' > dist/_headers
+          test -f dist/_headers
+          node "$GITHUB_WORKSPACE/ops/species/next61/intent-titles.mjs"
+          node "$GITHUB_WORKSPACE/ops/species/next61/v1-search-release.mjs"
+          # Absolutely preserve all 18 already-live V1 static profiles from the
+          # immutable prior origin, rather than allowing dynamic source updates
+          # to alter visitor-facing text/metadata or JSON without review.
+          python3 - <<'PY'
+          from pathlib import Path
+          import urllib.request,urllib.error,json,hashlib,time
+          def fetch_exact(url,agent):
+           # Immutable Pages origin can intermittently stall mid-response.
+           # Retry intact retrieval, never substitute mutable or generated data.
+           last=None
+           for attempt in range(5):
+            try:
+             req=urllib.request.Request(url,headers={"User-Agent":agent,"Accept-Encoding":"identity"})
+             with urllib.request.urlopen(req,timeout=65) as response:
+              payload=response.read()
+              if not payload or response.status!=200:
+               raise RuntimeError("Empty or non-200 exact snapshot")
+              declared=response.headers.get("Content-Length")
+              if declared is not None and len(payload)!=int(declared):
+               raise RuntimeError("Truncated exact immutable blob")
+              return payload
+            except (urllib.error.URLError,TimeoutError,ConnectionError,OSError,RuntimeError) as exc:
+             last=exc
+             print("RETRY_EXACT_IMMUTABLE_SOURCE",attempt+1,"URL",url,"error",type(exc).__name__,flush=True)
+             time.sleep(min(2**attempt,8))
+           raise RuntimeError("Fail closed: immutable 57-preservation source unavailable "+url) from last
+          old="https://de9e3e0e.4planet-05.pages.dev"
+          previous="koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          for slug in previous:
+           for relative,target in [(slug,"dist/"+slug+"/index.html"),
+                                   ("species-data/v1/"+slug+".json","dist/species-data/v1/"+slug+".json"),
+                                   ("species-data/v1/"+slug+".json","public/species-data/v1/"+slug+".json")]:
+            source=fetch_exact(old+"/"+relative,"4SPECIES-IMMUTABLE-PRIOR-57/1.0")
+            f=Path(target);f.parent.mkdir(parents=True,exist_ok=True);f.write_bytes(source)
+           profile=json.loads(Path("dist/species-data/v1/"+slug+".json").read_text())
+           assert profile["slug"]==slug and profile["provenance"]["founderRelease"]=="PREMIUM_V1_2026-10-22"
+           asset=profile["hero"]["url"].replace("https://4species.com","")
+           # The source refresh can change a photo while retaining its local filename.
+           # Restore the exact previously published photograph bytes too.
+           assert asset.startswith("/assets/species/next61/"),slug
+           exact_image=fetch_exact(old+asset,"4SPECIES-IMMUTABLE-PREVIOUS-MEDIA/1.0")
+           for loc in ("dist"+asset,"public"+asset):
+            output=Path(loc);output.parent.mkdir(parents=True,exist_ok=True);output.write_bytes(exact_image)
+           media=Path("dist"+asset)
+           assert media.is_file() and hashlib.sha256(media.read_bytes()).hexdigest()==profile["provenance"]["photoSha256"],slug
+           print("PRESERVED_PREVIOUS_18_IMMUTABLE_CLAUDE_ARTICLE_AND_IMAGE "+slug)
+          print("PRESERVED_18_V1_EXACT_PROFILES_FROM_IMMUTABLE_PRIOR_ORIGIN")
+          PY
+          echo SPECIES_PREMIUM_V1_STATIC_CLAUDE_RELEASE_CANDIDATE_PASS
+      - name: Static audit of four new signed heroes without changing LIVE
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd ../species-v53-build
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import crypto from 'node:crypto';
+          const original='orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia'.split(' ');
+          const additions=['atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree'];
+          assert.equal(original.length,57);
+          for(const slug of [...original,...additions]) {
+            const p=JSON.parse(fs.readFileSync('dist/species-data/v1/'+slug+'.json','utf8'));
+            const body=fs.readFileSync('dist/'+slug+'/index.html','utf8');
+            assert.equal(p.slug,slug);
+            assert.ok(body.includes('https://4species.com/'+slug));
+            assert.ok(p.identity.scientificName);
+            if(additions.includes(slug)){
+              assert.equal(p.provenance.founderRelease,'PREMIUM_V1_2026-10-22');
+              assert.deepEqual(p.gallery,[]);
+              const img=p.hero.url.replace('https://4species.com','');
+              assert.ok(img.startsWith('/assets/species/next61/'));
+              const blob=fs.readFileSync('dist'+img);
+              assert.equal(crypto.createHash('sha256').update(blob).digest('hex'),p.provenance.photoSha256);
+            }
+          }
+          for(const slug of ['clouded-leopard','sea-otter','snowy-owl','indian-peafowl','coconut-crab']){
+            const p=JSON.parse(fs.readFileSync('dist/species-data/v1/'+slug+'.json','utf8'));
+            const html=fs.readFileSync('dist/'+slug+'/index.html','utf8');
+            assert.ok(html.includes('https://4species.com/'+slug),'canonical '+slug);
+            assert.equal(p.provenance?.founderRelease,'PREMIUM_V1_2026-10-28_CANDIDATE_ONLY');
+            assert.deepEqual(p.gallery,[]);
+            const asset=p.hero.url.replace('https://4species.com','');
+            assert.ok(asset.startsWith('/assets/species/next61/'));
+            assert.equal(crypto.createHash('sha256').update(fs.readFileSync('dist'+asset)).digest('hex'),p.provenance.photoSha256);
+          }
+          const code=fs.readFileSync('src/pages/integrated/SpeciesTemplate.tsx','utf8');
+          assert.ok(code.includes('["atlas-moth", "peacock-spider", "emperor-scorpion", "dragon-blood-tree"].includes(page.slug)'));
+          assert.ok(code.includes('if (signedCandidate) {'));
+          console.log('CLAUDE_V53_PRIVATE_BUILD_57_PRESERVED_FOUR_SIGNED_CANDIDATES_PASS');
+          NODE
+          mkdir -p "$GITHUB_WORKSPACE/premium-61-private-artifact"
+          for slug in atlas-moth peacock-spider emperor-scorpion dragon-blood-tree clouded-leopard sea-otter snowy-owl indian-peafowl coconut-crab; do
+            mkdir -p "$GITHUB_WORKSPACE/premium-61-private-artifact/$slug"
+            cp "dist/$slug/index.html" "$GITHUB_WORKSPACE/premium-61-private-artifact/$slug/index.html"
+          done
+          cp reports/species-next61/v1-release-selection.json "$GITHUB_WORKSPACE/premium-61-private-artifact/release-selection.json"
+          echo '## Premium 61: isolated source-ready build (NO LIVE release)' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Original 57 plus four new signed-photo candidate builds verified; no existing public worker, route, sitemap, DNS or Google submitted.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Independent browser-render QA of four signed new + existing Orca and Koala (NO external release)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git show "$GITHUB_SHA:ops/species/premium-61/browser-qa-virtual-live.mjs" > /tmp/4species-browser-qa.mjs
+          cp /tmp/4species-browser-qa.mjs "$GITHUB_WORKSPACE/../species-v53-build/scripts/4species-browser-qa.mjs"
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('../species-v53-build/scripts/4species-browser-qa.mjs')
+          s=p.read_text()
+          anchor="  ['dragon-blood-tree','Dracaena cinnabari'],"
+          assert anchor in s
+          s=s.replace(anchor,anchor+"""
+  ['clouded-leopard','Neofelis nebulosa'],
+  ['sea-otter','Enhydra lutris'],
+  ['snowy-owl','Bubo scandiacus'],
+  ['indian-peafowl','Pavo cristatus'],
+  ['coconut-crab','Birgus latro'],""",1)
+          p.write_text(s)
+          PY
+          cd "$GITHUB_WORKSPACE/../species-v53-build"
+          npx playwright install --with-deps chromium webkit
+          SPECIES_SCREENSHOT_DIR="$GITHUB_WORKSPACE/premium-61-private-artifact/browser" node scripts/4species-browser-qa.mjs
+          echo CLAUDE_PREMIUM_BROWSER_GOLD_CANDIDATE_QA_PASS
+      - name: Publish verified premium candidates ONLY to isolated NOINDEX Pages preview
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }} 
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          cd "$GITHUB_WORKSPACE/../species-v53-build"
+          grep -Fq 'X-Robots-Tag: noindex, nofollow, noarchive' dist/_headers
+          # This is intentionally a private indexing-excluded Cloudflare Pages preview:
+          # public 4species.com custom-domain Worker and its 57 profiles are untouched.
+          npx --yes wrangler@4.128.0 pages deploy dist \
+            --project-name 4planet-05 --branch species-premium-66-next5-20261028-noindex \
+            --commit-hash "$GITHUB_SHA" --commit-message "SPECIES 61 published and next five candidate preview - NOINDEX" \
+            2>&1 | tee /tmp/species-premium-pages-stage.log
+          python3 - <<'PY'
+          import re,urllib.request,urllib.error,xml.etree.ElementTree as ET,json,hashlib,os
+          log=open('/tmp/species-premium-pages-stage.log').read()
+          origins=re.findall(r'https://[a-zA-Z0-9-]+\.4planet-05\.pages\.dev',log)
+          origins=[o for o in origins if not o.startswith('https://4planet-05.pages.dev')]
+          if not origins:raise SystemExit('NO_IMMUTABLE_PAGES_STAGING_URL')
+          url=origins[0]
+          slugs=['atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree','clouded-leopard','sea-otter','snowy-owl','indian-peafowl','coconut-crab','orca','koala']
+          for slug in slugs:
+           req=urllib.request.Request(url+'/'+slug,headers={'User-Agent':'Mozilla/5.0 (4SPECIES-PRIVATE-NOINDEX-VERIFIER)'})
+           with urllib.request.urlopen(req,timeout=30) as r:
+            body=r.read(360000).decode('utf-8','replace')
+            robots=r.headers.get('X-Robots-Tag','')
+            if r.status!=200 or 'noindex' not in robots.lower():raise SystemExit('PUBLIC_PREVIEW_INDEXABILITY_BREACH '+slug)
+            if 'https://4species.com/'+slug not in body:raise SystemExit('UNEXPECTED_PREVIEW_CANONICAL '+slug)
+           req2=urllib.request.Request(url+'/species-data/v1/'+slug+'.json')
+           with urllib.request.urlopen(req2,timeout=25) as j:
+            doc=json.loads(j.read())
+            if doc['slug']!=slug or not doc['identity']['scientificName']:raise SystemExit('BROKEN_OR_STALE_PROFILE_JSON '+slug)
+            if slug not in ('orca','koala'):
+             hero=doc['hero']['url'].replace('https://4species.com','')
+             if not hero.startswith('/assets/species/next61/'):raise SystemExit('UNTRUSTED_HERO '+slug)
+             with urllib.request.urlopen(url+hero,timeout=30) as image:
+              digest=hashlib.sha256(image.read()).hexdigest()
+             if digest!=doc['provenance']['photoSha256']:raise SystemExit('HERO_PHOTO_SHA_DRIFT '+slug)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+           f.write('\n## VERIFIED ISOLATED Pages noindex preview (not public 4species.com)\n\n'+url+'\n\n6/6 noindex routes HTTP 200; four candidate JSON+first-party photographed hero SHA match.\n')
+          print('ISOLATED_CLAUDE_PREMIUM_PAGES_NOINDEX_ALL_PASS '+url)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: species-premium-66-nine-candidate-private-build
+          path: premium-61-private-artifact/
+          if-no-files-found: error
+          retention-days: 14
