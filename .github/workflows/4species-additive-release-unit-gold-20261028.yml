@@ -1,0 +1,72 @@
+name: 4SPECIES Four Additive Routes Independent Unit GOLD 20261028
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/4species-additive-release-unit-gold-20261028.yml
+      - ops/species/premium-61/additive-live-edge-template-20261028.mjs
+      - ops/species/premium-61/additive-live-release-20261028.py
+permissions: {contents: read}
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Python exact-live release runner static syntax + worker mock negative cases
+        run: |
+          set -euo pipefail
+          python3 -m py_compile ops/species/premium-61/additive-live-release-20261028.py
+          sed 's|__IMMUTABLE_PAGES_PREVIEW__|https://qa.4planet-05.pages.dev|' \
+            ops/species/premium-61/additive-live-edge-template-20261028.mjs > /tmp/4species-additive-verified.mjs
+          node --check /tmp/4species-additive-verified.mjs
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {pathToFileURL} from 'node:url';
+          const mod=await import(pathToFileURL('/tmp/4species-additive-verified.mjs'));
+          const worker=mod.default;
+          const slugs=['atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree'];
+          const original62=Array.from({length:62},(_,i)=>'https://4species.com/keep-'+i);
+          const xml='<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+original62.map(s=>'<url><loc>'+s+'</loc></url>').join('')+'</urlset>';
+          const originalFetch=globalThis.fetch;
+          globalThis.fetch=async input=>{
+            const u=typeof input==='string'?input:input.url;
+            if(u==='https://4species.com/sitemap.xml')return new Response(xml,{status:200,headers:{'content-type':'application/xml'}});
+            if(u.startsWith('https://4species.com/'))return new Response('ORIGINAL_WORKER_UNCHANGED',{status:200});
+            if(u.includes('/species-data/v1/')){
+              const slug=u.split('/').at(-1).replace('.json','');
+              const body=JSON.stringify({schema:'4PLANET_SPECIES_PAGE_01',slug,identity:{scientificName:'Mock species'},provenance:{founderRelease:'PREMIUM_V1_2026-10-22'},gallery:[],hero:{credit:'Licensed photographer',licence:'CC BY 4.0',sourcePage:'https://example.org/record'}});
+              return new Response(body,{status:200,headers:{'x-robots-tag':'noindex','content-type':'application/json'}});
+            }
+            if(slugs.some(s=>u.endsWith('/'+s))) {
+              const slug=u.split('/').at(-1);
+              const html='<html><head><link rel="canonical" href="https://4species.com/'+slug+'"></head><body><h1>Actual licensed species</h1></body></html>';
+              return new Response(html,{status:200,headers:{'x-robots-tag':'noindex','content-type':'text/html'}});
+            }
+            if(u.includes('/assets/'))return u.endsWith('.js')?new Response('new js',{status:200}):new Response('missing',{status:404});
+            throw new Error('Unknown request '+u);
+          };
+          try {
+            for(const slug of slugs){
+              const response=await worker.fetch(new Request('https://4species.com/'+slug));
+              assert.equal(response.status,200);
+              assert.equal(response.headers.get('x-robots-tag'),'index,follow,max-image-preview:large');
+              const p=await worker.fetch(new Request('https://4species.com/species-data/v1/'+slug+'.json'));
+              assert.equal(p.status,200);
+              assert.equal(p.headers.get('x-robots-tag'),null);
+            }
+            const original=await worker.fetch(new Request('https://4species.com/orca'));
+            assert.equal(await original.text(),'ORIGINAL_WORKER_UNCHANGED');
+            const site=await worker.fetch(new Request('https://4species.com/sitemap.xml'));
+            assert.equal(site.status,200);
+            const links=[...(await site.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
+            assert.deepEqual(links,original62.concat(slugs.map(s=>'https://4species.com/'+s)));
+            const assets=await worker.fetch(new Request('https://4species.com/assets/new.js'));
+            assert.equal(await assets.text(),'new js');
+            const fallback=await worker.fetch(new Request('https://4species.com/assets/old.jpg'));
+            assert.equal(await fallback.text(),'ORIGINAL_WORKER_UNCHANGED');
+            console.log('FOUR_ADDITIVE_ROUTE_UNIT_GOLD_PASS: four signed photos gates, original 62 XML order preserved, original Worker fallback, preview noindex removed on LIVE-only routes');
+          }finally{globalThis.fetch=originalFetch}
+          NODE
