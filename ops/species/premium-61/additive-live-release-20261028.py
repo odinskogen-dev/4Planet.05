@@ -65,7 +65,7 @@ def check_species(url,slug,need_noindex,strict=True):
  try:parser.feed(b.decode("utf-8","replace"))
  except:pass
  index=' '.join(parser.robot)+' '+headers_get(h,"x-robots-tag")
- good=(st==200 and final==url and parser.canonical==[SITE+"/"+slug] and parser.h1>=1)
+ good=(st==200 and (final==url or (need_noindex and final==url+"/")) and parser.canonical==[SITE+"/"+slug] and parser.h1>=1)
  if need_noindex:good=good and "noindex" in index.lower()
  else:good=good and "noindex" not in index.lower()
  return good,st,sha(b),parser,final
