@@ -160,6 +160,80 @@ test("mocked GBIF request path withholds unlicensed media across country and glo
   assert.doesNotMatch(requests[1], /country=/);
 });
 
+test("mocked GBIF fallback keeps a previously blocked identifier withheld when rights conflict", async () => {
+  const identifier = "https://example.test/conflicting-rights.jpg";
+  const responses = [
+    {
+      key: 123,
+      media: [{
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier,
+      }],
+    },
+    {
+      key: 456,
+      media: [{
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier,
+        license: "https://creativecommons.org/licenses/by/4.0/",
+        creator: "Conflicting creator",
+      }],
+    },
+  ];
+  let requestIndex = 0;
+  const fetchMock = async () => jsonResponse({
+    results: [responses[requestIndex++]],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 2 });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.length, 0);
+  assert.equal(result.blockedCount, 1);
+  assert.equal(requestIndex, 2);
+  assert.match(result.note, /1 media item was withheld/);
+});
+
+test("mocked GBIF fallback still returns a different displayable identifier with attribution", async () => {
+  const responses = [
+    {
+      key: 123,
+      media: [{
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier: "https://example.test/country-blocked.jpg",
+      }],
+    },
+    {
+      key: 456,
+      media: [{
+        type: "StillImage",
+        format: "image/jpeg",
+        identifier: "https://example.test/global-displayable.jpg",
+        license: "https://creativecommons.org/licenses/by-sa/4.0/",
+        creator: "Global creator",
+      }],
+    },
+  ];
+  let requestIndex = 0;
+  const fetchMock = async () => jsonResponse({
+    results: [responses[requestIndex++]],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 2 });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.length, 1);
+  assert.equal(result.data[0].identifier, "https://example.test/global-displayable.jpg");
+  assert.equal(result.data[0].license, "https://creativecommons.org/licenses/by-sa/4.0/");
+  assert.equal(result.data[0].creator, "Global creator");
+  assert.equal(result.blockedCount, 1);
+});
+
 
 test("mocked GBIF request path counts different blocked identifiers separately", async () => {
   const responses = [

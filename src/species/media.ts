@@ -137,6 +137,8 @@ async function queryGbifStillImages(
         blockedIdentifiers.add(identifier);
         continue;
       }
+      // Fail closed when another query returned the same asset with conflicting rights.
+      if (blockedIdentifiers.has(identifier)) continue;
 
       images.push({
         id: `${row.key}-${images.length + 1}`,
