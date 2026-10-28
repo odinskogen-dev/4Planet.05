@@ -1,3 +1,4 @@
+# FOUNDER REQUEST 2026-10-28: run full independent Chrome/WebKit + true NOINDEX preview to prepare exact LIVE additive release.
 name: 4SPECIES Claude Premium 61 Safe Artifact Build 20261028
 on:
   push:
