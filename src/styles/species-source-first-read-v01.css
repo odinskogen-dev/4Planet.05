@@ -70,7 +70,8 @@
   /* Detailed operational/licensing limitations and long attribution strings are
      evidence, not the hero story. Keep the animal unobstructed on compact screens. */
   .sp-hero__media > div[style*="max-width: 320px"],
-  .sp-hero__media > div[style*="bottom: 34px"] {
+  .sp-hero__media > div[style*="bottom: 34px"],
+  .species-editorial-hero__credit {
     display: none !important;
   }
 

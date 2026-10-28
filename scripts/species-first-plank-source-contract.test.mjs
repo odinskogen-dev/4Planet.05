@@ -6,6 +6,8 @@ const file = await readFile(new URL('../src/data/speciesSourceEnvelope.ts', impo
 const refreshContract = await readFile(new URL('../src/data/sourceRefresh.ts', import.meta.url), 'utf8');
 const evidenceSeam = await readFile(new URL('../src/components/species/SpeciesEvidenceSeam.tsx', import.meta.url), 'utf8');
 const speciesRoute = await readFile(new URL('../src/pages/integrated/SpeciesRoute.tsx', import.meta.url), 'utf8');
+const speciesEditorialRoute = await readFile(new URL('../src/pages/integrated/Species.tsx', import.meta.url), 'utf8');
+const firstReadStyles = await readFile(new URL('../src/styles/species-source-first-read-v01.css', import.meta.url), 'utf8');
 
 test('SPEC-FP-01 preserves source/provenance/uncertainty/update semantics for Orca', () => {
   for (const required of [
@@ -142,4 +144,20 @@ test('SOURCE REFRESH state is visible through progressive public evidence disclo
     'TRUTH EFFECT',
     'source-refresh-',
   ]) assert.ok(evidenceSeam.includes(required), `missing refresh presentation: ${required}`);
+});
+
+test('SPECIES compact first read keeps the active editorial hero clear without deleting its credit', () => {
+  assert.ok(
+    speciesEditorialRoute.includes('className="species-editorial-hero__credit"'),
+    'active editorial hero credit needs a stable presentation hook',
+  );
+  assert.match(
+    firstReadStyles,
+    /@media \(max-width: 620px\)[\s\S]*\.species-editorial-hero__credit[\s\S]*display: none !important;/,
+    'compact first read must hide the internal credit overlay',
+  );
+  assert.ok(
+    speciesEditorialRoute.includes('{media.attribution}{media.licence ? ` · ${media.licence}` : ""}'),
+    'rights and source credit must remain in the active source path',
+  );
 });

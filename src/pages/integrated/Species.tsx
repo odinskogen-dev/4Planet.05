@@ -354,7 +354,7 @@ function SpeciesEditorialProfile({
             </div>
           </div>
           {media?.attribution && (
-            <div style={{ position: "absolute", right: 14, bottom: 10, ...mono, color: "rgba(255,255,255,.72)", fontSize: 8 }}>
+            <div className="species-editorial-hero__credit" style={{ position: "absolute", right: 14, bottom: 10, ...mono, color: "rgba(255,255,255,.72)", fontSize: 8 }}>
               {media.attribution}{media.licence ? ` · ${media.licence}` : ""}
             </div>
           )}
