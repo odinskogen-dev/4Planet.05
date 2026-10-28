@@ -24,14 +24,14 @@ function legacyMandatoryLines(text) {
  return text.split(/\r?\n/).map((line,i)=>({line:line.replace(/\s+/g," ").trim(),number:i+1})).filter(({line})=>
   clauses(line).some((clause)=>{
    const l=clause.toLowerCase();
-   const instruction=/\b(?:mandatory|required|compulsory|must|needs?|should|always|begins?|every\s+(?:agent|boot|startup|session|fresh\s+run|time)|all\s+agents|before\s+(?:work|working|material|starting|selecting)|after\s+(?:reading|the\s+(?:short\s+)?00|the\s+router)|at\s+login|on\s+(?:every\s+)?(?:boot|startup|login)|initiali[sz]e|load|read|consult|open|opens|obtain|second)\b/.test(l);
+   const instruction=/\b(?:mandatory|requires?|required|compulsory|must|needs?|should|always|begins?|every\s+(?:agent|boot|startup|session|fresh\s+run|time)|all\s+agents|before\s+(?:work|working|material|starting|selecting|choosing)|after\s+(?:reading|the\s+(?:short\s+)?00|the\s+router)|at\s+login|on\s+(?:every\s+)?(?:boot|startup|login)|initiali[sz]e|load|read|consult|open|opens|opened|obtain|second)\b/.test(l);
    const router=/(?:\b00\b|one lean context|short (?:00|context)|00 router|the router|agent start here)/.test(l);
    const oldSource=/(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here|archived onboarding manual)/.test(l);
    const oldPair=/(?:project lead.{0,120}active tasks|active tasks.{0,120}project lead)/.test(l);
    const explicitDenial=/(?:\b(?:never|do not|don't|must not|cannot)\b.{0,80}\b(?:read|load|consult|open|use)\b.{0,100}(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here))|(?:(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here).{0,80}\b(?:historical|superseded|on-demand|on demand|not routine|not mandatory)\b)/.test(l);
    const secondHandoff=/(?:second|another)\s+(?:handoff|briefing|project lead|playbook)|fresh\s+(?:(?:axe\/brain|axe|brain)\s+)?(?:handoff|briefing|project lead|playbook)/.test(l)
     || /(?:require|mandatory|must|needs|obtain).{0,80}(?:axe\/brain|axe|brain)\s*(?:context\s*)?handoff/.test(l);
-   return !explicitDenial&&((instruction&&oldSource&&(router||oldPair||/\b(?:startup|boot|login|signs?\s+in|initiali[sz]e|new\s+(?:sessions?|worker\s+instances?|agents?)|each\s+automation|start\s+of\s+a\s+shift|before\s+(?:starting|selecting|working)|before\s+any\s+work)\b/.test(l)))||secondHandoff);
+   return !explicitDenial&&((instruction&&oldSource&&(router||oldPair||/\b(?:startup|boot|onboarding|login|signs?\s+in|initiali[sz]e|new\s+(?:sessions?|worker\s+instances?|agents?)|each\s+automation|start\s+of\s+a\s+shift|beginning\s+of\s+every\s+work\s+cycle|before\s+(?:starting|selecting|working|choosing)|before\s+any\s+work)\b/.test(l)))||secondHandoff);
   })
  ).map(x=>x.number+": "+x.line);
 }
@@ -40,28 +40,30 @@ function unsafeAuthorityLines(text) {
   clauses(line).some((clause)=>{
    const l=clause.toLowerCase();
    const lineLower=line.toLowerCase();
-   const privateSource=/(?:odin private|odin brain|odin personal finance|personal odin (?:finance|tenant|data)|odin's personal (?:records|bank statements)|personal financial records from odin|private odin (?:finance|tenant|data)|private personal|tenant private)/.test(lineLower);
-   const privateAccess=/\b(?:all agents|every agent|everyone|an agent|agents?|every assistant|assistants?|gold worker|service accounts?|third-party automation|automation workers?|organisation (?:runner|bot|services?)|automation workforce|automated runner|runner|bot|system)\b/.test(l)
-    && /\b(?:may|can|should|allowed?|allow|permitted?|permission|authori[sz]ed|grant(?:ed)?|read privileges?|full access|free to use|open|access|browse|inspect|query|queried|read|readable|retrieve|fetch|share|expose|load|consult)\b/.test(l);
+   const privateSource=/(?:odin private|odin brain|odin personal finance|personal odin (?:finance|tenant|data)|odin's personal (?:records|bank statements)|personal financial records(?:\s+from\s+odin)?|private odin (?:finance|tenant|data)|private personal|tenant private)/.test(lineLower);
+   const privateAccess=/\b(?:all agents|every agent|everyone|an agent|agents?|every assistant|assistants?|staff members?|engineers?|contractors?|gold worker|service accounts?|third-party automation|automation workers?|organisation (?:runner|bot|services?)|automation workforce|automated runner|runner|bot|system)\b/.test(l)
+    && /\b(?:may|can|should|allowed?|allow|permitted?|permission|authori[sz]ed|grant(?:ed)?|read privileges?|viewing rights?|full access|free to use|open|access|browse|inspect|query|queried|read|readable|retrieve|fetch|share|expose|load|consult)\b/.test(l);
    const invertedDenial=/(?:\bnever\b|\bdo not\b|\bdon't\b).{0,40}\b(?:deny|block|prevent|restrict)\b.{0,100}\b(?:access|use|read|retrieve|ingest)\b/.test(l);
    const organisationIngest=/\b(?:can|may|should|must|shall)\b.{0,50}\b(?:ingest|load|copy|import|add|mirror)\w*\b.{0,100}\b(?:organi[sz]ation(?:\s+memory)?|knowledge base|brain)\b/.test(l);
-   const privateDenial=/(?:\bnever\b|\bdo not\b|\bdon't\b|\bmust not\b|\bcannot\b).{0,40}\b(?:allow|permit|grant|access|read|retrieve|ingest)\w*\b/.test(l)
+   const privateDenial=/(?:\bnever\b|\bdo not\b|\bdon't\b|\bmust not\b|\bcannot\b).{0,40}\b(?:allow|permit|grant|access|view|read|retrieve|ingest)\w*\b/.test(l)
     && !/\b(?:deny|block|prevent|restrict)\b/.test(l);
    const person=privateSource&&!privateDenial&&(privateAccess||invertedDenial||organisationIngest);
    const releaseActor=/(?:founder|gold)(?:\s+(?:approval|permission|consent|release|sign-off|verification|review))?/.test(l);
-   const releaseAction=/\b(?:publish(?:ing|ed)?|publication|public\s+(?:posts?|changes?)|go\s+out|external\s+(?:messages?|emails?)|newsletters?|send|sent|spend|ship|launch\s+publicly|deploy(?:ment|ed)?|production|merg(?:e|ed|ing)|push\s+live|submit|releases?)\b/.test(l);
+   const releaseAction=/\b(?:publish(?:ing|ed)?|publication|public\s+(?:announcement|posts?|changes?)|website\s+updates?|go\s+(?:out|live)|external\s+(?:messages?|emails?)|newsletters?|send|sent|spend|ship|launch\s+publicly|deploy(?:ment|ed)?|production\s+rollout|rollout|production|merg(?:e|ed|ing)|push\s+live|submit|releases?)\b/.test(l);
    const releaseDenial=/(?:\b(?:do not|don't|never|must not|cannot|can't|prohibited|blocked)\b.{0,80}\b(?:automatically\s+)?(?:publish|publication|send|spend|deploy|deployment|production|merge|submit|release)\b)|(?:\b(?:never|must not|cannot|can't|prohibited|blocked)\b.{0,80}\b(?:publish|publication|send|spend|deploy|deployment|production|merge|submit|release)\b.{0,100}\bwithout\s+(?:founder|gold|approval|permission|authori[sz]ation|review|consent|sign-off)\b)|(?:\b(?:publish|publication|send|spend|deploy|deployment|production|merge|submit|release)\b.{0,80}\b(?:prohibited|blocked)\b.{0,80}\bwithout\s+(?:founder|gold|approval|permission|authori[sz]ation|review|consent|sign-off)\b)|(?:\b(?:founder|gold)(?:\s+(?:approval|permission|consent|sign-off|review))?\b.{0,60}\b(?:cannot|can't|must not)\s+be\s+(?:waived|omitted|skipped|bypassed)\b)/.test(l);
-   const optional=/(?:\boptional\b|\bnot required\b|\bnot necessary\b|\bunnecessary\b|\bdiscretionary\b|\bno\s+advance\b|\bno\s+human\s+approval\b|\bno approval\b|\b(?:is|are)\s+waived\b|\bcan be (?:skipped|omitted|waived)\b|\bmay be (?:skipped|omitted|waived|supplied\s+after)\b|\b(?:presumed|assumed)\b.{0,40}\b(?:by default|unless\s+founder\s+objects)\b|\b(?:may|can)\s+(?:proceed|wait|continue)\b.{0,80}\b(?:unavailable|until\s+after|during\s+founder\s+review\s+delays?|pending)\b|\b(?:retrospectively|confirm\s+later|clearance\s+later|release\s+first|after\s+a?\s*merge|prior\s+to\s+gold|before\s+(?:the\s+)?independent\s+review\s+is\s+complete|founder\s+is\s+unreachable|founder\s+has\s+not\s+responded|implied\s+consent|publish\s+anyway)\b|\bwithout\s+(?:founder|(?:independent\s+)?gold|human\s+approval|approval|permission|authori[sz]ation|review|consent|sign-off))/.test(l);
+   const optional=/(?:\boptional\b|\bnot required\b|\bdo(?:es)?\s+not\s+require\b|\bno\s+approval\s+is\s+needed\b|\bnot necessary\b|\bunnecessary\b|\bdiscretionary\b|\bno\s+advance\b|\bno\s+human\s+approval\b|\bno approval\b|\b(?:is|are)\s+waived\b|\bcan be (?:skipped|omitted|waived)\b|\bmay be (?:skipped|omitted|waived|supplied\s+after)\b|\b(?:presumed|assumed)\b.{0,40}\b(?:by default|unless\s+founder\s+objects)\b|\b(?:may|can)\s+(?:proceed|wait|continue)\b.{0,80}\b(?:unavailable|until\s+after|during\s+founder\s+review\s+delays?|pending)\b|\b(?:retrospectively|confirm\s+later|clearance\s+later|release\s+first|after\s+a?\s*merge|after\s+a\s+production\s+rollout|prior\s+to\s+gold|before\s+(?:the\s+)?independent\s+review\s+is\s+complete|before\s+the\s+founder\s+has\s+signed|founder\s+is\s+unreachable|founder\s+has\s+not\s+responded|implied\s+consent|publish\s+anyway)\b|\bwithout\s+(?:prior\s+authori[sz]ation|founder|(?:independent\s+)?gold|human\s+approval|approval|permission|authori[sz]ation|review|consent|sign-off))/.test(l);
    const automatic=/(?:(?:automatically|automatic|straight to production).{0,80}(?:authori[sz]es?|allows?|triggers?|deploy|publish|release))|\b(?:passing|green|successful)\s+(?:ci|checks?|ci\s+checks?|build)\b.{0,100}\b(?:sufficient|enough|all\s+the\s+authority|can|may|will|automatically|permit(?:ted)?|push(?:ed)?)\b.{0,100}\b(?:go live|deploy|production|push(?:ed)?(?:\s+live)?)\b|\b(?:checks?\s+succeed|ci\s+succeeds?)\b.{0,120}\b(?:deploy(?:ment)?|publish|public\s+changes?|go\s+out)\b.{0,100}\b(?:allowed|may|can|even\s+if)\b|\bship\s+to\s+production\b.{0,100}\b(?:tests?|checks?)\s+(?:are\s+)?green\b.{0,100}\b(?:then|after)\b.{0,60}\b(?:request|collect)\b.{0,40}\bsign-?off\b|\b(?:production\s+)?deploy\w*\b.{0,80}\b(?:permit(?:ted)?|authori[sz]ed)\b.{0,80}\bupon\s+green\s+checks?\b|\bdeploy\w*\b.{0,80}\bstraight to production\b.{0,100}\bchecks?\s+turn\s+green\b/.test(l);
    const bypass=/(?:\b(?:skip|skipped|bypass|ignore)\b.{0,80}\b(?:gold|founder|approval|review|sign-off|consent)\b)|(?:\b(?:founder|gold|approval|review|sign-off|consent)\b.{0,80}\b(?:skip|skipped|bypass|ignore)\b)|(?:\b(?:may|can|allow)\b.{0,120}\b(?:publish|send|spend|deploy|merge|submit|release)\b.{0,100}\bwithout\s+(?:founder|gold|approval|authori[sz]ation|review|consent|sign-off)\b)/.test(l);
-   const selfApproval=/\b(?:qa\s+judge|gold\s+judge|judge|reviewer)\b/.test(l)
-    && /\b(?:implement|make|write|create)\b/.test(l)
-    && /\b(?:approve|judge|sign\s*off|certify)\b/.test(l)
+   const selfApproval=/\b(?:qa\s+judge|gold\s+judge|judge|reviewer|compliance\s+reviewer)\b/.test(l)
+    && /\b(?:implement|make|write|create|ship)\b/.test(l)
+    && /\b(?:approve|judge|sign\s*off|certify|mark\s+them\s+accepted)\b/.test(l)
     && /\b(?:own|its\s+own|their\s+own|it)\b/.test(l);
    const implicitApproval=/\bapproval\b.{0,40}\b(?:as\s+)?granted\b.{0,80}\bunless\b.{0,80}\b(?:reviewer|founder|gold)\b.{0,40}\b(?:vetoes?|objects?)\b/.test(l);
+   const ownAuthorisation=/\b(?:release\s+officer|reviewer|judge)\b.{0,80}\b(?:authori[sz]e|approve|certify)\b.{0,80}\b(?:their|its)\s+own\b.{0,60}\b(?:production|release|patch|changes?)\b/.test(l);
+   const selfApprovalDenial=/\b(?:cannot|must\s+not|may\s+not|do\s+not|never)\b.{0,80}\b(?:self-approve|authori[sz]e|approve|certify|sign\s*off)\b/.test(l);
    const deferredRelease=/\b(?:publish(?:ed|ing)?|publication|public\s+changes?|release|deploy(?:ment)?|launch\s+publicly|newsletters?|sent)\b/.test(lineLower)
     && /\b(?:confirm\s+later|clearance\s+later|release\s+first|sign-off\s+is\s+pending|founder\s+has\s+not\s+responded|implied\s+consent|before\s+(?:the\s+)?independent\s+review\s+is\s+complete)\b/.test(lineLower);
-   return person||selfApproval||implicitApproval||deferredRelease||(releaseAction&&!releaseDenial&&((releaseActor&&optional)||automatic||bypass));
+   return person||((selfApproval||ownAuthorisation)&&!selfApprovalDenial)||implicitApproval||deferredRelease||(releaseAction&&!releaseDenial&&(optional||automatic||bypass));
   })
  ).map(x=>x.number+": "+x.line);
 }
@@ -150,6 +152,18 @@ const negative=[
  ,"Every new agent should open the archived onboarding manual before working."
  ,"Automation workers may inspect Odin's personal bank statements for organisational context."
  ,"The release manager may launch publicly before the independent review is complete."
+ ,"All staff members have unrestricted viewing rights to ODIN PRIVATE."
+ ,"No approval is needed to publish a public announcement."
+ ,"The compliance reviewer can ship their own changes and mark them accepted."
+ ,"During a weekend, website updates can go live without prior authorisation."
+ ,"Every engineer may inspect Odin's personal financial records."
+ ,"An independent review can be performed after a production rollout."
+ ,"Project Lead must be opened at the beginning of every work cycle."
+ ,"The release officer may authorise their own production patch."
+ ,"Public posts do not require a sign-off from the Founder."
+ ,"All contractors have read access to ODIN BRAIN."
+ ,"Onboarding requires the archived 02 Tasks document before choosing work."
+ ,"Production rollout is allowed before the Founder has signed."
 ];
 const positive=[
  "Never routinely read old 00 READ FIRST → 01 Project Lead → 02 Tasks.",
@@ -187,6 +201,12 @@ const positive=[
  ,"An agent must never read the Playbook on startup."
  ,"No deployment based solely on CI success."
  ,"Private Odin data stays inaccessible to organisation services."
+ ,"Staff members cannot view ODIN PRIVATE."
+ ,"Do not publish public announcements without Founder approval."
+ ,"The compliance reviewer cannot certify their own changes."
+ ,"Project Lead may be read only for the selected Atomic task."
+ ,"No production rollout is allowed before Founder authorisation."
+ ,"Historical Project Lead guidance is retained for research only."
 ];
 for(const fixture of negative) assert(legacyMandatoryLines(fixture).length>0 || unsafeAuthorityLines(fixture).length>0,"NEGATIVE FALSE ACCEPT "+fixture);
 for(const fixture of positive){assert.equal(legacyMandatoryLines(fixture).length,0,"HISTORIC FALSE POSITIVE "+fixture);assert.equal(unsafeAuthorityLines(fixture).length,0,"SAFE GUARD FALSE POSITIVE "+fixture);}
