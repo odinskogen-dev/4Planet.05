@@ -1,0 +1,57 @@
+name: 4SPECIES Additive LIVE Nonmutating Authority Proof 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-additive-live-readiness-20261028.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_T1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_T2: ${{ secrets.CLOUDFLARE_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify SPECIES exact active custom Worker version, competing routes and 57 live — never write
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,re,concurrent.futures
+          token=os.getenv('CF_T1','').strip() or os.getenv('CF_T2','').strip()
+          if not token:raise SystemExit('CLOUDFLARE_TOKEN_NOT_PRESENT')
+          api='https://api.cloudflare.com/client/v4'
+          def get(url,h=None):
+           req=urllib.request.Request(url,headers=h or {'User-Agent':'Mozilla/5.0 (4SPECIES LIVE authority proof)'})
+           try:
+            with urllib.request.urlopen(req,timeout=25) as r:return r.status,r.read(1200000),dict(r.headers)
+           except urllib.error.HTTPError as e:return e.code,e.read(10000),dict(e.headers)
+          def cf(path):
+           code,b,h=get(api+path,{'Authorization':'Bearer '+token,'Content-Type':'application/json'})
+           try:j=json.loads(b)
+           except:j={}
+           return code,j
+          code,z=cf('/zones?name=4species.com')
+          zz=[v for v in z.get('result',[]) if v.get('name')=='4species.com']
+          if code!=200 or len(zz)!=1:raise SystemExit('ZONE_IDENTITY_UNVERIFIED')
+          zone=zz[0];acc=(zone.get('account') or {}).get('id')
+          code,d=cf('/accounts/'+acc+'/workers/domains')
+          if code!=200:raise SystemExit('CUSTOM_DOMAIN_WORKERS_READ_DENIED '+str(code))
+          matches=[v for v in d.get('result',[]) if v.get('hostname')=='4species.com']
+          if len(matches)!=1:raise SystemExit('CUSTOM_DOMAIN_OWNER_AMBIGUOUS '+str(len(matches)))
+          owner=matches[0].get('service')
+          code,v=cf('/accounts/'+acc+'/workers/scripts/'+owner+'/deployments')
+          if code!=200:raise SystemExit('WORKER_VERSION_UNREADABLE '+str(code))
+          versions=(v.get('result',{}).get('deployments') or [{}])[0].get('versions') or []
+          version=versions[0].get('version_id') if versions else None
+          code,rs=cf('/zones/'+zone['id']+'/workers/routes')
+          if code!=200:raise SystemExit('EXISTING_ROUTES_UNREADABLE '+str(code))
+          patterns=[q.get('pattern') for q in rs.get('result',[])]
+          selected=[p for p in patterns if p.startswith('4species.com')]
+          safe=['4species.com/atlas-moth','4species.com/peacock-spider','4species.com/emperor-scorpion','4species.com/dragon-blood-tree','4species.com/sitemap.xml','4species.com/assets/*']
+          conflicts=[p for p in safe if p in selected]
+          data={'customWorker':owner,'version':version,'expectedVersion':'3ea0b7fa-bd4e-4583-9471-867e7a0c6db6','routeConflicts':conflicts,'existing4speciesRoutes':selected}
+          print('LIVE_SPECIES_CURRENT_CLOUDFLARE_CONTROL '+json.dumps(data))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('## 4SPECIES independent release authority readback\n\n'+str(data)+'\n\nNo mutation.\n')
+          if owner!='4species-router' or conflicts or not version:raise SystemExit('PROTECTED_WORKER_ROUTE_HOLD')
+          PY
