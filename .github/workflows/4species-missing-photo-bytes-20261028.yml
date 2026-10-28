@@ -1,0 +1,46 @@
+name: 4SPECIES Two Missing Signed Photos Recovery 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-missing-photo-bytes-20261028.yml]
+permissions: {contents: read}
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe only original SHA-approved Indian peafowl and orchid mantis image bytes (READ ONLY)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,hashlib,concurrent.futures,json,os,time
+          manifest=json.load(open('ops/species/next61/v1-visual-approved-20261022.json'))['approved']
+          targets={'indian-peafowl':317280189,'orchid-mantis':356484614}
+          matches=[];out=['# 4SPECIES exact approved photo SHA recovery (read only)','']
+          headers={'User-Agent':'4PLANET-SPECIES-photo-identity-evidence/1.0'}
+          jobs=[]
+          for slug,pid in targets.items():
+           v=manifest[slug];assert v['photoId']==pid
+           out.append('## '+slug+' source photo ID '+str(pid)+' expected SHA256 '+v['sha256'])
+           for host in ('https://inaturalist-open-data.s3.amazonaws.com/photos/','https://static.inaturalist.org/photos/','https://images.inaturalist.org/photos/'):
+            for size in ('large','medium','original','square'):
+             jobs.append((slug,pid,v['sha256'],host+str(pid)+'/'+size+'.jpg'))
+          def probe(item):
+           slug,pid,expected,url=item
+           try:
+            req=urllib.request.Request(url,headers=headers)
+            with urllib.request.urlopen(req,timeout=10) as r:
+             c=r.status;mime=r.headers.get('Content-Type','');content=r.read(18000000)
+            digest=hashlib.sha256(content).hexdigest()
+            return slug,url,c,mime,len(content),digest,digest==expected
+           except Exception as e:return slug,url,0,type(e).__name__,0,'',False
+          with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:results=list(pool.map(probe,jobs))
+          for result in results:
+           slug,url,c,mime,n,digest,match=result
+           if match:matches.append((slug,url))
+           if c==200 or match:out.append(f'{slug} | {url} | status={c} mime={mime} bytes={n} sha={digest} EXACT_APPROVED={match}')
+          out+=['','## Exact signed SHA match results',json.dumps(matches),'','No candidate photo, original 57, Cloudflare Worker, Pages or public sitemap modified. Different photos may require fresh photographic review; never substitute solely by taxon name.']
+          print('\n'.join(out))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(out)+'\n')
+          PY
