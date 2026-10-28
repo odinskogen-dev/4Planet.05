@@ -1,0 +1,66 @@
+name: 4SPECIES Koala Existing LIVE Browser P0 Root Cause 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-koala-live-p0-broken-js-diagnosis-20261028.yml]
+permissions: {contents: read}
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CF_T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Capture actual Koala browser network and original custom worker source route (read only)
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium} from '@playwright/test';
+          const browser=await chromium.launch({headless:true});
+          try {
+            for(const url of ['https://4species.com/koala','https://4species.com/atlas-moth','https://4species.com/orca']){
+              const page=await browser.newPage();
+              const bad=[],reasons=[],code=[];
+              page.on('pageerror',e=>bad.push(String(e).slice(0,350)));
+              page.on('console',m=>{if(m.type()==='error')code.push(m.text().slice(0,220))});
+              page.on('requestfailed',q=>reasons.push([q.url(),q.failure()?.errorText]));
+              page.on('response',r=>{if(r.status()>=400)reasons.push(['HTTP '+r.status(),r.url()])});
+              let res;
+              try {res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:26000});await page.waitForTimeout(9000)}
+              catch(e){bad.push(String(e).slice(0,250))}
+              const dom=await page.evaluate(()=>({
+                title:document.title,h1:[...document.querySelectorAll('h1')].map(x=>x.textContent?.slice(0,150)),
+                root:document.querySelector('#root')?.innerHTML?.slice(0,280),
+                script:[...document.scripts].map(x=>x.src).filter(Boolean).slice(0,6),
+                robots:document.querySelector('meta[name="robots"]')?.content,
+                body:document.body.innerText.slice(0,320)
+              })).catch(e=>({error:String(e)}));
+              console.log('SPECIES_PUBLIC_BROWSER_DIAGNOSTIC',JSON.stringify({url,http:res?.status(),dom,pageErrors:bad,consoleErrors:code.slice(0,8),failedRequests:reasons.slice(0,12)}));
+              await page.close();
+            }
+          } finally {await browser.close();}
+          NODE
+          python3 - <<'PY'
+          import os,urllib.request,urllib.error,json,re
+          token=os.getenv('CF_T','').strip()
+          if not token:raise SystemExit('NO CF TOKEN')
+          def req(url,parseJson=True):
+           q=urllib.request.Request(url,headers={'Authorization':'Bearer '+token,'Accept':'application/json'})
+           with urllib.request.urlopen(q,timeout=25) as r:
+            b=r.read(1500000);return json.loads(b) if parseJson else b.decode('utf-8','replace')
+          api='https://api.cloudflare.com/client/v4'
+          z=req(api+'/zones?name=4species.com')['result'][0]
+          acc=z['account']['id'];name='4species-premium-61-additive-20261028'
+          d=req(api+'/accounts/'+acc+'/workers/scripts/'+name+'/deployments')['result']
+          info=d.get('deployments',[{}])[0]
+          print('LIVE_PREMIUM_OVERLAY_DEPLOYED_VERSIONS',json.dumps(info.get('versions')))
+          js=req(api+'/accounts/'+acc+'/workers/scripts/'+name,False)
+          origin=re.search(r'https://[a-zA-Z0-9-]+\\.4planet-05\\.pages\\.dev',js)
+          print('LIVE_PREMIUM_OVERLAY_SOURCE',json.dumps({'length':len(js),'origin':origin.group(0) if origin else None,
+             'oldfirst':js.find('const old=await fetch('),'previewfirst':js.find('const res=await upstream(path+u.search)'),'hasAssetRoute':('/assets/' in js),'baseSitemapDelegate':('const old=await fetch(request)' in js)}))
+          PY
