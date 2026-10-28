@@ -31,7 +31,7 @@ function legacyMandatoryLines(text) {
    const explicitDenial=/(?:\b(?:never|do not|don't|must not|cannot)\b.{0,80}\b(?:read|load|consult|open|use)\b.{0,100}(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here))|(?:(?:\b01\b|\b02\b|project lead|active tasks|playbook|agent start here).{0,80}\b(?:historical|superseded|on-demand|on demand|not routine|not mandatory)\b)/.test(l);
    const secondHandoff=/(?:second|another)\s+(?:handoff|briefing|project lead|playbook)|fresh\s+(?:(?:axe\/brain|axe|brain)\s+)?(?:handoff|briefing|project lead|playbook)/.test(l)
     || /(?:require|mandatory|must|needs|obtain).{0,80}(?:axe\/brain|axe|brain)\s*(?:context\s*)?handoff/.test(l);
-   return !explicitDenial&&((instruction&&oldSource&&(router||oldPair||/\b(?:startup|boot|login|session|fresh\s+run)\b/.test(l)))||secondHandoff);
+   return !explicitDenial&&((instruction&&oldSource&&(router||oldPair||/\b(?:startup|boot|login)\b/.test(l)))||secondHandoff);
   })
  ).map(x=>x.number+": "+x.line);
 }
@@ -119,6 +119,7 @@ const positive=[
  ,"Public release is blocked without Founder sign-off."
  ,"Founder approval cannot be waived for publishing."
  ,"Consult Project Lead only for a specifically assigned task, not routine startup."
+ ,"The return must be usable by AXE / GPT Project Lead for BRAIN writeback without reconstructing the session from scratch. NOT APPLICABLE is allowed for an elite-contract field only with a reason; silently omitted applicable fields make the return incomplete."
 ];
 for(const fixture of negative) assert(legacyMandatoryLines(fixture).length>0 || unsafeAuthorityLines(fixture).length>0,"NEGATIVE FALSE ACCEPT "+fixture);
 for(const fixture of positive){assert.equal(legacyMandatoryLines(fixture).length,0,"HISTORIC FALSE POSITIVE "+fixture);assert.equal(unsafeAuthorityLines(fixture).length,0,"SAFE GUARD FALSE POSITIVE "+fixture);}
