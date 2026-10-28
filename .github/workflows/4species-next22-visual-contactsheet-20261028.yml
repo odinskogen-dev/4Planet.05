@@ -1,0 +1,75 @@
+name: 4SPECIES Next 22 Source-backed Photos — Visual Contact Sheets 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-next22-visual-contactsheet-20261028.yml]
+permissions: {contents: read}
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Generate real original photo identity visual sheets for remaining SCIENCE-PACK candidates
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/species-next22-photos /tmp/species-next22-reports
+          SPECIES_OUTPUT_ROOT=/tmp/species-next22-photos SPECIES_REPORT_DIR=/tmp/species-next22-reports \
+            node ops/species/next61/build-cohort.mjs --build
+          python3 -m pip install --quiet pillow
+          cat > /tmp/species-next22-montage.py <<'PY'
+          import re,os,json,pathlib,base64,io,collections
+          from PIL import Image,ImageDraw,ImageFont,ImageOps
+          root=pathlib.Path('/tmp/species-next22-photos')
+          report=json.load(open('/tmp/species-next22-reports/research-report.json'))
+          completed=set("koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia atlas-moth peacock-spider emperor-scorpion dragon-blood-tree".split())
+          expected=set("red-panda snow-leopard clouded-leopard fennec-fox meerkat ring-tailed-lemur sea-otter narwhal dugong west-indian-manatee platypus common-wombat snowy-owl toco-toucan indian-peafowl greater-flamingo komodo-dragon saltwater-crocodile giant-pacific-octopus coconut-crab".split())
+          # Match further human-readiness by source-claims scripts without relying on arbitrary candidate image.
+          candidates=[r for r in report['records'] if r['slug'] not in completed and r['slug'] in expected]
+          rejects=json.load(open('ops/species/next61/photo-visual-rejects-20261021.json'))['rejects']
+          rejected={str(v.get('photoId')) for v in rejects}
+          inventory=[]
+          for r in candidates:
+           options=[p for p in r.get('pictures',[]) if p.get('artist') and p.get('license') and p.get('sourcePage','').startswith('https://') and p.get('local') and
+                pathlib.Path('/tmp/species-next22-photos/public'+p['local']).exists() and str(p.get('photoId')) not in rejected]
+           if not options:inventory.append({'slug':r['slug'],'status':'NO_PHOTO'});continue
+           p=options[0]
+           inventory.append({'slug':r['slug'],'status':'CANDIDATE','url':p['sourcePage'],
+             'local':p['local'],'sha':p['sha256'],'artist':p['artist'],'licence':p['license'],
+             'photoId':p.get('photoId'),'scientificName':r['scientificName'] if 'scientificName' in r else None,
+             'observation':p.get('observationQuality'),'captive':p.get('captive')})
+          print('PHOTO_MONTAGE_INVENTORY',json.dumps(inventory,ensure_ascii=False))
+          os.makedirs('/tmp/species-next22-sheets',exist_ok=True)
+          font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',14)
+          tiny=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',10)
+          for idx in range(0,len(inventory),10):
+           subset=inventory[idx:idx+10];sheet=Image.new('RGB',(5*275,2*250),'white');draw=ImageDraw.Draw(sheet)
+           for n,rec in enumerate(subset):
+            x=(n%5)*275;y=(n//5)*250
+            if rec.get('status')=='CANDIDATE':
+             imgfile=root/'public'/rec['local'].lstrip('/')
+             try:
+              pic=Image.open(imgfile).convert('RGB')
+              pic=ImageOps.contain(pic,(265,196))
+              sheet.paste(pic,(x+(275-pic.width)//2,y+(200-pic.height)//2))
+             except Exception as ex:
+              print('BAD_MEDIA',rec['slug'],type(ex).__name__)
+            draw.text((x+4,y+202),rec['slug'][:33],fill='black',font=font)
+            draw.text((x+4,y+222),str(rec.get('photoId'))+' '+rec.get('licence','')[:14],fill='black',font=tiny)
+            draw.text((x+4,y+236),rec.get('artist','')[:39],fill='black',font=tiny)
+           buf=io.BytesIO()
+           sheet.save(buf,format='JPEG',quality=73,optimize=True)
+           b64=base64.b64encode(buf.getvalue()).decode()
+           print('CONTACT_SHEET_'+str(idx//10+1)+'_BASE64='+b64)
+           sheet.save('/tmp/species-next22-sheets/contact-'+str(idx//10+1)+'.jpg',quality=90)
+          with open('/tmp/species-next22-sheets/inventory.json','w') as f:json.dump(inventory,f,ensure_ascii=False,indent=2)
+          PY
+          python3 /tmp/species-next22-montage.py
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: next22-species-original-licensed-photo-visual-sheets
+          path: /tmp/species-next22-sheets/
+          retention-days: 14
