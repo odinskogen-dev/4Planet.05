@@ -91,10 +91,19 @@ jobs:
       - name: Record bundle evidence
         shell: bash
         run: |
-          find dist/assets -maxdepth 1 -type f -printf '%f,%s\n' | sort -t, -k2nr > bundle-sizes.csv
-          largest="$(awk -F, 'NR==1 {print $2}' bundle-sizes.csv)"
-          test -n "$largest"
-          test "$largest" -lt 1800000
+          limit_bytes=1800000
+          find dist/assets -maxdepth 1 -type f -printf '%f,%s\n' | sort -t, -k2,2nr > bundle-sizes.csv
+          IFS=, read -r largest_asset largest_bytes < bundle-sizes.csv || true
+          if [[ -z "${largest_asset:-}" || ! "${largest_bytes:-}" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: no numeric asset-size evidence was produced from dist/assets" >&2
+            exit 1
+          fi
+          echo "largest_asset=$largest_asset"
+          echo "largest_bytes=$largest_bytes"
+          echo "limit_bytes=$limit_bytes"
+          printf '### Bundle evidence\n- Largest asset: `%s`\n- Bytes: `%s`\n- Limit: `%s`\n' \
+            "$largest_asset" "$largest_bytes" "$limit_bytes" >> "$GITHUB_STEP_SUMMARY"
+          test "$largest_bytes" -lt "$limit_bytes"
 
       - name: Start local preview
         shell: bash
