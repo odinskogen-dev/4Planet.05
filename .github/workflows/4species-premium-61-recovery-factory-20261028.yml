@@ -2,7 +2,7 @@ name: 4SPECIES Premium 61 Zero-Loss Candidate Recovery 20261028
 on:
   push:
     branches: [king/test]
-    paths: [.github/workflows/4species-premium-61-recovery-factory-20261028.yml]
+    paths: [.github/workflows/4species-premium-61-recovery-factory-20261028.yml, ops/species/next61/**]
 permissions: {contents: read}
 jobs:
   reconstruct:
@@ -11,6 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
+      - name: Fail-closed 61-candidate readiness proof from consolidated legal HEIR source
+        run: node ops/species/next61/audit-readiness.mjs
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
       - name: Independently reconstruct immutable Claude original, donor and 4 proposed additions without public publication
