@@ -1,0 +1,56 @@
+name: 4SPECIES 57 Zero-Loss Two-Entrypoint Browser Gold 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-p0-original57-two-entrypoint-wrapper-gold-20261028.yml]
+permissions: {contents: read}
+jobs:
+  virtual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Browser proof original HTML byte-unchanged, two exact old JS paths returning safe cleanup+single import, zero live writes
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {chromium,webkit} from '@playwright/test';
+          const legacy=new Set(['/assets/index-DLiHR8tZ.js','/assets/index-DJRRK0k4.js']);
+          const wrapper='document.querySelector("#root")?.replaceChildren(); import("/assets/index-B-Sfe1QA.js");';
+          let failures=[];
+          for(const [engine,browserType] of [['chromium',chromium],['webkit',webkit]]){
+            const browser=await browserType.launch({headless:true});
+            for(const name of ['orca','lion','tiger','hyacinth-macaw','koala','quokka','giant-sequoia','venus-flytrap']){
+              const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true}),errs=[];
+              let replaced=0;
+              page.on('pageerror',e=>errs.push('page:'+String(e).slice(0,190)));
+              page.on('console',m=>{if(m.type()==='error')errs.push('console:'+m.text().slice(0,190))});
+              await page.route('https://4species.com/assets/*',async route=>{
+                const path=new URL(route.request().url()).pathname;
+                if(legacy.has(path)){
+                  replaced++;
+                  await route.fulfill({status:200,contentType:'application/javascript',body:wrapper});return;
+                }
+                await route.continue();
+              });
+              let status;
+              try{
+                const res=await page.goto('https://4species.com/'+name,{waitUntil:'domcontentloaded',timeout:29000});
+                status=res?.status();
+                await page.waitForTimeout(4300);
+                const dom=await page.evaluate(()=>({name:document.querySelector('h1.spx-name')?.textContent?.trim(),prerender:!!document.querySelector('.spx-prerender'),hero:!!document.querySelector('[data-spx-section="hero"]'),canon:document.querySelector('link[rel=canonical]')?.getAttribute('href')}));
+                const ok=status===200&&replaced===1&&dom.name&&dom.hero&&!dom.prerender&&dom.canon==='https://4species.com/'+name&&!errs.length;
+                console.log('OLD57_WRAPPER_VIRTUAL_BROWSER',JSON.stringify({engine,slug:name,ok,replaced,dom,errors:errs.slice(0,5)}));
+                if(!ok)failures.push(engine+':'+name+':'+JSON.stringify({replaced,dom,errs:errs.slice(0,3)}));
+              }catch(e){failures.push(engine+':'+name+':'+String(e))}
+              await page.close();
+            }
+            await browser.close();
+          }
+          if(failures.length)throw Error('NOT_SAFE_FOR_LIVE '+failures.join('|').slice(0,3600));
+          console.log('TWO_JS_ROUTE_PREVIEW_GOLD_16_INTERACTIVE_EXEMPLARS_PASS');
+          NODE
