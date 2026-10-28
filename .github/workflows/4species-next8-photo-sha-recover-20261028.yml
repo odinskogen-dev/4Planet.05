@@ -1,0 +1,59 @@
+name: 4SPECIES Next Eight Licensed Hero Photo Exact SHA Recovery 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-next8-photo-sha-recover-20261028.yml]
+permissions: {contents: read}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - uses: actions/checkout@v4
+      - name: Independently retrieve eight visually vetted exact original image bytes and verify immutable SHA
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error,hashlib,re,concurrent.futures,os
+          j=json.load(open('ops/species/next61/visual-selected-next8-20261028.json'))['approved']
+          if len(j)!=8:raise SystemExit('EXPECTED_EIGHT')
+          def check(entry):
+           slug,rec=entry
+           sources=[]
+           if rec['photoId'] is not None:
+            x=rec['photoId']
+            for host in ('https://inaturalist-open-data.s3.amazonaws.com/photos/','https://static.inaturalist.org/photos/','https://images.inaturalist.org/photos/'):
+             sources.extend([host+str(x)+'/original.jpg',host+str(x)+'/original.png'])
+           else:
+            # Commons author/license file metadata directly from target source Page.
+            import urllib.parse
+            title=rec['sourcePage'].split('File:')[-1]
+            params=urllib.parse.urlencode({'action':'query','format':'json','prop':'imageinfo','iiprop':'url|size|mime|extmetadata','titles':'File:'+title})
+            try:
+             req=urllib.request.Request('https://commons.wikimedia.org/w/api.php?'+params,headers={'User-Agent':'4PLANET-SPECIES-image-rights-check/1.0'})
+             with urllib.request.urlopen(req,timeout=24) as r:
+              body=json.load(r)
+             for x in body.get('query',{}).get('pages',{}).values():
+              for inf in x.get('imageinfo',[]):sources.append(inf.get('url',''))
+            except Exception:pass
+           hits=[];details=[]
+           for u in dict.fromkeys(x for x in sources if x.startswith('https://')):
+            try:
+             req=urllib.request.Request(u,headers={'User-Agent':'4PLANET-SPECIES-photo-original-sha-verifier/1.0'})
+             with urllib.request.urlopen(req,timeout=12) as res:
+              st=res.status;ct=res.headers.get('Content-Type','');blob=res.read(16000000)
+             digest=hashlib.sha256(blob).hexdigest()
+             if st==200 and digest==rec['sha256'] and ct.startswith('image/'):hits.append((u,len(blob),ct))
+             details.append((u,st,len(blob),digest==rec['sha256']))
+            except Exception as e:details.append((u,0,0,type(e).__name__))
+           return slug,bool(hits),hits,details[:10]
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:rows=list(pool.map(check,j.items()))
+          out=['# Next eight PHOTO-SHA release readiness','',f'Exact original approved photo matches: {sum(r[1] for r in rows)}/8','',
+               '| Species | Exact signed original bytes found | Sources |','|---|---|---|']
+          for slug,yes,hits,details in rows:
+           out.append('| '+slug+' | '+str(yes)+' | '+str(hits)[:260].replace('|','/')+' |')
+           print('NEXT8_EXACT_PHOTO '+json.dumps({'slug':slug,'match':yes,'matches':hits,'probes':details}))
+          out+=['','**READ-ONLY:** file matches support source identity; not independent review of image content, authenticity, scientific claims or rights authorisation. No product/cloudflare/user data mutated.']
+          print('\n'.join(out))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(out)+'\n')
+          PY
