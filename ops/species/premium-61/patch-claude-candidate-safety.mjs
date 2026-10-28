@@ -18,7 +18,7 @@ export function patchClaudeCandidateRenderer(source) {
   assert.ok(source.includes('const slides: Slide[] = useMemo('), 'Original Claude premium slideshow missing');
   assert.ok(source.includes('for (const g of live?.gallery ?? [])'), 'Original Claude gallery path missing');
 
-  const signed = '  const signedCandidate = (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-22";';
+  const signed = '  const signedCandidate = ["atlas-moth", "peacock-spider", "emperor-scorpion", "dragon-blood-tree"].includes(page.slug) && (page.provenance as typeof page.provenance & { founderRelease?: string }).founderRelease === "PREMIUM_V1_2026-10-22";';
   const gate = [
     '    // SOURCE-SIGNED NEW PROFILE ONLY. Preserve original Claude media for every',
     '    // previous published profile. Never add external, unreviewed photos to new',
