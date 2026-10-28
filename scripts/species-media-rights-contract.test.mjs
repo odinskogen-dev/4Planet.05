@@ -197,6 +197,73 @@ test("mocked GBIF fallback keeps a previously blocked identifier withheld when r
   assert.match(result.note, /1 media item was withheld/);
 });
 
+test("mocked GBIF request path fails closed when a displayable duplicate is followed by blocked rights", async () => {
+  const identifier = "https://example.test/reverse-order-conflict.jpg";
+  let requestIndex = 0;
+  const fetchMock = async () => jsonResponse({
+    results: requestIndex++ === 0 ? [
+      {
+        key: 123,
+        media: [{
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier,
+          license: "https://creativecommons.org/licenses/by/4.0/",
+          creator: "Conflicting creator",
+        }],
+      },
+      {
+        key: 456,
+        media: [{
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier,
+        }],
+      },
+    ] : [],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 2 });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.length, 0);
+  assert.equal(result.blockedCount, 1);
+  assert.equal(requestIndex, 2);
+});
+
+test("mocked GBIF request path reconciles conflicting duplicates inside one media array", async () => {
+  const identifier = "https://example.test/same-row-conflict.jpg";
+  let requestIndex = 0;
+  const fetchMock = async () => jsonResponse({
+    results: requestIndex++ === 0 ? [{
+      key: 123,
+      media: [
+        {
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier,
+          license: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
+        {
+          type: "StillImage",
+          format: "image/jpeg",
+          identifier,
+          license: "CC BY-NC 4.0",
+        },
+      ],
+    }] : [],
+  });
+  const { fetchResolvedSpeciesImages } = loadSpeciesMediaModule(fetchMock);
+
+  const result = await fetchResolvedSpeciesImages("2440483", { countryFirst: "NO", limit: 2 });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.length, 0);
+  assert.equal(result.blockedCount, 1);
+  assert.equal(requestIndex, 2);
+});
+
 test("mocked GBIF fallback still returns a different displayable identifier with attribution", async () => {
   const responses = [
     {

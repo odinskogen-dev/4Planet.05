@@ -124,21 +124,24 @@ async function queryGbifStillImages(
     const mediaRows = Array.isArray(row?.media) ? row.media : [];
     for (const media of mediaRows) {
       const identifier = String(media?.identifier ?? "").trim();
-      if (!identifier || seen.has(identifier)) continue;
+      if (!identifier) continue;
       const mediaType = String(media?.type ?? "").toLowerCase();
       const format = String(media?.format ?? "").toLowerCase();
       if (mediaType && mediaType !== "stillimage" && mediaType !== "image") continue;
       if (format && !format.startsWith("image/")) continue;
-      seen.add(identifier);
 
       const license = resolveSpeciesImageLicence(media?.license);
       const rightsState = classifySpeciesMediaRights(license);
       if (rightsState !== "DISPLAYABLE") {
         blockedIdentifiers.add(identifier);
+        const candidateIndex = images.findIndex((image) => image.identifier === identifier);
+        if (candidateIndex >= 0) images.splice(candidateIndex, 1);
         continue;
       }
       // Fail closed when another query returned the same asset with conflicting rights.
       if (blockedIdentifiers.has(identifier)) continue;
+      if (seen.has(identifier)) continue;
+      seen.add(identifier);
 
       images.push({
         id: `${row.key}-${images.length + 1}`,
@@ -156,11 +159,13 @@ async function queryGbifStillImages(
         rightsState,
         rightsCheckedAt,
       });
-
-      if (images.length >= (options.limit ?? 8)) break;
     }
-    if (images.length >= (options.limit ?? 8)) break;
   }
+
+  const resolvedImages = images.slice(0, options.limit ?? 8).map((image, index) => ({
+    ...image,
+    id: `${image.occurrenceKey}-${index + 1}`,
+  }));
 
   const baseNote = options.country
     ? "GBIF occurrence media resolved from Norway records using COL XR taxonomy."
@@ -168,7 +173,7 @@ async function queryGbifStillImages(
 
   return {
     ok: true,
-    data: images,
+    data: resolvedImages,
     blockedCount: blockedIdentifiers.size,
     rightsCheckedAt,
     note: rightsNote(baseNote, blockedIdentifiers.size),
