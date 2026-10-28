@@ -64,6 +64,13 @@ jobs:
             match=[i for i,line in enumerate(rows) if any(x in line.lower() for x in markers)]
             excerpts[str(p)]=[{'line':i+1,'text':rows[i][:240]} for i in match[:120]]
           print('SPECIES_CLAUDE_PREMIUM_UI_BLOCKER_SOURCE '+json.dumps(excerpts))
+          template=Path('src/pages/integrated/SpeciesTemplate.tsx').read_text().splitlines()
+          for lo,hi in [(190,315),(488,550),(750,790)]:
+            print('SPECIES_EXACT_TEMPLATE_LINES_'+str(lo)+'_'+str(hi)+'\n'+'\n'.join(str(i+1)+':'+template[i] for i in range(lo-1,min(hi,len(template)))))
+          for p in (Path('src/species/pageModel.ts'),Path('src/species/pageFromProfile.ts')):
+            lines=p.read_text().splitlines()
+            print('SPECIES_IDENTITY_'+p.name+'\n'+'\n'.join(str(i+1)+':'+lines[i] for i in range(max(0,len(lines)-26),len(lines))))
+
           PY
           git cat-file -e b18b811addb23a2095d9ce2f69cd32ad9b633c2c^{commit} || git fetch --no-tags --depth=1 origin b18b811addb23a2095d9ce2f69cd32ad9b633c2c
           git worktree add --detach "$GITHUB_WORKSPACE/../species-61-science-donor" b18b811addb23a2095d9ce2f69cd32ad9b633c2c
