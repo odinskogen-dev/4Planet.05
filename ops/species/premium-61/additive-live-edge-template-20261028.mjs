@@ -5,11 +5,9 @@
  * Exact immutable noindex Pages staging origin is injected AFTER full QA.
  */
 const ORIGIN = "__IMMUTABLE_PAGES_PREVIEW__";
-// Exact immutable Pages origin already served by the existing 4species Worker.
-// Old assets MUST win: original 57 may reference old JS/CSS/photo bytes.
-const PRESERVED_ORIGIN = "https://72494005.4planet-05.pages.dev";
-// Insert exact 62-entry LIVE sitemap snapshot only after prerelease 57-check.
-const ORIGINAL_SITEMAP_XML = __LIVE_SITEMAP_JSON__;
+// This route sits in front of an unchanged Custom Domain Worker. Per Cloudflare
+// documentation, fetch(request) invokes that original Worker, NOT this route.
+// Preserve ALL original assets before consulting preview for only new ones.
 const ADDITIONS = ["atlas-moth","peacock-spider","emperor-scorpion","dragon-blood-tree"];
 const ADD = new Set(ADDITIONS);
 const PUBLIC = "https://4species.com";
@@ -51,7 +49,7 @@ export default {
    // Deterministically preserve all original assets BEFORE consulting the
    // candidate Pages branch. Never loop/re-enter the existing Cloudflare Worker
    // from the route overlay; origin bytes have immutable source control.
-   const old=await fetch(PRESERVED_ORIGIN+path+u.search,{redirect:"follow"});
+   const old=await fetch(request);
    const extension=path.split(".").at(-1).toLowerCase();
    const valid=(res)=>{
      const ct=(res.headers.get("content-type")||"").toLowerCase();
@@ -62,20 +60,23 @@ export default {
      if(["woff","woff2","ttf","otf"].includes(extension))return ct.includes("font/")||ct.includes("application/octet-stream");
      return false;
    };
-   if(valid(old))return new Response(head?null:old.body,{status:200,headers:clean(old.headers)});
+   if(valid(old))return old; // exact existing LIVE Worker response/bytes/headers
    const fresh=await upstream(path+u.search);
    if(valid(fresh))return new Response(head?null:fresh.body,{status:200,headers:clean(fresh.headers)});
    return new Response("Unverified asset unavailable",{status:404,headers:{"cache-control":"no-store","x-robots-tag":"noindex"}});
   }
   if(path==="/sitemap.xml"){
    // Current production sitemap is read from unmodified original Worker.
-   // Frozen exact LIVE source snapshot prevents route recursion and old-site drift.
-   const xml=ORIGINAL_SITEMAP_XML;
+   // Cloudflare Custom Domains allow a route Worker to call the original
+   // custom-domain Worker via fetch(request); keep the sitemap source dynamic.
+   const old=await fetch(request);
+   if(!old.ok)return new Response("Original sitemap unavailable",{status:503,headers:{"cache-control":"no-store"}});
+   const xml=await old.text();
    const existing=[...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
    if(existing.length!==62||new Set(existing).size!==62||!xml.includes("</urlset>")||ADDITIONS.some(s=>existing.includes(PUBLIC+"/"+s)))return new Response("Sitemap drift, fail closed",{status:503,headers:{"cache-control":"no-store"}});
    const add=ADDITIONS.map(s=>"<url><loc>"+PUBLIC+"/"+s+"</loc></url>").join("\n");
    return new Response(head?null:xml.replace("</urlset>",add+"\n</urlset>"),{status:200,headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=180,must-revalidate","x-4species-additive-release":"four-premium-20261028"}});
   }
-  return new Response("Route not admitted",{status:404,headers:{"cache-control":"no-store"}});
+  return fetch(request);
  }
 };
