@@ -340,17 +340,18 @@ jobs:
           assert.ok(code.includes('if (signedCandidate) {'));
           console.log('CLAUDE_V53_PRIVATE_BUILD_57_PRESERVED_FOUR_SIGNED_CANDIDATES_PASS');
           NODE
+          mkdir -p "$GITHUB_WORKSPACE/premium-61-private-artifact"
+          for slug in atlas-moth peacock-spider emperor-scorpion dragon-blood-tree; do
+            mkdir -p "$GITHUB_WORKSPACE/premium-61-private-artifact/$slug"
+            cp "dist/$slug/index.html" "$GITHUB_WORKSPACE/premium-61-private-artifact/$slug/index.html"
+          done
+          cp reports/species-next61/v1-release-selection.json "$GITHUB_WORKSPACE/premium-61-private-artifact/release-selection.json"
           echo '## Premium 61: isolated source-ready build (NO LIVE release)' >> "$GITHUB_STEP_SUMMARY"
           echo 'Original 57 plus four new signed-photo candidate builds verified; no existing public worker, route, sitemap, DNS or Google submitted.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: success()
         with:
           name: species-premium-61-four-candidate-private-build
-          path: |
-            ../species-v53-build/dist/atlas-moth/index.html
-            ../species-v53-build/dist/peacock-spider/index.html
-            ../species-v53-build/dist/emperor-scorpion/index.html
-            ../species-v53-build/dist/dragon-blood-tree/index.html
-            ../species-v53-build/reports/species-next61/v1-release-selection.json
+          path: premium-61-private-artifact/
           if-no-files-found: error
           retention-days: 14
