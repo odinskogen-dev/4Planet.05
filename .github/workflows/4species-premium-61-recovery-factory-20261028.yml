@@ -1,0 +1,99 @@
+name: 4SPECIES Premium 61 Zero-Loss Candidate Recovery 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-premium-61-recovery-factory-20261028.yml]
+permissions: {contents: read}
+jobs:
+  reconstruct:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Independently reconstruct immutable Claude original, donor and 4 proposed additions without public publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          donor=748addeabfe7aa2641a8cbd672b9ca4c8aa6b1c9
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git cat-file -e "$donor^{commit}" || git fetch --no-tags --depth=1 origin "$donor"
+          git worktree add --detach ../species-v1-donor "$donor"
+          mkdir -p /tmp/v53-audit
+          cat ../species-v1-donor/ops/species/v53/patch/chunk-*.txt | base64 -d | gzip -d > /tmp/v53-audit/v53.patch
+          echo '2ed04097d14d5096235f29c16db17b4bb40b2cbe5a92c0741493ed1e92e590c0  /tmp/v53-audit/v53.patch' | sha256sum -c -
+          git cat-file -e 5dc63fe8ddd1daea32d62d102066705d3c7efbfe^{commit}
+          git worktree add --detach ../species-premium-v53 5dc63fe8ddd1daea32d62d102066705d3c7efbfe
+          cd ../species-premium-v53
+          git apply --check /tmp/v53-audit/v53.patch
+          git apply /tmp/v53-audit/v53.patch
+          git add -A
+          test "$(git write-tree)" = 818b4ff766d4423cafc1709bda38d164da2b9731
+          echo CLAUDE_ORIGINAL_TEMPLATE_RECONSTRUCTED_EXACTLY
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, json
+          root=Path('src')
+          target={}
+          markers={'authority':'Pending authority citation','gallery':'Wikimedia','additional':'photoCandidates','origin':'LIVE_ONLY','render':'SpeciesTemplate','origin2':'4species.com'}
+          for key,phrase in markers.items():
+            found=[]
+            for p in root.rglob('*'):
+              if p.suffix not in ('.ts','.tsx','.js','.jsx','.css'):continue
+              s=p.read_text(encoding='utf-8',errors='replace')
+              lines=s.splitlines()
+              for i,line in enumerate(lines):
+                if phrase in line:
+                  found.append({'path':str(p),'line':i+1,'source':line.strip()[:270]})
+                  if len(found)>=30:break
+              if len(found)>=30:break
+            target[key]=found
+          print('SPECIES_V53_COMPONENT_MARKER_AUDIT '+json.dumps(target))
+          PY
+          cd "$GITHUB_WORKSPACE"
+          echo "## Exact source proof, no LIVE edits" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Claude v53 patch SHA, worktree tree and original species source identities verified" >> "$GITHUB_STEP_SUMMARY"
+      - name: Audit all 61 donor evidence packs and approved photo batch for publication blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import {pathToFileURL} from 'node:url';
+          const donor=path.resolve('../species-v1-donor/ops/species/next61');
+          const imported=async x=>import(pathToFileURL(path.join(donor,x)).href);
+          const arr=[];
+          for (const group of ['mammals','birds','reptiles','fishes','invertebrates-plants']) {
+            const o=await imported(group+'.mjs');
+            arr.push(...Object.values(o).flat());
+          }
+          const packs={};
+          for (let n=1;n<=9;n++){
+            const obj=await imported('science-claims-stage'+n+'.mjs');
+            for(const v of Object.values(obj)){
+              for(const [slug,p] of Object.entries(v)){
+                if(packs[slug])throw new Error('DUPLICATE_PUBLISHER_PACK '+slug);
+                packs[slug]=p;
+              }
+            }
+          }
+          const visual=JSON.parse(fs.readFileSync(path.join(donor,'v1-visual-approved-20261022.json'),'utf8')).approved;
+          const live=fs.readFileSync('ops/discovery/4species-router.js','utf8').split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([')[1].split(']);')[0].match(/"([a-z0-9-]+)"/g).map(x=>x.slice(1,-1));
+          const missing=arr.filter(s=>!live.includes(s[0]));
+          const candidates=missing.map(s=>{
+            const slug=s[0], pack=packs[slug], claims=pack?.claims||[], publishers=new Set(claims.map(x=>x.source?.publisher).filter(Boolean)), sourceUrls=new Set(claims.map(x=>x.source?.url).filter(Boolean)), photo=visual[slug];
+            return {slug,claimCount:claims.length,documents:sourceUrls.size,publishers:publishers.size,photoShortlisted:!!photo,shaPinned:!!photo?.sha256,stage:claims.length>=8&&sourceUrls.size>=3&&publishers.size>=2&&photo?.sha256?'SOURCE_AND_PHOTO_SHORTLIST':'SCIENCE_OR_MEDIA_OPEN'};
+          });
+          const counts={};
+          for(const c of candidates)counts[c.stage]=(counts[c.stage]||0)+1;
+          if(arr.length!==61||live.length!==57||missing.length!==43)throw new Error('PUBLIC_COHORT_DRIFT');
+          console.log('PREMIUM_61_SOURCE_READINESS '+JSON.stringify({candidate61:arr.length,originalLive:39,existingAdditionalLive:18,remaining43:missing.length,packs:Object.keys(packs).length,sourceAndPhotoShortlist:counts.SOURCE_AND_PHOTO_SHORTLIST||0,scienceOrMediaOpen:counts.SCIENCE_OR_MEDIA_OPEN||0,firstReviewTargets:candidates.filter(x=>x.stage==='SOURCE_AND_PHOTO_SHORTLIST').slice(0,18),all43:candidates}));
+          const md=['## 4SPECIES 61 original Claude v53 completion audit','','All candidate source and media records inspected without public route mutation.','',
+           '| Species (not yet LIVE) | Distinct claims | Linked docs | Publishers | Hero photo shortlist | Candidate status |','|---|---:|---:|---:|---|---|'];
+          for(const c of candidates)md.push('| '+[c.slug,c.claimCount,c.documents,c.publishers,c.photoShortlisted?'yes':'no',c.stage].join(' | ')+' |');
+          md.push('','**None of these source/media candidates is automatically independently Gold.** Original v53 premium HTML/template and all 57 public profiles are immutable during this audit.');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,md.join('\n')+'\n');
+          NODE
