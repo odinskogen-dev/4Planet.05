@@ -1,0 +1,53 @@
+{
+  "purpose": "Source-file names checked against original Wikimedia Commons file pages, never generic Commons keyword results. Exclude zoos, specimens, dead or captive animals. All remain human visual and independent rights Gold pending.",
+  "checked": "2026-10-21",
+  "candidates": {
+    "red-panda": [
+      {
+        "file": "Curious Red Panda in Langtang National Park.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Curious_Red_Panda_in_Langtang_National_Park.jpg",
+        "uploader": "Sunuwargr (Ganga Raj Sunuwar)",
+        "wildBasis": "Author states alive wild red panda observed in Langtang National Park, Nepal, 2024-11-08",
+        "licenceExpected": "CC BY-SA 4.0"
+      },
+      {
+        "file": "Red Panda, Gentle Tree-Dweller of the Himalayas.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Red_Panda,_Gentle_Tree-Dweller_of_the_Himalayas.jpg",
+        "uploader": "Sunuwargr",
+        "wildBasis": "Author reports Langtang National Park, Helambu, Nepal, 2024-11-08",
+        "licenceExpected": "CC BY-SA 4.0"
+      }
+    ],
+    "golden-poison-frog": [
+      {
+        "file": "Phyllobates terribilis.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Phyllobates_terribilis.jpg",
+        "uploader": "Biodiego88",
+        "wildBasis": "Original author says observed in Resguardo Indígena Calle Santa Rosa, Colombia with camera GPS coordinates; not from captive collection",
+        "licenceExpected": "CC BY 4.0"
+      }
+    ],
+    "western-santa-cruz-tortoise": [
+      {
+        "file": "Galapagos tortoise (Chelonoidis nigra porteri) on Santa Cruz, Galapagos Islands (7429202882).jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Galapagos_tortoise_(Chelonoidis_nigra_porteri)_on_Santa_Cruz,_Galapagos_Islands_(7429202882).jpg",
+        "uploader": "Dallas Krentzel",
+        "wildBasis": "Original Flickr metadata reports location Santa Cruz Galápagos; Commons licence checked by FlickreviewR; old nigra porteri is a historical taxon name",
+        "licenceExpected": "CC BY 2.0"
+      },
+      {
+        "file": "Chelonoidis porteri 1506883.jpg",
+        "sourcePage": "https://commons.wikimedia.org/wiki/File:Chelonoidis_porteri_1506883.jpg",
+        "uploader": "Annika Lindqvist",
+        "wildBasis": "Location-tagged iNaturalist field observation on Santa Cruz island; exact Chelonoidis porteri",
+        "licenceExpected": "CC BY 4.0"
+      }
+    ]
+  },
+  "pending": [
+    "Download first-party optimised copies and record SHA256",
+    "Inspect every image full resolution for alive, wild, correct species and premium quality",
+    "Verify current source licence and crop/share-alike obligations",
+    "No species is Gold by virtue of this shortlist"
+  ]
+}
