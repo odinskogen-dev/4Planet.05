@@ -364,6 +364,17 @@ jobs:
           cp reports/species-next61/v1-release-selection.json "$GITHUB_WORKSPACE/premium-61-private-artifact/release-selection.json"
           echo '## Premium 61: isolated source-ready build (NO LIVE release)' >> "$GITHUB_STEP_SUMMARY"
           echo 'Original 57 plus four new signed-photo candidate builds verified; no existing public worker, route, sitemap, DNS or Google submitted.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Independent browser-render QA of four signed new + existing Orca and Koala (NO external release)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git show "$GITHUB_SHA:ops/species/premium-61/browser-qa-virtual-live.mjs" > /tmp/4species-browser-qa.mjs
+          cp /tmp/4species-browser-qa.mjs "$GITHUB_WORKSPACE/../species-v53-build/scripts/4species-browser-qa.mjs"
+          cd "$GITHUB_WORKSPACE/../species-v53-build"
+          npx playwright install --with-deps chromium webkit
+          SPECIES_SCREENSHOT_DIR="$GITHUB_WORKSPACE/premium-61-private-artifact/browser" node scripts/4species-browser-qa.mjs
+          echo CLAUDE_PREMIUM_BROWSER_GOLD_CANDIDATE_QA_PASS
       - uses: actions/upload-artifact@v4
         if: success()
         with:
