@@ -1,0 +1,79 @@
+name: 4SPECIES Current LIVE Worker Immutable Version READ ONLY 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-current-worker-version-readonly-20261028.yml]
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_T1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_T2: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CF_T3: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - name: Discover exact zone, binding and active script version without production writes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,json,urllib.request,urllib.error,hashlib
+          raw=[os.environ.get(k,'') for k in ('CF_T1','CF_T2','CF_T3')]
+          tokens=[]
+          for t in raw:
+            t=t.strip().replace('\r','').replace('\n','')
+            for p in ('Bearer ','bearer ','CLOUDFLARE_API_TOKEN=','CF_API_TOKEN='):
+              if t.startswith(p):t=t[len(p):]
+            t=t.strip().strip('"').strip("'")
+            if t and t not in tokens:tokens.append(t)
+          api='https://api.cloudflare.com/client/v4'
+          def call(t,u):
+            req=urllib.request.Request(api+u,headers={'Authorization':'Bearer '+t,'Accept':'application/json'})
+            try:
+              with urllib.request.urlopen(req,timeout=21) as r:
+                body=r.read(150000)
+                try:return r.status,json.loads(body)
+                except:return r.status,{}
+            except urllib.error.HTTPError as e:
+              try:d=json.load(e)
+              except:d={}
+              return e.code,d
+            except:return 0,{}
+          token=None;zone=None
+          for t in tokens:
+            c,v=call(t,'/zones?name=4species.com')
+            z=[x for x in v.get('result',[]) if x.get('name')=='4species.com' and x.get('status')=='active']
+            if c==200 and len(z)==1:token=t;zone=z[0];break
+          if not token:raise SystemExit('READONLY_WORKER_ZONE_ACCESS_NOT_GRANTED')
+          zid=zone['id'];acc=(zone.get('account') or {}).get('id')
+          results=['# 4SPECIES actual Cloudflare LIVE version (read only)','',f'Zone status: {zone.get("status")}']
+          if not acc:raise SystemExit('READONLY_ACCOUNT_ID_MISSING')
+          c,v=call(token,f'/zones/{zid}/workers/routes')
+          binding=[{'pattern':x.get('pattern'),'script':x.get('script')} for x in v.get('result',[]) if x.get('script')=='4species-router']
+          results.append(f'Zone routes HTTP {c}: {binding}')
+          if not binding:
+            c,v=call(token,f'/accounts/{acc}/workers/domains')
+            binding=[{'hostname':x.get('hostname'),'service':x.get('service')} for x in v.get('result',[]) if x.get('hostname')=='4species.com']
+            results.append(f'Worker custom domain HTTP {c}: {binding}')
+          if not binding:raise SystemExit('UNKNOWN_LIVE_ROUTER_OWNER_FAIL_CLOSED')
+          candidates=[
+           f'/accounts/{acc}/workers/scripts/4species-router/deployments',
+           f'/accounts/{acc}/workers/scripts/4species-router/versions',
+           f'/accounts/{acc}/workers/scripts/4species-router/settings',
+          ]
+          for path in candidates:
+            c,data=call(token,path)
+            cleaned=[]
+            for item in (data.get('result',{}) if isinstance(data.get('result'),dict) else {}).get('deployments',[])[:3]:
+              cleaned.append({'id':item.get('id'),'created_on':item.get('created_on'),'versions':[{'version_id':x.get('version_id'),'percentage':x.get('percentage')} for x in item.get('versions',[])]})
+            if path.endswith('/versions'):
+              result=data.get('result',[])
+              if isinstance(result,dict):result=result.get('items',[])
+              cleaned=[{'id':v.get('id'),'created_on':v.get('created_on')} for v in result[:5]] if isinstance(result,list) else []
+            if path.endswith('/settings'):
+              result=data.get('result',{})
+              cleaned={'compatibility_date':result.get('compatibility_date'),'placement':result.get('placement',{}).get('mode')} if isinstance(result,dict) else {}
+            results.append(path.rsplit('/',1)[-1]+f' HTTP {c} data: {cleaned}, error_codes: {[e.get("code") for e in data.get("errors",[])][:3]}')
+          print('\n'.join(results))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(results)+'\n')
+          PY
