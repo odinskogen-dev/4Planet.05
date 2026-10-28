@@ -1,0 +1,57 @@
+{
+  "schema": "4PLANET_ASSET_BANK_ORIGINAL_PHOTO_CREDITS_V1",
+  "created": "2026-10-28",
+  "evidence": "https://github.com/odinskogen-dev/4Planet.05/actions/runs/40717752812",
+  "policy": "Original photographer must be included in the human asset title, original source URL and license must remain associated, never strip attribution in public UI.",
+  "status": "SOURCE_AND_BYTE_VERIFIED; NOT AUTOMATIC SCIENTIFIC_GOLD",
+  "records": [
+    {
+      "slug": "atlas-moth",
+      "assetTitle": "Atlas moth — Oleg Kosterin — CC BY 4.0",
+      "scientificName": "Attacus atlas",
+      "originalPhotographerCredit": "(c) Oleg Kosterin, some rights reserved (CC BY)",
+      "creator": "Oleg Kosterin",
+      "licence": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourcePage": "https://www.inaturalist.org/photos/60643931",
+      "localPath": "/assets/species/next61/atlas-moth-hero.jpg",
+      "sha256": "5be3cd37a787ac892405ee77d883a8d13fbbbfe6c736d39f7e390a0f18a1970b"
+    },
+    {
+      "slug": "peacock-spider",
+      "assetTitle": "Peacock spider — Nigel Main — CC BY 4.0",
+      "scientificName": "Maratus volans",
+      "originalPhotographerCredit": "(c) Nigel Main, some rights reserved (CC BY)",
+      "creator": "Nigel Main",
+      "licence": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourcePage": "https://www.inaturalist.org/photos/160634068",
+      "localPath": "/assets/species/next61/peacock-spider-hero.jpg",
+      "sha256": "5c4fc0a8fd37d12679e0b9b8d481392558d9af7ec81ec3db4df343c7a95f7451"
+    },
+    {
+      "slug": "emperor-scorpion",
+      "assetTitle": "Emperor scorpion — Ryan van Huyssteen — CC BY 4.0",
+      "scientificName": "Pandinus imperator",
+      "originalPhotographerCredit": "(c) Ryan van Huyssteen, some rights reserved (CC BY)",
+      "creator": "Ryan van Huyssteen",
+      "licence": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourcePage": "https://www.inaturalist.org/photos/539642635",
+      "localPath": "/assets/species/next61/emperor-scorpion-hero.jpg",
+      "sha256": "f6f9aa9401cb36ec638ad785a1ab16da5cb9054597b23e5b3c88729151aa24e6"
+    },
+    {
+      "slug": "dragon-blood-tree",
+      "assetTitle": "Dragon's blood tree — Alex38 — CC BY 4.0",
+      "scientificName": "Dracaena cinnabari",
+      "originalPhotographerCredit": "Alex38",
+      "creator": "Alex38",
+      "licence": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Dragonblood_tree_in_Socotra_2.jpg",
+      "localPath": "/assets/species/next61/dragon-blood-tree-hero.jpg",
+      "sha256": "822a87936297ce4c47809e9a9f9d855a1b41d4285cbd86b26b347232d1b7941a"
+    }
+  ]
+}
