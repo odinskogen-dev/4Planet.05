@@ -1,0 +1,33 @@
+name: 4SPECIES LIVE Old Asset Sources Proof 20261028
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-live-old-assets-origin-proof-20261028.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check exact previous-v1 and original-v53 JS asset origins; no mutations
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,os
+          origins=['https://4species.com','https://de9e3e0e.4planet-05.pages.dev','https://72494005.4planet-05.pages.dev']
+          assets=['/assets/index-DLiHR8tZ.js','/assets/index-DJRRK0k4.js','/assets/index-B-Sfe1QA.js']
+          out=['# IMMUTABLE OLD AND NEW PREMIUM JS ASSET IDENTITY PROOF','','| Origin | Asset | HTTP | MIME | Bytes | Body prefix |','|---|---|---:|---|---:|---|']
+          for o in origins:
+           for a in assets:
+            req=urllib.request.Request(o+a,headers={'User-Agent':'Mozilla/5.0 (SPECIES old-browser-chunk-recovery)'})
+            try:
+             with urllib.request.urlopen(req,timeout=21) as r:
+              body=r.read(5000000)
+              code=r.status;mime=r.headers.get('Content-Type','')
+            except urllib.error.HTTPError as e:
+             body=e.read(80);code=e.code;mime=e.headers.get('Content-Type','')
+            except Exception as e:body=b'';code=0;mime=type(e).__name__
+            out.append('| '+o+' | '+a+' | '+str(code)+' | '+mime+' | '+str(len(body))+' | '+repr(body[:30])+' |')
+          print('\n'.join(out))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(out)+'\n')
+          PY
