@@ -7,6 +7,7 @@ const refreshContract = await readFile(new URL('../src/data/sourceRefresh.ts', i
 const evidenceSeam = await readFile(new URL('../src/components/species/SpeciesEvidenceSeam.tsx', import.meta.url), 'utf8');
 const speciesRoute = await readFile(new URL('../src/pages/integrated/SpeciesRoute.tsx', import.meta.url), 'utf8');
 const speciesEditorialRoute = await readFile(new URL('../src/pages/integrated/Species.tsx', import.meta.url), 'utf8');
+const speciesMediaRegistry = await readFile(new URL('../src/data/speciesMedia.ts', import.meta.url), 'utf8');
 const firstReadStyles = await readFile(new URL('../src/styles/species-source-first-read-v01.css', import.meta.url), 'utf8');
 
 test('SPEC-FP-01 preserves source/provenance/uncertainty/update semantics for Orca', () => {
@@ -176,4 +177,23 @@ test('SPECIES compact first read moves licensed-media credit below the hero with
     /@media \(max-width: 620px\)[\s\S]*\.species-editorial-media-credit\s*\{[\s\S]*display: flex;/,
     'compact first read must expose the below-hero media credit',
   );
+});
+
+test('SPECIES media source labels distinguish a taxon reference from a verified image source', () => {
+  assert.match(
+    speciesMediaRegistry,
+    /orca:\s*\{[\s\S]*?sourcePage:\s*"https:\/\/www\.gbif\.org\/species\/2440483",[\s\S]*?sourceKind:\s*"TAXON"/,
+    'the Orca GBIF species page is a taxon reference, not a photo-source record',
+  );
+  assert.match(
+    speciesMediaRegistry,
+    /function fromManifest[\s\S]*?sourceKind:\s*"IMAGE"/,
+    'manifest records with exact provider file pages must remain verified image sources',
+  );
+  for (const required of [
+    'media.sourceKind === "IMAGE"',
+    '? "image" : "taxon"',
+    'IMAGE SOURCE ↗',
+    'TAXON SOURCE ↗',
+  ]) assert.ok(speciesEditorialRoute.includes(required), `missing source-label truth boundary: ${required}`);
 });

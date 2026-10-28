@@ -13,10 +13,13 @@ import { MEDIA_MANIFEST } from "@/content/mediaManifest";
  *  - "PENDING": no verified licence yet → render the designed no-image state.
  */
 export type RightsStatus = "LICENCE_VERIFIED" | "CLEARED" | "PENDING";
+export type MediaSourceKind = "IMAGE" | "TAXON";
 
 export interface MediaRecord {
   localPath: string;
   sourcePage: string;
+  /** What the linked source actually identifies; never infer image provenance from a taxon page. */
+  sourceKind: MediaSourceKind;
   fileUrl?: string;
   photographer: string;
   owner: string;
@@ -64,7 +67,7 @@ const BLOCKERS: Record<string, string> = {
 
 function pending(slug: string, sourcePage: string): MediaRecord {
   return {
-    localPath: "", sourcePage, photographer: "", owner: "", licence: "", licenceUrl: "",
+    localPath: "", sourcePage, sourceKind: "TAXON", photographer: "", owner: "", licence: "", licenceUrl: "",
     attribution: "", checkedDate: "2026-08-06", cropAllowed: false, modificationAllowed: false,
     publicWebAllowed: false, commercialAllowed: false, supportedUse: "",
     limitations: "No verified image licence yet — render the no-image state.", rightsStatus: "PENDING",
@@ -82,7 +85,7 @@ function fromManifest(assetId: string): MediaRecord {
   const a = MEDIA_MANIFEST[assetId];
   if (!a || !a.localPath) return pending(assetId, a?.sourcePage ?? "");
   return {
-    localPath: a.localPath, sourcePage: a.sourcePage,
+    localPath: a.localPath, sourcePage: a.sourcePage, sourceKind: "IMAGE",
     photographer: a.creator, owner: "Not asserted — see licence", licence: `${a.licence} (${a.assetId})`,
     licenceUrl: a.licenceUrl, attribution: a.attribution, checkedDate: a.checked,
     cropAllowed: a.cropModifyAllowed, modificationAllowed: a.cropModifyAllowed,
@@ -102,6 +105,7 @@ export const SPECIES_MEDIA: Record<string, MediaRecord> = {
   orca: {
     localPath: "/assets/species/orca/hero.jpg",
     sourcePage: "https://www.gbif.org/species/2440483",
+    sourceKind: "TAXON",
     photographer: "Founder-supplied (provenance only)", owner: "Not asserted — founder-supplied does not transfer ownership",
     licence: "Founder-supplied for 4PLANET use; not an ownership or commercial-rights claim", licenceUrl: "",
     attribution: "4PLANET — founder-supplied", checkedDate: "2026-08-11",

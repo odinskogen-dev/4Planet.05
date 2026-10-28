@@ -368,8 +368,13 @@ function SpeciesEditorialProfile({
           >
             <span>{media.attribution}</span>
             {media.sourcePage && (
-              <a href={media.sourcePage} target="_blank" rel="noreferrer" aria-label={`Open image source for ${profile.commonName}`}>
-                IMAGE SOURCE ↗
+              <a
+                href={media.sourcePage}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Open ${media.sourceKind === "IMAGE" ? "image" : "taxon"} source for ${profile.commonName}`}
+              >
+                {media.sourceKind === "IMAGE" ? "IMAGE SOURCE ↗" : "TAXON SOURCE ↗"}
               </a>
             )}
             {media.licenceUrl ? (

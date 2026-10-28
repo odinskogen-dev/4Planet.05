@@ -1,3 +1,65 @@
+# SPECIES — MEDIA SOURCE SEMANTICS — 28 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED PROVENANCE CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor opening a licensed SPECIES image needs source labels that describe the linked evidence truthfully.
+
+## ONE THING TO UNDERSTAND
+
+A taxon reference identifies the species; it does not identify who created the photograph or where that image came from.
+
+## PRIMARY ACTION
+
+Label the Orca GBIF species page as `TAXON SOURCE` and reserve `IMAGE SOURCE` for manifest records with an exact provider file page.
+
+## SECONDARY DEPTH
+
+Keep the existing attribution and licence record, without inventing an Orca creator, ownership claim or photo-source URL.
+
+## P1 DOMINANT
+
+The animal and species identity remain visually dominant.
+
+## P2 ORIENTATION
+
+The compact credit distinguishes the available reference by evidence type.
+
+## P3 ACTION / NEXT
+
+Visitors can open the taxon reference or a verified image file page under the correct label; independent Gold judges the exact returned SHA.
+
+## P4 DEPTH
+
+The existing rights and evidence records remain the source of licence detail and limitations.
+
+## WHAT CAN BE REMOVED
+
+Remove only the inaccurate `IMAGE SOURCE` label from the Orca GBIF taxon link.
+
+## WHAT MUST BE REUSED
+
+Reuse issue #145, Atomic `SPEC-GS-09`, sole `king/test` HEIR, `speciesMedia`, the compact credit component and its owning source/browser regressions.
+
+## TRUTH BOUNDARY
+
+This correction proves only that the UI distinguishes a taxon reference from a manifest-backed image source. It does not establish the missing Orca photo origin, Gold acceptance, deployment, LIVE visibility or user use.
+
+## MOBILE-FIRST RISK
+
+The compact credit is the only visible source surface below 620 pixels, so a false label there directly misstates provenance.
+
+## HUMAN SUCCESS
+
+At 390 and 430 pixels Orca exposes `TAXON SOURCE` with no `IMAGE SOURCE`; Jaguar retains its exact Commons file-page `IMAGE SOURCE`; desktop keeps the existing subtle overlay and no duplicate.
+
+**ROOT CAUSE / FAILED TEST / IMMUNITY:** a generic `sourcePage` field was rendered unconditionally as `IMAGE SOURCE`, although Orca stored a GBIF species page while manifest-backed records stored actual image file pages. The new negative Orca and positive Jaguar source/browser regressions fail first, then require explicit source semantics at the owning media record and route.
+
+**DOOR / ROLLBACK / JUDGE:** Reversible HEIR-only correction. Base and rollback are `king/test@486d4b5dc162aebfccd587d4619319b22127e125`. Factory returns CODE FIXED evidence only; independent Gold judges the exact SHA and Founder retains merge/deploy/LIVE authority.
+
+---
+
 # SPECIES — COMPACT MEDIA CREDIT OUTSIDE HERO — 28 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED SOURCE CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
