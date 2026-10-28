@@ -66,7 +66,7 @@ jobs:
           for path in candidates:
             c,data=call(token,path)
             cleaned=[]
-            for item in (data.get('result',{}) if isinstance(data.get('result'),dict) else {}).get('deployments',[])[:3]:
+            for item in (((data.get('result') or {}) if isinstance(data.get('result'),dict) else {}).get('deployments') or [])[:3]:
               cleaned.append({'id':item.get('id'),'created_on':item.get('created_on'),'versions':[{'version_id':x.get('version_id'),'percentage':x.get('percentage')} for x in item.get('versions',[])]})
             if path.endswith('/versions'):
               result=data.get('result',[])
@@ -75,7 +75,7 @@ jobs:
             if path.endswith('/settings'):
               result=data.get('result',{})
               cleaned={'compatibility_date':result.get('compatibility_date'),'placement':result.get('placement',{}).get('mode')} if isinstance(result,dict) else {}
-            results.append(path.rsplit('/',1)[-1]+f' HTTP {c} data: {cleaned}, error_codes: {[e.get("code") for e in data.get("errors",[])][:3]}')
+            results.append(path.rsplit('/',1)[-1]+f' HTTP {c} data: {cleaned}, error_codes: {[e.get("code") for e in (data.get("errors") or [])][:3]}')
           print('\n'.join(results))
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(results)+'\n')
           PY
