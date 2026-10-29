@@ -91,9 +91,21 @@ def preflight():
  acc,zone=get_live_owner()
  baseline=snap()
  sitemap=check_sitemap()
+ # An intermittent Cloudflare response can correctly serve JS in one colo
+ # while another serves the SPA HTML shell. That is still a LIVE production
+ # defect. Sample repeatedly and require a definite bad MIME reply before
+ # making any scoped repair; all-valid or ambiguous transport FAILS CLOSED.
  for old in PATTERNS:
-  code,body,h,_=web('https://4species.com/'+old.split('4species.com')[1])
-  if code!=200 or 'javascript' in (h.get('Content-Type','')).lower():raise RuntimeError('Legacy path no longer broken; classify again')
+  observed=[]
+  for attempt in range(4):
+   code,body,h,_=web('https://4species.com/'+old.split('4species.com')[1])
+   ct=next((v for k,v in h.items() if k.lower()=='content-type'),'').lower()
+   kind='BAD_HTML' if code==200 and ('text/html' in ct or body[:120].lstrip().lower().startswith(b'<!doctype html')) else ('VALID_JS' if code==200 and 'javascript' in ct and b'<html' not in body[:160].lower() else 'UNKNOWN')
+   observed.append(kind)
+  print('LEGACY_PATH_MIME_MULTISAMPLE',old,observed,flush=True)
+  if 'BAD_HTML' not in observed:raise RuntimeError('Legacy path not independently proven broken under four live samples: '+old+' '+str(observed))
+  if observed.count('UNKNOWN')>0:raise RuntimeError('Unstable transport/authority beyond known MIME bug: '+old+' '+str(observed))
+ print('TWO_JS_INTERMITTENT_OR_CONSISTENT_BAD_MIME_CONFIRMED',flush=True)
  data={'account':acc,'zone':zone,'protected':baseline,'sitemap':sitemap,'routes':PATTERNS}
  REC.write_text(json.dumps(data))
  print('TWO_EXACT_JS_ROUTES_PRE_RELEASE_ALL_SAFE 57 original HTML/JSON snapshotted, custom Worker and overlay pinned; virtual Gold PASS',flush=True)
