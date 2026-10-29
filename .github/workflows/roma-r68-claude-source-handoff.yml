@@ -22,7 +22,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/roma-claude/src
-          cat site/rome/r68-source/part-*.txt | tr -d '\\n\\r ' | base64 --decode > /tmp/roma-claude/source.tar.xz
+          cat site/rome/r68-source/part-*.txt | base64 --decode > /tmp/roma-claude/source.tar.xz
           echo '78c977fcb76dc6dbf944eb673dea84643f7190c93cdf8c140c1f819fc9c8005c  /tmp/roma-claude/source.tar.xz' | sha256sum -c -
           test "$(wc -c < /tmp/roma-claude/source.tar.xz)" -eq 4810148
           tar -xJf /tmp/roma-claude/source.tar.xz -C /tmp/roma-claude/src
