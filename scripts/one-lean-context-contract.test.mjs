@@ -58,6 +58,8 @@ const GOLD_RETURN_05_TASK_CLASS_MUTATIONS = [
 const GOLD_RETURN_06_BARE_CONTRAST_MUTATIONS = [
   "Non-user-facing control work: do not automatically read Brand OS but MUST load GOLD_CURRENT_BRIEF before every edit.",
   "Never routinely read 01 Project Lead but MUST read 02 Active Tasks before every task.",
+  "Non-user-facing control work: do not automatically read Brand OS but you MUST load GOLD_CURRENT_BRIEF before every edit.",
+  "Never routinely read 01 Project Lead but you MUST read 02 Active Tasks before every task.",
 ];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
@@ -110,7 +112,7 @@ function semanticStartupConflicts(name, content) {
           || /\bif\b.*\b(?:needed|required)\b/i.test(clause);
       const optionalWithoutMandate = optional
         && !/\b(?:must|always|required before|required at|mandatory for|do not skip)\b/i.test(clause);
-      const contrastingMandatory = /\b(?:but|yet|however)\s+(?:must|always|required|mandatory)\b/i.test(clause);
+      const contrastingMandatory = /\b(?:but|yet|however)\s+(?:(?:you|agents?|the agent)\s+)?(?:must|always|required|mandatory)\b/i.test(clause);
       const explicitProhibition = /^(?:never|do not|must not)\s+(?:(?:routinely|automatically)\s+)?(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
         && !contrastingMandatory
         && !/\bdo not skip\b/i.test(clause);
