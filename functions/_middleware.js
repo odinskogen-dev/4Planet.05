@@ -1785,12 +1785,314 @@ function withSecurityHeaders(response, privateSurface = false) {
   });
 }
 
-// Discovery places prerendered by scripts/prerender-discovery-seo.mjs from
-// src/data/discoveryInventory.json that are not in the 250-place World Place Index.
-const ATLAS_PRERENDERED_DISCOVERY_PLACES = new Set([
-  "serengeti", "costa-rica", "great-barrier-reef", "amazon-basin",
-  "congo-basin", "borneo", "svalbard", "oslofjord",
-]);
+// sites-fix-plan-01 ATLAS item 1 follow-up (LOCAL PACKET, not released).
+// First-wave discovery places served on 4planetatlas.com as standalone ATLAS pages
+// (no 4planet.org application shell, same pattern as the 250 World Place Index pages).
+// Content is restated from src/data/discoveryInventory.json (updatedAt 2026-10-02);
+// only truthBoundary/protectedAreasSummary are rewritten as plain public copy.
+// Species links point at 4species.com/<slug>, verified 200 + matching canonical on 2026-10-29.
+// amazon-basin, borneo, congo-basin and costa-rica stay 404 + noindex.
+const ATLAS_DISCOVERY_FIRST_WAVE = [
+ {
+  "slug": "svalbard",
+  "name": "Svalbard",
+  "kind": "REGION",
+  "title": "Svalbard — Sea ice, Polar Bear, whales and protected Arctic nature | 4PLANET",
+  "description": "Explore Svalbard through sea ice, marine and terrestrial ecosystems, Polar Bear, whales, protected areas, sources and ATLAS.",
+  "summary": "Svalbard links Arctic land, fjords, sea ice and marine food webs. Energy moves strongly between sea and land through seabirds, marine mammals and other species adapted to polar conditions.",
+  "ecosystems": [
+   "Sea-ice ecosystems",
+   "Fjords and coastal marine systems",
+   "Tundra and terrestrial Arctic systems",
+   "Seabird and marine-mammal food webs"
+  ],
+  "pressures": [
+   "Sea-ice loss and climate change",
+   "Long-range pollutants",
+   "Changes in Arctic food-web conditions",
+   "Human–wildlife encounter pressure"
+  ],
+  "truthBoundary": "This page looks at Svalbard as a whole. The area shown on the ATLAS map is only a guide for exploring and is not the official boundary of the Svalbard archipelago or of any protected area. Animal populations and sea-ice conditions change over time and differ between populations and sites.",
+  "protectedAreasSummary": "The Governor of Svalbard reported on 23 September 2026 that Svalbard has seven national parks, 21 nature reserves and one geotopic conservation area, covering about 65% of land and 84% of territorial waters. These are the Governor's figures for legal protection; they do not score the condition of nature.",
+  "relatedSpecies": [
+   {
+    "slug": "polar-bear",
+    "label": "Polar Bear",
+    "scientificName": "Ursus maritimus"
+   },
+   {
+    "slug": "humpback-whale",
+    "label": "Humpback Whale",
+    "scientificName": "Megaptera novaeangliae"
+   },
+   {
+    "slug": "blue-whale",
+    "label": "Blue Whale",
+    "scientificName": "Balaenoptera musculus"
+   }
+  ],
+  "sources": [
+   {
+    "label": "Norwegian Polar Institute — Fauna in Svalbard",
+    "url": "https://npolar.no/en/themes/fauna-svalbard/",
+    "checkedAt": "2026-10-02",
+    "use": "Sea–land ecosystem linkage, marine mammals, whales, Polar Bear, ice-fauna and climate-pressure context."
+   },
+   {
+    "label": "Norwegian Polar Institute — Polar Bear",
+    "url": "https://npolar.no/en/species/polar-bear/",
+    "checkedAt": "2026-10-02",
+    "use": "Polar Bear distribution, Svalbard/Barents Sea population context, sea-ice dependence and explicit uncertainty."
+   },
+   {
+    "label": "Governor of Svalbard — Protected areas in Svalbard",
+    "url": "https://www.sysselmesteren.no/en/the-governor-of-svalbard/environmental-protection/protected-areas-in-svalbard/",
+    "checkedAt": "2026-10-02",
+    "use": "Current 23 Sep 2026 legal protected-area counts and reported land/water coverage."
+   }
+  ],
+  "atlasZoom": "5",
+  "atlasCentre": "15.6,78.2"
+ },
+ {
+  "slug": "oslofjord",
+  "name": "Oslofjord",
+  "kind": "MARINE_AREA",
+  "title": "Oslofjord — Cod, Blue Mussel, pollution and restoration evidence | 4PLANET",
+  "description": "Explore Oslofjord through marine ecological condition, Cod, Blue Mussel, pollution evidence, fisheries measures, sources and ATLAS.",
+  "summary": "Oslofjord is a heavily used fjord system where wastewater, agricultural runoff, fisheries and other human pressures interact with marine habitats, food webs and coastal communities.",
+  "ecosystems": [
+   "Coastal and fjord marine systems",
+   "Shallow-water habitats",
+   "Sediment and benthic systems",
+   "Marine food-web habitats"
+  ],
+  "pressures": [
+   "Wastewater nutrient and pollution loads",
+   "Agricultural runoff",
+   "Fishing pressure and depleted coastal fish populations",
+   "Environmental contaminants",
+   "Habitat degradation"
+  ],
+  "truthBoundary": "This page looks at the Oslofjord as a whole and is not a complete assessment of its condition. Official ecological and chemical classifications, monitoring samples, fishing rules and restoration areas measure different things, so they are kept separate here. The area shown on the ATLAS map is only a guide for exploring and is not the official boundary of the fjord.",
+  "protectedAreasSummary": "Marine national parks, three no-fishing areas from 2026, restoration sites and water-management classifications are not combined into one protected-area figure here, because each has a different legal purpose and covers a different area.",
+  "relatedSpecies": [
+   {
+    "slug": "atlantic-cod",
+    "label": "Atlantic Cod",
+    "scientificName": "Gadus morhua"
+   },
+   {
+    "slug": "blue-mussel",
+    "label": "Blue Mussel",
+    "scientificName": "Mytilus edulis"
+   }
+  ],
+  "sources": [
+   {
+    "label": "Norwegian Government — Oslofjorden",
+    "url": "https://www.regjeringen.no/no/tema/klima-og-miljo/naturmangfold/innsiktsartikler-naturmangfold/oslofjorden/id3139220/",
+    "checkedAt": "2026-10-02",
+    "use": "Current government summary of serious ecosystem condition, main pressures and 2026 policy/restoration context."
+   },
+   {
+    "label": "Norwegian Environment Agency — coastal contaminant monitoring 2024",
+    "url": "https://www.miljodirektoratet.no/aktuelt/fagmeldinger/2026/februar-2026/ny-overvakingsrapport-for-miljogifter-i-kystomradene/",
+    "checkedAt": "2026-10-02",
+    "use": "Annual monitoring evidence; Oslofjord sediment exceedances and explicit difficulty obtaining enough Cod samples."
+   },
+   {
+    "label": "Norwegian Environment Agency — contaminants in Oslofjord food webs",
+    "url": "https://www.miljodirektoratet.no/aktuelt/fagmeldinger/2026/august-2026/miljogifter-i-oslofjordens-naringskjeder/",
+    "checkedAt": "2026-10-02",
+    "use": "2025 Urban Fjord sampling across sediment and food-web organisms including Blue Mussel and Cod; sampled evidence is not whole-fjord condition."
+   }
+  ],
+  "atlasZoom": "6.3",
+  "atlasCentre": "10.55,59.45"
+ },
+ {
+  "slug": "great-barrier-reef",
+  "name": "Great Barrier Reef",
+  "kind": "MARINE_AREA",
+  "title": "Great Barrier Reef — Coral, turtles, heat signals and evidence | 4PLANET",
+  "description": "Explore the Great Barrier Reef through coral habitats, seagrass, mangroves, marine species, current reef-condition evidence and ATLAS context.",
+  "summary": "The Great Barrier Reef is the world's largest coral reef ecosystem and includes coral reefs, seagrass beds, mangroves, islands, deep-water features and highly connected marine habitats.",
+  "ecosystems": [
+   "Coral reefs",
+   "Seagrass beds",
+   "Mangroves and inshore habitats",
+   "Inter-reefal communities",
+   "Deep oceanic and continental-shelf habitats"
+  ],
+  "pressures": [
+   "Marine heat stress and bleaching",
+   "Tropical cyclones and flooding",
+   "Crown-of-thorns starfish outbreaks",
+   "Fishing and other human pressures"
+  ],
+  "truthBoundary": "This page keeps the Great Barrier Reef World Heritage Area, the Marine Park's management and the reef-monitoring results apart. The area shown on the ATLAS map is only a guide for exploring and is not an official boundary. AIMS survey results describe the reefs and regions that were surveyed; they do not mean that every reef, or the whole ecosystem, is in the same condition.",
+  "protectedAreasSummary": "UNESCO records the World Heritage property at about 348,000 km². The Reef Authority describes more than 2,900 coral reefs and 70 bioregions. These describe the reef in different ways, so they are kept separate.",
+  "relatedSpecies": [
+   {
+    "slug": "green-sea-turtle",
+    "label": "Green Turtle",
+    "scientificName": "Chelonia mydas"
+   },
+   {
+    "slug": "whale-shark",
+    "label": "Whale Shark",
+    "scientificName": "Rhincodon typus"
+   },
+   {
+    "slug": "humpback-whale",
+    "label": "Humpback Whale",
+    "scientificName": "Megaptera novaeangliae"
+   }
+  ],
+  "sources": [
+   {
+    "label": "Great Barrier Reef Marine Park Authority — Biodiversity",
+    "url": "https://www.gbrmpa.gov.au/learn/biodiversity",
+    "checkedAt": "2026-10-02",
+    "use": "Official Reef biodiversity, habitats and bioregion context."
+   },
+   {
+    "label": "Great Barrier Reef Marine Park Authority — Marine Turtles",
+    "url": "https://www.gbrmpa.gov.au/learn/animals/marine-turtles",
+    "checkedAt": "2026-10-02",
+    "use": "Green-turtle and marine-turtle occurrence, habitat and nesting context."
+   },
+   {
+    "label": "AIMS — Annual Summary Report of Coral Reef Condition 2025/26",
+    "url": "https://www.aims.gov.au/monitoring-great-barrier-reef/gbr-condition-summary-2025-26",
+    "checkedAt": "2026-10-02",
+    "use": "Current 2025–26 surveyed-reef coral-cover and heat/bleaching context, with survey limitations."
+   },
+   {
+    "label": "UNESCO World Heritage Centre — Great Barrier Reef",
+    "url": "https://whc.unesco.org/en/list/154",
+    "checkedAt": "2026-10-02",
+    "use": "World Heritage property identity, extent and biodiversity context."
+   }
+  ],
+  "atlasZoom": "4.6",
+  "atlasCentre": "147.5,-18.2"
+ },
+ {
+  "slug": "serengeti",
+  "name": "Serengeti",
+  "kind": "REGION",
+  "title": "Serengeti — Migration, savanna wildlife and ecological context | 4PLANET",
+  "description": "Explore Serengeti as a connected savanna system: migration, water, predators, protected-area context, source evidence and ATLAS-linked species.",
+  "summary": "Serengeti National Park sits at the heart of a wider East African ecosystem shaped by seasonal rainfall, grasslands, rivers, woodlands and one of the world's largest terrestrial migrations.",
+  "ecosystems": [
+   "Short-grass plains and savanna",
+   "Woodlands and river systems",
+   "Seasonal water and migration corridors",
+   "Rocky outcrops and associated habitats"
+  ],
+  "pressures": [
+   "Dry-year surface-water scarcity",
+   "Poaching",
+   "Tourism pressure",
+   "Wildfires",
+   "Potential fragmentation of migration connectivity"
+  ],
+  "truthBoundary": "This page is based on published sources and centres on Serengeti National Park and the wider ecosystem around it. The area shown on the ATLAS map is only a guide for exploring and is not the UNESCO or national-park legal boundary. Wildlife numbers quoted from UNESCO are UNESCO's figures for the site, not current 4PLANET population estimates.",
+  "protectedAreasSummary": "UNESCO describes the World Heritage property as 1,476,300 hectares and places it within a larger Serengeti ecosystem. Protected Planet separately records national and World Heritage designations with different reported areas; they are not combined here into one boundary or area figure.",
+  "relatedSpecies": [
+   {
+    "slug": "african-savanna-elephant",
+    "label": "African Savanna Elephant",
+    "scientificName": "Loxodonta africana"
+   },
+   {
+    "slug": "lion",
+    "label": "Lion",
+    "scientificName": "Panthera leo"
+   },
+   {
+    "slug": "cheetah",
+    "label": "Cheetah",
+    "scientificName": "Acinonyx jubatus"
+   },
+   {
+    "slug": "leopard",
+    "label": "Leopard",
+    "scientificName": "Panthera pardus"
+   }
+  ],
+  "sources": [
+   {
+    "label": "UNESCO World Heritage Centre — Serengeti National Park",
+    "url": "https://whc.unesco.org/en/list/156/",
+    "checkedAt": "2026-10-02",
+    "use": "Savanna, migration, biodiversity, integrity and management-pressure context; UNESCO's property boundary remains authoritative for the World Heritage site."
+   },
+   {
+    "label": "Protected Planet — Serengeti National Park",
+    "url": "https://www.protectedplanet.net/2575",
+    "checkedAt": "2026-10-02",
+    "use": "Current protected-area/World Heritage designation record and source provenance."
+   },
+   {
+    "label": "GBIF — Tanzania",
+    "url": "https://www.gbif.org/country/TZ/summary",
+    "checkedAt": "2026-10-02",
+    "use": "Country-scale biodiversity-data entry point; GBIF records are observations, not population estimates or complete range."
+   }
+  ],
+  "atlasZoom": "6",
+  "atlasCentre": "34.8333,-2.3333"
+ }
+];
+const ATLAS_DISCOVERY_FIRST_WAVE_SLUGS = new Set(ATLAS_DISCOVERY_FIRST_WAVE.map((place) => place.slug));
+const ATLAS_DISCOVERY_KIND_LABEL = { REGION: "Region", MARINE_AREA: "Marine area", COUNTRY: "Country", FOREST: "Forest" };
+
+function atlasDiscoverySitemapXml(host) {
+  const urls = ATLAS_DISCOVERY_FIRST_WAVE.map((place) => `  <url><loc>${xmlEscape(`https://${host}/place/${place.slug}`)}</loc></url>`).join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+function atlasDiscoveryPlacePage(place) {
+  const canonical = `https://4planetatlas.com/place/${place.slug}`;
+  const atlasHref = `/atlas/?l=bluemarble%2Cbiodiv&z=${place.atlasZoom}&c=${encodeURIComponent(place.atlasCentre)}&entity=${encodeURIComponent(`place:4p:${place.slug}`)}`;
+  const speciesUrl = (slug) => `https://4species.com/${slug}`;
+  const data = {"@context":"https://schema.org","@type":"WebPage","name":place.title,"description":place.description,"url":canonical,
+    "about":{"@type":"Place","name":place.name},"mainEntity":{"@type":"Place","name":place.name},
+    "citation":place.sources.map((s) => s.url),
+    "mentions":place.relatedSpecies.map((s) => ({"@type":"Thing","name":s.label,"alternateName":s.scientificName,"url":speciesUrl(s.slug)})),
+    "isPartOf":{"@type":"WebSite","name":"4PLANET ATLAS","url":"https://4planetatlas.com/"}};
+  const list = (items) => `<ul>${items.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow,max-image-preview:large"><title>${escapeHtml(place.title)}</title><meta name="description" content="${escapeHtml(place.description)}"><link rel="canonical" href="${canonical}"><link rel="icon" href="/favicon.svg"><meta property="og:site_name" content="4PLANET ATLAS"><meta property="og:type" content="website"><meta property="og:title" content="${escapeHtml(place.title)}"><meta property="og:description" content="${escapeHtml(place.description)}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="https://4planetatlas.com/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(place.title)}"><meta name="twitter:description" content="${escapeHtml(place.description)}"><meta name="twitter:image" content="https://4planetatlas.com/og.png"><style>
+:root{color-scheme:dark;--ink:#f5f7f8;--dim:#a3abb3;--line:rgba(255,255,255,.16);--accent:#e7ff00}
+*{box-sizing:border-box}html,body{background:#030405}body{margin:0;color:var(--ink);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-underline-offset:4px}
+.place-nav{display:flex;justify-content:space-between;gap:18px;padding:22px clamp(20px,4vw,58px);font-size:11px;letter-spacing:.16em;text-transform:uppercase;border-bottom:1px solid var(--line)}.place-nav a{text-decoration:none}.place-nav__index{color:var(--dim)}
+.place-content{max-width:960px;margin:0 auto;padding:clamp(48px,8vw,110px) clamp(22px,5vw,72px)}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+h1{font-size:clamp(48px,8vw,112px);line-height:.9;letter-spacing:-.06em;font-weight:520;margin:0}
+.lead{font-size:clamp(18px,2vw,23px);color:#d4d8dc;max-width:46ch}
+h2{font-size:clamp(28px,4vw,44px);line-height:1;letter-spacing:-.04em;font-weight:520;margin:clamp(48px,7vw,80px) 0 18px;padding-top:clamp(32px,5vw,56px);border-top:1px solid var(--line)}
+p,li{color:#d8dde1;font-size:17px;max-width:760px}ul{padding-left:20px}li{margin:8px 0}.meta{color:#99a1a8;font-size:14px}
+.atlas-cta{display:inline-flex;align-items:center;min-height:52px;margin:24px 0 0;padding:0 20px;background:var(--accent);color:#050607;text-decoration:none;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+</style><script type="application/ld+json">${JSON.stringify(data).replaceAll("<","\\u003c")}</script></head><body>
+<nav class="place-nav" aria-label="Place navigation"><a href="/atlas/"><strong>4PLANET ATLAS</strong></a><a class="place-nav__index" href="/places">WORLD PLACE INDEX</a></nav>
+<main class="place-content" data-atlas-discovery-place="${escapeHtml(place.slug)}">
+<p class="eyebrow">4PLANET PLACE · ${escapeHtml(ATLAS_DISCOVERY_KIND_LABEL[place.kind] || place.kind)}</p>
+<h1>${escapeHtml(place.name)}</h1>
+<p class="lead">${escapeHtml(place.summary)}</p>
+<p><strong>About this page:</strong> ${escapeHtml(place.truthBoundary)}</p>
+<p><a class="atlas-cta" href="${atlasHref}">Explore ${escapeHtml(place.name)} in ATLAS →</a></p>
+<p class="meta">The map view is only a guide for exploring. Each map layer and source record has its own coverage, dates and limits, and together they are not a complete ecological assessment.</p>
+<h2>Living systems and habitats</h2>${list(place.ecosystems)}
+<h2>Documented pressures</h2>${list(place.pressures)}
+<h2>Protected areas</h2><p>${escapeHtml(place.protectedAreasSummary)}</p>
+<h2>Related species</h2><ul>${place.relatedSpecies.map((s) => `<li><a href="${speciesUrl(s.slug)}">${escapeHtml(s.label)}</a> — <em>${escapeHtml(s.scientificName)}</em></li>`).join("")}</ul>
+<h2>Sources</h2><ul>${place.sources.map((s) => `<li><a href="${escapeHtml(s.url)}">${escapeHtml(s.label)}</a> — ${escapeHtml(s.use)} <span class="meta">Checked ${escapeHtml(s.checkedAt)}.</span></li>`).join("")}</ul>
+<p><a href="/atlas/">Explore in ATLAS</a> · <a href="/places">All places</a></p>
+</main></body></html>`;
+}
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -1955,12 +2257,13 @@ export async function onRequest(context) {
   if (host === "4planetatlas.com" && url.pathname.startsWith("/place/")) {
     const slug = url.pathname.slice("/place/".length).replace(/\/+$/,"");
     const place = ATLAS_INDEXABLE_PLACES.find((item) => item.slug === slug);
-    // sites-fix-plan-01 item 1: the ATLAS home links these discovery places, and the
-    // build already prerenders them at dist/place/<slug>/index.html. Hand exactly
-    // this fixed set to the static asset instead of the 404 below. Every other
-    // unknown /place/* still fails closed with 404.
-    if (!place && ATLAS_PRERENDERED_DISCOVERY_PLACES.has(slug)) {
-      return context.next(new Request(new URL(`/place/${slug}/`, url), context.request));
+    // sites-fix-plan-01 item 1 follow-up: serve only the four first-wave discovery
+    // places, rendered here without the 4planet.org application shell so every link
+    // resolves on this host. Every other unknown /place/* (including amazon-basin,
+    // borneo, congo-basin, costa-rica) still fails closed with 404 + noindex below.
+    if (!place && ATLAS_DISCOVERY_FIRST_WAVE_SLUGS.has(slug)) {
+      const discovery = ATLAS_DISCOVERY_FIRST_WAVE.find((item) => item.slug === slug);
+      return new Response(context.request.method === "HEAD" ? null : atlasDiscoveryPlacePage(discovery), {status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=300"}});
     }
     if (place) {
       const canonical = `https://4planetatlas.com/place/${place.slug}`;
@@ -2181,7 +2484,8 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
   const config = routeConfig ? { ...baseConfig, ...routeConfig, canonical: `https://4planet.org${normalisedPath}` } : baseConfig;
 
   if (config && url.pathname === "/robots.txt" && host !== "4planet.org") {
-    return new Response(robotsText(host), {
+    const discoverySitemap = host === "4planetatlas.com" ? `Sitemap: https://${host}/sitemap-discovery.xml\n` : "";
+    return new Response(robotsText(host) + discoverySitemap, {
       status: 200,
       headers: {
         "content-type": "text/plain; charset=utf-8",
@@ -2198,6 +2502,18 @@ h1{font-size:clamp(58px,9.2vw,138px);line-height:.82;letter-spacing:-.072em;font
       ? atlasSitemapXml(host)
       : sitemapXml(host, sitemapPaths);
     return new Response(sitemapBody, {
+      status: 200,
+      headers: {
+        "content-type": "application/xml; charset=utf-8",
+        "cache-control": "public, max-age=300",
+      },
+    });
+  }
+
+  // Separate sitemap for the first-wave discovery places so /sitemap.xml keeps its
+  // exact 250-Place / 250-image contract (runtime test + live verify unchanged).
+  if (host === "4planetatlas.com" && url.pathname === "/sitemap-discovery.xml") {
+    return new Response(atlasDiscoverySitemapXml(host), {
       status: 200,
       headers: {
         "content-type": "application/xml; charset=utf-8",

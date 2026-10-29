@@ -78,10 +78,10 @@ jobs:
           import {onRequest} from './functions/_middleware.js';
           import assert from 'node:assert/strict';
           const call=async path=>onRequest({request:new Request('https://4planetatlas.com'+path),next:async()=>new Response('<!doctype html><html><body>ATLAS map</body></html>',{status:200,headers:{'content-type':'text/html'}})});
-          for(const path of ['/','/atlas/','/atlas/?place=oslo&z=7','/embed/atlas?place=berlin','/places','/place/oslo','/place/berlin']){
+          for(const path of ['/','/atlas/','/atlas/?place=oslo&z=7','/embed/atlas?place=berlin','/places','/place/oslo','/place/berlin','/place/svalbard','/place/oslofjord','/place/great-barrier-reef','/place/serengeti','/sitemap-discovery.xml']){
             const r=await call(path);assert.equal(r.status,200,path);
           }
-          for(const path of ['/unpublished-random-path-404','/unknown/prefix','/place/not-a-qualifying-place']){
+          for(const path of ['/unpublished-random-path-404','/unknown/prefix','/place/not-a-qualifying-place','/place/amazon-basin','/place/borneo','/place/congo-basin','/place/costa-rica']){
             const r=await call(path);assert.equal(r.status,404,path);
             assert.match(r.headers.get('x-robots-tag'),/noindex/);
           }
@@ -157,6 +157,26 @@ jobs:
             echo "ATLAS_LIVE_CHECKPOINT place-$slug=PASS"
           done
 
+          # sites-fix-plan-01 item 1 follow-up: expected status per featured/discovery URL.
+          for spec in /:200 /place/kenya:200 /place/norway:200 /place/svalbard:200 /place/oslofjord:200 /place/great-barrier-reef:200 /place/serengeti:200 /place/amazon-basin:404 /place/borneo:404 /place/congo-basin:404 /place/costa-rica:404; do
+            path="${spec%:*}"; want="${spec##*:}"
+            code=$(curl -sS -o /tmp/discovery.html -w '%{http_code}' "https://$ATLAS_DOMAIN$path")
+            echo "ATLAS_LIVE_DIAG discovery $path status=$code expected=$want"
+            test "$code" = "$want"
+            if [ "$want" = 404 ]; then grep -Fq 'noindex' /tmp/discovery.html; fi
+          done
+          for slug in svalbard oslofjord great-barrier-reef serengeti; do
+            html=$(curl -fsSL "https://$ATLAS_DOMAIN/place/$slug")
+            grep -Fq "rel=\"canonical\" href=\"https://$ATLAS_DOMAIN/place/$slug\"" <<<"$html"
+            grep -Fq "data-atlas-discovery-place=\"$slug\"" <<<"$html"
+            if grep -Eq 'href="/(species|living-systems|about|brands|impact|join|missions|reports|privacy|domains)' <<<"$html"; then echo "shell link on $slug"; exit 41; fi
+            if grep -Eqi 'discovery object|navigation geometry|publication threshold' <<<"$html"; then echo "internal wording on $slug"; exit 42; fi
+          done
+          dsm=$(curl -fsSL "https://$ATLAS_DOMAIN/sitemap-discovery.xml")
+          discovery_places=$(grep -o "<loc>https://$ATLAS_DOMAIN/place/[^<]*</loc>" <<<"$dsm" | sort -u | wc -l | tr -d ' ')
+          test "$discovery_places" = '4'
+          echo "ATLAS_LIVE_CHECKPOINT discovery-first-wave=PASS sitemap-discovery=$discovery_places"
+
           sm=$(curl -fsSL "https://$ATLAS_DOMAIN/sitemap.xml")
           grep -Fq "<loc>https://$ATLAS_DOMAIN/</loc>" <<<"$sm"
           ! grep -Fq "<loc>https://$ATLAS_DOMAIN/atlas/</loc>" <<<"$sm"
@@ -169,6 +189,7 @@ jobs:
 
           robots=$(curl -fsSL "https://$ATLAS_DOMAIN/robots.txt")
           grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap.xml" <<<"$robots"
+          grep -Fq "Sitemap: https://$ATLAS_DOMAIN/sitemap-discovery.xml" <<<"$robots"
           echo "ATLAS_LIVE_CHECKPOINT robots=PASS"
 
           status=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' "https://$ATLAS_DOMAIN/place/__max_exposure_unknown__")
