@@ -289,8 +289,15 @@ test("mobile proof preserves navigation, source limits, local Watch and route-co
   await expect(page.locator(".foot-grid")).toHaveCount(0);
   const compactNavigation = compactFooter.getByRole("navigation");
   await expect(compactNavigation).toBeVisible();
+  const atlasJourneyLink = compactNavigation.getByRole("link", { name: "ATLAS", exact: true });
+  const atlasJourneyHref = await atlasJourneyLink.getAttribute("href");
+  expect(atlasJourneyHref).not.toBeNull();
+  const atlasJourneyUrl = new URL(atlasJourneyHref!, BASE);
+  expect(atlasJourneyUrl.pathname).toBe("/atlas");
+  expect(atlasJourneyUrl.searchParams.get("entity")).toBe("taxon:gbif:2440483");
+  expect(atlasJourneyUrl.searchParams.get("journey")).toBe("orca-gbif");
+
   for (const [name, path] of [
-    ["ATLAS", "/atlas"],
     ["SPECIES", "/species"],
     ["ABOUT", "/about"],
     ["PRIVACY", "/privacy"],

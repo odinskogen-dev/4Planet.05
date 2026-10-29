@@ -1,3 +1,70 @@
+# 4PLANET — ORCA CONTEXT-PRESERVING ATLAS FOOTER CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED BROWSER CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor exploring Orca needs ATLAS to open with the same taxon and journey context instead of dropping them at a bare index.
+
+## ONE THING TO UNDERSTAND
+
+The compact Orca footer deliberately carries `entity=taxon:gbif:2440483` and `journey=orca-gbif` into ATLAS.
+
+## PRIMARY ACTION
+
+Verify the ATLAS link pathname and both context parameters, while retaining exact bare-path contracts for SPECIES, ABOUT and PRIVACY.
+
+## SECONDARY DEPTH
+
+Preserve the route-specific compact footer, source truth, local Watch, mobile overflow and negative navigation checks.
+
+## P1 DOMINANT
+
+The visitor's current species context remains intact across the product boundary.
+
+## P2 ORIENTATION
+
+Path identity and query identity are separate assertions so neither a wrong route nor dropped context can pass.
+
+## P3 ACTION / NEXT
+
+Run the exact candidate through native Browser Product Proof and independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Gold Template route identity, WebKit, rights, accessibility, indexability and published-SPECIES zero-loss remain independent gates.
+
+## WHAT CAN BE REMOVED
+
+Remove only the stale assertion that ATLAS must equal the bare `/atlas` alias.
+
+## WHAT MUST BE REUSED
+
+Reuse the rendered compact footer, exact Orca GBIF entity, journey marker, existing navigation and overflow regressions, issue #145 and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Browser Product Proof 40919962073 passed desktop and failed both mobile widths at product-proof.spec.ts:296 because the rendered context-preserving ATLAS href was compared with bare `/atlas`. This change updates only the owning test and cumulative Gold brief. It does not alter runtime links, routes, copy, CSS, provider data or deployment.
+
+## MOBILE-FIRST RISK
+
+A stale exact-href assertion can incorrectly punish correct cross-product context preservation on both supported mobile widths.
+
+## HUMAN SUCCESS
+
+At 390px and 430px the Orca footer proves that ATLAS receives the exact taxon and journey context a human needs to continue exploration.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: the footer contract treated a contextual destination as a bare static path. Failed check: Browser Product Proof 40919962073, mobile 390 and 430. Immunity: separate pathname, entity and journey assertions at the same owning code path.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is 79d88866e57585f624508d7a9a24342e761e8c8f. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+
+---
+
 # 4PLANET — STABLE PRIVACY-ROW NEGATIVE CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
