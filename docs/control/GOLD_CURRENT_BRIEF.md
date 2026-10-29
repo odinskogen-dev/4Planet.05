@@ -2,17 +2,66 @@
 
 **STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
 
-## USER VALUE AND BOUNDARY
+## USER ARRIVES BECAUSE
 
-Orca occurrence truth must stay verifiable across PUBLIC_RECORDS, NO_PUBLIC_RECORDS and SOURCE_UNAVAILABLE without a test invalidating its own selector. Product source, copy, routes, styling and provider behaviour remain unchanged.
+A visitor needs Orca occurrence evidence to remain honest whether GBIF returns public-use records, rights-review-only records, or no usable response.
+
+## ONE THING TO UNDERSTAND
+
+The browser proof must test the rendered truth boundary without invalidating its own text-based selector after a deliberate negative mutation.
+
+## PRIMARY ACTION
+
+Verify the existing Orca profile across PUBLIC_RECORDS, NO_PUBLIC_RECORDS and SOURCE_UNAVAILABLE, then mutate and restore the same already-resolved DOM node.
+
+## SECONDARY DEPTH
+
+Retain the existing Taxon → ACCEPTED, Source identity → GBIF 2440483, rights-review copy, local Watch and ATLAS continuation checks.
+
+## P1 DOMINANT
+
+The occurrence truth boundary remains the dominant source-safety proof; the product UI and provider branches are unchanged.
+
+## P2 ORIENTATION
+
+Each provider state stays distinct, and the negative mutation must yield no valid occurrence truth state before the original state is restored.
+
+## P3 ACTION / NEXT
+
+Run the exact candidate through native Browser Product Proof and hand it to independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Keep the same 1440/390 browser path while independent Gold retains 430, WebKit, rights, accessibility, indexability and full published 4SPECIES zero-loss scope.
+
+## WHAT CAN BE REMOVED
+
+Remove only the self-invalidating post-mutation Locator reads at the two owning test sites.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing text locator to find and visibly assert the true node before mutation, all three forced GBIF fixtures, issue #145, branch king/test and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Browser Product Proof 40879863725 failed because the text-filtered Locator re-resolved after its matching text was replaced with a false live-position claim. Both mutation sites now capture that visible element as a stable ElementHandle, mutate/read/restore the same connected node, and preserve the three-state assertions. No product source, copy, route, styling or provider behaviour changed.
+
+## MOBILE-FIRST RISK
+
+No rendered product change exists. Test risk is false confidence if the stable node disconnects, so both sites assert isConnected before restoration.
+
+## HUMAN SUCCESS
+
+A regression can no longer pass or time out merely because its selector stopped matching its own negative mutation; each truthful occurrence state is rejected when falsified and verified again after restoration.
 
 ## ROOT CAUSE / FAILED TEST / IMMUNITY
 
-Browser Product Proof 40879863725 failed because the text-filtered Playwright Locator was re-resolved after its matching text was deliberately replaced with a false live-position claim. The mutated node stopped matching, so the next textContent call timed out instead of checking the negative state. Both owning mutation sites now capture the already-visible element as a stable ElementHandle, mutate/read/restore that same connected node, and retain the three-state rights/source assertions before mutation.
+The missing preflight check was the repository's required 13-heading newest-brief contract. Native Gold, Browser and Human Craft correctly failed at their authority step on first child 7db32bd; this corrective child restores the complete contract without changing the already-bounded product test.
 
-## DONE / ROLLBACK / JUDGE
+## DOOR / ROLLBACK / JUDGE
 
-Provider source readback must show only this owning test and this cumulative brief changed from parent ef34e3835a2bcb699b674daab1ff04d50a7f7b29. Native Browser Product Proof plus Gold gates must pass at the new exact SHA. Revert the child commit if the stable-node contract regresses. Factory is Maker only; independent Gold judges the exact SHA. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+Candidate parent and rollback for the test correction is ef34e3835a2bcb699b674daab1ff04d50a7f7b29. Factory returns Maker evidence only; independent Gold judges the exact final child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
 
 ---
 
