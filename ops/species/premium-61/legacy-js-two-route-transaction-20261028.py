@@ -91,6 +91,8 @@ def preflight():
  acc,zone=get_live_owner()
  baseline=snap()
  sitemap=check_sitemap()
+ # Use exact single-slash asset path. Double-slash requests are NOT the original
+ # broken JS addresses and must never be mistaken for proof.
  # An intermittent Cloudflare response can correctly serve JS in one colo
  # while another serves the SPA HTML shell. That is still a LIVE production
  # defect. Sample repeatedly and require a definite bad MIME reply before
@@ -98,7 +100,7 @@ def preflight():
  for old in PATTERNS:
   observed=[]
   for attempt in range(4):
-   code,body,h,_=web('https://4species.com/'+old.split('4species.com')[1])
+   code,body,h,_=web('https://4species.com'+old.split('4species.com',1)[1])
    ct=next((v for k,v in h.items() if k.lower()=='content-type'),'').lower()
    kind='BAD_HTML' if code==200 and ('text/html' in ct or body[:120].lstrip().lower().startswith(b'<!doctype html')) else ('VALID_JS' if code==200 and 'javascript' in ct and b'<html' not in body[:160].lower() else 'UNKNOWN')
    observed.append(kind)
