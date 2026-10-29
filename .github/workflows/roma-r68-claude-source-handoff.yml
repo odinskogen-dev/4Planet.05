@@ -1,0 +1,130 @@
+name: CUB ROMA R68 Claude source handoff archive
+on:
+  push:
+    branches:
+      - handoff/roma-r68-claude-source-20261029
+    paths:
+      - .github/workflows/roma-r68-claude-source-handoff.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify and unpack preserved R68 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/roma-claude/src
+          cat site/rome/r68-source/part-*.txt | tr -d '\\n\\r ' | base64 --decode > /tmp/roma-claude/source.tar.xz
+          echo '78c977fcb76dc6dbf944eb673dea84643f7190c93cdf8c140c1f819fc9c8005c  /tmp/roma-claude/source.tar.xz' | sha256sum -c -
+          test "$(wc -c < /tmp/roma-claude/source.tar.xz)" -eq 4810148
+          tar -xJf /tmp/roma-claude/source.tar.xz -C /tmp/roma-claude/src
+          test -s /tmp/roma-claude/src/package.json
+          test -s /tmp/roma-claude/src/src/campaign/quickBattle.js
+          test -s /tmp/roma-claude/src/src/campaign/battleMonuments.js
+          test -s /tmp/roma-claude/src/src/client/controlGuard.js
+          test -s /tmp/roma-claude/src/tests/unit/axe_r68_quick_battle.test.mjs
+      - name: Run source-level smoke and unit tests
+        working-directory: /tmp/roma-claude/src
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/unit/axe_r68_quick_battle.test.mjs
+          npm run test:unit
+      - name: Create self-contained Claude delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/roma-claude/delivery
+          cp -a /tmp/roma-claude/src/. /tmp/roma-claude/delivery/
+          cat > /tmp/roma-claude/delivery/CLAUDE_START_HERE.md <<'EOF'
+          # ROMA: THE REPUBLIC — R68 source handoff to Claude
+          Created 29 October 2026 from exact preserved CUB R68 source on GitHub.
+          This ZIP is a standalone source snapshot including original iteration 60 and the R68 full source patch (as declared by the original R68 manifest).
+          It is NOT the original independent R64 or R65 ZIP. Their existence is documented in conversation, but their separate archive bytes were not recovered.
+
+          ## Request
+          Integrate/review and improve the ROMA four cultural fortresses:
+          1. Roman large castra — walls, gates, tents, command tent, wall sentries.
+          2. Qin Chinese fortress — rammed-earth walls, gatehouses, hall, barracks.
+          3. Celtic hillfort — timber palisades, roundhouses, watchtowers.
+          4. Steppe camp — wagons, tents, nomadic perimeter defences.
+          Also review Hangu Pass tactical battle, its Qin fortress and approaches, and all capturable objectives/hamlets on battlefields.
+
+          ## Prior R64/R65 claims to verify against actual code
+          R64 was reported as four camp variants, 70 maps, 138 possible capturable-object placements, 9/9 targeted tests, GL-AS-119.
+          R65 was reported as Hangu Pass, Qin fortress and four optional buildable fortress variants, GL-AS-120.
+          R68 added Quick Battle/Hangu and was compiled successfully from source on 28 October 2026.
+          Do NOT treat prior reporting as runtime proof. Re-evaluate R64/R65 asset presence, feature integration and 70/138 dataset counts in this archive.
+
+          ## Integration rules
+          - Treat this archive as an isolated candidate; do not replace working ROMA v60 or Cannae.
+          - Preserve the actual existing game engine, combat, formation, save keys, simulation terrain and historical scenarios.
+          - No separate fortress/game engine: reuse current camp entity, collisions, gates, ownership and save system.
+          - Every Hangu/Alpine choke point requires passable routes, fair spawns, large-unit clearance, line of sight and accessible alternates.
+          - Use three-stage LOD / instancing; keep iPhone/WebGL performance budget explicit.
+          - Ensure every capturable village/well/watchtower/shrine/farm/stone quarry has meaningful tactical value but modest game-balance effects.
+          - Identify static visual guards vs actual AI and do not claim AI exists unless proved.
+          - Check asset provenance/license before commercial publishing; source snapshot is not a commercial rights clearance.
+          - No LIVE deployment, publish or replacement without explicit separate founder instruction.
+
+          ## Evidence required from Claude
+          (a) File inventory of features actually present; (b) tests + exact commands/results;
+          (c) reproducible WebGL build and real gameplay screenshots; (d) playable Hangu battle;
+          (e) all 4 fortress variants verified in game; (f) battlefield objective counts and save/resume tests;
+          (g) historical/legal rights manifest; (h) performance measurements, iPhone if available;
+          (i) remaining defects and a concise next-step integration diff.
+          EOF
+          cat > /tmp/roma-claude/delivery/SOURCE_PROVENANCE.txt <<'EOF'
+          Project: CUB GAME LAB / ROMA: THE REPUBLIC
+          GitHub repo: odinskogen-dev/4Planet.05
+          Original source branch: cub-roma-r68-quickbattle-20261028
+          Original source repository location: site/rome/r68-source/
+          Original tar.xz size: 4810148 bytes
+          Original tar.xz SHA256: 78c977fcb76dc6dbf944eb673dea84643f7190c93cdf8c140c1f819fc9c8005c
+          R68 WebGL CI run: https://github.com/odinskogen-dev/4Planet.05/actions/runs/40761102469
+          R68 source-manifest: https://github.com/odinskogen-dev/4Planet.05/blob/cub-roma-r68-quickbattle-20261028/site/rome/r68-source/MANIFEST.txt
+          Earlier R64/R65 separately named archives not physically recovered.
+          All bytes supplied through this handoff originate from original R68 source after SHA256 verification.
+          This is not a live release.
+          EOF
+          python3 - <<'PY'
+          import hashlib, pathlib, json
+          root=pathlib.Path('/tmp/roma-claude/delivery')
+          needles=['Hangu Pass','Qin','Celtic','steppe','fortress','castra','hamlet','capture']
+          evidence={n:[] for n in needles}
+          filehashes={}
+          files=0
+          for f in sorted(root.rglob('*')):
+              if not f.is_file():continue
+              rel=f.relative_to(root).as_posix()
+              files+=1
+              if rel not in ('SOURCE_SHA256SUMS.txt','SOURCE_FEATURE_INVENTORY.json'):
+                  filehashes[rel]=hashlib.sha256(f.read_bytes()).hexdigest()
+              if f.suffix.lower() not in ('.js','.mjs','.ts','.json','.md'):continue
+              if rel == 'CLAUDE_START_HERE.md':continue
+              try:s=f.read_text(encoding='utf-8')
+              except UnicodeDecodeError:continue
+              for n in needles:
+                  if n.lower() in s.lower() and len(evidence[n])<80:evidence[n].append(rel)
+          (root/'SOURCE_FEATURE_INVENTORY.json').write_text(json.dumps({'files_scanned':files,'substring_file_matches':evidence,'note':'Static strings only. Not proof of functionality.'},indent=2))
+          (root/'SOURCE_SHA256SUMS.txt').write_text(''.join(f'{v}  {k}\n' for k,v in sorted(filehashes.items())))
+          print('PACKAGE_FILES',files)
+          for n,v in evidence.items():print('FEATURE_STRING',n,len(v))
+          PY
+      - name: Upload one complete source ZIP for Claude (no deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ROMA_R68_CLAUDE_SOURCE_HANDOFF_2026-10-29
+          path: /tmp/roma-claude/delivery/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
