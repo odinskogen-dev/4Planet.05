@@ -343,24 +343,55 @@ test("mobile proof preserves navigation, source limits, local Watch and route-co
   await compactFooter.evaluate((node, markup) => { node.innerHTML = markup; }, originalCompactMarkup);
   await expect(compactFooter.getByRole("navigation")).toBeVisible();
 
-  const forcedOverflow = await page.evaluate(() => {
-    const probe = document.createElement("div");
-    probe.dataset.footerOverflowProbe = "true";
-    probe.style.width = "calc(100vw + 32px)";
-    probe.style.height = "1px";
-    document.body.appendChild(probe);
+  const footerBounds = await compactFooter.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
     return {
-      pageWidth: document.documentElement.scrollWidth,
+      left: rect.left,
+      right: rect.right,
+      width: rect.width,
       viewportWidth: window.innerWidth,
+      rootOverflowX: getComputedStyle(document.documentElement).overflowX,
+      bodyOverflowX: getComputedStyle(document.body).overflowX,
     };
   });
-  expect(forcedOverflow.pageWidth).toBeGreaterThan(forcedOverflow.viewportWidth + 1);
-  await page.locator('[data-footer-overflow-probe="true"]').evaluate((node) => node.remove());
-  const restoredOverflow = await page.evaluate(() => ({
-    pageWidth: document.documentElement.scrollWidth,
-    viewportWidth: window.innerWidth,
-  }));
-  expect(restoredOverflow.pageWidth).toBeLessThanOrEqual(restoredOverflow.viewportWidth + 1);
+  expect(footerBounds.left).toBeGreaterThanOrEqual(-1);
+  expect(footerBounds.right).toBeLessThanOrEqual(footerBounds.viewportWidth + 1);
+
+  const originalFooterStyle = await compactFooter.getAttribute("style");
+  try {
+    await compactFooter.evaluate((node) => {
+      node.style.minWidth = "calc(100vw + 32px)";
+      node.style.boxSizing = "border-box";
+    });
+    const forcedFooterBounds = await compactFooter.evaluate((node) => {
+      const rect = node.getBoundingClientRect();
+      return {
+        right: rect.right,
+        width: rect.width,
+        viewportWidth: window.innerWidth,
+      };
+    });
+    expect(forcedFooterBounds.width).toBeGreaterThan(forcedFooterBounds.viewportWidth + 1);
+    expect(forcedFooterBounds.right).toBeGreaterThan(forcedFooterBounds.viewportWidth + 1);
+  } finally {
+    await compactFooter.evaluate((node, style) => {
+      if (style === null) node.removeAttribute("style");
+      else node.setAttribute("style", style);
+    }, originalFooterStyle);
+  }
+
+  const restoredFooterBounds = await compactFooter.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return {
+      left: rect.left,
+      right: rect.right,
+      viewportWidth: window.innerWidth,
+      pageWidth: document.documentElement.scrollWidth,
+    };
+  });
+  expect(restoredFooterBounds.left).toBeGreaterThanOrEqual(-1);
+  expect(restoredFooterBounds.right).toBeLessThanOrEqual(restoredFooterBounds.viewportWidth + 1);
+  expect(restoredFooterBounds.pageWidth).toBeLessThanOrEqual(restoredFooterBounds.viewportWidth + 1);
 
   await settleVisuals(page);
   await compactFooter.screenshot({ path: `${OUTPUT}/05b-orca-footer-mobile.png` });

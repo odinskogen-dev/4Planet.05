@@ -1,3 +1,70 @@
+# 4PLANET — DETERMINISTIC COMPACT-FOOTER OVERFLOW CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED BROWSER HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A mobile visitor needs the Orca compact footer to stay inside the visible viewport without clipped navigation.
+
+## ONE THING TO UNDERSTAND
+
+A detached body probe can be clipped by page-level overflow containment and leave document scrollWidth unchanged even when its own box is wider than the viewport.
+
+## PRIMARY ACTION
+
+Measure the real footer rectangle, force that same footer wider than the viewport, prove its rectangle breaches the boundary, restore its exact inline style in finally, then recheck footer and document bounds.
+
+## SECONDARY DEPTH
+
+Retain contextual ATLAS/SPECIES navigation, mobile source truth, local Watch and missing-navigation regressions.
+
+## P1 DOMINANT
+
+The actual user-visible footer—not an unrelated synthetic body child—owns the mobile boundary contract.
+
+## P2 ORIENTATION
+
+The proof records root/body overflow styles for diagnostics while accepting or rejecting the real footer by its bounding rectangle.
+
+## P3 ACTION / NEXT
+
+Run the exact candidate through native Browser Product Proof and independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Gold Template route identity, WebKit, rights, accessibility, indexability and published-SPECIES zero-loss remain independent gates.
+
+## WHAT CAN BE REMOVED
+
+Remove only the body-appended width probe whose effect was invisible to document scrollWidth under current containment.
+
+## WHAT MUST BE REUSED
+
+Reuse the rendered compact footer, existing <=1px document overflow acceptance, contextual navigation contracts, issue #145 and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Browser Product Proof 40937723872 passed the contextual SPECIES repair and failed both mobile widths at product-proof.spec.ts:357 because a 100vw+32px body probe still produced document widths of exactly 390 and 430. This change updates only the owning test and cumulative Gold brief. It does not alter product CSS, runtime layout, routes, copy, provider data or deployment.
+
+## MOBILE-FIRST RISK
+
+A negative probe that cannot affect its measured boundary creates repeated false failures and hides whether the actual footer stays visible.
+
+## HUMAN SUCCESS
+
+At 390px and 430px the real footer is proved within the viewport, a forced footer-width regression is detected, and cleanup restores the accepted boundary.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: the negative mutation targeted an unrelated body child while the acceptance claim concerned the footer, and page containment masked document scroll growth. Failed check: Browser Product Proof 40937723872 mobile 390 and 430. Immunity: real-footer rectangle acceptance, deterministic min-width mutation, forced-boundary rejection, exact-style finally restoration and restored document check.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is 96e898d560e2a03ec9328ce2357f7dd94bb27edb. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+
+---
+
 # 4PLANET — ORCA CONTEXT-PRESERVING SPECIES FOOTER CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED BROWSER CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
