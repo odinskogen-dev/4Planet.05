@@ -242,10 +242,16 @@ test("mobile proof preserves navigation, source limits, local Watch and route-co
   await expect(homePrivacyLink).toHaveAttribute("href", "/privacy");
 
   const privacyRow = homePrivacyLink.locator("..");
-  const originalPrivacyRowMarkup = await privacyRow.innerHTML();
-  await homePrivacyLink.evaluate((node) => node.remove());
-  await expect(homeFooter.getByRole("link", { name: "PRIVACY", exact: true })).toHaveCount(0);
-  await privacyRow.evaluate((node, markup) => { node.innerHTML = markup; }, originalPrivacyRowMarkup);
+  const privacyRowHandle = await privacyRow.elementHandle();
+  expect(privacyRowHandle).not.toBeNull();
+  const originalPrivacyRowMarkup = await privacyRowHandle!.evaluate((node) => node.innerHTML);
+  try {
+    await homePrivacyLink.evaluate((node) => node.remove());
+    await expect(homeFooter.getByRole("link", { name: "PRIVACY", exact: true })).toHaveCount(0);
+  } finally {
+    await privacyRowHandle!.evaluate((node, markup) => { node.innerHTML = markup; }, originalPrivacyRowMarkup);
+  }
+  expect(await privacyRowHandle!.evaluate((node) => node.isConnected)).toBe(true);
   await expect(homeFooter.getByRole("link", { name: "PRIVACY", exact: true })).toHaveAttribute("href", "/privacy");
 
   const homeLayout = await page.evaluate(() => {

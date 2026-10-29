@@ -1,3 +1,70 @@
+# 4PLANET — STABLE PRIVACY-ROW NEGATIVE CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A mobile visitor needs the homepage privacy destination to remain provably present and recoverable at both supported widths.
+
+## ONE THING TO UNDERSTAND
+
+A Locator derived from the PRIVACY link cannot re-resolve its parent after that same link is deliberately removed.
+
+## PRIMARY ACTION
+
+Pin the legal-row parent as a stable ElementHandle before mutation, then remove, reject, restore and recheck the actual privacy link.
+
+## SECONDARY DEPTH
+
+Retain full-grid breakpoints, zero overflow, Orca compact footer, GBIF source truth, local Watch and ATLAS continuation.
+
+## P1 DOMINANT
+
+The semantic privacy destination remains the dominant legal-navigation proof.
+
+## P2 ORIENTATION
+
+The negative mutation must invalidate the link without invalidating the node used to restore the owning row.
+
+## P3 ACTION / NEXT
+
+Run the exact candidate through native Browser Product Proof and hand it to independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Desktop, WebKit, rights, accessibility, indexability and published-species zero-loss remain with independent Gold.
+
+## WHAT CAN BE REMOVED
+
+Remove only the post-mutation parent Locator evaluation that depended on the deleted link.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing semantic-footer scope, exact /privacy href, real delete/absence regression, route-correct footer variants, issue #145 and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Browser Product Proof 40909981349 passed 24/24 journeys, 15/15 Magazine and desktop product, then both mobile widths timed out because privacyRow was derived from the deleted PRIVACY Locator and could not re-resolve for restoration. The correction captures the parent ElementHandle before deletion, restores in finally through that same node, asserts it remains connected and rechecks exact href. No product runtime, copy, route, CSS or provider behaviour changed.
+
+## MOBILE-FIRST RISK
+
+A negative test can hide its intended assertion behind a self-created timeout. Stable node identity plus finally restoration makes the failure deterministic and leaves the page recoverable.
+
+## HUMAN SUCCESS
+
+At 390px and 430px the actual footer privacy destination is proved present, absent when deliberately removed, and correctly restored.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: restore used a Locator whose identity depended on the deleted child. Missing check: stable parent identity and cleanup guaranteed on assertion failure. Immunity: non-null parent ElementHandle, finally restoration, connected-node assertion and exact post-restore href.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is 221eb09224f84a78d2b8407e2aad20213abe8a1b. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+
+---
+
 # 4PLANET — HOMEPAGE PRIVACY FOOTER SCOPE CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
