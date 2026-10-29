@@ -1,3 +1,69 @@
+# SPECIES — THREE-STATE GBIF OCCURRENCE TRUTH CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED BROWSER CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor needs Orca occurrence evidence to remain honest whether GBIF returns public-use records, only rights-review records, or no usable source response.
+
+## ONE THING TO UNDERSTAND
+
+“No public records to display” can mean GBIF returned records whose rights are not cleared; it must not be collapsed into source unavailability or presented as live position.
+
+## PRIMARY ACTION
+
+Exercise the existing Orca profile against all three source states and verify the rendered truth boundary for each.
+
+## SECONDARY DEPTH
+
+Preserve Taxon → ACCEPTED, Source identity → GBIF 2440483, local Watch and the same-entity ATLAS continuation.
+
+## P1 DOMINANT
+
+The source-limited occurrence state remains the dominant proof.
+
+## P2 ORIENTATION
+
+PUBLIC_RECORDS, NO_PUBLIC_RECORDS and SOURCE_UNAVAILABLE are distinct factual states with different visitor meaning.
+
+## P3 ACTION / NEXT
+
+The existing Watch and OPEN OBSERVATIONS IN ATLAS controls remain unchanged.
+
+## P4 DEPTH
+
+No product copy, source data, route, styling or non-Orca journey changes.
+
+## WHAT CAN BE REMOVED
+
+Remove only the incomplete three-alternative locator that omitted the existing NO_PUBLIC_RECORDS phrase.
+
+## WHAT MUST BE REUSED
+
+Reuse the exact GBIF connector URL, existing Species conditional branches, product-proof journey, issue #145 and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+The browser test forces each existing connector state, checks its rendered DOM, mutates that real DOM to a false live-position claim, verifies the state contract fails, restores it and verifies the original state. It does not claim production deployment or catalogue-wide zero loss.
+
+## MOBILE-FIRST RISK
+
+The existing 390px semantic check is retained; independent Gold still owns 430/390, WebKit, accessibility, rights and indexability.
+
+## HUMAN SUCCESS
+
+A visitor is never told that rights-review-only records are absent, plotted, or live positions.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Browser Product Proof 40872275905 failed at line 118 because the generic locator modeled PUBLIC_RECORDS and SOURCE_UNAVAILABLE but omitted valid NO_PUBLIC_RECORDS copy. The same-path correction explicitly models all three branches and includes a real DOM negative mutation per branch.
+
+## DOOR / ROLLBACK / JUDGE
+
+This is a reversible king/test test-contract and Gold-brief correction. Parent and rollback are 3dadb6698ab6a574c1defb8af5d6e2b5301c18c7. Factory returns Maker evidence only; independent Gold judges the exact candidate and Founder retains merge/deploy/LIVE authority.
+
+---
+
 # SPECIES — SOURCE-GROUNDED ORCA OCCURRENCE CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED TEST-CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

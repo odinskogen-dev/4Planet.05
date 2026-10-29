@@ -21,8 +21,20 @@ async function readDefinitionPairs(list: import("@playwright/test").Locator) {
   );
 }
 
-function isSourceLimitedOccurrenceText(text: string) {
-  return /reported observations are not current position, abundance or complete range|no public observation is implied or plotted|GBIF observation source is currently unavailable or returned no matching records/i.test(text);
+type OccurrenceTruthState = "PUBLIC_RECORDS" | "NO_PUBLIC_RECORDS" | "SOURCE_UNAVAILABLE";
+
+const OCCURRENCE_TRUTH_PATTERN =
+  /reported observations are not current position, abundance or complete range|nothing from this response is plotted|GBIF observation source is currently unavailable or returned no matching records/i;
+
+function occurrenceTruthState(text: string): OccurrenceTruthState | null {
+  if (/reported observations are not current position, abundance or complete range/i.test(text)) return "PUBLIC_RECORDS";
+  if (/nothing from this response is plotted/i.test(text) && /rights review/i.test(text)) return "NO_PUBLIC_RECORDS";
+  if (/GBIF observation source is currently unavailable or returned no matching records/i.test(text) && /no public observation is implied or plotted/i.test(text)) return "SOURCE_UNAVAILABLE";
+  return null;
+}
+
+function findOccurrenceBoundary(section: import("@playwright/test").Locator) {
+  return section.locator("p").filter({ hasText: OCCURRENCE_TRUTH_PATTERN }).first();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -112,16 +124,15 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(occurrenceSection.getByText("WHERE RECORDED", { exact: true })).toBeVisible();
   await expect(occurrenceSection.getByRole("heading", { name: "Explore reported observations." })).toBeVisible();
   await expect(occurrenceSection.getByRole("link", { name: "OPEN OBSERVATIONS IN ATLAS" })).toBeVisible();
-  const occurrenceBoundary = occurrenceSection.getByText(
-    /reported observations are not current position, abundance or complete range|no public observation is implied or plotted|GBIF observation source is currently unavailable or returned no matching records/i,
-  ).first();
+  const occurrenceBoundary = findOccurrenceBoundary(occurrenceSection);
   await expect(occurrenceBoundary).toBeVisible();
   const originalOccurrenceBoundary = (await occurrenceBoundary.textContent())?.trim() ?? "";
-  expect(isSourceLimitedOccurrenceText(originalOccurrenceBoundary)).toBe(true);
+  const originalOccurrenceState = occurrenceTruthState(originalOccurrenceBoundary);
+  expect(originalOccurrenceState).not.toBeNull();
   await occurrenceBoundary.evaluate((node) => { node.textContent = "These are live animal positions."; });
-  expect(isSourceLimitedOccurrenceText((await occurrenceBoundary.textContent()) ?? "")).toBe(false);
+  expect(occurrenceTruthState((await occurrenceBoundary.textContent()) ?? "")).toBeNull();
   await occurrenceBoundary.evaluate((node, value) => { node.textContent = value; }, originalOccurrenceBoundary);
-  expect(isSourceLimitedOccurrenceText((await occurrenceBoundary.textContent()) ?? "")).toBe(true);
+  expect(occurrenceTruthState((await occurrenceBoundary.textContent()) ?? "")).toBe(originalOccurrenceState);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
 
@@ -138,6 +149,73 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await page.waitForTimeout(2500);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/03-atlas-context-desktop.png` });
+});
+
+test("Orca occurrence truth keeps public, rights-review-only and unavailable states separate", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const occurrenceUrl = "**/v1/occurrence/search?taxonKey=2440483*";
+  const cases: Array<{
+    state: OccurrenceTruthState;
+    status?: number;
+    payload?: Record<string, unknown>;
+  }> = [
+    {
+      state: "PUBLIC_RECORDS",
+      payload: {
+        count: 1,
+        results: [{
+          key: 1001,
+          occurrenceStatus: "PRESENT",
+          hasGeospatialIssue: false,
+          decimalLatitude: 60,
+          decimalLongitude: 5,
+          scientificName: "Orcinus orca",
+          license: "CC0",
+        }],
+      },
+    },
+    {
+      state: "NO_PUBLIC_RECORDS",
+      payload: {
+        count: 1,
+        results: [{
+          key: 1002,
+          occurrenceStatus: "PRESENT",
+          hasGeospatialIssue: false,
+          decimalLatitude: 60,
+          decimalLongitude: 5,
+          scientificName: "Orcinus orca",
+          license: "All rights reserved",
+        }],
+      },
+    },
+    { state: "SOURCE_UNAVAILABLE", status: 503 },
+  ];
+
+  for (const scenario of cases) {
+    await page.route(occurrenceUrl, async (route) => {
+      if (scenario.status) await route.fulfill({ status: scenario.status, body: "{}" });
+      else await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(scenario.payload) });
+    }, { times: 1 });
+
+    await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif&state=${scenario.state}`);
+    const section = page.locator('[data-species-section="atlas"]');
+    const boundary = findOccurrenceBoundary(section);
+    await expect(boundary).toBeVisible();
+    const original = (await boundary.textContent())?.trim() ?? "";
+    expect(occurrenceTruthState(original)).toBe(scenario.state);
+
+    if (scenario.state === "NO_PUBLIC_RECORDS") {
+      await expect(boundary).toContainText("Nothing from this response is plotted");
+      await expect(boundary).toContainText("requires rights review");
+    }
+
+    await boundary.evaluate((node) => { node.textContent = "These are live animal positions."; });
+    expect(occurrenceTruthState((await boundary.textContent()) ?? "")).toBeNull();
+    await boundary.evaluate((node, value) => { node.textContent = value; }, original);
+    expect(occurrenceTruthState((await boundary.textContent()) ?? "")).toBe(scenario.state);
+    await page.unroute(occurrenceUrl);
+  }
 });
 
 test("mobile proof preserves navigation, source limits, local Watch and a readable footer", async ({ page }) => {
@@ -158,11 +236,9 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   const mobileOccurrenceSection = page.locator('[data-species-section="atlas"]');
   await expect(mobileOccurrenceSection.getByText("WHERE RECORDED", { exact: true })).toBeVisible();
   await expect(mobileOccurrenceSection.getByRole("link", { name: "OPEN OBSERVATIONS IN ATLAS" })).toBeVisible();
-  const mobileOccurrenceBoundary = mobileOccurrenceSection.getByText(
-    /reported observations are not current position, abundance or complete range|no public observation is implied or plotted|GBIF observation source is currently unavailable or returned no matching records/i,
-  ).first();
+  const mobileOccurrenceBoundary = findOccurrenceBoundary(mobileOccurrenceSection);
   await expect(mobileOccurrenceBoundary).toBeVisible();
-  expect(isSourceLimitedOccurrenceText((await mobileOccurrenceBoundary.textContent()) ?? "")).toBe(true);
+  expect(occurrenceTruthState((await mobileOccurrenceBoundary.textContent()) ?? "")).not.toBeNull();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await settleVisuals(page);
 
