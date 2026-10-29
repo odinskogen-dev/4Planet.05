@@ -1,0 +1,86 @@
+name: 4SPECIES 100 Independent LIVE Indexability Proof 20261029
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-live100-exact-public-proof-20261029.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check all original 39 + all 61 candidates against real 4species.com, JSON, canonical and public sitemap (READ ONLY)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,xml.etree.ElementTree as ET,re,concurrent.futures,collections,html.parser,os,json
+          originally="orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw".split()
+          candidates="red-panda koala quokka capybara snow-leopard clouded-leopard red-fox fennec-fox meerkat ring-tailed-lemur brown-throated-sloth giant-anteater chinese-pangolin giant-otter sea-otter walrus narwhal beluga-whale dugong west-indian-manatee platypus common-wombat tasmanian-devil snowy-owl common-kingfisher secretary-bird toco-toucan scarlet-macaw peregrine-falcon indian-peafowl greater-flamingo axolotl komodo-dragon king-cobra reticulated-python saltwater-crocodile panther-chameleon leopard-gecko golden-poison-frog western-santa-cruz-tortoise ocellaris-clownfish ocean-sunfish great-hammerhead giant-manta-ray electric-eel tiger-shark long-snouted-seahorse zebrafish greater-blue-ringed-octopus giant-pacific-octopus coconut-crab japanese-spider-crab peacock-mantis-shrimp atlas-moth orchid-mantis peacock-spider emperor-scorpion venus-flytrap titan-arum giant-sequoia dragon-blood-tree".split()
+          currently_declared="orca lion tiger african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar monarch-butterfly polar-bear english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia".split()
+          assert len(originally)==39 and len(candidates)==61 and len(set(originally+candidates))==100
+          assert len(currently_declared)==57 and len(set(currently_declared))==57
+          UA={'User-Agent':'Mozilla/5.0 (compatible; 4PLANET-independent-SPECIES-100-audit/1.0)'}
+          def get(url):
+            req=urllib.request.Request(url,headers=UA)
+            try:
+              with urllib.request.urlopen(req,timeout=28) as r:return r.status,r.geturl(),r.headers,r.read(360000)
+            except urllib.error.HTTPError as e:return e.code,e.geturl(),e.headers,e.read(15000)
+            except Exception as e:return 0,type(e).__name__,{},b''
+          class H(html.parser.HTMLParser):
+            def __init__(self):
+              super().__init__();self.canon=[];self.h1=0;self.robot=[]
+            def handle_starttag(self,t,a):
+              d=dict(a)
+              if t=='link' and d.get('rel','').lower()=='canonical':self.canon.append(d.get('href',''))
+              if t=='h1':self.h1+=1
+              if t=='meta' and d.get('name','').lower()=='robots':self.robot.append(d.get('content',''))
+          c,final,headers,body=get('https://4species.com/sitemap.xml')
+          if c!=200:raise SystemExit('Cannot read live species sitemap')
+          root=ET.fromstring(body)
+          locs=[x.text for x in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if x.text]
+          sitemapped=set(locs)
+          def check(slug):
+            url='https://4species.com/'+slug
+            status,dest,headers,html=get(url)
+            h=H()
+            try:h.feed(html.decode('utf-8','replace'))
+            except:pass
+            robots=' '.join(h.robot)+' '+headers.get('X-Robots-Tag','')
+            jstatus,jdest,jheads,jbody=get('https://4species.com/species-data/v1/'+slug+'.json')
+            json_slug=''
+            try:
+              v=json.loads(jbody)
+              json_slug=v.get('slug') if isinstance(v,dict) else ''
+              schema=v.get('schema') if isinstance(v,dict) else ''
+              science=(v.get('identity') or {}).get('scientificName') if isinstance(v,dict) else ''
+            except: schema='';science=''
+            profile=(status==200 and dest==url and h.canon==[url] and h.h1>0 and 'noindex' not in robots.lower() and url in sitemapped and jstatus==200 and schema=='4PLANET_SPECIES_PAGE_01' and json_slug==slug and bool(science))
+            return (slug,profile,status,jstatus,'yes' if url in sitemapped else 'no',h.canon[:1],robots[:65],len(html))
+          with concurrent.futures.ThreadPoolExecutor(max_workers=7) as ex: rows=list(ex.map(check,originally+candidates))
+          passing=[r for r in rows if r[1]]
+          n39=sum(r[1] for r in rows[:39])
+          n61=sum(r[1] for r in rows[39:])
+          unknown=[r for r in rows if not r[1]]
+          extras=[u for u in locs if u.startswith('https://4species.com/') and u.removeprefix('https://4species.com/').strip('/') not in set(originally+candidates) and not u.endswith(('/','/explore','/quiz','/about'))]
+          summary=['# 4SPECIES independent 100-address LIVE truth — 29 October 2026','',
+            f'Current public sitemap: {len(locs)} entries, {len(sitemapped)} unique. Registered source state: {len(currently_declared)} slugs.',
+            f'Original 39 truly live by strict HTML+JSON+sitemap criteria: {n39}/39.',
+            f'61 expansion candidates truly live by strict criteria: {n61}/61.',
+            f'Total true, owned, source-backed live profile routes among exact 100: {len(passing)}/100.',
+            f'Candidates not fully live: {len(unknown)}.',
+            f'Live sitemap entries outside planned 100 species: {len(extras)} (inspect before asserting total).','',
+            '### All expansion candidates and observed public status',
+            '| Slug | Valid published profile | HTTP HTML | HTTP JSON | In live sitemap | Canonical | Robots |',
+            '|---|---|---:|---:|---|---|---|']
+          for x in rows[39:]:
+            slug,pub,http,jsonhttp,sm,can,rob,htmlsize=x
+            summary.append(f'| {slug} | {"YES" if pub else "NO"} | {http} | {jsonhttp} | {sm} | {str(can[:1])[:65]} | {rob[:55]} |')
+          summary+=['','### Any original profiles that failed live verification',
+            *[f'{r[0]} : HTML {r[2]}, JSON {r[3]}, sitemap {r[4]}' for r in rows[:39] if not r[1]],
+            '','This is **READ ONLY**, no Worker, Pages, routing, code, profile, photo or sitemap modified.',
+            'HTTP 200 alone does not mean that an actual species profile is published. Each must have correct profile JSON, self canonical and discoverability.']
+          result='\n'.join(summary)
+          print(result)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write(result+'\n')
+          if n39!=39 or len(passing)<61:raise SystemExit('PUBLIC 61 BASELINE REGRESSION: old39='+str(n39)+' new='+str(n61))
+          PY
