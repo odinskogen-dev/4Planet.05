@@ -1,0 +1,82 @@
+name: 4SPECIES Next Five Independent Premium Release Candidate Gold 20261029
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-five-new-independent-candidate-ready-20261029.yml]
+permissions: {contents: read}
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify current 61 source cohort inventory
+        run: node ops/species/next61/audit-readiness.mjs
+      - name: Check exact immutable new five source-linked HTML, noindex, photo bytes, and protected 61
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json,hashlib,html.parser,concurrent.futures,re,xml.etree.ElementTree as ET,os
+          SITE='https://4species.com'
+          PREVIEW='https://a8010871.4planet-05.pages.dev'
+          OLD57=re.findall(r'"([a-z0-9-]+)"',open('ops/discovery/4species-router.js').read().split('export const CURRENT_PUBLIC_SPECIES_SLUGS = new Set([',1)[1].split(']);',1)[0])
+          OLD4=['atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree']
+          NEW=['clouded-leopard','sea-otter','snowy-owl','indian-peafowl','coconut-crab']
+          assert len(OLD57)==57 and len(set(OLD57+OLD4+NEW))==66
+          manifest=json.load(open('ops/species/next61/visual-selected-next8-20261028.json'))['approved']
+          def get(url,cap=15000000):
+           req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (4SPECIES-Independent-Gold-20261029)','Cache-Control':'no-cache'})
+           try:
+            with urllib.request.urlopen(req,timeout=35) as r:return r.status,r.geturl(),r.headers,r.read(cap)
+           except urllib.error.HTTPError as e:return e.code,e.geturl(),e.headers,e.read(10000)
+          class Meta(html.parser.HTMLParser):
+           def __init__(self):super().__init__();self.h1=0;self.canonical=[];self.robots=[];self.scripts=[]
+           def handle_starttag(self,t,a):
+            d=dict(a)
+            if t=='h1':self.h1+=1
+            if t=='link' and d.get('rel','').lower()=='canonical':self.canonical.append(d.get('href',''))
+            if t=='meta' and d.get('name','').lower()=='robots':self.robots.append(d.get('content',''))
+            if t=='script' and d.get('src','').startswith('/assets/'):self.scripts.append(d.get('src'))
+          def validate_new(slug):
+           st,final,h,html=get(PREVIEW+'/'+slug,cap=500000)
+           p=Meta();p.feed(html.decode('utf-8','replace'))
+           robots=' '.join(p.robots)+' '+h.get('X-Robots-Tag','')
+           assert st==200 and 'noindex' in robots.lower() and p.h1>0 and p.canonical==[SITE+'/'+slug],('PREVIEW_HTML_NOT_GOLD',slug,st,p.canonical,robots)
+           js,_,_,body=get(PREVIEW+'/species-data/v1/'+slug+'.json',cap=900000)
+           data=json.loads(body)
+           assert js==200 and data['slug']==slug and data['schema']=='4PLANET_SPECIES_PAGE_01'
+           assert len([c for v in data.get('facts',{}).values() for c in v if isinstance(c,dict) and c.get('source',{}).get('url','').startswith('https://')])>=8,('SCIENCE_8_CLAIMS_MISSING',slug)
+           assert data['provenance']['founderRelease']=='PREMIUM_V1_2026-10-28_CANDIDATE_ONLY'
+           assert data['provenance']['review']=='DRAFT' and data.get('gallery')==[],('DRAFT_OR_GALLERY_GAP',slug)
+           info=manifest[slug]; hero=data['hero']
+           assert info['visuallyCheckedOnContactSheet'] is True
+           assert info['sourcePage']==hero['sourcePage'] and info['artist']==hero['credit'] and info['licence']==hero['licence']
+           assert info['sha256']==data['provenance']['photoSha256']
+           path=hero['url'].replace(SITE,'')
+           assert path.startswith('/assets/species/next61/')
+           im,_,headers,bytesimg=get(PREVIEW+path)
+           assert im==200 and headers.get('Content-Type','').startswith('image/')
+           assert hashlib.sha256(bytesimg).hexdigest()==info['sha256'],('PHOTO_BYTE_SHA_INVALID',slug)
+           return (slug,p.canonical[0],len(bytesimg),len(p.scripts),info['licence'])
+          with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:newresults=list(pool.map(validate_new,NEW))
+          print('NEXT_FIVE_INDEPENDENT_IMMUTABLE_NOINDEX_SHA_PASS '+json.dumps(newresults))
+          i,_,_,raw=get(PREVIEW+'/release-identity.json')
+          identity=json.loads(raw)
+          assert i==200 and identity['triggerSha']=='6c5acf66b645e8544015b85ab98c2643dc9c48c5' and len(identity['payloadDigest'])==64,('IMMUTABLE_BUILD_IDENTITY_MISMATCH',identity)
+          liveS,_,_,xml=get(SITE+'/sitemap.xml')
+          locs=[x.text for x in ET.fromstring(xml).findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if x.text]
+          assert liveS==200 and len(locs)==66 and len(set(locs))==66 and all(SITE+'/'+x in locs for x in OLD57+OLD4), 'OLD61_PUBLIC_SITEMAP_DRIFT'
+          def protected(slug):
+           st,final,h,html=get(SITE+'/'+slug,cap=500000)
+           p=Meta();p.feed(html.decode('utf-8','replace'))
+           j,_,_,jsonBody=get(SITE+'/species-data/v1/'+slug+'.json',cap=900000)
+           d=json.loads(jsonBody)
+           valid=st==200 and final==SITE+'/'+slug and j==200 and p.canonical==[SITE+'/'+slug] and p.h1>0 and 'noindex' not in (' '.join(p.robots)+' '+h.get('X-Robots-Tag','')).lower() and d['slug']==slug and d['schema']=='4PLANET_SPECIES_PAGE_01'
+           return slug,valid,hashlib.sha256(html).hexdigest(),hashlib.sha256(jsonBody).hexdigest()
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as ex:old=list(ex.map(protected,OLD57+OLD4))
+          assert len(old)==61 and all(row[1] for row in old),'OLD61_ZERO_LOSS_PRE_RELEASE_FAIL'
+          print('PROTECTED_61_PUBLIC_HTML_JSON_AND_SITEMAP_PASS '+str(len(old)))
+          print('NEXT_FIVE_PREVIEW_GOLD_CANDIDATE_READY_NOT_LIVE')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+           f.write('## 4SPECIES next five independent preview readiness\n\n5/5 private noindex candidate HTML/JSON + eight cited claims, exact photo SHA and credit, immutable identity PASS. 61/61 public identities currently intact. **NO live release has occurred.**\n\n'+json.dumps(newresults)+'\n')
+          PY
