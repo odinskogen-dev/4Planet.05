@@ -383,7 +383,8 @@ export const RELATIONS: Relation[] = [
     claim: "Fishing pressure beyond stock recovery capacity collapses cod populations.",
     interpretation: "SEEDED_PROTOTYPE",
     confidence: "HIGH",
-    evidence: "Grand Banks collapse, 1992. The stock has still not recovered.",
+    // Primary source (12 June 2026): https://www.canada.ca/en/fisheries-oceans/news/2026/06/northern-cod-quota-to-increase-55-per-cent-minister-thompson-announces-2026-management-decisions-for-northern-cod-northern-gulf-cod-and-northeast-a.html
+    evidence: "Northern cod (NAFO 2J3KL): 1992 moratorium; Healthy Zone as of DFO 12 June 2026. Northern Gulf cod (3Pn4RS): Critical Zone. Stock status is not species-wide or proof of pre-collapse biomass recovery.",
     origin: "FOUNDER_DIRECTED",
     reviewStatus: "UNREVIEWED",
   },
