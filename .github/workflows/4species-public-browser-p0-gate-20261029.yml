@@ -1,0 +1,49 @@
+name: 4SPECIES Public Browser 61 Preservation P0 20261029
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-public-browser-p0-gate-20261029.yml]
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Direct public production browser test, diagnose old/new failures, READ ONLY
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import {chromium,webkit} from '@playwright/test';
+          const cases=[['orca','Orca'],['koala','Koala'],['atlas-moth','Atlas moth'],['peacock-spider','Peacock spider'],['indian-peafowl','Indian peafowl']];
+          const faults=[];
+          for(const [bname,driver] of [['chromium',chromium],['webkit',webkit]]){
+            const browser=await driver.launch({headless:true});
+            for(const [slug,expected] of cases){
+              const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
+              const pageerrors=[],failed=[];
+              page.on('pageerror',err=>pageerrors.push(String(err).slice(0,230)));
+              page.on('requestfailed',req=>{if(req.url().includes('4species.com'))failed.push(req.url().slice(0,240)+' '+(req.failure()?.errorText||''))});
+              let status=0,dom={},reason='';
+              try{
+                const response=await page.goto('https://4species.com/'+slug,{waitUntil:'domcontentloaded',timeout:30000});
+                status=response?.status()||0;
+                await page.locator('h1.spx-name').waitFor({state:'visible',timeout:14000});
+                dom=await page.evaluate(()=>({heading:document.querySelector('h1.spx-name')?.textContent?.trim(),ssr:!!document.querySelector('.spx-prerender'),scripts:[...document.querySelectorAll('script[src]')].map(x=>x.getAttribute('src')).slice(0,4),canonical:document.querySelector('link[rel=canonical]')?.href,broken:[...document.images].filter(x=>x.complete&&!x.naturalWidth).length}));
+                if(dom.heading?.toLowerCase()!==expected.toLowerCase()||dom.ssr||dom.canonical!=='https://4species.com/'+slug)reason='WRONG_TITLE_OR_SSR_OR_CANONICAL';
+              }catch(e){reason=String(e).slice(0,280);dom=await page.evaluate(()=>({body:document.body?.innerText?.slice(0,80),script:[...document.querySelectorAll('script[src]')].map(x=>x.getAttribute('src')).slice(0,5),ssr:!!document.querySelector('.spx-prerender')})).catch(()=>({}))}
+              const result={browser:bname,slug,http:status,ok:reason==='',reason,dom,pageerrors:pageerrors.slice(0,3),requestFailed:failed.slice(0,3)};
+              console.log('PUBLIC_BROWSER_TRUTH '+JSON.stringify(result));
+              if(slug!=='indian-peafowl'&&reason)faults.push(result);
+              await page.close();
+            }
+            await browser.close();
+          }
+          if(faults.length)console.log('PUBLIC_EXISTING_OR_NEW_BROWSER_BLOCKERS '+JSON.stringify(faults));
+          else console.log('PUBLIC_61_BROWSER_BASELINE_KOALA_ORCA_ATLAS_PEACOCK_PASS');
+          if(faults.length)process.exitCode=1;
+          JS
