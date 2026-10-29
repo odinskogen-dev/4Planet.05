@@ -12,6 +12,19 @@ function hasDefinitionPair(pairs: DefinitionPair[], term: string, value: string)
   return pairs.some((pair) => pair.term === term && pair.value === value);
 }
 
+async function readDefinitionPairs(list: import("@playwright/test").Locator) {
+  return list.locator(":scope > div").evaluateAll((rows) =>
+    rows.map((row) => ({
+      term: row.querySelector("dt")?.textContent?.trim() ?? "",
+      value: row.querySelector("dd")?.textContent?.trim() ?? "",
+    })),
+  );
+}
+
+function isSourceLimitedOccurrenceText(text: string) {
+  return /reported observations are not current position, abundance or complete range|no public observation is implied or plotted|GBIF observation source is currently unavailable or returned no matching records/i.test(text);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -84,23 +97,31 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
   const sourceIdentityList = page.locator("dl").filter({ has: page.locator("dt", { hasText: /^Taxon$/ }) }).first();
-  const sourceIdentityPairs = await sourceIdentityList.locator(":scope > div").evaluateAll((rows) =>
-    rows.map((row) => ({
-      term: row.querySelector("dt")?.textContent?.trim() ?? "",
-      value: row.querySelector("dd")?.textContent?.trim() ?? "",
-    })),
-  );
+  const sourceIdentityPairs = await readDefinitionPairs(sourceIdentityList);
   expect(hasDefinitionPair(sourceIdentityPairs, "Taxon", "ACCEPTED")).toBe(true);
   expect(hasDefinitionPair(sourceIdentityPairs, "Source identity", "GBIF 2440483")).toBe(true);
 
-  const changedStatus = sourceIdentityPairs.map((pair) => pair.term === "Taxon" ? { ...pair, value: "REJECTED" } : pair);
-  const changedKey = sourceIdentityPairs.map((pair) => pair.term === "Source identity" ? { ...pair, value: "GBIF 0" } : pair);
-  expect(hasDefinitionPair(changedStatus, "Taxon", "ACCEPTED")).toBe(false);
-  expect(hasDefinitionPair(changedKey, "Source identity", "GBIF 2440483")).toBe(false);
-  await expect(page.getByText("SOURCE RECORD", { exact: true })).toBeVisible();
-  await expect(page.getByText("5939349319", { exact: true })).toBeVisible();
-  await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
-  await expect(page.getByText(/does not establish range, abundance, population trend/i)).toBeVisible();
+  const sourceIdentityValue = sourceIdentityList.locator("dt", { hasText: /^Source identity$/ }).locator("..").locator("dd");
+  const originalSourceIdentity = (await sourceIdentityValue.textContent())?.trim() ?? "";
+  await sourceIdentityValue.evaluate((node) => { node.textContent = "GBIF 0"; });
+  expect(hasDefinitionPair(await readDefinitionPairs(sourceIdentityList), "Source identity", "GBIF 2440483")).toBe(false);
+  await sourceIdentityValue.evaluate((node, value) => { node.textContent = value; }, originalSourceIdentity);
+  expect(hasDefinitionPair(await readDefinitionPairs(sourceIdentityList), "Source identity", "GBIF 2440483")).toBe(true);
+
+  const occurrenceSection = page.locator('[data-species-section="atlas"]');
+  await expect(occurrenceSection.getByText("WHERE RECORDED", { exact: true })).toBeVisible();
+  await expect(occurrenceSection.getByRole("heading", { name: "Explore reported observations." })).toBeVisible();
+  await expect(occurrenceSection.getByRole("link", { name: "OPEN OBSERVATIONS IN ATLAS" })).toBeVisible();
+  const occurrenceBoundary = occurrenceSection.getByText(
+    /reported observations are not current position, abundance or complete range|no public observation is implied or plotted|GBIF observation source is currently unavailable or returned no matching records/i,
+  ).first();
+  await expect(occurrenceBoundary).toBeVisible();
+  const originalOccurrenceBoundary = (await occurrenceBoundary.textContent())?.trim() ?? "";
+  expect(isSourceLimitedOccurrenceText(originalOccurrenceBoundary)).toBe(true);
+  await occurrenceBoundary.evaluate((node) => { node.textContent = "These are live animal positions."; });
+  expect(isSourceLimitedOccurrenceText((await occurrenceBoundary.textContent()) ?? "")).toBe(false);
+  await occurrenceBoundary.evaluate((node, value) => { node.textContent = value; }, originalOccurrenceBoundary);
+  expect(isSourceLimitedOccurrenceText((await occurrenceBoundary.textContent()) ?? "")).toBe(true);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
 
@@ -131,8 +152,17 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
-  await expect(page.getByText("SOURCE REVIEW PENDING", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(/do not establish range, abundance, population trend or live tracking/i)).toBeVisible();
+  const mobileSourceIdentityList = page.locator("dl").filter({ has: page.locator("dt", { hasText: /^Taxon$/ }) }).first();
+  expect(hasDefinitionPair(await readDefinitionPairs(mobileSourceIdentityList), "Taxon", "ACCEPTED")).toBe(true);
+  expect(hasDefinitionPair(await readDefinitionPairs(mobileSourceIdentityList), "Source identity", "GBIF 2440483")).toBe(true);
+  const mobileOccurrenceSection = page.locator('[data-species-section="atlas"]');
+  await expect(mobileOccurrenceSection.getByText("WHERE RECORDED", { exact: true })).toBeVisible();
+  await expect(mobileOccurrenceSection.getByRole("link", { name: "OPEN OBSERVATIONS IN ATLAS" })).toBeVisible();
+  const mobileOccurrenceBoundary = mobileOccurrenceSection.getByText(
+    /reported observations are not current position, abundance or complete range|no public observation is implied or plotted|GBIF observation source is currently unavailable or returned no matching records/i,
+  ).first();
+  await expect(mobileOccurrenceBoundary).toBeVisible();
+  expect(isSourceLimitedOccurrenceText((await mobileOccurrenceBoundary.textContent()) ?? "")).toBe(true);
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
   await settleVisuals(page);
 

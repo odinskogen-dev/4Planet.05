@@ -1,3 +1,69 @@
+# SPECIES — SOURCE-GROUNDED ORCA OCCURRENCE CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED TEST-CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor opens the Orca profile and needs the accepted taxon, its GBIF identity and the limits of reported observations to remain explicit on desktop and mobile.
+
+## ONE THING TO UNDERSTAND
+
+The interface presents GBIF 2440483 as source identity and reported occurrences as historical evidence, never live position, abundance or complete range.
+
+## PRIMARY ACTION
+
+Verify the current `WHERE RECORDED` section, its same-entity ATLAS handoff and the source-limited occurrence state actually rendered by `Species.tsx`.
+
+## SECONDARY DEPTH
+
+Preserve local Watch, the Orca → ATLAS entity context and the existing dynamic public-record, no-public-record and source-unavailable states.
+
+## P1 DOMINANT
+
+Source identity and the occurrence truth boundary remain the dominant proof.
+
+## P2 ORIENTATION
+
+Dynamic GBIF state can vary; every accepted state must remain source-limited and must not imply live animal positions.
+
+## P3 ACTION / NEXT
+
+The existing Watch and `OPEN OBSERVATIONS IN ATLAS` controls remain unchanged.
+
+## P4 DEPTH
+
+No product copy, source data, route, styling or non-Orca journey changes.
+
+## WHAT CAN BE REMOVED
+
+Remove only stale browser assertions for `SOURCE RECORD`, `5939349319`, `NONE CREATED` and `SOURCE REVIEW PENDING`, none of which exist in the exact component blob.
+
+## WHAT MUST BE REUSED
+
+Reuse the semantic source-identity definition list, `data-species-section="atlas"`, the existing product-proof journey, issue #145 and Atomic `P51-SHIP-01`.
+
+## TRUTH BOUNDARY
+
+The test proves the current DOM contains the accepted source identity and one source-limited occurrence state. It deliberately mutates the real DOM to a wrong source key and a live-position claim, verifies both contracts fail, restores the source truth, and makes no production or catalogue-wide claim.
+
+## MOBILE-FIRST RISK
+
+The same semantic source and occurrence checks now run at 390px; independent Gold still owns 430/390, WebKit, accessibility, rights and indexability evidence.
+
+## HUMAN SUCCESS
+
+A visitor can distinguish accepted taxonomy, source identity and reported-observation limits before continuing to ATLAS.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Native Browser Product Proof 40863362414 failed at line 100 because the test retained historical literals absent from `Species.tsx`. The prior negative check altered only an in-memory array. This same-path regression now asserts current semantic DOM and fails deliberate DOM mutations of both source identity and occurrence truth.
+
+## DOOR / ROLLBACK / JUDGE
+
+This is a reversible `king/test` test-contract and Gold-brief correction. Parent and rollback are `125a032beec37562ef75e31792f35270d27c807c`. Factory returns Maker evidence only; independent Gold judges the exact candidate and Founder retains merge/deploy/LIVE authority.
+
+---
+
 # SPECIES — SEMANTIC GBIF SOURCE-TRUTH PROOF — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED TEST-CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
