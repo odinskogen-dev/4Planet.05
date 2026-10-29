@@ -14,6 +14,38 @@ const surfaces = [
   { path: "/sandbox/gold/magazine/visual-blue-whale", heading: "A blue whale, in six numbers", marker: "VISUAL STORY" },
 ] as const;
 
+test("@identity-preflight exact controlled sandbox is the expected HEIR before the full matrix", async ({ page }) => {
+  const exactSha = process.env.EXACT_SHA;
+  expect(exactSha, "workflow must pin the exact candidate SHA").toMatch(/^[0-9a-f]{40}$/);
+
+  const response = await page.goto("/sandbox/gold", { waitUntil: "domcontentloaded" });
+  expect(response?.status(), "sandbox identity preflight requires HTTP 200").toBe(200);
+
+  const headers = response?.headers() ?? {};
+  expect(headers["x-4planet-control-plane"]).toBe("four-state-v1");
+  expect(headers["x-4planet-review-source"]).toBe(`heir-${exactSha!.slice(0, 12)}`);
+
+  const controlled = page.getByText("CONTROLLED TEST", { exact: true }).first();
+  await expect(controlled).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Founder Review/i }).first()).toBeVisible();
+
+  const controlledNode = await controlled.elementHandle();
+  expect(controlledNode, "controlled sentinel must resolve to a stable node").not.toBeNull();
+  const originalText = await controlledNode!.textContent();
+  try {
+    await controlledNode!.evaluate((node) => {
+      node.textContent = "WRONG SURFACE";
+    });
+    await expect(page.getByText("CONTROLLED TEST", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("WRONG SURFACE", { exact: true })).toBeVisible();
+  } finally {
+    await controlledNode!.evaluate((node, text) => {
+      node.textContent = text;
+    }, originalText);
+  }
+  await expect(page.getByText("CONTROLLED TEST", { exact: true }).first()).toBeVisible();
+});
+
 for (const surface of surfaces) {
   test(`${surface.marker} renders as controlled sandbox Gold surface`, async ({ page }, testInfo) => {
     const fatal: string[] = [];

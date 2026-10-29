@@ -1,3 +1,69 @@
+# 4PLANET — GOLD TEST-DOMAIN IDENTITY FAIL-FAST CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** RECURRING GOLD-RETURNED CI HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+An independent judge needs the controlled Founder Review sandbox—not an unrelated HTTP-200 surface—before spending time on the full 36-case matrix.
+
+## ONE THING TO UNDERSTAND
+
+Exact HEIR headers prove the request reached a candidate-aware edge, but they do not prove the rendered application contains the controlled review surface.
+
+## PRIMARY ACTION
+
+Run one exact-SHA desktop identity preflight for control-plane headers, review-source header, CONTROLLED TEST and Founder Review before the 1440/390/430 matrix.
+
+## SECONDARY DEPTH
+
+Retain all 36 existing Gold surface assertions, robots noindex, source truth, screenshots and no-LIVE authority checks.
+
+## P1 DOMINANT
+
+Wrong rendered content fails before the full matrix begins.
+
+## P2 ORIENTATION
+
+The preflight separates transport identity from application-surface identity.
+
+## P3 ACTION / NEXT
+
+Run native Gold Template TEST Domain Proof, then hand the exact candidate and evidence to independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Actual sandbox routing/deployment mismatch remains the TEST-domain owner's runtime problem; this change prevents repeated expensive diagnostic fan-out.
+
+## WHAT CAN BE REMOVED
+
+Remove no product or Gold assertion; only exclude the preflight-tagged case from the subsequent full matrix after it already passes.
+
+## WHAT MUST BE REUSED
+
+Reuse the exact HEIR headers, controlled sentinel, Founder Review namespace, existing Playwright spec, evidence upload, issue #145 and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Gold Template runs 40937723758 and 40946823606 reached exact HEIR headers, then failed 36/36 because CONTROLLED TEST and Founder Review were absent. The former spent 8m05.9s in the browser matrix. This change edits only the Gold TEST workflow, its owning Playwright regression and cumulative Gold brief. It does not repair sandbox routing, change product runtime, deploy, or grant LIVE authority.
+
+## MOBILE-FIRST RISK
+
+Without a preflight, one wrong application surface repeats the same identity failure across every viewport and route, delaying useful Gold feedback.
+
+## HUMAN SUCCESS
+
+A wrong HTTP-200 surface fails one desktop identity check; the full 1440/390/430 matrix runs only when the exact controlled review surface is present.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: the existing wait checked candidate headers but not rendered application identity before starting the matrix. Missing check: controlled sentinel plus Founder Review namespace at the exact source SHA. Immunity: tagged exact-SHA preflight, wrong-sentinel DOM mutation proving detector sensitivity, and grep separation that prevents duplicate execution in the full matrix.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is 75f2681bdde12fa6e9532e7a467d3a2a2b3ad8dc. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+---
+
 # 4PLANET — DETERMINISTIC COMPACT-FOOTER OVERFLOW CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED BROWSER HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
