@@ -140,17 +140,26 @@ test("homepage exposes the complete public universe and three guided entry journ
   assert.match(home, /These action pathways are in development\./);
 });
 
-test("homepage hero remains readable and operable on short, narrow and zoomed mobile viewports", () => {
-  const mobile = homeCss.match(/@media\(max-width:680px\)\{[\s\S]*?\n\}/)?.[0] ?? "";
-  const narrow = homeCss.match(/@media\(max-width:260px\)\{[\s\S]*?\n\}/)?.[0] ?? "";
+const assertMobileHeroContract = (cssSource) => {
+  const mobile = cssSource.match(/@media\(max-width:680px\)\{[\s\S]*?\n\}/)?.[0] ?? "";
+  const narrow = cssSource.match(/@media\(max-width:260px\)\{[\s\S]*?\n\}/)?.[0] ?? "";
 
-  assert.match(mobile, /\.planet-hero\{height:auto;min-height:100svh;overflow:visible\}/);
+  assert.match(mobile, /\.planet-hero\{height:auto;min-height:100svh;overflow:clip\}/);
   assert.match(mobile, /\.planet-hero__content\{height:auto;min-height:100svh;box-sizing:border-box;/);
   assert.match(mobile, /padding-top:max\(90px,calc\(env\(safe-area-inset-top\) \+ 72px\)\)/);
   assert.match(mobile, /\.planet-hero h1 span\{white-space:normal\}/);
   assert.doesNotMatch(mobile, /min-height:680px|white-space:nowrap/);
   assert.match(narrow, /overflow-wrap:anywhere/);
   assert.match(narrow, /\.planet-hero__actions\{grid-template-columns:1fr\}/);
+};
+
+test("homepage hero remains readable and operable on short, narrow and zoomed mobile viewports", () => {
+  assertMobileHeroContract(homeCss);
+});
+
+test("homepage mobile hero containment cannot regress to overflow visible", () => {
+  const visibleRegression = homeCss.replace("overflow:clip", "overflow:visible");
+  assert.throws(() => assertMobileHeroContract(visibleRegression));
 });
 
 test("WILD ORCA's blob module exception is scoped away from the public shell", () => {
