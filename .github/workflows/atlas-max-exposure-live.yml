@@ -25,7 +25,7 @@ jobs:
     env:
       ATLAS_PROJECT: 4planet-atlas
       ATLAS_DOMAIN: 4planetatlas.com
-      BASELINE_SHA: c60a670a3ceade04ac6f2d50e706948bd835d65d
+      BASELINE_SHA: f01d4943e8e5fd98f1f3253255f370293f0a9589
     steps:
       - uses: actions/checkout@v4
         with:
