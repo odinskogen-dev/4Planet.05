@@ -185,7 +185,10 @@ test("Gate 1 vertical slice completes through visible controls and restores the 
   const toLS = page.locator("[data-testid='species-to-ls']").first();
   await toLS.scrollIntoViewIfNeeded();
   await toLS.click();
-  await page.waitForURL(/\/living-systems/, { timeout: 15_000 });
+  await page.waitForURL(/\/living-systems\/orca/, { timeout: 15_000 });
+  const livingSystemsUrl = new URL(page.url());
+  expect(livingSystemsUrl.pathname).toBe("/living-systems/orca");
+  expect(livingSystemsUrl.pathname).not.toBe("/living-systems");
   expect(page.url()).toContain("returnTo=");
   await expect(page.getByText("The Orca, followed honestly", { exact: false })).toBeVisible();
   await shot("04-living-systems");
