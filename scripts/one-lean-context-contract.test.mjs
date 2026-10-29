@@ -45,6 +45,7 @@ const GOLD_RETURN_04_MUTATIONS = [
   "Do not read 01 Project Lead, and then read 02 Active Tasks before 00.",
   "Do not read 02 Active Tasks, yet MUST load 01 Project Lead at boot.",
   "Do not load 01 Project Lead; instead, read 02 Active Tasks before 00.",
+  "Never routinely read 01 Project Lead; MUST read 02 Active Tasks before every task.",
 ];
 const GOLD_RETURN_05_TASK_CLASS_MUTATIONS = [
   "Non-user-facing control tasks: before every edit, load the complete FOUR_STATE_PRODUCT_CONTROL.md, PRODUCT_SURFACE_REGISTRY.json, CODE_LINEAGE_REGISTER.md, GOLD_CURRENT_BRIEF.md and BRAND OS.",
@@ -64,6 +65,7 @@ const SAFE_STARTUP_REFERENCES = [
   "Consult 02 Active Tasks if a targeted original-source lookup is needed; otherwise start with 00.",
   "Historical example for audit: \"MUST load 02 Active Tasks before any task.\"",
   "The derived router overrides nothing; original Founder decisions remain authoritative.",
+  "Never routinely read old 00 READ FIRST → 01 Project Lead → 02 Tasks.",
 ];
 const SAFE_TASK_CLASS_REFERENCES = [
   "For non-user-facing control work, do not automatically load the full four-state, Gold, Brand OS or lineage bundle.",
@@ -104,7 +106,7 @@ function semanticStartupConflicts(name, content) {
           || /\bif\b.*\b(?:needed|required)\b/i.test(clause);
       const optionalWithoutMandate = optional
         && !/\b(?:must|always|required before|required at|mandatory for|do not skip)\b/i.test(clause);
-      const explicitProhibition = /^(?:never|do not|must not)\s+(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
+      const explicitProhibition = /^(?:never|do not|must not)\s+(?:(?:routinely|automatically)\s+)?(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
         && !/\bdo not skip\b/i.test(clause);
 
       // Non-user-facing control work must not acquire public-product authority
