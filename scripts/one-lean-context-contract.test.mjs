@@ -60,6 +60,8 @@ const GOLD_RETURN_06_BARE_CONTRAST_MUTATIONS = [
   "Never routinely read 01 Project Lead but MUST read 02 Active Tasks before every task.",
   "Non-user-facing control work: do not automatically read Brand OS but you MUST load GOLD_CURRENT_BRIEF before every edit.",
   "Never routinely read 01 Project Lead but you MUST read 02 Active Tasks before every task.",
+  "Non-user-facing control work: do not automatically read Brand OS but the operator MUST load GOLD_CURRENT_BRIEF before every edit.",
+  "Never routinely read 01 Project Lead but the operator MUST read 02 Active Tasks before every task.",
 ];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
@@ -99,10 +101,12 @@ function semanticStartupConflicts(name, content) {
       line = line.replace(/^(?:historical (?:quote|note|example)(?: for audit)?|quoted (?:historical )?(?:example|text))[^"`]*(["`]).*?\1\s*/i, "");
     }
 
-    // Split only at explicit instruction boundaries. This keeps ordinary
-    // prose intact while preventing a safe first clause from masking a later
-    // mandate separated by punctuation or a contrastive conjunction.
-    const clauses = line.split(/\s*;\s*(?:instead,?\s*)?|(?<=[.!?])\s+|,\s*(?:but|yet|and then|instead,?)\s+/i);
+    const lineHasGlobalControlScope = /\b(?:non-user-facing|control-only|before changing any code|before every edit)\b/i.test(line);
+
+    // Split only at explicit instruction boundaries. A contrast becomes a
+    // boundary when its same instruction clause contains a mandate, regardless
+    // of the actor phrase between the conjunction and the modal.
+    const clauses = line.split(/\s*;\s*(?:instead,?\s*)?|(?<=[.!?])\s+|,\s*(?:but|yet|and then|instead,?)\s+|\s+(?=(?:but|yet|however)\b(?:(?![.!?;]).){0,80}\b(?:must|always|required|mandatory)\b)/i);
     for (const rawClause of clauses) {
       const clause = rawClause.trim().replace(/^(?:but|yet|and then|instead),?\s+/i, "");
       if (!clause) continue;
@@ -112,7 +116,7 @@ function semanticStartupConflicts(name, content) {
           || /\bif\b.*\b(?:needed|required)\b/i.test(clause);
       const optionalWithoutMandate = optional
         && !/\b(?:must|always|required before|required at|mandatory for|do not skip)\b/i.test(clause);
-      const contrastingMandatory = /\b(?:but|yet|however)\s+(?:(?:you|agents?|the agent)\s+)?(?:must|always|required|mandatory)\b/i.test(clause);
+      const contrastingMandatory = /\b(?:but|yet|however)\b(?:(?![.!?;]).){0,80}\b(?:must|always|required|mandatory)\b/i.test(clause);
       const explicitProhibition = /^(?:never|do not|must not)\s+(?:(?:routinely|automatically)\s+)?(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
         && !contrastingMandatory
         && !/\bdo not skip\b/i.test(clause);
@@ -121,7 +125,8 @@ function semanticStartupConflicts(name, content) {
       // bundles as a universal bootstrap. Keep this finite: require a global
       // control scope, a mandate, and a named broad supplemental bundle in the
       // same clause. An explicit prohibition remains valid guidance.
-      const globalControlScope = /\b(?:non-user-facing|control-only|before changing any code|before every edit)\b/i.test(clause);
+      const globalControlScope = lineHasGlobalControlScope
+        || /\b(?:non-user-facing|control-only|before changing any code|before every edit)\b/i.test(clause);
       const mandatorySupplementalRead = /\b(?:must\s+(?:read|load|fetch|preload)|requires?|mandatory bootstrap|before (?:any|each|every|changing)[^.!?]*(?:read|load|fetch|preload)|first\s+(?:read|load|fetch|preload)|always\s+(?:read|load|fetch|preload))\b/i.test(clause);
       const broadSupplementalBundle = /\b(?:four[- ]state(?: product authority)?|FOUR_STATE_PRODUCT_CONTROL|PRODUCT_SURFACE_REGISTRY|Gold(?: document| control)? bundle|GOLD_CURRENT_BRIEF|Brand OS|Brand control documents?|CODE_LINEAGE_REGISTER|product lineage files?|(?:project|product) lineage archive)\b/i.test(clause);
       const scopedSupplementalProhibition = /\b(?:do not|never|must not)\s+(?:automatically\s+)?(?:read|load|fetch|preload|require)\b/i.test(clause)
