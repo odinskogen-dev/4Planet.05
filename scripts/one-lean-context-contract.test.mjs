@@ -55,6 +55,10 @@ const GOLD_RETURN_05_TASK_CLASS_MUTATIONS = [
   "Every non-user-facing test task must preload the entire project lineage archive before starting.",
   "For a control-only task, always preload the complete product lineage archive before editing.",
 ];
+const GOLD_RETURN_06_BARE_CONTRAST_MUTATIONS = [
+  "Non-user-facing control work: do not automatically read Brand OS but MUST load GOLD_CURRENT_BRIEF before every edit.",
+  "Never routinely read 01 Project Lead but MUST read 02 Active Tasks before every task.",
+];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
   "Use the 01 Project Lead or 02 Active Tasks archives on-demand only when a targeted original-source lookup requires them.",
@@ -106,7 +110,9 @@ function semanticStartupConflicts(name, content) {
           || /\bif\b.*\b(?:needed|required)\b/i.test(clause);
       const optionalWithoutMandate = optional
         && !/\b(?:must|always|required before|required at|mandatory for|do not skip)\b/i.test(clause);
+      const contrastingMandatory = /\b(?:but|yet|however)\s+(?:must|always|required|mandatory)\b/i.test(clause);
       const explicitProhibition = /^(?:never|do not|must not)\s+(?:(?:routinely|automatically)\s+)?(?:bulk-?load|load|read|fetch|boot|treat|promote|override|supersede)\b/i.test(clause)
+        && !contrastingMandatory
         && !/\bdo not skip\b/i.test(clause);
 
       // Non-user-facing control work must not acquire public-product authority
@@ -116,7 +122,8 @@ function semanticStartupConflicts(name, content) {
       const globalControlScope = /\b(?:non-user-facing|control-only|before changing any code|before every edit)\b/i.test(clause);
       const mandatorySupplementalRead = /\b(?:must\s+(?:read|load|fetch|preload)|requires?|mandatory bootstrap|before (?:any|each|every|changing)[^.!?]*(?:read|load|fetch|preload)|first\s+(?:read|load|fetch|preload)|always\s+(?:read|load|fetch|preload))\b/i.test(clause);
       const broadSupplementalBundle = /\b(?:four[- ]state(?: product authority)?|FOUR_STATE_PRODUCT_CONTROL|PRODUCT_SURFACE_REGISTRY|Gold(?: document| control)? bundle|GOLD_CURRENT_BRIEF|Brand OS|Brand control documents?|CODE_LINEAGE_REGISTER|product lineage files?|(?:project|product) lineage archive)\b/i.test(clause);
-      const scopedSupplementalProhibition = /\b(?:do not|never|must not)\s+(?:automatically\s+)?(?:read|load|fetch|preload|require)\b/i.test(clause);
+      const scopedSupplementalProhibition = /\b(?:do not|never|must not)\s+(?:automatically\s+)?(?:read|load|fetch|preload|require)\b/i.test(clause)
+        && !contrastingMandatory;
       if (globalControlScope && mandatorySupplementalRead && broadSupplementalBundle && !scopedSupplementalProhibition) {
         failures.push(`${name}: broad supplemental product/Gold/Brand/lineage preload required for control work`);
       }
@@ -233,6 +240,18 @@ test("returned Gold task-class preload mutations fail closed", () => {
       ".github/copilot-instructions.md": `${mutation}\n${sources[".github/copilot-instructions.md"]}`,
     };
     assert.notDeepEqual(startupContractFailures(mutated), [], mutation);
+  }
+});
+
+test("returned Gold bare-contrast mandates fail closed in both entrypoints", () => {
+  for (const mutation of GOLD_RETURN_06_BARE_CONTRAST_MUTATIONS) {
+    for (const name of Object.keys(sources)) {
+      const mutated = {
+        ...sources,
+        [name]: `${sources[name]}\n${mutation}`,
+      };
+      assert.notDeepEqual(startupContractFailures(mutated), [], `${name}: ${mutation}`);
+    }
   }
 });
 
