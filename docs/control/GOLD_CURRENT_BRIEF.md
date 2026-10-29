@@ -1,3 +1,70 @@
+# SPECIES — ROUTE-CORRECT MOBILE FOOTER CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A mobile visitor needs the full 4PLANET footer on the public entry and a compact, usable navigation footer on the focused Orca profile without horizontal overflow.
+
+## ONE THING TO UNDERSTAND
+
+The homepage and Orca intentionally render different footer variants; proof must assert each route's actual component contract.
+
+## PRIMARY ACTION
+
+Verify the responsive homepage footer at the configured 390 and 430 project widths, then verify Orca's compact semantic footer and its four exact navigation destinations.
+
+## SECONDARY DEPTH
+
+Retain the accepted GBIF identity, three-state occurrence truth, local Watch and ATLAS continuation checks.
+
+## P1 DOMINANT
+
+Visitor-readable footer navigation and zero horizontal overflow remain the dominant mobile proof.
+
+## P2 ORIENTATION
+
+At 390px the full footer is one column; at 430px it is two columns. Orca intentionally has no .foot-grid and instead exposes ATLAS, SPECIES, ABOUT and PRIVACY links.
+
+## P3 ACTION / NEXT
+
+Run the exact candidate through native Browser Product Proof and hand the immutable child to independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Desktop, WebKit, rights, accessibility, indexability and published-species zero-loss scope remain with independent Gold.
+
+## WHAT CAN BE REMOVED
+
+Remove only the fixed 390px override and the unconditional Orca .foot-grid assertion that contradicted the owning component.
+
+## WHAT MUST BE REUSED
+
+Reuse PublicShell's existing full and compact footer branches, responsive-footer.css breakpoints, issue #145, branch king/test and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Browser Product Proof 40889525734 passed the stable occurrence-node correction and then failed because the mobile test queried .foot-grid after navigating to Orca. Source inspection proves Orca intentionally renders the compact semantic footer. The corrected proof checks the full footer on home, the compact footer on Orca, and adds negative checks for missing navigation and forced horizontal overflow. No product runtime, route, copy, styling or provider behaviour changed.
+
+## MOBILE-FIRST RISK
+
+A fixed page.setViewportSize silently made both mobile projects run at 390px. The proof now respects each configured project viewport and asserts the breakpoint-specific column count.
+
+## HUMAN SUCCESS
+
+At both supported mobile widths a visitor can reach the expected footer destinations, read the Orca source boundary and use the local Watch action without horizontal overflow.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: a shared journey assumed one footer DOM shape across route-specific component branches, and overrode the 430 project viewport. Missing check: route ownership plus configured viewport preservation. Immunity: separate home/Orca assertions, exact link targets, breakpoint columns, negative missing-nav and forced-overflow mutations.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is cc637e63187cc5cf4dd721d46faf1f74d152f981. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+
+---
+
 # SPECIES — STABLE OCCURRENCE DOM NEGATIVE CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

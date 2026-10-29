@@ -224,12 +224,30 @@ test("Orca occurrence truth keeps public, rights-review-only and unavailable sta
   }
 });
 
-test("mobile proof preserves navigation, source limits, local Watch and a readable footer", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test("mobile proof preserves navigation, source limits, local Watch and route-correct footers", async ({ page }) => {
+  const configuredViewport = page.viewportSize();
+  expect(configuredViewport).not.toBeNull();
 
   await page.goto(`${BASE}/`);
   await verifySharedNavigation(page);
   await expect(page.locator("main")).toBeVisible();
+
+  const homeFooter = page.locator(".foot-grid").first();
+  await homeFooter.scrollIntoViewIfNeeded();
+  await expect(homeFooter).toBeVisible();
+  await expect(homeFooter.getByRole("link", { name: "PRIVACY" })).toBeVisible();
+  const homeLayout = await page.evaluate(() => {
+    const footerGrid = document.querySelector<HTMLElement>(".foot-grid");
+    if (!footerGrid) return null;
+    return {
+      columns: getComputedStyle(footerGrid).gridTemplateColumns.split(" ").filter(Boolean).length,
+      pageWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
+  });
+  expect(homeLayout).not.toBeNull();
+  expect(homeLayout!.columns).toBe(homeLayout!.viewportWidth <= 420 ? 1 : 2);
+  expect(homeLayout!.pageWidth).toBeLessThanOrEqual(homeLayout!.viewportWidth + 1);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/04-4planet-mobile.png` });
 
@@ -246,26 +264,55 @@ test("mobile proof preserves navigation, source limits, local Watch and a readab
   await expect(mobileOccurrenceBoundary).toBeVisible();
   expect(occurrenceTruthState((await mobileOccurrenceBoundary.textContent()) ?? "")).not.toBeNull();
   await expect(page.getByRole("button", { name: /ADD TO LOCAL WATCH|WATCHING LOCALLY/ })).toBeVisible();
-  await settleVisuals(page);
 
-  const mobileLayout = await page.evaluate(() => {
-    const footerGrid = document.querySelector<HTMLElement>(".foot-grid");
-    if (!footerGrid) return null;
+  const compactFooter = page.locator("footer").last();
+  await compactFooter.scrollIntoViewIfNeeded();
+  await expect(compactFooter).toBeVisible();
+  await expect(page.locator(".foot-grid")).toHaveCount(0);
+  const compactNavigation = compactFooter.getByRole("navigation");
+  await expect(compactNavigation).toBeVisible();
+  for (const [name, path] of [
+    ["ATLAS", "/atlas"],
+    ["SPECIES", "/species"],
+    ["ABOUT", "/about"],
+    ["PRIVACY", "/privacy"],
+  ] as const) {
+    await expect(compactNavigation.getByRole("link", { name, exact: true })).toHaveAttribute("href", path);
+  }
+  const compactLayout = await page.evaluate(() => ({
+    pageWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+  expect(compactLayout.pageWidth).toBeLessThanOrEqual(compactLayout.viewportWidth + 1);
+
+  const originalCompactMarkup = await compactFooter.innerHTML();
+  await compactNavigation.evaluate((node) => node.remove());
+  await expect(compactFooter.getByRole("navigation")).toHaveCount(0);
+  await compactFooter.evaluate((node, markup) => { node.innerHTML = markup; }, originalCompactMarkup);
+  await expect(compactFooter.getByRole("navigation")).toBeVisible();
+
+  const forcedOverflow = await page.evaluate(() => {
+    const probe = document.createElement("div");
+    probe.dataset.footerOverflowProbe = "true";
+    probe.style.width = "calc(100vw + 32px)";
+    probe.style.height = "1px";
+    document.body.appendChild(probe);
     return {
-      columns: getComputedStyle(footerGrid).gridTemplateColumns.split(" ").filter(Boolean).length,
       pageWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
     };
   });
-  expect(mobileLayout).not.toBeNull();
-  expect(mobileLayout!.columns).toBe(1);
-  expect(mobileLayout!.pageWidth).toBeLessThanOrEqual(mobileLayout!.viewportWidth + 1);
+  expect(forcedOverflow.pageWidth).toBeGreaterThan(forcedOverflow.viewportWidth + 1);
+  await page.locator('[data-footer-overflow-probe="true"]').evaluate((node) => node.remove());
+  const restoredOverflow = await page.evaluate(() => ({
+    pageWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+  expect(restoredOverflow.pageWidth).toBeLessThanOrEqual(restoredOverflow.viewportWidth + 1);
 
+  await settleVisuals(page);
+  await compactFooter.screenshot({ path: `${OUTPUT}/05b-orca-footer-mobile.png` });
   await page.screenshot({ path: `${OUTPUT}/05-orca-source-proof-mobile.png` });
-  const footer = page.locator(".foot-grid").first();
-  await footer.scrollIntoViewIfNeeded();
-  await expect(footer).toBeVisible();
-  await footer.screenshot({ path: `${OUTPUT}/05b-orca-footer-mobile.png` });
 });
 
 test("IMPACT direct routes remain explicit local tests with no physical delivery", async ({ page }) => {
