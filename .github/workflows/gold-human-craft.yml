@@ -68,6 +68,7 @@ jobs:
           exit 1
 
       - name: 4planet.org Human Craft objective hierarchy
+        id: human-craft
         env:
           BASE_URL: http://127.0.0.1:4173
         run: >-
@@ -76,6 +77,16 @@ jobs:
           --project=desktop-1440
           --project=mobile-390
           --project=mobile-430
+
+      - name: Verify Human Craft evidence retention
+        if: always() && steps.human-craft.outcome != 'skipped'
+        env:
+          HUMAN_CRAFT_OUTCOME: ${{ steps.human-craft.outcome }}
+        run: |
+          node scripts/gold-human-craft-evidence-check.mjs --self-test
+          node scripts/gold-human-craft-evidence-check.mjs \
+            --outcome "$HUMAN_CRAFT_OUTCOME" \
+            --root artifacts/atlas-gold
 
       - name: Upload Human Craft evidence
         if: always()
@@ -86,6 +97,7 @@ jobs:
             exact-sha.txt
             preview.log
             artifacts/product-proof
+            artifacts/atlas-gold
             playwright-report
             test-results
           if-no-files-found: warn
