@@ -38,10 +38,25 @@ async function assertPremiumNavigation(page) {
     for (const label of ["EXPLORE", "DOMAINS", "MISSIONS", "CULTURE", "ABOUT"]) {
       await expect(page.getByRole("button", { name: label, exact: true })).toBeVisible();
     }
-    await page.getByRole("button", { name: "EXPLORE", exact: true }).hover();
+    const exploreTrigger = page.getByRole("button", { name: "EXPLORE", exact: true });
+    await exploreTrigger.hover();
     const explorePanel = page.getByRole("region", { name: "EXPLORE navigation" });
     await expect(explorePanel).toBeVisible();
     await expect(page.getByRole("link", { name: /ATLAS/i }).first()).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(explorePanel).toBeHidden();
+
+    // Escape is an explicit dismissal, not a transient hover close. The panel
+    // must stay closed until a new pointer entry or an intentional focus entry.
+    await page.waitForTimeout(200);
+    await expect(explorePanel).toBeHidden();
+    await page.mouse.move(0, 500);
+    await exploreTrigger.hover();
+    await expect(explorePanel).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(explorePanel).toBeHidden();
+    await exploreTrigger.focus();
+    await expect(explorePanel).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(explorePanel).toBeHidden();
   }

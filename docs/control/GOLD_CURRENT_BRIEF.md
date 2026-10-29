@@ -1,6 +1,68 @@
 Warning: truncated output (original token count: 72636)
 Total output lines: 3245
 
+# SHARED PUBLIC NAVIGATION — DESKTOP ESCAPE DISMISSAL — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED ACCESSIBILITY CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A keyboard or pointer user opens the shared EXPLORE navigation and needs Escape to close it predictably.
+
+## ONE THING TO UNDERSTAND
+
+Escape is an explicit dismissal: the panel stays closed while the pointer is stationary and opens again only after a deliberate pointer re-entry or focus action.
+
+## PRIMARY ACTION
+
+Close the active desktop navigation panel on Escape and suppress the current hover entry until the pointer leaves its trigger.
+
+## SECONDARY DEPTH
+
+Preserve outside-click, delayed hover, intentional click/focus opening, mobile Escape/focus return and all existing navigation links.
+
+## P1 DOMINANT
+
+The shared header remains the sole orientation and navigation surface.
+
+## P2 ORIENTATION
+
+The selected navigation family and its panel remain exposed only while requested.
+
+## P3 ACTION / NEXT
+
+Escape returns the visitor to the page; deliberate re-entry or focus reopens the same navigation family.
+
+## P4 DEPTH
+
+Existing product, domain, mission, culture, about and take-part links remain unchanged.
+
+## WHAT CAN BE REMOVED
+
+Remove the desktop state in which an open panel ignores Escape.
+
+## WHAT MUST BE REUSED
+
+Reuse `PublicShell`, its existing close primitive, sole `king/test` HEIR, issue #145, Atomic `P51-SHIP-01` and the Human Craft exact-viewport regression.
+
+## TRUTH BOUNDARY
+
+This correction proves source and browser behaviour only after independent exact-SHA CI. It does not prove mobile overflow closure, Gold acceptance, deployment, LIVE behaviour or user use.
+
+## MOBILE-FIRST RISK
+
+The desktop listener must not intercept the mobile dialog's existing Escape close and focus-return contract.
+
+## HUMAN SUCCESS
+
+At 1440px EXPLORE closes on Escape, remains hidden while the pointer is stationary, and reopens on deliberate pointer re-entry and keyboard focus; mobile Escape remains owned by the dialog.
+
+**ROOT CAUSE / FAILED TEST / IMMUNITY:** the only document Escape listener was conditional on `mobileOpen`, leaving desktop `panel` state without a keyboard close path. The owning Human Craft test now asserts persistent dismissal plus deliberate pointer and focus re-entry without weakening the existing hidden assertion.
+
+**DOOR / ROLLBACK / JUDGE:** Reversible HEIR-only correction. Base and rollback are `king/test@80085677ee438dd3ab2dff3be3d04c6bf4c5485b`. Factory returns CODE FIXED evidence only; independent Gold judges the exact SHA and Founder retains deploy/LIVE authority.
+
+---
+
 # SPECIES — BLOCKED ORCA BINARY OUT OF PUBLIC ARTIFACT — 28 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED P0 STATIC-ASSET CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

@@ -215,6 +215,7 @@ function Header() {
   const menuButton = useRef<HTMLButtonElement>(null);
   const mobileDialog = useRef<HTMLDivElement>(null);
   const explicitlyOpenedPanel = useRef<PanelKey | null>(null);
+  const escapeDismissedPanel = useRef<PanelKey | null>(null);
   const openTimer = useRef<number | null>(null);
   const closeTimer = useRef<number | null>(null);
 
@@ -238,6 +239,7 @@ function Header() {
   const previewDesktopPanel = (key: PanelKey) => {
     cancelOpen();
     cancelClose();
+    if (escapeDismissedPanel.current === key) return;
     if (explicitlyOpenedPanel.current !== key) explicitlyOpenedPanel.current = null;
     openTimer.current = window.setTimeout(() => setPanel(key), panel ? 60 : 140);
   };
@@ -245,6 +247,7 @@ function Header() {
   const focusDesktopPanel = (key: PanelKey) => {
     cancelOpen();
     cancelClose();
+    escapeDismissedPanel.current = null;
     if (explicitlyOpenedPanel.current !== key) explicitlyOpenedPanel.current = null;
     setPanel(key);
   };
@@ -258,6 +261,7 @@ function Header() {
   const toggleDesktopPanel = (key: PanelKey) => {
     cancelOpen();
     cancelClose();
+    escapeDismissedPanel.current = null;
     if (explicitlyOpenedPanel.current === key && panel === key) {
       closeDesktopPanel();
       return;
@@ -268,6 +272,7 @@ function Header() {
 
   useEffect(() => {
     explicitlyOpenedPanel.current = null;
+    escapeDismissedPanel.current = null;
     setPanel(null);
     setMobileOpen(false);
   }, [pathname]);
@@ -286,6 +291,18 @@ function Header() {
     document.addEventListener("pointerdown", closeOutside);
     return () => document.removeEventListener("pointerdown", closeOutside);
   }, [panel]);
+
+  useEffect(() => {
+    if (!panel || mobileOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      escapeDismissedPanel.current = panel;
+      closeDesktopPanel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [panel, mobileOpen]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -389,6 +406,9 @@ function Header() {
                 className="public-header__nav-button"
                 aria-expanded={panel === item.key}
                 onMouseEnter={() => previewDesktopPanel(item.key)}
+                onMouseLeave={() => {
+                  if (escapeDismissedPanel.current === item.key) escapeDismissedPanel.current = null;
+                }}
                 onFocus={() => focusDesktopPanel(item.key)}
                 onClick={() => toggleDesktopPanel(item.key)}
                 style={{ color: panel === item.key ? T.blue : fg }}
