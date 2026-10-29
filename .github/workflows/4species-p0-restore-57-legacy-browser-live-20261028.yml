@@ -1,3 +1,5 @@
+# LIVE P0 retry 29 Oct 2026, independent exact MIME evidence: https://github.com/odinskogen-dev/4Planet.05/actions/runs/40900979893
+# Both old JS files currently 200 text/html; original and overlay pinned version IDs remain exact. No bypass of preflight/rollback.
 name: 4SPECIES P0 Two-URL LIVE Hydration Restore 20261028
 on:
   push:
