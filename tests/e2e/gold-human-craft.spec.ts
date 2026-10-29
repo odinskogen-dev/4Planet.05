@@ -18,7 +18,7 @@ async function assertNoHorizontalOverflow(page) {
 }
 
 async function assertScaledHeroIsContained(page, testInfo) {
-  const evidence = await page.evaluate(() => {
+  const evidence = await page.evaluate(async () => {
     const hero = document.querySelector<HTMLElement>(".planet-hero");
     const image = hero?.querySelector<HTMLElement>(".earth-breathe");
     if (!hero || !image) return null;
@@ -30,8 +30,11 @@ async function assertScaledHeroIsContained(page, testInfo) {
 
     const previousInlineOverflow = hero.style.overflow;
     hero.style.overflow = "visible";
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    const visibleComputedOverflow = getComputedStyle(hero).overflowX;
     const visibleOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
     hero.style.overflow = previousInlineOverflow;
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
     return {
       computedOverflow,
@@ -40,6 +43,7 @@ async function assertScaledHeroIsContained(page, testInfo) {
       imageLeft: imageRect.left,
       imageRight: imageRect.right,
       clippedOverflow,
+      visibleComputedOverflow,
       visibleOverflow,
     };
   });
@@ -52,6 +56,7 @@ async function assertScaledHeroIsContained(page, testInfo) {
   expect(evidence).not.toBeNull();
   expect(evidence!.computedOverflow).toBe("clip");
   expect(evidence!.imageWidth - evidence!.heroWidth).toBeGreaterThanOrEqual(8);
+  expect(evidence!.visibleComputedOverflow).toBe("visible");
   expect(evidence!.visibleOverflow).toBeGreaterThanOrEqual(4);
   expect(evidence!.clippedOverflow).toBeLessThanOrEqual(1);
 }
