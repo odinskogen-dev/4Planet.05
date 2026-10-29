@@ -1,6 +1,72 @@
 Warning: truncated output (original token count: 72636)
 Total output lines: 3245
 
+# 4RT — PARAMETER-PRESERVING PUBLIC MISSION ROUTE — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED PUBLIC ROUTING CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor opens `/missions/4rt` and needs the existing 4RT mission surface rather than Not Found.
+
+## ONE THING TO UNDERSTAND
+
+`MissionDetail` resolves content from `useParams().slug`; the route must provide `slug=4rt`.
+
+## PRIMARY ACTION
+
+Use the existing `/missions/:slug` route for 4RT and remove only the shadowing static route that supplied no parameter.
+
+## SECONDARY DEPTH
+
+Preserve 4RT’s existing content, prototype links, public shell, context-preserving lenses and every other mission redirect.
+
+## P1 DOMINANT
+
+The existing 4RT mission title and working-prototypes invitation remain the dominant public content.
+
+## P2 ORIENTATION
+
+The existing mission description and relationship to the wider 4PLANET system remain unchanged.
+
+## P3 ACTION / NEXT
+
+The existing 4RT prototype links and product lenses remain the visitor’s next actions.
+
+## P4 DEPTH
+
+Every other mission route, redirect and content record remains outside this correction.
+
+## WHAT CAN BE REMOVED
+
+Remove only the explicit `/missions/4rt` route that shadows the parameterised mission route without supplying a slug.
+
+## WHAT MUST BE REUSED
+
+Reuse `MissionDetail`, the existing 4RT mission data, `/missions/:slug`, issue #145, Atomic `P51-SHIP-01` and the exact-SHA browser workflow.
+
+## TRUTH BOUNDARY
+
+The source contract proves the generic parameter route exists and the invalid static route cannot return. Native exact-SHA 1440/1280/390/430 browser runs and independent Gold remain required. This does not prove deployment, LIVE behaviour, user use, cash or impact.
+
+## MOBILE-FIRST RISK
+
+The route correction must resolve identically on 390px, 430px, 1280px and 1440px without changing layout or content.
+
+## HUMAN SUCCESS
+
+A visitor who opens `/missions/4rt` sees the existing 4RT mission page and can continue through its existing links instead of reaching Not Found.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+H07 ONE INTERFACE and Browser Product runs failed at all four viewports because the explicit `/missions/4rt` route rendered `MissionDetail` without a `slug`; the component returned `NotFound`. The corrected same-path contract went RED 12/13, then GREEN 13/13 after removing the static route.
+
+## DOOR / ROLLBACK / JUDGE
+
+This is a reversible `king/test` router/contract correction. Parent and rollback are `660cd9b86dbc142d0f7f2b7b4d458ef0bbcc0333`; first candidate `c1b8541654bcc1bddca9c2d1f50c1dd8296caa31` proved the missing same-change Gold-brief gate and is superseded by the final candidate. Factory returns CODE FIXED evidence only; independent Gold judges the exact final SHA and Founder retains deploy/LIVE authority.
+
+---
+
 # HOMEPAGE — MOBILE SCALED-HERO OVERFLOW CONTAINMENT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED MOBILE CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
