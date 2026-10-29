@@ -1,3 +1,69 @@
+# SPECIES — SEMANTIC GBIF SOURCE-TRUTH PROOF — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED TEST-CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A visitor opens the Orca profile and needs accepted taxonomy, source identity and observation boundaries presented as factual, accessible relationships rather than decorative copy.
+
+## ONE THING TO UNDERSTAND
+
+The public interface now renders separate semantic definition pairs: Taxon → ACCEPTED and Source identity → GBIF 2440483.
+
+## PRIMARY ACTION
+
+Verify those exact term/value relationships in the existing desktop product-proof journey.
+
+## SECONDARY DEPTH
+
+Preserve SOURCE RECORD 5939349319, SIGNAL NONE CREATED, the occurrence-versus-range boundary, local Watch state and the return to the same entity in ATLAS.
+
+## P1 DOMINANT
+
+The Orca identity and evidence boundary remain the dominant source-truth proof.
+
+## P2 ORIENTATION
+
+GBIF 2440483 identifies the accepted taxon; it does not establish range, abundance, population trend or live position.
+
+## P3 ACTION / NEXT
+
+The existing Watch and ATLAS controls remain the next actions and are unchanged.
+
+## P4 DEPTH
+
+No product copy, source data, routes, styling or non-Orca journeys are changed by this correction.
+
+## WHAT CAN BE REMOVED
+
+Remove only the stale test expectation for the historical combined string `GBIF TAXON · ACCEPTED`.
+
+## WHAT MUST BE REUSED
+
+Reuse the semantic `<dl>` rendered by `Species.tsx`, the existing product-proof test, issue #145, Atomic `P51-SHIP-01` and the exact-SHA native browser workflows.
+
+## TRUTH BOUNDARY
+
+The scoped contract proves the rendered definition pairs retain ACCEPTED and GBIF 2440483 and rejects mutations of either value. It does not prove production deployment, full published SPECIES zero-loss, user use, cash or ecological impact.
+
+## MOBILE-FIRST RISK
+
+The correction changes no layout; independent Gold still owns 1440/1280/430/390, WebKit, accessibility and indexability evidence.
+
+## HUMAN SUCCESS
+
+A visitor can distinguish the accepted taxon from its GBIF source identity while retaining the observation-record caveat and next actions.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Native Browser Product Proof 40856300518 failed because `product-proof.spec.ts` asserted obsolete concatenated copy after the component moved to semantic term/value pairs. The same-path regression now scopes the definition list, verifies both factual pairs and proves changed status/key mutations are rejected.
+
+## DOOR / ROLLBACK / JUDGE
+
+This is a reversible `king/test` test-contract and Gold-brief correction. Parent and rollback are `9a6572bb51680ebe32f8e7882e0f4cd9ac754e93`. Factory returns Maker evidence only; independent Gold judges the exact candidate and Founder retains merge/deploy/LIVE authority.
+
+---
+
 Warning: truncated output (original token count: 72636)
 Total output lines: 3245
 

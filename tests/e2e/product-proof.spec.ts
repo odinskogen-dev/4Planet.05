@@ -6,6 +6,12 @@ const OUTPUT = "artifacts/product-proof";
 
 mkdirSync(OUTPUT, { recursive: true });
 
+type DefinitionPair = { term: string; value: string };
+
+function hasDefinitionPair(pairs: DefinitionPair[], term: string, value: string) {
+  return pairs.some((pair) => pair.term === term && pair.value === value);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 });
@@ -77,7 +83,20 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await page.goto(`${BASE}/species/orca?entity=taxon%3Agbif%3A2440483&journey=orca-gbif`);
   await verifySharedNavigation(page);
   await expect(page.getByRole("heading", { name: "Orca", exact: true })).toBeVisible();
-  await expect(page.getByText("GBIF TAXON · ACCEPTED")).toBeVisible();
+  const sourceIdentityList = page.locator("dl").filter({ has: page.locator("dt", { hasText: /^Taxon$/ }) }).first();
+  const sourceIdentityPairs = await sourceIdentityList.locator(":scope > div").evaluateAll((rows) =>
+    rows.map((row) => ({
+      term: row.querySelector("dt")?.textContent?.trim() ?? "",
+      value: row.querySelector("dd")?.textContent?.trim() ?? "",
+    })),
+  );
+  expect(hasDefinitionPair(sourceIdentityPairs, "Taxon", "ACCEPTED")).toBe(true);
+  expect(hasDefinitionPair(sourceIdentityPairs, "Source identity", "GBIF 2440483")).toBe(true);
+
+  const changedStatus = sourceIdentityPairs.map((pair) => pair.term === "Taxon" ? { ...pair, value: "REJECTED" } : pair);
+  const changedKey = sourceIdentityPairs.map((pair) => pair.term === "Source identity" ? { ...pair, value: "GBIF 0" } : pair);
+  expect(hasDefinitionPair(changedStatus, "Taxon", "ACCEPTED")).toBe(false);
+  expect(hasDefinitionPair(changedKey, "Source identity", "GBIF 2440483")).toBe(false);
   await expect(page.getByText("SOURCE RECORD", { exact: true })).toBeVisible();
   await expect(page.getByText("5939349319", { exact: true })).toBeVisible();
   await expect(page.getByText("NONE CREATED", { exact: true })).toBeVisible();
