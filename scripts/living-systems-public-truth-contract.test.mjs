@@ -21,7 +21,7 @@ test("public Living Systems species never present unsourced generic multi-hop ca
 
 test("seeded Atlantic cod pressure edge preserves stock-specific 2026 source boundaries", () => {
   const src = read("src/planet/livingSystems.ts");
-  const match = src.match(/id: "r-overexploit-affects-cod",[\\s\\S]*?reviewStatus: "UNREVIEWED",/);
+  const match = src.match(/id: "r-overexploit-affects-cod",[\s\S]*?reviewStatus: "UNREVIEWED",/);
   assert.ok(match, "Atlantic cod pressure edge must remain present");
   const edge = match[0];
   assert.match(edge, /1992 moratorium/);
@@ -29,7 +29,7 @@ test("seeded Atlantic cod pressure edge preserves stock-specific 2026 source bou
   assert.match(edge, /Healthy Zone as of DFO 12 June 2026/);
   assert.match(edge, /3Pn4RS/);
   assert.match(edge, /Critical Zone/);
-  assert.match(edge, /canada\\.ca\\/en\\/fisheries-oceans\\/news\\/2026\\/06/);
+  assert.match(edge, /canada\.ca\/en\/fisheries-oceans\/news\/2026\/06/);
   assert.match(edge, /not species-wide or proof of pre-collapse biomass recovery/);
   assert.match(edge, /reviewStatus: "UNREVIEWED"/);
   assert.doesNotMatch(edge, /The stock has still not recovered/);
