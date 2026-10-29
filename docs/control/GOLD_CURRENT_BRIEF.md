@@ -1,3 +1,21 @@
+# SPECIES — STABLE OCCURRENCE DOM NEGATIVE CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER VALUE AND BOUNDARY
+
+Orca occurrence truth must stay verifiable across PUBLIC_RECORDS, NO_PUBLIC_RECORDS and SOURCE_UNAVAILABLE without a test invalidating its own selector. Product source, copy, routes, styling and provider behaviour remain unchanged.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Browser Product Proof 40879863725 failed because the text-filtered Playwright Locator was re-resolved after its matching text was deliberately replaced with a false live-position claim. The mutated node stopped matching, so the next textContent call timed out instead of checking the negative state. Both owning mutation sites now capture the already-visible element as a stable ElementHandle, mutate/read/restore that same connected node, and retain the three-state rights/source assertions before mutation.
+
+## DONE / ROLLBACK / JUDGE
+
+Provider source readback must show only this owning test and this cumulative brief changed from parent ef34e3835a2bcb699b674daab1ff04d50a7f7b29. Native Browser Product Proof plus Gold gates must pass at the new exact SHA. Revert the child commit if the stable-node contract regresses. Factory is Maker only; independent Gold judges the exact SHA. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+---
+
 # SPECIES — THREE-STATE GBIF OCCURRENCE TRUTH CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED BROWSER CONTRACT CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

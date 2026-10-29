@@ -126,13 +126,16 @@ test("desktop proof captures the public entry, source-aware Orca profile and ret
   await expect(occurrenceSection.getByRole("link", { name: "OPEN OBSERVATIONS IN ATLAS" })).toBeVisible();
   const occurrenceBoundary = findOccurrenceBoundary(occurrenceSection);
   await expect(occurrenceBoundary).toBeVisible();
-  const originalOccurrenceBoundary = (await occurrenceBoundary.textContent())?.trim() ?? "";
+  const occurrenceBoundaryNode = await occurrenceBoundary.elementHandle();
+  expect(occurrenceBoundaryNode).not.toBeNull();
+  const originalOccurrenceBoundary = (await occurrenceBoundaryNode!.textContent())?.trim() ?? "";
   const originalOccurrenceState = occurrenceTruthState(originalOccurrenceBoundary);
   expect(originalOccurrenceState).not.toBeNull();
-  await occurrenceBoundary.evaluate((node) => { node.textContent = "These are live animal positions."; });
-  expect(occurrenceTruthState((await occurrenceBoundary.textContent()) ?? "")).toBeNull();
-  await occurrenceBoundary.evaluate((node, value) => { node.textContent = value; }, originalOccurrenceBoundary);
-  expect(occurrenceTruthState((await occurrenceBoundary.textContent()) ?? "")).toBe(originalOccurrenceState);
+  await occurrenceBoundaryNode!.evaluate((node) => { node.textContent = "These are live animal positions."; });
+  expect(occurrenceTruthState((await occurrenceBoundaryNode!.textContent()) ?? "")).toBeNull();
+  expect(await occurrenceBoundaryNode!.evaluate((node) => node.isConnected)).toBe(true);
+  await occurrenceBoundaryNode!.evaluate((node, value) => { node.textContent = value; }, originalOccurrenceBoundary);
+  expect(occurrenceTruthState((await occurrenceBoundaryNode!.textContent()) ?? "")).toBe(originalOccurrenceState);
   await settleVisuals(page);
   await page.screenshot({ path: `${OUTPUT}/02-orca-source-proof-desktop.png`, fullPage: true });
 
@@ -202,7 +205,9 @@ test("Orca occurrence truth keeps public, rights-review-only and unavailable sta
     const section = page.locator('[data-species-section="atlas"]');
     const boundary = findOccurrenceBoundary(section);
     await expect(boundary).toBeVisible();
-    const original = (await boundary.textContent())?.trim() ?? "";
+    const boundaryNode = await boundary.elementHandle();
+    expect(boundaryNode).not.toBeNull();
+    const original = (await boundaryNode!.textContent())?.trim() ?? "";
     expect(occurrenceTruthState(original)).toBe(scenario.state);
 
     if (scenario.state === "NO_PUBLIC_RECORDS") {
@@ -210,10 +215,11 @@ test("Orca occurrence truth keeps public, rights-review-only and unavailable sta
       await expect(boundary).toContainText("requires rights review");
     }
 
-    await boundary.evaluate((node) => { node.textContent = "These are live animal positions."; });
-    expect(occurrenceTruthState((await boundary.textContent()) ?? "")).toBeNull();
-    await boundary.evaluate((node, value) => { node.textContent = value; }, original);
-    expect(occurrenceTruthState((await boundary.textContent()) ?? "")).toBe(scenario.state);
+    await boundaryNode!.evaluate((node) => { node.textContent = "These are live animal positions."; });
+    expect(occurrenceTruthState((await boundaryNode!.textContent()) ?? "")).toBeNull();
+    expect(await boundaryNode!.evaluate((node) => node.isConnected)).toBe(true);
+    await boundaryNode!.evaluate((node, value) => { node.textContent = value; }, original);
+    expect(occurrenceTruthState((await boundaryNode!.textContent()) ?? "")).toBe(scenario.state);
     await page.unroute(occurrenceUrl);
   }
 });
