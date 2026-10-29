@@ -1,0 +1,54 @@
+name: 4SPECIES Exact Legacy JS MIME and Route Owner Audit 20261029
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-live-two-js-mime-and-worker-route-audit-20261029.yml]
+permissions: {contents: read}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Compare exact two older JS paths with known current v53 JS, no writes
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json,os,hashlib,concurrent.futures
+          root='https://4species.com'
+          paths=['/assets/index-DLiHR8tZ.js','/assets/index-DJRRK0k4.js','/assets/index-B-Sfe1QA.js']
+          def get(path):
+           req=urllib.request.Request(root+path,headers={'User-Agent':'Mozilla/5.0 (4SPECIES-zero-loss-JS-diagnostic/1.0)','Cache-Control':'no-cache'})
+           try:
+            with urllib.request.urlopen(req,timeout=27) as r:
+             b=r.read(2500000)
+             return {'path':path,'status':r.status,'contentType':r.headers.get('Content-Type'),'length':len(b),'cache':r.headers.get('cf-cache-status'),'sha256':hashlib.sha256(b).hexdigest(),'first50':b[:50].decode('utf-8','replace')}
+           except urllib.error.HTTPError as e:
+            b=e.read(1024);return {'path':path,'status':e.code,'contentType':e.headers.get('Content-Type'),'first50':b[:50].decode('utf-8','replace')}
+           except Exception as e:return {'path':path,'status':0,'error':str(type(e).__name__)}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:rows=list(pool.map(get,paths))
+          for row in rows:print('JS_EXACT_LIVE_SOURCE '+json.dumps(row))
+          t=os.environ.get('CF_TOKEN','').strip()
+          if t:
+           api='https://api.cloudflare.com/client/v4'
+           def cloud(path):
+            req=urllib.request.Request(api+path,headers={'Authorization':'Bearer '+t})
+            try:
+             with urllib.request.urlopen(req,timeout=20) as r:return json.load(r)
+            except Exception as e:return {'error':type(e).__name__}
+           z=cloud('/zones?name=4species.com')
+           zones=[x for x in z.get('result',[]) if x.get('name')=='4species.com']
+           if len(zones)==1:
+            zone=zones[0];acc=zone.get('account',{}).get('id')
+            route=cloud('/zones/'+zone['id']+'/workers/routes')
+            matches=[{'pattern':x.get('pattern'),'script':x.get('script'),'id':x.get('id')} for x in route.get('result',[]) if x.get('pattern','').startswith('4species.com')]
+            print('CF_CURRENT_ROUTING '+json.dumps(matches))
+            if acc:
+             for n in ['4species-router','4species-premium-61-additive-20261028','4species-legacy-js-exact-two-p0-20261028']:
+              d=cloud('/accounts/'+acc+'/workers/scripts/'+n+'/deployments')
+              vers=[v.get('version_id') for y in d.get('result',{}).get('deployments',[])[:1] for v in y.get('versions',[])[:2]]
+              print('CF_WORKER_CURRENT_VERSION '+n+' '+json.dumps(vers))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+           f.write('## 4SPECIES exact old JS MIME\n\n| Path | HTTP | Content Type | First 50 bytes | sha256 |\n|---|---|---|---|---|\n')
+           for row in rows:f.write('| '+str(row['path'])+' | '+str(row['status'])+' | '+str(row.get('contentType',''))+' | '+str(row.get('first50','')).replace('|','/')+' | '+str(row.get('sha256',''))+' |\n')
+          PY
