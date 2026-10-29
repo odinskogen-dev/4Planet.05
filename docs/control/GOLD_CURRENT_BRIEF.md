@@ -1,3 +1,69 @@
+# 4PLANET — GOLD SANDBOX ACCESSIBLE-SEMANTICS CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD/AXE-RETURNED SELECTOR CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+An independent judge needs the controlled sandbox gate to recognise the actual accessible review UI before running every Gold route and viewport.
+
+## ONE THING TO UNDERSTAND
+
+Playwright exact text matches the complete element string, and the Founder Review control bar is an accessible note rather than a heading.
+
+## PRIMARY ACTION
+
+Assert the complete controlled index paragraph, the Founder Review note and each surface's TEST / object-or-story marker / NO LIVE RELEASE note semantics.
+
+## SECONDARY DEPTH
+
+Preserve exact HEIR headers, noindex, all object routes, wrong-surface mutation, full 1440/390/430 matrix and evidence upload.
+
+## P1 DOMINANT
+
+The test follows the rendered accessible semantics instead of an obsolete fragment or role assumption.
+
+## P2 ORIENTATION
+
+Index identity and per-surface review-bar identity remain separate, explicit contracts.
+
+## P3 ACTION / NEXT
+
+Run native Gold Template TEST Domain Proof on the exact candidate and return both preflight and full-matrix evidence to independent Gold.
+
+## P4 DEPTH
+
+Routing remains unproven either correct or wrong until the corrected semantic contract executes against the exact sandbox.
+
+## WHAT CAN BE REMOVED
+
+Remove only the false exact-fragment selector and false heading role assumption.
+
+## WHAT MUST BE REUSED
+
+Reuse the accepted fail-fast workflow, exact HEIR headers, stable-node negative mutation, existing matrix, noindex/no-LIVE gates, issue #145 and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Run 40956795670 failed at the new preflight, but artifact 12934740602 showed the controlled paragraph, Founder Review note, expected object links and exact HEIR/noindex headers were present. The failure was a selector semantic false negative, not proof of misrouting. This change edits only the owning Playwright spec and cumulative Gold brief; product UI, routing and deployment remain untouched.
+
+## MOBILE-FIRST RISK
+
+A false-negative identity selector skips the full mobile matrix even when the controlled review UI is present.
+
+## HUMAN SUCCESS
+
+The preflight accepts the actual controlled paragraph and note, its stable-node wrong-surface mutation still fails, and all existing Gold routes can proceed through 1440/390/430.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: exact:true requested a fragment that was not the full paragraph, while Founder Review was queried as heading despite role=note. Failed check: Gold Template 40956795670 at line 29. Immunity: complete paragraph assertion, role=note Founder Review assertion, per-surface note semantics, wrong-surface mutation and finally restoration.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is a6b0414276e31a73b82b40b169fcf8e432ee7396. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+---
+
 # 4PLANET — GOLD TEST-DOMAIN IDENTITY FAIL-FAST CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** RECURRING GOLD-RETURNED CI HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

@@ -25,25 +25,27 @@ test("@identity-preflight exact controlled sandbox is the expected HEIR before t
   expect(headers["x-4planet-control-plane"]).toBe("four-state-v1");
   expect(headers["x-4planet-review-source"]).toBe(`heir-${exactSha!.slice(0, 12)}`);
 
-  const controlled = page.getByText("CONTROLLED TEST", { exact: true }).first();
-  await expect(controlled).toBeVisible();
-  await expect(page.getByRole("heading", { name: /Founder Review/i }).first()).toBeVisible();
+  const controlled = page.locator("p.gold2-kicker").filter({ hasText: "CONTROLLED TEST" }).first();
+  await expect(controlled).toHaveText("TEST.4PLANET.ORG / CONTROLLED TEST / NO LIVE RELEASE / SANDBOX");
+  await expect(page.getByRole("note").filter({ hasText: "FOUNDER REVIEW" }).first()).toContainText("NO LIVE RELEASE");
 
   const controlledNode = await controlled.elementHandle();
   expect(controlledNode, "controlled sentinel must resolve to a stable node").not.toBeNull();
   const originalText = await controlledNode!.textContent();
   try {
     await controlledNode!.evaluate((node) => {
-      node.textContent = "WRONG SURFACE";
+      node.textContent = "TEST.4PLANET.ORG / WRONG SURFACE / NO LIVE RELEASE / SANDBOX";
     });
-    await expect(page.getByText("CONTROLLED TEST", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("WRONG SURFACE", { exact: true })).toBeVisible();
+    await expect(page.locator("p.gold2-kicker").filter({ hasText: "CONTROLLED TEST" })).toHaveCount(0);
+    await expect(page.locator("p.gold2-kicker").filter({ hasText: "WRONG SURFACE" }).first())
+      .toHaveText("TEST.4PLANET.ORG / WRONG SURFACE / NO LIVE RELEASE / SANDBOX");
   } finally {
     await controlledNode!.evaluate((node, text) => {
       node.textContent = text;
     }, originalText);
   }
-  await expect(page.getByText("CONTROLLED TEST", { exact: true }).first()).toBeVisible();
+  await expect(page.locator("p.gold2-kicker").filter({ hasText: "CONTROLLED TEST" }).first())
+    .toHaveText("TEST.4PLANET.ORG / CONTROLLED TEST / NO LIVE RELEASE / SANDBOX");
 });
 
 for (const surface of surfaces) {
@@ -57,8 +59,10 @@ for (const surface of surfaces) {
     const response = await page.goto(surface.path, { waitUntil: "domcontentloaded" });
     expect(response?.status(), `${surface.path} must return HTTP 200`).toBe(200);
 
-    await expect(page.getByText("CONTROLLED TEST", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("NO LIVE RELEASE", { exact: true }).first()).toBeVisible();
+    const reviewNote = page.getByRole("note").first();
+    await expect(reviewNote).toContainText("TEST");
+    await expect(reviewNote).toContainText(surface.marker);
+    await expect(reviewNote).toContainText("NO LIVE RELEASE");
     await expect(page.locator("h1").first()).toContainText(surface.heading);
     await expect(page.locator("meta[name='robots']")).toHaveAttribute("content", /noindex/);
 
@@ -76,7 +80,7 @@ for (const surface of surfaces) {
 test("Founder Review index exposes every object and Magazine review path", async ({ page }) => {
   const response = await page.goto("/sandbox/gold", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
-  await expect(page.getByRole("heading", { name: /Founder Review/i }).first()).toBeVisible();
+  await expect(page.getByRole("note").filter({ hasText: "FOUNDER REVIEW" }).first()).toContainText("NO LIVE RELEASE");
   await expect(page.locator("meta[name='robots']")).toHaveAttribute("content", /noindex/);
   for (const surface of surfaces) await expect(page.locator(`a[href='${surface.path}']`)).toHaveCount(1);
 });
