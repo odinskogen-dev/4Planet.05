@@ -127,11 +127,24 @@ def attach_and_test():
    made.append({'id':route_id,'pattern':name})
    ROUTES.write_text(json.dumps(made))
   print('EXACT_TWO_LEGACY_JS_ROUTES_ATTACHED',made,flush=True)
-  for p in PATTERNS:
-   st,b,h,_=web('https://'+p)
-   mime=h.get('Content-Type','').lower()
-   if st!=200 or 'javascript' not in mime or b'document.querySelector("#root")?.replaceChildren()' not in b:
-    raise RuntimeError('P0 exact JS repair response missing '+p+' HTTP '+str(st))
+  # Cloudflare scoped-route attachment is eventually consistent across
+  # PoPs. Never treat a not-yet-propagated read as a permanent failure, but
+  # also never accept a release without TWO exact real-public MIME proofs.
+  passed=False
+  for attempt in range(15):
+   statuses=[]
+   for p in PATTERNS:
+    st,b,h,_=web('https://'+p)
+    mime=next((v for k,v in h.items() if k.lower()=='content-type'),'').lower()
+    ok=st==200 and 'javascript' in mime and b'document.querySelector("#root")?.replaceChildren()' in b
+    statuses.append((p,st,mime,ok))
+   if all(row[3] for row in statuses):
+    print('EXACT_TWO_JS_LIVE_EDGE_PROPAGATION_PASS',statuses,flush=True)
+    passed=True
+    break
+   print('EXACT_JS_ROUTE_PROPAGATION_PENDING',attempt+1,statuses,flush=True)
+   time.sleep(3)
+  if not passed:raise RuntimeError('Exact two JS route did not propagate in bounded window; automatic rollback')
   if snap()!=baseline['protected']:raise RuntimeError('Original 57 HTML/JSON changed unexpectedly')
   if check_sitemap()!=baseline['sitemap']:raise RuntimeError('Original 61 sitemap changed')
   for slug in ('atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree'):
