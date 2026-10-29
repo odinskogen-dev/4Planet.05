@@ -23,8 +23,8 @@ for(const row of candidates){
 if(candidates.length!==61||seen.size!==61)throw Error('Exactly 61 original Claude expansion candidates required');
 const published39=new Set('orca african-savanna-elephant asian-elephant bald-eagle black-rhinoceros blue-whale bornean-orangutan cheetah chimpanzee emperor-penguin giant-panda giraffe gray-wolf great-white-shark green-sea-turtle hippopotamus jaguar lion monarch-butterfly polar-bear tiger english-oak western-honey-bee fly-agaric common-octopus atlantic-puffin sei-whale eurasian-lynx humpback-whale sperm-whale harbour-porpoise bottlenose-dolphin atlantic-cod blue-mussel whale-shark leopard eastern-gorilla acropora-palmata hyacinth-macaw'.split(' '));
 if(published39.size!==39||candidates.some(s=>published39.has(s[0])))throw Error('Original live 39 overlap detected');
-const live61=new Set('koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia'.split(' '));
-if(live61.size!==18||[...live61].some(s=>!seen.has(s)))throw Error('Previous 18 live cohort mismatch');
+const live61=new Set('koala quokka capybara red-fox giant-anteater giant-otter walrus common-kingfisher secretary-bird scarlet-macaw peregrine-falcon ocean-sunfish giant-manta-ray greater-blue-ringed-octopus peacock-mantis-shrimp venus-flytrap titan-arum giant-sequoia atlas-moth peacock-spider emperor-scorpion dragon-blood-tree'.split(' '));
+if(live61.size!==22||[...live61].some(s=>!seen.has(s)))throw Error('Protected 22 live expansion cohort mismatch');
 const claimPacks=new Map();
 for(let n=1;n<=10;n++){
   const name='science-claims-stage'+n+'.mjs';
@@ -38,7 +38,8 @@ for(let n=1;n<=10;n++){
   }
 }
 const imageManifest=JSON.parse(fs.readFileSync(new URL('v1-visual-approved-20261022.json',dir),'utf8'));
-const shortlisted=imageManifest.approved||{};
+const nextManifest=JSON.parse(fs.readFileSync(new URL('visual-selected-next8-20261028.json',dir),'utf8'));
+const shortlisted={...(imageManifest.approved||{}),...(nextManifest.approved||{})};
 const remaining=candidates.filter(s=>!live61.has(s[0])).map(s=>{
   const slug=s[0],p=claimPacks.get(slug),facts=p?.pack?.claims??[];
   const uniqueDocs=new Set(facts.map(x=>x.source?.url).filter(x=>x?.startsWith('https://')));
@@ -53,8 +54,8 @@ const remaining=candidates.filter(s=>!live61.has(s[0])).map(s=>{
     gate:!sourcePackValid?'NEEDS_CLAIM_SOURCE_PACK':!photo?'NEEDS_VISUAL_RIGHTS_PHOTO':'SOURCE_AND_PHOTO_SHORTLIST_NOT_GOLD'};
 });
 const result={
-  schema:'4SPECIES_ADDITIONAL61_SOURCE_READY_01',auditedAt:'2026-10-28',
-  intended:61,oldLive39:39,alreadyLiveFromExpansion:18,stillUnpublished:43,
+  schema:'4SPECIES_ADDITIONAL61_SOURCE_READY_01',auditedAt:'2026-10-29',
+  intended:61,oldLive39:39,alreadyLiveFromExpansion:22,stillUnpublished:39,
   sourcePackCandidates:claimPacks.size,
   unpublishedWithValidSciencePacks:remaining.filter(x=>x.sourcePackValid).length,
   unpublishedWithoutSciencePacks:remaining.filter(x=>!x.sourcePackValid).length,
@@ -63,14 +64,14 @@ const result={
   warnings:[
    'A science pack is a research candidate, NOT independent review or proven factual accuracy.',
    'A contact-sheet photo shortlist is NOT independent rights/identification approval or permission to publish.',
-   'All 57 existing public profiles MUST be preserved and LIVE release must be separately approved and proved.',
+   'All 61 existing public profiles MUST be preserved and LIVE release must be separately approved and proved.',
    'Never claim Google indexed a page from successful sitemap/IndexNow submission.'
   ]
 };
 if(result.stillUnpublished!==remaining.length||
-   result.unpublishedWithValidSciencePacks!==26||
+   result.unpublishedWithValidSciencePacks!==22||
    result.unpublishedWithoutSciencePacks!==17||
-   result.unpublishedWithPhotoShortlist!==6)throw Error('Source cohort drift; independent human reclassification required');
-console.log('SPECIES_61_SOURCE_MATRIX_PASS '+JSON.stringify({intended:61,published:18,remaining:43,sciencePackAvailable:26,sciencePackMissing:17,photoShortlisted:6,independentlyGold:0}));
+   result.unpublishedWithPhotoShortlist!==9)throw Error('Source cohort drift; independent human reclassification required');
+console.log('SPECIES_61_SOURCE_MATRIX_PASS '+JSON.stringify({intended:61,published:22,remaining:39,sciencePackAvailable:22,sciencePackMissing:17,photoShortlisted:9,independentlyGold:0}));
 console.log('SPECIES_61_MISSING_SCIENCE '+remaining.filter(x=>!x.sourcePackValid).map(x=>x.slug).join(', '));
 if(process.argv.includes('--json'))console.log(JSON.stringify(result,null,2));
