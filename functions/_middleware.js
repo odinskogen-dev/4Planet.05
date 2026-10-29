@@ -1785,6 +1785,13 @@ function withSecurityHeaders(response, privateSurface = false) {
   });
 }
 
+// Discovery places prerendered by scripts/prerender-discovery-seo.mjs from
+// src/data/discoveryInventory.json that are not in the 250-place World Place Index.
+const ATLAS_PRERENDERED_DISCOVERY_PLACES = new Set([
+  "serengeti", "costa-rica", "great-barrier-reef", "amazon-basin",
+  "congo-basin", "borneo", "svalbard", "oslofjord",
+]);
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const rawHost = url.hostname.toLowerCase();
@@ -1948,6 +1955,13 @@ export async function onRequest(context) {
   if (host === "4planetatlas.com" && url.pathname.startsWith("/place/")) {
     const slug = url.pathname.slice("/place/".length).replace(/\/+$/,"");
     const place = ATLAS_INDEXABLE_PLACES.find((item) => item.slug === slug);
+    // sites-fix-plan-01 item 1: the ATLAS home links these discovery places, and the
+    // build already prerenders them at dist/place/<slug>/index.html. Hand exactly
+    // this fixed set to the static asset instead of the 404 below. Every other
+    // unknown /place/* still fails closed with 404.
+    if (!place && ATLAS_PRERENDERED_DISCOVERY_PLACES.has(slug)) {
+      return context.next(new Request(new URL(`/place/${slug}/`, url), context.request));
+    }
     if (place) {
       const canonical = `https://4planetatlas.com/place/${place.slug}`;
       const imageUrl = `${canonical}/map.svg`;
