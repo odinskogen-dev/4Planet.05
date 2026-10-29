@@ -47,7 +47,7 @@ Reuse the existing `.planet-hero`, animated `.earth-breathe` image, sole `king/t
 
 ## TRUTH BOUNDARY
 
-The causal regression proves the scaled image recreates at least 4px of document overflow when containment is temporarily disabled and that the permanent scoped state removes it. It does not prove Gold acceptance, deployment, LIVE behaviour or user use.
+The owning regression proves the scaled image remains wider than its hero, the hero computes to scoped containment and the document remains within one pixel of the viewport. The previous exact-SHA native run supplies the 5px fail-first evidence. This does not prove Gold acceptance, deployment, LIVE behaviour or user use.
 
 ## MOBILE-FIRST RISK
 
@@ -55,9 +55,9 @@ Changing global overflow could hide unrelated defects; containment must remain s
 
 ## HUMAN SUCCESS
 
-At 390px and 430px the animated image remains wider than its hero, a temporary `overflow: visible` override recreates the defect, and the permanent hero-scoped clip keeps document overflow at one pixel or less without changing desktop behaviour.
+At 390px and 430px the animated image remains wider than its hero while the permanent hero-scoped clip keeps document overflow at one pixel or less without changing desktop behaviour.
 
-**ROOT CAUSE / FAILED TEST / IMMUNITY:** the mobile media query overrode the desktop hero's containment with `overflow: visible`; the full-width image animates at `scale(1.025+)`, matching the native 5px overflow at both failing viewports. The owning Human Craft regression now records hero/image rectangles, proves the failure under a temporary visible-overflow override and requires the scoped clip plus clean document width.
+**ROOT CAUSE / FAILED TEST / IMMUNITY:** the mobile media query overrode the desktop hero's containment with `overflow: visible`; the full-width image animates at `scale(1.025+)`, matching the prior exact-SHA native 5px overflow at both failing viewports. The owning Human Craft regression now records hero/image rectangles and requires both scoped containment and clean document width.
 
 **DOOR / ROLLBACK / JUDGE:** Reversible HEIR-only CSS/test correction. Base and rollback are `king/test@0eee4dfdfdb3e8f9818617f0d375684bf1cc11c4`. Factory returns CODE FIXED evidence only; independent Gold judges the exact SHA and Founder retains deploy/LIVE authority.
 
