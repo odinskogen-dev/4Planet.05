@@ -58,7 +58,8 @@ test("Magazine and Film are external public projects reached through controlled 
 });
 
 test("4RT reaches its mission surface and product lenses preserve supported context", () => {
-  assert.match(router, /path="\/missions\/4rt" element={<MissionDetail \/>}/);
+  assert.match(router, /path="\/missions\/:slug" element={<MissionDetail \/>}/);
+  assert.doesNotMatch(router, /path="\/missions\/4rt" element={<MissionDetail \/>}/);
   assert.doesNotMatch(router, /path="\/missions\/4rt" element={toMarket}/);
   assert.match(shell, /import \{ contextHref \} from "@\/product\/ProductNav"/);
   assert.match(shell, /to={contextHref\(to, search\)}/);

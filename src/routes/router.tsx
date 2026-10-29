@@ -121,7 +121,6 @@ export function AppRoutes() {
       <Route path="/missions/rewild" element={<Navigate to="/missions/rewild-land" replace />} />
       <Route path="/missions/en3rgy" element={<Navigate to="/missions/en4rgy" replace />} />
       <Route path="/missions/4telier" element={toMarket} />
-      <Route path="/missions/4rt" element={<MissionDetail />} />
       <Route path="/missions/m4gazine" element={<ExternalRedirect to="https://4planetmagazine.com" />} />
       <Route path="/missions/4film" element={<ExternalRedirect to="https://4planetmagazine.com/films" />} />
       <Route path="/culture/telier" element={toMarket} />
