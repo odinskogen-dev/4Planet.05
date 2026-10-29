@@ -1,0 +1,37 @@
+name: 4SPECIES 66-Page Preview 403 Public Read Only 20261029
+on:
+  push:
+    branches: [king/test]
+    paths: [.github/workflows/4species-next5-noindex-preview-403-readonly-20261029.yml]
+permissions: {contents: read}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Diagnose fresh immutable Pages origin, no production changes
+        run: |
+          python3 - <<'PY'
+          import urllib.request,urllib.error,json,concurrent.futures,time
+          origins=['https://a8010871.4planet-05.pages.dev','https://b0951128.4planet-05.pages.dev']
+          paths=['/','/clouded-leopard','/species-data/v1/clouded-leopard.json','/release-identity.json','/assets/species/next61/clouded-leopard-hero.jpg']
+          jobs=[(o,p) for o in origins for p in paths]
+          def one(pair):
+           o,p=pair
+           req=urllib.request.Request(o+p,headers={'User-Agent':'Mozilla/5.0 (4PLANET-premium-noindex-staging-verification/1.0)','Cache-Control':'no-cache'})
+           try:
+            with urllib.request.urlopen(req,timeout=25) as r:
+             b=r.read(5000); return {'url':o+p,'code':r.status,'final':r.geturl(),'type':r.headers.get('Content-Type'),'robots':r.headers.get('X-Robots-Tag'),'server':r.headers.get('Server'),'bodyStart':b[:120].decode('utf-8','replace')}
+           except urllib.error.HTTPError as e:
+            return {'url':o+p,'code':e.code,'final':e.geturl(),'type':e.headers.get('Content-Type'),'robots':e.headers.get('X-Robots-Tag'),'server':e.headers.get('Server'),'bodyStart':e.read(160)[:120].decode('utf-8','replace')}
+           except Exception as e:return {'url':o+p,'code':0,'error':str(type(e).__name__)}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=7) as pool:
+           rows=list(pool.map(one,jobs))
+          for x in rows:print('PUBLIC_IMMUTABLE_PAGES_DIAGNOSTIC '+json.dumps(x))
+          st=[x for x in rows if x['url']=='https://a8010871.4planet-05.pages.dev/clouded-leopard']
+          if st and st[0].get('code')==200 and 'noindex' in (st[0].get('robots') or ''):print('NEW_FIVE_PREVIEW_PUBLIC_NOINDEX_REACHABLE')
+          else:print('NEW_FIVE_PREVIEW_PUBLIC_HOLD')
+          with open(__import__('os').environ['GITHUB_STEP_SUMMARY'],'a') as f:
+           f.write('## 4SPECIES next five immutable Pages preview independent GET audit\n\n')
+           for x in rows:f.write('- '+x['url']+' HTTP '+str(x.get('code'))+' robots '+str(x.get('robots'))+' type '+str(x.get('type'))+'\n')
+          PY
