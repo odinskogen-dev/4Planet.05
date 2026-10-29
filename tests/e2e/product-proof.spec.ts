@@ -297,8 +297,35 @@ test("mobile proof preserves navigation, source limits, local Watch and route-co
   expect(atlasJourneyUrl.searchParams.get("entity")).toBe("taxon:gbif:2440483");
   expect(atlasJourneyUrl.searchParams.get("journey")).toBe("orca-gbif");
 
+  const hasOrcaJourneyContext = (href: string | null, pathname: string) => {
+    if (!href) return false;
+    const url = new URL(href, BASE);
+    return url.pathname === pathname
+      && url.searchParams.get("entity") === "taxon:gbif:2440483"
+      && url.searchParams.get("journey") === "orca-gbif";
+  };
+
+  const speciesJourneyLink = compactNavigation.getByRole("link", { name: "SPECIES", exact: true });
+  const originalSpeciesJourneyHref = await speciesJourneyLink.getAttribute("href");
+  expect(hasOrcaJourneyContext(originalSpeciesJourneyHref, "/species")).toBe(true);
+  try {
+    await speciesJourneyLink.evaluate((node) => {
+      node.setAttribute("href", "/species?entity=taxon%3Agbif%3A999&journey=orca-gbif");
+    });
+    expect(hasOrcaJourneyContext(await speciesJourneyLink.getAttribute("href"), "/species")).toBe(false);
+
+    await speciesJourneyLink.evaluate((node) => {
+      node.setAttribute("href", "/species?entity=taxon%3Agbif%3A2440483&journey=wrong-journey");
+    });
+    expect(hasOrcaJourneyContext(await speciesJourneyLink.getAttribute("href"), "/species")).toBe(false);
+  } finally {
+    await speciesJourneyLink.evaluate((node, href) => {
+      if (href) node.setAttribute("href", href);
+    }, originalSpeciesJourneyHref);
+  }
+  expect(hasOrcaJourneyContext(await speciesJourneyLink.getAttribute("href"), "/species")).toBe(true);
+
   for (const [name, path] of [
-    ["SPECIES", "/species"],
     ["ABOUT", "/about"],
     ["PRIVACY", "/privacy"],
   ] as const) {
