@@ -1,3 +1,17 @@
+# ACTOR GOLD — CONTROLLED DEVELOPMENT PROJECTION — 30 OCTOBER 2026
+
+**STATUS:** CODE CANDIDATE / NATIVE GOLD TEMPLATE REQUIRED / RELEASE HOLD.
+
+**ESCAPED FAILURE:** exact-SHA Gold Template run 40964188220 passed the sandbox identity preflight and 33/36 cases, but ACTOR failed at 1440/390/430. The controlled route mounted the public-only ActorProfilePage; ORCA is DEVELOPMENT, so publicActorBySlug rejected it and React redirected to /actors, unmounting the existing ACTOR GOLD review note.
+
+**BOUNDED CORRECTION:** reuse one private Actor profile renderer through an explicit SandboxActorProfile projection that accepts the already authorised actor record but emits no public Actor SEO. The public ActorProfilePage continues to resolve only through publicActorBySlug. ORCA remains DEVELOPMENT and /actors/orca remains fail-closed.
+
+**OWNING-PATH REGRESSION:** every controlled Gold surface must retain its exact pathname before semantic assertions. A dedicated public negative proves /actors/orca redirects to /actors and exposes neither the ORCA heading nor Actor JSON-LD identity. The existing ACTOR positive still requires the controlled review note, ORCA h1, noindex and no console errors across 1440/390/430.
+
+**TRUTH / RELEASE BOUNDARY:** no actor is published, no public gate is weakened, and no production route, data state, merge, deployment or release is changed. Independent Gold must judge the exact SHA, full 36-case matrix, public negative, WebKit, rights, accessibility, indexability and published-SPECIES zero-loss.
+
+**ROLLBACK:** revert this bounded Actor renderer, controlled route, regression and brief commit to e8f107f3ca8b2bcb6356b67f30c718db6e56faf5 if independent Gold finds any public leakage or sandbox regression.
+
 # 4PLANET — GOLD SANDBOX ACCESSIBLE-SEMANTICS CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD/AXE-RETURNED SELECTOR CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

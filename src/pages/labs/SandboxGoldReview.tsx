@@ -3,8 +3,8 @@ import { PublicShell } from "@/components/layout/PublicShell";
 import { Seo } from "@/components/Seo";
 import { GOLD_OBJECT_PROOFS, GOLD_STORY_PROOFS } from "@/content/goldTemplateSystem";
 import { goldCompletionObjectBySlug } from "@/content/goldTemplateCompletion";
-import { ACTOR_GOLD_PROFILES } from "@/content/actorGold";
-import { ActorProfilePage } from "@/pages/v5/ActorGold";
+import { ACTOR_GOLD_PROFILES, actorBySlug } from "@/content/actorGold";
+import { SandboxActorProfile } from "@/pages/v5/ActorGold";
 import { GoldRefinedObject, GoldRefinedStory, GoldRefinementBar } from "@/pages/labs/GoldTemplateRefinement02";
 import "@/styles/gold-template-refinement-02.css";
 import "@/styles/gold-review-index.css";
@@ -49,8 +49,9 @@ export function SandboxGoldStoryPage() {
 
 export function SandboxActorGoldPage() {
   const { slug } = useParams();
-  if (!ACTOR_GOLD_PROFILES.some((actor)=>actor.slug===slug)) return <Navigate to="/sandbox/gold" replace/>;
-  return <><Seo title="Actor Gold Founder Review | 4PLANET TEST" description="Controlled Founder review of Actor Gold." path={`/sandbox/gold/actor/${slug}`} robots={TEST_ROBOTS}/><div className="gold2"><GoldRefinementBar label="ACTOR GOLD"/></div><ActorProfilePage/></>;
+  const actor = actorBySlug(slug);
+  if (!actor || !ACTOR_GOLD_PROFILES.some((profile)=>profile.id===actor.id)) return <Navigate to="/sandbox/gold" replace/>;
+  return <><Seo title="Actor Gold Founder Review | 4PLANET TEST" description="Controlled Founder review of Actor Gold." path={`/sandbox/gold/actor/${slug}`} robots={TEST_ROBOTS}/><div className="gold2"><GoldRefinementBar label="ACTOR GOLD"/></div><SandboxActorProfile actor={actor}/></>;
 }
 
 export const SANDBOX_GOLD_REVIEW_PATHS = [...REVIEW_OBJECTS.map((item)=>item.href),...REVIEW_STORIES.map((item)=>item.href)] as const;

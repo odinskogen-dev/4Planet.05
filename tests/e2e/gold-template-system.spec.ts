@@ -58,6 +58,9 @@ for (const surface of surfaces) {
 
     const response = await page.goto(surface.path, { waitUntil: "domcontentloaded" });
     expect(response?.status(), `${surface.path} must return HTTP 200`).toBe(200);
+    await expect.poll(() => new URL(page.url()).pathname, {
+      message: `${surface.path} must retain its controlled sandbox identity`,
+    }).toBe(surface.path);
 
     const reviewNote = page.getByRole("note").first();
     await expect(reviewNote).toContainText("TEST");
@@ -76,6 +79,15 @@ for (const surface of surfaces) {
     expect(fatal, fatal.join("\n")).toEqual([]);
   });
 }
+
+test("DEVELOPMENT Actor Gold stays absent from public route and metadata", async ({ page }) => {
+  await page.goto("/actors/orca", { waitUntil: "domcontentloaded" });
+  await expect.poll(() => new URL(page.url()).pathname).toBe("/actors");
+  await expect(page.getByRole("heading", { name: "ORCA", exact: true })).toHaveCount(0);
+  const structuredData = await page.locator("script[type='application/ld+json']").allTextContents();
+  expect(structuredData.join("\n")).not.toContain("P17-A036");
+  expect(structuredData.join("\n")).not.toContain('"name":"ORCA"');
+});
 
 test("Founder Review index exposes every object and Magazine review path", async ({ page }) => {
   const response = await page.goto("/sandbox/gold", { waitUntil: "domcontentloaded" });

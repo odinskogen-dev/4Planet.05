@@ -121,10 +121,7 @@ export function ActorsIndex() {
   );
 }
 
-export function ActorProfilePage() {
-  const { slug } = useParams();
-  const actor = publicActorBySlug(slug);
-  if (!actor) return <Navigate to="/actors" replace />;
+function ActorProfileContent({ actor, includeSeo }: { actor: ActorGoldProfile; includeSeo: boolean }) {
   const publishableClaims = actor.claimsAllowed.filter((claim) =>
     actorClaimCanPublish(claim, actor.sourceRecords, actor.evidenceRecords),
   );
@@ -135,7 +132,7 @@ export function ActorProfilePage() {
 
   return (
     <main className="actor-gold">
-      <Seo
+      {includeSeo && <Seo
         title={`${actor.name} — Actor Profile | 4PLANET`}
         description={actor.oneLine}
         path={`/actors/${actor.slug}`}
@@ -148,7 +145,7 @@ export function ActorProfilePage() {
           url: canonicalUrl,
           identifier: actor.id,
         })}
-      />
+      />}
 
       <nav className="actor-gold-nav" aria-label="Actor profile navigation">
         <Link className="actor-gold-brand" to="/">4PLANET_</Link>
@@ -332,4 +329,19 @@ export function ActorProfilePage() {
       </section>
     </main>
   );
+}
+
+
+export function ActorProfilePage() {
+  const { slug } = useParams();
+  const actor = publicActorBySlug(slug);
+  return actor ? <ActorProfileContent actor={actor} includeSeo /> : <Navigate to="/actors" replace />;
+}
+
+/**
+ * Controlled review projection only. The public route continues to resolve
+ * exclusively through publicActorBySlug and this projection emits no public SEO.
+ */
+export function SandboxActorProfile({ actor }: { actor: ActorGoldProfile }) {
+  return <ActorProfileContent actor={actor} includeSeo={false} />;
 }
