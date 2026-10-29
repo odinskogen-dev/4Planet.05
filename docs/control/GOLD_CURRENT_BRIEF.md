@@ -1,3 +1,70 @@
+# 4PLANET — HOMEPAGE PRIVACY FOOTER SCOPE CONTRACT — 29 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.
+
+## USER ARRIVES BECAUSE
+
+A mobile visitor needs a reachable privacy destination in the semantic homepage footer at both supported widths.
+
+## ONE THING TO UNDERSTAND
+
+The homepage PRIVACY link is intentionally in the footer legal row outside the internal .foot-grid layout container.
+
+## PRIMARY ACTION
+
+Verify PRIVACY against the enclosing semantic footer while retaining a separate responsive .foot-grid contract.
+
+## SECONDARY DEPTH
+
+Retain the Orca compact-footer destinations, GBIF source truth, local Watch, ATLAS continuation and overflow checks.
+
+## P1 DOMINANT
+
+The accessible privacy destination and zero horizontal overflow remain the dominant mobile proof.
+
+## P2 ORIENTATION
+
+The full footer grid is one column at 390px and two at 430px; the legal-row privacy link is a sibling, not a grid descendant.
+
+## P3 ACTION / NEXT
+
+Run the exact candidate through native Browser Product Proof and hand it to independent Gold; do not merge or deploy.
+
+## P4 DEPTH
+
+Desktop, WebKit, rights, accessibility, indexability and published-species zero-loss remain with independent Gold.
+
+## WHAT CAN BE REMOVED
+
+Remove only the impossible descendant assertion that searched for PRIVACY inside .foot-grid.
+
+## WHAT MUST BE REUSED
+
+Reuse PublicShell's existing semantic footer/legal row, responsive footer grid, issue #145, branch king/test and Atomic P51-SHIP-01.
+
+## TRUTH BOUNDARY
+
+Browser Product Proof 40900084684 passed 24/24 integrated journeys, 15/15 Magazine and 2/2 desktop product checks, then failed mobile 390/430 before breakpoint proof because the test scoped PRIVACY to .foot-grid. Source confirms the actual link exists outside that grid. The correction scopes accessibility to footer, keeps grid/breakpoint/overflow assertions separate, removes the real link in a negative mutation, proves absence, restores its owning row and rechecks href. No product runtime, copy, route, styling or provider behaviour changed.
+
+## MOBILE-FIRST RISK
+
+A selector can falsely report a missing legal destination when DOM ownership is narrower than the semantic footer. The negative regression now targets the actual link.
+
+## HUMAN SUCCESS
+
+At 390px and 430px the visitor can reach PRIVACY while the full footer retains its approved responsive columns and no horizontal overflow.
+
+## ROOT CAUSE / FAILED TEST / IMMUNITY
+
+Root cause: accessibility proof was scoped to an internal layout grid rather than the semantic footer. Missing check: delete and restore the actual legal-row link. Immunity: footer-scoped exact href assertion plus a real DOM-negative absence/restoration regression.
+
+## DOOR / ROLLBACK / JUDGE
+
+Candidate parent and rollback is cea180efc239366fd6e282a52876c46a74221f00. Factory returns Maker evidence only; independent Gold judges the exact child. No merge, deploy, LIVE, public send, cash or impact authority is granted.
+
+
+---
+
 # SPECIES — ROUTE-CORRECT MOBILE FOOTER CONTRACT — 29 OCTOBER 2026
 
 **STATUS:** GOLD-RETURNED TEST-HARNESS CORRECTION / CODE CANDIDATE ONLY / NO RELEASE.

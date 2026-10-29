@@ -232,10 +232,22 @@ test("mobile proof preserves navigation, source limits, local Watch and route-co
   await verifySharedNavigation(page);
   await expect(page.locator("main")).toBeVisible();
 
-  const homeFooter = page.locator(".foot-grid").first();
+  const homeFooter = page.locator("footer").last();
   await homeFooter.scrollIntoViewIfNeeded();
   await expect(homeFooter).toBeVisible();
-  await expect(homeFooter.getByRole("link", { name: "PRIVACY" })).toBeVisible();
+
+  const homeFooterGrid = homeFooter.locator(".foot-grid").first();
+  await expect(homeFooterGrid).toBeVisible();
+  const homePrivacyLink = homeFooter.getByRole("link", { name: "PRIVACY", exact: true });
+  await expect(homePrivacyLink).toHaveAttribute("href", "/privacy");
+
+  const privacyRow = homePrivacyLink.locator("..");
+  const originalPrivacyRowMarkup = await privacyRow.innerHTML();
+  await homePrivacyLink.evaluate((node) => node.remove());
+  await expect(homeFooter.getByRole("link", { name: "PRIVACY", exact: true })).toHaveCount(0);
+  await privacyRow.evaluate((node, markup) => { node.innerHTML = markup; }, originalPrivacyRowMarkup);
+  await expect(homeFooter.getByRole("link", { name: "PRIVACY", exact: true })).toHaveAttribute("href", "/privacy");
+
   const homeLayout = await page.evaluate(() => {
     const footerGrid = document.querySelector<HTMLElement>(".foot-grid");
     if (!footerGrid) return null;
