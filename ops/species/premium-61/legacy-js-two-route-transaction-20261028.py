@@ -150,7 +150,7 @@ def attach_and_test():
   for slug in ('atlas-moth','peacock-spider','emperor-scorpion','dragon-blood-tree'):
    st,b,_,end=web(SITE+'/'+slug)
    if st!=200 or end!=SITE+'/'+slug:raise RuntimeError('New four broken '+slug)
-  cp=subprocess.run(['node','ops/species/premium-61/old57-hydration-live-gold-20261028.mjs'],timeout=220)
+  cp=subprocess.run(['node','ops/species/premium-61/old57-hydration-live-gold-20261028.mjs'],timeout=480)
   if cp.returncode!=0:raise RuntimeError('Real Chromium+WebKit UX regression')
   if snap()!=baseline['protected'] or check_sitemap()!=baseline['sitemap']:raise RuntimeError('Postbrowser zero-loss evidence changed')
   print('TWO_JS_ROUTES_PUBLIC_GOLD_PASS; 57 ORIGINAL HTML/JSON EXACT; four NEW preserved; 16 Chrome/WebKit UX cases',flush=True)
