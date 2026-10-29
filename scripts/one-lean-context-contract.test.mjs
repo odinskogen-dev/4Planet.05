@@ -63,6 +63,9 @@ const GOLD_RETURN_06_BARE_CONTRAST_MUTATIONS = [
   "Non-user-facing control work: do not automatically read Brand OS but the operator MUST load GOLD_CURRENT_BRIEF before every edit.",
   "Never routinely read 01 Project Lead but the operator MUST read 02 Active Tasks before every task.",
 ];
+const GOLD_RETURN_07_SAFE_CONTRASTIVE_PROHIBITIONS = [
+  "Never routinely read 01 Project Lead but you MUST NOT read 02 Active Tasks before any task.",
+];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
   "Use the 01 Project Lead or 02 Active Tasks archives on-demand only when a targeted original-source lookup requires them.",
@@ -136,8 +139,11 @@ function semanticStartupConflicts(name, content) {
       }
       if (optionalWithoutMandate || explicitProhibition) continue;
 
-      const mandatory = /\b(?:must|required|mandatory|before (?:any|each|every|starting)|for every|always|first|start only|read only|default|startup|at boot|before beginning)\b/i.test(clause)
-        || /^(?:read|load|consult|fetch|boot|treat|use)\b/i.test(clause);
+      const actionBoundMustNot = /\bmust\s+not\s+(?:bulk-?load|load|read|fetch|preload|boot|treat|promote|override|supersede|require)\b/i.test(clause);
+      const mandatory = !actionBoundMustNot && (
+        /\b(?:must|required|mandatory|before (?:any|each|every|starting)|for every|always|first|start only|read only|default|startup|at boot|before beginning)\b/i.test(clause)
+        || /^(?:read|load|consult|fetch|boot|treat|use)\b/i.test(clause)
+      );
       const requiresProjectArchives = /\b(?:01[ _-]*project lead|02[ _-]*active tasks?)\b/i.test(clause);
       if (mandatory && requiresProjectArchives) {
         failures.push(`${name}: historical 01/02 archive required before sole 00 startup`);
@@ -258,6 +264,18 @@ test("returned Gold bare-contrast mandates fail closed in both entrypoints", () 
         [name]: `${sources[name]}\n${mutation}`,
       };
       assert.notDeepEqual(startupContractFailures(mutated), [], `${name}: ${mutation}`);
+    }
+  }
+});
+
+test("returned Gold contrastive MUST NOT remains safe in both entrypoints", () => {
+  for (const reference of GOLD_RETURN_07_SAFE_CONTRASTIVE_PROHIBITIONS) {
+    for (const name of Object.keys(sources)) {
+      const mutated = {
+        ...sources,
+        [name]: `${sources[name]}\n${reference}`,
+      };
+      assert.deepEqual(startupContractFailures(mutated), [], `${name}: ${reference}`);
     }
   }
 });
