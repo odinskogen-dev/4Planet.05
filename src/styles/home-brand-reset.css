@@ -134,7 +134,7 @@
   .home-guided-grid{grid-template-columns:1fr}
 }
 @media(max-width:680px){
-  .planet-hero{height:auto;min-height:100svh;overflow:visible}
+  .planet-hero{height:auto;min-height:100svh;overflow:clip}
   .planet-hero__content{height:auto;min-height:100svh;box-sizing:border-box;padding-top:max(90px,calc(env(safe-area-inset-top) + 72px));padding-bottom:34px}
   .planet-hero h1{font-size:clamp(36px,10.7vw,48px);max-width:none}
   .planet-hero h1 span{white-space:normal}

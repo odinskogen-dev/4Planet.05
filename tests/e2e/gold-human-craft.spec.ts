@@ -17,6 +17,45 @@ async function assertNoHorizontalOverflow(page) {
   expect(overflow).toBeLessThanOrEqual(1);
 }
 
+async function assertScaledHeroIsContained(page, testInfo) {
+  const evidence = await page.evaluate(() => {
+    const hero = document.querySelector<HTMLElement>(".planet-hero");
+    const image = hero?.querySelector<HTMLElement>(".earth-breathe");
+    if (!hero || !image) return null;
+
+    const heroRect = hero.getBoundingClientRect();
+    const imageRect = image.getBoundingClientRect();
+    const computedOverflow = getComputedStyle(hero).overflowX;
+    const clippedOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+
+    const previousInlineOverflow = hero.style.overflow;
+    hero.style.overflow = "visible";
+    const visibleOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+    hero.style.overflow = previousInlineOverflow;
+
+    return {
+      computedOverflow,
+      heroWidth: heroRect.width,
+      imageWidth: imageRect.width,
+      imageLeft: imageRect.left,
+      imageRight: imageRect.right,
+      clippedOverflow,
+      visibleOverflow,
+    };
+  });
+
+  await testInfo.attach("mobile-hero-overflow-causal-proof.json", {
+    body: Buffer.from(JSON.stringify(evidence, null, 2)),
+    contentType: "application/json",
+  });
+
+  expect(evidence).not.toBeNull();
+  expect(evidence!.computedOverflow).toBe("clip");
+  expect(evidence!.imageWidth - evidence!.heroWidth).toBeGreaterThanOrEqual(8);
+  expect(evidence!.visibleOverflow).toBeGreaterThanOrEqual(4);
+  expect(evidence!.clippedOverflow).toBeLessThanOrEqual(1);
+}
+
 async function assertPremiumNavigation(page) {
   const width = page.viewportSize()?.width ?? 1440;
 
@@ -126,6 +165,8 @@ for (const project of ["desktop-1440", "mobile-390", "mobile-430"] as const) {
         expect(cardBoxes).toHaveLength(4);
         const heights = cardBoxes.map((box) => box.height);
         expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(2);
+
+        await assertScaledHeroIsContained(page, testInfo);
       }
 
       await assertNoHorizontalOverflow(page);
