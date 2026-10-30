@@ -6,7 +6,7 @@ on:
       - deploy/romequickconquest-r4-20261030
     paths:
       - deploy/romequickconquest/**
-      - .github/workflows/cub-romequickconquest-r4-route.yml
+      - .github/workflows/cub-romequickconquest-r2-route.yml
 
 permissions:
   contents: read
