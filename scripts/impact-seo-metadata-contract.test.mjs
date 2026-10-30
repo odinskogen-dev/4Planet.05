@@ -51,6 +51,7 @@ test("sitemaps carry meaningful IMPACT lastmod without build-time fiction",()=>{
   const sitemap=fs.readFileSync("scripts/generate-sitemap.mjs","utf8");
   assert.match(snapshot,/updatedAt: text\(row\.updated_at\)/);
   assert.match(snapshot,/lastReviewed: a\.lastReviewed/);
+  assert.match(snapshot,/updatedAt: p\.updatedAt/);
   assert.match(sitemap,/impactLastmodByRoute/);
   assert.match(sitemap,/<lastmod>/);
   assert.match(sitemap,/item\?\.lastReviewed \|\| item\?\.updatedAt/);
