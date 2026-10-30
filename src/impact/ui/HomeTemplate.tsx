@@ -37,12 +37,33 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
       ?? null;
   }, [graph, issueParam]);
 
-  const issueFilters = useMemo(
+  const issueRows = useMemo(
     () => graph.issues
-      .map((issue) => ({ issue, count: idx.projectsForIssue(issue).length }))
-      .filter((row) => row.count > 0),
+      .map((issue) => ({ issue, projects: idx.projectsForIssue(issue) }))
+      .sort((a, b) => b.projects.length - a.projects.length || a.issue.name.localeCompare(b.issue.name)),
     [graph, idx],
   );
+  const issueFilters = issueRows.filter((row) => row.projects.length > 0).map(({ issue, projects }) => ({ issue, count: projects.length }));
+  const issuesWithProjects = issueRows.filter((row) => row.projects.length > 0);
+  const issuesWithoutProjects = issueRows.filter((row) => row.projects.length === 0);
+
+  const actorRows = useMemo(
+    () => graph.actors
+      .map((actor) => ({ actor, count: idx.projectsForActor(actor).length }))
+      .sort((a, b) => b.count - a.count || a.actor.name.localeCompare(b.actor.name)),
+    [graph, idx],
+  );
+  const primaryActors = actorRows.slice(0, 16);
+  const moreActors = actorRows.slice(16);
+
+  const solutionRows = useMemo(
+    () => graph.solutions
+      .map((solution) => ({ solution, count: idx.projectsForSolution(solution).length }))
+      .sort((a, b) => b.count - a.count || a.solution.name.localeCompare(b.solution.name)),
+    [graph, idx],
+  );
+  const primarySolutions = solutionRows.slice(0, 12);
+  const moreSolutions = solutionRows.slice(12);
 
   const visible = activeIssue ? idx.projectsForIssue(activeIssue) : graph.projects;
   const hits = useMemo(() => searchGraph(idx, query), [idx, query]);
@@ -117,9 +138,15 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
             <button type="submit">Search</button>
           </form>
           <p className="iu-hero__count">
-            {graph.projects.length} projects · {graph.actors.length} organisations · {graph.issues.length} issues — read live from NATUREBRAIN.{" "}
+            {graph.projects.length} projects · {graph.actors.length} organisations · {graph.issues.length} issues — source-aware public records.{" "}
             <Link to={impactRoutes.method}>How records are reviewed</Link>
           </p>
+          <nav className="iu-home-jumps" aria-label="Explore IMPACT">
+            <a href="#index">Projects</a>
+            <a href="#issues">Problems</a>
+            <a href="#actors">Organisations</a>
+            {graph.solutions.length > 0 && <a href="#methods">Methods</a>}
+          </nav>
         </div>
         <span className="iu-hero__label" aria-hidden>Issue visual · not project photography</span>
       </section>
@@ -165,16 +192,15 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
         </section>
       )}
 
-      <section className="iu-section" aria-labelledby="issues-title">
+      <section className="iu-section" id="issues" aria-labelledby="issues-title">
         <div className="iu-wrap">
           <SectionHead
             id="issues-title"
             title="Start with the problem"
-            lead="Each issue page brings together the projects, organisations, methods and places working on it — and what is still unknown."
+            lead="Start with issues that already have published projects. The wider issue map remains available without pretending 4PLANET has found action on every problem yet."
           />
           <ul className="iu-rows iu-rows--two">
-            {graph.issues.map((issue) => {
-              const projects = idx.projectsForIssue(issue);
+            {issuesWithProjects.map(({ issue, projects }) => {
               const actors = idx.actorsForProjects(projects);
               return (
                 <RuledRow
@@ -189,22 +215,47 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
               );
             })}
           </ul>
+          {issuesWithoutProjects.length > 0 && (
+            <details className="iu-more">
+              <summary>Explore {issuesWithoutProjects.length} more source-backed issues without a published project yet</summary>
+              <p className="iu-more__lead">These are public problem-intelligence records. A missing project link means IMPACT has not published one yet — not that no work exists.</p>
+              <ul className="iu-rows iu-rows--two">
+                {issuesWithoutProjects.map(({ issue }) => (
+                  <RuledRow
+                    key={issue.id}
+                    to={impactRoutes.issue(issue.slug)}
+                    title={issue.name}
+                    mark={markOf(issue.domain)}
+                    line={issue.description || "Source-backed issue record"}
+                    meta={issue.evidence.length ? `${issue.evidence.length} source-backed claim${issue.evidence.length === 1 ? "" : "s"}` : "Issue record"}
+                    onOpen={() => trackEvent("impact_issue_open", { issue_id: issue.id, surface: "home_more" })}
+                  />
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
       </section>
 
-      <section className="iu-section iu-section--rule" aria-labelledby="actors-title">
+      <section className="iu-section iu-section--rule" id="actors" aria-labelledby="actors-title">
         <div className="iu-wrap">
           <SectionHead
             id="actors-title"
             title="Who is doing the work"
-            lead="Organisations are first-class records: what they do, where, which projects and which sources. A listing is never an endorsement or a partnership."
+            lead={`${graph.actors.length} public organisation records. The most connected records are shown first; listing is never endorsement or partnership.`}
           />
-          <ActorRows actors={graph.actors.map((actor) => ({ actor }))} idx={idx} surface="home" />
+          <ActorRows actors={primaryActors.map(({ actor }) => ({ actor }))} idx={idx} surface="home" />
+          {moreActors.length > 0 && (
+            <details className="iu-more">
+              <summary>Show all {graph.actors.length} organisations</summary>
+              <ActorRows actors={moreActors.map(({ actor }) => ({ actor }))} idx={idx} surface="home_more" />
+            </details>
+          )}
         </div>
       </section>
 
       {graph.solutions.length > 0 && (
-        <section className="iu-section iu-section--rule" aria-labelledby="methods-title">
+        <section className="iu-section iu-section--rule" id="methods" aria-labelledby="methods-title">
           <div className="iu-wrap">
             <SectionHead
               id="methods-title"
@@ -212,20 +263,34 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
               lead="How the work is done. Solution records are early: method and maturity first; solution-level evidence follows as it is published."
             />
             <ul className="iu-rows iu-rows--three">
-              {graph.solutions.map((solution) => {
-                const projects = idx.projectsForSolution(solution);
-                return (
-                  <RuledRow
-                    key={solution.id}
-                    to={impactRoutes.solution(solution.slug)}
-                    title={solution.name}
-                    line={[humanise(solution.solutionType), solution.maturity ? humanise(solution.maturity) : null].filter(Boolean).join(" · ")}
-                    meta={`${projects.length} project${projects.length === 1 ? "" : "s"}`}
-                    onOpen={() => trackEvent("impact_solution_open", { solution_id: solution.id, surface: "home" })}
-                  />
-                );
-              })}
+              {primarySolutions.map(({ solution, count }) => (
+                <RuledRow
+                  key={solution.id}
+                  to={impactRoutes.solution(solution.slug)}
+                  title={solution.name}
+                  line={[humanise(solution.solutionType), solution.maturity ? humanise(solution.maturity) : null].filter(Boolean).join(" · ")}
+                  meta={`${count} project${count === 1 ? "" : "s"}`}
+                  onOpen={() => trackEvent("impact_solution_open", { solution_id: solution.id, surface: "home" })}
+                />
+              ))}
             </ul>
+            {moreSolutions.length > 0 && (
+              <details className="iu-more">
+                <summary>Show all {graph.solutions.length} methods</summary>
+                <ul className="iu-rows iu-rows--three">
+                  {moreSolutions.map(({ solution, count }) => (
+                    <RuledRow
+                      key={solution.id}
+                      to={impactRoutes.solution(solution.slug)}
+                      title={solution.name}
+                      line={[humanise(solution.solutionType), solution.maturity ? humanise(solution.maturity) : null].filter(Boolean).join(" · ")}
+                      meta={`${count} project${count === 1 ? "" : "s"}`}
+                      onOpen={() => trackEvent("impact_solution_open", { solution_id: solution.id, surface: "home_more" })}
+                    />
+                  ))}
+                </ul>
+              </details>
+            )}
           </div>
         </section>
       )}
@@ -235,7 +300,7 @@ export function HomeTemplate({ idx }: { idx: ImpactIndex }) {
           <SectionHead
             id="place-title"
             title="Every project happens somewhere"
-            lead={<>IMPACT uses the same 4PLANET ATLAS as every other product — no second map. Places named here: {graph.places.map((place) => place.name).join(", ")}.</>}
+            lead={<>IMPACT uses the shared 4PLANET ATLAS. Published work currently connects to {graph.places.length} place records; open the map for geographic context rather than a long place list.</>}
           />
           <div className="iu-atlas" onClickCapture={(event) => { if ((event.target as HTMLElement).closest("a")) trackEvent("impact_atlas_open", { surface: "home" }); }}>
             <AtlasEmbed view={{ kind: "IMPACT", title: "Where published projects work", description: "Open the shared ATLAS to explore places, species and living systems around this work.", entityId: "impact:4planet:living-action-network", limitation: "World navigation view. Project places are context labels, not boundaries." }} />
