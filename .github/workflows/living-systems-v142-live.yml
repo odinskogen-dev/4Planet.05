@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: living-systems-v142-zero-loss-live-20261007
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy-and-prove:
