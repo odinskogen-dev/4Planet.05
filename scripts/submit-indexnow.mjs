@@ -22,7 +22,7 @@ const keyLocation = `${origin}/${key}.txt`;
 // IndexNow is for the canonical 4planet.org pages, not legacy product routes.
 // The sitemap is generated from the same canonical route ownership rules as the build.
 const sitemap = fs.readFileSync(path.join(root, "public/sitemap.xml"), "utf8");
-const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/g)]
+const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
   .map((match) => match[1].replaceAll("&amp;", "&"));
 const eligible = new Set([
   `${origin}/now`,
