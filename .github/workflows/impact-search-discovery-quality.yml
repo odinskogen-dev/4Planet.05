@@ -1,4 +1,5 @@
 name: IMPACT — Search and AI Discovery Release Gate
+# IMPACT SEO red-team: concise titles + meaningful lastmod
 on:
   push:
     branches:
