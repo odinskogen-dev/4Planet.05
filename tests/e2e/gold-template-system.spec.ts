@@ -84,7 +84,15 @@ for (const surface of surfaces) {
       await page.screenshot({ path: `${screenshotPrefix}.png`, fullPage: true });
     } else {
       await page.screenshot({ path: `${screenshotPrefix}-top.png` });
-      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      const bottomPosition = await page.evaluate(() => {
+        window.scrollTo(0, document.documentElement.scrollHeight);
+        const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        return { scrollY: window.scrollY, maxScrollY };
+      });
+      if (bottomPosition.maxScrollY > 0) {
+        expect(bottomPosition.scrollY).toBeGreaterThan(0);
+        expect(bottomPosition.scrollY).toBeGreaterThanOrEqual(bottomPosition.maxScrollY - 1);
+      }
       await page.screenshot({ path: `${screenshotPrefix}-bottom.png` });
     }
     expect(fatal, fatal.join("\n")).toEqual([]);

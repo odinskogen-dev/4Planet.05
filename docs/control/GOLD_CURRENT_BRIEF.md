@@ -1,3 +1,17 @@
+# GOLD TEMPLATE — WEBKIT BOTTOM-POSITION EVIDENCE ASSERTION — 30 OCTOBER 2026
+
+**STATUS:** GOLD-RETURNED EVIDENCE CORRECTION / EXACT-SHA RERUN REQUIRED / RELEASE HOLD.
+
+**INDEPENDENT GOLD RETURN:** issue comment 6511969118 accepted the segmented capture as structurally plausible but found no assertion that a scrollable page had actually reached the bottom; top and bottom files could therefore be redundant.
+
+**PROVIDER RECEIPT BEFORE THIS CORRECTION:** exact SHA 1c9abfd1ff5c0a4231b7ac7862762e1bd19bfee3 completed native run 40980297891 / job 123818388025 with identity preflight 1/1 and combined Chromium+WebKit matrix 78/78 PASS; artifact 12944003901. That closes the WebKit raster failure but not Gold's evidence-integrity return.
+
+**BOUNDED SAME-PATH CORRECTION:** after scrolling, the test records actual `scrollY` and computed `maxScrollY`; whenever content is scrollable it requires positive movement and the final position to be within one pixel of the bottom before writing the bottom screenshot. All semantic, route, privacy, console, noindex and public DEVELOPMENT-actor assertions remain unchanged.
+
+**TRUTH / RELEASE BOUNDARY:** this is test-evidence integrity only. Independent Gold, wider product gates, and Founder release remain required; no deployment or LIVE claim.
+
+**ROLLBACK:** revert to 1c9abfd1ff5c0a4231b7ac7862762e1bd19bfee3 if the owning exact-SHA rerun shows the assertion is not portable across the six configured projects.
+
 # GOLD TEMPLATE — DETERMINISTIC WEBKIT SEGMENTED EVIDENCE — 30 OCTOBER 2026
 
 **STATUS:** SECOND RETURN CORRECTION / EXACT-SHA RERUN REQUIRED / RELEASE HOLD.
