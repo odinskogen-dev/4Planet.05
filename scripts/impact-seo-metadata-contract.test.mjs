@@ -44,3 +44,15 @@ test("profile title templates stay concise and avoid repetitive type branding",(
   assert.doesNotMatch(impact,/projects and organisations \| 4PLANET Impact/);
   assert.doesNotMatch(impact,/Organisation \| 4PLANET Impact/);
 });
+
+
+test("sitemaps carry meaningful IMPACT lastmod without build-time fiction",()=>{
+  const snapshot=fs.readFileSync("scripts/impact-graph-snapshot.mjs","utf8");
+  const sitemap=fs.readFileSync("scripts/generate-sitemap.mjs","utf8");
+  assert.match(snapshot,/updatedAt: text\(row\.updated_at\)/);
+  assert.match(snapshot,/lastReviewed: a\.lastReviewed/);
+  assert.match(sitemap,/impactLastmodByRoute/);
+  assert.match(sitemap,/<lastmod>/);
+  assert.match(sitemap,/item\?\.lastReviewed \|\| item\?\.updatedAt/);
+  assert.doesNotMatch(sitemap,/impactLastmodByRoute.*Date\.now/);
+});
