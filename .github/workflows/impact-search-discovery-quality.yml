@@ -1,0 +1,62 @@
+name: IMPACT — Search and AI Discovery Release Gate
+on:
+  push:
+    branches:
+      - feat/impact-search-ai-discovery-all-229-20261030
+  pull_request:
+    paths:
+      - scripts/prerender-impact-seo.mjs
+      - scripts/generate-sitemap.mjs
+      - scripts/impact-seo-graph-contract.test.mjs
+      - .github/workflows/impact-search-discovery-quality.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-backed-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CF_PAGES: "1"
+      IMPACT_SNAPSHOT_LIVE: "1"
+      PUBLIC_SITE_ORIGIN: https://4planet.org
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Produce exact published NATUREBRAIN snapshot and SEO HTML
+        run: |
+          npm ci
+          npm run build
+      - name: Verify all profile evidence links, breadcrumb schema and sitemap parity
+        run: |
+          node --test scripts/impact-seo-graph-contract.test.mjs
+          node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
+      - name: Verify every profile's static canonical HTML matches its final sitemap URL
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
+          const types=[['project',data.projects],['actors',data.actors],['issue',data.issues],['solution',data.solutions.filter(x=>x.indexable)]];
+          const paths=['/impact/',...types.flatMap(([t,v])=>v.map(x=>'/impact/'+t+'/'+x.slug+'/'))];
+          if(paths.length<229) throw Error('Zero-loss baseline rejected: '+paths.length);
+          const sitemap=fs.readFileSync('dist/impact-sitemap.xml','utf8');
+          const main=fs.readFileSync('dist/sitemap.xml','utf8');
+          const homepage=fs.readFileSync('dist/impact/index.html','utf8');
+          if(!homepage.includes('Conservation and restoration methods')) throw Error('Home does not link methods');
+          for(const p of paths){
+            const file='dist/'+p.replace(/^\//,'')+'index.html';
+            if(!fs.existsSync(file)) throw Error('Missing prerender '+p);
+            const html=fs.readFileSync(file,'utf8');
+            const canonical='https://4planet.org'+p;
+            if(!html.includes('rel="canonical" href="'+canonical+'"')) throw Error('canonical '+p);
+            if(!sitemap.includes('<loc>'+canonical+'</loc>')) throw Error('impact sitemap '+p);
+            if(!main.includes('<loc>'+canonical+'</loc>')) throw Error('site sitemap '+p);
+            if((html.match(/rel="canonical"/g)||[]).length!==1) throw Error('duplicate canonical '+p);
+            if(!html.includes('"@type":"BreadcrumbList"')) throw Error('missing breadcrumb schema '+p);
+          }
+          if(!fs.readFileSync('dist/robots.txt','utf8').includes('Sitemap: https://4planet.org/impact-sitemap.xml')) throw Error('robots missing dedicated sitemap');
+          console.log('IMPACT_SEO_ALL_CANONICALS_OK '+paths.length);
+          NODE

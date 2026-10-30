@@ -65,6 +65,18 @@ const sitemapUrls = routes
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls}\n</urlset>\n`;
 fs.writeFileSync(path.join(publicDir, "sitemap.xml"), sitemap, "utf8");
 
+// A separate IMPACT sitemap makes 229 canonical project, actor, issue and method
+// URLs independently monitorable in Google Search Console. It is a discovery
+// surface, not evidence of indexing or a second source of truth.
+const impactRoutes = ["/impact/", ...impactSitemapRoutes(impactDiscovery)];
+if (origin === "https://4planet.org") {
+  const impactXml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + [...new Set(impactRoutes)].map((p) => '  <url><loc>' + escapeXml(origin + p) + '</loc></url>').join('\n')
+    + '\n</urlset>\n';
+  fs.writeFileSync(path.join(publicDir, "impact-sitemap.xml"), impactXml, "utf8");
+}
+
+
 // News sitemap foundation. Stories are added only when a real publication date is
 // present and less than 48 hours old; current organisational explainers deliberately
 // carry no invented publication timestamp.
@@ -94,7 +106,7 @@ const robotGroup = (agent) => [
   ...robotDisallows.map((route) => `Disallow: ${route}`),
   "",
 ].join("\n");
-const robots = `${robotGroup("OAI-SearchBot")}\n${robotGroup("Googlebot")}\n${robotGroup("Bingbot")}\n${robotGroup("*")}\nSitemap: ${absoluteUrl(origin, "/sitemap.xml")}\n${newsStories.length > 0 ? `Sitemap: ${absoluteUrl(origin, "/news-sitemap.xml")}\n` : ""}`;
+const robots = `${robotGroup("OAI-SearchBot")}\n${robotGroup("Googlebot")}\n${robotGroup("Bingbot")}\n${robotGroup("*")}\nSitemap: ${absoluteUrl(origin, "/sitemap.xml")}\n${origin === "https://4planet.org" ? `Sitemap: ${origin}/impact-sitemap.xml\n` : ""}${newsStories.length > 0 ? `Sitemap: ${absoluteUrl(origin, "/news-sitemap.xml")}\n` : ""}`;
 
 fs.writeFileSync(path.join(publicDir, "robots.txt"), robots, "utf8");
 
