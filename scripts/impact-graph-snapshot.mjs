@@ -106,6 +106,7 @@ export function normalise(payload) {
         imageRole: text(profile.image_role) || null,
         reviewState: text(profile.review_state) || null,
         lastReviewed: text(profile.last_reviewed) || null,
+        updatedAt: text(row.updated_at) || null,
         officialUrl: https(profile.official_url),
         coverageNote: text(profile.coverage_note) || null,
         leadActorId: leadEdge ? text(leadEdge.target) : null,
@@ -152,7 +153,7 @@ export function normalise(payload) {
       solutions: p.solutionIds.map((id) => ref(solutions, id)).filter(Boolean),
       place: p.coverageNote || placeNames.join(", ") || null,
       places: placeNames,
-      reviewState: p.reviewState, lastReviewed: p.lastReviewed, officialUrl: p.officialUrl,
+      reviewState: p.reviewState, lastReviewed: p.lastReviewed, updatedAt: p.updatedAt || null, officialUrl: p.officialUrl,
       claims: p.claims,
       citations: citationsOf(p.claims),
     };
