@@ -1,0 +1,41 @@
+name: IMPACT deep live SEO QA patch gate
+on:
+  push:
+    branches: [qa/impact-live-og-search-gate-20261031]
+  pull_request:
+    paths:
+      - scripts/impact-live-full-audit.mjs
+      - .github/workflows/impact-full-live-audit.yml
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CF_PAGES: "1"
+      IMPACT_SNAPSHOT_LIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Build and validate exact canonical metadata for all 229 pages
+        run: |
+          npm ci
+          npm run build
+          node --check scripts/impact-live-full-audit.mjs
+          node scripts/impact-deep-seo-audit.mjs
+          node --test scripts/impact-seo-graph-contract.test.mjs
+      - name: Confirm all SEO preview fields are correctly formatted and unique
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('artifacts/impact-deep-seo-audit.json','utf8'));
+          if(r.technical.length||r.records.length!==229)throw Error('Missing or invalid pages');
+          for(const key of ['relative_og_image','relative_twitter_image','long_description','duplicate_description']){
+            if(r.summary.byCategory[key])throw Error('Metadata failure '+key);
+          }
+          console.log('IMPACT_DEEP_QA_PASS',r.records.length);
+          NODE
