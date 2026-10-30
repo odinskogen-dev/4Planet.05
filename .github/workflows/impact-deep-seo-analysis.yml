@@ -1,0 +1,34 @@
+name: IMPACT deep SEO editorial + technical analysis
+on:
+  push:
+    branches: [seo/impact-deep-page-quality-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CF_PAGES: "1"
+      IMPACT_SNAPSHOT_LIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Build exact current NATUREBRAIN content and static pages
+        run: |
+          npm ci
+          npm run build
+      - name: Deep per-page metadata, source and indexability analysis
+        run: node scripts/impact-deep-seo-audit.mjs
+      - name: Preserve per-page SEO diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: impact-deep-seo-229
+          path: artifacts/impact-deep-seo-audit.*
+          retention-days: 30
+          if-no-files-found: warn
