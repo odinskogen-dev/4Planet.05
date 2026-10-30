@@ -1,3 +1,65 @@
+# P51-OSLOFJORD-01 — FIELD EVIDENCE ADMISSION 09 — 30 OCTOBER 2026
+
+## USER ARRIVES BECAUSE
+
+A field worker needs to preserve a real Oslofjord observation without allowing an incomplete record to become an ecological success claim.
+
+## ONE THING TO UNDERSTAND
+
+No admissible dated Oslofjord field record was available to this Maker. This change adds a fail-closed admission gate; it does not manufacture a site, observation, delivery, recovery or impact claim.
+
+## PRIMARY ACTION
+
+Admit an observation only when record ID, timestamp, bounded site reference, safely publishable geography, site permission, method, source, observer, observation and explicit limitations are present.
+
+## SECONDARY DEPTH
+
+Preserve existing Proof Passport and Gold template semantics: observation is evidence, not delivery, recovery, causality or impact.
+
+## P1 DOMINANT
+
+Source truth and permission stay dominant.
+
+## P2 ORIENTATION
+
+The returned record is explicitly classed as a field observation with an observation-only claim boundary.
+
+## P3 ACTION / NEXT
+
+Run the three-case regression on the exact provider SHA, then hand that immutable SHA to independent Science Gold.
+
+## P4 DEPTH
+
+Later real records may connect to existing proof objects only after their source-owned evidence is available; this gate creates no field register, CMS or parallel authority.
+
+## WHAT CAN BE REMOVED
+
+Reject incomplete, future-dated, delivery, survival, recovery, biodiversity-gain, causal-outcome and impact-bearing candidates.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing impact proof semantics and current Gold evidence boundary.
+
+## TRUTH BOUNDARY
+
+Test fixtures are explicitly non-real. No private coordinate, ecological improvement, use, cash or impact is asserted. Founder release remains required for publication or deployment.
+
+## MOBILE-FIRST RISK
+
+None introduced: this bounded internal evidence function has no rendered surface. Any later surface still requires independent mobile proof.
+
+## HUMAN SUCCESS
+
+A real field worker can later receive an explicit list of missing evidence instead of an unsupported success story.
+
+**ACCEPTANCE:** `node --test scripts/oslofjord-field-evidence-contract.test.mjs` passes and adjacent Gold/Proof Passport contracts remain green.
+
+**MAKER ≠ JUDGE:** Factory authors the gate and regression. Independent Science Gold judges the exact provider SHA. Founder retains release authority.
+
+**BASE / REVERSION:** base is `king/test@3fb1e5cae9612888102e9cce6a80063395262c00`; revert the bounded source/test/brief commit if independent Gold finds a provenance or claim-boundary regression.
+
+---
+
 # P51 SHIP — GOLD HISTORY SUFFIX RECOVERY — 30 OCTOBER 2026
 
 **STATUS:** CODE CANDIDATE / INDEPENDENT GOLD REQUIRED / RELEASE HOLD.
