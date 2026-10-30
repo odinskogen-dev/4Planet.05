@@ -1,0 +1,133 @@
+name: 4PLANET Sitemap 171 Precision READONLY 20261030
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/4planet-sitemap-171-precision-readonly-20261030.yml
+permissions: {contents: read}
+concurrency: {group: 4planet-sitemap-171-precision-readonly, cancel-in-progress: false}
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Inspect entire public sitemap without changing any website, API, repository content or Cloudflare configuration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.error, html.parser, xml.etree.ElementTree as ET
+          import concurrent.futures, collections, os, json, datetime, time
+          from urllib.parse import urljoin, urlparse
+          ROOT='https://4planet.org'
+          UA='Mozilla/5.0 (compatible; 4PLANET-SEO-Precision-READONLY-20261030/1.0)'
+          class NoFollow(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):return None
+          nofollow=urllib.request.build_opener(NoFollow)
+          follow=urllib.request.build_opener()
+          def web(url,redirect=True,limit=350000):
+              op=follow if redirect else nofollow
+              req=urllib.request.Request(url,headers={'User-Agent':UA,'Cache-Control':'no-cache'})
+              for attempt in range(2):
+                  try:
+                      with op.open(req,timeout=24) as r:
+                          return r.status,r.geturl(),r.headers,r.read(limit),''
+                  except urllib.error.HTTPError as e:
+                      return e.code,e.geturl(),e.headers,e.read(min(limit,20000)),''
+                  except Exception as e:
+                      if attempt: return 0,url,{},b'',type(e).__name__
+                      time.sleep(.4)
+          class Parser(html.parser.HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.canonicals=[];self.robots=[];self.desc=[];self.h1=0;self.links=0;self.title='';self.t=False
+                  self.body_text=0;self.in_body=False;self.suppress=0
+              def handle_starttag(self,tag,attrs):
+                  a=dict(attrs)
+                  if tag=='link' and 'canonical' in a.get('rel','').lower().split():self.canonicals.append(a.get('href',''))
+                  if tag=='meta':
+                      name=a.get('name','').lower()
+                      if name in ('robots','googlebot','bingbot'):self.robots.append(a.get('content',''))
+                      if name=='description':self.desc.append(a.get('content',''))
+                  if tag=='h1':self.h1+=1
+                  if tag=='a' and a.get('href'):self.links+=1
+                  if tag=='title':self.t=True
+                  if tag=='body':self.in_body=True
+                  if tag in ('script','style','noscript'):self.suppress+=1
+              def handle_endtag(self,tag):
+                  if tag=='title':self.t=False
+                  if tag=='body':self.in_body=False
+                  if tag in ('script','style','noscript'):self.suppress=max(0,self.suppress-1)
+              def handle_data(self,data):
+                  if self.t:self.title+=data
+                  if self.in_body and not self.suppress:self.body_text+=len(data.strip())
+          st,_,hdr,body,error=web(ROOT+'/sitemap.xml')
+          if st!=200:raise SystemExit('FAIL: cannot retrieve live sitemap: '+str(st)+' '+error)
+          xml=ET.fromstring(body)
+          if xml.tag!='{http://www.sitemaps.org/schemas/sitemap/0.9}urlset':raise SystemExit('FAIL: sitemap root is not urlset')
+          locs=[n.text.strip() for n in xml.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc') if n.text]
+          if not locs:raise SystemExit('FAIL: no sitemap URLs')
+          duplicates=[u for u,n in collections.Counter(locs).items() if n>1]
+          foreign=[u for u in locs if urlparse(u).netloc!='4planet.org' or urlparse(u).scheme!='https']
+          def check(u):
+              direct=web(u,False,2000);final=web(u,True,350000)
+              p=Parser();ctype=final[2].get('Content-Type','')
+              if 'text/html' in ctype.lower():
+                  try:p.feed(final[3].decode('utf-8','replace'))
+                  except Exception:pass
+              canonical=[urljoin(final[1],c) for c in p.canonicals]
+              robots=' '.join(p.robots)+' '+final[2].get('X-Robots-Tag','')
+              issues=[]
+              if direct[0]!=200:issues.append('NOT_DIRECT_200')
+              if final[0]!=200:issues.append('FINAL_NOT_200')
+              if final[0]==200 and 'html' not in ctype.lower():issues.append('NOT_HTML')
+              if 'noindex' in robots.lower():issues.append('NOINDEX')
+              if final[0]==200:
+                  if not canonical:issues.append('NO_CANONICAL')
+                  if len(canonical)>1:issues.append('MULTIPLE_CANONICAL')
+                  if len(canonical)==1 and canonical[0]!=u:issues.append('CANONICAL_NOT_SITEMAP_URL')
+                  if len(canonical)==1 and canonical[0]!=final[1]:issues.append('CANONICAL_NOT_FINAL_URL')
+                  if not p.h1:issues.append('NO_SERVER_H1')
+                  if not p.desc:issues.append('NO_DESCRIPTION')
+                  if p.body_text<100:issues.append('THIN_SERVER_HTML')
+                  if 'page not found' in p.title.lower():issues.append('SOFT_404_INDICATOR')
+              if '/impact/project/' in u or '/impact/actors/' in u:issues.append('OLD_IMPACT_CANDIDATE')
+              return {'url':u,'direct':direct[0],'redirect_to':direct[2].get('Location',''),'final':final[0],'final_url':final[1],'canonical':canonical,'robots':robots.strip(),'title':p.title[:115],'h1':p.h1,'description_count':len(p.desc),'server_text_chars':p.body_text,'html_links':p.links,'issues':issues,'error':final[4]}
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+              rows=list(pool.map(check,locs))
+          counts=collections.Counter(flag for r in rows for flag in r['issues'])
+          primary={'NOT_DIRECT_200','FINAL_NOT_200','NOT_HTML','NOINDEX','NO_CANONICAL','MULTIPLE_CANONICAL','CANONICAL_NOT_SITEMAP_URL','CANONICAL_NOT_FINAL_URL','OLD_IMPACT_CANDIDATE','SOFT_404_INDICATOR'}
+          summary={'at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'total':len(locs),'unique':len(set(locs)),'duplicates':duplicates,'foreign_urls':foreign,'direct_200':sum(r['direct']==200 for r in rows),'final_200':sum(r['final']==200 for r in rows),'all_issue_urls':sum(bool(r['issues']) for r in rows),'primary_issue_urls':sum(any(k in primary for k in r['issues']) for r in rows),'issue_counts':dict(counts),'unreleased_impact_urls':[r['url'] for r in rows if 'OLD_IMPACT_CANDIDATE' in r['issues']]}
+          report={'summary':summary,'urls':rows}
+          with open('sitemap-precision-20261030.json','w') as f:json.dump(report,f,indent=2,ensure_ascii=False)
+          lines=['# 4PLANET sitemap — exact production precision check','',
+                 'Read-only audit UTC: '+summary['at_utc'],'',
+                 '| Measure | Value |','|---|---:|',
+                 f'| URLs in sitemap | {len(locs)} |',
+                 f'| Distinct URLs | {len(set(locs))} |',
+                 f'| Direct HTTP 200 | {summary["direct_200"]}/{len(locs)} |',
+                 f'| Final HTTP 200 | {summary["final_200"]}/{len(locs)} |',
+                 f'| URLs with primary indexability/canonical issue | {summary["primary_issue_urls"]} |',
+                 f'| URLs with any flag including thin HTML | {summary["all_issue_urls"]} |',
+                 f'| Old IMPACT candidate URLs in sitemap | {len(summary["unreleased_impact_urls"])} |',
+                 '','## Flag counts',*[f'- {k}: {v}' for k,v in counts.most_common()],
+                 '','## All URLs flagged','| URL | Direct/Final HTTP | Final URL | Canonical | Flags |','|---|---|---|---|---|']
+          for r in rows:
+              if r['issues']:
+                  lines.append('| '+r['url']+' | '+str(r['direct'])+'/'+str(r['final'])+' | '+r['final_url']+' | '+', '.join(r['canonical'])+' | '+', '.join(r['issues'])+' |')
+          lines+=['','**Interpretation:** XML validity and HTTP 200 do not certify Google indexing; only public technical eligibility is tested here. No content or production changes performed.']
+          with open('sitemap-precision-20261030.md','w') as f:f.write('\n'.join(lines)+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:f.write('\n'.join(lines)[:95000]+'\n')
+          print('EXACT_SITEMAP_AUDIT_RESULT '+json.dumps(summary,ensure_ascii=False))
+          for r in rows:
+              if r['issues']:print('FLAGGED '+r['url']+' | '+str(r['direct'])+'/'+str(r['final'])+' | '+','.join(r['issues'])+' | '+str(r['canonical']))
+          PY
+      - name: Archive complete per-URL evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitemap-precision-20261030
+          path: |
+            sitemap-precision-20261030.json
+            sitemap-precision-20261030.md
+          if-no-files-found: ignore
+          retention-days: 30
