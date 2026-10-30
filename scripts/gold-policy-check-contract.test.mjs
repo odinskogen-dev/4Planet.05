@@ -37,7 +37,7 @@ const newestContractOnly = `${currentBrief.slice(0, separator).trimEnd()}\n`;
 const preservedHistoryOnly = currentBrief.slice(separator + "\n---\n".length).replace(/^\n/, "");
 
 const nextContract = newestContractOnly.replace(
-  "# EARTH NOW + ABOUT — CANONICAL ACCEPTANCE CONTRACT — 27 OCTOBER 2026",
+  /^#\s+.+$/m,
   "# NEXT BOUNDED GOLD CONTRACT — FIXTURE",
 );
 const legitimatePrepend = `${nextContract.trimEnd()}\n\n---\n\n${currentBrief}`;
@@ -117,6 +117,7 @@ const run = (mutateBrief, { changed = true } = {}) => {
     const git = (...args) => {
       const result = spawnSync("git", args, { cwd: directory, encoding: "utf8" });
       assert.equal(result.status, 0, result.stderr);
+      return result.stdout.trim();
     };
     git("init", "-q");
     git("config", "user.email", "gold-contract@example.invalid");
@@ -130,7 +131,14 @@ const run = (mutateBrief, { changed = true } = {}) => {
     git("commit", "-qm", "install history contract");
 
     if (mutateBrief !== null) {
-      writeFileSync(join(directory, BRIEF), mutateBrief, "utf8");
+      const candidateParent = git("rev-parse", "HEAD");
+      const candidateBrief = mutateBrief.includes("# NEXT BOUNDED GOLD CONTRACT — FIXTURE")
+        ? mutateBrief.replace(
+          /(\*\*ROLLBACK:\*\*[\s\S]*?`)[a-f0-9]{40}(`)/i,
+          `$1${candidateParent}$2`,
+        )
+        : mutateBrief;
+      writeFileSync(join(directory, BRIEF), candidateBrief, "utf8");
       git("add", BRIEF);
       git("commit", "-qm", "candidate");
     }
@@ -167,6 +175,7 @@ const runTwoCommitCandidate = ({
     const git = (...args) => {
       const result = spawnSync("git", args, { cwd: directory, encoding: "utf8" });
       assert.equal(result.status, 0, result.stderr);
+      return result.stdout.trim();
     };
     git("init", "-q");
     git("config", "user.email", "gold-contract@example.invalid");
@@ -187,7 +196,14 @@ const runTwoCommitCandidate = ({
     git("add", CONTRACT_TEST);
     git("commit", "-qm", "install history contract");
 
-    writeFileSync(join(directory, BRIEF), firstBrief, "utf8");
+    const candidateParent = git("rev-parse", "HEAD");
+    const candidateBrief = firstBrief.includes("# NEXT BOUNDED GOLD CONTRACT — FIXTURE")
+      ? firstBrief.replace(
+        /(\*\*ROLLBACK:\*\*[\s\S]*?`)[a-f0-9]{40}(`)/i,
+        `$1${candidateParent}$2`,
+      )
+      : firstBrief;
+    writeFileSync(join(directory, BRIEF), candidateBrief, "utf8");
     git("add", BRIEF);
     git("commit", "-qm", "brief candidate");
     writeFileSync(join(directory, "README.md"), "unrelated final commit\n", "utf8");
@@ -203,6 +219,53 @@ const runTwoCommitCandidate = ({
         GOLD_HEAD_REF: "king/test",
         GOLD_PR_DRAFT: "true",
       },
+      encoding: "utf8",
+    });
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+};
+
+const runRollbackLineageCandidate = ({ stale = false }) => {
+  const directory = mkdtempSync(join(tmpdir(), "gold-policy-rollback-lineage-"));
+  try {
+    for (const relative of REQUIRED) {
+      const source = new URL(`../${relative}`, import.meta.url);
+      const destination = join(directory, relative);
+      mkdirSync(dirname(destination), { recursive: true });
+      copyFileSync(source, destination);
+    }
+
+    const git = (...args) => {
+      const result = spawnSync("git", args, { cwd: directory, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr);
+      return result.stdout.trim();
+    };
+    git("init", "-q");
+    git("config", "user.email", "gold-contract@example.invalid");
+    git("config", "user.name", "Gold contract fixture");
+    git("add", ".");
+    git("commit", "-qm", "trusted baseline");
+    const staleParent = git("rev-parse", "HEAD");
+
+    mkdirSync(dirname(join(directory, CONTRACT_TEST)), { recursive: true });
+    copyFileSync(new URL(`../${CONTRACT_TEST}`, import.meta.url), join(directory, CONTRACT_TEST));
+    git("add", CONTRACT_TEST);
+    git("commit", "-qm", "install history contract");
+    const actualParent = git("rev-parse", "HEAD");
+
+    const rollback = stale ? staleParent : actualParent;
+    const contract = nextContract.replace(
+      /\*\*ROLLBACK:\*\*[\s\S]*?(?=\n\n##|\n\n---|$)/i,
+      `**ROLLBACK:** revert to \`${rollback}\`.`,
+    );
+    writeFileSync(join(directory, BRIEF), `${contract.trimEnd()}\n\n---\n\n${currentBrief}`, "utf8");
+    git("add", BRIEF);
+    git("commit", "-qm", "candidate contract");
+
+    return spawnSync(process.execPath, [POLICY, "--mode=king-push"], {
+      cwd: directory,
+      env: { ...process.env, GOLD_CHANGED_FILES: BRIEF },
       encoding: "utf8",
     });
   } finally {
@@ -318,5 +381,16 @@ test("accepts TEST KING lineage when main has a divergent shorter brief", () => 
     mainBrief: newestContractOnly,
     establishTestKingCheckpoint: true,
   });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test("rejects a stale pre-rebase rollback SHA for the newest Gold brief", () => {
+  const result = runRollbackLineageCandidate({ stale: true });
+  assert.notEqual(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stderr, /rollback .* is stale; actual introduction parent/i);
+});
+
+test("accepts the exact parent that introduced the newest Gold brief", () => {
+  const result = runRollbackLineageCandidate({ stale: false });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });

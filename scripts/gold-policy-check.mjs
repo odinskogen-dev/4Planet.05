@@ -215,6 +215,42 @@ function validateRequiredBriefContract(current) {
   }
 }
 
+function validateNewestBriefRollback(current) {
+  const declaredRollback = current.match(/\*\*ROLLBACK:\*\*[\s\S]*?`([a-f0-9]{40})`/i)?.[1]?.toLowerCase();
+  // Some canonical contract fixtures and legacy brief sections predate an exact
+  // rollback field. This lineage guard applies once a section declares one.
+  if (!declaredRollback) return;
+
+  const heading = current.match(/^#\s+.+$/m)?.[0]?.trim();
+  if (!heading) {
+    fail("newest GOLD brief contract has no H1 heading for rollback lineage");
+    return;
+  }
+
+  const history = git(["log", "--reverse", "--format=%H", "--", GOLD_BRIEF_PATH])
+    .split("\n")
+    .filter(Boolean);
+  const introduction = history.find((commit) => {
+    const candidate = gitRaw(["show", `${commit}:${GOLD_BRIEF_PATH}`]);
+    return candidate && newestGoldBriefSection(candidate).match(/^#\s+.+$/m)?.[0]?.trim() === heading;
+  });
+  if (!introduction) {
+    fail(`newest GOLD brief heading has no Git introduction commit: ${heading}`);
+    return;
+  }
+
+  const expectedRollback = git(["rev-parse", `${introduction}^`]);
+  if (!expectedRollback) {
+    // A repository imported with an existing brief has no local parent for that
+    // trusted baseline. Enforce only on sections introduced inside this lineage.
+    return;
+  }
+
+  if (declaredRollback !== expectedRollback.toLowerCase()) {
+    fail(`newest GOLD brief rollback ${declaredRollback} is stale; actual introduction parent is ${expectedRollback}`);
+  }
+}
+
 function trustedGoldBriefCheckpoint() {
   const introduction = git([
     "log",
@@ -276,6 +312,7 @@ function validateAuthorityFiles(files) {
   validateGoldBriefHistory(brief);
   const current = newestGoldBriefSection(brief);
   validateRequiredBriefContract(current);
+  validateNewestBriefRollback(current);
 
   const registry = JSON.parse(fs.readFileSync("docs/control/GOLD_VISUAL_BASELINES.json", "utf8"));
   if (!Array.isArray(registry.screens)) fail("visual baseline registry must contain screens[]");
