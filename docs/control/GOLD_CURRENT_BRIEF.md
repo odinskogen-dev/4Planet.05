@@ -1,3 +1,58 @@
+# IMPACT — HUMAN-FIRST + SEARCH/AI DISCOVERY RED-TEAM — 31 OCTOBER 2026
+
+**STATUS:** TEST CANDIDATE / NOT LIVE FROM THIS BRANCH / NO GOLD CLAIM.
+**FOUNDER DIRECTION:** 31 OCTOBER 2026 — red-team the whole 4PLANET IMPACT experience from a human-first perspective, analyse every public page for SEO, and implement improvements that make the system more useful and discoverable without damaging Claude's design.
+**SOURCE AUTHORITY:** Existing public IMPACT templates + live NATUREBRAIN `public.impact_lan_v02()`. No parallel content store, duplicate database or hand-authored replacement corpus.
+**BOUNDED SCOPE:** IMPACT Home, Actor, Issue and Solution scanability/navigation; shared provenance wording; IMPACT crawlable HTML metadata/schema/source-link semantics; IMPACT discovery and regression workflows. Project visual/template structure remains unchanged.
+**CURRENT LIVE DATA READBACK:** 65 projects, 62 actors, 66 issues, 37 solution records, 55 places; 35 solutions are public. 26 issues currently have at least one published project; 63/66 have issue-level evidence; all 66 have a description.
+**HUMAN-FIRST CORRECTIONS:** Keep Projects immediately browsable; separate issues with published projects from wider problem intelligence; progressively disclose the long Actor/Method inventories; compress long place/issue summaries; add in-page navigation to Actor and Method records; remove conditional section-number gaps; explain issue records with evidence but no linked public project; replace exposed RPC/version jargon with human-readable provenance.
+**SEARCH / AI DISCOVERY CORRECTIONS:** Route-specific absolute Open Graph/Twitter images; en-GB metadata; concise descriptions; explicit 4PLANET publisher identity; cleaner WebPage → Project/Organization JSON-LD graphs; normal editorial citation links; accurate issue titles/descriptions when no project is published; dedicated IMPACT sitemap/robots/canonical coverage retained.
+**TRUTH BOUNDARY:** Search visibility, indexing, ranking, rich-result display, traffic or AI citation are not claimed outcomes. Search engines decide crawl/index/rank. A listed issue with no linked IMPACT project means no project has passed this publication graph yet, not that no work exists.
+**DESIGN BOUNDARY:** Preserve Claude IMPACT visual grammar, typography, layout system, project template and NATUREBRAIN architecture. No new visual system, dashboard or parallel frontend.
+**RELEASE CONTROL:** Direct feature-branch → LIVE promotion is intentionally blocked by GOLD policy. Existing `king/test` and `main` are materially diverged; no wholesale convergence/reset is authorised by this bounded task. Candidate must pass PR/build/browser/search gates before any safe promotion decision.
+**ROLLBACK:** Prior production main `900692899d55c1f1ac46e177b8f8d1741b280063` and its existing Cloudflare Pages deployment remain rollback authority until a later bounded promotion is actually verified.
+
+## USER ARRIVES BECAUSE
+They want to find real ecological problems, projects, organisations and methods quickly, then understand what the evidence actually establishes.
+
+## ONE THING TO UNDERSTAND
+IMPACT connects problems to real action and evidence without turning listing into endorsement or source-reported claims into verified outcomes.
+
+## PRIMARY ACTION
+Search or browse a published project, then move through its problem, organisation, method, place, evidence and official action route.
+
+## SECONDARY DEPTH
+Explore the wider issue map, actor network, methods, ATLAS context, sources, review method and known unknowns.
+
+## P1 DOMINANT
+Useful projects and problems, not platform explanation.
+
+## P2 ORIENTATION
+Clear counts, problem/action state, organisation, place and evidence context.
+
+## P3 ACTION / NEXT
+Open a project, inspect the source record, follow an official action route or continue through a related issue/actor/method.
+
+## P4 DEPTH
+Review ladder, provenance, limitations, truth boundaries, structured data and source graph.
+
+## WHAT CAN BE REMOVED
+Long unprioritised directory dumps, exposed backend/RPC jargon, conditional numbering gaps, misleading zero-state wording, duplicate truth stores, SEO filler and unsupported verification language.
+
+## WHAT MUST BE REUSED
+Claude IMPACT templates and design grammar, NATUREBRAIN v02, shared ATLAS, existing route/canonical/sitemap authority, existing review model and truth separations.
+
+## TRUTH BOUNDARY
+Listing ≠ endorsement. Actor ≠ partner. Payment ≠ delivery. Delivery ≠ outcome. Outcome ≠ system-level impact. Source-reported ≠ independently verified. Search-engine indexing or ranking remains external and unproven until measured.
+
+## MOBILE-FIRST RISK
+Large live inventories can create scroll fatigue; sticky navigation, two-column project browse, details disclosure, long names and metadata must remain readable at 390/430 without horizontal overflow or hidden primary actions.
+
+## HUMAN SUCCESS
+A first-time visitor can answer: what is the problem, who is doing something, what are they doing, where, what evidence exists, what is not established, and what can I do next — without first learning 4PLANET's internal architecture.
+
+---
+
 # WILD: ORCA — EMBEDDED ORIGINAL RENDERING CORRECTION — 15 OCTOBER 2026
 
 **FOUNDER EVIDENCE:** Founder submitted a production screenshot with a white orca despite Claude Challenger 02 original screenshots showing the black-white orca. This is a confirmed visual regression, regardless of static asset hash success.
