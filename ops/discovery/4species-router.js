@@ -8,6 +8,7 @@ const ORIGIN = "https://4planet-05.pages.dev";
 const SPECIES_V53_ORIGIN = "https://72494005.4planet-05.pages.dev";
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
+const SITEMAP_REVIEW_CONCURRENCY = 6;
 const PHOTO_REVIEW_TIMEOUT_MS = 5000;
 const MAX_APPROVED_PHOTO_BYTES = 15 * 1024 * 1024;
 export const NON_PROFILE_REVIEW_STATE = "NON_PROFILE";
@@ -168,6 +169,20 @@ export async function profileReviewState(pathname, fetchImpl = fetch) {
   }
 }
 
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await mapper(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 async function reviewedSpeciesSitemap(request) {
   const upstream = await fetch(`${SPECIES_V53_ORIGIN}/species-sitemap.xml`, {
     method: request.method,
@@ -178,22 +193,22 @@ async function reviewedSpeciesSitemap(request) {
   }
   const xml = await upstream.text();
   const blocks = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
-  const kept = [];
-  for (const block of blocks) {
+  const reviewedBlocks = await mapWithConcurrency(blocks, SITEMAP_REVIEW_CONCURRENCY, async (block) => {
     const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
-    if (!loc) continue;
+    if (!loc) return null;
     let slugPath;
     try {
       const pathname = new URL(loc).pathname.replace(/\/+$/, "") || "/";
       slugPath = pathname.startsWith("/species/") ? pathname.replace(/^\/species\//, "/") : pathname;
-    } catch { continue; }
-    if (!/^\/[a-z0-9-]*$/.test(slugPath)) continue;
+    } catch { return null; }
+    if (!/^\/[a-z0-9-]*$/.test(slugPath)) return null;
     const review = await profileReviewState(slugPath);
-    if (!permitsSpeciesIndexing(review)) continue;
+    if (!permitsSpeciesIndexing(review)) return null;
     // Avoid publishing any v53 preview-domain URL or obsolete /species/ aliases.
     const canonical = "https://4species.com" + slugPath;
-    kept.push(block.replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>"));
-  }
+    return block.replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>");
+  });
+  const kept = reviewedBlocks.filter(Boolean);
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
   return new Response(body, {
     headers: {

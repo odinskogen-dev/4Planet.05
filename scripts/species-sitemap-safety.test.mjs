@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import worker, { publicSpeciesCanonical } from "../ops/discovery/4species-router.js";
+import worker, { CURRENT_PUBLIC_SPECIES_SLUGS, publicSpeciesCanonical } from "../ops/discovery/4species-router.js";
 import { readFileSync } from "node:fs";
 
 const workerSource = readFileSync(new URL("../ops/discovery/4species-router.js", import.meta.url), "utf8");
@@ -45,6 +45,55 @@ test("4SPECIES sitemap keeps the 57-profile baseline and rejects unapproved new 
   assert.doesNotMatch(xml, /unavailable/);
   assert.doesNotMatch(xml, /pages\.dev/);
   assert.equal(response.headers.get("x-4species-index-gate"), "human-review-v1");
+});
+
+test("4SPECIES reviews all 57 sitemap profiles with bounded concurrency and stable order", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const slugs = [...CURRENT_PUBLIC_SPECIES_SLUGS];
+  let activeProfileFetches = 0;
+  let peakProfileFetches = 0;
+  let profileFetches = 0;
+
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith("/species-sitemap.xml")) {
+      return new Response(
+        '<?xml version="1.0" encoding="UTF-8"?><urlset>' +
+        slugs.map((slug) => `<url><loc>https://species-v53.4planet-05.pages.dev/${slug}</loc></url>`).join("") +
+        "</urlset>",
+        { status: 200, headers: { "content-type": "application/xml" } },
+      );
+    }
+
+    const profile = url.match(/\/species-data\/v1\/([^/]+)\.json$/);
+    if (profile) {
+      profileFetches += 1;
+      activeProfileFetches += 1;
+      peakProfileFetches = Math.max(peakProfileFetches, activeProfileFetches);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      activeProfileFetches -= 1;
+      const slug = decodeURIComponent(profile[1]);
+      return Response.json({
+        schema: "4PLANET_SPECIES_PAGE_01",
+        slug,
+        identity: { commonName: slug, scientificName: "Reviewed species" },
+        hook: { source: { label: "Authoritative citation", url: `https://example.org/${slug}` } },
+        provenance: { review: "REVIEWED" },
+      });
+    }
+    return new Response("Not found", { status: 404 });
+  };
+
+  const response = await worker.fetch(new Request("https://4species.com/sitemap.xml"));
+  assert.equal(response.status, 200);
+  const xml = await response.text();
+  const emittedSlugs = [...xml.matchAll(/<loc>https:\/\/4species\.com\/([^<]+)<\/loc>/g)]
+    .map((match) => match[1]);
+  assert.equal(profileFetches, slugs.length);
+  assert.ok(peakProfileFetches > 1, `expected concurrent review fetches, observed ${peakProfileFetches}`);
+  assert.ok(peakProfileFetches <= 6, `expected at most 6 concurrent review fetches, observed ${peakProfileFetches}`);
+  assert.deepEqual(emittedSlugs, slugs);
 });
 
 
