@@ -85,7 +85,7 @@ jobs:
             const r=await call(path);assert.equal(r.status,404,path);
             assert.match(r.headers.get('x-robots-tag'),/noindex/);
           }
-          for(const [path,loc] of [['/species','https://4species.com/explore'],['/living-systems','https://4planet.org/livingsystems/']]){
+          for(const [path,loc] of [['/species','https://4species.com/explore'],['/species/','https://4species.com/explore'],['/living-systems','https://4planet.org/livingsystems/'],['/livingsystems/','https://4planet.org/livingsystems/']]){
             const r=await call(path);assert.equal(r.status,302,path);assert.equal(r.headers.get('location'),loc,path);
           }
           console.log('ATLAS_SOFT404_P0_DEEP_LINK_PRESERVATION_PASS');
@@ -149,12 +149,17 @@ jobs:
           test "$place_count" = '250'
           echo "ATLAS_LIVE_CHECKPOINT place-index=$place_count"
 
-          # Hub paths: the home page still links /species and /living-systems (home bytes unchanged);
-          # on 4planetatlas.com those exact paths now redirect (302) to the live hubs.
+          # Hub paths: public/_redirects and Pages run BEFORE the middleware, so production answers
+          # /species -> 308 /species/ and /living-systems -> 301 /livingsystems/ first; the middleware then 302s
+          # to the hub. Follow at most 2 redirects (live chain measured 30 Oct), print every hop, and assert the
+          # FINAL URL is the hub and the final status is 200.
           for spec in /species=https://4species.com/explore /living-systems=https://4planet.org/livingsystems/; do
-            got=$(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 25 "https://$ATLAS_DOMAIN${spec%%=*}")
-            echo "ATLAS_LIVE_DIAG hub ${spec%%=*} -> $got (target status, info only: $(curl -sS -o /dev/null -w '%{http_code}' --max-time 25 "${spec#*=}" || true))"
-            test "$got" = "302 ${spec#*=}"
+            path=${spec%%=*}; hub=${spec#*=}
+            echo "ATLAS_LIVE_DIAG hub-chain $path:"
+            curl -sS -L --max-redirs 2 --max-time 25 -o /dev/null -D - "https://$ATLAS_DOMAIN$path" | grep -iE '^(HTTP/|location:)' | sed 's/^/  /' || true
+            got=$(curl -sS -L --max-redirs 2 --max-time 25 -o /dev/null -w '%{http_code} %{url_effective} hops=%{num_redirects}' "https://$ATLAS_DOMAIN$path") || { echo "hub chain failed for $path"; exit 48; }
+            echo "ATLAS_LIVE_DIAG hub $path -> $got"
+            [ "${got% hops=*}" = "200 $hub" ] || { echo "hub final mismatch for $path"; exit 48; }
           done
           echo "ATLAS_LIVE_CHECKPOINT hub-redirects=PASS"
 
