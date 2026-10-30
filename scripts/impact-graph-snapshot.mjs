@@ -75,6 +75,7 @@ export function normalise(payload) {
           whyItMatters: text(profile.why_it_matters) || null,
           unknowns: list(profile.unknowns).map(text).filter(Boolean),
           lastReviewed: text(profile.last_reviewed) || null,
+          updatedAt: text(row.updated_at) || null,
         };
         if (kind === "actor") actors.set(base.id, { ...base, type: text(row.actor_type) || null, website: https(profile.website) });
         if (kind === "issue") issues.set(base.id, { ...base, domain: text(profile.domain) || null });
@@ -159,6 +160,7 @@ export function normalise(payload) {
   const projectsFor = (key, id) => outProjects.filter((p) => p[key].some((n) => n.id === id)).map((p) => p.slug);
   const outActors = Array.from(actors.values()).filter((a) => projectsFor("actors", a.id).length || a.publication === "public").sort(byName).map((a) => ({
     id: a.id, slug: a.slug, name: a.name, description: a.description, type: a.type, website: a.website,
+    lastReviewed: a.lastReviewed || null, updatedAt: a.updatedAt || null,
     projects: projectsFor("actors", a.id),
     citations: citationsOf([...a.claims, ...outProjects.filter((p) => p.actors.some((n) => n.id === a.id)).flatMap((p) => p.claims)]),
   }));
@@ -167,6 +169,7 @@ export function normalise(payload) {
     whyItMatters: i.whyItMatters || null,
     unknowns: i.unknowns || [],
     lastReviewed: i.lastReviewed || null,
+    updatedAt: i.updatedAt || null,
     claims: i.claims || [],
     projects: projectsFor("issues", i.id),
     citations: citationsOf(i.claims),
@@ -176,6 +179,7 @@ export function normalise(payload) {
     publication: s.publication, indexable: s.publication === "public",
     reviewState: s.publication === "public" ? "SOURCE-CHECKED" : null,
     lastReviewed: s.lastReviewed || null,
+    updatedAt: s.updatedAt || null,
     mechanism: s.mechanism || null,
     applicability: s.applicability || [],
     risks: s.risks || [],
