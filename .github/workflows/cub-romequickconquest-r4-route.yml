@@ -1,0 +1,126 @@
+name: CUB Quick Conquest R4 — isolated Cloudflare route
+
+on:
+  push:
+    branches:
+      - deploy/romequickconquest-r4-20261030
+    paths:
+      - deploy/romequickconquest/**
+      - .github/workflows/cub-romequickconquest-r4-route.yml
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: cub-romequickconquest-r4-route
+  cancel-in-progress: false
+
+jobs:
+  route-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify source and target scope
+        run: |
+          set -euo pipefail
+          test -s deploy/romequickconquest/index.html
+          grep -q 'ROMA: QUICK CONQUEST' deploy/romequickconquest/index.html
+          echo "Source SHA256: $(sha256sum deploy/romequickconquest/index.html | cut -d' ' -f1)"
+
+      - name: Resolve Cloudflare zone and prevent route takeover
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          token="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '\r\n')"
+          response="$(curl -fsS --get --data-urlencode 'name=p4nther.com' -H "Authorization: Bearer $token" 'https://api.cloudflare.com/client/v4/zones')"
+          zone_id="$(printf '%s' "$response" | jq -r '.result[0].id // empty')"
+          account_id="$(printf '%s' "$response" | jq -r '.result[0].account.id // empty')"
+          test -n "$zone_id"
+          test -n "$account_id"
+          routes="$(curl -fsS -H "Authorization: Bearer $token" "https://api.cloudflare.com/client/v4/zones/$zone_id/workers/routes")"
+          test "$(printf '%s' "$routes" | jq -r '.success')" = true
+          existing="$(printf '%s' "$routes" | jq -r '.result[]? | select(.pattern == "labs.p4nther.com/romequickconquest*") | .script // empty')"
+          if [ -n "$existing" ] && [ "$existing" != "cub-romequickconquest-r2" ]; then
+            echo 'Refusing to replace a Worker route owned by another script.'
+            exit 1
+          fi
+          echo "CLOUDFLARE_ACCOUNT_ID=$account_id" >> "$GITHUB_ENV"
+          echo "CF_ZONE_ID=$zone_id" >> "$GITHUB_ENV"
+          echo "CF_TOKEN_CLEAN=$token" >> "$GITHUB_ENV"
+
+      - name: Generate standalone scoped Worker
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const html = fs.readFileSync('deploy/romequickconquest/index.html', 'utf8');
+          const lines = [
+            'const HTML = ' + JSON.stringify(html) + ';',
+            'export default {',
+            '  async fetch(request) {',
+            '    const path = new URL(request.url).pathname;',
+            '    if (path === "/romequickconquest" || path === "/romequickconquest/" || path === "/romequickconquest/index.html") {',
+            '      return new Response(HTML, { headers: {',
+            '        "content-type": "text/html; charset=utf-8",',
+            '        "cache-control": "no-cache",',
+            '        "x-cub-release": "quick-conquest-r4"',
+            '      }});',
+            '    }',
+            '    return new Response("Not found", { status: 404 });',
+            '  }',
+            '};'
+          ];
+          fs.writeFileSync('deploy/romequickconquest/.generated.mjs', lines.join('\n') + '\n');
+          NODE
+          cat > deploy/romequickconquest/.generated.toml <<EOF
+          name = "cub-romequickconquest-r2"
+          main = ".generated.mjs"
+          compatibility_date = "2026-10-30"
+          workers_dev = false
+          routes = [{ pattern = "labs.p4nther.com/romequickconquest*", zone_id = "$CF_ZONE_ID" }]
+          EOF
+
+      - name: Publish scoped Worker without replacing CUB Lab
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 deploy --config deploy/romequickconquest/.generated.toml
+
+      - name: Verify actual public bytes
+        run: |
+          set -euo pipefail
+          expected="$(sha256sum deploy/romequickconquest/index.html | cut -d' ' -f1)"
+          url="https://labs.p4nther.com/romequickconquest/?verify=$GITHUB_SHA"
+          found=0
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if curl -fsSL --max-time 20 -H 'Cache-Control: no-cache' "$url" -o /tmp/cub-quickconquest-live.html; then
+              actual="$(sha256sum /tmp/cub-quickconquest-live.html | cut -d' ' -f1)"
+              if [ "$actual" = "$expected" ]; then found=1; break; fi
+            fi
+            sleep 5
+          done
+          if [ "$found" != 1 ]; then echo "Live origin does not match R4 source; release not certified."; exit 1; fi
+          echo "Verified live HTML SHA256: $expected"
+          echo 'Verified https://labs.p4nther.com/romequickconquest/'
+
+      - name: Report verified release status to GitHub
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsS --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d '{"state":"success","target_url":"https://labs.p4nther.com/romequickconquest/","description":"Cloudflare path live and source SHA-256 identical","context":"cub/romequickconquest-r4-live"}'
+
+      - name: Report failed or blocked release
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsS --retry 2 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d '{"state":"failure","description":"R4 route not certified live; inspect Actions logs","context":"cub/romequickconquest-r4-live"}'
