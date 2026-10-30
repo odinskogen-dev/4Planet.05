@@ -99,8 +99,7 @@ export async function verifyApprovedNewSpeciesPhoto(
 function isProfilePathCandidate(pathname) {
   if (typeof pathname !== "string" || PUBLIC_NON_PROFILE_PATHS.has(pathname)) return false;
   return /^\/[^/.]+$/.test(pathname) ||
-    /^\/{2,}[^/.]+$/.test(pathname) ||
-    /^\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)+\/?$/.test(pathname);
+    /^\/+[a-z0-9]+(?:-[a-z0-9]+)*(?:\/+[a-z0-9]+(?:-[a-z0-9]+)*)*\/*$/.test(pathname);
 }
 
 function hasNonCanonicalIndexQuery(searchParams) {
@@ -620,3 +619,4 @@ export default {
     return redirect(`https://4species.com/species${path}${url.search}`);
   },
 };
+

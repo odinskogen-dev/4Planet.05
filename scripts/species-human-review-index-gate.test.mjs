@@ -192,8 +192,9 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
   globalThis.HTMLRewriter = PassThroughHTMLRewriter;
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
-    if (url.pathname === "/species-data/v1/orca.json") {
-      return Response.json(sourcedProfile("orca", "DRAFT"));
+    const profileMatch = url.pathname.match(/^\/species-data\/v1\/([a-z0-9-]+)\.json$/);
+    if (profileMatch && CURRENT_PUBLIC_SPECIES_SLUGS.has(profileMatch[1])) {
+      return Response.json(sourcedProfile(profileMatch[1], "DRAFT"));
     }
     if (url.pathname === "/species-data/v1/unknown.json") {
       return new Response("missing", { status: 404 });
@@ -216,10 +217,12 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
   try {
     assert.equal(CURRENT_PUBLIC_SPECIES_SLUGS.size, 57);
     for (const method of ["GET", "HEAD"]) {
-      const known = await speciesWorker.fetch(new Request("https://4species.com/orca", { method }));
-      assert.equal(known.status, 200, `${method} known profile`);
-      assert.equal(known.headers.get("link"), '<https://4species.com/orca>; rel="canonical"');
-      assert.equal(known.headers.get("x-robots-tag"), null);
+      for (const slug of CURRENT_PUBLIC_SPECIES_SLUGS) {
+        const known = await speciesWorker.fetch(new Request(`https://4species.com/${slug}`, { method }));
+        assert.equal(known.status, 200, `${method} public profile ${slug}`);
+        assert.equal(known.headers.get("link"), `<https://4species.com/${slug}>; rel="canonical"`);
+        assert.equal(known.headers.get("x-robots-tag"), null);
+      }
 
       const benignQuery = await speciesWorker.fetch(new Request("https://4species.com/orca?utm_source=4planet", { method }));
       assert.equal(benignQuery.status, 200, `${method} benign query`);
@@ -233,7 +236,7 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
       assert.equal(trailingSlash.headers.get("x-robots-tag"), null);
       assert.equal(await trailingSlash.text(), "", `${method} trailing slash body`);
 
-      for (const path of ["/orca?preview=1", "/orca/unknown", "/unknown/path", "//orca"]) {
+      for (const path of ["/orca?preview=1", "/orca/unknown", "/unknown/path", "//orca", "//orca/", "/orca//"]) {
         const response = await speciesWorker.fetch(new Request(`https://4species.com${path}`, { method }));
         assert.equal(response.status, 404, `${method} ${path}`);
         assert.equal(response.headers.get("link"), null, `${method} ${path} canonical`);
@@ -260,3 +263,4 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
     globalThis.HTMLRewriter = originalHtmlRewriter;
   }
 });
+
