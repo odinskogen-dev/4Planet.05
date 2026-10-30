@@ -13,6 +13,17 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
   const solutions = (impactDiscovery.solutions ?? []).filter((item) => item.indexable === true);
   const host = (url) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
   const url = (path) => origin + path;
+  // Meta summaries are derived from the original, source-bound prose.
+  // A shortened excerpt is clearly marked, not silently cut mid-word.
+  const snippet = (value, limit = 175) => {
+    const text = String(value ?? "").replace(/\\s+/g, " ").trim();
+    if (text.length <= limit) return text;
+    const firstSentence = text.slice(0, limit + 1).match(/^.{75,165}?[.!?](?=\\s|$)/);
+    if (firstSentence) return firstSentence[0];
+    const prefix = text.slice(0, limit - 1).trimEnd();
+    const wordEnd = prefix.lastIndexOf(" ");
+    return prefix.slice(0, wordEnd >= 90 ? wordEnd : prefix.length).replace(/[,;:—-]$/, "") + "…";
+  };
   const projectHref = (slug) => `/impact/project/${slug}/`;
   const actorHref = (slug) => `/impact/actors/${slug}/`;
   const issueHref = (slug) => `/impact/issue/${slug}/`;
@@ -124,7 +135,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
   }
 
   const boundary = "<p><strong>Truth boundary.</strong> Listing does not imply 4PLANET partnership or endorsement. Source-reported figures are not independently verified by 4PLANET. Delivery, outcome and verification remain separate states.</p>";
-  const sourcesList = (urls) => urls.length ? `<h2>Sources</h2><ul>${urls.map((u) => `<li><a href="${esc(u)}" rel="nofollow">${esc(host(u))}</a></li>`).join("")}</ul>` : "";
+  const sourcesList = (urls) => urls.length ? `<h2>Sources</h2><ul>${urls.map((u) => `<li><a href="${esc(u)}" rel="noopener noreferrer">${esc(host(u))}</a></li>`).join("")}</ul>` : "";
   const projectLi = (p) => `<li><a href="${projectHref(esc(p.slug))}">${esc(p.name)}</a>${p.actor ? ` — ${esc(p.actor.name)}` : ""}${p.place ? `, ${esc(p.place)}` : ""}</li>`;
 
   writeRoute("/impact", enhanced({
@@ -145,8 +156,8 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
 
   for (const p of projects) {
     const path = projectHref(p.slug);
-    const desc = [p.description.replace(/\.\s*$/, "") + ".", p.actor ? `Lead organisation: ${p.actor.name}.` : "", p.place ? `Place: ${p.place}.` : "", "Evidence and sources on 4PLANET Impact."].filter(Boolean).join(" ").slice(0, 300);
-    const claims = (p.claims ?? []).map((c) => `<li><p>${esc(c.statement)}</p><p><small>${esc([c.review, c.strength, c.interpretation].filter(Boolean).join(" · ").replaceAll("_", " "))}</small>${c.url ? ` — <a href="${esc(c.url)}" rel="nofollow">${esc(c.source || host(c.url))}</a>` : ""}</p>${(c.limitations ?? []).map((l) => `<p><small>Limitation: ${esc(l)}</small></p>`).join("")}</li>`).join("");
+    const desc = snippet([p.description.replace(/\.\s*$/, "") + ".", p.actor ? `Lead organisation: ${p.actor.name}.` : "", p.place ? `Place: ${p.place}.` : "", "Evidence and sources on 4PLANET Impact."].filter(Boolean).join(" "));
+    const claims = (p.claims ?? []).map((c) => `<li><p>${esc(c.statement)}</p><p><small>${esc([c.review, c.strength, c.interpretation].filter(Boolean).join(" · ").replaceAll("_", " "))}</small>${c.url ? ` — <a href="${esc(c.url)}" rel="noopener noreferrer">${esc(c.source || host(c.url))}</a>` : ""}</p>${(c.limitations ?? []).map((l) => `<p><small>Limitation: ${esc(l)}</small></p>`).join("")}</li>`).join("");
     writeRoute(path, enhanced({
       pathName: path,
       title: `${p.name} — Impact | 4PLANET`,
@@ -179,7 +190,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     writeRoute(path, enhanced({
       pathName: path,
       title: `${a.name} — Organisation | 4PLANET Impact`,
-      description: (a.description ? `${a.description} ` : `${a.name}: `) + "Projects, places and sources on 4PLANET Impact.",
+      description: snippet((a.description ? `${a.description} ` : `${a.name}: `) + "Projects, places and sources on 4PLANET Impact."),
       body: `<main><p>4PLANET IMPACT / ORGANISATION</p><h1>${esc(a.name)}</h1>${a.description ? `<p>${esc(a.description)}</p>` : ""}${a.type ? `<p>Type: ${esc(a.type.replaceAll("_", " "))}</p>` : ""}<p>Public record — not a 4PLANET partner. Listing does not imply endorsement.</p><h2>Projects</h2><ul>${related.map(projectLi).join("")}</ul>${sourcesList(a.citations ?? [])}</main>`,
       jsonLd: {
         "@context": "https://schema.org",
@@ -203,7 +214,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const issueUnknowns = i.unknowns ?? [];
     const issueSources = i.citations ?? [];
     const issueEvidenceHtml = issueClaims.length
-      ? `<h2>What the sources establish</h2><ul>${issueClaims.map((claim) => `<li><p>${esc(claim.statement)}</p>${claim.url ? `<p><small>Source: <a href="${esc(claim.url)}" rel="nofollow">${esc(claim.source || host(claim.url))}</a></small></p>` : ""}</li>`).join("")}</ul>`
+      ? `<h2>What the sources establish</h2><ul>${issueClaims.map((claim) => `<li><p>${esc(claim.statement)}</p>${claim.url ? `<p><small>Source: <a href="${esc(claim.url)}" rel="noopener noreferrer">${esc(claim.source || host(claim.url))}</a></small></p>` : ""}</li>`).join("")}</ul>`
       : "";
     const issueUnknownHtml = issueUnknowns.length
       ? `<h2>Known and not established</h2><ul>${issueUnknowns.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>`
@@ -211,7 +222,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     writeRoute(path, enhanced({
       pathName: path,
       title: `${i.name} — projects and organisations | 4PLANET Impact`,
-      description: `${i.description ? i.description.replace(/\.\s*$/, "") + "." : i.name + "."} Who is working on it, with which methods and where — with sources.`,
+      description: snippet(`${i.description ? i.description.replace(/\.\s*$/, "") + "." : i.name + "."} Who is working on it, with which methods and where — with sources.`),
       image: related.find((p) => p.image)?.image || undefined,
       body: `<main><p>4PLANET IMPACT / ISSUE</p><h1>${esc(i.name)}</h1>${i.description ? `<p>${esc(i.description)}</p>` : ""}${i.whyItMatters ? `<h2>Why it matters</h2><p>${esc(i.whyItMatters)}</p>` : ""}${issueEvidenceHtml}<h2>Projects working on it</h2><ul>${related.map(projectLi).join("")}</ul><h2>Organisations</h2><ul>${Array.from(new Map(related.flatMap((p) => p.actors ?? []).map((a) => [a.slug, a])).values()).map((a) => `<li><a href="${actorHref(esc(a.slug))}">${esc(a.name)}</a></li>`).join("")}</ul>${issueUnknownHtml}${sourcesList(issueSources)}${boundary}</main>`,
       jsonLd: {
@@ -235,7 +246,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const relatedProjects = s.projectRefs ?? projects.filter((p) => (p.solutions ?? []).some((x) => x.id === s.id));
     const relatedIssues = s.issues ?? [];
     const claimHtml = claims.length
-      ? `<h2>What the sources establish</h2><ul>${claims.map((claim) => `<li><p>${esc(claim.statement)}</p>${claim.url ? `<p><small><a href="${esc(claim.url)}" rel="noreferrer nofollow">${esc(claim.source || host(claim.url))}</a> · ${esc(claim.strength || "source record")}</small></p>` : ""}</li>`).join("")}</ul>`
+      ? `<h2>What the sources establish</h2><ul>${claims.map((claim) => `<li><p>${esc(claim.statement)}</p>${claim.url ? `<p><small><a href="${esc(claim.url)}" rel="noopener noreferrer">${esc(claim.source || host(claim.url))}</a> · ${esc(claim.strength || "source record")}</small></p>` : ""}</li>`).join("")}</ul>`
       : "";
     const mechanismHtml = s.mechanism ? `<h2>How the method works</h2><p>${esc(s.mechanism)}</p>` : "";
     const applicabilityHtml = (s.applicability ?? []).length ? `<h2>Where it may apply</h2><ul>${s.applicability.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
@@ -245,7 +256,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     writeRoute(path, enhanced({
       pathName: path,
       title: `${s.name} — Method and evidence | 4PLANET Impact`,
-      description: `${s.description || s.name} See source-grounded projects, evidence, applicability and limitations in 4PLANET Impact.`,
+      description: snippet(`${s.description || s.name} See source-grounded projects, evidence, applicability and limitations in 4PLANET Impact.`),
       body: `<main><p>4PLANET IMPACT / METHOD</p><h1>${esc(s.name)}</h1>${s.description ? `<p>${esc(s.description)}</p>` : ""}${mechanismHtml}${claimHtml}${issuesHtml}${projectsHtml}${applicabilityHtml}${risksHtml}${sourcesList(citations)}${boundary}</main>`,
       jsonLd: {
         "@context": "https://schema.org",
