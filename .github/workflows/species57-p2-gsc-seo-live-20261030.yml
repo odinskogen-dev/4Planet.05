@@ -1,0 +1,66 @@
+name: SPECIES57 P2 GSC SEO
+on:
+  push:
+    branches: [ops/species57-p0-asset-mime-safe-20261026]
+    paths: [.github/workflows/species57-p2-gsc-seo-live-20261030.yml]
+permissions: {contents: read}
+concurrency: {group: species57-20261030-p2-gsc, cancel-in-progress: false}
+jobs:
+  guarded:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      EXPECTED_WORKER: 3ea0b7fa-bd4e-4583-9471-867e7a0c6db6
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0,persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Recreate exact current P1 Worker and derive only new18 navigation from live 57 authoritative index
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ops/discovery ops/species57 public/species-data/v1 evidence/group-links
+          git fetch --no-tags origin +refs/heads/release/species-v1-selective-20261022:refs/remotes/origin/release/species-v1-selective-20261022 +refs/heads/ops/species57-search-discovery-20261025:refs/remotes/origin/ops/species57-search-discovery-20261025
+          git show origin/release/species-v1-selective-20261022:ops/discovery/4species-router.js > ops/discovery/4species-router.js
+          git show origin/release/species-v1-selective-20261022:ops/discovery/species-proof-router.js >ops/discovery/species-proof-router.js
+          git show origin/release/species-v1-selective-20261022:public/species-data/v1/english-oak.json >public/species-data/v1/english-oak.json
+          git show origin/ops/species57-search-discovery-20261025:ops/species57/patch-57-discovery.py >ops/species57/patch-57-discovery.py
+          git show origin/ops/species57-search-discovery-20261025:ops/discovery/species57-search-directory.js >ops/discovery/species57-search-directory.js
+          test "$(git hash-object ops/discovery/4species-router.js)" = 140d6854b34609e537a016068543c8bf44a6e7cf
+          python3 ops/species57/patch-57-discovery.py ops/discovery/4species-router.js ops/discovery/4species-router-seo57.js
+          python3 ops/species57/p0-fix-asset-mime.py ops/discovery/4species-router-seo57.js ops/discovery/4species-router-p0.js
+          python3 ops/species57/p1-remove-unverified-taxonomic-authority.py ops/discovery/4species-router-p0.js ops/discovery/4species-router-p1.js
+          python3 ops/species57/p1-add-source-verified-authors.py ops/discovery/4species-router-p1.js ops/species57/p1-taxonomy-evidence.json ops/discovery/4species-router-p1-reviewed.js
+          curl -fsSL --retry 2 https://4species.com/species-data/v1/index.json -o /tmp/species57-live-catalog.json
+          python3 ops/species57/p1-source-group-crosslinks.py ops/discovery/4species-router-p1-reviewed.js /tmp/species57-live-catalog.json ops/discovery/4species-router-p1-nav.js evidence/group-links/nav-evidence.json
+          node --check ops/discovery/4species-router-p1-nav.js
+          test "$(sha256sum ops/discovery/4species-router-p1-nav.js | cut -d" " -f1)" = e8f3dc51806d605b296656381b4ee2aa1bfc595a714b76c2c2e0ee0a0a97ebbe
+          python3 ops/species57/p2-gsc-seo-20261030.py ops/discovery/4species-router-p1-nav.js ops/discovery/4species-router-p2-gsc.js
+          node --check ops/discovery/4species-router-p2-gsc.js
+          echo SPECIES57_P1_CATALOG_SOURCE_GROUP_NAV_18_EXACT_GENERATED
+      - name: Guarded deploy, verify /orca body hash, rollback on any failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          api=https://api.cloudflare.com/client/v4
+          curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/zones?name=4species.com" > /tmp/zone.json
+          account=$(jq -r '.result[0].account.id // empty' /tmp/zone.json); test -n "$account"
+          current=$(curl -fsSL -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$api/accounts/$account/workers/scripts/4species-router/deployments" | jq -er '.result | (if type=="array" then . else .deployments end) | .[0].versions[0].version_id')
+          test "$current" = "$EXPECTED_WORKER" || { echo UNEXPECTED_WORKER $current; exit 1; }
+          orca_before=$(curl -fsS -H 'Cache-Control: no-cache' https://4species.com/orca | sha256sum | cut -d' ' -f1)
+          test "$orca_before" = 5eb09d2832c8ba3aa58e5b659fa7ae09aadf076cdee3444c953f599a853af448
+          rollback(){ npx --yes wrangler@4.128.0 rollback "$EXPECTED_WORKER" --name 4species-router || true; }
+          trap rollback ERR
+          npx --yes wrangler@4.128.0 deploy ops/discovery/4species-router-p2-gsc.js --name 4species-router --compatibility-date 2026-10-05 --keep-vars
+          for i in $(seq 1 20); do s=$(curl -s -o /dev/null -w '%{http_code}' "https://4species.com/zz-p2-probe-$i"); [ "$s" = 404 ] && break; sleep 3; done
+          test "$s" = 404
+          test "$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' https://4species.com/lion/)" = "308 https://4species.com/lion"
+          test "$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' https://4species.com/index.html)" = "308 https://4species.com/"
+          for u in $(curl -fsS https://4species.com/sitemap.xml | grep -o '<loc>[^<]*</loc>' | sed 's/<[^>]*>//g'); do test "$(curl -s -o /dev/null -w '%{http_code}' "$u")" = 200 || { echo SITEMAP_URL_NOT_200 $u; exit 1; }; done
+          test "$(curl -fsS -H 'Cache-Control: no-cache' https://4species.com/orca | sha256sum | cut -d' ' -f1)" = "$orca_before"
+          curl -fsS https://4species.com/sitemap.xml | grep -c '<loc>' | grep -qx 66
+          ! curl -fsS https://4species.com/sitemap.xml | grep -q 'Special:FilePath'
+          curl -fsS https://4species.com/lion | grep -q 'https://4planetatlas.com/place/kenya'
+          trap - ERR
