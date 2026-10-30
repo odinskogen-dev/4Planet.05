@@ -57,6 +57,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: impact-full-live-audit-report
-          path: |\n            artifacts/impact-full-live-audit.json\n            artifacts/impact-deep-seo-audit.json\n            artifacts/impact-deep-seo-audit.csv
+          path: |
+            artifacts/impact-full-live-audit.json
+            artifacts/impact-deep-seo-audit.json
+            artifacts/impact-deep-seo-audit.csv
           retention-days: 30
           if-no-files-found: warn
