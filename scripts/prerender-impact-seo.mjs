@@ -240,7 +240,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const mechanismHtml = s.mechanism ? `<h2>How the method works</h2><p>${esc(s.mechanism)}</p>` : "";
     const applicabilityHtml = (s.applicability ?? []).length ? `<h2>Where it may apply</h2><ul>${s.applicability.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
     const risksHtml = (s.risks ?? []).length ? `<h2>Limitations and risks</h2><ul>${s.risks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
-    const issuesHtml = relatedIssues.length ? `<h2>Issues connected to this method</h2><ul>${relatedIssues.map((i) => `<li><a href="/impact/issue/${esc(i.slug)}">${esc(i.name)}</a></li>`).join("")}</ul>` : "";
+    const issuesHtml = relatedIssues.length ? `<h2>Issues connected to this method</h2><ul>${relatedIssues.map((i) => `<li><a href="${issueHref(esc(i.slug))}">${esc(i.name)}</a></li>`).join("")}</ul>` : "";
     const projectsHtml = relatedProjects.length ? `<h2>Projects using this method</h2><ul>${relatedProjects.map((project) => `<li><a href="${projectHref(esc(project.slug))}">${esc(project.name)}</a></li>`).join("")}</ul>` : "";
     writeRoute(path, enhanced({
       pathName: path,
