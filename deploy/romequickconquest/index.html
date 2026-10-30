@@ -50,7 +50,7 @@
   .hud-top{height:60px;min-height:60px}
   .hud-bottom{height:58px;min-height:58px}
   .side-guidance{max-width:calc(100% - 120px);white-space:normal;line-height:1.45;bottom:9px}
-  .brand-title{font-size:15px}
+  .brand-title{font-size:15px}.eyebrow{letter-spacing:.075em}.inset-map-label,.edge-label{display:none}
   .stat-value{font-size:17px}
   .overlay{overflow-y:auto;overscroll-behavior:contain}
   .overlay-panel{max-height:96%;overflow-y:auto;padding:17px 14px}
@@ -167,7 +167,7 @@
     if(!camera.scale||camera.scale===1){fit(true);}else{camera.scale=Math.min(width/W,height/H)*camera.zoom;clampCamera();}
   }
   function fit(force=false){camera.zoom=1;const base=Math.min(width/W,height/H);camera.scale=base;
-    if(width<height*.82){camera.zoom=3.0;camera.scale=base*camera.zoom;camera.ox=width/2-1160*camera.scale;camera.oy=height/2-885*camera.scale;}
+    if(width<height*.82){camera.zoom=Math.max(2.45,(height/H)/base);camera.scale=base*camera.zoom;camera.ox=width/2-1130*camera.scale;camera.oy=height/2-850*camera.scale;}
     else{camera.ox=(width-W*camera.scale)/2;camera.oy=(height-H*camera.scale)/2;}
     clampCamera();if(!force)message('MAP VIEW RESET');
   }
@@ -388,7 +388,7 @@
   function drawFort(f){
     const p=worldToScreen(f);if(p.x<-120||p.y<-110||p.x>width+120||p.y>height+100)return;
     const owner=f.owner,color=OWNERS[owner],isRome=owner==='roman';
-    const k=clamp(camera.scale*.58,.48,.96),chosen=selected===f.id;
+    const k=width<650?clamp(camera.scale*.50,.27,.50):clamp(camera.scale*.58,.48,.96),chosen=selected===f.id;
     ctx.save();ctx.translate(p.x,p.y);ctx.scale(k,k);
     ctx.fillStyle='#0a0f10b0';ctx.beginPath();ctx.ellipse(2,16,38,16,-.16,0,Math.PI*2);ctx.fill();
     // Eroded stone plinth, inner court and sculpted defensive wall blocks.
@@ -414,11 +414,11 @@
     if(chosen||f.pulse>.2){ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.arc(p.x,p.y,42+Math.sin(time*4)*2,0,7);ctx.stroke();ctx.restore();}
     const name=f.name.toUpperCase();ctx.save();ctx.font='700 10px Georgia,serif';ctx.textAlign='center';ctx.textBaseline='middle';
     const textW=Math.min(146,ctx.measureText(name).width+17);
-    const showName=camera.zoom>=3.3 || [0,1,2,3,4,5,16,19].includes(f.id) || selected===f.id;
+    const showName=width<650?(selected===f.id || [1,2,3,5].includes(f.id)): (camera.zoom>=3.3 || [0,1,2,3,4,5,16,19].includes(f.id) || selected===f.id);
     if(showName){roundRect(ctx,p.x-textW/2,p.y+19*k+13,textW,21,3);ctx.fillStyle='#0d1719ee';ctx.fill();ctx.strokeStyle=color+'b3';ctx.stroke();
     ctx.fillStyle='#f4ead7';ctx.fillText(name,p.x,p.y+19*k+23);}
-    roundRect(ctx,p.x-21,p.y-38*k-35,42,22,4);ctx.fillStyle='#10191ddd';ctx.fill();ctx.strokeStyle=color;ctx.stroke();
-    ctx.font='800 14px system-ui';ctx.fillStyle=color;ctx.fillText(Math.floor(f.troops),p.x,p.y-38*k-24);
+    const badgeWidth=width<650?32:42,badgeHeight=width<650?18:22;roundRect(ctx,p.x-badgeWidth/2,p.y-38*k-31,badgeWidth,badgeHeight,5);ctx.fillStyle='#10191ddd';ctx.fill();ctx.strokeStyle=color;ctx.stroke();
+    ctx.font=width<650?'800 11px system-ui':'800 14px system-ui';ctx.fillStyle=color;ctx.fillText(Math.floor(f.troops),p.x,p.y-38*k-20);
     if(chosen&&owner==='roman'){ctx.font='800 10px system-ui';ctx.fillText(`NEXT ${Math.round(nextRatio(f)*100)}%`,p.x,p.y-38*k-44);}
     ctx.restore();
   }
