@@ -110,8 +110,8 @@ jobs:
           ! grep -Fq '<loc>https://4planet.org/species/' dist/sitemap.xml
           test -f dist/impact/project/agave-restoration-initiative/index.html
           test -f dist/impact/actors/bat-conservation-international/index.html
-          grep -Fq '<loc>https://4planet.org/impact/project/agave-restoration-initiative</loc>' dist/sitemap.xml
-          grep -Fq '<loc>https://4planet.org/impact/actors/bat-conservation-international</loc>' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/impact/project/agave-restoration-initiative/</loc>' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/impact/actors/bat-conservation-international/</loc>' dist/sitemap.xml
           impact_routes="$(find dist/impact -type f -name index.html | wc -l | tr -d ' ')"
           test "$impact_routes" -ge 200
           echo "IMPACT_DISCOVERY_EXPORTED_ROUTES=$impact_routes"
