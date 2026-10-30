@@ -18,7 +18,7 @@ test("IMPACT sitemap freshness uses record review/update timestamps",()=>{
 
 test("crawlable IMPACT graph exposes publisher context and all public Methods",()=>{
   assert.match(prerender,/Published by <a href="\/about">4PLANET<\/a>/);
-  assert.match(prerender,/<h2>Methods<\/h2>/);
-  assert.match(prerender,/solutions\.filter\(\(s\) => s\.indexable === true\)/);
-  assert.match(prerender,/solutionHref/);
+  assert.match(prerender,/id="impact-methods"/);
+  assert.match(prerender,/solutions\.map\(\(s\) =>/);
+  assert.match(prerender,/\/impact\/solution\//);
 });
