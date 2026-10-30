@@ -60,10 +60,33 @@ jobs:
           [ -n "$szid" ] || { echo "S4PIENS_ZONE_MISSING"; exit 4; }
           echo "S4PIENS_ZONE_ID=$szid" >> "$GITHUB_ENV"
           curl -fsS "$api/zones/$szid/workers/routes" -H "Authorization: Bearer $TOKEN" > artifacts/release/s4-routes-before.json
-          jq -e '([.result[]? | select(.pattern|contains("s4piens.com"))] | length)==0' artifacts/release/s4-routes-before.json >/dev/null || { echo "S4PIENS_EXISTING_WORKER_ROUTE_HOLD"; exit 5; }
+          jq -e '([.result[]? | select(.pattern|contains("s4piens.com")) | select(.script!="4planet-s4piens-live")] | length)==0' artifacts/release/s4-routes-before.json >/dev/null || { echo "S4PIENS_FOREIGN_WORKER_ROUTE_HOLD"; exit 5; }
           curl -fsS "$api/accounts/$aid/workers/domains" -H "Authorization: Bearer $TOKEN" > artifacts/release/worker-domains-before.json
           jq -e '([.result[]? | select(.hostname=="4nation.org" and .service=="4planet-nation-live")] | length)==1' artifacts/release/worker-domains-before.json >/dev/null || { echo "4NATION_EXISTING_OWNER_HOLD"; exit 6; }
           cp ops/nation/4nation-live-worker.js artifacts/release/4nation-live-worker-before.js
+          for w in 4planet-nation-live 4planet-s4piens-live; do
+            curl -fsS "$api/accounts/$aid/workers/scripts/$w/deployments" -H "Authorization: Bearer $TOKEN" > "artifacts/release/$w-deployments-before.json" || { echo "PREVIOUS_VERSION_UNREADABLE_HOLD worker=$w"; exit 7; }
+            v=$(jq -r '[.result.deployments[]?] | sort_by(.created_on) | last | select(.versions|length==1) | .versions[0] | select(.percentage==100) | .version_id // empty' "artifacts/release/$w-deployments-before.json")
+            [ -n "$v" ] || { echo "PREVIOUS_VERSION_NOT_SINGLE_100PCT_HOLD worker=$w"; exit 7; }
+            printf '%s\n' "$v" > "artifacts/release/$w-previous-version-id.txt"
+            echo "PREVIOUS_VERSION worker=$w version_id=$v"
+            case "$w" in 4planet-nation-live) echo "PREV_NATION_VERSION=$v" >> "$GITHUB_ENV";; *) echo "PREV_S4_VERSION=$v" >> "$GITHUB_ENV";; esac
+          done
+          # Final response header block only: s4piens.com answers HTTP/2 103 Early Hints before the 200.
+          final_hdr() { curl -sSI --max-time 20 "$1" | tr -d '\r' | awk 'BEGIN{RS=""} {b=$0} END{print b}'; }
+          live_n=$(final_hdr https://4nation.org/ | awk -F': ' 'tolower($1)=="x-4nation-sha"{print $2}' | head -n1)
+          live_s=$(final_hdr https://s4piens.com/ | awk -F': ' 'tolower($1)=="x-s4piens-sha"{print $2}' | head -n1)
+          if [ -z "$live_n" ] || [ -z "$live_s" ]; then echo "LIVE_SHA_UNREADABLE_HOLD"; exit 8; fi
+          printf 'x-4nation-sha=%s\nx-s4piens-sha=%s\n' "$live_n" "$live_s" > artifacts/release/live-sha-before.txt
+          echo "LIVE_NATION_SHA=$live_n" >> "$GITHUB_ENV"
+          echo "LIVE_S4_SHA=$live_s" >> "$GITHUB_ENV"
+          noop=0
+          if [[ "$live_n" =~ ^[0-9a-f]{40}$ ]] && [ "$live_n" = "$live_s" ] && git merge-base --is-ancestor "$live_n" "$GITHUB_SHA" 2>/dev/null; then
+            changed=$(git diff --name-only "$live_n" "$GITHUB_SHA")
+            if [ -z "$(grep -vxF '.github/workflows/founder-live-4nation-s4piens-20261014.yml' <<<"$changed" || true)" ]; then noop=1; fi
+          fi
+          echo "RELEASE_NOOP=$noop" >> "$GITHUB_ENV"
+          echo "RELEASE_NOOP=$noop live=$live_n candidate=$GITHUB_SHA"
           echo "ROLLBACK_SNAPSHOT=PASS"
 
       - name: Exact source, contract, type and build gates
@@ -77,6 +100,7 @@ jobs:
           npm run test:smoke
 
       - name: Deploy hash-pinned frontend artifact
+        if: env.RELEASE_NOOP != '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -88,6 +112,7 @@ jobs:
           echo "IMMUTABLE_STATIC_PREVIEW=$static_url"
 
       - name: Build exact release Workers
+        if: env.RELEASE_NOOP != '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -107,6 +132,7 @@ jobs:
           echo "RELEASE_WORKERS_BUILT=YES"
 
       - name: Deploy both Founder-authorised live Workers
+        if: env.RELEASE_NOOP != '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -128,6 +154,7 @@ jobs:
           echo "LIVE_WORKERS_DEPLOYED=YES"
 
       - name: Verify real source APIs on live domains
+        if: env.RELEASE_NOOP != '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -164,6 +191,7 @@ jobs:
           echo "LIVE_REAL_SOURCE_GATE=PASS"
 
       - name: Verify exact live domains in Chromium and WebKit
+        if: env.RELEASE_NOOP != '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -206,22 +234,46 @@ jobs:
           echo "4NATION=https://4nation.org"
           echo "S4PIENS=https://s4piens.com"
 
-      - name: Roll back both domains if a post-mutation step fails
+      - name: Verify no-op release left live unchanged (read-only)
+        if: env.RELEASE_NOOP == '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Status = curl's final http_code (never the first status line: s4piens.com sends HTTP/2 103 Early Hints first).
+          final_code() { curl -sS --max-time 30 -o /dev/null -w '%{http_code}' "$1" || true; }
+          final_hdr() { curl -sSI --max-time 20 "$1" | tr -d '\r' | awk 'BEGIN{RS=""} {b=$0} END{print b}'; }
+          nc=$(final_code https://4nation.org/)
+          sc=$(final_code https://s4piens.com/)
+          if [ "$nc" != 200 ] || [ "$sc" != 200 ]; then echo "NOOP_LIVE_HOME_FAIL 4nation=$nc s4piens=$sc"; exit 14; fi
+          nh=$(final_hdr https://4nation.org/)
+          sh=$(final_hdr https://s4piens.com/)
+          grep -qiE "^x-4nation-sha: $LIVE_NATION_SHA$" <<<"$nh" || { echo "NOOP_LIVE_SHA_CHANGED host=4nation.org"; exit 15; }
+          grep -qiE "^x-s4piens-sha: $LIVE_S4_SHA$" <<<"$sh" || { echo "NOOP_LIVE_SHA_CHANGED host=s4piens.com"; exit 15; }
+          for u in https://4nation.org/country/norway https://4nation.org/decisions https://s4piens.com/system/food https://s4piens.com/object/bread; do
+            c=$(curl -sS --max-time 30 -o /dev/null -w '%{http_code}' "$u"); [ "$c" = 200 ] || { echo "NOOP_LIVE_PAGE_FAIL $u http=$c"; exit 14; }
+          done
+          echo "RELEASE_NOOP_VERIFIED=PASS live=$LIVE_NATION_SHA nation_version=$PREV_NATION_VERSION s4_version=$PREV_S4_VERSION"
+
+      - name: Roll back both Workers to their previous version if a post-mutation step fails
         if: failure()
         continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           [ -f /tmp/live-mutation-started ] || { echo "NO_LIVE_MUTATION_TO_ROLL_BACK"; exit 0; }
-          echo "ROLLBACK_START"
-          npx --yes wrangler@4.128.0 deploy artifacts/release/4nation-live-worker-before.js --name 4planet-nation-live --compatibility-date 2026-09-21 --keep-vars || true
-          api=https://api.cloudflare.com/client/v4
-          routes=$(curl -fsS "$api/zones/$S4PIENS_ZONE_ID/workers/routes" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" || echo '{"result":[]}')
-          for id in $(jq -r '.result[]? | select(.script=="4planet-s4piens-live") | .id' <<<"$routes"); do
-            curl -fsS -X DELETE "$api/zones/$S4PIENS_ZONE_ID/workers/routes/$id" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" >/dev/null || true
+          echo "ROLLBACK_START nation=$PREV_NATION_VERSION s4piens=$PREV_S4_VERSION"
+          # Version-only rollback: never deletes a Worker, route, custom domain or DNS record.
+          rc=0
+          npx --yes wrangler@4.128.0 versions deploy "$PREV_NATION_VERSION@100%" --name 4planet-nation-live --message "rollback $GITHUB_SHA run $GITHUB_RUN_ID" --yes | tee artifacts/release/rollback-nation.txt || rc=1
+          npx --yes wrangler@4.128.0 versions deploy "$PREV_S4_VERSION@100%" --name 4planet-s4piens-live --message "rollback $GITHUB_SHA run $GITHUB_RUN_ID" --yes | tee artifacts/release/rollback-s4piens.txt || rc=1
+          ok=0
+          for _ in $(seq 1 24); do
+            nh=$(curl -sSI --max-time 20 https://4nation.org/ || true)
+            sh=$(curl -sSI --max-time 20 https://s4piens.com/ || true)
+            if grep -qi "x-4nation-sha: $LIVE_NATION_SHA" <<<"$nh" && grep -qi "x-s4piens-sha: $LIVE_S4_SHA" <<<"$sh"; then ok=1; break; fi
+            sleep 5
           done
-          npx --yes wrangler@4.128.0 delete 4planet-s4piens-live --force || true
-          echo "ROLLBACK_ATTEMPTED"
+          if [ "$rc" = 0 ] && [ "$ok" = 1 ]; then echo "ROLLBACK_VERIFIED live=$LIVE_NATION_SHA"; else echo "ROLLBACK_FAILED rc=$rc settled=$ok"; exit 1; fi
 
       - name: Upload release and rollback evidence
         if: always()
