@@ -53,3 +53,44 @@ test("rejects future timestamps and every delivery, recovery, causal or impact c
   for (const key of ["deliveryClaim", "survivalClaim", "recoveryClaim", "biodiversityGainClaim", "causalOutcomeClaim", "impactClaim"])
     assert.ok(result.reasons.includes(`forbidden:${key}`), key);
 });
+
+
+test("rejects unknown private geography, observer PII and ecological outcome fields", () => {
+  const result = admitOslofjordFieldObservation({
+    ...completeObservation,
+    preciseCoordinates: "59.123,10.456",
+    observerEmail: "private@example.invalid",
+    ecologicalRecoveryConfirmed: true,
+  });
+  assert.equal(result.admitted, false);
+  for (const key of ["preciseCoordinates", "observerEmail", "ecologicalRecoveryConfirmed"])
+    assert.ok(result.reasons.includes(`unknown:${key}`), key);
+});
+
+test("rejects explicit permission denial", () => {
+  const result = admitOslofjordFieldObservation({
+    ...completeObservation,
+    sitePermissionRef: "DENIED",
+  });
+  assert.equal(result.admitted, false);
+  assert.ok(result.reasons.includes("denied:sitePermissionRef"));
+});
+
+test("projects an admitted record from the explicit ten-field schema", () => {
+  const result = admitOslofjordFieldObservation(completeObservation);
+  assert.equal(result.admitted, true);
+  assert.deepEqual(Object.keys(result.record).sort(), [
+    "claimBoundary",
+    "evidenceClass",
+    "limitations",
+    "methodRef",
+    "observation",
+    "observedAt",
+    "observerRef",
+    "publicGeography",
+    "recordId",
+    "sitePermissionRef",
+    "siteRef",
+    "sourceRef",
+  ].sort());
+});
