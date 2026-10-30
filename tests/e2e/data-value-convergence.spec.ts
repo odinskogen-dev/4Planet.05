@@ -82,8 +82,10 @@ test("DATA VALUE / FOOD: branded product can be explicitly joined to Matvaretabe
   await expect(page.getByRole("heading", { name: "Havregryn test product" })).toBeVisible();
   await expect(page.getByText("NOT JOINED")).toBeVisible();
 
-  await page.getByLabel("Generic food").fill("havregryn");
-  await page.getByRole("button", { name: "Search Matvaretabellen" }).click();
+  const genericFoodSearch = page.locator(".food-generic-search");
+  await expect(genericFoodSearch).toHaveCount(1);
+  await genericFoodSearch.getByLabel("Generic food", { exact: true }).fill("havregryn");
+  await genericFoodSearch.getByRole("button", { name: "Search Matvaretabellen", exact: true }).click();
   await expect(page.getByText("Havregryn", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /CONFIRM THIS REFERENCE/ }).click();
 
@@ -243,8 +245,10 @@ test("DATA VALUE / 4BRANDS: public profile resolves exact identity, exposes evid
   });
 
   await page.goto("/4brands");
-  await page.getByRole("textbox", { name: "Company", exact: true }).fill("TOMRA");
-  await page.getByRole("button", { name: "Search", exact: true }).click();
+  const companySearch = page.locator(".fb-search");
+  await expect(companySearch).toHaveCount(1);
+  await companySearch.getByRole("textbox", { name: "Company", exact: true }).fill("TOMRA");
+  await companySearch.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Which legal entity do you mean?" })).toBeVisible();
   await page.getByRole("button", { name: /USE THIS ENTITY/ }).click();
 
@@ -384,10 +388,13 @@ test("DATA VALUE / 4NATION: user can inspect neutral Stortinget case state and s
   await page.getByRole("button", { name: "Find official tables" }).click();
   await expect(page.getByText("05810", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /OPEN DEFAULT EXTRACT/ }).click();
-  await expect(page.getByText("statistical-table:ssb:05810")).toBeVisible();
-  await expect(page.getByText(/724[\s\u00a0]?000 people/i)).toBeVisible();
-  await expect(page.getByText("UNIT people · SSB STATUS PUBLISHED VALUE", { exact: true })).toBeVisible();
-  await expect(page.getByText("REFERENCE PERIOD 2026", { exact: true })).toBeVisible();
+  const selectedSsbContext = page.locator(".nt-statbank-data");
+  await expect(selectedSsbContext).toHaveCount(1);
+  await expect(selectedSsbContext).toBeVisible();
+  await expect(selectedSsbContext.getByText("statistical-table:ssb:05810")).toBeVisible();
+  await expect(selectedSsbContext.getByText(/724[\s\u00a0]?000 people/i)).toBeVisible();
+  await expect(selectedSsbContext.getByText("UNIT people · SSB STATUS PUBLISHED VALUE", { exact: true })).toBeVisible();
+  await expect(selectedSsbContext.getByText("REFERENCE PERIOD 2026", { exact: true })).toBeVisible();
   await expect(page.getByText(/does not pick the statistic for you or treat correlation as policy causation/i)).toBeVisible();
 });
 
