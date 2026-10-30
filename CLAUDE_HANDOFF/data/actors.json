@@ -1,0 +1,2673 @@
+[
+  {
+    "id": "actor:4p:accion-andina",
+    "name": "Acción Andina",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://accion-andina.org/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Acción Andina",
+        "claim_id": "claim:4p:impact:gold20:accion-andina:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists Acción Andina, ECOAN and Global Forest Generation among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/accion-andina",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:accion-andina",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_network",
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "A multi-country Andean restoration movement co-founded by ECOAN and Global Forest Generation.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:araticum",
+    "name": "Araticum",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://araticum.org.br/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Restoring Brazil’s Cerrado Savannah",
+        "claim_id": "claim:4p:impact:gold20:restoring-brazil-cerrado-savannah:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists Araticum as the leading organisation.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/restoring-brazils-cerrado-savannah",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:restoring-brazil-cerrado-savannah",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_coalition",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Coalition listed by the UN as the leading organisation for the Cerrado restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:acbk-kazakhstan",
+    "name": "Association for the Conservation of Biodiversity of Kazakhstan",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Altyn Dala Conservation Initiative",
+        "claim_id": "claim:4p:impact:scale02:altyn-dala-conservation-initiative:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Association for the Conservation of Biodiversity of Kazakhstan among the organisations coordinating the flagship.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/altyn-dala-conservation-initiative",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:altyn-dala-conservation-initiative",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "conservation_organisation",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Kazakh conservation organisation listed by the UN among the coordinators of the Altyn Dala World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:bat-conservation-international",
+    "name": "Bat Conservation International",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Agave Restoration Initiative",
+        "claim_id": "claim:4p:impact:scale02b:agave-restoration-initiative:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Bat Conservation International with implementation of Agave Restoration Initiative.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/agave-restoration-initiative",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:agave-restoration-initiative",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Global bat conservation organisation leading the Agave Restoration Initiative with more than 100 partners.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:borneo-nature-foundation",
+    "name": "Borneo Nature Foundation",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Borneo Nature Foundation Peat-Swamp Restoration",
+        "claim_id": "claim:4p:impact:scale02b:borneo-peat-swamp-restoration:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Borneo Nature Foundation with implementation of Borneo Nature Foundation Peat-Swamp Restoration.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/borneo-nature-foundation-community-led-restoration-borneos-tropical-peat-swamp-forests",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:borneo-peat-swamp-restoration",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Conservation organisation leading community-based peat-swamp forest restoration in Borneo.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:ccad",
+    "name": "Central American Commission on Environment and Development",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.sica.int/ccad/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Central American Dry Corridor",
+        "claim_id": "claim:4p:impact:gold20:central-american-dry-corridor:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile says the flagship is coordinated by the Central American Commission on Environment and Development together with other regional and international bodies.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/central-american-dry-corridor",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:central-american-dry-corridor",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "intergovernmental_body",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Regional intergovernmental body listed among the coordinators of the Central American Dry Corridor World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:childfund-philippines",
+    "name": "ChildFund Philippines",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Project GREENLIGHT",
+        "claim_id": "claim:4p:impact:scale02b:project-greenlight:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates ChildFund Philippines with implementation of Project GREENLIGHT.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/project-greenlight-generating-resilience-empowering-eco-leaders-nurturing-tomorrow",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:project-greenlight",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Child-focused development organisation implementing Project GREENLIGHT with REINA Federation and local government/DENR partners.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:coral-gardeners",
+    "name": "Coral Gardeners",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "coral-gardeners",
+      "summary": "Marine restoration organisation working on coral cultivation, reef monitoring and public engagement.",
+      "website": "https://coralgardeners.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Coral Gardeners — Coral Gardeners Reef Restoration",
+        "claim_id": "claim:4p:impact:batch10:coral-gardeners-reef-restoration:actor",
+        "source_id": "source:4p:impact:batch10:coral-gardeners-reef-restoration",
+        "statement": "Coral Gardeners publicly describes or participates in the named Coral Gardeners Reef Restoration initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://coralgardeners.org/",
+        "limitations": [
+          "Corals planted, survival, reef condition and ecosystem benefits are distinct measurements; independent long-term ecological verification has not been established."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Coral Gardeners — Coral Gardeners Reef Restoration",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Coral Gardeners",
+        "source_record_id": "record:4p:impact:batch10:coral-gardeners-reef-restoration",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Marine restoration organisation working on coral cultivation, reef monitoring and public engagement.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:coral-restoration-foundation",
+    "name": "Coral Restoration Foundation",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://coralrestoration.org/",
+      "publication": "related",
+      "relationship_state": "public_record"
+    },
+    "evidence": [],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Nonprofit coral-restoration organisation operating nursery, outplanting and monitoring programmes.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:csir-south-africa",
+    "name": "Council for Scientific and Industrial Research (CSIR), South Africa",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.csir.co.za/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Thicket Restoration in South Africa",
+        "claim_id": "claim:4p:impact:gold20:thicket-restoration-south-africa:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists South Africa’s CSIR among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/thicket-restoration-south-africa",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:thicket-restoration-south-africa",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "research_organisation",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "South African research organisation listed among the leading organisations in the thicket restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:dryland-sustainable-landscapes-partnership",
+    "name": "Dryland Sustainable Landscapes programme partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Dryland Sustainable Landscapes Programme",
+        "claim_id": "claim:4p:impact:scale02b:dryland-sustainable-landscapes-programme:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Dryland Sustainable Landscapes programme partnership with implementation of Dryland Sustainable Landscapes Programme.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/sustainable-forest-management-impact-program-dryland-sustainable-landscapes",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:dryland-sustainable-landscapes-programme",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "intergovernmental_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Multi-country programme partnership supported through the Global Environment Facility and focused on dryland restoration and sustainable management.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:environment-agency-abu-dhabi",
+    "name": "Environment Agency – Abu Dhabi",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Abu Dhabi Marine Restoration",
+        "claim_id": "claim:4p:impact:scale02:abu-dhabi-marine-restoration:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile identifies Environment Agency – Abu Dhabi as the coordinating organisation for this World Restoration Flagship.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/abu-dhabi-marine-restoration",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:abu-dhabi-marine-restoration",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Abu Dhabi environmental authority identified by the UN as coordinator of the marine restoration World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:fao-silva-mediterranea",
+    "name": "FAO Silva Mediterranea",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.fao.org/silva-mediterranea/en",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Restoring Mediterranean Forests",
+        "claim_id": "claim:4p:impact:gold20:restoring-mediterranean-forests:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists FAO, Silva Mediterranea and national forestry authorities among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/restoring-mediterranean-forests",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:restoring-mediterranean-forests",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "intergovernmental_network",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "FAO and its Committee on Mediterranean Forestry Questions, Silva Mediterranea, are listed among the leading organisations of the flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:ferncliffe-forest-wilding",
+    "name": "Ferncliffe Forest Wilding",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Ferncliffe Forest Wilding",
+        "claim_id": "claim:4p:impact:scale02b:ferncliffe-forest-wilding:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Ferncliffe Forest Wilding with implementation of Ferncliffe Forest Wilding.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/ferncliffe-forest-wilding",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:ferncliffe-forest-wilding",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "South African non-profit established to restore biodiversity in the endangered eastern mistbelt forest above Pietermaritzburg.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:flr-hub-implementation-partnership",
+    "name": "FLR Hub implementation partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Forest Landscape Restoration Hub",
+        "claim_id": "claim:4p:impact:scale02b:forest-landscape-restoration-hub:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates FLR Hub implementation partnership with implementation of Forest Landscape Restoration Hub.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/forest-landscape-restoration-flr-hub",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:forest-landscape-restoration-hub",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Implementation partnership of IUCN, WWF and World Resources Institute described by the Hub for the Forest Landscape Restoration Hub.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:global-fishing-watch",
+    "name": "Global Fishing Watch",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "global-fishing-watch",
+      "summary": "Nonprofit organisation advancing open data and transparency about human activity at sea.",
+      "website": "https://globalfishingwatch.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Global Fishing Watch — Global Fishing Watch Map",
+        "claim_id": "claim:4p:impact:batch10:global-fishing-watch-map:actor",
+        "source_id": "source:4p:impact:batch10:global-fishing-watch-map",
+        "statement": "Global Fishing Watch publicly describes or participates in the named Global Fishing Watch Map initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://globalfishingwatch.org/our-map/",
+        "limitations": [
+          "Apparent fishing activity is algorithmically inferred; gaps in vessel coverage and incomplete detection must not be interpreted as absence of fishing."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Global Fishing Watch — Global Fishing Watch Map",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Global Fishing Watch",
+        "source_record_id": "record:4p:impact:batch10:global-fishing-watch-map",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Nonprofit organisation advancing open data and transparency about human activity at sea.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:gondwana-link",
+    "name": "Gondwana Link",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Gondwana Link",
+        "claim_id": "claim:4p:impact:scale02b:gondwana-link:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Gondwana Link with implementation of Gondwana Link.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/gondwana-link",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:gondwana-link",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Australian conservation initiative working to reconnect ecosystems across south-western Australia.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:good-forest-indonesia",
+    "name": "Good Forest Indonesia",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Good Forest Indonesia",
+        "claim_id": "claim:4p:impact:scale02b:good-forest-indonesia:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Good Forest Indonesia with implementation of Good Forest Indonesia.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/good-forest-indonesia",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:good-forest-indonesia",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Indonesian foundation focused on agroforestry, forest restoration and farmer livelihoods in Borneo.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:good-forests-foundation-uganda",
+    "name": "Good Forests Foundation Uganda",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Good Forests Foundation Uganda",
+        "claim_id": "claim:4p:impact:scale02b:good-forests-foundation-uganda:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Good Forests Foundation Uganda with implementation of Good Forests Foundation Uganda.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/good-forests-foundation-uganda",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:good-forests-foundation-uganda",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Local Ugandan non-governmental organisation focused on farmer-led forest and landscape restoration.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:greenpop-mulanje-restoration-partnership",
+    "name": "Greenpop Foundation × Mulanje Mission Hospital restoration partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Mulanje Landscape Restoration Project",
+        "claim_id": "claim:4p:impact:scale02b:mulanje-landscape-restoration:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Greenpop Foundation × Mulanje Mission Hospital restoration partnership with implementation of Mulanje Landscape Restoration Project.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/forests-life-mulanje-landscape-restoration-project",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:mulanje-landscape-restoration",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Collaborative implementation partnership described by the Hub for the Mulanje Landscape Restoration Project.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:inbar",
+    "name": "International Bamboo and Rattan Organization (INBAR)",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.inbar.int/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Bamboo-based Restoration",
+        "claim_id": "claim:4p:impact:gold20:bamboo-based-restoration:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists INBAR among the leading organisations and UN sources describe it as leading the initiative.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/bamboo-based-restoration",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:bamboo-based-restoration",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "intergovernmental_organisation",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "International organisation identified by UN sources as leading the bamboo-based restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:iucn",
+    "name": "International Union for Conservation of Nature",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — The Restoration Initiative",
+        "claim_id": "claim:4p:impact:scale02:the-restoration-initiative:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists IUCN, FAO, UNEP and the Global Environment Facility as leading organisations of The Restoration Initiative.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/restoration-initiative",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:the-restoration-initiative",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      },
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Nature-Based Solutions for Drought",
+        "claim_id": "claim:4p:impact:scale02b:nature-based-solutions-for-drought:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates International Union for Conservation of Nature with implementation of Nature-Based Solutions for Drought.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/nature-based-solutions-drought",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:nature-based-solutions-for-drought",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      },
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Towards Ending Drought Emergencies (TWENDE)",
+        "claim_id": "claim:4p:impact:scale02b:twende-kenya-rangelands:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates International Union for Conservation of Nature with implementation of Towards Ending Drought Emergencies (TWENDE).",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/towards-ending-drought-emergencies-twende",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:twende-kenya-rangelands",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "conservation_union",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Global conservation union working with governments and local partners on restoration and nature-based drought resilience.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:iucn-insee-sri-lanka-partnership",
+    "name": "IUCN × INSEE Sri Lanka restoration partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Ecosystem Restoration and Management in Sri Lanka",
+        "claim_id": "claim:4p:impact:scale02b:sri-lanka-ecosystem-restoration-management:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates IUCN × INSEE Sri Lanka restoration partnership with implementation of Ecosystem Restoration and Management in Sri Lanka.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/ecosystem-restoration-and-management-sri-lanka",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:sri-lanka-ecosystem-restoration-management",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Partnership described by the Hub for field restoration, biodiversity assessment and monitoring across Sri Lankan coastal and forest ecosystems.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:iucn-imfn-restoration-partnership",
+    "name": "IUCN × International Model Forest Network restoration partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Model Forests Accelerating Forest Landscape Restoration",
+        "claim_id": "claim:4p:impact:scale02b:model-forests-flr:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates IUCN × International Model Forest Network restoration partnership with implementation of Model Forests Accelerating Forest Landscape Restoration.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/model-forests-accelerating-forest-landscape-restoration",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:model-forests-flr",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Partnership between IUCN and the International Model Forest Network advancing gender-responsive forest landscape restoration.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:korea-forest-service",
+    "name": "Korea Forest Service",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.forest.go.kr/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Revitalizing Korea’s Forests From Fire",
+        "claim_id": "claim:4p:impact:gold20:revitalizing-korea-forests-from-fire:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Korea Forest Service and Baekdudaegan National Arboretum as leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/revitalizing-koreas-forests-fire",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:revitalizing-korea-forests-from-fire",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "National forest authority listed by the UN among the leading organisations of the Uljin post-fire restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:living-indus-initiative",
+    "name": "Living Indus Initiative",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.livingindus.com/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Living Indus Initiative",
+        "claim_id": "claim:4p:impact:gold20:living-indus:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Living Indus Initiative, Pakistan’s climate ministry, FAO and the UN Resident Coordinator’s Office among leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/living-indus-initiative",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:living-indus",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_initiative",
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Government-led initiative bringing together public institutions, civil society and UN partners around the Indus Basin.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:marine-stewardship-council",
+    "name": "Marine Stewardship Council",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "marine-stewardship-council",
+      "summary": "Independent nonprofit standards organisation focused on sustainable fisheries certification and seafood supply-chain traceability.",
+      "website": "https://www.msc.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Marine Stewardship Council — MSC Improvement Program for Fisheries",
+        "claim_id": "claim:4p:impact:batch10:msc-improvement-program:actor",
+        "source_id": "source:4p:impact:batch10:msc-improvement-program",
+        "statement": "Marine Stewardship Council publicly describes or participates in the named MSC Improvement Program for Fisheries initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.msc.org/for-business/fisheries/fips/improvement-program-fisheries",
+        "limitations": [
+          "An Improvement Program participant is not necessarily MSC certified; outcomes depend on independently verified progress and fishery-specific evidence."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Marine Stewardship Council — MSC Improvement Program for Fisheries",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Marine Stewardship Council",
+        "source_record_id": "record:4p:impact:batch10:msc-improvement-program",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Independent nonprofit standards organisation focused on sustainable fisheries certification and seafood supply-chain traceability.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:miteco-spain",
+    "name": "Ministry for the Ecological Transition and Demographic Challenge of Spain",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.miteco.gob.es/en/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Ecosystems Restoration in Mar Menor",
+        "claim_id": "claim:4p:impact:gold20:ecosystems-restoration-mar-menor:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN Ecosystem Restoration Hub lists Spain’s Ministry for the Ecological Transition and Demographic Challenge as the implementing organisation.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/ecosystems-restoration-mar-menor",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:ecosystems-restoration-mar-menor",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Spain’s ecological-transition ministry, listed as the implementing organisation for the Mar Menor restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:sri-lanka-ministry-environment",
+    "name": "Ministry of Environment of Sri Lanka",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://env.gov.lk/web/index.php/en/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Mangrove Regeneration in Sri Lanka",
+        "claim_id": "claim:4p:impact:gold20:mangrove-regeneration-sri-lanka:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Ministry of Environment of Sri Lanka among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/mangrove-regeneration-sri-lanka",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:mangrove-regeneration-sri-lanka",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Sri Lanka’s environment ministry, listed by the UN as a leading organisation in the mangrove regeneration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:gambia-ministry-environment",
+    "name": "Ministry of Environment, Climate Change and Natural Resources of the Gambia",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Large-Scale Ecosystem-Based Adaptation in the Gambia",
+        "claim_id": "claim:4p:impact:scale02b:gambia-ecosystem-based-adaptation:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Ministry of Environment, Climate Change and Natural Resources of the Gambia with implementation of Large-Scale Ecosystem-Based Adaptation in the Gambia.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/ministry-environment-climate-change-and-natural-resources-large-scale-ecosystem-based",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:gambia-ecosystem-based-adaptation",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Government ministry identified by the Hub as implementer of the large-scale ecosystem-based adaptation initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:saudi-ministry-environment-water-agriculture",
+    "name": "Ministry of Environment, Water and Agriculture of Saudi Arabia",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — KSA National Greening Program",
+        "claim_id": "claim:4p:impact:scale02:ksa-national-greening-program:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists Saudi Arabia’s Ministry of Environment, Water and Agriculture as the leading organisation of the programme.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/ksa-national-greening-program",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:ksa-national-greening-program",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Saudi government ministry listed by the UN as the leading organisation of the KSA National Greening Program World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:indonesia-ministry-marine-affairs-fisheries",
+    "name": "Ministry of Marine Affairs and Fisheries of Indonesia",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Building with Nature in Indonesia",
+        "claim_id": "claim:4p:impact:scale02:building-with-nature-indonesia:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists Indonesia’s Ministry of Marine Affairs and Fisheries among the organisations coordinating the flagship.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/building-nature-indonesia",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:building-with-nature-indonesia",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Indonesian ministry listed by the UN among the coordinating organisations of the Building with Nature World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:china-ministry-natural-resources",
+    "name": "Ministry of Natural Resources of the People’s Republic of China",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Shan-Shui Initiative",
+        "claim_id": "claim:4p:impact:scale02:shan-shui-initiative:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile says the Shan-Shui flagship is coordinated by China’s Ministry of Natural Resources and Ministry of Finance.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/shan-shui-initiative",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:shan-shui-initiative",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Chinese ministry identified by the UN as one of the coordinating organisations of the Shan-Shui World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:national-mission-clean-ganga",
+    "name": "National Mission for Clean Ganga",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Namami Gange",
+        "claim_id": "claim:4p:impact:scale02:namami-gange:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile says Namami Gange is coordinated by the National Mission for Clean Ganga under the Government of India.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/namami-gange",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:namami-gange",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_programme",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Government of India mission identified by the UN as coordinator of the Namami Gange World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:northern-mozambique-restoration-network",
+    "name": "Northern Mozambique Channel restoration network",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "relationship_state": "public_record"
+    },
+    "evidence": [],
+    "actor_type": "restoration_network",
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "Multi-organisation regional restoration effort; leading organisations listed by the UN include WWF and other regional partners.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:oceana",
+    "name": "Oceana",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "oceana",
+      "summary": "International ocean conservation organisation conducting science-based policy campaigns to protect marine wildlife and habitats.",
+      "website": "https://oceana.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Oceana — California Bycatch Campaign",
+        "claim_id": "claim:4p:impact:batch10:california-bycatch-campaign:actor",
+        "source_id": "source:4p:impact:batch10:california-bycatch-campaign",
+        "statement": "Oceana publicly describes or participates in the named California Bycatch Campaign initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://usa.oceana.org/our-campaigns/responsible-fishing/california-bycatch/",
+        "limitations": [
+          "Legislative milestones and future phaseout dates are not proof of realised reductions in bycatch or population recovery."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Oceana — California Bycatch Campaign",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Oceana",
+        "source_record_id": "record:4p:impact:batch10:california-bycatch-campaign",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "International ocean conservation organisation conducting science-based policy campaigns to protect marine wildlife and habitats.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:pact-for-restoration-atlantic-forest",
+    "name": "Pact for the Restoration of the Atlantic Forest",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Trinational Atlantic Forest Pact",
+        "claim_id": "claim:4p:impact:scale02:trinational-atlantic-forest-pact:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile says the flagship is coordinated by the Pact for the Restoration of the Atlantic Forest and the Trinational Network for the restoration of the Atlantic Forest.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/trinational-atlantic-forest-pact",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:trinational-atlantic-forest-pact",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_network",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Brazilian restoration network named by the UN as one of the coordinating organisations of the Trinational Atlantic Forest World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:pan-african-great-green-wall-agency",
+    "name": "Pan-African Great Green Wall Agency",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Great Green Wall for Restoration & Peace",
+        "claim_id": "claim:4p:impact:scale02:great-green-wall:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Pan-African Great Green Wall Agency among the organisations coordinating this flagship.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/great-green-wall-restoration-peace",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:great-green-wall",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "intergovernmental_body",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Pan-African coordinating body listed by the UN among the organisations coordinating the Great Green Wall World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:parks-canada",
+    "name": "Parks Canada",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://parks.canada.ca/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Respectful Returns in Canada",
+        "claim_id": "claim:4p:impact:gold20:respectful-returns-canada:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists Parks Canada together with multiple First Nations and Indigenous organisations among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/respectful-returns-canada",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:respectful-returns-canada",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Federal agency working with Indigenous Peoples and local communities on the Respectful Returns salmon-habitat restoration initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:pollinator-partnership",
+    "name": "Pollinator Partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "pollinator-partnership",
+      "summary": "Nonprofit organisation specialising in pollinator conservation research, education and stewardship programmes.",
+      "website": "https://www.pollinator.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Pollinator Partnership — Bee Friendly Farming",
+        "claim_id": "claim:4p:impact:batch10:bee-friendly-farming:actor",
+        "source_id": "source:4p:impact:batch10:bee-friendly-farming",
+        "statement": "Pollinator Partnership publicly describes or participates in the named Bee Friendly Farming initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.pollinator.org/bff/",
+        "limitations": [
+          "Membership uptake is not evidence of independently measured pollinator population recovery at participating sites."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Pollinator Partnership — Bee Friendly Farming",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Pollinator Partnership",
+        "source_record_id": "record:4p:impact:batch10:bee-friendly-farming",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Nonprofit organisation specialising in pollinator conservation research, education and stewardship programmes.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:procoreef",
+    "name": "Procoreef",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Procoreef",
+        "claim_id": "claim:4p:impact:scale02b:procoreef:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Procoreef with implementation of Procoreef.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/procoreef",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:procoreef",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Colombian coral-restoration organisation working with fishing communities and visitors around Isla Fuerte.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:project-seagrass",
+    "name": "Project Seagrass",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Seagrass Ocean Rescue",
+        "claim_id": "claim:4p:impact:scale02b:seagrass-ocean-rescue:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Project Seagrass with implementation of Seagrass Ocean Rescue.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/seagrass-ocean-rescue",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:seagrass-ocean-rescue",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Marine conservation organisation delivering Seagrass Ocean Rescue and community-led seagrass restoration.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:rainforest-trust",
+    "name": "Rainforest Trust",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "rainforest-trust",
+      "summary": "International conservation nonprofit focused on securing threatened tropical habitats in partnership with local and Indigenous organisations.",
+      "website": "https://www.rainforesttrust.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Rainforest Trust — Acarai–Rupununi Corridor Protection Proposal",
+        "claim_id": "claim:4p:impact:batch10:acarai-rupununi-corridor-protection:actor",
+        "source_id": "source:4p:impact:batch10:acarai-rupununi-corridor-protection",
+        "statement": "Rainforest Trust publicly describes or participates in the named Acarai–Rupununi Corridor Protection Proposal initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.rainforesttrust.org/our-impact/rainforest-news/conservation-funders-pledge-initial-12-5-million-toward-permanent-protection-of-guyanas-forests-and-biodiversity/",
+        "limitations": [
+          "This is a conservation proposal and financial pledge, not a completed protected-area designation or demonstrated conservation outcome."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Rainforest Trust — Acarai–Rupununi Corridor Protection Proposal",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Rainforest Trust",
+        "source_record_id": "record:4p:impact:batch10:acarai-rupununi-corridor-protection",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "International conservation nonprofit focused on securing threatened tropical habitats in partnership with local and Indigenous organisations.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:rewild",
+    "name": "Re:wild",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "rewild",
+      "summary": "Conservation organisation working with local communities, Indigenous Peoples and conservation partners on species protection and recovery.",
+      "website": "https://www.rewild.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Re:wild — Phoenix Species Project",
+        "claim_id": "claim:4p:impact:batch10:phoenix-species-project:actor",
+        "source_id": "source:4p:impact:batch10:phoenix-species-project",
+        "statement": "Re:wild publicly describes or participates in the named Phoenix Species Project initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.rewild.org/phoenix-species-project",
+        "limitations": [
+          "The US$200 million is an announced commitment, not verified expenditure. Population recovery and project-level delivery are not independently verified by 4PLANET."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Re:wild — Phoenix Species Project",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Re:wild",
+        "source_record_id": "record:4p:impact:batch10:phoenix-species-project",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Conservation organisation working with local communities, Indigenous Peoples and conservation partners on species protection and recovery.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:reforestarg",
+    "name": "ReforestArg",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — ReforestArg",
+        "claim_id": "claim:4p:impact:scale02b:reforestarg:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates ReforestArg with implementation of ReforestArg.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/reforestarg",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:reforestarg",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Argentine non-profit restoring degraded and fire-affected native forests in Patagonia.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:regreening-africa-partnership",
+    "name": "Regreening Africa",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://regreeningafrica.org/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Regreening Africa",
+        "claim_id": "claim:4p:impact:gold20:regreening-africa:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists Regreening Africa and CIFOR-ICRAF among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/regreening-africa",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:regreening-africa",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "A multi-country research-in-development and restoration partnership co-led by CIFOR-ICRAF with multiple implementing partners.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:relisa-partnership",
+    "name": "ReLISA implementation partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Restoring Landscapes in South Africa (ReLISA)",
+        "claim_id": "claim:4p:impact:scale02b:relisa-south-africa:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates ReLISA implementation partnership with implementation of Restoring Landscapes in South Africa (ReLISA).",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/restoring-landscapes-south-africa-relisa",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:relisa-south-africa",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Multi-actor programme partnership working on landscape restoration, investment mobilisation and climate resilience in South Africa.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:rest-coast-consortium",
+    "name": "REST-COAST consortium",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Large Scale Coastal Restoration in Europe (REST-COAST)",
+        "claim_id": "claim:4p:impact:scale02b:rest-coast:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates REST-COAST consortium with implementation of Large Scale Coastal Restoration in Europe (REST-COAST).",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/large-scale-coastal-restoration-europe-rest-coast",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:rest-coast",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "research_consortium",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Consortium of more than 35 partners working on large-scale coastal restoration across Europe and West Asia.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:royal-botanic-garden-jordan",
+    "name": "Royal Botanic Garden of Jordan",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Collaborative Rangelands Restoration in Jordan",
+        "claim_id": "claim:4p:impact:scale02:collaborative-rangelands-restoration-jordan:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Royal Botanic Garden, Jordan’s Ministry of Environment and Ministry of Agriculture as leading organisations.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/collaborative-rangelands-restoration-jordan",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:collaborative-rangelands-restoration-jordan",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "botanic_garden",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Jordanian botanic garden listed by the UN among the leading organisations of the Collaborative Rangelands Restoration World Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:semarnat-mexico",
+    "name": "Secretariat of Environment and Natural Resources of Mexico (SEMARNAT)",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.gob.mx/semarnat",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Comprehensive Island Restoration in Mexico",
+        "claim_id": "claim:4p:impact:gold20:comprehensive-island-restoration-mexico:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists SEMARNAT alongside CONANP, CONABIO, CONAFOR, SEMAR and GECI among the leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/comprehensive-island-restoration-mexico",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:comprehensive-island-restoration-mexico",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "government_agency",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Mexico’s environment ministry, listed among the leading organisations of the comprehensive island restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:sids-coalition-for-nature",
+    "name": "Small Island Developing States Coalition for Nature",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Small Island Developing States Ecosystem Restoration Flagship",
+        "claim_id": "claim:4p:impact:scale02:small-island-developing-states-restoration:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists the Small Island Developing States Coalition for Nature among the governments and UN bodies coordinating this flagship.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/small-island-developing-states",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:small-island-developing-states-restoration",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_coalition",
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Coalition listed by the UN among the coordinators of the Small Island Developing States Ecosystem Restoration Flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:soil-conservation-service-iceland",
+    "name": "Soil Conservation Service of Iceland",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Snæfellsnes Peatland Restoration",
+        "claim_id": "claim:4p:impact:scale02b:snaefellsnes-peatland-restoration:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates Soil Conservation Service of Iceland with implementation of Snæfellsnes Peatland Restoration.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/soil-conservation-service-iceland-restoration-peatland-snaefellsnes-peninsula",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:snaefellsnes-peatland-restoration",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "public_agency",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Icelandic land-restoration service described by the Hub as implementing peatland restoration on the Snæfellsnes peninsula.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:nature-conservancy-australia",
+    "name": "The Nature Conservancy Australia",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.natureaustralia.org.au/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Shellfish Reef Building Program in Australia",
+        "claim_id": "claim:4p:impact:gold20:shellfish-reef-building-australia:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists The Nature Conservancy Australia as the leading organisation.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/shellfish-reef-building-program-australia",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:shellfish-reef-building-australia",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Conservation organisation listed by the UN as the leading organisation for the Australian shellfish-reef restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:the-ocean-cleanup",
+    "name": "The Ocean Cleanup",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://theoceancleanup.com/",
+      "publication": "related",
+      "relationship_state": "public_record"
+    },
+    "evidence": [],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Nonprofit organisation developing and operating technology for river interception and ocean plastic cleanup.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:trees-for-the-future",
+    "name": "Trees for the Future",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://trees.org/",
+      "publication": "related",
+      "relationship_state": "public_record"
+    },
+    "evidence": [],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "Nonprofit organisation leading the African Farmers Transforming Food Systems flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:trepa-implementation-partnership",
+    "name": "TREPA implementation partnership",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Transforming Eastern Province Through Adaptation (TREPA)",
+        "claim_id": "claim:4p:impact:scale02b:trepa-rwanda:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates TREPA implementation partnership with implementation of Transforming Eastern Province Through Adaptation (TREPA).",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/transforming-eastern-province-through-adaptation-trepa",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:trepa-rwanda",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "restoration_partnership",
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Multi-actor implementation partnership described by the Hub, including IUCN, Cordaid, Rwanda Forestry Authority, ICRAF and World Vision.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:unep",
+    "name": "United Nations Environment Programme",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Multi-country Mountain Flagship",
+        "claim_id": "claim:4p:impact:scale02:multi-country-mountain-flagship:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile says the flagship is coordinated by UNEP, the Carpathian Convention and the Mountain Partnership.",
+        "checked_at": "2026-10-24",
+        "source_url": "https://www.decadeonrestoration.org/multi-country-mountain-flagship",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration and other programme metrics are source-reported and are not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-24T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-24T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02:multi-country-mountain-flagship",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      },
+      {
+        "citation": "UN Decade on Ecosystem Restoration — Ecosystem Restoration Hub — Dinder National Park Resilience Initiative",
+        "claim_id": "claim:4p:impact:scale02b:dinder-national-park-resilience:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The Hub profile associates United Nations Environment Programme with implementation of Dinder National Park Resilience Initiative.",
+        "checked_at": "2026-10-25",
+        "source_url": "https://hub.decadeonrestoration.org/initiatives/enhancing-food-security-and-resilience-rural-communities-and-around-dinder-national",
+        "limitations": [
+          "Initiative information and metrics are self-reported on the Ecosystem Restoration Hub.",
+          "Hub publication does not mean UNEP monitors the implementer or independently verifies ecological outcomes.",
+          "4PLANET treats reported scale and impact statements as source-reported unless independent evidence is separately linked."
+        ],
+        "reviewed_at": "2026-10-25T00:00:00+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-25T00:00:00+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:scale02b:dinder-national-park-resilience",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "un_agency",
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "United Nations environment agency involved in the EU-UNEP Dinder National Park resilience and restoration initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:world-food-programme",
+    "name": "United Nations World Food Programme",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.wfp.org/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Sahel Integrated Resilience Initiative",
+        "claim_id": "claim:4p:impact:gold20:sahel-integrated-resilience:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN record identifies the United Nations World Food Programme as leading the initiative.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/un-recognizes-restoration-initiative-feeding-4-million-across-sahel",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:sahel-integrated-resilience",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "un_agency",
+    "updated_at": "2026-10-19T19:41:59.989944+00:00",
+    "description": "UN agency identified by the UN Decade as leading the Sahel Integrated Resilience Initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:wateraid",
+    "name": "WaterAid",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "wateraid",
+      "summary": "International nonprofit organisation working with communities, governments and local partners on clean water, sanitation and hygiene.",
+      "website": "https://www.wateraid.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "WaterAid — The Beacon Project — Lahan, Nepal",
+        "claim_id": "claim:4p:impact:batch10:wateraid-beacon-project-nepal:actor",
+        "source_id": "source:4p:impact:batch10:wateraid-beacon-project-nepal",
+        "statement": "WaterAid publicly describes or participates in the named The Beacon Project — Lahan, Nepal initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.wateraid.org/washmatters/projects/beacon-project",
+        "limitations": [
+          "Universal 2030 access is an ambition, not a verified achieved outcome. Project scope, budgets and service quality need current project-level verification."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "WaterAid — The Beacon Project — Lahan, Nepal",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "WaterAid",
+        "source_record_id": "record:4p:impact:batch10:wateraid-beacon-project-nepal",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "International nonprofit organisation working with communities, governments and local partners on clean water, sanitation and hygiene.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:wetlands-international",
+    "name": "Wetlands International",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "wetlands-international",
+      "summary": "International nonprofit organisation working to conserve and restore wetlands for biodiversity, water and climate resilience.",
+      "website": "https://www.wetlands.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "Wetlands International — Mongolia Peatland Restoration Programme",
+        "claim_id": "claim:4p:impact:batch10:mongolia-peatland-restoration:actor",
+        "source_id": "source:4p:impact:batch10:mongolia-peatland-restoration",
+        "statement": "Wetlands International publicly describes or participates in the named Mongolia Peatland Restoration Programme initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.wetlands.org/project-update-peatland-restoration-in-mongolia/",
+        "limitations": [
+          "Nearly 20,000 hectares is a programme target, not completed restoration or independently measured long-term impact."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "Wetlands International — Mongolia Peatland Restoration Programme",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "Wetlands International",
+        "source_record_id": "record:4p:impact:batch10:mongolia-peatland-restoration",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "International nonprofit organisation working to conserve and restore wetlands for biodiversity, water and climate resilience.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:world-resources-institute",
+    "name": "World Resources Institute",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "slug": "world-resources-institute",
+      "summary": "Global research nonprofit working on food systems, natural resources, climate and evidence-driven policy solutions.",
+      "website": "https://www.wri.org",
+      "publication": "public",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-30",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "World Resources Institute — Champions 12.3 — Food Loss and Waste",
+        "claim_id": "claim:4p:impact:batch10:champions-12-3-food-waste:actor",
+        "source_id": "source:4p:impact:batch10:champions-12-3-food-waste",
+        "statement": "World Resources Institute publicly describes or participates in the named Champions 12.3 — Food Loss and Waste initiative.",
+        "checked_at": "2026-10-30",
+        "source_url": "https://www.wri.org/initiatives/champions-123",
+        "limitations": [
+          "A global 2030 reduction target is not the same as measured project reductions; individual members' performance must be evaluated separately."
+        ],
+        "reviewed_at": "2026-10-30T18:32:42.857108+00:00",
+        "source_name": "World Resources Institute — Champions 12.3 — Food Loss and Waste",
+        "source_type": "official_project_page",
+        "retrieved_at": "2026-10-30T18:32:42.857108+00:00",
+        "evidence_role": "official_primary_source",
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_only",
+        "source_event_at": null,
+        "source_authority": "World Resources Institute",
+        "source_record_id": "record:4p:impact:batch10:champions-12-3-food-waste",
+        "evidence_strength": "source_reported",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Global research nonprofit working on food systems, natural resources, climate and evidence-driven policy solutions.",
+    "solution_type": null
+  },
+  {
+    "id": "actor:4p:wwf-nepal",
+    "name": "WWF Nepal",
+    "type": "actor",
+    "issues": null,
+    "profile": {
+      "website": "https://www.wwfnepal.org/",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "relationship_state": "public_record"
+    },
+    "evidence": [
+      {
+        "citation": "UN Decade on Ecosystem Restoration / Ecosystem Restoration Hub — Terai Arc Landscape",
+        "claim_id": "claim:4p:impact:gold20:terai-arc-landscape:actor",
+        "source_id": "source:4p:impact:un-decade",
+        "statement": "The UN profile lists WWF Nepal, Nepal’s Department of National Parks and Wildlife Conservation, and Department of Forests and Soil Conservation as leading organisations.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://www.decadeonrestoration.org/terai-arc-landscape",
+        "limitations": [
+          "UN/implementer-reported project information; not independently measured by 4PLANET.",
+          "World Restoration Flagship status is external review, not 4PLANET verification.",
+          "Area under restoration is a source-reported programme metric and is not silently converted into ecological outcome."
+        ],
+        "reviewed_at": "2026-10-19T19:14:42.555654+00:00",
+        "source_name": "UN Decade on Ecosystem Restoration — World Restoration Flagships",
+        "source_type": "public_website",
+        "retrieved_at": "2026-10-19T19:14:42.555654+00:00",
+        "evidence_role": null,
+        "evidence_type": "source_record",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only",
+        "source_event_at": null,
+        "source_authority": "UN Decade on Ecosystem Restoration / UNEP / FAO",
+        "source_record_id": "record:4p:impact:gold20:terai-arc-landscape",
+        "evidence_strength": "strong",
+        "interpretation_status": "source_record"
+      }
+    ],
+    "actor_type": "nonprofit",
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "WWF Nepal is listed by the UN among the leading organisations in the Terai Arc Landscape initiative.",
+    "solution_type": null
+  }
+]
