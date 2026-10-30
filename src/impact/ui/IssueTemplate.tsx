@@ -33,6 +33,9 @@ export function IssueTemplate({ issue, idx }: { issue: ImpactIssue; idx: ImpactI
   if (solutions.length) items.push(["issue-methods", "Methods"]);
   if (atlasView) items.push(["issue-place", "Places"]);
   items.push(["issue-unknown", "Known & unknown"], ["issue-act", "Take part"], ["issue-sources", "Sources"]);
+  const placeSummary = places.length > 5 ? `${places.slice(0, 5).map((place) => place.name).join(" · ")} +${places.length - 5} more` : places.map((place) => place.name).join(" · ");
+  let sectionNumber = 0;
+  const next = () => String(++sectionNumber).padStart(2, "0");
 
   return (
     <article className="iu iu-profile iu-issue">
@@ -44,7 +47,11 @@ export function IssueTemplate({ issue, idx }: { issue: ImpactIssue; idx: ImpactI
           <Kicker inverse mark={issue.domain ? markOf(issue.domain) : "#FFFFFF"}>{issue.domain ? DOMAIN_NAME[issue.domain] : "Issue"}</Kicker>
           <h1>{issue.name}</h1>
           {issue.description && <p className="iu-hero__lead">{issue.description}</p>}
-          <p className="iu-hero__count">{projects.length} published project{projects.length === 1 ? "" : "s"} · {actors.length} organisation{actors.length === 1 ? "" : "s"} · {solutions.length} method{solutions.length === 1 ? "" : "s"}</p>
+          <p className="iu-hero__count">
+            {projects.length > 0
+              ? <>{projects.length} published project{projects.length === 1 ? "" : "s"} · {actors.length} organisation{actors.length === 1 ? "" : "s"} · {solutions.length} method{solutions.length === 1 ? "" : "s"}</>
+              : <>{issue.evidence.length} source-backed claim{issue.evidence.length === 1 ? "" : "s"} · no published project linked yet</>}
+          </p>
         </div>
       </header>
 
@@ -52,7 +59,7 @@ export function IssueTemplate({ issue, idx }: { issue: ImpactIssue; idx: ImpactI
 
       <div className="iu-wrap iu-stack">
         <section className="iu-block iu-block--wide" id="issue-why" aria-labelledby="issue-why-h">
-          <SectionHead index="01" title="The problem" id="issue-why-h" />
+          <SectionHead index={next()} title="The problem" id="issue-why-h" />
           <div className="iu-prose iu-prose--wide">
             <p>{issue.whyItMatters || issue.description || "An issue summary has not been published yet."}</p>
           </div>
@@ -64,18 +71,18 @@ export function IssueTemplate({ issue, idx }: { issue: ImpactIssue; idx: ImpactI
         </section>
 
         <section className="iu-block iu-block--wide" id="issue-projects" aria-labelledby="issue-projects-h">
-          <SectionHead index="02" title="Projects working on it" id="issue-projects-h" lead={projects.length ? "Several credible projects per problem — not one winner." : "No project on this issue has passed the publication gate yet. That is not evidence that none exists."} />
+          <SectionHead index={next()} title="Projects working on it" id="issue-projects-h" lead={projects.length ? "Several credible projects per problem — not one winner." : "No project on this issue has passed the publication gate yet. That is not evidence that none exists."} />
           {projects.length > 0 && <ProjectGrid projects={projects} idx={idx} surface="issue" eagerFirst={2} label={`Projects addressing ${issue.name}`} />}
         </section>
 
         <section className="iu-block iu-block--wide" id="issue-actors" aria-labelledby="issue-actors-h">
-          <SectionHead index="03" title="Organisations active" id="issue-actors-h" />
+          <SectionHead index={next()} title="Organisations active" id="issue-actors-h" />
           {actors.length ? <ActorRows actors={actors.map((actor) => ({ actor }))} idx={idx} surface="issue" /> : <p className="iu-note">No organisation is linked yet.</p>}
         </section>
 
         {solutions.length > 0 && (
           <section className="iu-block iu-block--wide" id="issue-methods" aria-labelledby="issue-methods-h">
-            <SectionHead index="04" title="Methods in use" id="issue-methods-h" lead="A method listed here is in use by a published project or linked to this issue in NATUREBRAIN. Listing is not an assessment of effectiveness." />
+            <SectionHead index={next()} title="Methods in use" id="issue-methods-h" lead="A method listed here is in use by a published project or linked to this issue in NATUREBRAIN. Listing is not an assessment of effectiveness." />
             <ul className="iu-rows iu-rows--two">
               {solutions.map((solution) => (
                 <RuledRow key={solution.id} to={impactRoutes.solution(solution.slug)} title={solution.name} line={solution.description || undefined} meta={solution.maturity ? humanise(solution.maturity) : humanise(solution.solutionType)} onOpen={() => trackEvent("impact_solution_open", { solution_id: solution.id, surface: "issue" })} />
@@ -86,18 +93,18 @@ export function IssueTemplate({ issue, idx }: { issue: ImpactIssue; idx: ImpactI
 
         {atlasView && (
           <section className="iu-block iu-block--wide" id="issue-place" aria-labelledby="issue-place-h">
-            <SectionHead index="05" title="Where the work is" id="issue-place-h" lead={places.map((place) => place.name).join(" · ")} />
+            <SectionHead index={next()} title="Where the work is" id="issue-place-h" lead={placeSummary} />
             <div className="iu-atlas" onClickCapture={(event) => { if ((event.target as HTMLElement).closest("a")) trackEvent("impact_atlas_open", { issue_id: issue.id }); }}><AtlasEmbed view={atlasView} /></div>
           </section>
         )}
 
         <section className="iu-block iu-block--wide" id="issue-unknown" aria-labelledby="issue-unknown-h">
-          <SectionHead index="06" title="Known and not established" id="issue-unknown-h" lead="What the published record cannot yet tell you. Unknown is not the same as false." />
+          <SectionHead index={next()} title="Known and not established" id="issue-unknown-h" lead="What the published record cannot yet tell you. Unknown is not the same as false." />
           {unknowns.length ? <ul className="iu-plain iu-plain--limits">{unknowns.map((line) => <li key={line}>{line}</li>)}</ul> : <p className="iu-note">No limitations are recorded yet.</p>}
         </section>
 
         <section className="iu-block iu-block--wide" id="issue-act" aria-labelledby="issue-act-h">
-          <SectionHead index="07" title="What you can do next" id="issue-act-h" />
+          <SectionHead index={next()} title="What you can do next" id="issue-act-h" />
           {actions.length ? (
             <ul className="iu-rows iu-rows--two">
               {actions.map(({ action, project }) => (
@@ -122,7 +129,7 @@ export function IssueTemplate({ issue, idx }: { issue: ImpactIssue; idx: ImpactI
         </section>
 
         <section className="iu-block iu-block--wide" id="issue-sources" aria-labelledby="issue-sources-h">
-          <SectionHead index="08" title="Sources" id="issue-sources-h" />
+          <SectionHead index={next()} title="Sources" id="issue-sources-h" />
           <SourceTable claims={sources} subjectId={issue.id} />
         </section>
         <Provenance idx={idx} />
