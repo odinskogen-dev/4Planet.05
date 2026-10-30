@@ -96,6 +96,92 @@ test("4SPECIES reviews all 57 sitemap profiles with bounded concurrency and stab
   assert.deepEqual(emittedSlugs, slugs);
 });
 
+test("4SPECIES sitemap fails closed for source outages without misclassifying editorial rejection", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const slugs = [...CURRENT_PUBLIC_SPECIES_SLUGS];
+  const sitemapXml = (paths = slugs) =>
+    '<?xml version="1.0" encoding="UTF-8"?><urlset>' +
+    paths.map((slug) => `<url><loc>https://species-v53.4planet-05.pages.dev/${slug}</loc></url>`).join("") +
+    "</urlset>";
+  const reviewedPage = (slug) => ({
+    schema: "4PLANET_SPECIES_PAGE_01",
+    slug,
+    identity: { commonName: slug, scientificName: "Reviewed species" },
+    hook: { source: { label: "Authoritative citation", url: `https://example.org/${slug}` } },
+    provenance: { review: "REVIEWED" },
+  });
+
+  for (const method of ["GET", "HEAD"]) {
+    globalThis.fetch = async (input, init = {}) => {
+      const url = String(input);
+      if (url.endsWith("/species-sitemap.xml")) {
+        assert.equal(init.method, "GET", `${method} health check must read the upstream sitemap`);
+        return new Response(sitemapXml(), {
+          status: 200,
+          headers: { "content-type": "application/xml" },
+        });
+      }
+      if (url.includes("/species-data/v1/")) return new Response("Unavailable", { status: 503 });
+      return new Response("Not found", { status: 404 });
+    };
+    const response = await worker.fetch(new Request("https://4species.com/sitemap.xml", { method }));
+    assert.equal(response.status, 503, `${method} all-profile outage`);
+    assert.match(response.headers.get("cache-control") || "", /no-store/);
+    if (method === "HEAD") assert.equal(await response.text(), "");
+  }
+
+  const failedSlug = slugs[17];
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith("/species-sitemap.xml")) {
+      return new Response(sitemapXml(), { status: 200, headers: { "content-type": "application/xml" } });
+    }
+    const profile = url.match(/\/species-data\/v1\/([^/]+)\.json$/);
+    if (profile) {
+      const slug = decodeURIComponent(profile[1]);
+      if (slug === failedSlug) return new Response("Unavailable", { status: 503 });
+      return Response.json(reviewedPage(slug));
+    }
+    return new Response("Not found", { status: 404 });
+  };
+  const partial = await worker.fetch(new Request("https://4species.com/sitemap.xml"));
+  assert.equal(partial.status, 503, "one unavailable public profile must not become cached partial loss");
+  assert.match(partial.headers.get("cache-control") || "", /no-store/);
+
+  globalThis.fetch = async (_input, init = {}) => {
+    assert.ok(init.signal, "upstream sitemap request must carry an application timeout");
+    throw new DOMException("Upstream timeout", "TimeoutError");
+  };
+  const stalled = await worker.fetch(new Request("https://4species.com/sitemap.xml"));
+  assert.equal(stalled.status, 503);
+  assert.match(stalled.headers.get("cache-control") || "", /no-store/);
+
+  globalThis.fetch = async (input) => {
+    const url = String(input);
+    if (url.endsWith("/species-sitemap.xml")) {
+      return new Response(sitemapXml([...slugs, "editorial-reject"]), {
+        status: 200,
+        headers: { "content-type": "application/xml" },
+      });
+    }
+    const profile = url.match(/\/species-data\/v1\/([^/]+)\.json$/);
+    if (profile) {
+      const slug = decodeURIComponent(profile[1]);
+      if (slug === "editorial-reject") {
+        return Response.json({ ...reviewedPage(slug), identity: { commonName: slug } });
+      }
+      return Response.json(reviewedPage(slug));
+    }
+    return new Response("Not found", { status: 404 });
+  };
+  const editorial = await worker.fetch(new Request("https://4species.com/sitemap.xml"));
+  assert.equal(editorial.status, 200);
+  const editorialXml = await editorial.text();
+  assert.doesNotMatch(editorialXml, /editorial-reject/);
+  assert.equal([...editorialXml.matchAll(/<loc>https:\/\/4species\.com\/([^<]+)<\/loc>/g)].length, slugs.length);
+});
+
 
 test("4SPECIES reinforces one clean canonical host on HTML and HEAD", async (t) => {
   const originalFetch = globalThis.fetch;

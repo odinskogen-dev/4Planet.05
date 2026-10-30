@@ -8,6 +8,7 @@ const ORIGIN = "https://4planet-05.pages.dev";
 const SPECIES_V53_ORIGIN = "https://72494005.4planet-05.pages.dev";
 const PROFILE_DATA_PREFIX = "/species-data/v1/";
 const PROFILE_REVIEW_TIMEOUT_MS = 3000;
+const SITEMAP_SOURCE_TIMEOUT_MS = 3000;
 const SITEMAP_REVIEW_CONCURRENCY = 6;
 const PHOTO_REVIEW_TIMEOUT_MS = 5000;
 const MAX_APPROVED_PHOTO_BYTES = 15 * 1024 * 1024;
@@ -131,42 +132,52 @@ export function permitsSpeciesIndexing(reviewState) {
   return reviewState === NON_PROFILE_REVIEW_STATE || reviewState === "REVIEWED" || reviewState === "DRAFT";
 }
 
-export async function profileReviewState(pathname, fetchImpl = fetch) {
+async function profileReviewResult(pathname, fetchImpl = fetch) {
   // Index authority belongs only to an exact canonical pathname. Never
   // collapse redundant slashes, remove dot segments, strip query/fragment
   // data or decode an encoded variant before making the review decision:
   // doing so can turn a malformed or alternate route into an allowlisted one.
   if (typeof pathname !== "string" || !pathname.startsWith("/") ||
-      pathname.includes("?") || pathname.includes("#")) return "UNREVIEWED";
-  if (PUBLIC_NON_PROFILE_PATHS.has(pathname)) return NON_PROFILE_REVIEW_STATE;
-  if (!/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return "UNREVIEWED";
+      pathname.includes("?") || pathname.includes("#")) return { state: "UNREVIEWED", sourceAvailable: true };
+  if (PUBLIC_NON_PROFILE_PATHS.has(pathname)) return { state: NON_PROFILE_REVIEW_STATE, sourceAvailable: true };
+  if (!/^\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return { state: "UNREVIEWED", sourceAvailable: true };
   const slug = pathname.slice(1);
+  const existingPublicProfile = CURRENT_PUBLIC_SPECIES_SLUGS.has(slug);
   try {
     const response = await fetchImpl(`${SPECIES_V53_ORIGIN}${PROFILE_DATA_PREFIX}${encodeURIComponent(slug)}.json`, {
       headers: { accept: "application/json" },
       signal: AbortSignal.timeout(PROFILE_REVIEW_TIMEOUT_MS),
     });
-    if (!response.ok) return "UNREVIEWED";
+    if (!response.ok) return { state: "UNREVIEWED", sourceAvailable: !existingPublicProfile };
     const page = await response.json();
     // A search-visible species must have real canonical profile data and
     // source-linked claims in Claude's original 4PLANET_SPECIES_PAGE_01.
     if (page?.schema !== "4PLANET_SPECIES_PAGE_01" || page?.slug !== slug ||
-        !page?.identity?.scientificName || !page?.identity?.commonName) return "UNREVIEWED";
+        !page?.identity?.scientificName || !page?.identity?.commonName) {
+      return { state: "UNREVIEWED", sourceAvailable: !existingPublicProfile };
+    }
     const containsSource = (value) => {
       if (!value || typeof value !== "object") return false;
       if (value.source?.url?.startsWith?.("https://")) return true;
       return Object.values(value).some(containsSource);
     };
-    if (!containsSource(page)) return "UNREVIEWED";
-    if (!CURRENT_PUBLIC_SPECIES_SLUGS.has(slug) &&
+    if (!containsSource(page)) return { state: "UNREVIEWED", sourceAvailable: !existingPublicProfile };
+    if (!existingPublicProfile &&
         (!FOUNDER_AUTHORISED_NEW_PROFILE_BATCH.has(slug) ||
           !await verifyApprovedNewSpeciesPhoto(slug, page, fetchImpl))) {
-      return "UNREVIEWED";
+      return { state: "UNREVIEWED", sourceAvailable: true };
     }
-    return page.provenance?.review === "REVIEWED" ? "REVIEWED" : "DRAFT";
+    return {
+      state: page.provenance?.review === "REVIEWED" ? "REVIEWED" : "DRAFT",
+      sourceAvailable: true,
+    };
   } catch {
-    return "UNREVIEWED";
+    return { state: "UNREVIEWED", sourceAvailable: !existingPublicProfile };
   }
+}
+
+export async function profileReviewState(pathname, fetchImpl = fetch) {
+  return (await profileReviewResult(pathname, fetchImpl)).state;
 }
 
 async function mapWithConcurrency(items, limit, mapper) {
@@ -183,34 +194,58 @@ async function mapWithConcurrency(items, limit, mapper) {
   return results;
 }
 
-async function reviewedSpeciesSitemap(request) {
-  const upstream = await fetch(`${SPECIES_V53_ORIGIN}/species-sitemap.xml`, {
-    method: request.method,
-    headers: { accept: "application/xml,text/xml" },
+function unavailableSpeciesSitemap(method) {
+  return new Response(method === "HEAD" ? null : "Species sitemap source temporarily unavailable", {
+    status: 503,
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+      "cache-control": "no-store, max-age=0, must-revalidate",
+      "x-robots-tag": "noindex, nofollow, noarchive",
+      "x-4species-index-gate": "source-unavailable",
+    },
   });
-  if (!upstream.ok || request.method === "HEAD") {
-    return new Response(null, { status: upstream.status, headers: upstream.headers });
+}
+
+async function reviewedSpeciesSitemap(request) {
+  let xml;
+  try {
+    const upstream = await fetch(`${SPECIES_V53_ORIGIN}/species-sitemap.xml`, {
+      method: "GET",
+      headers: { accept: "application/xml,text/xml" },
+      signal: AbortSignal.timeout(SITEMAP_SOURCE_TIMEOUT_MS),
+    });
+    if (!upstream.ok) return unavailableSpeciesSitemap(request.method);
+    xml = await upstream.text();
+  } catch {
+    return unavailableSpeciesSitemap(request.method);
   }
-  const xml = await upstream.text();
   const blocks = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
   const reviewedBlocks = await mapWithConcurrency(blocks, SITEMAP_REVIEW_CONCURRENCY, async (block) => {
     const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];
-    if (!loc) return null;
+    if (!loc) return { block: null, sourceAvailable: true };
     let slugPath;
     try {
       const pathname = new URL(loc).pathname.replace(/\/+$/, "") || "/";
       slugPath = pathname.startsWith("/species/") ? pathname.replace(/^\/species\//, "/") : pathname;
-    } catch { return null; }
-    if (!/^\/[a-z0-9-]*$/.test(slugPath)) return null;
-    const review = await profileReviewState(slugPath);
-    if (!permitsSpeciesIndexing(review)) return null;
+    } catch { return { block: null, sourceAvailable: true }; }
+    if (!/^\/[a-z0-9-]*$/.test(slugPath)) return { block: null, sourceAvailable: true };
+    const reviewResult = await profileReviewResult(slugPath);
+    if (!reviewResult.sourceAvailable) return { block: null, sourceAvailable: false };
+    const review = reviewResult.state;
+    if (!permitsSpeciesIndexing(review)) return { block: null, sourceAvailable: true };
     // Avoid publishing any v53 preview-domain URL or obsolete /species/ aliases.
     const canonical = "https://4species.com" + slugPath;
-    return block.replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>");
+    return {
+      block: block.replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>"),
+      sourceAvailable: true,
+    };
   });
-  const kept = reviewedBlocks.filter(Boolean);
+  if (reviewedBlocks.some((result) => !result.sourceAvailable)) {
+    return unavailableSpeciesSitemap(request.method);
+  }
+  const kept = reviewedBlocks.map((result) => result.block).filter(Boolean);
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
-  return new Response(body, {
+  return new Response(request.method === "HEAD" ? null : body, {
     headers: {
       "content-type": "application/xml; charset=utf-8",
       "cache-control": "public, max-age=300, must-revalidate",
