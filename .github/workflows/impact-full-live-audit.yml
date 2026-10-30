@@ -1,0 +1,50 @@
+name: IMPACT — Every LIVE URL and Premium Profile QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/impact-live-full-audit.mjs
+      - .github/workflows/impact-full-live-audit.yml
+  workflow_run:
+    workflows:
+      - IMPACT — current-main convergence LIVE 2026-10-25
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: impact-exhaustive-live-audit
+  cancel-in-progress: true
+jobs:
+  all-profiles:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CF_PAGES: "1"
+      IMPACT_SNAPSHOT_LIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Record exact current main authority
+        run: echo "AUDIT_EXPECTED_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Regenerate public NATUREBRAIN projection and zero-loss build
+        run: |
+          npm ci
+          npm run build
+          node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
+      - name: Install Chromium and audit every live page and hydrated project and actor on mobile
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/impact-live-full-audit.mjs --browser
+      - name: Upload per-URL JSON audit log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: impact-full-live-audit-report
+          path: artifacts/impact-full-live-audit.json
+          retention-days: 30
+          if-no-files-found: warn
