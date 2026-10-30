@@ -36,6 +36,18 @@ jobs:
           npm ci
           npm run build
           node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
+      - name: Audit search metadata and entity-specific summaries in the generated production pages
+        run: |
+          node scripts/impact-deep-seo-audit.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const report=JSON.parse(fs.readFileSync('artifacts/impact-deep-seo-audit.json','utf8'));
+          if(report.records.length!==229||report.technical.length) throw Error('IMPACT SEO completeness or technical failure');
+          for(const code of ['relative_og_image','relative_twitter_image','long_description','duplicate_description']){
+            if(report.summary.byCategory[code])throw Error('IMPACT SEO regression '+code);
+          }
+          console.log('IMPACT_DEEP_MAIN_SEO_OK',report.records.length,'canonical pages');
+          NODE
       - name: Install Chromium and audit every live page and hydrated project and actor on mobile
         run: |
           npx playwright install --with-deps chromium
@@ -45,6 +57,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: impact-full-live-audit-report
-          path: artifacts/impact-full-live-audit.json
+          path: |
+            artifacts/impact-full-live-audit.json
+            artifacts/impact-deep-seo-audit.json
+            artifacts/impact-deep-seo-audit.csv
           retention-days: 30
           if-no-files-found: warn
