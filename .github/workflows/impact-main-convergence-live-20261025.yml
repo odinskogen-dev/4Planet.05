@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: impact-main-convergence-live
+  cancel-in-progress: true
+
 jobs:
   prove-and-release:
     runs-on: ubuntu-latest

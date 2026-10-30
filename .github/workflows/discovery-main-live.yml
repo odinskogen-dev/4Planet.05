@@ -46,7 +46,7 @@ permissions:
 
 concurrency:
   group: 4planet-discovery-main-live
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -54,6 +54,7 @@ jobs:
     timeout-minutes: 20
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_PAGES: "1"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,6 +108,13 @@ jobs:
           grep -Fq '<loc>https://4planet.org/wildfires</loc>' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/place/' dist/sitemap.xml
           ! grep -Fq '<loc>https://4planet.org/species/' dist/sitemap.xml
+          test -f dist/impact/project/agave-restoration-initiative/index.html
+          test -f dist/impact/actors/bat-conservation-international/index.html
+          grep -Fq '<loc>https://4planet.org/impact/project/agave-restoration-initiative</loc>' dist/sitemap.xml
+          grep -Fq '<loc>https://4planet.org/impact/actors/bat-conservation-international</loc>' dist/sitemap.xml
+          impact_routes="$(find dist/impact -type f -name index.html | wc -l | tr -d ' ')"
+          test "$impact_routes" -ge 200
+          echo "IMPACT_DISCOVERY_EXPORTED_ROUTES=$impact_routes"
           echo 'MAX_EXPOSURE_DISCOVERY_BUILD_PASS'
       - name: Deploy exact current main to existing Pages project
         id: deploy
