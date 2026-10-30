@@ -38,6 +38,7 @@ function fixture() {
     priorLiveSha: mainSha,
     rollbackRef: `main@${mainSha}`,
     founderDecisionRef: 'fixture decision',
+    founderDecisionTestKingSha: testedSha,
     evidenceRef: 'fixture evidence',
     releaseControlCommit: true,
   };
@@ -80,4 +81,20 @@ test('rejects Founder authority when deployed LIVE rollback is unverified', () =
   const result = run(cwd);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /LIVE rollback state is UNVERIFIED/);
+});
+
+
+test('rejects Founder authority that is not bound to an exact tested artifact', () => {
+  const { cwd, manifest } = fixture();
+  delete manifest.founderDecisionTestKingSha;
+  fs.writeFileSync(path.join(cwd, 'docs/control/LIVE_PROMOTION_MANIFEST.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  const missing = run(cwd);
+  assert.notEqual(missing.status, 0);
+  assert.match(missing.stderr, /founderDecisionTestKingSha invalid/);
+
+  manifest.founderDecisionTestKingSha = 'f'.repeat(40);
+  fs.writeFileSync(path.join(cwd, 'docs/control/LIVE_PROMOTION_MANIFEST.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  const mismatched = run(cwd);
+  assert.notEqual(mismatched.status, 0);
+  assert.match(mismatched.stderr, /Founder decision artifact mismatch/);
 });
