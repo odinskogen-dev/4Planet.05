@@ -335,9 +335,9 @@ export function OnThisPage({ items }: { items: [string, string][] }) {
 export function Provenance({ idx }: { idx: ImpactIndex }) {
   const { graph } = idx;
   return (
-    <p className="iu-provenance">
-      Read live from NATUREBRAIN · {graph.source}() · {graph.version}
-      {graph.generatedAt ? ` · generated ${shortDate(graph.generatedAt)}` : ""} · <Link to={impactRoutes.method}>How records are reviewed</Link>
+    <p className="iu-provenance" title={`NATUREBRAIN projection · ${graph.source}() · ${graph.version}`}>
+      Published by 4PLANET · source-aware record from NATUREBRAIN
+      {graph.generatedAt ? ` · updated ${shortDate(graph.generatedAt)}` : ""} · <Link to={impactRoutes.method}>How records are reviewed</Link>
     </p>
   );
 }
