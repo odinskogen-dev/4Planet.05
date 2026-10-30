@@ -34,3 +34,13 @@ test("authoritative source citations are ordinary crawlable editorial links",()=
   assert.doesNotMatch(impact,/nofollow/);
   assert.match(impact,/Source-aware public record/);
 });
+
+
+test("profile title templates stay concise and avoid repetitive type branding",()=>{
+  assert.match(impact,/\$\{p\.name\} \| 4PLANET Impact/);
+  assert.match(impact,/\$\{a\.name\} \| 4PLANET Impact/);
+  assert.match(impact,/projects & evidence \| 4PLANET/);
+  assert.match(impact,/method & evidence \| 4PLANET/);
+  assert.doesNotMatch(impact,/projects and organisations \| 4PLANET Impact/);
+  assert.doesNotMatch(impact,/Organisation \| 4PLANET Impact/);
+});
