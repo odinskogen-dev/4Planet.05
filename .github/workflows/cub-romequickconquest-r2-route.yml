@@ -86,8 +86,6 @@ jobs:
           EOF
 
       - name: Publish scoped Worker without replacing CUB Lab
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ env.CF_TOKEN_CLEAN }}
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 deploy --config deploy/romequickconquest/.generated.toml
