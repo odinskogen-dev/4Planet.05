@@ -3,4 +3,8 @@
 /api/*  /api/:splat  200
 /games  /games/index.html  200
 /games/  /games/index.html  200
+/impact/project/*  /index.html  200
+/impact/actors/*  /index.html  200
+/impact/issue/*  /index.html  200
+/impact/solution/*  /index.html  200
 /*  /index.html  200
