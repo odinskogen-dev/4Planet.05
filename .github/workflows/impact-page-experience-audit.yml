@@ -59,6 +59,21 @@ jobs:
           }
           fs.writeFileSync('artifacts/impact-lighthouse/summary.json',JSON.stringify(out,null,2));
           console.log('IMPACT_LIGHTHOUSE_SUMMARY '+JSON.stringify(out,null,2));
+          for(const file of files){
+            const r=JSON.parse(fs.readFileSync('artifacts/impact-lighthouse/'+file,'utf8'));
+            const pick=(id)=>r.audits[id];
+            console.log('IMPACT_LIGHTHOUSE_DIAGNOSTIC '+JSON.stringify({
+              url:r.finalDisplayedUrl,
+              lcpElement:pick('largest-contentful-paint-element')?.details?.items?.slice(0,3),
+              clsShifts:pick('layout-shifts')?.details?.items?.slice(0,8),
+              renderBlocking:pick('render-blocking-resources')?.details?.items?.slice(0,10),
+              unusedJs:pick('unused-javascript')?.details?.items?.slice(0,10),
+              unusedCss:pick('unused-css-rules')?.details?.items?.slice(0,10),
+              imageSavings:pick('uses-responsive-images')?.details?.items?.slice(0,10),
+              modernImages:pick('uses-webp-images')?.details?.items?.slice(0,10),
+              totalByteItems:pick('resource-summary')?.details?.items,
+            },null,2));
+          }
           NODE
       - uses: actions/upload-artifact@v4
         with:
