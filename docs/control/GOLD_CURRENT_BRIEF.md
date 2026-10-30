@@ -1,3 +1,65 @@
+# P51-OSLOFJORD-01 — FIELD EVIDENCE EXPLICIT PROJECTION 10 — 30 OCTOBER 2026
+
+## USER ARRIVES BECAUSE
+
+A field worker needs an observation gate that cannot copy precise coordinates, observer PII or unreviewed ecological claims into admitted evidence.
+
+## ONE THING TO UNDERSTAND
+
+Independent Gold proved that the prior gate spread every unrecognised input key into its output. This correction admits only the ten declared observation fields and rejects all unknown keys.
+
+## PRIMARY ACTION
+
+Validate the candidate, reject unknown fields and explicit permission denial, then construct the returned record field by field.
+
+## SECONDARY DEPTH
+
+Keep source and permission references unverified until their original records are inspected; this code does not assert that either exists.
+
+## P1 DOMINANT
+
+Privacy and claim containment remain fail closed.
+
+## P2 ORIENTATION
+
+The admitted record contains the ten schema fields plus the fixed evidence class and claim boundary—nothing else.
+
+## P3 ACTION / NEXT
+
+Run the six-case regression and adjacent Gold/Proof Passport contracts on the exact provider SHA, then return it to independent Science/Privacy Gold.
+
+## P4 DEPTH
+
+Future private/public projection belongs in the existing evidence system only after a separate reviewed contract; this correction creates no alternate register.
+
+## WHAT CAN BE REMOVED
+
+Remove untrusted object spread and reject unknown private, personal or ecological-outcome fields.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing observation schema, Proof Passport semantics and Maker-not-Judge release gates.
+
+## TRUTH BOUNDARY
+
+No real field record, permission, site, observer, recovery, use, cash or impact is asserted. No deployment or publication is authorised.
+
+## MOBILE-FIRST RISK
+
+None introduced: this internal admission function renders no surface.
+
+## HUMAN SUCCESS
+
+A worker receives explicit rejection instead of silently publishing an extra private or unsupported field.
+
+**ACCEPTANCE:** six Oslofjord admission cases pass; adjacent Gold template and Proof Passport contracts pass; TypeScript and king-push Gold policy pass on the exact provider SHA.
+
+**MAKER ≠ JUDGE:** Factory supplies the bounded correction. Independent Science/Privacy Gold judges the immutable provider SHA. Founder retains release authority.
+
+**BASE / REVERSION:** base is `king/test@1e6f6431a5764905326a0a8602d472e59cd5e531`; revert this source/test/brief correction if independent Gold finds a schema, privacy or claim-boundary regression.
+
+---
+
 # P51-OSLOFJORD-01 — FIELD EVIDENCE ADMISSION 09 — 30 OCTOBER 2026
 
 ## USER ARRIVES BECAUSE
