@@ -45,6 +45,19 @@ const FORBIDDEN_CLAIM_KEYS = [
   "causalOutcomeClaim",
   "impactClaim",
 ] as const;
+const ALLOWED_INPUT_KEYS = new Set<keyof OslofjordFieldObservationInput>([
+  "recordId",
+  "observedAt",
+  "siteRef",
+  "publicGeography",
+  "sitePermissionRef",
+  "methodRef",
+  "sourceRef",
+  "observerRef",
+  "observation",
+  "limitations",
+]);
+const PERMISSION_DENIAL = /^(?:denied|no[_ -]?permission|not[_ -]?granted|refused)$/i;
 
 export function admitOslofjordFieldObservation(
   candidate: OslofjordFieldObservationInput | Record<string, unknown>,
@@ -72,13 +85,29 @@ export function admitOslofjordFieldObservation(
     if (key in raw) reasons.push(`forbidden:${key}`);
   }
 
+  for (const key of Object.keys(raw)) {
+    if (!ALLOWED_INPUT_KEYS.has(key as keyof OslofjordFieldObservationInput)) reasons.push(`unknown:${key}`);
+  }
+
+  if (typeof raw.sitePermissionRef === "string" && PERMISSION_DENIAL.test(raw.sitePermissionRef.trim())) {
+    reasons.push("denied:sitePermissionRef");
+  }
+
   if (reasons.length > 0) return { admitted: false, reasons };
 
-  const input = candidate as OslofjordFieldObservationInput;
   return {
     admitted: true,
     record: {
-      ...input,
+      recordId: raw.recordId as string,
+      observedAt: raw.observedAt as string,
+      siteRef: raw.siteRef as string,
+      publicGeography: raw.publicGeography as string,
+      sitePermissionRef: raw.sitePermissionRef as string,
+      methodRef: raw.methodRef as string,
+      sourceRef: raw.sourceRef as string,
+      observerRef: raw.observerRef as string,
+      observation: raw.observation as string,
+      limitations: [...(raw.limitations as string[])],
       evidenceClass: "FIELD_OBSERVATION",
       claimBoundary: "OBSERVATION_ONLY_NO_DELIVERY_RECOVERY_CAUSALITY_OR_IMPACT",
     },
