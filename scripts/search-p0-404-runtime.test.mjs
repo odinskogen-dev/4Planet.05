@@ -43,3 +43,16 @@ test("known public routes, query-driven maps, Next Living Systems and asset URLs
   const css=await page("https://4planet.org/assets/example.css",{contentType:"text/css"});
   assert.equal(css.status,200,"asset paths never diverted by HTML-only gate");
 });
+
+
+test("known IMPACT profile slugs pass while invented IMPACT slugs remain real 404",async()=>{
+  for(const path of ["/impact/project/african-forest-gardens","/impact/actors/the-ocean-cleanup","/impact/issue/ocean-plastic"]){
+    const r=await page("https://4planet.org"+path);
+    assert.equal(r.status,200,path);
+  }
+  for(const path of ["/impact/project/not-a-real-project","/impact/actors/not-a-real-actor","/impact/issue/not-a-real-issue","/impact/solution/not-a-real-solution"]){
+    const r=await page("https://4planet.org"+path);
+    assert.equal(r.status,404,path);
+    assert.match(r.headers.get("x-robots-tag"),/noindex/);
+  }
+});
