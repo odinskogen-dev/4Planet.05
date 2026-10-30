@@ -123,7 +123,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
           + '</section>';
       }
     }
-    const provenance = '<p><small>Published by 4PLANET · Source-aware public record · <a href="/impact/#method">How records are reviewed</a></small></p>';
+    const provenance = '<p><small>Published by <a href="/about">4PLANET</a> · Source-aware public record · <a href="/impact/#method">How records are reviewed</a></small></p>';
     const body = props.body.replace('<main>', '<main>' + breadcrumb.nav).replace('</main>', more + provenance + '</main>');
     const html = pageHtml({ ...props, body });
     // JSON-LD is a factual mirror of visible breadcrumb links; no fictional Q&A.
