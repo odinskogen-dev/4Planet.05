@@ -43,6 +43,24 @@ await parallel(rows,12,async t=>{
   check('breadcrumb_jsonld',crumb?.['@type']==='BreadcrumbList' && crumb?.itemListElement?.at(-1)?.item===origin+t.path);
  }
  check('description',/<meta name="description" content=".{30,}/.test(h));
+ // Exact production HTML must have page-specific, coherent OG/Twitter metadata.
+ const encodedTitle=h.match(/<title>([\s\S]*?)<\/title>/i)?.[1]||'';
+ const encodedDescription=h.match(/<meta name="description" content="([^"]*)"/i)?.[1]||'';
+ const field=(attr,key)=>[...h.matchAll(/<meta\s+[^>]*>/gi)]
+   .map(m=>m[0]).filter(t=>t.includes(attr+'="'+key+'"'));
+ const content=tag=>tag?.match(/content="([^"]*)"/i)?.[1]||'';
+ const ogTitle=field('property','og:title'),twTitle=field('name','twitter:title');
+ const ogDesc=field('property','og:description'),twDesc=field('name','twitter:description');
+ const ogUrl=field('property','og:url'),ogImage=field('property','og:image');
+ const twImage=field('name','twitter:image');
+ check('og_title',ogTitle.length===1&&content(ogTitle[0])===encodedTitle);
+ check('twitter_title',twTitle.length===1&&content(twTitle[0])===encodedTitle);
+ check('og_description',ogDesc.length===1&&content(ogDesc[0])===encodedDescription);
+ check('twitter_description',twDesc.length===1&&content(twDesc[0])===encodedDescription);
+ check('og_canonical',ogUrl.length===1&&content(ogUrl[0])===origin+t.path);
+ check('og_image_absolute',ogImage.length===1&&content(ogImage[0]).startsWith('https://'));
+ check('twitter_image_absolute',twImage.length===1&&content(twImage[0]).startsWith('https://'));
+ check('no_broken_og_attribute',!h.includes('<meta property="og" '));
  if(t.kind==='project'){check('project_actor',!!t.item.actor&&h.includes('/impact/actors/'+t.item.actor.slug));check('project_sources',(t.item.citations||[]).length>0&&h.includes('<h2>Sources</h2>'));check('truth_boundary',h.includes('No 4PLANET partnership'))}
  if(t.kind==='actors')check('actor_not_partner',h.includes('not a 4PLANET partner'));
  results.push({kind:t.kind,path:t.path,status:r.code,ok:bad.length===0,errors:bad})
