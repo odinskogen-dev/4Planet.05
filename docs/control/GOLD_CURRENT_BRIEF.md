@@ -1,3 +1,65 @@
+# P51-SHIP-01 — AUTHENTICATED FOUNDER DECISION RECEIPT 12 — 30 OCTOBER 2026
+
+## USER ARRIVES BECAUSE
+
+A release operator needs the LIVE guard to prove that a real Founder decision—not a self-declared manifest field—approves the exact action, target route and tested artifact.
+
+## ONE THING TO UNDERSTAND
+
+Independent Gold proved that an arbitrary decision string plus a matching SHA could satisfy the prior gate because both values came from the same mutable manifest.
+
+## PRIMARY ACTION
+
+Resolve only a canonical 4Planet.05 GitHub issue-comment receipt and verify its immutable timestamps, expected Founder account, APPROVED status, action, target route and exact TEST KING SHA.
+
+## SECONDARY DEPTH
+
+Reject arbitrary, edited, wrong-issuer, wrong-action and wrong-artifact receipts while preserving target drift, branch, rollback, evidence and manifest-only-child gates.
+
+## P1 DOMINANT
+
+Authenticated action-specific Founder authority remains dominant over automation, Gold readiness and manifest self-attestation.
+
+## P2 ORIENTATION
+
+GitHub remains the existing receipt provider; this correction creates no new authority register.
+
+## P3 ACTION / NEXT
+
+Run the receipt validator and full release-gate regressions on the exact provider SHA, then return that SHA to independent Gold.
+
+## P4 DEPTH
+
+The current manifest remains NOT_AUTHORISED and contains no Founder receipt; this code cannot promote it.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that a non-empty reference or two matching manifest fields prove Founder approval.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing GitHub issue receipt, LIVE promotion manifest, TEST KING lineage, rollback proof and Maker-not-Judge control.
+
+## TRUTH BOUNDARY
+
+No Founder release receipt exists for this candidate. No merge, deployment, public action, LIVE state, use, cash or ecological impact is claimed.
+
+## MOBILE-FIRST RISK
+
+None introduced: this internal authority guard renders no product surface.
+
+## HUMAN SUCCESS
+
+A release operator receives a deterministic failure unless the provider independently confirms the exact Founder, decision, action, target and artifact.
+
+**ACCEPTANCE:** arbitrary/unresolvable, edited, wrong-issuer, wrong-action and wrong-artifact receipts fail closed; a synthetic exact receipt validates; all existing release gates remain green; Gold policy and TypeScript pass.
+
+**MAKER ≠ JUDGE:** Factory supplies this bounded gate/test correction. Independent Gold judges the immutable provider SHA. Founder alone may create an exact release receipt.
+
+**BASE / REVERSION:** base is `king/test@4997d6ba55d34a479c14bac6b02eb07fc498a629`; revert this bounded gate/test/brief correction if independent Gold finds an authority, availability or lineage regression.
+
+---
+
 # P51-SHIP-01 — FOUNDER DECISION ARTIFACT BINDING 11 — 30 OCTOBER 2026
 
 ## USER ARRIVES BECAUSE
