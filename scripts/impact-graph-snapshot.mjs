@@ -217,7 +217,7 @@ async function live() {
   const call = async (name) => {
     const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
       method: "POST",
-      headers: { apikey: PUBLISHABLE_KEY, Authorization: `Bearer ${PUBLISHABLE_KEY}`, "Content-Type": "application/json", Accept: "application/json" },
+      headers: { apikey: PUBLISHABLE_KEY, "Content-Type": "application/json", Accept: "application/json" },
       body: "{}",
       signal: AbortSignal.timeout(12000),
     });
