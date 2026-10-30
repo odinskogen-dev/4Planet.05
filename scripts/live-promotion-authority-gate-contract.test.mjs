@@ -40,8 +40,6 @@ function fixture() {
     rollbackRef: `main@${mainSha}`,
     founderDecisionRef: 'fixture decision',
     founderDecisionTestKingSha: testedSha,
-    founderDecisionAction: 'DEPLOY',
-    founderDecisionTargetRoute: 'main',
     evidenceRef: 'fixture evidence',
     releaseControlCommit: true,
   };
@@ -67,9 +65,9 @@ test('accepts an unedited action-specific receipt from the expected Founder acco
     user: { login: 'odinskogen-dev', id: 289761792 },
     created_at: '2026-10-30T22:00:00Z',
     updated_at: '2026-10-30T22:00:00Z',
-    body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: DEPLOY\nTARGET_ROUTE: main\nTEST_KING_SHA: ${testKingSha}`,
+    body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: LIVE_DEPLOY\nTARGET_ROUTE: git:main\nTEST_KING_SHA: ${testKingSha}`,
   };
-  assert.equal(validateFounderDecisionReceipt({ receipt, ref, testKingSha, action: 'DEPLOY', targetRoute: 'main' }).commentId, 123456);
+  assert.equal(validateFounderDecisionReceipt({ receipt, ref, testKingSha }).commentId, 123456);
 });
 
 test('rejects an arbitrary or unresolvable Founder decision reference even with a matching self-declared SHA', () => {
@@ -89,12 +87,13 @@ test('rejects edited, wrong-issuer, wrong-action and wrong-artifact receipts', (
     user: { login: 'odinskogen-dev', id: 289761792 },
     created_at: '2026-10-30T22:00:00Z',
     updated_at: '2026-10-30T22:00:00Z',
-    body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: DEPLOY\nTARGET_ROUTE: main\nTEST_KING_SHA: ${testKingSha}`,
+    body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: LIVE_DEPLOY\nTARGET_ROUTE: git:main\nTEST_KING_SHA: ${testKingSha}`,
   };
-  const check = (receipt) => validateFounderDecisionReceipt({ receipt, ref, testKingSha, action: 'DEPLOY', targetRoute: 'main' });
+  const check = (receipt) => validateFounderDecisionReceipt({ receipt, ref, testKingSha });
   assert.throws(() => check({ ...base, updated_at: '2026-10-30T22:01:00Z' }), /edited/);
   assert.throws(() => check({ ...base, user: { login: 'attacker', id: 1 } }), /issuer mismatch/);
-  assert.throws(() => check({ ...base, body: base.body.replace('ACTION: DEPLOY', 'ACTION: REVIEW') }), /ACTION: DEPLOY/);
+  assert.throws(() => check({ ...base, body: base.body.replace('ACTION: LIVE_DEPLOY', 'ACTION: REVIEW_ONLY') }), /ACTION: LIVE_DEPLOY/);
+  assert.throws(() => check({ ...base, body: base.body.replace('TARGET_ROUTE: git:main', 'TARGET_ROUTE: \/drafts\/preview') }), /TARGET_ROUTE: git:main/);
   assert.throws(() => check({ ...base, body: base.body.replace(testKingSha, 'b'.repeat(40)) }), /TEST_KING_SHA/);
 });
 
