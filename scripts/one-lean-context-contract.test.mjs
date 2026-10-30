@@ -65,6 +65,7 @@ const GOLD_RETURN_06_BARE_CONTRAST_MUTATIONS = [
 ];
 const GOLD_RETURN_07_SAFE_CONTRASTIVE_PROHIBITIONS = [
   "Never routinely read 01 Project Lead but you MUST NOT read 02 Active Tasks before any task.",
+  "Never routinely read 01 Project Lead but you MUST NOT automatically read 02 Active Tasks before any task.",
 ];
 const SAFE_STARTUP_REFERENCES = [
   "Historical quote for audit only: \"Before any 4PLANET task you MUST read the complete 01 Project Lead and 02 Active Tasks documents.\"",
@@ -139,7 +140,7 @@ function semanticStartupConflicts(name, content) {
       }
       if (optionalWithoutMandate || explicitProhibition) continue;
 
-      const actionBoundMustNot = /\bmust\s+not\s+(?:bulk-?load|load|read|fetch|preload|boot|treat|promote|override|supersede|require)\b/i.test(clause);
+      const actionBoundMustNot = /\bmust\s+not\s+(?:(?:routinely|automatically)\s+)?(?:bulk-?load|load|read|fetch|preload|boot|treat|promote|override|supersede|require)\b/i.test(clause);
       const mandatory = !actionBoundMustNot && (
         /\b(?:must|required|mandatory|before (?:any|each|every|starting)|for every|always|first|start only|read only|default|startup|at boot|before beginning)\b/i.test(clause)
         || /^(?:read|load|consult|fetch|boot|treat|use)\b/i.test(clause)
