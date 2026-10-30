@@ -1,3 +1,4 @@
+import { isKnownImpactProfileRoute } from "./impact-public-routes.generated.js";
 // Generated from src/routes/router.tsx and src/data/discoveryTopics.json on 2026-10-22.
 // Server classification of released React routes; does not rewrite client route ownership.
 // Wildcards and dynamic route segments deliberately preserve existing deep links.
@@ -119,6 +120,10 @@ export const PUBLIC_PATTERN_ROUTES = [
   "/atlas/:objectSlug",
   "/place/:slug",
   "/species/:slug",
+  "/impact/project/:slug",
+  "/impact/actors/:slug",
+  "/impact/issue/:slug",
+  "/impact/solution/:slug",
   "/impact/lab/:unit",
   "/impact/lab/records/:recordId",
   "/impact/test/:unit",
@@ -152,6 +157,9 @@ export function isKnown4PlanetPublicRoute(pathname) {
   if (p.startsWith('/missions/')) return false;
   if (p.startsWith('/domains/')) return false;
   if (p.startsWith('/place/')) return false; // qualified Place IDs redirect first
+
+  const impactProfile = isKnownImpactProfileRoute(p);
+  if (impactProfile !== null) return impactProfile;
 
   if (patterns.some(r=>r.test(p))) return true;
   // Next.js Living Systems and historical web game deliveries are independently
