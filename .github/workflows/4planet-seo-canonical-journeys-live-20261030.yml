@@ -1,0 +1,37 @@
+name: 4PLANET SEO Canonical Journeys Scoped LIVE 20261030
+on:
+  push:
+    branches: [king/test]
+    paths:
+      - .github/workflows/4planet-seo-canonical-journeys-live-20261030.yml
+permissions:
+  contents: read
+concurrency:
+  group: 4planet-canonical-journeys-20261030
+  cancel-in-progress: false
+jobs:
+  exact-seo-only-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_PRIMARY: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_FALLBACK: ${{ secrets.CLOUDFLARE_TOKEN }}
+      CF_ALT: ${{ secrets.CF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Guard exact source SHA and SEO-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_REF_NAME" = "king/test"
+          test -f ops/exposure/seo-canonical-journeys-release-20261030.mjs
+          test -f ops/exposure/4planet-canonical-journeys-20261030.js
+          echo SEO_SOURCE_AND_BRANCH_SCOPE_PASS
+      - name: Verify 57 published species, prove exact canonical defects, attach scoped Workers, and roll back on any failed live check
+        run: node ops/exposure/seo-canonical-journeys-release-20261030.mjs
