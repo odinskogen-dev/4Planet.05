@@ -2076,7 +2076,9 @@ export async function onRequest(context) {
 
   const baseConfig = PUBLIC_HOSTS[host];
   const normalisedPath = url.pathname.replace(/\/$/, "") || "/";
-  // IMPACT home is now a fully source-grounded prerendered public page. Do not replace\n  // its canonical, H1 or content with the legacy generic FOURPLANET_ROUTES fallback.\n  let routeConfig = host === "4planet.org" && normalisedPath !== "/impact" ? FOURPLANET_ROUTES[normalisedPath] : null;
+  // IMPACT home is now a fully source-grounded prerendered public page. Do not replace
+  // its canonical, H1 or content with the legacy generic FOURPLANET_ROUTES fallback.
+  let routeConfig = host === "4planet.org" && normalisedPath !== "/impact" ? FOURPLANET_ROUTES[normalisedPath] : null;
 
   if (host === "4planet.org" && !routeConfig && normalisedPath.startsWith("/missions/")) {
     const missionSlug = normalisedPath.slice("/missions/".length);
