@@ -10,6 +10,7 @@ import {
   profileReviewState,
   verifyApprovedNewSpeciesPhoto,
 } from "../ops/discovery/4species-router.js";
+import speciesWorker from "../ops/discovery/4species-router.js";
 
 const router = readFileSync(new URL("../ops/discovery/4species-router.js", import.meta.url), "utf8");
 
@@ -179,4 +180,69 @@ test("the public species sitemap retains only non-profile routes and complete so
   assert.match(router, /permitsSpeciesIndexing\(review\)/);
   assert.doesNotMatch(router, /review === null \|\| review === "REVIEWED"/);
   assert.match(router, /x-4species-index-gate": "human-review-v1"/);
+});
+
+test("real worker GET and HEAD fail closed for preview and nested routes without losing the public 57", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalHtmlRewriter = globalThis.HTMLRewriter;
+  class PassThroughHTMLRewriter {
+    on() { return this; }
+    transform(response) { return response; }
+  }
+  globalThis.HTMLRewriter = PassThroughHTMLRewriter;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = new URL(input);
+    if (url.pathname === "/species-data/v1/orca.json") {
+      return Response.json(sourcedProfile("orca", "DRAFT"));
+    }
+    if (url.pathname === "/species-data/v1/unknown.json") {
+      return new Response("missing", { status: 404 });
+    }
+    if (url.pathname === "/species-sitemap.xml") {
+      const xml = "<?xml version=\"1.0\"?><urlset>" +
+        "<url><loc>https://72494005.4planet-05.pages.dev/orca</loc></url>" +
+        "<url><loc>https://72494005.4planet-05.pages.dev/unknown</loc></url></urlset>";
+      return new Response(init.method === "HEAD" ? null : xml, {
+        status: 200,
+        headers: { "content-type": "application/xml" },
+      });
+    }
+    return new Response(init.method === "HEAD" ? null : "<!doctype html><html><head></head><body>species</body></html>", {
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8", "x-robots-tag": "noindex" },
+    });
+  };
+
+  try {
+    assert.equal(CURRENT_PUBLIC_SPECIES_SLUGS.size, 57);
+    for (const method of ["GET", "HEAD"]) {
+      const known = await speciesWorker.fetch(new Request("https://4species.com/orca", { method }));
+      assert.equal(known.status, 200, `${method} known profile`);
+      assert.equal(known.headers.get("link"), '<https://4species.com/orca>; rel="canonical"');
+      assert.equal(known.headers.get("x-robots-tag"), null);
+
+      for (const path of ["/orca?preview=1", "/orca/unknown", "/unknown/path"]) {
+        const response = await speciesWorker.fetch(new Request(`https://4species.com${path}`, { method }));
+        assert.equal(response.status, 404, `${method} ${path}`);
+        assert.equal(response.headers.get("link"), null, `${method} ${path} canonical`);
+        assert.match(response.headers.get("x-robots-tag") || "", /noindex/, `${method} ${path} robots`);
+        if (method === "HEAD") assert.equal(await response.text(), "", `${path} HEAD body`);
+      }
+
+      const explore = await speciesWorker.fetch(new Request("https://4species.com/explore", { method }));
+      assert.equal(explore.status, 200, `${method} /explore`);
+      assert.equal(explore.headers.get("link"), '<https://4species.com/explore>; rel="canonical"');
+
+      const sitemap = await speciesWorker.fetch(new Request("https://4species.com/species-sitemap.xml", { method }));
+      assert.equal(sitemap.status, 200, `${method} sitemap`);
+      if (method === "GET") {
+        const xml = await sitemap.text();
+        assert.match(xml, /https:\/\/4species\.com\/orca/);
+        assert.doesNotMatch(xml, /https:\/\/4species\.com\/unknown/);
+      }
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+    globalThis.HTMLRewriter = originalHtmlRewriter;
+  }
 });

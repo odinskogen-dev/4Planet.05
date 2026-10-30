@@ -97,7 +97,13 @@ export async function verifyApprovedNewSpeciesPhoto(
 }
 
 function isProfilePathCandidate(pathname) {
-  return typeof pathname === "string" && /^\/[^/.]+$/.test(pathname) && !PUBLIC_NON_PROFILE_PATHS.has(pathname);
+  if (typeof pathname !== "string" || PUBLIC_NON_PROFILE_PATHS.has(pathname)) return false;
+  return /^\/[^/.]+$/.test(pathname) ||
+    /^\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)+\/?$/.test(pathname);
+}
+
+function hasNonCanonicalIndexQuery(searchParams) {
+  return Array.from(searchParams.keys()).some((key) => /^(?:preview|draft)$/i.test(key));
 }
 
 function missingSpeciesProfile(method) {
@@ -204,7 +210,13 @@ async function proxySpeciesV53(request) {
   const incoming = new URL(request.url);
   if (incoming.pathname === "/species-sitemap.xml") return reviewedSpeciesSitemap(request);
   const target = new URL(incoming.pathname+incoming.search, SPECIES_V53_ORIGIN);
-  const reviewState = await profileReviewState(incoming.pathname);
+  // Preview and draft variants are not canonical public profiles. Include the
+  // query in the review key so profileReviewState rejects it before the
+  // canonical/index headers can be inherited from the clean pathname.
+  const reviewKey = hasNonCanonicalIndexQuery(incoming.searchParams)
+    ? incoming.pathname + incoming.search
+    : incoming.pathname;
+  const reviewState = await profileReviewState(reviewKey);
   // The immutable SPA origin serves its application shell with HTTP 200 even
   // when no source-bearing profile exists. Fail closed at the public edge so
   // crawlers and people receive a real not-found response instead of a soft 404.
