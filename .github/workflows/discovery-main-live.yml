@@ -31,6 +31,10 @@ on:
       - src/styles/human-first-public.css
       - scripts/generate-sitemap.mjs
       - scripts/prerender-discovery-seo.mjs
+      - scripts/prerender-impact-seo.mjs
+      - scripts/impact-human-seo-contract.test.mjs
+      - src/impact/**
+      - src/styles/impact-living-action-network.css
       - scripts/max-exposure-discovery-contract.test.mjs
       - scripts/max-exposure-main-runtime.test.mjs
       - src/data/discoveryTopics.json
@@ -98,7 +102,7 @@ jobs:
           if [ ! -f dist/news-sitemap.xml ]; then
             ! grep -Fq 'news-sitemap.xml' dist/robots.txt
           fi
-          node --test scripts/max-exposure-discovery-contract.test.mjs scripts/max-exposure-main-runtime.test.mjs scripts/search-p0-404-runtime.test.mjs
+          node --test scripts/max-exposure-discovery-contract.test.mjs scripts/max-exposure-main-runtime.test.mjs scripts/search-p0-404-runtime.test.mjs scripts/impact-human-seo-contract.test.mjs
           for route in now wildfires earthquakes whales; do
             test -f "dist/$route/index.html"
             grep -Fq '<h1>' "dist/$route/index.html"

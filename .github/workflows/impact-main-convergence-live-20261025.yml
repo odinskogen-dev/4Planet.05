@@ -32,12 +32,12 @@ jobs:
           set -euo pipefail
           BASE=f3392550d5d6e7b360a80fb530debf23184699ab
           git merge-base --is-ancestor "$BASE" HEAD
-          test "$(git ls-files -s src/impact/ui/HomeTemplate.tsx | awk '{print $2}')" = "1315bff8a32c6caed1ed39a557e8285a33e1ea09"
+          test "$(git ls-files -s src/impact/ui/HomeTemplate.tsx | awk '{print $2}')" = "a911897d406057a977c0ef1a67bb74cbdb48ea98"
           test "$(git ls-files -s src/impact/ui/ProjectTemplate.tsx | awk '{print $2}')" = "3c46f27cab71e3389a0ad5399503d3acd14e667b"
-          test "$(git ls-files -s src/impact/ui/ActorTemplate.tsx | awk '{print $2}')" = "826494e5347c92f2f5f0861933fc495c48b9fca8"
-          test "$(git ls-files -s src/impact/ui/IssueTemplate.tsx | awk '{print $2}')" = "7566bc6956c13ff2cbc6f010b852398fbdbe8296"
-          test "$(git ls-files -s src/impact/ui/SolutionTemplate.tsx | awk '{print $2}')" = "86f3e773f9c36654a398e3c73472c67a2148deda"
-          test "$(git ls-files -s src/styles/impact-living-action-network.css | awk '{print $2}')" = "e10266a761ef58512d8a61fb469b4e596149136f"
+          test "$(git ls-files -s src/impact/ui/ActorTemplate.tsx | awk '{print $2}')" = "5be048b38193c007de5369f505821e6c04bc00ed"
+          test "$(git ls-files -s src/impact/ui/IssueTemplate.tsx | awk '{print $2}')" = "afbe7a2c050362a3d8a7a27ac0c23aff46c3c663"
+          test "$(git ls-files -s src/impact/ui/SolutionTemplate.tsx | awk '{print $2}')" = "02abcd4e3f7a1e580454500640344e8beef43cdf"
+          test "$(git ls-files -s src/styles/impact-living-action-network.css | awk '{print $2}')" = "951253f5f7db6a814151b18084244a3b46bd9de0"
 
       - uses: actions/setup-node@v4
         with:
@@ -59,7 +59,7 @@ jobs:
           test "$(jq '[.solutions[]|select(.profile.publication=="public")]|length' /tmp/impact.json)" -ge 35
 
       - name: IMPACT truth contracts
-        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
+        run: node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs scripts/impact-human-seo-contract.test.mjs
 
       - name: Typecheck current main + IMPACT
         run: npm run typecheck
@@ -82,6 +82,9 @@ jobs:
             test -f "$f"
             grep -qi '<link rel="canonical"' "$f"
             grep -qi 'application/ld+json' "$f"
+            grep -qi 'property="og:image"' "$f"
+            grep -qi 'name="twitter:image"' "$f"
+            grep -qi 'Published by 4PLANET' "$f"
           done
           grep -q '/impact/project/agave-restoration-initiative' dist/sitemap.xml
           grep -q '/impact/solution/peatland-rewetting' dist/sitemap.xml
