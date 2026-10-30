@@ -289,6 +289,12 @@ export const safeHttpUrl = (value: unknown): string => {
  * UNESCO DataHub geo_point samples are [latitude, longitude], unlike GeoJSON
  * coordinate arrays. Objects are accepted defensively for API representation
  * changes, but are never guessed when both values are not finite.
+ *
+ * whc001 (World Heritage) sends GeoJSON instead, e.g.
+ * {"type":"Feature","geometry":{"type":"MultiPoint","coordinates":[[5.32,60.40]]}}.
+ * GeoJSON positions are [longitude, latitude] (RFC 7946 §3.1.1), so a Feature or a
+ * bare Point/MultiPoint geometry is read lon-first; a MultiPoint uses its first
+ * position. Without this every whc001 record was dropped (4NATION showed 0 sites).
  */
 export const normaliseUnescoPoint = (value: any): { lat: number; lon: number } | null => {
   const coordinateNumber = (component: unknown): number | null => {
@@ -300,7 +306,16 @@ export const normaliseUnescoPoint = (value: any): { lat: number; lon: number } |
 
   let rawLat: unknown;
   let rawLon: unknown;
-  if (Array.isArray(value) && value.length >= 2) {
+  const geometry = value && typeof value === "object" && !Array.isArray(value)
+    ? (value.type === "Feature" ? value.geometry : value.type === "Point" || value.type === "MultiPoint" ? value : undefined)
+    : undefined;
+  if (geometry && typeof geometry === "object") {
+    const position = geometry.type === "Point" ? geometry.coordinates
+      : geometry.type === "MultiPoint" && Array.isArray(geometry.coordinates) ? geometry.coordinates[0]
+      : undefined;
+    if (!Array.isArray(position) || position.length < 2) return null;
+    [rawLon, rawLat] = position;
+  } else if (Array.isArray(value) && value.length >= 2) {
     [rawLat, rawLon] = value;
   } else if (value && typeof value === "object") {
     rawLat = value.lat ?? value.latitude;

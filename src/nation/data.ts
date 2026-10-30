@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { fetchCountryDevelopmentContext, WDI_DATASET, type CountryDevelopmentContext } from "@/data/unescoCountryContext";
+import { unescoRecordMatchesCountry } from "./unescoCountryMatch";
 import { fetchUnescoDataset, normaliseUnescoAtlasRecord, UNESCO_DATASETS, type CountryMetric, type CountrySeries, type UnescoAtlasRecord } from "@/data/unescoOpenData";
 
 export type Load<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; error: string };
@@ -34,12 +35,7 @@ function loadSet(id: SiteSet) {
   }
   return siteCache.get(id)!;
 }
-const matches = (x: UnescoAtlasRecord, iso2: string, name: string) => {
-  const codes = (x.iso2 || "").split(/[,;|/\s]+/).filter(Boolean);
-  if (codes.includes(iso2)) return true;
-  const n = name.toUpperCase();
-  return (x.iso2 || "").includes(n) || (x.country || "").toUpperCase().split(/[,;|/]+/).map((t) => t.trim()).includes(n);
-};
+const matches = (x: UnescoAtlasRecord, iso2: string, name: string) => unescoRecordMatchesCountry(x, iso2, name);
 export function useCountrySites(iso2: string, name: string): Load<CountrySites> {
   const [s, set] = useState<Load<CountrySites>>({ status: "loading" });
   useEffect(() => {
