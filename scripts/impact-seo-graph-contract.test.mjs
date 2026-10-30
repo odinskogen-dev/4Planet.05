@@ -19,6 +19,9 @@ test("all source-grounded public IMPACT entities are crawlable and internally li
    assert.match(html,/<h1>/,"missing H1 "+path);
    assert.ok(html.includes('href="'+origin+path+'"'),"wrong canonical "+path);
    assert.match(html,/aria-label="Breadcrumb"/,"no breadcrumbs "+path);
+   for(const match of html.matchAll(/href="(\/impact\/(?:project|actors|issue|solution)\/[^"#?]+)"/g)){
+     assert.ok(match[1].endsWith("/"),"non-canonical internal IMPACT href on "+path+": "+match[1]);
+   }
    const schemas=[...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(x=>JSON.parse(x[1]));
    assert.equal(schemas.length,2,"JSONLD graph count "+path);
    assert.equal(schemas[1]["@type"],"BreadcrumbList");

@@ -1,0 +1,50 @@
+name: IMPACT red-team — all 229 live URLs and Claude templates
+on:
+  push:
+    branches:
+      - audit/impact-redteam-229-premium-sitemap-20261030
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  red-team:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CF_PAGES: "1"
+      IMPACT_SNAPSHOT_LIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Identify currently deployed production commit, not QA branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "AUDIT_EXPECTED_SHA=$(git rev-parse origin/main)" >> "$GITHUB_ENV"
+      - name: Build latest NATUREBRAIN graph and verify immutable Claude template checksums
+        run: |
+          npm ci
+          npm run build
+          node --test scripts/impact-seo-graph-contract.test.mjs scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
+          test "$(git ls-files -s src/impact/ui/HomeTemplate.tsx | awk '{print $2}')" = "1315bff8a32c6caed1ed39a557e8285a33e1ea09"
+          test "$(git ls-files -s src/impact/ui/ProjectTemplate.tsx | awk '{print $2}')" = "3c46f27cab71e3389a0ad5399503d3acd14e667b"
+          test "$(git ls-files -s src/impact/ui/ActorTemplate.tsx | awk '{print $2}')" = "826494e5347c92f2f5f0861933fc495c48b9fca8"
+          test "$(git ls-files -s src/impact/ui/IssueTemplate.tsx | awk '{print $2}')" = "7566bc6956c13ff2cbc6f010b852398fbdbe8296"
+          test "$(git ls-files -s src/impact/ui/SolutionTemplate.tsx | awk '{print $2}')" = "86f3e773f9c36654a398e3c73472c67a2148deda"
+      - name: Open every live profile using Chromium mobile and verify both search-engine sitemaps
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/impact-live-full-audit.mjs --browser
+      - name: Upload exact per-URL red-team report even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: impact-redteam-229
+          path: artifacts/impact-full-live-audit.json
+          retention-days: 30
+          if-no-files-found: warn
