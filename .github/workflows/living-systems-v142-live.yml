@@ -17,11 +17,10 @@ concurrency:
 jobs:
   deploy-and-prove:
     runs-on: ubuntu-latest
-    env:
-      CF_PAGES: "1"
     timeout-minutes: 25
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_PAGES: "1"
     steps:
       - name: Checkout exact release carrier
         uses: actions/checkout@v4
