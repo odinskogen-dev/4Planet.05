@@ -77,7 +77,7 @@ jobs:
         run: |
           set -euo pipefail
           html=$(curl -fsS --connect-timeout 10 --max-time 30 "$BASE_URL/sandbox/gold")
-          grep -q 'Founder Review' <<<"$html" || true
+          grep -q 'Founder Review' <<<"$html"
           test "$BASE_URL" = "https://test.4planet.org"
           echo "TEST DOMAIN PROOF PASS — LIVE authority remains absent." > gold-test-domain-verdict.txt
 

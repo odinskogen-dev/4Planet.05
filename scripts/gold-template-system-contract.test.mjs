@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const data = read("src/content/goldTemplateSystem.ts");
@@ -11,6 +12,7 @@ const sandboxRoutes = read("src/pages/labs/SandboxGoldRoutes.tsx");
 const routes = read("src/routes/router.tsx");
 const actor = read("src/content/actorGold.ts");
 const css = read("src/styles/gold-template-system.css");
+const testDomainWorkflow = read(".github/workflows/gold-template-test-domain-proof.yml");
 
 const objectKinds = ["SPECIES", "PLACE", "LIVING_SYSTEM", "ACTOR", "SOLUTION", "SIGNAL", "PROOF"];
 const storyFormats = ["NEWS", "EXPLAINER", "FEATURE", "PROFILE", "VISUAL_STORY", "FIELD", "SOLUTIONS", "BIG_QUESTION", "GUIDE"];
@@ -84,6 +86,18 @@ test("Founder Review is exposed only through controlled sandbox routes", () => {
   assert.match(review, /NO LIVE RELEASE/);
   assert.match(review, /noindex,nofollow,noarchive,nosnippet/);
   assert.match(review, /Founder approval is the final gate/);
+});
+
+test("TEST-domain Founder Review assertion fails closed when its marker is missing", () => {
+  const assertion = testDomainWorkflow.match(/grep -q 'Founder Review' <<<"\$html"[^\n]*/)?.[0];
+  assert.equal(assertion, `grep -q 'Founder Review' <<<"$html"`, "workflow must keep the strict marker assertion without a bypass");
+
+  const runFixture = (html) => spawnSync("bash", ["-c", `set -euo pipefail\nhtml=$1\n${assertion}`, "fixture", html], {
+    encoding: "utf8",
+  });
+
+  assert.equal(runFixture("Founder Review").status, 0, "present-marker fixture must pass");
+  assert.notEqual(runFixture("marker deliberately missing").status, 0, "missing-marker fixture must fail before Gold evidence is emitted");
 });
 
 test("proof surfaces expose provenance, truth boundaries and connected handoffs", () => {
