@@ -1,0 +1,915 @@
+[
+  {
+    "id": "place:4p:impact:abu-dhabi-coastal-marine-region",
+    "name": "Abu Dhabi coastal and marine region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the flagship’s coastal and marine restoration footprint in the Emirate of Abu Dhabi.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the flagship’s coastal and marine restoration footprint in the Emirate of Abu Dhabi.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:reforestarg",
+    "name": "Argentine Patagonia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Argentine Patagonia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for ReforestArg; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:atlantic-forest-trinational-region",
+    "name": "Atlantic Forest — Argentina, Brazil and Paraguay",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the trinational Atlantic Forest restoration footprint; not a legal or ecological boundary.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the trinational Atlantic Forest restoration footprint; not a legal or ecological boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:bamboo-restoration-nine-country-region",
+    "name": "Bamboo restoration nine-country region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad multi-country context spanning Africa, Asia and Latin America.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad multi-country context spanning Africa, Asia and Latin America.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:forest-landscape-restoration-hub",
+    "name": "Brazil, Colombia, Madagascar, Peru, Tanzania and Uganda",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Brazil, Colombia, Madagascar, Peru, Tanzania and Uganda",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Forest Landscape Restoration Hub; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:nature-based-solutions-for-drought",
+    "name": "Burkina Faso, Georgia and Kenya",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Burkina Faso, Georgia and Kenya",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Nature-Based Solutions for Drought; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:central-american-dry-corridor",
+    "name": "Central American Dry Corridor",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad regional context for the multi-country restoration flagship.",
+      "geometry_status": "broad_navigation_context_not_boundary",
+      "reference_point": {
+        "lat": 14.788422138209,
+        "lng": -90.680073338022,
+        "zoom": 4,
+        "precision": "source_profile_reference_point_not_boundary"
+      }
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad regional context for the multi-country restoration flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:good-forest-indonesia",
+    "name": "Central Kalimantan, Indonesia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Central Kalimantan, Indonesia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Good Forest Indonesia; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:cerrado-brazil",
+    "name": "Cerrado, Brazil",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad biome context for the restoration initiative; not a project boundary.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad biome context for the restoration initiative; not a project boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:demak-java-coastal-region",
+    "name": "Demak coastal region, Java",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the Building with Nature restoration area in Demak, Indonesia.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the Building with Nature restoration area in Demak, Indonesia.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:dinder-national-park-resilience",
+    "name": "Dinder National Park and surrounding communities, Sudan",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Dinder National Park and surrounding communities, Sudan",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Dinder National Park Resilience Initiative; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:eastern-cape-thicket",
+    "name": "Eastern Cape thicket, South Africa",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad Eastern Cape context for subtropical thicket restoration.",
+      "geometry_status": "broad_navigation_context_not_boundary",
+      "reference_point": {
+        "lat": -31.530216359258,
+        "lng": 27.461294968225,
+        "zoom": 5,
+        "precision": "source_profile_reference_point_not_boundary"
+      }
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad Eastern Cape context for subtropical thicket restoration.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:trepa-rwanda",
+    "name": "Eastern Province, Rwanda",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Eastern Province, Rwanda",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Transforming Eastern Province Through Adaptation (TREPA); not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:twende-kenya-rangelands",
+    "name": "Eleven arid and semi-arid counties in Kenya",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Eleven arid and semi-arid counties in Kenya",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Towards Ending Drought Emergencies (TWENDE); not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:dryland-sustainable-landscapes-programme",
+    "name": "Eleven countries across Africa and Asia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Eleven countries across Africa and Asia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Dryland Sustainable Landscapes Programme; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:rest-coast",
+    "name": "European and West Asian coastal systems",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "European and West Asian coastal systems",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Large Scale Coastal Restoration in Europe (REST-COAST); not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:florida-keys",
+    "name": "Florida Keys",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "geometry_status": "context_only_no_boundary_geometry"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "Florida Keys marine and reef context in the United States.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:ganges-river-basin",
+    "name": "Ganges River basin",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for Namami Gange across the Ganges River basin in India.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for Namami Gange across the Ganges River basin in India.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:great-green-wall-sahel-region",
+    "name": "Great Green Wall — Sahel region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the multinational Great Green Wall restoration footprint across the Sahel.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the multinational Great Green Wall restoration footprint across the Sahel.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:high-andes-restoration-region",
+    "name": "High Andes restoration region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the five-country Acción Andina footprint.",
+      "geometry_status": "broad_navigation_context_not_boundary",
+      "reference_point": {
+        "lat": -13.393652028879,
+        "lng": -71.953138788039,
+        "zoom": 3,
+        "precision": "source_profile_reference_point_not_boundary"
+      }
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad navigation context for the five-country Acción Andina footprint.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:indus-basin-pakistan",
+    "name": "Indus Basin, Pakistan",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad basin context for the Living Indus Initiative; not a legal or project boundary.",
+      "geometry_status": "broad_navigation_context_not_boundary",
+      "reference_point": {
+        "lat": 33.693427903007,
+        "lng": 73.068308412385,
+        "zoom": 4,
+        "precision": "source_profile_reference_point_not_boundary"
+      }
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad basin context for the Living Indus Initiative; not a legal or project boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:project-greenlight",
+    "name": "Infanta, Quezon Province, Philippines",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Infanta, Quezon Province, Philippines",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Project GREENLIGHT; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:procoreef",
+    "name": "Isla Fuerte, Colombia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Isla Fuerte, Colombia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Procoreef; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:jordan-rangeland-restoration-region",
+    "name": "Jordan rangeland restoration region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the Collaborative Rangelands Restoration flagship in Jordan.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the Collaborative Rangelands Restoration flagship in Jordan.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:kazakhstan-steppe-restoration-region",
+    "name": "Kazakhstan steppe restoration region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the Altyn Dala steppe, semi-desert, desert and wetland restoration footprint.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the Altyn Dala steppe, semi-desert, desert and wetland restoration footprint.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:kenya",
+    "name": "Kenya",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "project also spans Mali, Senegal, Tanzania and Uganda",
+      "geometry_status": "navigation_context"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "One of five countries in the African Farmers Transforming Food Systems flagship.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:sri-lanka-ecosystem-restoration-management",
+    "name": "Koggala, Serakkuliya, Unawatuna and Aruwakkalu, Sri Lanka",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Koggala, Serakkuliya, Unawatuna and Aruwakkalu, Sri Lanka",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Ecosystem Restoration and Management in Sri Lanka; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:mar-menor-spain",
+    "name": "Mar Menor, Spain",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Lagoon and surrounding basin context for the restoration programme.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Lagoon and surrounding basin context for the restoration programme.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:mediterranean-forest-four-country-region",
+    "name": "Mediterranean forest restoration region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad four-country context spanning Lebanon, Morocco, Tunisia and Türkiye.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad four-country context spanning Lebanon, Morocco, Tunisia and Türkiye.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:mexican-islands",
+    "name": "Mexican islands",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad national island context; not a single project boundary.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad national island context; not a single project boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:agave-restoration-initiative",
+    "name": "Mexico and the US Southwest",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Mexico and the US Southwest",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Agave Restoration Initiative; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:model-forests-flr",
+    "name": "Model Forest landscapes in Latin America, West Africa and Southeast Asia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Model Forest landscapes in Latin America, West Africa and Southeast Asia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Model Forests Accelerating Forest Landscape Restoration; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:mulanje-landscape-restoration",
+    "name": "Mulanje District, Malawi",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Mulanje District, Malawi",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Mulanje Landscape Restoration Project; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:multi-country-mountain-restoration-regions",
+    "name": "Multi-country mountain restoration regions",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the flagship’s mountain restoration work across five countries.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the flagship’s mountain restoration work across five countries.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:north-pacific",
+    "name": "North Pacific Ocean",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "geometry_status": "broad_context_not_gpgp_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "Broad ocean context for Great Pacific Garbage Patch cleanup operations.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:northern-mozambique-channel",
+    "name": "Northern Mozambique Channel",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "geometry_status": "context_only_no_boundary_geometry"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "Multi-country marine and coastal region spanning Comoros, Madagascar, Mozambique and Tanzania.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:ferncliffe-forest-wilding",
+    "name": "Pietermaritzburg, KwaZulu-Natal, South Africa",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Pietermaritzburg, KwaZulu-Natal, South Africa",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Ferncliffe Forest Wilding; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:regreening-africa-eight-country-region",
+    "name": "Regreening Africa eight-country region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad context spanning Ethiopia, Ghana, Kenya, Mali, Niger, Rwanda, Senegal and Somalia.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad context spanning Ethiopia, Ghana, Kenya, Mali, Niger, Rwanda, Senegal and Somalia.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:sahel-five-country-region",
+    "name": "Sahel restoration region",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad five-country context spanning Burkina Faso, Chad, Mali, Mauritania and Niger.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad five-country context spanning Burkina Faso, Chad, Mali, Mauritania and Niger.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:saudi-arabia-restoration-landscapes",
+    "name": "Saudi Arabia restoration landscapes",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the National Greening Program across Saudi Arabia’s rangelands, forests, deserts, urban and coastal ecosystems.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the National Greening Program across Saudi Arabia’s rangelands, forests, deserts, urban and coastal ecosystems.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:borneo-peat-swamp-restoration",
+    "name": "Sebangau National Park, Central Kalimantan, Indonesia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Sebangau National Park, Central Kalimantan, Indonesia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Borneo Nature Foundation Peat-Swamp Restoration; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:canada-seven-coastal-national-parks",
+    "name": "Seven Canadian coastal national parks",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad project context spanning participating national parks on Canada’s Pacific and Atlantic coasts.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad project context spanning participating national parks on Canada’s Pacific and Atlantic coasts.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:china-shan-shui-restoration-landscapes",
+    "name": "Shan-Shui restoration landscapes, China",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the Shan-Shui Initiative’s large-scale restoration portfolio across China.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the Shan-Shui Initiative’s large-scale restoration portfolio across China.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:snaefellsnes-peatland-restoration",
+    "name": "Snæfellsnes peninsula, Iceland",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Snæfellsnes peninsula, Iceland",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Snæfellsnes Peatland Restoration; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:relisa-south-africa",
+    "name": "South Africa",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "South Africa",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Broad navigation context for Restoring Landscapes in South Africa (ReLISA); not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:gondwana-link",
+    "name": "South-western Australia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "South-western Australia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Gondwana Link; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:southern-australia-shellfish-reefs",
+    "name": "Southern Australian shellfish reefs",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad coastal context for shellfish-reef restoration locations around southern Australia.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad coastal context for shellfish-reef restoration locations around southern Australia.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:sri-lanka-coasts",
+    "name": "Sri Lanka coastal mangroves",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "National coastal context for the mangrove-regeneration initiative.",
+      "geometry_status": "broad_navigation_context_not_boundary",
+      "reference_point": {
+        "lat": 6.9216787646779,
+        "lng": 79.86629549414,
+        "zoom": 6,
+        "precision": "source_profile_reference_point_not_boundary"
+      }
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "National coastal context for the mangrove-regeneration initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:terai-arc-nepal",
+    "name": "Terai Arc Landscape, Nepal",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad landscape context for the Nepal portion of the Terai Arc.",
+      "geometry_status": "broad_navigation_context_not_boundary",
+      "reference_point": {
+        "lat": 29.511713507986,
+        "lng": 81.519921424821,
+        "zoom": 5,
+        "precision": "source_profile_reference_point_not_boundary"
+      }
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad landscape context for the Nepal portion of the Terai Arc.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:gambia-ecosystem-based-adaptation",
+    "name": "The Gambia",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "The Gambia",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Large-Scale Ecosystem-Based Adaptation in the Gambia; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:restoration-initiative-multi-country-region",
+    "name": "The Restoration Initiative — multi-country restoration regions",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for The Restoration Initiative across nine countries in Africa and Asia.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for The Restoration Initiative across nine countries in Africa and Asia.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:good-forests-foundation-uganda",
+    "name": "Uganda",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Uganda",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Good Forests Foundation Uganda; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:uljin-republic-of-korea",
+    "name": "Uljin, Republic of Korea",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad project context for the fire-damaged forest restoration area.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Broad project context for the fire-damaged forest restoration area.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:seagrass-ocean-rescue",
+    "name": "United Kingdom, with large-scale planting work in North Wales",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "United Kingdom, with large-scale planting work in North Wales",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Broad navigation context for Seagrass Ocean Rescue; not an ecological, legal or administrative boundary.",
+    "solution_type": null
+  },
+  {
+    "id": "place:4p:impact:sids-restoration-regions",
+    "name": "Vanuatu, Comoros and Saint Lucia restoration regions",
+    "type": "place",
+    "issues": null,
+    "profile": {
+      "publication": "related",
+      "coverage_note": "Broad navigation context for the flagship’s ridge-to-reef restoration footprint across three small island developing states.",
+      "geometry_status": "broad_navigation_context_not_boundary"
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Broad navigation context for the flagship’s ridge-to-reef restoration footprint across three small island developing states.",
+    "solution_type": null
+  }
+]
