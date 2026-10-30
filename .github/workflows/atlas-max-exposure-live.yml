@@ -21,11 +21,11 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 90
     env:
       ATLAS_PROJECT: 4planet-atlas
       ATLAS_DOMAIN: 4planetatlas.com
-      BASELINE_SHA: f01d4943e8e5fd98f1f3253255f370293f0a9589
+      BASELINE_SHA: b44c5b7e1a123ee2b3ee6a97168b0f2c4e15da74
     steps:
       - uses: actions/checkout@v4
         with:
@@ -85,6 +85,9 @@ jobs:
             const r=await call(path);assert.equal(r.status,404,path);
             assert.match(r.headers.get('x-robots-tag'),/noindex/);
           }
+          for(const [path,loc] of [['/species','https://4species.com/explore'],['/living-systems','https://4planet.org/livingsystems/']]){
+            const r=await call(path);assert.equal(r.status,302,path);assert.equal(r.headers.get('location'),loc,path);
+          }
           console.log('ATLAS_SOFT404_P0_DEEP_LINK_PRESERVATION_PASS');
           NODE
 
@@ -118,6 +121,7 @@ jobs:
 
       - name: Deploy exact candidate to dedicated ATLAS production
         id: deploy
+        timeout-minutes: 15
         shell: bash
         run: |
           set -euo pipefail
@@ -125,6 +129,7 @@ jobs:
 
       - name: Verify custom-domain LIVE
         id: live
+        timeout-minutes: 30
         shell: bash
         run: |
           set -euo pipefail
@@ -143,6 +148,15 @@ jobs:
           place_count=$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')
           test "$place_count" = '250'
           echo "ATLAS_LIVE_CHECKPOINT place-index=$place_count"
+
+          # Hub paths: the home page still links /species and /living-systems (home bytes unchanged);
+          # on 4planetatlas.com those exact paths now redirect (302) to the live hubs.
+          for spec in /species=https://4species.com/explore /living-systems=https://4planet.org/livingsystems/; do
+            got=$(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 25 "https://$ATLAS_DOMAIN${spec%%=*}")
+            echo "ATLAS_LIVE_DIAG hub ${spec%%=*} -> $got (target status, info only: $(curl -sS -o /dev/null -w '%{http_code}' --max-time 25 "${spec#*=}" || true))"
+            test "$got" = "302 ${spec#*=}"
+          done
+          echo "ATLAS_LIVE_CHECKPOINT hub-redirects=PASS"
 
           for slug in berlin oslo london tokyo nairobi kenya sao-tome; do
             html=$(curl -fsSL "https://$ATLAS_DOMAIN/place/$slug")
@@ -209,7 +223,10 @@ jobs:
           echo "ATLAS_250_LIVE_PASS source=$GITHUB_SHA"
 
       - name: Roll back exact prior v43 production on release failure
-        if: failure() && steps.deploy.outcome == 'success' && steps.live.outcome != 'success'
+        # Roll back if the deploy step ran at all (success, failure/step timeout, or cancel) and LIVE was not proven.
+        # Step timeouts above fire before the 90-minute job timeout, so a hang takes the failure() path.
+        if: (failure() || cancelled()) && contains(fromJSON('["success","failure","cancelled"]'), steps.deploy.outcome) && steps.live.outcome != 'success'
+        timeout-minutes: 30
         shell: bash
         run: |
           set -euo pipefail

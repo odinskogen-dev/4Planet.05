@@ -2182,6 +2182,23 @@ export async function onRequest(context) {
     }
   }
 
+  // ATLAS home links "/species" and "/living-systems" have no ATLAS page (they ended in 404).
+  // Send only these exact paths to the live hubs (verified 200 on 30 Oct 2026). 302 keeps this
+  // reversible: if ATLAS ever ships its own page here, delete this map and nothing is cached for good.
+  if (host === "4planetatlas.com") {
+    const atlasHubRedirects = new Map([
+      ["/species", "https://4species.com/explore"],
+      ["/species/", "https://4species.com/explore"],
+      ["/living-systems", "https://4planet.org/livingsystems/"],
+      ["/living-systems/", "https://4planet.org/livingsystems/"],
+      ["/livingsystems", "https://4planet.org/livingsystems/"],
+      ["/livingsystems/", "https://4planet.org/livingsystems/"],
+    ]);
+    if (atlasHubRedirects.has(url.pathname)) {
+      return Response.redirect(atlasHubRedirects.get(url.pathname) + url.search, 302);
+    }
+  }
+
   if (host === "4planetatlas.com" && (url.pathname === "/place" || url.pathname === "/place/")) {
     return Response.redirect("https://4planetatlas.com/places" + url.search, 308);
   }
