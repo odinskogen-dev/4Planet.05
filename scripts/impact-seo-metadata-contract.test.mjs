@@ -26,7 +26,7 @@ test("IMPACT SEO separates webpages from entities and identifies the publisher",
   assert.match(impact,/"@graph"/);
   assert.match(impact,/mainEntity/);
   assert.match(impact,/inLanguage: "en-GB"/);
-  assert.match(impact,/Published by 4PLANET/);
+  assert.match(impact,/Published by <a href="\/about">4PLANET<\/a>/);
   assert.match(impact,/const metaDescription/);
 });
 
