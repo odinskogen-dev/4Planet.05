@@ -175,7 +175,7 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       // Preserve non-sensitive ATLAS deep-link state and campaign parameters.
       const decodeForReturnInspection = (input: string) => {
         let decoded = input;
-        for (let pass = 0; pass < 2; pass += 1) {
+        for (let pass = 0; pass < 8; pass += 1) {
           try {
             const next = decodeURIComponent(decoded.replace(/\+/g, "%20"));
             if (next === decoded) break;
@@ -231,10 +231,13 @@ export async function recoverOAuthSessionFromLocation(): Promise<FourPlanetSessi
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const accessToken = hash.get("access_token");
   const refreshToken = hash.get("refresh_token");
+  const containsCredential = hash.has("access_token") || hash.has("refresh_token");
+  // Remove any complete or incomplete credential callback before every early
+  // return, SDK load or request. Ordinary navigation anchors remain untouched.
+  if (containsCredential) {
+    window.history.replaceState({}, "", window.location.pathname + window.location.search);
+  }
   if (!accessToken || !refreshToken) return null;
-  // Capture the credentials in memory, then remove them before loading the SDK
-  // or making any request. Failure paths must not leave tokens in browser history.
-  window.history.replaceState({}, "", window.location.pathname + window.location.search);
   const client = await getIdentityClient();
   const result = await client.auth.setSession({
     access_token: accessToken,

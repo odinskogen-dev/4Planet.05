@@ -128,6 +128,65 @@ test("failed OAuth recovery scrubs credential fragments before SDK work", async 
 });
 
 
+
+test("return sanitizer rejects sensitive query keys encoded through depth eight", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  const encodeEveryByte = (value) =>
+    [...value].map((character) => `%${character.charCodeAt(0).toString(16).padStart(2, "0")}`).join("");
+  try {
+    let encodedKey = encodeEveryByte("access_token");
+    for (let depth = 1; depth <= 8; depth += 1) {
+      const target = `https://4planetatlas.com/explore?habitat=kelp&${encodedKey}=SYNTHETIC_ONLY`;
+      assert.equal(
+        identityClient.safeReturnTo(target),
+        "https://4planetatlas.com/explore?habitat=kelp",
+        `encoded sensitive key depth ${depth}`
+      );
+      encodedKey = encodeURIComponent(encodedKey);
+    }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+test("incomplete OAuth credential fragments are scrubbed before early return", async () => {
+  const previousWindow = globalThis.window;
+  const replacements = [];
+  globalThis.window = {
+    location: {
+      origin: "https://id.4planet.org",
+      hash: "",
+      pathname: "/auth/callback",
+      search: "?source=google",
+    },
+    history: {
+      replaceState(_state, _title, value) {
+        replacements.push(value);
+      },
+    },
+  };
+  try {
+    for (const fragment of [
+      "#access_token=SYNTHETIC_ONLY",
+      "#refresh_token=SYNTHETIC_ONLY",
+    ]) {
+      replacements.length = 0;
+      globalThis.window.location.hash = fragment;
+      assert.equal(await identityClient.recoverOAuthSessionFromLocation(), null);
+      assert.deepEqual(replacements, ["/auth/callback?source=google"], fragment);
+    }
+    replacements.length = 0;
+    globalThis.window.location.hash = "#atlas-map";
+    assert.equal(await identityClient.recoverOAuthSessionFromLocation(), null);
+    assert.deepEqual(replacements, []);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test("canonical ID client can hand off to every priority product host accepted by the bridge", () => {
   for (const host of [
     "4planet.org",
