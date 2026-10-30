@@ -97,11 +97,11 @@ export function useImpactIndex(): ImpactLoadState & { retry: () => void } {
 
 /* Canonical public routes — the only URL grammar templates use. */
 export const impactRoutes = {
-  home: "/impact",
-  project: (slug: string) => `/impact/project/${slug}`,
-  actor: (slug: string) => `/impact/actors/${slug}`,
-  issue: (slug: string) => `/impact/issue/${slug}`,
-  solution: (slug: string) => `/impact/solution/${slug}`,
+  home: "/impact/",
+  project: (slug: string) => `/impact/project/${slug}/`,
+  actor: (slug: string) => `/impact/actors/${slug}/`,
+  issue: (slug: string) => `/impact/issue/${slug}/`,
+  solution: (slug: string) => `/impact/solution/${slug}/`,
   method: "/impact#method",
 } as const;
 
