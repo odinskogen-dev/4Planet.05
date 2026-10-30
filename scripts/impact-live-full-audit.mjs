@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import {setTimeout as sleep} from 'node:timers/promises';
 const origin='https://4planet.org', d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
 const groups={project:d.projects||[],actors:d.actors||[],issue:d.issues||[],solution:(d.solutions||[]).filter(x=>x.indexable)};
-const rows=[{kind:'home',name:'Find people bringing life back.',path:'/impact'}];
-for(const [kind,group] of Object.entries(groups))for(const x of group)rows.push({kind,name:x.name,path:'/impact/'+kind+'/'+x.slug,item:x});
+const rows=[{kind:'home',name:'Find people bringing life back.',path:'/impact/'}];
+for(const [kind,group] of Object.entries(groups))for(const x of group)rows.push({kind,name:x.name,path:'/impact/'+kind+'/'+x.slug+'/',item:x});
 const errors=[],results=[];function fail(code,p,detail){errors.push({code,path:p,detail:String(detail).slice(0,400)})}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function norm(s){return String(s||'').replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/[\u2018\u2019]/g,"'").replace(/\s+/g,' ').trim()}

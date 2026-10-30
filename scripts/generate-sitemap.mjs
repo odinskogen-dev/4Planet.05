@@ -28,7 +28,7 @@ const staticRoutes = [
   ...livingSystemsPublicRoutes,
   "/impact/actions/bay-of-biscay-survey",
   "/cre4tor/odin",
-  "/impact",
+  "/impact/",
   "/actors",
   "/brands",
   "/partners",
