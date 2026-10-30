@@ -1,3 +1,17 @@
+# GOLD TEMPLATE — CHROMIUM + WEBKIT IMMUTABLE MATRIX — 30 OCTOBER 2026
+
+**STATUS:** CODE CANDIDATE / EXACT-SHA CI REQUIRED / RELEASE HOLD.
+
+**ESCAPED GAP:** bounded ACTOR correction 456cee37 passed 39/39 Chromium checks and received independent scoped QA_ACCEPT, but the owning Gold Template workflow installed Chromium only. Three configured WebKit projects were never executed, so WebKit remained an unproven release gate.
+
+**BOUNDED CORRECTION:** the existing exact-SHA TEST-domain workflow now installs the lockfile-matched Chromium and WebKit engines and runs the same 13 non-preflight contracts at desktop 1440, mobile 390 and mobile 430 on both engines. The Chromium HEIR identity preflight remains fail-fast before the full matrix.
+
+**SAME-PATH PREVENTION:** the structural Gold judge now reads the owning workflow and Playwright config, fails if either engine install is absent, fails if any of the six project flags is removed, and fails if the three WebKit project names are no longer configured.
+
+**TRUTH / RELEASE BOUNDARY:** a successful native run proves this controlled Gold Template matrix only. It does not prove full-product rights, accessibility, indexability, published-SPECIES zero-loss, merge, deployment, LIVE use, cash or impact. Independent Gold and Founder-specific release remain separate.
+
+**ROLLBACK:** revert this workflow/judge/brief commit to 456cee37a6c8c330c0be59f34bf2b20444e6df7b if exact-SHA CI finds an engine, timeout, evidence-retention or product regression.
+
 # ACTOR GOLD — CONTROLLED DEVELOPMENT PROJECTION — 30 OCTOBER 2026
 
 **STATUS:** CODE CANDIDATE / NATIVE GOLD TEMPLATE REQUIRED / RELEASE HOLD.

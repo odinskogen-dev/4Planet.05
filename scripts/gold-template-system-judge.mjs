@@ -15,6 +15,8 @@ const files = {
   theme: read("src/components/gold/GoldThemeToggle.tsx"),
   brief: read("docs/control/GOLD_CURRENT_BRIEF.md"),
   routes: read("src/pages/labs/SandboxGoldRoutes.tsx"),
+  workflow: read(".github/workflows/gold-template-test-domain-proof.yml"),
+  playwright: read("playwright.config.ts"),
 };
 const combined = Object.values(files).join("\n");
 const checks = [];
@@ -42,6 +44,24 @@ check("truth:decision-delivery", combined.includes("DECISION ≠ DELIVERY ≠ EC
 check("species:orca-donor-only", files.core.includes("ORCA is used only as a capability donor") && files.core.includes("No Orca copy or species-specific claims are reused"), "Blue Whale uses ORCA capability, not Orca truth");
 check("actor:development", /publicationState:\s*"DEVELOPMENT"/.test(files.actor), "Actor proof is not promoted to public/live state");
 check("actor:rights", /documentaryRightsState:\s*"NOT_REQUIRED"/.test(files.actor), "Actor Gold does not depend on unverified documentary media rights");
+const requiredBrowserProjects = ["desktop-1440", "mobile-390", "mobile-430", "webkit-desktop", "webkit-390", "webkit-430"];
+check(
+  "browser:chromium-webkit-installed",
+  files.workflow.includes("playwright install --with-deps chromium webkit"),
+  "Exact Gold workflow installs both locked browser engines before acceptance",
+);
+check(
+  "browser:chromium-webkit-matrix",
+  requiredBrowserProjects.every((project) => files.workflow.includes(`--project=${project}`)),
+  "Exact TEST-domain proof executes 1440/390/430 on Chromium and WebKit",
+);
+check(
+  "browser:webkit-projects-configured",
+  ["webkit-desktop", "webkit-390", "webkit-430"].every((project) =>
+    files.playwright.includes(`name: "${project}"`)
+  ),
+  "Workflow project names remain backed by Playwright configuration",
+);
 check("media:designed", files.refinement.includes("DESIGNED TEST VISUAL / RIGHTS-SAFE") && files.refinement.includes("Designed ${object.visual.toLowerCase()} context visual"), "Rendered Gold review surfaces identify in-system designed, rights-safe media without requiring third-party imagery");
 check("proof:no-fake-outcome", files.completion.includes("No delivery, survival, habitat recovery, biodiversity gain or causal outcome is claimed"), "Proof template refuses an unsupported success claim");
 check("signal:temporal", files.completion.includes("proposal is final, funded, implemented or ecologically effective") && files.completion.includes("Proposal ≠ adopted measure"), "Signal object does not become outcome truth");
