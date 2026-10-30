@@ -1,0 +1,112 @@
+name: IMPACT — Human First 229 Profile QA
+
+on:
+  push:
+    branches:
+      - improve/impact-human-seo-redteam-20261031
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: impact-human-first-qa
+  cancel-in-progress: true
+
+jobs:
+  human-first:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CF_PAGES: "1"
+      IMPACT_SNAPSHOT_LIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Build current NATUREBRAIN-backed IMPACT candidate
+        run: |
+          npm ci
+          npm run build
+          node --test scripts/impact-human-seo-contract.test.mjs scripts/impact-seo-graph-contract.test.mjs
+      - name: Start exact local production preview
+        run: |
+          nohup npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/impact-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/impact/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/impact-preview.log
+          exit 1
+      - name: Browser prove human-first IMPACT on desktop and mobile
+        run: |
+          npx playwright install --with-deps chromium
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
+          const base='http://127.0.0.1:4173';
+          const profiles=[
+            ...d.projects.map(x=>['project',x.slug,x.name]),
+            ...d.actors.map(x=>['actors',x.slug,x.name]),
+            ...d.issues.map(x=>['issue',x.slug,x.name]),
+            ...d.solutions.filter(x=>x.indexable).map(x=>['solution',x.slug,x.name]),
+          ];
+          if(profiles.length<228) throw new Error('profile regression '+profiles.length);
+          const browser=await chromium.launch({headless:true});
+          try{
+            for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+              const page=await browser.newPage({viewport});
+              await page.goto(base+'/impact/',{waitUntil:'networkidle',timeout:90000});
+              await page.locator('h1').first().waitFor();
+              const home=await page.evaluate(()=>({
+                h1:document.querySelector('h1')?.textContent||'',
+                overflow:document.documentElement.scrollWidth-innerWidth,
+                jumps:[...document.querySelectorAll('.iu-home-jumps a')].map(a=>a.textContent?.trim()),
+                details:[...document.querySelectorAll('details.iu-more summary')].map(x=>x.textContent?.trim()),
+                text:document.body.innerText
+              }));
+              if(!/Find people bringing life back/i.test(home.h1)) throw new Error('home h1');
+              if(home.overflow>16) throw new Error('home overflow '+home.overflow);
+              for(const label of ['Projects','Problems','Organisations','Methods']) if(!home.jumps.includes(label)) throw new Error('missing home jump '+label);
+              if(!home.text.includes('source-aware public records')) throw new Error('human provenance missing');
+              if(!home.details.some(x=>/more source-backed issues/i.test(x||''))) throw new Error('issue progressive disclosure missing');
+              if(!home.details.some(x=>/organisations/i.test(x||''))) throw new Error('actor progressive disclosure missing');
+              await page.close();
+            }
+            // Exact profiles: mobile hydration, one H1, no overflow, no source failure.
+            const page=await browser.newPage({viewport:{width:390,height:844}});
+            for(let i=0;i<profiles.length;i++){
+              const [kind,slug,name]=profiles[i];
+              const r=await page.goto(base+`/impact/${kind}/${slug}/`,{waitUntil:'domcontentloaded',timeout:60000});
+              if(r?.status()!==200) throw new Error(`${kind}/${slug} HTTP ${r?.status()}`);
+              await page.locator('article.iu-profile h1').first().waitFor({timeout:20000});
+              const x=await page.evaluate(()=>({
+                h1:document.querySelector('article.iu-profile h1')?.textContent?.trim()||'',
+                overflow:document.documentElement.scrollWidth-innerWidth,
+                text:document.querySelector('article.iu-profile')?.textContent||'',
+              }));
+              if(x.h1!==name) throw new Error(`wrong H1 ${kind}/${slug}: ${x.h1}`);
+              if(x.overflow>16) throw new Error(`overflow ${kind}/${slug}: ${x.overflow}`);
+              if(x.text.length<180||/source unavailable/i.test(x.text)) throw new Error(`weak hydration ${kind}/${slug}`);
+            }
+            // Human-first targeted states.
+            const noProjectIssue=d.issues.find(issue=>!d.projects.some(p=>(p.issues||[]).some(i=>i.id===issue.id)));
+            if(noProjectIssue){
+              await page.goto(base+`/impact/issue/${noProjectIssue.slug}/`,{waitUntil:'networkidle',timeout:60000});
+              const text=await page.locator('article.iu-profile').innerText();
+              if(!/no published project linked yet/i.test(text)) throw new Error('no-project issue truth state missing');
+            }
+            const actor=d.actors.find(a=>(a.projects||[]).length>0) || d.actors[0];
+            await page.goto(base+`/impact/actors/${actor.slug}/`,{waitUntil:'networkidle',timeout:60000});
+            if(await page.locator('.iu-profile-nav').count()!==1) throw new Error('actor on-this-page missing');
+            const solution=d.solutions.find(x=>x.indexable);
+            await page.goto(base+`/impact/solution/${solution.slug}/`,{waitUntil:'networkidle',timeout:60000});
+            if(await page.locator('.iu-profile-nav').count()!==1) throw new Error('solution on-this-page missing');
+            if(!/Method · public record/i.test(await page.locator('article.iu-profile').innerText())) throw new Error('solution state label');
+            await page.close();
+            console.log('IMPACT_HUMAN_FIRST_BROWSER_PASS profiles='+profiles.length);
+          } finally { await browser.close(); }
+          NODE
