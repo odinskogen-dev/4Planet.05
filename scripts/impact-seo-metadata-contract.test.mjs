@@ -57,3 +57,10 @@ test("sitemaps carry meaningful IMPACT lastmod without build-time fiction",()=>{
   assert.match(sitemap,/item\?\.lastReviewed \|\| item\?\.updatedAt/);
   assert.doesNotMatch(sitemap,/impactLastmodByRoute.*Date\.now/);
 });
+
+
+test("crawlable home links public methods directly",()=>{
+  assert.match(impact,/<h2>Methods<\/h2>/);
+  assert.match(impact,/solutions\.filter\(\(s\) => s\.indexable === true\)/);
+  assert.match(impact,/solutionHref/);
+});
