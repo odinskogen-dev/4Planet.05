@@ -76,7 +76,7 @@ test("4SPECIES reinforces one clean canonical host on HTML and HEAD", async (t) 
   assert.equal(head.headers.get("link"), '<https://4species.com/green-sea-turtle>; rel="canonical"');
 
   const slash = await worker.fetch(new Request("https://4species.com/green-sea-turtle/?from=legacy", { redirect: "manual" }));
-  assert.equal(slash.status, 301);
+  assert.equal(slash.status, 308);
   assert.equal(slash.headers.get("location"), "https://4species.com/green-sea-turtle?from=legacy");
 
   const legacyRoot = await worker.fetch(new Request("https://4species.com/species/", { redirect: "manual" }));

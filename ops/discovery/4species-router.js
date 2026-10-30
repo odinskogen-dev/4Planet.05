@@ -99,6 +99,7 @@ export async function verifyApprovedNewSpeciesPhoto(
 function isProfilePathCandidate(pathname) {
   if (typeof pathname !== "string" || PUBLIC_NON_PROFILE_PATHS.has(pathname)) return false;
   return /^\/[^/.]+$/.test(pathname) ||
+    /^\/{2,}[^/.]+$/.test(pathname) ||
     /^\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)+\/?$/.test(pathname);
 }
 
@@ -565,7 +566,7 @@ export default {
       return redirect("https://4species.com/" + encodeURIComponent(slug) + url.search, 301);
     }
     if (/^\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(path))
-      return redirect(`https://4species.com${path.slice(0, -1)}${url.search}`, 301);
+      return redirect(`https://4species.com${path.slice(0, -1)}${url.search}`, 308);
     if (path === "/labs/species" || path === "/labs/species/")
       return redirect("https://4species.com/" + url.search, 301);
     if (path.startsWith("/labs/species/")) {

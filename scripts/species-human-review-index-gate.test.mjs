@@ -221,12 +221,26 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
       assert.equal(known.headers.get("link"), '<https://4species.com/orca>; rel="canonical"');
       assert.equal(known.headers.get("x-robots-tag"), null);
 
-      for (const path of ["/orca?preview=1", "/orca/unknown", "/unknown/path"]) {
+      const benignQuery = await speciesWorker.fetch(new Request("https://4species.com/orca?utm_source=4planet", { method }));
+      assert.equal(benignQuery.status, 200, `${method} benign query`);
+      assert.equal(benignQuery.headers.get("link"), '<https://4species.com/orca>; rel="canonical"');
+      assert.equal(benignQuery.headers.get("x-robots-tag"), null);
+
+      const trailingSlash = await speciesWorker.fetch(new Request("https://4species.com/orca/", { method, redirect: "manual" }));
+      assert.equal(trailingSlash.status, 308, `${method} trailing slash`);
+      assert.equal(trailingSlash.headers.get("location"), "https://4species.com/orca");
+      assert.equal(trailingSlash.headers.get("link"), null);
+      assert.equal(trailingSlash.headers.get("x-robots-tag"), null);
+      assert.equal(await trailingSlash.text(), "", `${method} trailing slash body`);
+
+      for (const path of ["/orca?preview=1", "/orca/unknown", "/unknown/path", "//orca"]) {
         const response = await speciesWorker.fetch(new Request(`https://4species.com${path}`, { method }));
         assert.equal(response.status, 404, `${method} ${path}`);
         assert.equal(response.headers.get("link"), null, `${method} ${path} canonical`);
         assert.match(response.headers.get("x-robots-tag") || "", /noindex/, `${method} ${path} robots`);
-        if (method === "HEAD") assert.equal(await response.text(), "", `${path} HEAD body`);
+        const body = await response.text();
+        if (method === "HEAD") assert.equal(body, "", `${path} HEAD body`);
+        else assert.match(body, /<meta name="robots" content="noindex,nofollow,noarchive">/, `${path} HTML robots`);
       }
 
       const explore = await speciesWorker.fetch(new Request("https://4species.com/explore", { method }));
