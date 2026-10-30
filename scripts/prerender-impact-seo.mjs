@@ -18,11 +18,116 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
   const issueHref = (slug) => `/impact/issue/${slug}/`;
   const bySlug = (rows) => new Map(rows.map((row) => [row.slug, row]));
   const projectMap = bySlug(projects);
+  // Search/AI discovery is based on crawlable, source-backed HTML, not artificial
+  // FAQ markup, keyword stuffing or a duplicate data store. Every link is
+  // resolved from the same published NATUREBRAIN projection as the templates.
+  const solutionMap = bySlug(solutions);
+  const projectForSlug = bySlug(projects);
+  const actorForSlug = bySlug(actors);
+  const issueForSlug = bySlug(issues);
+  const unique = (items) => [...new Set(items)];
+  const link = (href, name) => '<a href="' + esc(href) + '">' + esc(name) + '</a>';
+  const projectMethods = (project) =>
+    (project.solutions ?? []).filter((method) => solutionMap.has(method.slug));
+  const projectIssues = (project) =>
+    (project.issues ?? []).filter((issue) => issueForSlug.has(issue.slug));
+  const trail = (nodes) => {
+    const crumbs = [{ name: "4PLANET", href: "/" }, { name: "Impact", href: "/impact/" }, ...nodes];
+    const nav = '<nav aria-label="Breadcrumb"><ol>' + crumbs.map((c, i) =>
+      '<li>' + (i === crumbs.length - 1 ? '<span aria-current="page">' + esc(c.name) + '</span>' : link(c.href, c.name)) + '</li>'
+    ).join('') + '</ol></nav>';
+    const schema = {
+      "@context": "https://schema.org", "@type": "BreadcrumbList",
+      itemListElement: crumbs.map((c, i) => ({
+        "@type": "ListItem", position: i + 1, name: c.name, item: origin + c.href
+      }))
+    };
+    return { nav, schema };
+  };
+  function enhanced(props) {
+    const route = props.pathName;
+    const segments = route.split("/").filter(Boolean);
+    const kind = segments[1] || "home";
+    const slug = segments[2];
+    const name = kind === "home" ? "Impact" : (
+      kind === "project" ? projectForSlug.get(slug)?.name :
+      kind === "actors" ? actorForSlug.get(slug)?.name :
+      kind === "issue" ? issueForSlug.get(slug)?.name :
+      solutionMap.get(slug)?.name
+    ) || props.title;
+    const breadcrumb = trail(kind === "home" ? [] : [{ name, href: route }]);
+    let more = "";
+    if (kind === "home") {
+      more = '<section aria-labelledby="impact-methods"><h2 id="impact-methods">Conservation and restoration methods</h2>'
+        + '<p>Explore the approaches recorded in published project evidence, including where they are being used and what is not yet established.</p><ul>'
+        + solutions.map((s) => '<li>' + link('/impact/solution/' + s.slug + '/', s.name)
+          + (s.description ? ' — ' + esc(s.description) : '') + '</li>').join('')
+        + '</ul></section>';
+    } else if (kind === "project") {
+      const p = projectForSlug.get(slug);
+      if (p) {
+        const methods = projectMethods(p);
+        const similar = projects.filter((other) => other.slug !== p.slug &&
+          projectIssues(other).some((issue) => projectIssues(p).some((pi) => pi.slug === issue.slug))).slice(0, 5);
+        more = '<section aria-labelledby="impact-project-navigation"><h2 id="impact-project-navigation">Explore this project in context</h2>'
+          + (methods.length ? '<h3>Methods connected to this project</h3><ul>' + methods.map((m) =>
+            '<li>' + link('/impact/solution/' + m.slug + '/', m.name) + '</li>').join('') + '</ul>' : '')
+          + (p.officialUrl ? '<p>Official programme information: <a href="' + esc(p.officialUrl) +
+            '">' + esc(host(p.officialUrl)) + '</a>. This is an information link, not a 4PLANET contribution or partnership.</p>' : '')
+          + (similar.length ? '<h3>Other projects addressing related problems</h3><ul>' +
+            similar.map((other) => '<li>' + link(projectHref(other.slug), other.name) + '</li>').join('') + '</ul>' : '')
+          + '</section>';
+      }
+    } else if (kind === "actors") {
+      const a = actorForSlug.get(slug);
+      if (a) {
+        const related = (a.projects ?? []).map((p) => projectForSlug.get(p)).filter(Boolean);
+        const problems = unique(related.flatMap(projectIssues).map((i) => i.slug));
+        more = '<section aria-labelledby="actor-context"><h2 id="actor-context">Problems connected to published projects</h2>'
+          + (problems.length ? '<ul>' + problems.map((slug) =>
+            '<li>' + link(issueHref(slug), issueForSlug.get(slug)?.name || slug) + '</li>').join('') + '</ul>' :
+            '<p>Project-to-problem relationships are not published in this record.</p>')
+          + (a.website ? '<p>Organisation website: <a href="' + esc(a.website) + '">' + esc(host(a.website)) + '</a></p>' : '')
+          + '</section>';
+      }
+    } else if (kind === "issue") {
+      const i = issueForSlug.get(slug);
+      if (i) {
+        const related = (i.projects ?? []).map((slug) => projectForSlug.get(slug)).filter(Boolean);
+        const methods = unique(related.flatMap(projectMethods).map((m) => m.slug));
+        more = '<section aria-labelledby="issue-methods"><h2 id="issue-methods">Approaches associated with this problem</h2>'
+          + (methods.length ? '<ul>' + methods.map((slug) => {
+            const method = solutionMap.get(slug);
+            return '<li>' + link('/impact/solution/' + slug + '/', method?.name || slug)
+              + (method?.description ? ' — ' + esc(method.description) : '') + '</li>';
+          }).join('') + '</ul>' : '<p>No independently reviewed solution comparison is published for this problem.</p>')
+          + '</section>';
+      }
+    } else if (kind === "solution") {
+      const method = solutionMap.get(slug);
+      if (method) {
+        const related = projects.filter((p) => projectMethods(p).some((m) => m.slug === slug));
+        const problemSlugs = unique(related.flatMap(projectIssues).map((i) => i.slug));
+        more = '<section aria-labelledby="method-context"><h2 id="method-context">Problems connected to this approach</h2>'
+          + (problemSlugs.length ? '<ul>' + problemSlugs.map((slug) =>
+            '<li>' + link(issueHref(slug), issueForSlug.get(slug)?.name || slug) + '</li>').join('') + '</ul>' :
+            '<p>No problem relationship is established in the published project records.</p>')
+          + '</section>';
+      }
+    }
+    const body = props.body.replace('<main>', '<main>' + breadcrumb.nav).replace('</main>', more + '</main>');
+    const html = enhanced({ ...props, body });
+    // JSON-LD is a factual mirror of visible breadcrumb links; no fictional Q&A.
+    const breadcrumbScript = '<script type="application/ld+json">' +
+      JSON.stringify(breadcrumb.schema).replaceAll('<', '\\u003c') + '</script>';
+    return html.replace('</head>', breadcrumbScript + '</head>');
+  }
+
   const boundary = "<p><strong>Truth boundary.</strong> Listing does not imply 4PLANET partnership or endorsement. Source-reported figures are not independently verified by 4PLANET. Delivery, outcome and verification remain separate states.</p>";
   const sourcesList = (urls) => urls.length ? `<h2>Sources</h2><ul>${urls.map((u) => `<li><a href="${esc(u)}" rel="nofollow">${esc(host(u))}</a></li>`).join("")}</ul>` : "";
   const projectLi = (p) => `<li><a href="${projectHref(esc(p.slug))}">${esc(p.name)}</a>${p.actor ? ` — ${esc(p.actor.name)}` : ""}${p.place ? `, ${esc(p.place)}` : ""}</li>`;
 
-  writeRoute("/impact", pageHtml({
+  writeRoute("/impact", enhanced({
     pathName: "/impact/",
     title: "Impact — Find people bringing life back | 4PLANET",
     description: "A source-aware index of ecological projects and the organisations doing the work — by problem, place and method, with evidence and official routes kept close.",
@@ -42,7 +147,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const path = projectHref(p.slug);
     const desc = [p.description.replace(/\.\s*$/, "") + ".", p.actor ? `Lead organisation: ${p.actor.name}.` : "", p.place ? `Place: ${p.place}.` : "", "Evidence and sources on 4PLANET Impact."].filter(Boolean).join(" ").slice(0, 300);
     const claims = (p.claims ?? []).map((c) => `<li><p>${esc(c.statement)}</p><p><small>${esc([c.review, c.strength, c.interpretation].filter(Boolean).join(" · ").replaceAll("_", " "))}</small>${c.url ? ` — <a href="${esc(c.url)}" rel="nofollow">${esc(c.source || host(c.url))}</a>` : ""}</p>${(c.limitations ?? []).map((l) => `<p><small>Limitation: ${esc(l)}</small></p>`).join("")}</li>`).join("");
-    writeRoute(path, pageHtml({
+    writeRoute(path, enhanced({
       pathName: path,
       title: `${p.name} — Impact | 4PLANET`,
       description: desc,
@@ -71,7 +176,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
   for (const a of actors) {
     const path = actorHref(a.slug);
     const related = (a.projects ?? []).map((slug) => projectMap.get(slug)).filter(Boolean);
-    writeRoute(path, pageHtml({
+    writeRoute(path, enhanced({
       pathName: path,
       title: `${a.name} — Organisation | 4PLANET Impact`,
       description: (a.description ? `${a.description} ` : `${a.name}: `) + "Projects, places and sources on 4PLANET Impact.",
@@ -103,7 +208,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const issueUnknownHtml = issueUnknowns.length
       ? `<h2>Known and not established</h2><ul>${issueUnknowns.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>`
       : "";
-    writeRoute(path, pageHtml({
+    writeRoute(path, enhanced({
       pathName: path,
       title: `${i.name} — projects and organisations | 4PLANET Impact`,
       description: `${i.description ? i.description.replace(/\.\s*$/, "") + "." : i.name + "."} Who is working on it, with which methods and where — with sources.`,
@@ -137,7 +242,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const risksHtml = (s.risks ?? []).length ? `<h2>Limitations and risks</h2><ul>${s.risks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
     const issuesHtml = relatedIssues.length ? `<h2>Issues connected to this method</h2><ul>${relatedIssues.map((i) => `<li><a href="/impact/issue/${esc(i.slug)}">${esc(i.name)}</a></li>`).join("")}</ul>` : "";
     const projectsHtml = relatedProjects.length ? `<h2>Projects using this method</h2><ul>${relatedProjects.map((project) => `<li><a href="${projectHref(esc(project.slug))}">${esc(project.name)}</a></li>`).join("")}</ul>` : "";
-    writeRoute(path, pageHtml({
+    writeRoute(path, enhanced({
       pathName: path,
       title: `${s.name} — Method and evidence | 4PLANET Impact`,
       description: `${s.description || s.name} See source-grounded projects, evidence, applicability and limitations in 4PLANET Impact.`,
