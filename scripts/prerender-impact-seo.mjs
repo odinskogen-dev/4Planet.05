@@ -161,7 +161,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const claims = (p.claims ?? []).map((c) => `<li><p>${esc(c.statement)}</p><p><small>${esc([c.review, c.strength, c.interpretation].filter(Boolean).join(" · ").replaceAll("_", " "))}</small>${c.url ? ` — <a href="${esc(c.url)}">${esc(c.source || host(c.url))}</a>` : ""}</p>${(c.limitations ?? []).map((l) => `<p><small>Limitation: ${esc(l)}</small></p>`).join("")}</li>`).join("");
     writeRoute(path, enhanced({
       pathName: path,
-      title: `${p.name} — Impact | 4PLANET`,
+      title: `${p.name} — Project | 4PLANET`,
       description: desc,
       image: p.image || undefined,
       body: `<main><p>4PLANET IMPACT / PROJECT</p><h1>${esc(p.name)}</h1><p>${esc(p.description)}</p><dl>${p.issues?.length ? `<dt>Problem</dt><dd>${p.issues.map((i) => `<a href="${issueHref(esc(i.slug))}">${esc(i.name)}</a>`).join(", ")}</dd>` : ""}${p.place ? `<dt>Place</dt><dd>${esc(p.place)}</dd>` : ""}${(p.actors ?? []).length ? `<dt>Organisations</dt><dd>${p.actors.map((a) => `<a href="${actorHref(esc(a.slug))}">${esc(a.name)}</a>`).join(", ")}</dd>` : ""}${p.solutions?.length ? `<dt>Method</dt><dd>${p.solutions.map((s) => esc(s.name)).join(", ")}</dd>` : ""}${p.reviewState ? `<dt>Review state</dt><dd>${esc(p.reviewState)}</dd>` : ""}</dl><h2>What the sources establish</h2><ol>${claims}</ol><h2>What this record does not establish</h2><p>4PLANET has not reviewed this project under its own method. No 4PLANET partnership, funding or verified ecological outcome is recorded.</p>${sourcesList(p.citations ?? [])}${p.image && p.imageRole && p.imageRole !== "project_media" ? "<p><small>The image is an issue visual, not project photography.</small></p>" : ""}<p><a href="/impact/">Explore Impact</a> · <a href="/atlas">Open ATLAS</a></p></main>`,
@@ -205,7 +205,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const related = (a.projects ?? []).map((slug) => projectMap.get(slug)).filter(Boolean);
     writeRoute(path, enhanced({
       pathName: path,
-      title: `${a.name} — Organisation | 4PLANET Impact`,
+      title: `${a.name} — Organisation | 4PLANET`,
       description: metaDescription((a.description ? `${a.description} ` : `${a.name}: `) + "Projects, places and sources on 4PLANET Impact."),
       body: `<main><p>4PLANET IMPACT / ORGANISATION</p><h1>${esc(a.name)}</h1>${a.description ? `<p>${esc(a.description)}</p>` : ""}${a.type ? `<p>Type: ${esc(a.type.replaceAll("_", " "))}</p>` : ""}<p>Public record — not a 4PLANET partner. Listing does not imply endorsement.</p><h2>Projects</h2>${related.length ? `<ul>${related.map(projectLi).join("")}</ul>` : "<p>No linked project has passed the IMPACT publication gate yet.</p>"}${unique(related.flatMap((p) => p.places ?? [])).length ? `<h2>Places in published work</h2><ul>${unique(related.flatMap((p) => p.places ?? [])).map((place) => `<li>${esc(place)}</li>`).join("")}</ul>` : ""}${sourcesList(a.citations ?? [])}</main>`,
       jsonLd: {
@@ -253,7 +253,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
       : "";
     writeRoute(path, enhanced({
       pathName: path,
-      title: related.length ? `${i.name} — projects and organisations | 4PLANET Impact` : `${i.name} — evidence and problem intelligence | 4PLANET Impact`,
+      title: related.length ? `${i.name} — Projects | 4PLANET` : `${i.name} — Environmental Issue | 4PLANET`,
       description: metaDescription(related.length
         ? `${i.description ? i.description.replace(/\.\s*$/, "") + "." : i.name + "."} Who is working on it, with which methods and where — with sources.`
         : `${i.description ? i.description.replace(/\.\s*$/, "") + "." : i.name + "."} Source-backed problem intelligence, evidence and what is not yet established.`),
@@ -291,7 +291,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     const projectsHtml = relatedProjects.length ? `<h2>Projects using this method</h2><ul>${relatedProjects.map((project) => `<li><a href="${projectHref(esc(project.slug))}">${esc(project.name)}</a></li>`).join("")}</ul>` : "";
     writeRoute(path, enhanced({
       pathName: path,
-      title: `${s.name} — Method and evidence | 4PLANET Impact`,
+      title: `${s.name} — Method | 4PLANET`,
       description: metaDescription(`${s.description || s.name} See source-grounded projects, evidence, applicability and limitations in 4PLANET Impact.`),
       body: `<main><p>4PLANET IMPACT / METHOD</p><h1>${esc(s.name)}</h1>${s.description ? `<p>${esc(s.description)}</p>` : ""}${mechanismHtml}${claimHtml}${issuesHtml}${projectsHtml}${applicabilityHtml}${risksHtml}${sourcesList(citations)}${boundary}</main>`,
       jsonLd: {
