@@ -34,6 +34,10 @@ if (!sha(manifest.testKingSha)) fail('manifest testKingSha invalid');
 if (manifest.liveRollbackState !== 'VERIFIED') fail(`LIVE rollback state is ${manifest.liveRollbackState || 'MISSING'}, not VERIFIED`);
 if (!sha(manifest.priorLiveSha)) fail('manifest priorLiveSha invalid');
 if (!manifest.founderDecisionRef || !String(manifest.founderDecisionRef).trim()) fail('founderDecisionRef missing');
+if (!sha(manifest.founderDecisionTestKingSha)) fail('founderDecisionTestKingSha invalid');
+if (manifest.founderDecisionTestKingSha !== manifest.testKingSha) {
+  fail(`Founder decision artifact mismatch: decision binds ${manifest.founderDecisionTestKingSha}, manifest tests ${manifest.testKingSha}`);
+}
 if (!manifest.rollbackRef || !String(manifest.rollbackRef).includes(manifest.priorLiveSha)) fail('rollbackRef does not bind priorLiveSha');
 if (!manifest.evidenceRef || !String(manifest.evidenceRef).trim()) fail('evidenceRef missing');
 if (!head) fail('cannot resolve exact checked-out SHA');
@@ -63,6 +67,7 @@ console.log(JSON.stringify({
   liveRollbackState: manifest.liveRollbackState,
   priorLiveSha: manifest.priorLiveSha,
   founderDecisionRef: manifest.founderDecisionRef,
+  founderDecisionTestKingSha: manifest.founderDecisionTestKingSha,
   evidenceRef: manifest.evidenceRef,
   rollbackRef: manifest.rollbackRef
 }, null, 2));
