@@ -1,0 +1,67 @@
+name: IMPACT — Human Page Experience Audit
+
+on:
+  push:
+    branches:
+      - audit/impact-page-experience-20261031
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Chromium
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
+      - name: Audit representative IMPACT templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/impact-lighthouse
+          urls=(
+            "https://4planet.org/impact/"
+            "https://4planet.org/impact/project/agave-restoration-initiative/"
+            "https://4planet.org/impact/issue/land-degradation/"
+            "https://4planet.org/impact/actors/the-ocean-cleanup/"
+            "https://4planet.org/impact/solution/peatland-rewetting/"
+          )
+          i=0
+          for url in "${urls[@]}"; do
+            i=$((i+1))
+            npx --yes lighthouse "$url"               --chrome-path="$(command -v chromium-browser || command -v chromium)"               --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"               --only-categories=performance,accessibility,best-practices,seo               --output=json               --output-path="artifacts/impact-lighthouse/$i.json"               --quiet
+          done
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const files=fs.readdirSync('artifacts/impact-lighthouse').filter(x=>x.endsWith('.json')).sort();
+          const out=[];
+          for(const file of files){
+            const r=JSON.parse(fs.readFileSync('artifacts/impact-lighthouse/'+file,'utf8'));
+            const pct=(id)=>Math.round((r.categories[id]?.score??0)*100);
+            const ms=(id)=>Math.round(r.audits[id]?.numericValue??0);
+            out.push({
+              url:r.finalDisplayedUrl,
+              performance:pct('performance'),
+              accessibility:pct('accessibility'),
+              bestPractices:pct('best-practices'),
+              seo:pct('seo'),
+              lcp_ms:ms('largest-contentful-paint'),
+              cls:Number((r.audits['cumulative-layout-shift']?.numericValue??0).toFixed(3)),
+              tbt_ms:ms('total-blocking-time'),
+              speedIndex_ms:ms('speed-index'),
+              transferBytes:Math.round(r.audits['total-byte-weight']?.numericValue??0),
+            });
+          }
+          fs.writeFileSync('artifacts/impact-lighthouse/summary.json',JSON.stringify(out,null,2));
+          console.log('IMPACT_LIGHTHOUSE_SUMMARY '+JSON.stringify(out,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impact-lighthouse-redteam
+          path: artifacts/impact-lighthouse
+          retention-days: 30
