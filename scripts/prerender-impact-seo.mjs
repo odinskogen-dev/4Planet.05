@@ -123,7 +123,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
           + '</section>';
       }
     }
-    const provenance = '<p><small>Published by 4PLANET · Source-aware public record · <a href="/impact/#method">How records are reviewed</a></small></p>';
+    const provenance = '<p><small>Published by <a href="/about">4PLANET</a> · Source-aware public record · <a href="/impact/#method">How records are reviewed</a></small></p>';
     const body = props.body.replace('<main>', '<main>' + breadcrumb.nav).replace('</main>', more + provenance + '</main>');
     const html = pageHtml({ ...props, body });
     // JSON-LD is a factual mirror of visible breadcrumb links; no fictional Q&A.
@@ -141,7 +141,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
     title: "Impact — Find people bringing life back | 4PLANET",
     description: "A source-aware index of ecological projects and the organisations doing the work — by problem, place and method, with evidence and official routes kept close.",
     image: "/assets/missions/rewild/hero.jpg",
-    body: `<main><p>4PLANET IMPACT</p><h1>Find people bringing life back.</h1><p>An index of real ecological projects and the organisations doing the work — with what the sources establish, and what they do not.</p><h2>Projects</h2><ul>${projects.map(projectLi).join("")}</ul><h2>Issues</h2><ul>${issues.map((i) => `<li><a href="${issueHref(esc(i.slug))}">${esc(i.name)}</a></li>`).join("")}</ul><h2>Organisations</h2><ul>${actors.map((a) => `<li><a href="${actorHref(esc(a.slug))}">${esc(a.name)}</a></li>`).join("")}</ul><h2>How records are reviewed</h2><p>Discovered → Source-checked → Externally vetted → 4PLANET reviewed (reserved). No one can pay to be listed, ranked or reviewed.</p>${boundary}</main>`,
+    body: `<main><p>4PLANET IMPACT</p><h1>Find people bringing life back.</h1><p>An index of real ecological projects and the organisations doing the work — with what the sources establish, and what they do not.</p><h2>Projects</h2><ul>${projects.map(projectLi).join("")}</ul><h2>Issues</h2><ul>${issues.map((i) => `<li><a href="${issueHref(esc(i.slug))}">${esc(i.name)}</a></li>`).join("")}</ul><h2>Organisations</h2><ul>${actors.map((a) => `<li><a href="${actorHref(esc(a.slug))}">${esc(a.name)}</a></li>`).join("")}</ul><h2>Methods</h2><ul>${solutions.filter((s) => s.indexable === true).map((s) => `<li><a href="${solutionHref(esc(s.slug))}">${esc(s.name)}</a></li>`).join("")}</ul><h2>How records are reviewed</h2><p>Discovered → Source-checked → Externally vetted → 4PLANET reviewed (reserved). No one can pay to be listed, ranked or reviewed.</p>${boundary}</main>`,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
