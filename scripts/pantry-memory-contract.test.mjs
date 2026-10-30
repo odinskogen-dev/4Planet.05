@@ -130,3 +130,20 @@ test("FOOD choice surface exposes and blocks constraint-conflict and unknown opt
   assert.equal(blocked("CAN_MAKE_WITH_REPORTED_STOCK"), false);
   assert.equal(blocked("NEEDS_ITEMS"), false);
 });
+
+
+test("pantry supersede and delete fail closed without one exact owner-bound mutation receipt", () => {
+  assert.match(memory, /function requirePantryMutationReceipt/);
+  assert.match(memory, /!Array\.isArray\(rows\) \|\| rows\.length !== 1/);
+  assert.match(memory, /row\.id !== expectedId/);
+  assert.match(memory, /row\.user_id !== expectedUserId/);
+  assert.match(memory, /row\.state !== expectedState/);
+  assert.match(memory, /requireDeletedAt && \(typeof row\.deleted_at !== "string" \|\| row\.deleted_at\.length === 0\)/);
+
+  const returnedRepresentationCount = memory.match(/Prefer: "return=representation"/g)?.length ?? 0;
+  assert.ok(returnedRepresentationCount >= 4, "insert, decision, supersede and delete must request receipts");
+  assert.match(memory, /state=eq\.active&deleted_at=is\.null&select=id,user_id,state,deleted_at/);
+  assert.match(memory, /await patch\.json\(\)[\s\S]*"superseded"[\s\S]*"PANTRY_PRIOR_REVISION_REVIEW_REQUIRED"/);
+  assert.match(memory, /await response\.json\(\)[\s\S]*"deleted"[\s\S]*"PANTRY_DELETE_FAILED"[\s\S]*true/);
+  assert.doesNotMatch(memory, /Prefer: "return=minimal"[\s\S]{0,500}state: "(?:superseded|deleted)"/);
+});

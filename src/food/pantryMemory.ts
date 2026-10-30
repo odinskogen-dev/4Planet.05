@@ -61,6 +61,9 @@ const FOOD_VALUE_PAYLOAD_KEYS = new Set([
 
 type MemoryRow = {
   id: string;
+  user_id?: string;
+  state?: string;
+  deleted_at?: string | null;
   value?: {
     namespace?: string;
     pantry?: unknown;
@@ -69,6 +72,27 @@ type MemoryRow = {
   } | null;
   created_at?: string | null;
 };
+
+function requirePantryMutationReceipt(
+  rows: unknown,
+  expectedId: string,
+  expectedUserId: string,
+  expectedState: "superseded" | "deleted",
+  errorCode: string,
+  requireDeletedAt = false,
+) {
+  if (!Array.isArray(rows) || rows.length !== 1) throw new Error(errorCode);
+  const row = rows[0] as MemoryRow;
+  if (
+    row.id !== expectedId
+    || row.user_id !== expectedUserId
+    || row.state !== expectedState
+    || (requireDeletedAt && (typeof row.deleted_at !== "string" || row.deleted_at.length === 0))
+  ) {
+    throw new Error(errorCode);
+  }
+  return row;
+}
 
 function headers(session: FourPlanetSession, extra: Record<string, string> = {}) {
   return {
@@ -177,17 +201,24 @@ export async function saveFoodPantryMemory(
 
   if (supersedesId) {
     const patch = await fetch(
-      `${identityConstants.supabaseUrl}/rest/v1/four_sapien_embla_memories?id=eq.${encodeURIComponent(supersedesId)}&user_id=eq.${session.user.id}&state=eq.active`,
+      `${identityConstants.supabaseUrl}/rest/v1/four_sapien_embla_memories?id=eq.${encodeURIComponent(supersedesId)}&user_id=eq.${session.user.id}&state=eq.active&deleted_at=is.null&select=id,user_id,state,deleted_at`,
       {
         method: "PATCH",
         headers: headers(session, {
           "Content-Type": "application/json",
-          Prefer: "return=minimal",
+          Prefer: "return=representation",
         }),
         body: JSON.stringify({ state: "superseded", updated_at: new Date().toISOString() }),
       },
     );
     if (!patch.ok) throw new Error("PANTRY_PRIOR_REVISION_REVIEW_REQUIRED");
+    requirePantryMutationReceipt(
+      await patch.json(),
+      supersedesId,
+      session.user.id,
+      "superseded",
+      "PANTRY_PRIOR_REVISION_REVIEW_REQUIRED",
+    );
   }
 
   return {
@@ -361,12 +392,12 @@ export async function loadLatestFoodDecision(
 
 export async function removeFoodPantryMemory(session: FourPlanetSession, id: string) {
   const response = await fetch(
-    `${identityConstants.supabaseUrl}/rest/v1/four_sapien_embla_memories?id=eq.${encodeURIComponent(id)}&user_id=eq.${session.user.id}&state=eq.active`,
+    `${identityConstants.supabaseUrl}/rest/v1/four_sapien_embla_memories?id=eq.${encodeURIComponent(id)}&user_id=eq.${session.user.id}&state=eq.active&deleted_at=is.null&select=id,user_id,state,deleted_at`,
     {
       method: "PATCH",
       headers: headers(session, {
         "Content-Type": "application/json",
-        Prefer: "return=minimal",
+        Prefer: "return=representation",
       }),
       body: JSON.stringify({
         state: "deleted",
@@ -376,4 +407,12 @@ export async function removeFoodPantryMemory(session: FourPlanetSession, id: str
     },
   );
   if (!response.ok) throw new Error("PANTRY_DELETE_FAILED");
+  requirePantryMutationReceipt(
+    await response.json(),
+    id,
+    session.user.id,
+    "deleted",
+    "PANTRY_DELETE_FAILED",
+    true,
+  );
 }
