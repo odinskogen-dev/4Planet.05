@@ -24,6 +24,20 @@ jobs:
           npm run build
       - name: Deep per-page metadata, source and indexability analysis
         run: node scripts/impact-deep-seo-audit.mjs
+      - name: Assert no relative social images, duplicate titles or overlong meta snippets
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('artifacts/impact-deep-seo-audit.json','utf8'));
+          const counts=r.summary.byCategory;
+          if(r.records.length!==229)throw Error('Lost IMPACT public pages');
+          for(const key of ['relative_og_image','relative_twitter_image','long_description','duplicate_description']){
+            if((counts[key]||0)!==0)throw Error('Search/social metadata defect '+key+': '+counts[key]);
+          }
+          if(r.technical.length)throw Error('Technical SEO blockers: '+r.technical.length);
+          console.log('IMPACT_DEEP_SEO_CLEAN',r.records.length,'pages, no relative social images or long/duplicate descriptions');
+          NODE
       - name: Preserve per-page SEO diagnosis
         if: always()
         uses: actions/upload-artifact@v4
