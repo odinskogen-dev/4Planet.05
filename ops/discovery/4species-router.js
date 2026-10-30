@@ -234,6 +234,18 @@ function completeSpeciesSitemapBlocks(xml) {
   return [...CURRENT_PUBLIC_SPECIES_SLUGS].every((slug) => publicSlugs.has(slug)) ? blocks : null;
 }
 
+function isSchemaValidEmittedSpeciesSitemap(body, expectedEntries) {
+  if (typeof body !== "string" || !/^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset\b[^>]*>[\s\S]*<\/urlset>\n$/.test(body)) return false;
+  const openingTags = body.match(/<url(?:\s[^>]*)?>/g) || [];
+  if (openingTags.length !== expectedEntries || openingTags.some((tag) => tag !== "<url>")) return false;
+  const blocks = body.match(/<url>[\s\S]*?<\/url>/g) || [];
+  if (blocks.length !== expectedEntries) return false;
+  return blocks.every((block) => {
+    const locations = [...block.matchAll(/<loc>([^<]+)<\/loc>/g)];
+    return locations.length === 1 && /^https:\/\/4species\.com\/(?:|[a-z0-9]+(?:-[a-z0-9]+)*)$/.test(locations[0][1]);
+  });
+}
+
 async function reviewedSpeciesSitemap(request) {
   let xml;
   try {
@@ -265,7 +277,9 @@ async function reviewedSpeciesSitemap(request) {
     // Avoid publishing any v53 preview-domain URL or obsolete /species/ aliases.
     const canonical = "https://4species.com" + slugPath;
     return {
-      block: block.replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>"),
+      block: block
+        .replace(/^<url(?:\s[^>]*)?>/, "<url>")
+        .replace(/<loc>[^<]+<\/loc>/, "<loc>" + canonical + "</loc>"),
       sourceAvailable: true,
     };
   });
@@ -274,6 +288,9 @@ async function reviewedSpeciesSitemap(request) {
   }
   const kept = reviewedBlocks.map((result) => result.block).filter(Boolean);
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${kept.join("\n")}\n</urlset>\n`;
+  if (!isSchemaValidEmittedSpeciesSitemap(body, kept.length)) {
+    return unavailableSpeciesSitemap(request.method);
+  }
   return new Response(request.method === "HEAD" ? null : body, {
     headers: {
       "content-type": "application/xml; charset=utf-8",

@@ -5,6 +5,18 @@ import { readFileSync } from "node:fs";
 
 const workerSource = readFileSync(new URL("../ops/discovery/4species-router.js", import.meta.url), "utf8");
 
+function assertSchemaValidEmittedSitemap(xml, expectedEntries) {
+  assert.match(xml, /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset\b[^>]*>[\s\S]*<\/urlset>\n$/);
+  assert.doesNotMatch(xml, /<url\s+[^>]*>/, "sitemap <url> elements cannot carry attributes");
+  const blocks = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
+  assert.equal(blocks.length, expectedEntries, "emitted sitemap must retain every reviewed entry");
+  for (const block of blocks) {
+    const locations = [...block.matchAll(/<loc>([^<]+)<\/loc>/g)];
+    assert.equal(locations.length, 1, "each sitemap entry must contain exactly one loc child");
+    assert.match(locations[0][1], /^https:\/\/4species\.com\/[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  }
+}
+
 test("4SPECIES serves robots.txt with canonical sitemap", async () => {
   const response = await worker.fetch(new Request("https://4species.com/robots.txt"));
   assert.equal(response.status, 200);
@@ -262,11 +274,7 @@ test("4SPECIES reviews accepted url tag variants instead of caching an empty sit
       assert.match(response.headers.get("cache-control") || "", /^public,/);
       const body = await response.text();
       if (method === "HEAD") assert.equal(body, "");
-      else assert.equal(
-        [...body.matchAll(/<loc>https:\/\/4species\.com\/([^<]+)<\/loc>/g)].length,
-        slugs.length,
-        `${openingTag} must not become a cacheable empty sitemap`,
-      );
+      else assertSchemaValidEmittedSitemap(body, slugs.length);
     }
   }
 });
