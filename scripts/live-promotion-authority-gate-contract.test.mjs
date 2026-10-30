@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { validateFounderDecisionReceipt } from './live-promotion-authority-gate.mjs';
 
 const gatePath = path.resolve('scripts/live-promotion-authority-gate.mjs');
 const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
@@ -39,6 +40,8 @@ function fixture() {
     rollbackRef: `main@${mainSha}`,
     founderDecisionRef: 'fixture decision',
     founderDecisionTestKingSha: testedSha,
+    founderDecisionAction: 'DEPLOY',
+    founderDecisionTargetRoute: 'main',
     evidenceRef: 'fixture evidence',
     releaseControlCommit: true,
   };
@@ -56,11 +59,43 @@ function run(cwd) {
   });
 }
 
-test('accepts an exact manifest-only child with verified target and LIVE rollback', () => {
-  const { cwd } = fixture();
+test('accepts an unedited action-specific receipt from the expected Founder account', () => {
+  const testKingSha = 'a'.repeat(40);
+  const ref = 'https://github.com/odinskogen-dev/4Planet.05/issues/145#issuecomment-123456';
+  const receipt = {
+    id: 123456,
+    user: { login: 'odinskogen-dev', id: 289761792 },
+    created_at: '2026-10-30T22:00:00Z',
+    updated_at: '2026-10-30T22:00:00Z',
+    body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: DEPLOY\nTARGET_ROUTE: main\nTEST_KING_SHA: ${testKingSha}`,
+  };
+  assert.equal(validateFounderDecisionReceipt({ receipt, ref, testKingSha, action: 'DEPLOY', targetRoute: 'main' }).commentId, 123456);
+});
+
+test('rejects an arbitrary or unresolvable Founder decision reference even with a matching self-declared SHA', () => {
+  const { cwd, manifest } = fixture();
+  manifest.founderDecisionRef = 'UNVERIFIED-DECISION-DOES-NOT-EXIST';
+  fs.writeFileSync(path.join(cwd, 'docs/control/LIVE_PROMOTION_MANIFEST.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   const result = run(cwd);
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /LIVE PROMOTION AUTHORITY GUARD: PASS/);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /not a canonical 4Planet\.05 GitHub issue-comment receipt/);
+});
+
+test('rejects edited, wrong-issuer, wrong-action and wrong-artifact receipts', () => {
+  const testKingSha = 'a'.repeat(40);
+  const ref = 'https://github.com/odinskogen-dev/4Planet.05/issues/145#issuecomment-123456';
+  const base = {
+    id: 123456,
+    user: { login: 'odinskogen-dev', id: 289761792 },
+    created_at: '2026-10-30T22:00:00Z',
+    updated_at: '2026-10-30T22:00:00Z',
+    body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: DEPLOY\nTARGET_ROUTE: main\nTEST_KING_SHA: ${testKingSha}`,
+  };
+  const check = (receipt) => validateFounderDecisionReceipt({ receipt, ref, testKingSha, action: 'DEPLOY', targetRoute: 'main' });
+  assert.throws(() => check({ ...base, updated_at: '2026-10-30T22:01:00Z' }), /edited/);
+  assert.throws(() => check({ ...base, user: { login: 'attacker', id: 1 } }), /issuer mismatch/);
+  assert.throws(() => check({ ...base, body: base.body.replace('ACTION: DEPLOY', 'ACTION: REVIEW') }), /ACTION: DEPLOY/);
+  assert.throws(() => check({ ...base, body: base.body.replace(testKingSha, 'b'.repeat(40)) }), /TEST_KING_SHA/);
 });
 
 test('rejects target-branch drift even when the recorded SHA is syntactically valid', () => {
