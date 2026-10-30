@@ -25,7 +25,7 @@ for(const {kind,item,path:route} of routes){
  const words=visible(content).split(/\s+/).filter(Boolean).length;
  const links=[...html.matchAll(/<a\s[^>]*href="([^"]+)"[^>]*>/gi)].map(x=>x[1]);
  const sourceCount=(item.citations||[]).length;
- const image=meta(html,'property','og:image');
+ const image=meta(html,'property','og:image');const twimage=meta(html,'name','twitter:image');
  const record={kind,route,title,titleChars:title.length,description:desc,descriptionChars:desc.length,
   h1:h1[0],h1Count:h1.length,words,sourceCount,
   internalLinks:links.filter(x=>x.startsWith('/impact/')).length,
@@ -45,6 +45,7 @@ for(const {kind,item,path:route} of routes){
  if(desc.length<70)opportunity(route,'short_description',desc.length);
  if(words<150&&kind!=='home')opportunity(route,'short_source_text',words);
  if(image&&!image.startsWith('https://'))opportunity(route,'relative_og_image',image);
+ if(twimage&&!twimage.startsWith('https://'))opportunity(route,'relative_twitter_image',twimage);
  if(kind==='project'&&!item.image)opportunity(route,'unlicensed_or_missing_project_image','');
  if(kind==='actors'&&!item.website)opportunity(route,'actor_official_url_missing','');
  if(kind==='issue'&&!(item.claims||[]).length)opportunity(route,'issue_primary_evidence_missing','');
