@@ -1,3 +1,65 @@
+# P51-SHIP-01 — FOUNDER DECISION ARTIFACT BINDING 11 — 30 OCTOBER 2026
+
+## USER ARRIVES BECAUSE
+
+A release operator needs proof that Founder authority applies to the exact tested product artifact, not merely to a project name or stale reference.
+
+## ONE THING TO UNDERSTAND
+
+The existing LIVE guard required a non-empty Founder decision reference but did not require that decision to name the same immutable TEST KING SHA as the promotion manifest.
+
+## PRIMARY ACTION
+
+Require `founderDecisionTestKingSha` to be an exact 40-character commit SHA equal to `testKingSha` before any LIVE promotion authority can pass.
+
+## SECONDARY DEPTH
+
+Keep the existing target-drift, manifest-only child, rollback, evidence and branch gates unchanged.
+
+## P1 DOMINANT
+
+Exact action-specific Founder authority remains dominant over automation or Gold readiness.
+
+## P2 ORIENTATION
+
+The manifest now carries both the decision reference and the immutable artifact that decision covers.
+
+## P3 ACTION / NEXT
+
+Run the positive release fixture plus missing and mismatched decision-SHA regressions, then hand the exact provider SHA to independent Gold.
+
+## P4 DEPTH
+
+This is a release-control correction only; it does not authorise the current manifest, PR512, main, Cloudflare or production.
+
+## WHAT CAN BE REMOVED
+
+Remove any assumption that a non-empty Founder reference authorises whatever artifact happens to be current.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing LIVE promotion manifest, exact-head lineage, rollback proof and Maker-not-Judge gate.
+
+## TRUTH BOUNDARY
+
+Current LIVE_PROMOTION_MANIFEST remains NOT_AUTHORISED. No merge, deployment, production state, user use, cash or ecological impact is claimed.
+
+## MOBILE-FIRST RISK
+
+None introduced: this internal release guard renders no product surface.
+
+## HUMAN SUCCESS
+
+A release operator gets a deterministic mismatch failure before a stale or ambiguous Founder decision can promote code.
+
+**ACCEPTANCE:** the existing authorised fixture passes; missing and mismatched Founder decision artifact bindings fail closed; adjacent Gold policy and TypeScript pass on the exact provider SHA.
+
+**MAKER ≠ JUDGE:** Factory authors this gate and regression. Independent Gold judges the immutable provider SHA. Founder alone supplies release authority for an exact artifact.
+
+**BASE / REVERSION:** base is `king/test@55bf3832515cd508232881ccf6d450184dc1e403`; revert this bounded gate/test/brief correction if independent Gold finds an authority or lineage regression.
+
+---
+
 # P51-OSLOFJORD-01 — FIELD EVIDENCE EXPLICIT PROJECTION 10 — 30 OCTOBER 2026
 
 ## USER ARRIVES BECAUSE
