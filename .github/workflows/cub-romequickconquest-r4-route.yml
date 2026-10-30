@@ -1,9 +1,9 @@
-name: CUB Quick Conquest R4 — isolated Cloudflare route
+name: CUB Quick Conquest R5 — isolated Cloudflare route
 
 on:
   push:
     branches:
-      - deploy/romequickconquest-r4-20261030
+      - deploy/romequickconquest-r5-20261030
     paths:
       - deploy/romequickconquest/**
       - .github/workflows/cub-romequickconquest-r4-route.yml
@@ -68,7 +68,7 @@ jobs:
             '      return new Response(HTML, { headers: {',
             '        "content-type": "text/html; charset=utf-8",',
             '        "cache-control": "no-cache",',
-            '        "x-cub-release": "quick-conquest-r4"',
+            '        "x-cub-release": "quick-conquest-r5"',
             '      }});',
             '    }',
             '    return new Response("Not found", { status: 404 });',
@@ -103,7 +103,7 @@ jobs:
             fi
             sleep 5
           done
-          if [ "$found" != 1 ]; then echo "Live origin does not match R4 source; release not certified."; exit 1; fi
+          if [ "$found" != 1 ]; then echo "Live origin does not match R5 source; release not certified."; exit 1; fi
           echo "Verified live HTML SHA256: $expected"
           echo 'Verified https://labs.p4nther.com/romequickconquest/'
 
@@ -114,7 +114,7 @@ jobs:
         run: |
           curl -fsS --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
             -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-            -d '{"state":"success","target_url":"https://labs.p4nther.com/romequickconquest/","description":"Cloudflare path live and source SHA-256 identical","context":"cub/romequickconquest-r4-live"}'
+            -d '{"state":"success","target_url":"https://labs.p4nther.com/romequickconquest/","description":"Cloudflare path live and source SHA-256 identical","context":"cub/romequickconquest-r5-live"}'
 
       - name: Report failed or blocked release
         if: failure()
@@ -123,4 +123,4 @@ jobs:
         run: |
           curl -fsS --retry 2 -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
             -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-            -d '{"state":"failure","description":"R4 route not certified live; inspect Actions logs","context":"cub/romequickconquest-r4-live"}'
+            -d '{"state":"failure","description":"R5 route not certified live; inspect Actions logs","context":"cub/romequickconquest-r5-live"}'
