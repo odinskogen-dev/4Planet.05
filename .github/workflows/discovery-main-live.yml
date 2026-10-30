@@ -136,180 +136,32 @@ jobs:
           ];
           if((d.projects||[]).length<55) throw new Error('expected >=55 IMPACT projects');
           if((d.actors||[]).length<52) throw new Error('expected >=52 IMPACT actors');
-          fs.writeFileSync('/tmp/impact-live-routes.tsv',rows.map(([kind,slug,name])=>`${kind}\t${slug}\t${name}`).join('\n')+'\n');
-          console.log(`IMPACT canonical proof inventory: ${rows.length} profiles`);
+          const base='https://4planet.org';
+          const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+          const first=rows[0];
+          let ready=false;
+          for(let attempt=1;attempt<=20;attempt++){
+            const r=await fetch(`${base}/impact/${first[0]}/${first[1]}?build=${process.env.GITHUB_SHA}`,{redirect:'follow'});
+            const body=await r.text();
+            if(r.status===200 && !body.includes('4PLANET / 404')){ready=true;break;}
+            await sleep(3000);
+          }
+          if(!ready) throw new Error('canonical IMPACT did not converge after deploy');
+          for(let i=0;i<rows.length;i+=20){
+            const batch=rows.slice(i,i+20);
+            const results=await Promise.all(batch.map(async([kind,slug,name])=>{
+              const r=await fetch(`${base}/impact/${kind}/${slug}?build=${process.env.GITHUB_SHA}`,{redirect:'follow'});
+              const body=await r.text();
+              return {kind,slug,name,status:r.status,is404:body.includes('4PLANET / 404')};
+            }));
+            const bad=results.filter(x=>x.status!==200||x.is404);
+            if(bad.length) throw new Error('IMPACT LIVE profile failure: '+JSON.stringify(bad));
+          }
+          const fake=await fetch(`${base}/impact/project/not-a-real-project-${process.env.GITHUB_SHA}`,{redirect:'follow'});
+          const fakeBody=await fake.text();
+          if(fake.status!==404 || !fakeBody.includes('Page not found.')) throw new Error('fake IMPACT slug is not fail-closed');
+          console.log(`IMPACT_CANONICAL_ALL_PROFILE_ROUTES_PASS=${rows.length}`);
           NODE
-          ok=0
-          while IFS=
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx playwright install chromium
-          node --input-type=module <<'NODE'
-          import { chromium } from '@playwright/test';
-          import assert from 'node:assert/strict';
-          const b=await chromium.launch({headless:true});
-          try{
-            for(const [path,subject] of [['/about/what-we-believe','believe'],['/now/','Earth']]){
-              const page=await b.newPage({viewport:{width:390,height:844}});
-              const r=await page.goto('https://4planet.org'+path,{waitUntil:'domcontentloaded',timeout:40000});
-              assert.equal(r.status(),200,path);
-              await page.locator('h1').first().waitFor({timeout:25000});
-              const d=await page.evaluate(()=>({heading:document.querySelector('h1')?.textContent||'',text:document.body.innerText||'',scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
-              assert.ok(d.heading.length>5,path+' H1');
-              assert.ok(d.text.length>350,path+' human content');
-              assert.ok(d.text.toLowerCase().includes(subject.toLowerCase()),path+' topic present');
-              assert.ok(d.scroll<=d.viewport+16,path+' mobile horizontal overflow');
-              console.log('PUBLIC_EDITORIAL_MOBILE_BROWSER_GOLD',path,d.heading.slice(0,85),d.text.length);
-              await page.close();
-            }
-          }finally{await b.close()}
-          NODE
-      - name: Verify Living Systems v1.4.2 ZERO LOSS custom-domain runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          for i in $(seq 1 45); do
-            ls_root=$(curl -fsS --max-time 15 https://4planet.org/livingsystems/ || true)
-            if grep -Fq 'A system for understanding how nature' <<<"$ls_root" && grep -Fq 'Living Systems' <<<"$ls_root"; then
-              break
-            fi
-            sleep 4
-          done
-          grep -Fq 'A system for understanding how nature' <<<"$ls_root"
-          grep -Fq 'Living Systems' <<<"$ls_root"
-          grep -Fq '/livingsystems/start' <<<"$ls_root"
-          assets=$(grep -oE '/livingsystems/_next/static/[^"[:space:]]+' <<<"$ls_root" | sed 's/\\$//' | sort -u)
-          test -n "$assets"
-          while IFS= read -r asset; do
-            curl -fsS --max-time 20 -o /dev/null "https://4planet.org$asset"
-          done <<<"$assets"
-          route_count=0
-          while IFS= read -r file; do
-            rel="${file#dist}"
-            rel="${rel%index.html}"
-            url="https://4planet.org${rel}"
-            code=$(curl -sS --max-time 20 -o /tmp/ls-live-page.html -w '%{http_code}' "$url")
-            test "$code" = "200"
-            grep -Fqi '<html' /tmp/ls-live-page.html
-            route_count=$((route_count+1))
-          done < <(find dist/livingsystems -type f -name index.html | sort)
-          expected_count=$(find dist/livingsystems -type f -name index.html | wc -l | tr -d ' ')
-          test "$route_count" = "$expected_count"
-          curl -fsS https://4planet.org/livingsystems/start/ | grep -Fq 'Start with a question'
-          curl -fsS https://4planet.org/livingsystems/decisions/ | grep -Fq 'Decision'
-          curl -fsS https://4planet.org/livingsystems/learning/ | grep -Fq 'Learning'
-          curl -fsS https://4planet.org/livingsystems/trust/ | grep -Fq 'Trust'
-          curl -fsS https://4planet.org/livingsystems/ecosystems/EC_AMAZON_RAINFOREST/ | grep -Fq 'Amazon'
-          curl -fsS https://4planet.org/livingsystems/species/western-honey-bee/ | grep -Fq 'Honey'
-          echo "LIVING_SYSTEMS_V142_LIVE_ROUTES=$route_count"
-          echo 'LIVING_SYSTEMS_V142_CUSTOM_DOMAIN_PASS'
-
-      - name: Verify ATLAS canonical Place release by status, records and protected links
-        if: ${{ always() && steps.deploy.outcome == 'success' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          for route in / /atlas/ /places /place/berlin /place/manila /place/norway /place/kenya; do
-            code=$(curl -sSL --max-time 30 -o /tmp/atlas-live-check.html -w '%{http_code}' "https://4planetatlas.com$route")
-            test "$code" = 200
-            grep -Fqi '<html' /tmp/atlas-live-check.html
-            echo "ATLAS_PUBLIC_ROUTE_HTTP_GOLD $route"
-          done
-          place_index=$(curl -fsSL https://4planetatlas.com/places)
-          grep -Fq 'numberOfItems' <<<"$place_index"
-          test "$(grep -o 'href="/place/[^"]*"' <<<"$place_index" | sort -u | wc -l | tr -d ' ')" = 250
-          sm=$(curl -fsSL https://4planetatlas.com/sitemap.xml)
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = 250
-          test "$(grep -o '<image:loc>https://4planetatlas.com/place/[^<]*/map.svg</image:loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = 250
-          grep -Fq '<loc>https://4planetatlas.com/</loc>' <<<"$sm"
-          test "$(curl -sS -o /tmp/atlas-not-found.html -w '%{http_code}' https://4planetatlas.com/place/__indexability-canary-not-a-place__)" = 404
-          grep -qi noindex /tmp/atlas-not-found.html
-          echo 'ATLAS_PLACE_INDEXABILITY_LIVE_PASS'
-      - name: Verify production public discovery and 404 transport
-        if: ${{ always() && steps.deploy.outcome == 'success' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          sm=$(curl -fsSL --max-time 25 https://4planet.org/sitemap.xml)
-          count=$(grep -o '<loc>' <<<"$sm" | wc -l | tr -d ' ')
-          test "$count" -ge 70
-          ! grep -Fq '<loc>https://4planet.org/atlas' <<<"$sm"
-          ! grep -Fq '<loc>https://4planet.org/species/' <<<"$sm"
-          robots=$(curl -fsSL https://4planet.org/robots.txt)
-          for bot in OAI-SearchBot Googlebot Bingbot; do grep -Fq "User-agent: $bot" <<<"$robots"; done
-          grep -Fq 'Disallow: /os$' <<<"$robots"
-          ! grep -Fxq 'Disallow: /os' <<<"$robots"
-          for path in / /now/ /about /impact /oslofjord /livingsystems/ /livingsystems/species/western-honey-bee/ /livingsystems/ecosystems/EC_AMAZON_RAINFOREST/; do
-            code=$(curl -LsS --max-time 30 -o /tmp/search-public.html -w '%{http_code}' "https://4planet.org$path")
-            test "$code" = 200
-            grep -Fqi '<html' /tmp/search-public.html
-            echo "PUBLIC_RELEASE_ROUTE_GOLD $path"
-          done
-          for path in /this-is-not-a-published-planet-page-404 /unknown-route/nested-not-a-page /missions/unreleased-fake-mission /place/unreleased-unknown-place; do
-            code=$(curl -sS --max-time 25 -o /tmp/search-unknown.html -w '%{http_code}' "https://4planet.org$path")
-            test "$code" = 404 || { echo "SOFT_404_REGRESSION $path $code"; exit 12; }
-            grep -Fq 'noindex' /tmp/search-unknown.html
-            echo "UNKNOWN_URL_404_GOLD $path"
-          done
-          deep=$(curl -LsS --max-time 30 -o /dev/null -w '%{http_code}' 'https://4planet.org/atlas?embed=news&z=5&c=5%2C18')
-          test "$deep" = 200
-          target=$(curl -LsS --max-time 30 -o /dev/null -w '%{url_effective}' https://4planet.org/place/kenya)
-          test "$target" = https://4planetatlas.com/place/kenya
-          echo "MAX_EXPOSURE_LIVE_STATUS_ROUTE_DISCOVERY_GOLD sitemap=$count"
-
-  atlas-live-proof:
-    name: ATLAS Place Live Proof
-    needs: deploy
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Verify canonical ATLAS Place graph
-        shell: bash
-        run: |
-          set -euo pipefail
-          places=$(curl -fsS https://4planetatlas.com/places)
-          grep -Fq '<h1>Explore the world by place</h1>' <<<"$places"
-          test "$(grep -o 'href="/place/[^"]*"' <<<"$places" | sort -u | wc -l | tr -d ' ')" = "250"
-          berlin=$(curl -fsS https://4planetatlas.com/place/berlin)
-          grep -Fq '1159151529' <<<"$berlin"
-          grep -Fq 'Q64' <<<"$berlin"
-          grep -Fq '2950159' <<<"$berlin"
-          grep -Fq 'World Place Index' <<<"$berlin"
-          manila=$(curl -fsS https://4planetatlas.com/place/manila)
-          grep -Fq 'Q1461' <<<"$manila"
-          grep -Fq 'South-Eastern Asia' <<<"$manila"
-          kenya=$(curl -fsS https://4planetatlas.com/place/kenya)
-          grep -Fq 'Connected Living Planet Intelligence' <<<"$kenya"
-          grep -Fq 'African Savanna Elephant' <<<"$kenya"
-          sm=$(curl -fsS https://4planetatlas.com/sitemap.xml)
-          test "$(grep -o '<loc>https://4planetatlas.com/place/[^<]*</loc>' <<<"$sm" | sort -u | wc -l | tr -d ' ')" = "250"
-          unknown=$(curl -sS -o /tmp/unknown.html -w '%{http_code}' https://4planetatlas.com/place/__atlas-live-proof-unknown__)
-          test "$unknown" = "404"
-          echo 'ATLAS_ENTITY_AUTHORITY_LIVE_PASS'
-          echo 'ATLAS_250_LIVE_PROOF_PASS'
-\t' read -r kind slug name; do
-            [ -n "$slug" ] || continue
-            url="https://4planet.org/impact/$kind/$slug"
-            pass=0
-            for attempt in $(seq 1 10); do
-              code=$(curl -LsS --max-time 25 -o /tmp/impact-live.html -w '%{http_code}' "$url?build=$GITHUB_SHA" || true)
-              if [ "$code" = "200" ] && ! grep -Fq '4PLANET / 404' /tmp/impact-live.html; then
-                pass=1
-                break
-              fi
-              sleep 3
-            done
-            if [ "$pass" != "1" ]; then
-              echo "IMPACT LIVE FAIL $code $url $name" >&2
-              exit 1
-            fi
-            ok=$((ok+1))
-          done < /tmp/impact-live-routes.tsv
-          fake=$(curl -LsS --max-time 25 -o /tmp/impact-fake.html -w '%{http_code}' "https://4planet.org/impact/project/not-a-real-project-$GITHUB_SHA")
-          test "$fake" = "404"
-          grep -Fq 'Page not found.' /tmp/impact-fake.html
-          echo "IMPACT_CANONICAL_ALL_PROFILE_ROUTES_PASS=$ok"
 
       - name: Verify public editorial DOM with a real browser (not stale raw HTML copy)
         shell: bash
