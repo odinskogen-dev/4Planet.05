@@ -1,3 +1,65 @@
+# P51-SHIP-01 — IMMUTABLE LIVE OPERATION SCOPE 13 — 31 OCTOBER 2026
+
+## USER ARRIVES BECAUSE
+
+A release operator needs proof that a Founder receipt approves the LIVE deployment actually performed by this guard, not a review-only or draft route named by the manifest.
+
+## ONE THING TO UNDERSTAND
+
+Independent Gold proved that the prior validator compared receipt scope with two caller-controlled manifest strings, allowing narrow approval text to be reused for a broader promotion.
+
+## PRIMARY ACTION
+
+Require the receipt to state the guard-owned operation `LIVE_DEPLOY` and actual promotion target `git:main`; neither value can be supplied or redefined by the manifest.
+
+## SECONDARY DEPTH
+
+Reject REVIEW_ONLY and unrelated route receipts even when every issuer, timestamp and artifact predicate is otherwise valid.
+
+## P1 DOMINANT
+
+Founder authority must bind the exact action and target that the release code will execute.
+
+## P2 ORIENTATION
+
+The existing gate already fixes targetBranch to main; the receipt now expresses that same immutable operation boundary.
+
+## P3 ACTION / NEXT
+
+Run the positive LIVE_DEPLOY/git:main receipt case and the REVIEW_ONLY/unrelated-route negatives, then return the exact provider SHA to independent Gold.
+
+## P4 DEPTH
+
+This correction does not broaden the gate to any repository, branch, route or release class beyond its existing main promotion contract.
+
+## WHAT CAN BE REMOVED
+
+Remove mutable founderDecisionAction and founderDecisionTargetRoute declarations from the authority decision.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing canonical GitHub receipt fetch, Founder identity, TEST KING SHA, main target gate, rollback proof and Maker-not-Judge control.
+
+## TRUTH BOUNDARY
+
+No qualifying Founder receipt exists. The current manifest remains NOT_AUTHORISED. No merge, deployment, LIVE state, use, cash or ecological impact is claimed.
+
+## MOBILE-FIRST RISK
+
+None introduced: this internal release guard renders no product surface.
+
+## HUMAN SUCCESS
+
+A review-only or draft-only approval fails deterministically before any LIVE promotion can pass.
+
+**ACCEPTANCE:** exact LIVE_DEPLOY + git:main + tested SHA validates; REVIEW_ONLY, unrelated route, arbitrary ref, edited receipt, wrong issuer and wrong artifact fail closed; existing target/rollback/lineage gates remain green.
+
+**MAKER ≠ JUDGE:** Factory supplies this bounded correction. Independent Gold judges the immutable provider SHA. Founder alone may issue the exact release receipt.
+
+**BASE / REVERSION:** base is `king/test@3949aa522267c78280205f21ab0f52a89bcd4574`; revert this bounded gate/test/brief correction if independent Gold finds an authority or operation-binding regression.
+
+---
+
 # P51-SHIP-01 — AUTHENTICATED FOUNDER DECISION RECEIPT 12 — 30 OCTOBER 2026
 
 ## USER ARRIVES BECAUSE
