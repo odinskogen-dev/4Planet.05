@@ -206,6 +206,34 @@ function unavailableSpeciesSitemap(method) {
   });
 }
 
+function hasCompleteSpeciesSitemapSource(xml) {
+  if (typeof xml !== "string") return false;
+  const document = xml.trim();
+  if (!/^(?:<\?xml[\s\S]*?\?>\s*)?<urlset(?:\s[^>]*)?>[\s\S]*<\/urlset>$/.test(document)) return false;
+  const openingUrls = document.match(/<url(?:\s|>)/g) || [];
+  const blocks = document.match(/<url(?:\s[^>]*)?>[\s\S]*?<\/url>/g) || [];
+  if (!blocks.length || blocks.length !== openingUrls.length) return false;
+
+  const publicSlugs = new Set();
+  for (const block of blocks) {
+    const locations = [...block.matchAll(/<loc>([^<]+)<\/loc>/g)];
+    if (locations.length !== 1) return false;
+    let pathname;
+    try {
+      pathname = new URL(locations[0][1]).pathname.replace(/\/+$/, "") || "/";
+    } catch {
+      return false;
+    }
+    const slugPath = pathname.startsWith("/species/") ? pathname.replace(/^\/species\//, "/") : pathname;
+    const slug = slugPath.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/)?.[1];
+    if (slug && CURRENT_PUBLIC_SPECIES_SLUGS.has(slug)) publicSlugs.add(slug);
+  }
+
+  // This is a source-integrity preservation baseline, not an editorial Gold
+  // award. Each entry still has to pass the independent profile review below.
+  return [...CURRENT_PUBLIC_SPECIES_SLUGS].every((slug) => publicSlugs.has(slug));
+}
+
 async function reviewedSpeciesSitemap(request) {
   let xml;
   try {
@@ -219,6 +247,7 @@ async function reviewedSpeciesSitemap(request) {
   } catch {
     return unavailableSpeciesSitemap(request.method);
   }
+  if (!hasCompleteSpeciesSitemapSource(xml)) return unavailableSpeciesSitemap(request.method);
   const blocks = xml.match(/<url>[\s\S]*?<\/url>/g) || [];
   const reviewedBlocks = await mapWithConcurrency(blocks, SITEMAP_REVIEW_CONCURRENCY, async (block) => {
     const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1];

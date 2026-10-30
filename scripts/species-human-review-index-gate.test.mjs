@@ -201,7 +201,9 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
     }
     if (url.pathname === "/species-sitemap.xml") {
       const xml = "<?xml version=\"1.0\"?><urlset>" +
-        "<url><loc>https://72494005.4planet-05.pages.dev/orca</loc></url>" +
+        [...CURRENT_PUBLIC_SPECIES_SLUGS]
+          .map((slug) => `<url><loc>https://72494005.4planet-05.pages.dev/${slug}</loc></url>`)
+          .join("") +
         "<url><loc>https://72494005.4planet-05.pages.dev/unknown</loc></url></urlset>";
       return new Response(init.method === "HEAD" ? null : xml, {
         status: 200,

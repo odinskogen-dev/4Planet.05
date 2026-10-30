@@ -22,14 +22,16 @@ test("4SPECIES sitemap keeps the 57-profile baseline and rejects unapproved new 
     if (url.endsWith("/species-sitemap.xml")) {
       return new Response(
         '<?xml version="1.0" encoding="UTF-8"?><urlset>' +
-        ['/', '/explore', '/orca', '/draft-species', '/unavailable']
+        ['/', '/explore', ...[...CURRENT_PUBLIC_SPECIES_SLUGS].map((slug) => `/${slug}`), '/draft-species', '/unavailable']
           .map((path) => '<url><loc>https://species-v53.4planet-05.pages.dev' + path + '</loc></url>')
           .join("") + '</urlset>',
         { status: 200, headers: { "content-type": "application/xml" } },
       );
     }
-    if (url.endsWith("/orca.json")) {
-      return Response.json({schema:"4PLANET_SPECIES_PAGE_01",slug:"orca",identity:{commonName:"Orca",scientificName:"Orcinus orca"},hook:{source:{label:"NOAA",url:"https://www.fisheries.noaa.gov/species/killer-whale"}},provenance:{review:"REVIEWED"}});
+    const existingProfile = url.match(/\/species-data\/v1\/([^/]+)\.json$/);
+    if (existingProfile && CURRENT_PUBLIC_SPECIES_SLUGS.has(decodeURIComponent(existingProfile[1]))) {
+      const slug = decodeURIComponent(existingProfile[1]);
+      return Response.json({schema:"4PLANET_SPECIES_PAGE_01",slug,identity:{commonName:slug,scientificName:"Reviewed species"},hook:{source:{label:"Authoritative citation",url:`https://example.org/${slug}`}},provenance:{review:"REVIEWED"}});
     }
     if (url.endsWith("/draft-species.json")) {
       return Response.json({schema:"4PLANET_SPECIES_PAGE_01",slug:"draft-species",identity:{commonName:"Draft species",scientificName:"Example example"},hook:{source:{label:"Authoritative citation",url:"https://example.org/authority"}},provenance:{review:"DRAFT"}});
@@ -180,6 +182,49 @@ test("4SPECIES sitemap fails closed for source outages without misclassifying ed
   const editorialXml = await editorial.text();
   assert.doesNotMatch(editorialXml, /editorial-reject/);
   assert.equal([...editorialXml.matchAll(/<loc>https:\/\/4species\.com\/([^<]+)<\/loc>/g)].length, slugs.length);
+});
+
+test("4SPECIES rejects HTTP-200 empty, malformed, or incomplete upstream sitemaps", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const slugs = [...CURRENT_PUBLIC_SPECIES_SLUGS];
+  const locations = (selected) => selected
+    .map((slug) => `<url><loc>https://species-v53.4planet-05.pages.dev/${slug}</loc></url>`)
+    .join("");
+  const reviewedPage = (slug) => ({
+    schema: "4PLANET_SPECIES_PAGE_01",
+    slug,
+    identity: { commonName: slug, scientificName: "Reviewed species" },
+    hook: { source: { label: "Authoritative citation", url: `https://example.org/${slug}` } },
+    provenance: { review: "REVIEWED" },
+  });
+  const cases = [
+    ["empty", "<urlset></urlset>"],
+    ["malformed", "<urlset><url><loc>broken"],
+    ["missing-public-profile", `<urlset>${locations(slugs.slice(0, -1))}</urlset>`],
+  ];
+
+  for (const [name, upstreamXml] of cases) {
+    globalThis.fetch = async (input) => {
+      const url = String(input);
+      if (url.endsWith("/species-sitemap.xml")) {
+        return new Response(upstreamXml, {
+          status: 200,
+          headers: { "content-type": "application/xml" },
+        });
+      }
+      const profile = url.match(/\/species-data\/v1\/([^/]+)\.json$/);
+      if (profile) return Response.json(reviewedPage(decodeURIComponent(profile[1])));
+      return new Response("Not found", { status: 404 });
+    };
+
+    for (const method of ["GET", "HEAD"]) {
+      const response = await worker.fetch(new Request("https://4species.com/sitemap.xml", { method }));
+      assert.equal(response.status, 503, `${name} ${method}`);
+      assert.match(response.headers.get("cache-control") || "", /no-store/);
+      if (method === "HEAD") assert.equal(await response.text(), "");
+    }
+  }
 });
 
 
