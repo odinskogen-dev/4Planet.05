@@ -227,6 +227,50 @@ test("4SPECIES rejects HTTP-200 empty, malformed, or incomplete upstream sitemap
   }
 });
 
+test("4SPECIES reviews accepted url tag variants instead of caching an empty sitemap", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const slugs = [...CURRENT_PUBLIC_SPECIES_SLUGS];
+  const reviewedPage = (slug) => ({
+    schema: "4PLANET_SPECIES_PAGE_01",
+    slug,
+    identity: { commonName: slug, scientificName: "Reviewed species" },
+    hook: { source: { label: "Authoritative citation", url: `https://example.org/${slug}` } },
+    provenance: { review: "REVIEWED" },
+  });
+
+  for (const openingTag of ["<url >", '<url priority="1">']) {
+    globalThis.fetch = async (input) => {
+      const url = String(input);
+      if (url.endsWith("/species-sitemap.xml")) {
+        const entries = slugs
+          .map((slug) => `${openingTag}<loc>https://species-v53.4planet-05.pages.dev/${slug}</loc></url>`)
+          .join("");
+        return new Response(`<urlset>${entries}</urlset>`, {
+          status: 200,
+          headers: { "content-type": "application/xml" },
+        });
+      }
+      const profile = url.match(/\/species-data\/v1\/([^/]+)\.json$/);
+      if (profile) return Response.json(reviewedPage(decodeURIComponent(profile[1])));
+      return new Response("Not found", { status: 404 });
+    };
+
+    for (const method of ["GET", "HEAD"]) {
+      const response = await worker.fetch(new Request("https://4species.com/sitemap.xml", { method }));
+      assert.equal(response.status, 200, `${openingTag} ${method}`);
+      assert.match(response.headers.get("cache-control") || "", /^public,/);
+      const body = await response.text();
+      if (method === "HEAD") assert.equal(body, "");
+      else assert.equal(
+        [...body.matchAll(/<loc>https:\/\/4species\.com\/([^<]+)<\/loc>/g)].length,
+        slugs.length,
+        `${openingTag} must not become a cacheable empty sitemap`,
+      );
+    }
+  }
+});
+
 
 test("4SPECIES reinforces one clean canonical host on HTML and HEAD", async (t) => {
   const originalFetch = globalThis.fetch;
