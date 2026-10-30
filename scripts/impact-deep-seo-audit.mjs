@@ -26,12 +26,21 @@ for(const {kind,item,path:route} of routes){
  const links=[...html.matchAll(/<a\s[^>]*href="([^"]+)"[^>]*>/gi)].map(x=>x[1]);
  const sourceCount=(item.citations||[]).length;
  const image=meta(html,'property','og:image');const twimage=meta(html,'name','twitter:image');
+ const ogTitle=decode(meta(html,'property','og:title')),twitterTitle=decode(meta(html,'name','twitter:title'));
+ const ogDescription=decode(meta(html,'property','og:description')),ogUrl=decode(meta(html,'property','og:url'));
+ const twitterDescription=decode(meta(html,'name','twitter:description'));
  const record={kind,route,title,titleChars:title.length,description:desc,descriptionChars:desc.length,
   h1:h1[0],h1Count:h1.length,words,sourceCount,
   internalLinks:links.filter(x=>x.startsWith('/impact/')).length,
   projectImage:!!item.image,actorWebsite:!!item.website,
   ogImage:image};
  report.records.push(record);
+ if(ogTitle!==title)error(route,'og_title_mismatch',{ogTitle,title});
+ if(twitterTitle!==title)error(route,'twitter_title_mismatch',{twitterTitle,title});
+ if(ogDescription!==desc)error(route,'og_description_mismatch',{ogDescription,desc});
+ if(twitterDescription!==desc)error(route,'twitter_description_mismatch',{twitterDescription,desc});
+ if(ogUrl!==origin+route)error(route,'og_url_mismatch',ogUrl);
+ if(html.includes('<meta property="og"'))error(route,'broken_og_field','Unexpected property="og"');
  if(!title)error(route,'missing_title','');
  if(!desc)error(route,'missing_description','');
  if(h1.length!==1)error(route,'h1_count',h1.length);
