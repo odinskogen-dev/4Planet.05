@@ -18,7 +18,7 @@ if(sha&&live.sha!==sha)fail('production_sha_mismatch','/impact-build.json','expe
 if(groups.project.length<65||groups.actors.length<62)fail('baseline_regression','/impact','projects or actors below baseline');
 if(new Set(rows.map(x=>x.path)).size!==rows.length)fail('duplicate_profile_url','/impact','slug collision');
 await parallel(rows,12,async t=>{
- const r=await get(origin+t.path),h=r.body||'',bad=[];function check(k,pass){if(!pass){bad.push(k);fail(k,t.path,'status='+r.code+' expected='+t.name+' actual='+r.url)}}
+ const r=await get(origin+t.path),h=r.body||'',bad=[];if(t.kind==='home')console.log('IMPACT_HOME_HTML_DIAGNOSTIC',JSON.stringify({body_length:h.length,heading_fragment:h.slice(Math.max(0,h.indexOf('<h1')),h.indexOf('</h1>')+5),canonical_fragment:h.slice(Math.max(0,h.indexOf('rel="canonical"')-7),h.indexOf('rel="canonical"')+180),first_700:h.slice(0,700)}));function check(k,pass){if(!pass){bad.push(k);fail(k,t.path,'status='+r.code+' expected='+t.name+' actual='+r.url)}}
  check('http_200',r.code===200);check('correct_url',r.url===origin+t.path);
  check('html',/text\/html/i.test(r.type));check('not_fallback_404',!/4PLANET\s*\/\s*404|Page not found\./i.test(h));
  check('correct_h1',h.includes('<h1>'+esc(t.name)+'</h1>'));check('canonical',h.includes('<link rel="canonical" href="'+origin+t.path+'"'));
