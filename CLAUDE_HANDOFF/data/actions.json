@@ -1,0 +1,1248 @@
+[
+  {
+    "id": "action:4p:impact:ocean-cleanup-fundraise",
+    "name": "Fundraise for The Ocean Cleanup",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://theoceancleanup.com/help-clean/",
+      "action_type": "fundraising",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-19",
+      "processed_by_4planet": false
+    },
+    "evidence": [
+      {
+        "citation": "https://theoceancleanup.com/help-clean/",
+        "claim_id": "claim:4p:impact:ocean-cleanup-fundraise:availability",
+        "source_id": "source:4p:impact:ocean-cleanup-help-clean",
+        "statement": "The Ocean Cleanup publicly offers donation and fundraising routes to support its organisation-wide ocean and river cleanup work.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://theoceancleanup.com/help-clean/",
+        "limitations": [
+          "This is an organisation-wide support route and is not restricted to one deployment or project.",
+          "4PLANET does not receive, process or take credit for donations or fundraising."
+        ],
+        "reviewed_at": "2026-10-19T19:39:31.618723+00:00",
+        "source_name": "The Ocean Cleanup — Help clean the oceans",
+        "source_type": "official_organisation_page",
+        "retrieved_at": "2026-10-19T19:39:31.618723+00:00",
+        "evidence_role": null,
+        "evidence_type": "official_action_page",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only; media_rights_not_assumed",
+        "source_event_at": null,
+        "source_authority": "The Ocean Cleanup",
+        "source_record_id": "source_record:4p:impact:ocean-cleanup-help-clean",
+        "evidence_strength": "official_primary_source",
+        "interpretation_status": "source_reported"
+      }
+    ],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:39:31.618723+00:00",
+    "description": "Official organisation route describing ways to fund or fundraise for The Ocean Cleanup.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:crf-dive-snorkel",
+    "name": "Join a coral restoration dive or snorkel programme",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://coralrestoration.org/dive-and-snorkel-programs/",
+      "action_type": "field_participation",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "last_reviewed": "2026-10-19",
+      "processed_by_4planet": false
+    },
+    "evidence": [
+      {
+        "citation": "https://coralrestoration.org/dive-and-snorkel-programs/",
+        "claim_id": "claim:4p:impact:crf-dive-snorkel:availability",
+        "source_id": "source:4p:impact:crf-dive-programmes",
+        "statement": "Coral Restoration Foundation publicly offers dive and snorkel programmes through which participants can learn about coral restoration and may take part in monitoring or restoration activities subject to programme conditions.",
+        "checked_at": "2026-10-19",
+        "source_url": "https://coralrestoration.org/dive-and-snorkel-programs/",
+        "limitations": [
+          "Participation depends on programme availability, weather, operator terms, experience/certification and fees where applicable.",
+          "4PLANET does not operate, book, process or verify participation."
+        ],
+        "reviewed_at": "2026-10-19T19:39:31.618723+00:00",
+        "source_name": "Coral Restoration Foundation — Dive & Snorkel Programs",
+        "source_type": "official_organisation_page",
+        "retrieved_at": "2026-10-19T19:39:31.618723+00:00",
+        "evidence_role": null,
+        "evidence_type": "official_action_page",
+        "review_status": "source_checked",
+        "source_rights": "reference_and_fact_extraction_only; media_rights_not_assumed",
+        "source_event_at": null,
+        "source_authority": "Coral Restoration Foundation",
+        "source_record_id": "source_record:4p:impact:crf-dive-programmes",
+        "evidence_strength": "official_primary_source",
+        "interpretation_status": "source_reported"
+      }
+    ],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:39:31.618723+00:00",
+    "description": "Official Coral Restoration Foundation participation route for dive and snorkel programmes.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:good-forest-indonesia:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://fairventures.org/en/donate/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:agave-restoration-initiative:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.batcon.org/our-work/endangered-species-interventions/agave-restoration-initiative/",
+      "action_type": "support",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:mulanje-landscape-restoration:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://greenpop.org/donate/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:borneo-peat-swamp-restoration:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.borneonaturefoundation.org/campaigns/help-plant-1-million-trees/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:reforestarg:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.reforestarg.org.ar/home-2",
+      "action_type": "support",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:good-forests-foundation-uganda:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://fairventures.org/en/donate/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:gondwana-link:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://gondwanalink.org/get-involved/donate/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:ferncliffe-forest-wilding:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://ferncliffe.org/support/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:seagrass-ocean-rescue:official",
+    "name": "Open official participation route",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.projectseagrass.org/donate/",
+      "action_type": "donate",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:champions-12-3-food-waste",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.wri.org/initiatives/champions-123",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:msc-improvement-program",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.msc.org/for-business/fisheries/fips/improvement-program-fisheries",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:acarai-rupununi-corridor-protection",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.rainforesttrust.org/our-impact/rainforest-news/conservation-funders-pledge-initial-12-5-million-toward-permanent-protection-of-guyanas-forests-and-biodiversity/",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:phoenix-species-project",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.rewild.org/phoenix-species-project",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:global-fishing-watch-map",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://globalfishingwatch.org/our-map/",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:wateraid-beacon-project-nepal",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.wateraid.org/washmatters/projects/beacon-project",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:coral-gardeners-reef-restoration",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://coralgardeners.org/",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:bee-friendly-farming",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.pollinator.org/bff/",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:mongolia-peatland-restoration",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.wetlands.org/project-update-peatland-restoration-in-mongolia/",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:batch10:california-bycatch-campaign",
+    "name": "Read the official project page",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://usa.oceana.org/our-campaigns/responsible-fishing/california-bycatch/",
+      "action_type": "official_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-30T18:32:42.857108+00:00",
+    "description": "Visit the organisation's own source page for the current programme status.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:crf-support",
+    "name": "Support Coral Restoration Foundation",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://coralrestoration.org/one-time-donation/",
+      "action_type": "external_support",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "External support route on the organisation's own site.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:ocean-cleanup-support",
+    "name": "Support The Ocean Cleanup",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://theoceancleanup.com/donate/",
+      "action_type": "external_support",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "External support route on the organisation's own site.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:trees-support",
+    "name": "Support Trees for the Future",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://donate.trees.org/",
+      "action_type": "external_support",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "External support route on the organisation's own site.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:twende-kenya-rangelands:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/towards-ending-drought-emergencies-twende",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:forest-landscape-restoration-hub:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/forest-landscape-restoration-flr-hub",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:dinder-national-park-resilience:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/enhancing-food-security-and-resilience-rural-communities-and-around-dinder-national",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:procoreef:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/procoreef",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:rest-coast:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/large-scale-coastal-restoration-europe-rest-coast",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:model-forests-flr:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/model-forests-accelerating-forest-landscape-restoration",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:nature-based-solutions-for-drought:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/nature-based-solutions-drought",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:dryland-sustainable-landscapes-programme:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/sustainable-forest-management-impact-program-dryland-sustainable-landscapes",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:sri-lanka-ecosystem-restoration-management:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/ecosystem-restoration-and-management-sri-lanka",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:snaefellsnes-peatland-restoration:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/soil-conservation-service-iceland-restoration-peatland-snaefellsnes-peninsula",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:gambia-ecosystem-based-adaptation:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/ministry-environment-climate-change-and-natural-resources-large-scale-ecosystem-based",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:trepa-rwanda:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/transforming-eastern-province-through-adaptation-trepa",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:project-greenlight:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/project-greenlight-generating-resilience-empowering-eco-leaders-nurturing-tomorrow",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:49:10.295924+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:relisa-south-africa:official",
+    "name": "View official initiative record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/restoring-landscapes-south-africa-relisa",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-25T10:50:00.618587+00:00",
+    "description": "Source-linked external action.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:multi-country-mountain-flagship:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/multi-country-mountain-flagship",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:central-american-dry-corridor:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/central-american-dry-corridor",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:accion-andina:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/accion-andina",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:small-island-developing-states-restoration:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/small-island-developing-states",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:terai-arc-landscape:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/terai-arc-landscape",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:collaborative-rangelands-restoration-jordan:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/collaborative-rangelands-restoration-jordan",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:building-with-nature-indonesia:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/building-nature-indonesia",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:sahel-integrated-resilience:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/un-recognizes-restoration-initiative-feeding-4-million-across-sahel",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:living-indus:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/living-indus-initiative",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:bamboo-based-restoration:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/bamboo-based-restoration",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:respectful-returns-canada:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/respectful-returns-canada",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:the-restoration-initiative:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/restoration-initiative",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:restoring-mediterranean-forests:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/restoring-mediterranean-forests",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:shellfish-reef-building-australia:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/shellfish-reef-building-program-australia",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:abu-dhabi-marine-restoration:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/abu-dhabi-marine-restoration",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:comprehensive-island-restoration-mexico:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/comprehensive-island-restoration-mexico",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:shan-shui-initiative:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/shan-shui-initiative",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:mangrove-regeneration-sri-lanka:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/mangrove-regeneration-sri-lanka",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:restoring-brazil-cerrado-savannah:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/restoring-brazils-cerrado-savannah",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:great-green-wall:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/great-green-wall-restoration-peace",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:revitalizing-korea-forests-from-fire:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/revitalizing-koreas-forests-fire",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:ksa-national-greening-program:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/ksa-national-greening-program",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:ecosystems-restoration-mar-menor:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/ecosystems-restoration-mar-menor",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:trinational-atlantic-forest-pact:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/trinational-atlantic-forest-pact",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:namami-gange:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/namami-gange",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:thicket-restoration-south-africa:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/thicket-restoration-south-africa",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:altyn-dala-conservation-initiative:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/altyn-dala-conservation-initiative",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-24T11:36:25.439605+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:regreening-africa:official",
+    "name": "View official UN record",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://hub.decadeonrestoration.org/initiatives/regreening-africa",
+      "action_type": "external_information",
+      "publication": "related",
+      "review_state": "SOURCE-CHECKED",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-19T19:14:42.555654+00:00",
+    "description": "Open the official UN Decade / Ecosystem Restoration Hub record for this initiative.",
+    "solution_type": null
+  },
+  {
+    "id": "action:4p:impact:northern-mozambique-un",
+    "name": "Visit UN initiative",
+    "type": "action",
+    "issues": null,
+    "profile": {
+      "url": "https://www.decadeonrestoration.org/restoring-northern-mozambique-channel-region",
+      "action_type": "external_information",
+      "publication": "related",
+      "processed_by_4planet": false
+    },
+    "evidence": [],
+    "actor_type": null,
+    "updated_at": "2026-10-13T20:51:21.346506+00:00",
+    "description": "Open the official UN flagship record.",
+    "solution_type": null
+  }
+]
