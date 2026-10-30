@@ -57,6 +57,8 @@ jobs:
           for i in $(seq 1 20); do s=$(curl -s -o /dev/null -w '%{http_code}' "https://4species.com/zz-p2-probe-$i"); [ "$s" = 404 ] && break; sleep 3; done
           test "$s" = 404
           test "$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' https://4species.com/lion/)" = "308 https://4species.com/lion"
+          test "$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' https://4species.com/index.html)" = "308 https://4species.com/"
+          for u in $(curl -fsS https://4species.com/sitemap.xml | grep -o '<loc>[^<]*</loc>' | sed 's/<[^>]*>//g'); do test "$(curl -s -o /dev/null -w '%{http_code}' "$u")" = 200 || { echo SITEMAP_URL_NOT_200 $u; exit 1; }; done
           test "$(curl -fsS -H 'Cache-Control: no-cache' https://4species.com/orca | sha256sum | cut -d' ' -f1)" = "$orca_before"
           curl -fsS https://4species.com/sitemap.xml | grep -c '<loc>' | grep -qx 66
           ! curl -fsS https://4species.com/sitemap.xml | grep -q 'Special:FilePath'
