@@ -101,10 +101,10 @@ jobs:
             }
             const actor=d.actors.find(a=>(a.projects||[]).length>0) || d.actors[0];
             await page.goto(base+`/impact/actors/${actor.slug}/`,{waitUntil:'networkidle',timeout:60000});
-            if(await page.locator('.iu-profile-nav').count()!==1) throw new Error('actor on-this-page missing');
+            if(await page.locator('.iu-onpage').count()!==1) throw new Error('actor on-this-page missing');
             const solution=d.solutions.find(x=>x.indexable);
             await page.goto(base+`/impact/solution/${solution.slug}/`,{waitUntil:'networkidle',timeout:60000});
-            if(await page.locator('.iu-profile-nav').count()!==1) throw new Error('solution on-this-page missing');
+            if(await page.locator('.iu-onpage').count()!==1) throw new Error('solution on-this-page missing');
             if(!/Method · public record/i.test(await page.locator('article.iu-profile').innerText())) throw new Error('solution state label');
             await page.close();
             console.log('IMPACT_HUMAN_FIRST_BROWSER_PASS profiles='+profiles.length);
