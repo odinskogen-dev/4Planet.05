@@ -121,6 +121,48 @@ jobs:
         run: |
           set -euo pipefail
           npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch main --commit-hash "$GITHUB_SHA" --commit-message "discoverability closure main"
+      - name: Verify every published IMPACT profile on canonical domain
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const d=JSON.parse(fs.readFileSync('src/data/impactDiscovery.json','utf8'));
+          const rows=[
+            ...(d.projects||[]).map(x=>['project',x.slug,x.name]),
+            ...(d.actors||[]).map(x=>['actors',x.slug,x.name]),
+            ...(d.issues||[]).map(x=>['issue',x.slug,x.name]),
+            ...(d.solutions||[]).filter(x=>x.indexable===true).map(x=>['solution',x.slug,x.name]),
+          ];
+          if((d.projects||[]).length<55) throw new Error('expected >=55 IMPACT projects');
+          if((d.actors||[]).length<52) throw new Error('expected >=52 IMPACT actors');
+          const base='https://4planet.org';
+          const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+          const first=rows[0];
+          let ready=false;
+          for(let attempt=1;attempt<=20;attempt++){
+            const r=await fetch(`${base}/impact/${first[0]}/${first[1]}?build=${process.env.GITHUB_SHA}`,{redirect:'follow'});
+            const body=await r.text();
+            if(r.status===200 && !body.includes('4PLANET / 404')){ready=true;break;}
+            await sleep(3000);
+          }
+          if(!ready) throw new Error('canonical IMPACT did not converge after deploy');
+          for(let i=0;i<rows.length;i+=20){
+            const batch=rows.slice(i,i+20);
+            const results=await Promise.all(batch.map(async([kind,slug,name])=>{
+              const r=await fetch(`${base}/impact/${kind}/${slug}?build=${process.env.GITHUB_SHA}`,{redirect:'follow'});
+              const body=await r.text();
+              return {kind,slug,name,status:r.status,is404:body.includes('4PLANET / 404')};
+            }));
+            const bad=results.filter(x=>x.status!==200||x.is404);
+            if(bad.length) throw new Error('IMPACT LIVE profile failure: '+JSON.stringify(bad));
+          }
+          const fake=await fetch(`${base}/impact/project/not-a-real-project-${process.env.GITHUB_SHA}`,{redirect:'follow'});
+          const fakeBody=await fake.text();
+          if(fake.status!==404 || !fakeBody.includes('Page not found.')) throw new Error('fake IMPACT slug is not fail-closed');
+          console.log(`IMPACT_CANONICAL_ALL_PROFILE_ROUTES_PASS=${rows.length}`);
+          NODE
+
       - name: Verify public editorial DOM with a real browser (not stale raw HTML copy)
         shell: bash
         run: |
