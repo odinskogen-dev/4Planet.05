@@ -116,7 +116,7 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
       }
     }
     const body = props.body.replace('<main>', '<main>' + breadcrumb.nav).replace('</main>', more + '</main>');
-    const html = enhanced({ ...props, body });
+    const html = pageHtml({ ...props, body });
     // JSON-LD is a factual mirror of visible breadcrumb links; no fictional Q&A.
     const breadcrumbScript = '<script type="application/ld+json">' +
       JSON.stringify(breadcrumb.schema).replaceAll('<', '\\u003c') + '</script>';
