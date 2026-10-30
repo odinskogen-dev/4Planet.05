@@ -54,3 +54,20 @@ test("Contextual embed overrides legacy strict size containment without touching
   assert.match(css, /\.atlas-embed\.atlas-embed--contextual\{contain:none!important;display:block;min-height:/);
   assert.doesNotMatch(css, /\.atlas-embed\.atlas-embed--contextual\{contain:strict\}/);
 });
+
+
+test("Embedded ATLAS reconnects late, zero-size and replaced containers", () => {
+  const runtime = source("src/earth/AtlasEmbedRuntime.tsx");
+  const connectStart = runtime.indexOf("function connect()");
+  const observeAt = runtime.indexOf("observer.observe(element)", connectStart);
+  const sizeGateAt = runtime.indexOf("if (!resize(map, element)) return", connectStart);
+
+  assert.ok(connectStart >= 0, "the idempotent connect lifecycle must exist");
+  assert.ok(observeAt > connectStart, "the current container must be observed");
+  assert.ok(sizeGateAt > observeAt, "zero-size containers must be observed before the resize gate");
+  assert.match(runtime, /function onResize\(\) \{ requestAnimationFrame\(connect\); \}/);
+  assert.match(runtime, /visibilityState === "visible"\) requestAnimationFrame\(connect\)/);
+  assert.match(runtime, /element && element !== observed/);
+  assert.doesNotMatch(runtime, /requestAnimationFrame\(resize\)/);
+  assert.doesNotMatch(runtime, /new maplibregl\.Map|flyTo|easeTo|setCenter/);
+});

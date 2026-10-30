@@ -29,32 +29,34 @@ export function AtlasEmbedRuntime() {
     let observer: ResizeObserver | null = null;
     let polling: number | null = null;
 
-    function resize() {
-      if (disposed) return false;
-      const map = target.__4planet_map;
-      const element = map?.getContainer?.();
-      if (!element || element.getBoundingClientRect().width < 32 ||
-          element.getBoundingClientRect().height < 32) return false;
-      try { map?.resize(); map?.triggerRepaint?.(); return true; }
+    function resize(map: EmbeddedMap | undefined, element: HTMLElement | undefined) {
+      if (disposed || !map || !element) return false;
+      const bounds = element.getBoundingClientRect();
+      if (bounds.width < 32 || bounds.height < 32) return false;
+      try { map.resize(); map.triggerRepaint?.(); return true; }
       catch { return false; }
     }
 
-    const onVisible = () => {
-      if (document.visibilityState === "visible") requestAnimationFrame(resize);
-    };
-    const onResize = () => { requestAnimationFrame(resize); };
-
-    const connect = () => {
-      if (disposed || !resize()) return;
-      const element = target.__4planet_map?.getContainer?.();
+    function connect() {
+      if (disposed) return;
+      const map = target.__4planet_map;
+      const element = map?.getContainer?.();
+      // Observe the current container before it has usable layout so a
+      // zero-size -> visible transition can reconnect without another poll.
       if (element && element !== observed && typeof ResizeObserver !== "undefined") {
         observer?.disconnect();
         observed = element;
         observer = new ResizeObserver(onResize);
         observer.observe(element);
       }
+      if (!resize(map, element)) return;
       if (polling !== null) { window.clearInterval(polling); polling = null; }
-    };
+    }
+
+    function onVisible() {
+      if (document.visibilityState === "visible") requestAnimationFrame(connect);
+    }
+    function onResize() { requestAnimationFrame(connect); }
 
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
