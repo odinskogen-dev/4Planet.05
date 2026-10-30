@@ -1,3 +1,17 @@
+# GOLD TEMPLATE — DETERMINISTIC WEBKIT SEGMENTED EVIDENCE — 30 OCTOBER 2026
+
+**STATUS:** SECOND RETURN CORRECTION / EXACT-SHA RERUN REQUIRED / RELEASE HOLD.
+
+**ROOT CAUSE CORRECTION:** run 40979202073 proved DOM scrollHeight is not a reliable predictor of WebKit's full-page raster dimension. ACTOR WebKit 390/430 again passed route/note/h1/noindex/console assertions, then failed at the fullPage branch despite the DOM height guard.
+
+**BOUNDED CORRECTION:** every WebKit project now uses deterministic top+bottom viewport evidence; Chromium keeps full-page capture when the DOM is within the existing cap. This removes engine-dependent size inference without removing any semantic, route, privacy or console assertion.
+
+**SAME-PATH REGRESSION:** the owning exact-SHA workflow runs all three WebKit projects on every king/test change. A reintroduced WebKit full-page capture will fail those projects before acceptance.
+
+**TRUTH / RELEASE BOUNDARY:** segmented evidence is test artefact handling, not product Gold, deployment or user value. Independent Gold and all wider product gates remain required.
+
+**ROLLBACK:** revert this test/brief correction to 25ae490627f7f9ee49ba679e3e1d5c1d66070b89 if the rerun loses required top/bottom evidence or hides an earlier semantic failure.
+
 # GOLD TEMPLATE — TALL WEBKIT EVIDENCE CAPTURE — 30 OCTOBER 2026
 
 **STATUS:** RETURNED CI CORRECTION / EXACT-SHA RERUN REQUIRED / RELEASE HOLD.

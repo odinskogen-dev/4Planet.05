@@ -78,7 +78,9 @@ for (const surface of surfaces) {
     const screenshotPrefix = `artifacts/product-proof/gold-${safeName}-${testInfo.project.name}`;
     const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
     const maxFullPageScreenshotHeight = 32_000;
-    if (pageHeight <= maxFullPageScreenshotHeight) {
+    const requiresSegmentedEvidence =
+      testInfo.project.name.startsWith("webkit") || pageHeight > maxFullPageScreenshotHeight;
+    if (!requiresSegmentedEvidence) {
       await page.screenshot({ path: `${screenshotPrefix}.png`, fullPage: true });
     } else {
       await page.screenshot({ path: `${screenshotPrefix}-top.png` });
