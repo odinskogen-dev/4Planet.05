@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#171b1b" />
+  <meta name="description" content="CUB Game Lab – ROMA: Quick Conquest, a playable original touch-first historical strategy prototype." />
+  <title>ROMA: QUICK CONQUEST | CUB GAME LAB</title>
+  <style>
+:root {color-scheme:dark;--bg:#141918;--fg:#efe9d8;--muted:#9ba59b;--line:rgba(237,228,206,.15);--gold:#c9aa70;--roman:#6ac8de;--punic:#e26e5b}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overscroll-behavior:none}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--fg)}button{font-family:inherit;cursor:pointer}#app{width:100%;height:100dvh;min-height:460px;display:flex;flex-direction:column;overflow:hidden}.hud-top{height:80px;padding:13px clamp(12px,3vw,44px);background:#191f1e;display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--line);flex-shrink:0;z-index:3}.identity{display:flex;align-items:center;gap:12px}.brand-mark{width:38px;height:44px;display:grid;place-items:center;color:#171b19;background:var(--gold);font:700 28px Georgia,serif;clip-path:polygon(12% 0,88% 0,100% 14%,100% 86%,88% 100%,12% 100%,0 86%,0 14%)}.eyebrow{font-size:10px;letter-spacing:.22em;color:var(--gold);font-weight:800}.separator{opacity:.5}.brand-title{font:600 24px 'Cinzel',Georgia,serif;letter-spacing:.025em;white-space:nowrap}.brand-title span{font:600 11px 'DM Sans',sans-serif;letter-spacing:.15em;color:#bcbcb0;vertical-align:middle;margin-left:6px}.match-title{text-align:center;letter-spacing:.15em;font-size:12px;font-weight:800;white-space:nowrap}.map-needle{color:var(--gold);font-size:16px;margin-right:5px}.map-divider{color:#62736b;margin:0 6px}.map-subtitle{font-size:10px;letter-spacing:.09em;font-weight:400;color:#85988b;margin-top:3px}.top-stats{display:flex;gap:20px}.stat{display:flex;flex-direction:column;gap:3px;min-width:58px}.stat-label{font-size:9px;letter-spacing:.12em;color:#9fab9e;white-space:nowrap}.stat-value{font:600 23px 'Cinzel',Georgia,serif;color:var(--roman);line-height:1}.stat-value.enemy{color:var(--punic)}#clock{color:var(--fg)}.battle-view{flex:1;min-height:0;position:relative;overflow:hidden;background:#897f60}canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}.inset-map-label{position:absolute;top:18px;left:26px;border:1px solid rgba(0,0,0,.25);border-radius:2px;padding:9px 13px;background:#18201bdc;color:#e8e4d4;font-size:10px;letter-spacing:.16em;font-weight:800;pointer-events:none}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--roman);margin-right:6px;box-shadow:0 0 8px var(--roman)}.light-line{display:inline-block;width:1px;height:10px;margin:0 10px;vertical-align:middle;background:#66786c}.edge-label{position:absolute;top:16px;right:26px;color:#faf4e4;text-shadow:0 1px 6px #17160fa8;letter-spacing:.19em;font-size:10px;pointer-events:none}.side-guidance{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);padding:9px 17px;background:rgba(18,27,22,.85);border:1px solid rgba(250,230,192,.22);color:#e8e3d6;font-size:10px;letter-spacing:.12em;font-weight:700;white-space:nowrap;pointer-events:none;transition:opacity .2s}.side-guidance span{color:var(--gold);padding:0 8px}.zoom-tools{position:absolute;right:18px;bottom:22px;display:flex;flex-direction:column;gap:5px}.zoom-tools button{height:35px;width:35px;border:1px solid #d9dbc167;color:#efe4d4;background:#19211be7;font-size:22px;border-radius:3px}.map-scale{position:absolute;left:26px;bottom:20px;color:#f7ead6;font-size:9px;text-shadow:0 1px 3px #000;pointer-events:none;letter-spacing:.08em}.map-scale div{width:90px;border-bottom:2px solid #f1e5d0;border-left:2px solid #f1e5d0;border-right:2px solid #f1e5d0;height:6px;margin-bottom:4px}.toast{position:absolute;top:62px;left:50%;transform:translateX(-50%) translateY(-10px);background:#1b2921e8;color:#fff;padding:9px 14px;border:1px solid rgba(231,224,193,.2);font-size:12px;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.hud-bottom{height:66px;flex-shrink:0;background:#191f1e;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(12px,3vw,44px);gap:10px;z-index:3}.legend{display:flex;gap:17px;align-items:center}.legend-item{white-space:nowrap;font-size:10px;letter-spacing:.12em;font-weight:700;color:#c6c7b9}.swatch{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px}.swatch.blue{background:var(--roman)}.swatch.red{background:var(--punic)}.swatch.neutral{background:#d3bc86}.order-status{font-size:10px;letter-spacing:.11em;color:#b5bbac;text-align:center}.bottom-buttons{display:flex;gap:6px}.bottom-buttons button{height:34px;background:rgba(230,226,210,.07);color:#e3dfd1;border:1px solid var(--line);border-radius:3px;font-size:10px;font-weight:800;letter-spacing:.08em;padding:0 12px;white-space:nowrap}.bottom-buttons button:hover,.zoom-tools button:hover{background:#2f4238}.overlay,.result{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:linear-gradient(90deg,rgba(11,21,18,.94),rgba(11,21,18,.55) 65%,rgba(11,21,18,.35));z-index:2}.overlay-panel{max-width:510px;margin:20px;padding:30px;background:#111c19e8;border:1px solid #cfb07a63;box-shadow:0 12px 80px #0a110db8}.overlay h1{font:500 clamp(43px,5vw,64px)/.98 'Cinzel',Georgia,serif;letter-spacing:-.025em;margin:21px 0 15px}.overlay h1 em{font-style:normal;color:var(--gold)}.overlay p{font-size:14px;color:#bfc9bf;line-height:1.65;margin-bottom:20px}.overlay-mechanics{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}.overlay-mechanics span{border:1px solid #bdae8866;padding:8px 9px;font-size:10px;letter-spacing:.06em;color:#c4cbbd}.overlay-mechanics strong{color:#f1dbac}.start-button{width:100%;background:var(--gold);color:#1c241f;border:0;font-size:12px;letter-spacing:.18em;font-weight:800;padding:17px 20px;display:flex;justify-content:space-between}.start-button:hover{background:#e0bc82}.overlay-tip{margin-top:14px;font-size:9px;letter-spacing:.11em;color:#899b8d}.result{display:none;background:#11211bde}.result.visible{display:flex}.result-panel{background:#15231eee;border:1px solid #d3b97a8c;padding:40px;width:min(90vw,470px);text-align:center;box-shadow:0 15px 80px #0a100bd8}.result-panel h2{font:600 48px 'Cinzel',Georgia,serif;color:#d9bd8a}.result-panel p{color:#b7c9bd;line-height:1.55}.result-panel .start-button{margin-top:26px}@media(max-width:980px){.match-title{display:none}.top-stats{gap:10px}.hud-top{height:67px}.hud-bottom{height:60px}.order-status{display:none}.brand-title{font-size:20px}.brand-title span{font-size:9px}}@media(max-width:550px){.hud-top{height:64px;padding:7px 9px}.brand-mark{width:28px;height:34px;font-size:20px}.brand-title{font-size:17px}.brand-title span{display:none}.eyebrow{font-size:8px}.identity{gap:7px}.stat-label{font-size:7px}.stat{min-width:40px}.stat-value{font-size:18px}.top-stats{gap:7px}.hud-bottom{height:52px;padding:0 8px}.legend{gap:7px}.legend-item{font-size:8px}.swatch{width:7px;height:7px;margin-right:2px}.bottom-buttons{gap:3px}.bottom-buttons button{height:29px;font-size:8px;padding:0 6px}.inset-map-label{top:8px;left:8px;padding:7px;font-size:8px}.edge-label{top:12px;right:9px;font-size:8px}.side-guidance{font-size:8px;bottom:14px;max-width:70%;overflow:hidden;text-overflow:ellipsis;padding:7px 9px}.map-scale{left:10px;bottom:12px}.zoom-tools{right:8px;bottom:10px}.zoom-tools button{height:30px;width:30px}.overlay-panel{padding:23px;margin:12px}.overlay h1{font-size:43px}.overlay p{font-size:12px}}
+
+/* R2: responsive battle-intelligence overlays and interactive minimap */
+.supply-value{color:var(--gold)}
+.battle-intel{position:absolute;left:26px;top:60px;background:#14221be0;border:1px solid #d2c29a66;color:#eee4ca;padding:6px 9px;font-size:9px;letter-spacing:.1em;pointer-events:none;line-height:1.4}
+.minimap-wrap{position:absolute;right:18px;top:56px;background:#151f1cde;border:1px solid #b5b39781;padding:6px 6px 3px;box-shadow:0 6px 22px #142019aa;z-index:1}
+.minimap-wrap .minimap-label{font-size:8px;letter-spacing:.13em;margin:1px 3px 5px;color:#c7d0b6;font-weight:700}
+#miniMap{position:relative;inset:auto;width:170px;height:104px;cursor:crosshair;touch-action:none;display:block}
+.issued-status{font-size:10px;letter-spacing:.08em;color:#adbaad;white-space:nowrap}.issued-status strong{color:#e3e2d5;font-size:16px}
+@media(max-width:980px){.issued-status{display:none}}
+@media(max-width:550px){
+ .minimap-wrap{right:7px;top:43px;padding:3px}
+ #miniMap{width:94px;height:58px}
+ .minimap-label{display:none}
+ .battle-intel{left:8px;top:42px;max-width:calc(100% - 115px);font-size:8px;letter-spacing:0;padding:4px 6px}
+ .supply-stat{display:none}
+ .inset-map-label{font-size:7px;padding:6px}
+ .overlay-mechanics{gap:4px}.overlay-mechanics span{font-size:9px;padding:6px}
+}
+
+</style>
+</head>
+<body>
+  <main id="app">
+    <header class="hud-top">
+      <div class="identity"><div class="brand-mark">R</div><div><div class="eyebrow">CUB GAME LAB <span class="separator">/</span> PROTOTYPE 02</div><div class="brand-title">ROMA <span>QUICK CONQUEST</span></div></div></div>
+      <div class="match-title"><span class="map-needle">◈</span> CANNAE · APULIA <span class="map-divider">/</span> 216 BCE <div class="map-subtitle">Ofanto floodplain · tactical river valley</div></div>
+      <div class="top-stats"><div class="stat"><span class="stat-label">ROMAN FORTS</span><span class="stat-value" id="romanForts">3</span></div><div class="stat"><span class="stat-label">PUNIC FORTS</span><span class="stat-value enemy" id="punicForts">3</span></div><div class="stat supply-stat"><span class="stat-label">GRANARIES</span><span class="stat-value supply-value" id="supplies">0/2</span></div><div class="stat"><span class="stat-label">BATTLE</span><span class="stat-value" id="clock">00:00</span></div></div>
+    </header>
+    <section class="battle-view" id="battleView" aria-label="Playable battlefield">
+      <canvas id="battle" aria-label="Interactive strategy battle map. Drag from your blue forts to other forts to send troops." tabindex="0"></canvas>
+      <div class="inset-map-label"><span class="dot live-dot"></span> LIVE BATTLE <span class="light-line"></span> 3.2 × 1.9 KM</div>
+      <div class="edge-label topography">AUFIDUS / OFANTO VALLEY</div>
+      <div class="side-guidance" id="guidance">SWIPE FROM BLUE FORT TO TARGET <span>·</span> TAP SOURCE THEN TARGET <span>·</span> RAPID ORDERS</div>
+      <div class="battle-intel" id="battleIntel">ROAD +25% · GROVE −28% · FORDS CLEAR · HIGHLANDS DEFEND</div>
+      <div class="minimap-wrap"><div class="minimap-label">THEATRE MAP · TAP TO MOVE</div><canvas id="miniMap" width="170" height="104" aria-label="Minimap. Tap to move battlefield view."></canvas></div>
+      <div class="zoom-tools"><button id="zoomIn" aria-label="Zoom in">+</button><button id="zoomOut" aria-label="Zoom out">−</button><button id="fit" aria-label="Fit battlefield">⌗</button></div>
+      <div class="map-scale"><div></div><span>~500 m</span></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="overlay" id="overlay"><div class="overlay-panel"><div class="eyebrow">CUB GAME LAB · PLAYTEST</div><h1>CONQUER<br/><em>CANNAE.</em></h1><p>Command Roman forts across an original battlefield inspired by the Ofanto valley. Forts continuously recruit fresh soldiers. Swipe from a blue fort to any target to dispatch men. Roads accelerate marching, groves and wet ground slow armies, and high ground strengthens defenders.</p><div class="overlay-mechanics"><span>1ST SWIPE <strong>60%</strong></span><span>2ND <strong>40%</strong></span><span>3RD <strong>25%</strong></span><span>4TH+ <strong>20%</strong></span></div><button id="start" class="start-button">BEGIN BATTLE <span>→</span></button><div class="overlay-tip">TAKE GRANARIES TO BOOST RECRUITMENT · CROSS WET GROUND AT FORDS<br/>DESKTOP: DRAG WITH MOUSE · MOBILE: SWIPE WITH FINGER</div></div></div>
+      <div class="result" id="result"><div class="result-panel"><span class="eyebrow" id="resultCaption">BATTLE COMPLETE</span><h2 id="resultTitle">VICTORY</h2><p id="resultText"></p><button id="again" class="start-button">PLAY AGAIN →</button></div></div>
+    </section>
+    <footer class="hud-bottom">
+      <div class="legend"><span class="legend-item"><i class="swatch blue"></i> ROME</span><span class="legend-item"><i class="swatch red"></i> CARTHAGE</span><span class="legend-item"><i class="swatch neutral"></i> NEUTRAL</span></div>
+      <div class="order-status" id="orderStatus">SELECT A ROMAN FORT TO ISSUE ORDERS</div><div class="issued-status"><span>ORDERS </span><strong id="issued">0</strong></div>
+      <div class="bottom-buttons"><button id="audio" title="Toggle audio">♪ OFF</button><button id="speed" title="Toggle speed">1× SPEED</button><button id="pause" title="Pause game">Ⅱ PAUSE</button><button id="reset" title="Restart game">↻ RESET</button></div>
+    </footer>
+  </main>
+  <script>
+/* ROMA: QUICK CONQUEST R2 — CUB Game Lab. Original, dependency-free prototype, 2026-10-30.
+   Stylised playfield of the Ofanto valley around Cannae, NOT a surveyed historical map.
+   All game graphics, interactions and logic are authored for this prototype. */
+(() => {
+  'use strict';
+  const canvas = document.getElementById('battle');
+  const view = document.getElementById('battleView');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const $ = id => document.getElementById(id);
+  const W = 1600, H = 960, MAX_GARRISON = 280;
+  const GRANARIES = [11,17], HIGH_GROUND = [12,13,18], FORDS = [[675,775],[757,550],[845,345]];
+  const CHANNEL = [[620,1000],[660,850],[682,727],[738,572],[795,460],[838,358],[910,190]];
+  const GRID = 40, GW = Math.ceil(W/GRID), GH = Math.ceil(H/GRID);
+  const OWNERS = { roman: '#65cee5', punic: '#df765d', neutral: '#d4c08c' };
+  const DATA = [
+    ['Castra Romana',175,725,'roman',72,3.6,1],
+    ['Western Gate',340,590,'roman',52,3.0,1],
+    ['Legion Watch',255,405,'roman',32,2.3,1],
+    ['Hannibal\'s Camp',1410,490,'punic',76,3.6,1],
+    ['Iberian Guard',1215,335,'punic',54,2.9,1],
+    ['Numidian Camp',1370,740,'punic',38,2.4,1],
+    ['Aufidus Ford',500,302,'neutral',26,2.2,1],
+    ['Western Farms',520,490,'neutral',25,2.4,1],
+    ['South Ridge',545,760,'neutral',26,2.6,1],
+    ['Stone Crossing',735,268,'neutral',23,2.4,1],
+    ['Central Villa',729,550,'neutral',36,3.3,1],
+    ['Olive Granary',770,817,'neutral',28,2.7,1],
+    ['Cannae Citadel',1030,555,'neutral',55,4.5,1.24],
+    ['High Terrace',1080,347,'neutral',29,2.7,1.1],
+    ['Eastern Ford',912,233,'neutral',24,2.5,1],
+    ['River Watch',1170,176,'neutral',23,2.0,1],
+    ['Olive Station',982,795,'neutral',30,3.0,1],
+    ['East Granary',1195,808,'neutral',28,2.6,1],
+    ['North Terrace',828,408,'neutral',25,2.5,1]
+  ];
+  const ROAD = [
+    [[95,760],[310,610],[510,490],[729,550],[1030,555],[1215,335],[1490,360]],
+    [[200,405],[500,302],[735,268],[912,233],[1170,176],[1420,130]],
+    [[240,865],[545,760],[770,817],[982,795],[1195,808],[1460,860]],
+    [[485,302],[520,490],[545,760]],[[735,268],[828,408],[1030,555],[982,795]],
+    [[1170,176],[1080,347],[1030,555],[1195,808]]
+  ];
+  const RIVER = [[-50,155],[165,175],[320,128],[460,175],[600,150],[770,125],[900,155],[1040,105],[1190,110],[1350,94],[1670,118]];
+  const GROVES = [[355,830,58],[645,710,56],[840,700,65],[980,690,56],[1200,890,46],[1125,720,42],[450,405,42],[1110,440,32],[700,395,35],[1260,610,42],[1450,285,45]];
+  const HILLS = [[1040,560,270,115],[1150,350,190,85],[785,900,200,70],[290,310,190,60],[1450,690,180,60]];
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  let seed=317130;
+  function rand(){seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;}
+  const camera={zoom:1,ox:0,oy:0,scale:1};
+  let width=0,height=0,dpr=1,texture=null;
+  let forts=[],armies=[],particles=[],running=false,paused=false,done=false,time=0,clockAcc=0,aiAcc=0,rate=1;
+  let selected=null,gesture=null, pointers=new Map(), toastTime=0, hintsTime=0;
+  let audioOn=false, audioCtx=null, matchEvents=[], battleStats={orders:0,sent:0,captured:0,clashes:0};
+  let routePreview=null, miniCtx=null;
+  function newForts(){return DATA.map((row,id)=>({id,name:row[0],x:row[1],y:row[2],owner:row[3],troops:row[4],prod:row[5],def:row[6],chain:0,lastOrder:-999,pulse:0}));}
+  function init(){
+    forts=newForts();armies=[];particles=[];time=0;clockAcc=0;aiAcc=0;done=false;paused=false;rate=1;
+    selected=null;gesture=null;pointers.clear();routePreview=null;matchEvents=[];battleStats={orders:0,sent:0,captured:0,clashes:0};$('speed').textContent='1× SPEED';$('pause').textContent='Ⅱ PAUSE';$('result').classList.remove('visible');
+    $('orderStatus').textContent='SELECT A ROMAN FORT TO ISSUE ORDERS';$('guidance').style.opacity='1';$('battleIntel').textContent='ROAD +25% · GROVE −28% · FORDS CLEAR · HIGHLANDS DEFEND';
+    updateHUD();
+  }
+  function message(text){$('toast').textContent=text;$('toast').classList.add('show');toastTime=2.2;}
+  function counts(){return ['roman','punic','neutral'].map(o=>forts.filter(f=>f.owner===o).length);}
+  function updateHUD(){let [r,p]=counts();$('romanForts').textContent=r;$('punicForts').textContent=p;let s=Math.floor(time);$('clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');$('supplies').textContent=GRANARIES.filter(i=>forts[i].owner==='roman').length+'/2';$('issued').textContent=battleStats.orders;}
+  function resize(){
+    const box=view.getBoundingClientRect();width=box.width;height=box.height;dpr=Math.min(2,window.devicePixelRatio||1);
+    canvas.width=Math.max(1,Math.floor(width*dpr));canvas.height=Math.max(1,Math.floor(height*dpr));
+    if(!camera.scale||camera.scale===1){fit(true);}else{camera.scale=Math.min(width/W,height/H)*camera.zoom;clampCamera();}
+  }
+  function fit(force=false){camera.zoom=1;const base=Math.min(width/W,height/H);camera.scale=base;
+    if(width<height*.82){camera.zoom=2.15;camera.scale=base*camera.zoom;camera.ox=width/2-385*camera.scale;camera.oy=height/2-555*camera.scale;}
+    else{camera.ox=(width-W*camera.scale)/2;camera.oy=(height-H*camera.scale)/2;}
+    clampCamera();if(!force)message('MAP VIEW RESET');
+  }
+  function clampCamera(){const worldW=W*camera.scale,worldH=H*camera.scale;
+    camera.ox=worldW<=width?(width-worldW)/2:clamp(camera.ox,width-worldW-40,40);
+    camera.oy=worldH<=height?(height-worldH)/2:clamp(camera.oy,height-worldH-40,40);
+  }
+  function zoomAt(factor,sx=width/2,sy=height/2){const old=camera.scale;const base=Math.min(width/W,height/H);
+    camera.zoom=clamp(camera.zoom*factor,1,4.2);camera.scale=base*camera.zoom;
+    camera.ox=sx-(sx-camera.ox)*camera.scale/old;camera.oy=sy-(sy-camera.oy)*camera.scale/old;clampCamera();}
+  function worldToScreen(p){return{x:p.x*camera.scale+camera.ox,y:p.y*camera.scale+camera.oy};}
+  function screenToWorld(p){return{x:(p.x-camera.ox)/camera.scale,y:(p.y-camera.oy)/camera.scale};}
+  function hitFort(p){let best=null,d=35;for(const fort of forts){const q=worldToScreen(fort),a=dist(q,p);if(a<d){d=a;best=fort;}}return best;}
+  function nextRatio(f){return f.chain===0?.60:f.chain===1?.40:f.chain===2?.25:.20;}
+  function canOrder(from,to){return running&&!done&&!paused&&from&&to&&from.id!==to.id&&from.owner==='roman'&&Math.floor(from.troops)>=2;}
+
+  // R2 terrain grid. Routes minimise travel time: roads favour fast advance,
+  // woods and wet ground slow armies, and shallow fords offer crossings.
+  function segmentDistance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;
+    const t=clamp(l?((x-a[0])*dx+(y-a[1])*dy)/l:0,0,1);return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t);}
+  function nearLine(x,y,line){let d=Infinity;for(let i=1;i<line.length;i++)d=Math.min(d,segmentDistance(x,y,line[i-1],line[i]));return d;}
+  function terrainAt(x,y){let road=Infinity;for(const line of ROAD)road=Math.min(road,nearLine(x,y,line));
+    const grove=GROVES.some(([gx,gy,r])=>Math.hypot(x-gx,(y-gy)/.66)<r);
+    const ridge=HILLS.some(([hx,hy,rx,ry])=>Math.pow((x-hx)/rx,2)+Math.pow((y-hy)/ry,2)<.65);
+    const wet=nearLine(x,y,CHANNEL)<28;
+    const atFord=FORDS.some(([fx,fy])=>Math.hypot(x-fx,y-fy)<56);
+    const river=nearLine(x,y,RIVER)<26;
+    let speed=1;
+    if(road<15)speed*=1.25;
+    if(grove)speed*=.72;
+    if(ridge)speed*=.84;
+    if(wet&&!atFord)speed*=.45;
+    if(river)speed*=.50;
+    return {speed:clamp(speed,.35,1.4),road:road<15,grove,ridge,wet,atFord,river};
+  }
+  function cellCenter(gx,gy){return{x:Math.min(W-2,(gx+.5)*GRID),y:Math.min(H-2,(gy+.5)*GRID)};}
+  let gridSpeeds=null;
+  function getGridSpeeds(){if(gridSpeeds)return gridSpeeds;
+    gridSpeeds=new Float32Array(GW*GH);
+    for(let i=0;i<gridSpeeds.length;i++){const p=cellCenter(i%GW,Math.floor(i/GW));gridSpeeds[i]=terrainAt(p.x,p.y).speed;}
+    return gridSpeeds;
+  }
+  function gridIndex(x,y){return clamp(Math.floor(x/GRID),0,GW-1)+clamp(Math.floor(y/GRID),0,GH-1)*GW;}
+  // Bounded A*; grid costs measure time rather than distance. Fully local, no APIs.
+  function routeBetween(from,to){
+    const start=gridIndex(from.x,from.y),end=gridIndex(to.x,to.y);
+    const count=GW*GH,g=new Float64Array(count),f=new Float64Array(count),parent=new Int32Array(count),closed=new Uint8Array(count),opened=new Uint8Array(count);
+    g.fill(Infinity);f.fill(Infinity);parent.fill(-1);g[start]=0;
+    const goal=cellCenter(end%GW,Math.floor(end/GW));
+    function heuristic(i){let p=cellCenter(i%GW,Math.floor(i/GW));return Math.hypot(p.x-goal.x,p.y-goal.y)/1.4;}
+    f[start]=heuristic(start);let queue=[start];opened[start]=1;const cellSpeeds=getGridSpeeds();
+    while(queue.length){let best=0;for(let k=1;k<queue.length;k++)if(f[queue[k]]<f[queue[best]])best=k;
+      const n=queue[best];queue[best]=queue[queue.length-1];queue.pop();opened[n]=0;
+      if(n===end)break;if(closed[n])continue;closed[n]=1;
+      const x=n%GW,y=Math.floor(n/GW);
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        if(!dx&&!dy)continue;let nx=x+dx,ny=y+dy;if(nx<0||nx>=GW||ny<0||ny>=GH)continue;
+        const ni=ny*GW+nx;if(closed[ni])continue;
+        // Apply terrain costs to each visited cell; speeds precomputed for fast rapid-order swipes.
+        const slow=(cellSpeeds[ni]+cellSpeeds[n])*.5;
+        const cand=g[n]+GRID*Math.hypot(dx,dy)/Math.max(slow,.3);
+        if(cand<g[ni]){parent[ni]=n;g[ni]=cand;f[ni]=cand+heuristic(ni);if(!opened[ni]){queue.push(ni);opened[ni]=1;}}
+      }
+    }
+    if(end!==start&&parent[end]<0)return [{x:from.x,y:from.y},{x:to.x,y:to.y}];
+    const raw=[],seen=new Set();let n=end;while(n!==start&&!seen.has(n)){seen.add(n);raw.push(cellCenter(n%GW,Math.floor(n/GW)));n=parent[n];if(n<0)break;}
+    raw.reverse();const path=[{x:from.x,y:from.y}];
+    // Retain bends but avoid 40-pixel corner jitter; the destination is exact.
+    for(let i=0;i<raw.length;i++){
+      const prev=raw[Math.max(0,i-1)],cur=raw[i],next=raw[Math.min(i+1,raw.length-1)];
+      if(i===0||i===raw.length-1||Math.abs((cur.x-prev.x)*(next.y-cur.y)-(cur.y-prev.y)*(next.x-cur.x))>1)path.push(cur);
+    }
+    path.push({x:to.x,y:to.y});return path;
+  }
+  function sound(freq=430,duration=.07){if(!audioOn)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')audioCtx.resume();const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+    osc.type='triangle';osc.frequency.setValueAtTime(freq,audioCtx.currentTime);osc.frequency.exponentialRampToValueAtTime(freq*.75,audioCtx.currentTime+duration);
+    gain.gain.setValueAtTime(.085,audioCtx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
+    osc.connect(gain);gain.connect(audioCtx.destination);osc.start();osc.stop(audioCtx.currentTime+duration);
+  }catch(_e){audioOn=false;$('audio').textContent='♪ OFF';}}
+  function record(text){matchEvents.push({time:Math.floor(time),text});if(matchEvents.length>24)matchEvents.shift();}
+  function productionFactor(who){return 1+.12*GRANARIES.filter(i=>forts[i].owner===who).length;}
+  function defenceFactor(f){return f.def*(HIGH_GROUND.includes(f.id)?1.22:1);}
+
+  function launch(from,to,ratio,who){
+    const num=Math.min(Math.floor(from.troops),Math.max(1,Math.floor(from.troops*ratio)));
+    if(num<1)return 0;
+    from.troops-=num;
+    const path=routeBetween(from,to),pace=(who==='roman'?160:148)*(0.93+rand()*.13);
+    const start=path[0];
+    armies.push({id:Math.floor(rand()*1e9),owner:who,from:from.id,to:to.id,troops:num,x:start.x,y:start.y,
+      path,waypoint:1,progress:0,pace,angle:Math.atan2(to.y-from.y,to.x-from.x),fuse:0});
+    for(let i=0;i<6;i++)dust(from.x,from.y,who);
+    return num;
+  }
+  function order(from,to){
+    if(!canOrder(from,to)){if(from?.owner==='roman'&&from.troops<2)message('GARRISON NEEDS MORE SOLDIERS');return false;}
+    if(time-from.lastOrder>4)from.chain=0;
+    const ratio=nextRatio(from),count=launch(from,to,ratio,'roman');
+    from.chain+=1;from.lastOrder=time;from.pulse=1.2;selected=from.id;battleStats.orders++;battleStats.sent+=count;record(`${count} troops → ${to.name}`);sound(460,.065);
+    $('guidance').style.opacity='0';$('orderStatus').textContent=`${from.name.toUpperCase()} · ${count} SENT TO ${to.name.toUpperCase()} · NEXT ${Math.round(nextRatio(from)*100)}%`;
+    return count>0;
+  }
+  function dust(x,y,owner){if(particles.length>170)return;particles.push({x:x+(rand()-.5)*36,y:y+(rand()-.5)*20,vx:(rand()-.5)*40,vy:-10-rand()*18,life:.35+rand()*.45,max:.8,color:owner==='roman'?'#8e9e85':'#9a8170',r:2+rand()*4});}
+  function burst(f,owner){for(let i=0;i<21;i++){const a=rand()*Math.PI*2,s=20+rand()*80;particles.push({x:f.x,y:f.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.5+rand()*.6,max:1,color:owner==='roman'?'#8bd7ed':owner==='punic'?'#f9a17a':'#e9d1a0',r:1+rand()*3});}}
+  function arrive(army){const f=forts[army.to];if(!f)return;
+    if(f.owner===army.owner){f.troops=Math.min(MAX_GARRISON,f.troops+army.troops);return;}
+    const power=army.troops,needed=Math.ceil(f.troops*defenceFactor(f));
+    if(power>needed){f.owner=army.owner;f.troops=Math.max(1,power-needed);f.chain=0;f.pulse=1.6;burst(f,army.owner);if(army.owner==='roman'){battleStats.captured++;sound(720,.18);}record(`${army.owner==='roman'?'Rome':'Carthage'} captured ${f.name}`);
+      if(army.owner==='roman'){message(`${f.name.toUpperCase()} CAPTURED`);}else if(army.owner==='punic'&&selected===f.id){selected=null;message(`${f.name.toUpperCase()} LOST`);}
+    }else{f.troops=Math.max(0,(needed-power)/defenceFactor(f));burst(f,f.owner);}
+  }
+  function aiStep(){
+    const owned=forts.filter(f=>f.owner==='punic').sort(()=>rand()-.5);
+    if(!owned.length)return;
+    let sent=0;
+    for(const f of owned){
+      if(f.troops<28)continue;
+      const defend=forts.filter(t=>t.owner==='punic'&&t.id!==f.id)
+        .map(t=>({t,threat:armies.filter(a=>a.owner==='roman'&&a.to===t.id).reduce((s,a)=>s+a.troops,0)}))
+        .filter(x=>x.threat>x.t.troops*defenceFactor(x.t)*.8).sort((a,b)=>dist(f,a.t)-dist(f,b.t))[0];
+      if(defend&&dist(f,defend.t)<610&&sent<2){launch(f,defend.t,.44,'punic');sent++;}
+    }
+    for(const f of owned){if(sent>=2)break;if(f.troops<29)continue;
+      let chosen=null,best=-Infinity;
+      for(const t of forts){if(t.id===f.id||t.owner==='punic')continue;
+        const d=dist(f,t),inbound=armies.filter(a=>a.owner==='punic'&&a.to===t.id).reduce((s,a)=>s+a.troops,0);
+        const req=t.troops*defenceFactor(t)+inbound;
+        const affordable=f.troops*.67>req*1.08;
+        if(!affordable)continue;
+        const score=t.prod*20-(d*.052)-(t.owner==='roman'?7:0)-inbound*.25+rand()*11;
+        if(score>best){best=score;chosen=t;}
+      }
+      if(chosen){launch(f,chosen,.62+rand()*.12,'punic');sent++;}
+    }
+  }
+  function update(dt){
+    if(toastTime>0){toastTime-=dt;if(toastTime<=0)$('toast').classList.remove('show');}
+    if(!running||paused||done)return;
+    dt=clamp(dt,0,.055)*rate;time+=dt;clockAcc+=dt;aiAcc+=dt;
+    for(const f of forts){if(f.owner!=='neutral'){f.troops=Math.min(MAX_GARRISON,f.troops+f.prod*productionFactor(f.owner)*dt);f.pulse=Math.max(0,f.pulse-dt);}if(f.chain&&time-f.lastOrder>4)f.chain=0;}
+    for(const a of armies){
+      let remain=dt*a.pace*terrainAt(a.x,a.y).speed;
+      let guard=0;
+      while(remain>0&&a.waypoint<a.path.length&&guard++<12){
+        const target=a.path[a.waypoint],len=dist(a,target);
+        if(len<.01){a.waypoint++;continue;}
+        a.angle=Math.atan2(target.y-a.y,target.x-a.x);
+        const step=Math.min(len,remain);a.x+=Math.cos(a.angle)*step;a.y+=Math.sin(a.angle)*step;
+        remain-=step;if(step>=len-.01){a.x=target.x;a.y=target.y;a.waypoint++;}
+      }
+      a.fuse+=dt;if(a.fuse>.16){a.fuse=0;if(rand()<.7)dust(a.x,a.y,a.owner);}
+      if(a.waypoint>=a.path.length)a.arrived=true;
+    }
+    // Field encounters: opposing marching formations collide before reaching forts.
+    for(let i=0;i<armies.length;i++)for(let j=i+1;j<armies.length;j++){
+      const a=armies[i],b=armies[j];if(a.arrived||b.arrived||a.owner===b.owner)continue;
+      if(Math.abs(a.x-b.x)>19||Math.abs(a.y-b.y)>19||dist(a,b)>23)continue;
+      const casualties=Math.min(a.troops,b.troops);a.troops-=casualties;b.troops-=casualties;
+      if(a.troops<=0)a.arrived='destroyed';if(b.troops<=0)b.arrived='destroyed';
+      burst({x:(a.x+b.x)/2,y:(a.y+b.y)/2},'neutral');battleStats.clashes++;
+    }
+    for(const a of armies){if(a.arrived===true&&a.troops>0)arrive(a);}
+    armies=armies.filter(x=>!x.arrived);
+    for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.13,dt);p.vy*=Math.pow(.20,dt);p.life-=dt;}
+    particles=particles.filter(p=>p.life>0);
+    if(aiAcc>2.5){aiAcc=0;aiStep();}
+    if(clockAcc>.3){clockAcc=0;updateHUD();const [romans,punic,neutral]=counts();
+      if(punic===0&&!armies.some(a=>a.owner==='punic')&&romans>=10)finish(true);
+      if(romans===0&&!armies.some(a=>a.owner==='roman'))finish(false);
+      if(time>1200)finish(romans>punic);
+    }
+  }
+  function finish(win){done=true;updateHUD();$('resultCaption').textContent=win?'VICTORIA · ROMA':'THE REPUBLIC HAS FALLEN';$('resultTitle').textContent=win?'VICTORY':'DEFEAT';$('resultText').textContent=win?`Cannae is secured. ${counts()[0]} Roman forts, ${battleStats.orders} orders, ${battleStats.captured} captures in ${$('clock').textContent}.`: `Carthage prevailed after ${$('clock').textContent}. ${battleStats.orders} orders issued; rally your legion and fight again.`;$('result').classList.add('visible');}
+  function poly(c,pts){c.beginPath();c.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)c.lineTo(...pts[i]);c.closePath();}
+  function roundRect(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r);}
+  function drawPath(c,pts){c.beginPath();c.moveTo(...pts[0]);for(let i=1;i<pts.length;i++){const p=pts[i-1],q=pts[i];const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2;c.quadraticCurveTo(p[0],p[1],mx,my);}const n=pts[pts.length-1];c.lineTo(n[0],n[1]);}
+  function buildTerrain(){
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');seed=317130;
+    const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#a2a082');bg.addColorStop(.38,'#a5a07e');bg.addColorStop(1,'#b4a27b');c.fillStyle=bg;c.fillRect(0,0,W,H);
+    for(let i=0;i<62;i++){const x=rand()*W,y=210+rand()*770,rx=45+rand()*220,ry=30+rand()*130;
+      c.save();c.translate(x,y);c.rotate((rand()-.5)*1.4);c.fillStyle=['#879876','#bca77e','#8c9574','#d0b38a','#9ca17f','#c9bd91'][i%6];c.globalAlpha=.14+rand()*.28;c.fillRect(-rx/2,-ry/2,rx,ry);c.strokeStyle='#eee0b14d';c.lineWidth=1;
+      for(let j=-ry/2+12;j<ry/2;j+=10){c.beginPath();c.moveTo(-rx/2,j);c.lineTo(rx/2,j);c.stroke();}c.restore();}
+    for(const [cx,cy,rx,ry] of HILLS){for(let ring=0;ring<8;ring++){const frac=1-ring/10;c.beginPath();c.ellipse(cx,cy,rx*frac,ry*frac,-.2,0,Math.PI*2);c.fillStyle=ring<2?'#777d6160':'#7a81602a';c.fill();c.strokeStyle=ring%2===0?'#e0cda347':'#505f443b';c.lineWidth=1.6;c.stroke();}}
+    // Fictionalised seasonal channel with three tactical ford corridors.
+    // This is authored game geography, NOT surveyed or a claimed historic river trace.
+    drawPath(c,CHANNEL);c.lineJoin='round';c.lineCap='round';c.strokeStyle='#6f745664';c.lineWidth=77;c.stroke();
+    drawPath(c,CHANNEL);c.strokeStyle='#83896cbd';c.lineWidth=44;c.stroke();
+    drawPath(c,CHANNEL);c.strokeStyle='#94a1849c';c.lineWidth=22;c.stroke();
+    for(const [fx,fy] of FORDS){c.save();c.translate(fx,fy);c.fillStyle='#ceb992cc';c.beginPath();c.ellipse(0,0,49,18,-.82,0,7);c.fill();
+      c.strokeStyle='#f1dfbd9c';c.lineWidth=2;c.beginPath();c.moveTo(-28,-17);c.lineTo(27,19);c.stroke();c.restore();}
+    // Ofanto is intentionally a geographic motif, not modern GIS river geometry.
+    drawPath(c,RIVER);c.lineCap='round';c.lineJoin='round';c.strokeStyle='#666e65';c.lineWidth=77;c.stroke();
+    drawPath(c,RIVER);c.strokeStyle='#c1bca0';c.lineWidth=63;c.stroke();
+    drawPath(c,RIVER);c.strokeStyle='#5d7777';c.lineWidth=49;c.stroke();
+    drawPath(c,RIVER);c.strokeStyle='#688b89';c.lineWidth=40;c.stroke();
+    drawPath(c,RIVER);c.strokeStyle='#86a4a0';c.lineWidth=28;c.stroke();
+    drawPath(c,RIVER);c.strokeStyle='#bdd0ba';c.globalAlpha=.38;c.lineWidth=3;c.stroke();c.globalAlpha=1;
+    for(const pts of ROAD){drawPath(c,pts);c.strokeStyle='#615e4b78';c.lineWidth=19;c.stroke();drawPath(c,pts);c.strokeStyle='#ccb992';c.lineWidth=13;c.stroke();drawPath(c,pts);c.strokeStyle='#e8d4ae70';c.lineWidth=2;c.stroke();}
+    for(const [bx,by,ang] of [[500,302,-.1],[735,268,.14],[910,232,-.15]]){
+      c.save();c.translate(bx,by-110);c.rotate(ang);c.fillStyle='#776b52';c.fillRect(-13,-28,26,56);c.fillStyle='#b6a37d';c.fillRect(-9,-28,18,56);for(let k=-26;k<26;k+=7){c.fillStyle='#ddc89f';c.fillRect(-9,k,18,1);}c.restore();}
+    for(const [x,y,r] of GROVES){for(let j=0;j<Math.floor(r*.85);j++){const a=rand()*6.283,d=Math.sqrt(rand())*r;const tx=x+Math.cos(a)*d,ty=y+Math.sin(a)*d*.6,rr=3+rand()*4;
+       c.fillStyle='#3b4e3b47';c.beginPath();c.arc(tx+2,ty+3,rr+1,0,7);c.fill();c.fillStyle=['#516649','#64734a','#727c53','#536b51'][j%4];c.beginPath();c.arc(tx,ty,rr,0,7);c.fill();}}
+    for(let i=0;i<6700;i++){let x=rand()*W,y=rand()*H,r=rand()*1.6+.15;c.fillStyle=rand()>.5?'#f7e4aa25':'#363e3420';c.fillRect(x,y,r*2,r);}
+    // A few hand-authored encampment tracks and ruined walls, not borrowed images.
+    for(const [x,y] of [[1010,470],[1110,535],[670,490],[1360,600]]){
+      c.save();c.translate(x,y);c.rotate(-.23);c.strokeStyle='#63594480';c.lineWidth=5;c.strokeRect(-23,-12,46,24);c.strokeStyle='#d6c8a275';c.lineWidth=2;c.strokeRect(-23,-12,46,24);c.restore();}
+    const fade=c.createRadialGradient(W/2,H/2,220,W/2,H/2,950);fade.addColorStop(0,'#00000000');fade.addColorStop(1,'#24241c42');c.fillStyle=fade;c.fillRect(0,0,W,H);
+    c.save();c.translate(1160,95);c.rotate(-.05);c.fillStyle='#f8efe5b0';c.font='italic 18px Georgia,serif';c.fillText('A U F I D U S  ·  O F A N T O',0,0);c.restore();
+    c.save();c.translate(915,655);c.rotate(-.13);c.fillStyle='#2c342a8a';c.font='italic 23px Georgia,serif';c.fillText('C A N N A E  R I D G E',0,0);c.restore();
+    c.save();c.fillStyle='#fff8e4b4';c.font='italic 18px Georgia,serif';c.fillText('A P U L I A N   P L A I N',320,880);c.restore();
+    c.strokeStyle='#f5efcf2b';c.lineWidth=2;c.strokeRect(5,5,W-10,H-10);
+    texture=cv;
+  }
+  function drawFort(f){
+    const p=worldToScreen(f),owner=f.owner,color=OWNERS[owner],r=owner==='neutral'?18:20;
+    if(p.x<-70||p.y<-70||p.x>width+70||p.y>height+70)return;
+    const chosen=selected===f.id;
+    ctx.save();ctx.translate(p.x,p.y);
+    ctx.globalAlpha=.22;ctx.fillStyle='#211c14';ctx.beginPath();ctx.ellipse(4,11,31,14,0,0,7);ctx.fill();ctx.globalAlpha=1;
+    if(chosen){ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.arc(0,0,32+Math.sin(time*4)*2,0,7);ctx.stroke();ctx.setLineDash([]);}
+    if(f.pulse>0){ctx.strokeStyle=color;ctx.globalAlpha=f.pulse*.25;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,27+(1.8-f.pulse)*16,0,7);ctx.stroke();ctx.globalAlpha=1;}
+    ctx.fillStyle='#352f27';ctx.beginPath();ctx.moveTo(-r-2,7);ctx.lineTo(-r-2,-11);ctx.lineTo(-r+4,-15);ctx.lineTo(r-4,-15);ctx.lineTo(r+2,-11);ctx.lineTo(r+2,7);ctx.closePath();ctx.fill();
+    ctx.fillStyle=owner==='roman'?'#809c9b':owner==='punic'?'#a58570':'#ac9d7e';
+    ctx.fillRect(-r,-11,r*2,18);ctx.fillStyle='#d4c5a5';ctx.fillRect(-r,-13,r*2,4);ctx.fillStyle='#61594b';
+    for(let x=-r+1;x<=r-5;x+=9)ctx.fillRect(x,-18,6,5);
+    ctx.fillStyle='#554b37';ctx.fillRect(-5,-4,10,11);
+    ctx.fillStyle='#b4ac8e';ctx.fillRect(-5,-3,2,10);
+    ctx.fillStyle=owner==='roman'?'#3a879c':owner==='punic'?'#ab4d3e':'#98865e';
+    ctx.fillRect(-11,-23,7,11);ctx.fillRect(6,-23,7,11);
+    ctx.strokeStyle='#3b3428';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(0,-37);ctx.stroke();
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,-36);ctx.lineTo(16,-31);ctx.lineTo(0,-26);ctx.closePath();ctx.fill();
+    roundRect(ctx,-17,12,34,22,4);ctx.fillStyle='#1a211de8';ctx.fill();ctx.strokeStyle=color+'aa';ctx.lineWidth=1.3;ctx.stroke();
+    ctx.fillStyle=owner==='neutral'?'#f3e1b5':'#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='800 13px system-ui';ctx.fillText(Math.floor(f.troops),0,23);
+    const txt=f.name.toUpperCase();ctx.font='800 9px system-ui';const wid=Math.min(132,ctx.measureText(txt).width+14);
+    roundRect(ctx,-wid/2,40,wid,18,3);ctx.fillStyle='#17201ce8';ctx.fill();ctx.fillStyle='#f6f0de';ctx.fillText(txt,0,49);
+    ctx.font='700 9px system-ui';ctx.fillStyle=owner==='neutral'?'#f1dab0':color;ctx.fillText(owner==='neutral'?`+${f.prod.toFixed(1)}/s AFTER CAPTURE`:`+${(f.prod*productionFactor(owner)).toFixed(1)}/s`,0,66);
+    if(GRANARIES.includes(f.id)||HIGH_GROUND.includes(f.id)){ctx.font='800 9px system-ui';ctx.fillStyle='#f8e8bd';ctx.fillText(GRANARIES.includes(f.id)?'◆ SUPPLY +12%':'▲ RIDGE DEF +22%',0,79);}
+    if(chosen&&owner==='roman'){ctx.fillStyle='#d8eff1';ctx.font='800 10px system-ui';ctx.fillText(`NEXT ${Math.round(nextRatio(f)*100)}%`,0,-45);}
+    ctx.restore();
+  }
+  function drawArmy(a){
+    const p=worldToScreen(a),color=OWNERS[a.owner],size=clamp(1+Math.sqrt(a.troops)*.35,3,6);
+    if(p.x<-60||p.y<-60||p.x>width+60||p.y>height+60)return;
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a.angle);
+    ctx.globalAlpha=.32;ctx.fillStyle='#312b21';ctx.beginPath();ctx.ellipse(-3,5,size*2.9,size*1.7,0,0,7);ctx.fill();ctx.globalAlpha=1;
+    for(let i=0;i<Math.min(15,Math.max(5,Math.ceil(a.troops/7)));i++){
+      const row=Math.floor(i/3),col=i%3,x=8-row*6,y=(col-1)*6;
+      ctx.fillStyle='#252a24';ctx.beginPath();ctx.arc(x,y+2,2.9,0,7);ctx.fill();
+      ctx.fillStyle=color;ctx.fillRect(x-2,y-3,4,5);ctx.fillStyle='#d8c49d';ctx.beginPath();ctx.arc(x,y-4,2,0,7);ctx.fill();
+      if(col===1){ctx.strokeStyle='#d7c9a5';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(x+3,y);ctx.lineTo(x+7,y-6);ctx.stroke();}
+      ctx.strokeStyle='#292b24';ctx.lineWidth=1;const stride=Math.sin(time*12+row*.7+col)*2;
+      ctx.beginPath();ctx.moveTo(x-1,y+2);ctx.lineTo(x-2+stride,y+5);ctx.moveTo(x+1,y+2);ctx.lineTo(x+2-stride,y+5);ctx.stroke();
+    }
+    ctx.restore();ctx.save();ctx.translate(p.x,p.y-26);
+    roundRect(ctx,-19,-10,38,20,4);ctx.fillStyle='#1a231ee8';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='800 12px system-ui';ctx.fillText(a.troops,0,1);ctx.restore();
+  }
+  function drawCompass(){const x=width-52,y=82;ctx.save();ctx.translate(x,y);ctx.strokeStyle='#f1ecd0aa';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,0,18,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(-5,6);ctx.lineTo(0,3);ctx.lineTo(5,6);ctx.closePath();ctx.fillStyle='#e8e3c9';ctx.fill();ctx.font='800 10px system-ui';ctx.textAlign='center';ctx.fillText('N',0,-23);ctx.restore();}
+  function drawArrow(from,to,color,ratio){
+    const angle=Math.atan2(to.y-from.y,to.x-from.x);ctx.save();ctx.strokeStyle=color;ctx.globalAlpha=.95;ctx.lineWidth=3;ctx.setLineDash([11,7]);ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();ctx.setLineDash([]);
+    ctx.translate(to.x,to.y);ctx.rotate(angle);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-17,-8);ctx.lineTo(-17,8);ctx.closePath();ctx.fill();ctx.restore();
+    const mx=(from.x+to.x)/2,my=(from.y+to.y)/2;ctx.save();roundRect(ctx,mx-30,my-30,60,22,4);ctx.fillStyle='#17221ce8';ctx.fill();ctx.fillStyle='#fff';ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillText(`${Math.round(ratio*100)}%`,mx,my-15);ctx.restore();
+  }
+  function render(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);ctx.fillStyle='#7c866d';ctx.fillRect(0,0,width,height);
+    ctx.save();ctx.translate(camera.ox,camera.oy);ctx.scale(camera.scale,camera.scale);
+    ctx.drawImage(texture,0,0);ctx.restore();
+    // March trails follow each army's routed waypoints, not straight-line teleport travel.
+    for(const a of armies){const p=worldToScreen(a);
+      ctx.save();ctx.globalAlpha=.25;ctx.strokeStyle=OWNERS[a.owner];ctx.lineWidth=1.4;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(p.x,p.y);
+      for(let j=a.waypoint;j<a.path.length;j++){const q=worldToScreen(a.path[j]);ctx.lineTo(q.x,q.y);}ctx.stroke();ctx.restore();}
+    for(const p of particles){const a=worldToScreen(p);ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(a.x,a.y,p.r,0,7);ctx.fill();ctx.restore();}
+    for(const a of armies)drawArmy(a);
+    for(const f of forts)drawFort(f);
+    if(gesture?.fort){const start=worldToScreen(gesture.fort),to=gesture.pos||start;const target=hitFort(to);
+      if(target&&target.id!==gesture.fort.id){const p=worldToScreen(target);drawArrow(start,p,OWNERS.roman,nextRatio(gesture.fort));}
+      else if(dist(to,start)>12)drawArrow(start,to,OWNERS.roman,nextRatio(gesture.fort));}
+    if(selected!==null&&forts[selected]?.owner==='roman'&&gesture?.fort===undefined){const p=worldToScreen(forts[selected]);ctx.save();ctx.strokeStyle='#8deafa';ctx.globalAlpha=.8;ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(p.x,p.y,32,0,7);ctx.stroke();ctx.restore();}
+    drawCompass();drawMinimap();
+  }
+  function drawMinimap(){if(!miniCtx)return;
+    const c=miniCtx,cv=$('miniMap'),mw=cv.width,mh=cv.height;c.clearRect(0,0,mw,mh);
+    c.fillStyle='#202d28';c.fillRect(0,0,mw,mh);
+    c.strokeStyle='#b9b394';c.globalAlpha=.43;c.lineWidth=1;c.beginPath();
+    for(let i=0;i<RIVER.length;i++){let q=RIVER[i],x=q[0]/W*mw,y=q[1]/H*mh;i?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
+    c.beginPath();for(let i=0;i<CHANNEL.length;i++){let q=CHANNEL[i],x=q[0]/W*mw,y=q[1]/H*mh;i?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();c.globalAlpha=1;
+    for(const f of forts){c.fillStyle=OWNERS[f.owner];c.beginPath();c.arc(f.x/W*mw,f.y/H*mh,f.owner==='neutral'?2:3,0,7);c.fill();}
+    const l=clamp(-camera.ox/camera.scale,0,W),t=clamp(-camera.oy/camera.scale,0,H);
+    c.strokeStyle='#f2e6c7';c.lineWidth=1;c.strokeRect(l/W*mw,t/H*mh,Math.min(width/camera.scale,W)/W*mw,Math.min(height/camera.scale,H)/H*mh);
+  }
+  function pos(e){const r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+  canvas.addEventListener('pointerdown',e=>{
+    if(!running||done)return;canvas.setPointerCapture(e.pointerId);const p=pos(e);pointers.set(e.pointerId,p);
+    if(pointers.size>=2){gesture=null;return;}
+    const fort=hitFort(p);
+    gesture={pointer:e.pointerId,start:p,pos:p,fort:fort?.owner==='roman'?fort:null,downFort:fort,origin:{ox:camera.ox,oy:camera.oy},moved:false};
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!running||done||!pointers.has(e.pointerId))return;
+    const p=pos(e),old=pointers.get(e.pointerId);pointers.set(e.pointerId,p);
+    if(pointers.size>=2){
+      const other=[...pointers.entries()].find(([id])=>id!==e.pointerId)?.[1];
+      if(other){const before=dist(old,other),after=dist(p,other);
+        if(before>14&&after>14){const factor=clamp(after/before,.85,1.18);zoomAt(factor,(p.x+other.x)/2,(p.y+other.y)/2);}
+      }
+      camera.ox+=(p.x-old.x)*.5;camera.oy+=(p.y-old.y)*.5;clampCamera();return;
+    }
+    if(!gesture||gesture.pointer!==e.pointerId)return;
+    gesture.pos=p;if(dist(p,gesture.start)>8)gesture.moved=true;
+    if(!gesture.fort&&gesture.moved){camera.ox=gesture.origin.ox+(p.x-gesture.start.x);camera.oy=gesture.origin.oy+(p.y-gesture.start.y);clampCamera();}
+  });
+  function endPointer(e){
+    if(!pointers.has(e.pointerId))return;
+    const p=pos(e);pointers.delete(e.pointerId);if(!gesture||gesture.pointer!==e.pointerId){if(pointers.size===0)gesture=null;return;}
+    const origin=gesture.downFort,target=hitFort(p);
+    if(gesture.fort&&target&&target.id!==gesture.fort.id)order(gesture.fort,target);
+    else if(!gesture.moved&&origin){
+      if(origin.owner==='roman'){selected=origin.id;origin.chain=time-origin.lastOrder>4?0:origin.chain;const n=Math.round(nextRatio(origin)*100);$('orderStatus').textContent=`${origin.name.toUpperCase()} · ${Math.floor(origin.troops)} TROOPS · ${n}% NEXT ORDER`;}
+      else if(selected!==null&&forts[selected]?.owner==='roman')order(forts[selected],origin);
+    }
+    gesture=null;
+  }
+  canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();const p=pos(e);zoomAt(e.deltaY<0?1.12:.88,p.x,p.y);},{passive:false});
+  $('start').addEventListener('click',()=>{init();running=true;$('overlay').style.display='none';message('ROMA — CAPTURE THE ENEMY FORTS');});
+  $('again').addEventListener('click',()=>{init();running=true;message('NEW BATTLE');});
+  $('reset').addEventListener('click',()=>{init();running=true;$('overlay').style.display='none';message('BATTLE RESTARTED');});
+  $('pause').addEventListener('click',()=>{if(!running||done)return;paused=!paused;$('pause').textContent=paused?'▶ RESUME':'Ⅱ PAUSE';message(paused?'BATTLE PAUSED':'BATTLE RESUMED');});
+  $('speed').addEventListener('click',()=>{rate=rate===1?2:1;$('speed').textContent=`${rate}× SPEED`;});
+  $('audio').addEventListener('click',()=>{audioOn=!audioOn;$('audio').textContent=audioOn?'♪ ON':'♪ OFF';sound(570,.08);});
+  miniCtx=$('miniMap').getContext('2d');
+  $('miniMap').addEventListener('pointerdown',e=>{if(!running)return;const r=e.currentTarget.getBoundingClientRect(),x=clamp((e.clientX-r.left)/r.width,0,1),y=clamp((e.clientY-r.top)/r.height,0,1);camera.ox=width/2-x*W*camera.scale;camera.oy=height/2-y*H*camera.scale;clampCamera();});
+  $('zoomIn').addEventListener('click',()=>zoomAt(1.24));$('zoomOut').addEventListener('click',()=>zoomAt(.8));$('fit').addEventListener('click',()=>fit());
+  window.addEventListener('resize',resize);
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'){selected=null;gesture=null;}if(e.code==='Space'){e.preventDefault();$('pause').click();}if(e.key==='+'||e.key==='=')zoomAt(1.2);if(e.key==='-')zoomAt(.8);});
+  // A deterministic, non-modifying snapshot and test hooks; no external network or user data.
+  window.ROMA_DEBUG={snapshot:()=>({running,paused,done,time,battleStats:{...battleStats},events:matchEvents.map(e=>({...e})),forts:forts.map(f=>({id:f.id,name:f.name,x:f.x,y:f.y,owner:f.owner,troops:f.troops,prod:f.prod,chain:f.chain})),armies:armies.map(a=>({...a,path:a.path.map(p=>({...p}))})),camera:{...camera}}),send:(a,b)=>order(forts[a],forts[b]),start:()=>{$('start').click();},reset:()=>{$('reset').click();},route:(a,b)=>routeBetween(forts[a],forts[b]),terrain:(x,y)=>terrainAt(x,y),step:(sec)=>{const n=Math.ceil(sec/.04);for(let i=0;i<n;i++)update(sec/n);}};
+  buildTerrain();init();resize();let last=performance.now();function frame(now){const dt=(now-last)/1000;last=now;update(dt);render();requestAnimationFrame(frame);}requestAnimationFrame(frame);
+})();
+
+</script>
+</body>
+</html>
