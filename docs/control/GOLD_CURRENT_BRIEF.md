@@ -1,4 +1,4 @@
-Warning: truncated output (original token count: 86004)
+Warning: truncated output (original token count: 86026)
 Total output lines: 4321
 
 # P51 SHIP — DATA-VALUE SELECTOR OWNERSHIP — 30 OCTOBER 2026
@@ -13,7 +13,7 @@ Total output lines: 4321
 
 **TRUTH / RELEASE BOUNDARY:** this corrects the owning browser proof only. It does not repair PR512 dependency/bundle/ATLAS failures, authorise merge/deploy, prove LIVE use, or confer Founder release.
 
-**ROLLBACK:** revert this test/brief change to `6400ca8a955796972fa30d604bd0c0349043c15b` if native Gold shows that the scoped regions do not correspond to the intended user controls.
+**ROLLBACK:** revert this test/brief change to its actual rebased parent `2af3050ea5ff86f9ef2cfdef17e90e45d31cdd51` if native Gold shows that the scoped regions do not correspond to the intended user controls; do not drop the unrelated SEO commit preserved at that parent.
 
 # GOLD TEMPLATE — WEBKIT BOTTOM-POSITION EVIDENCE ASSERTION — 30 OCTOBER 2026
 
@@ -2320,11 +2320,7 @@ A person can enter either accepted URL form, land once on the correct canonical 
 
 **BASE / ROLLBACK:** `king/test@95dcd8701077f7c7d36b7fb652275370f6f95221`; revert this bounded source/test/brief commit.
 
-**MAKER ≠ JUDGE:** Factory corrects the existing HEIR. Independent Gold must judge the exact resulting SHA and authenticated owner-isolation runtime before any release claim.
-
----
-
-# EARTH NOW 02 …6004 tokens truncated… independent Gold finds an HTTP, cache or source-truth regression.
+**MAKER ≠ JUDGE:** Factory corrects the existing HEIR. Independent Gold must judge the exact resulting SHA …6026 tokens truncated… independent Gold finds an HTTP, cache or source-truth regression.
 **MAKER ≠ JUDGE:** Factory closes the returned cache-boundary defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
 
 ---
