@@ -20,7 +20,7 @@ test("Embedded ATLAS reuses first-party renderer without standalone-host recursi
   assert.match(app, /isFirstPartyAtlasEmbedRoute/);
   assert.match(app, /<AtlasEmbedRuntime \/>/);
   assert.match(runtime, /ResizeObserver/);
-  assert.match(runtime, /map\?\.resize/);
+  assert.match(runtime, /map\.resize\(\)/);
   assert.doesNotMatch(runtime, /flyTo|easeTo|setCenter/);
 });
 test("NATION and SPECIES use existing identities and honest spatial context", () => {
