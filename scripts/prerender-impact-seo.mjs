@@ -16,9 +16,9 @@ export function renderImpactRoutes({ impactDiscovery, pageHtml, writeRoute, esc,
   // Meta summaries are derived from the original, source-bound prose.
   // A shortened excerpt is clearly marked, not silently cut mid-word.
   const snippet = (value, limit = 175) => {
-    const text = String(value ?? "").replace(/\\s+/g, " ").trim();
+    const text = String(value ?? "").replace(/\s+/g, " ").trim();
     if (text.length <= limit) return text;
-    const firstSentence = text.slice(0, limit + 1).match(/^.{75,165}?[.!?](?=\\s|$)/);
+    const firstSentence = text.slice(0, limit + 1).match(/^.{75,165}?[.!?](?=\s|$)/);
     if (firstSentence) return firstSentence[0];
     const prefix = text.slice(0, limit - 1).trimEnd();
     const wordEnd = prefix.lastIndexOf(" ");
