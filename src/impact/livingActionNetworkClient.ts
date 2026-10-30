@@ -23,7 +23,6 @@ async function rpc(name: string, signal?: AbortSignal): Promise<unknown> {
     method: "POST",
     headers: {
       apikey: identityConstants.publishableKey,
-      Authorization: `Bearer ${identityConstants.publishableKey}`,
       Accept: "application/json",
       "Content-Type": "application/json",
     },
