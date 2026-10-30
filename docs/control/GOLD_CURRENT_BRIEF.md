@@ -1,5 +1,16 @@
-Warning: truncated output (original token count: 86026)
-Total output lines: 4321
+# P51 SHIP — GOLD HISTORY SUFFIX RECOVERY — 30 OCTOBER 2026
+
+**STATUS:** CODE CANDIDATE / INDEPENDENT GOLD REQUIRED / RELEASE HOLD.
+
+**ROOT CAUSE:** selector commit `645f1393b56d7c31255251f7cb8677920ebcd1d1` replaced the 342,246-byte cumulative parent brief with a 320,109-byte provider-truncated payload while claiming byte-exact history preservation. The standalone king-push policy therefore rejected the trusted `104f4dfecb890502cfc4568bfd3cf93854641003` checkpoint suffix.
+
+**BOUNDED CORRECTION:** retain the current data-value selector contract and its corrected rollback ancestry, then restore the exact complete pre-selector brief from `2af3050ea5ff86f9ef2cfdef17e90e45d31cdd51` beneath it. Product runtime, routes, data, CSS, workflows and tests are unchanged.
+
+**PROOF CONTRACT:** the repaired brief must end with the exact trusted checkpoint history, pass the standalone king-push policy, and pass both the destructive-history and stale-rollback regression contracts. Independent Gold must rerun those checks on the immutable provider SHA.
+
+**ROLLBACK:** revert this brief-only commit to `f4e0581ecb4fae094c92c30d9fb28014eef01060` if independent Gold finds any history-order, ancestry or policy regression; do not use that rollback as release authority because the prior brief is known to fail the trusted suffix gate.
+
+**MAKER ≠ JUDGE:** Factory supplies the bounded source correction and exact test receipt. Independent Gold judges acceptance. Founder retains merge, deployment, public action and LIVE authority.
 
 # P51 SHIP — DATA-VALUE SELECTOR OWNERSHIP — 30 OCTOBER 2026
 
@@ -2320,7 +2331,286 @@ A person can enter either accepted URL form, land once on the correct canonical 
 
 **BASE / ROLLBACK:** `king/test@95dcd8701077f7c7d36b7fb652275370f6f95221`; revert this bounded source/test/brief commit.
 
-**MAKER ≠ JUDGE:** Factory corrects the existing HEIR. Independent Gold must judge the exact resulting SHA …6026 tokens truncated… independent Gold finds an HTTP, cache or source-truth regression.
+**MAKER ≠ JUDGE:** Factory corrects the existing HEIR. Independent Gold must judge the exact resulting SHA and authenticated owner-isolation runtime before any release claim.
+
+---
+
+# EARTH NOW 02 — HUMAN-FIRST REPAIR — 21 OCT 2026
+
+USER ARRIVES BECAUSE: they want to understand current natural events and environmental change without technical clutter.
+ONE THING TO UNDERSTAND: choose one view; see its map, source and observation time.
+PRIMARY ACTION: choose Events, Ocean, Land, Air or Life.
+SECONDARY DEPTH: source limitations and the full guide index live in native disclosures.
+P1 / P2 / P3 / P4: real map / selected view / open full map or guide / methodology and other guides.
+WHAT CAN BE REMOVED: repeated fire rows, technical introductions, all-eight-layer default and oversized warnings.
+WHAT MUST BE REUSED: PublicShell, current ATLAS renderer/layer keys, discoveryTopics, source links, SEO and consent.
+TRUTH BOUNDARY: latest available is not real time; retain source/date/coverage limitations; no new data or observations.
+MOBILE-FIRST RISK: overflow, undersized touch targets, blocked cross-origin frame, oversized type and text concatenation.
+HUMAN SUCCESS: readable 390/430px view, functional URL-persisted category selection, no stray escaped newlines, visible map, unchanged homepage composition.
+BRAND PREFLIGHT: DM Sans throughout discovery; White #FFFFFF / Black #000000; controlled blue; 16px reading, 32–48px display; shared soft geometry, thin rules and whitespace; documentary map is dominant anchor. Defer technical depth.
+AUTHORITY: Founder explicitly ordered Earth Now and logo repairs with live iteration in this conversation on 21 Oct 2026. HEIR king/test parent aace934a6f616bba8b525e15c0033006b7c1a1f2; no sandbox; LIVE main a60355872550939ba8a810befbd7981570e1d35b read-only rollback/source donor. Scope only discovery UI, exact newline generation and same-origin NEWS embedding. No wholesale HEIR promotion.
+PROGRAMME ADMISSION: not applicable; bounded repair to existing product. EXECUTION: deterministic edits/build/browser QA. Reversible via exact prior production deployment.
+DONOR: preserve existing live homepage and shell unchanged; HEIR discovery evidence/layout primitives adapted, old oversized dark treatment rejected. NASA Worldview category and preselected-view mechanisms used, no visual copying.
+MAKER != JUDGE: independent exact-diff review required; automated verification does not confer Founder visual acceptance or Gold.
+WRITEBACK: existing Project Lead CURRENT/issue #132; no new project or system.
+
+---
+
+# ATLAS — PUBLIC DOMAIN MARK FAIL-CLOSED RIGHTS BOUNDARY — 21 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**RETURNED DEFECT:** OBIS records carrying Creative Commons Public Domain Mark 1.0 or an ambiguous `PUBLIC DOMAIN` token were classified as `OPEN_CC0` and could enter the ATLAS point layer.
+
+**HUMAN VALUE:** a person inspecting or reusing an ATLAS occurrence must not be told that a public-domain marking is a CC0 dedication or waiver.
+
+**RIGHTS BOUNDARY:** only a genuine Creative Commons Zero 1.0 URL or the exact vetted `CC0 1.0` token receives `OPEN_CC0`. Public Domain Mark 1.0 and ambiguous public-domain tokens require review, carry `UNKNOWN_OR_MISSING`, and are not map-admitted.
+
+**PRESERVATION:** issued CC BY behaviour, attribution requirements, original dataset evidence and genuine CC0 admission remain unchanged.
+
+**TRUTH BOUNDARY:** this classification correction prevents a false permission claim. It does not independently prove underlying public-domain status, dataset rights, release readiness, deployment or LIVE value.
+
+**BASE / ROLLBACK:** `king/test@1d0de7aa9b067a5eba06e18ee66c6d577cdc2094`; revert this bounded source/test/brief commit.
+
+**MAKER ≠ JUDGE:** Factory corrects the existing HEIR. Independent Gold must judge the exact resulting SHA and runtime/source behaviour before any release claim.
+
+---
+
+# 4SAPIEN FOOD — AUTHORITATIVE PANTRY-WRITE READBACK — 21 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a signed-in person needs the private pantry shown as saved to match exactly what they just confirmed.
+
+**ONE THING TO UNDERSTAND:** an owner-scoped row with the right namespace is not an authoritative receipt when its id, pantry items, budget or confirmation state differs from the attempted write.
+
+**PRIMARY ACTION:** save the private pantry only after an active, user-confirmed row readback matches the canonical id and exact pantry/budget payload.
+
+**SECONDARY DEPTH:** missing, stale, inferred, reordered or mismatched readbacks retain the existing fail-closed recheck state.
+
+**P1 / P2 / P3 / P4:** private pantry / explicit saved state / continue to meal comparison / owner-RLS and later-session Gold evidence.
+
+**WHAT CAN BE REMOVED:** treating `food_pantry_v1` namespace equality as sufficient proof of the write.
+
+**WHAT MUST BE REUSED:** existing FOOD pantry UI, owner RLS, exact write/readback flow, issue #317, PR #131 and sole `king/test` HEIR.
+
+**TRUTH BOUNDARY:** an exact matching row proves server readback for this write only. It does not prove later-session persistence, cross-owner isolation, deployment, LIVE state, meal completion or user value.
+
+**MOBILE-FIRST RISK:** none introduced; no layout, copy or interaction geometry changes.
+
+**HUMAN SUCCESS:** SAVED appears only when id, active state, user confirmation, pantry item order/content, budget and consumption boundary all match the attempted write.
+
+**BASE / ROLLBACK:** `king/test@c6c56372b2f4ae346bd6bb417b750ef00f4f0317`; revert this bounded source/test/brief commit.
+
+**MAKER ≠ JUDGE:** Factory implements the readback boundary. Independent Gold must verify the exact SHA and authenticated owner-RLS/later-session runtime before any release claim.
+
+---
+
+# 4SAPIEN — AUTHORITATIVE NOTE-WRITE RECEIPT — 20 OCT 2026
+
+**STATUS:** BOUNDED HEIR CORRECTION / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** a signed-in person needs a private note to be truly persisted before the product reports success or value.
+
+**ONE THING TO UNDERSTAND:** an HTTP-successful PostgREST write attempt is not an authoritative saved-note receipt.
+
+**PRIMARY ACTION:** create or edit a note only when the owner-scoped API returns exactly one active row with the expected canonical id and content.
+
+**SECONDARY DEPTH:** failed, empty, duplicate, stale, deleted or mismatched representations remain unconfirmed and retain the existing retry/error path.
+
+**P1 / P2 / P3 / P4:** personal note / explicit saved state / continue using it / owner-RLS and second-session Gold evidence.
+
+**WHAT CAN BE REMOVED:** delivery and completed-value telemetry based only on `return=minimal` HTTP success.
+
+**WHAT MUST BE REUSED:** existing 4SAPIEN note UI, owner RLS, #317, PR #131, `king/test`, notes pagination and existing event sink.
+
+**TRUTH BOUNDARY:** a matching returned row proves server acknowledgement for this write only. It does not prove a later session, another device, cross-owner isolation, deployment, LIVE state or user value.
+
+**MOBILE-FIRST RISK:** none introduced; no layout or interaction geometry changes.
+
+**HUMAN SUCCESS:** note create/update success and its value event occur only after an exact active-row receipt; zero-row, mismatched and duplicate responses fail closed.
+
+**BASE / ROLLBACK:** `king/test@9e39603c5a7be299180812799a5f7d3b16e33333`; revert this bounded source/test/brief commit.
+
+**MAKER ≠ JUDGE:** Factory implements the receipt boundary. Independent Gold must verify exact-SHA contract, authenticated owner-RLS and second-session runtime before any release claim.
+
+---
+
+# IMPACT — ACTION IDENTITY / LABEL-COLLISION BOUNDARY — 20 OCT 2026
+
+**STATUS:** FRESH NATUREBRAIN SOURCE QA CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**SOURCE FINDING:** sixteen action records currently share one display label while retaining sixteen distinct canonical IDs, source URLs and source-checked action edges. A label is presentation, never identity.
+
+**HUMAN VALUE:** a person following an IMPACT action must reach the exact source-backed route for that action, even when many actions use the same generic call-to-action wording.
+
+**IDENTITY BOUNDARY:** the public CTA carries the canonical action ID, preserves its exact URL and records both in telemetry. No label-keyed deduplication, URL substitution or label-derived identity is permitted.
+
+**TRUTH BOUNDARY:** preserving identity and route does not prove the action is current, delivered, funded, effective or endorsed. Source dates, external live status, evidence and outcome remain separate gates.
+
+**BASE / ROLLBACK:** `king/test@dbe16d4e797345db848a26d61ac5dc97bf5f524b`; revert this bounded page/test/brief commit to restore the prior candidate.
+
+**MAKER ≠ JUDGE:** Factory consumes the source QA only. Independent Gold must judge the exact resulting SHA and runtime/source behaviour.
+
+---
+
+# ATLAS — GBIF ATTRIBUTION-PROVENANCE BOUNDARY — 20 OCT 2026
+
+**STATUS:** FRESH INDEPENDENT GOLD QA_CORRECT CONSUMED ON SOLE HEIR / RE-GOLD REQUIRED / NO MERGE, DEPLOYMENT OR LIVE RELEASE.
+
+**RETURNED DEFECT:** an issued CC BY token could admit a point without a responsible attribution identity; publisher, publishing-organisation title, rights holder, institution code and dataset citation were then dropped from the projected point and map detail. Token normalisation also widened hyphen/underscore aliases into canonical terms.
+
+**HUMAN VALUE:** a person inspecting an ATLAS occurrence must be able to see who is responsible for attribution and retain the source citation before reusing the record.
+
+**TRUTH BOUNDARY:** an issued licence family/version is necessary but not sufficient for CC BY map admission. The record must also name an explicit publisher, publishing organisation or rights holder. Institution code alone is not treated as a responsible rights identity. CC0 remains a distinct permission state.
+
+**PRESERVATION:** publisher, publishingOrganizationTitle, rightsHolder, institutionCode and datasetCitation remain independent provenance fields. `attributionIdentity` selects the first explicit responsible identity for display without relabelling a rights holder as publisher.
+
+**TOKEN BOUNDARY:** exact whitespace-normalised `CC BY <issued-version>`, `CC0 1.0` or `CC ZERO 1.0` tokens are recognised case-insensitively. Hyphen/underscore aliases remain REVIEW_REQUIRED.
+
+**BASE / ROLLBACK:** `king/test@37e3a0a20f3a459ddaf18d4d47892cfa230f27be`; revert the bounded correction commit to restore the prior candidate.
+
+**MAKER ≠ JUDGE:** Factory corrected the returned defect only. Independent Gold must judge the new exact SHA and actual runtime/source behaviour.
+
+---
+
+# ATLAS — GBIF ISSUED-LICENCE ADMISSION — 20 OCT 2026
+
+**STATUS:** SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+
+**USER ARRIVES BECAUSE:** they want to explore species occurrences without mistaking unverifiable source terms for reusable open data.
+
+**ONE THING TO UNDERSTAND:** an ATLAS GBIF point is admitted only when its record declares a recognised, issued CC BY or CC0 licence version.
+
+**PRIMARY ACTION:** explore mapped occurrence evidence.
+
+**SECONDARY DEPTH:** inspect the original GBIF record, dataset, licence and retrieval evidence.
+
+**P1 DOMINANT:** the existing ATLAS map remains the dominant surface.
+
+**P2 ORIENTATION:** existing presence, uncertainty and dataset context remain unchanged.
+
+**P3 ACTION:** open the original record or dataset source.
+
+**P4 DEPTH:** inspect the exact original licence and retrieval timestamp before reuse.
+
+**WHAT CAN BE REMOVED:** admission of versionless, invented, non-issued, insecure or ambiguous licence labels.
+
+**WHAT MUST BE REUSED:** issue #244, ATLAS-03, the existing `gbifOccurrencePoint` source boundary and the sole `king/test` receiver.
+
+**TRUTH BOUNDARY:** licence admission proves only that a record declares an issued open licence. It does not prove identity, accuracy, abundance, coverage, timeliness or endorsement.
+
+**MOBILE-FIRST RISK:** no layout or interaction change; the change only removes points that fail the source contract.
+
+**HUMAN SUCCESS:** every visible GBIF point declares CC BY 1.0/2.0/2.5/3.0/4.0 or CC0 1.0, expressed as an exact token or official HTTPS Creative Commons URL.
+
+**BASE / ROLLBACK:** `king/test@7bb4640489c2a585d6f03c9ab5e59205fe95c742`; revert the bounded commit to restore the previous classifier.
+
+**MAKER ≠ JUDGE:** Factory has produced a candidate correction only. Independent QA/GOLD remains required.
+
+---
+
+# SPECIES — TAXON IDENTITY / CITATION SEPARATION — 19 OCT 2026
+
+**STATUS:** FRESH SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person or crawler needs a species profile whose evidence links do not overstate identity equivalence.
+**ONE THING TO UNDERSTAND:** a source may support the page without being an unambiguous identity URL for the taxon.
+**PRIMARY ACTION:** inspect the existing species profile and follow its visible source links.
+**SECONDARY DEPTH:** consume the same links as `WebPage.citation` while Taxon identity remains limited to reviewed names and rank.
+**P1 DOMINANT:** the existing species profile.
+**P2 ORIENTATION:** common name, scientific name, limitations and source list.
+**P3 ACTION:** follow the existing source links or continue into ATLAS.
+**P4 DEPTH:** independent exact-head generated-HTML and structured-data validation before release.
+**WHAT CAN BE REMOVED:** automatic promotion of every `sourceUrls` entry into `Taxon.sameAs`.
+**WHAT MUST BE REUSED:** EXPO-04, SPEC-GS-11, issue #132, SPECIES #145, the existing discovery prerenderer, JSON-LD ownership contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this separates page evidence from taxon identity equivalence; it does not judge any individual source false, invent an identity URL, grant Gold, deploy, alter LIVE or prove search-engine interpretation.
+**MOBILE-FIRST RISK:** no layout or interaction change; visible source links and existing route content remain unchanged.
+**HUMAN SUCCESS:** every existing source remains visible and emitted as a page citation, while no source is asserted as Taxon identity without a separate reviewed identity contract.
+**BASE / ROLLBACK:** `king/test@c5bfa7fceee67c6c0845844a4b44f163741eafec`; revert the bounded generator/test/brief commit if independent Gold finds a citation, identity, generated-HTML or route regression.
+**MAKER ≠ JUDGE:** Factory implements and returns an exact candidate SHA. Independent Gold judges the exact generated artifact; Founder release and runtime verification remain separate.
+
+---
+
+# 4SAPIEN FOOD — KEYBOARD + MOBILE PRIORITY CHOICE — 19 OCT 2026
+
+**STATUS:** DOCUMENTED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD + REAL 390/430 BROWSER PROOF REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs to choose the concern that matters most before Embla exposes an evidence path.
+**ONE THING TO UNDERSTAND:** HEALTH, WALLET and PLANET stay separate; the selected concern controls the next evidence path without inventing a universal score.
+**PRIMARY ACTION:** choose one priority by touch, pointer or standard radio-group keyboard controls.
+**SECONDARY DEPTH:** continue to controlled comparison or product evidence only where that path is ready.
+**P1 DOMINANT:** “What matters most today?”
+**P2 ORIENTATION:** seven bounded priority choices with explicit readiness.
+**P3 ACTION:** one selected priority with Arrow/Home/End movement and an obvious next step.
+**P4 DEPTH:** comparison or scan evidence with UNKNOWN and category/SKU boundaries preserved.
+**WHAT CAN BE REMOVED:** seven 170px mobile cards, extra keyboard tab stops and click-only radio behaviour.
+**WHAT MUST BE REUSED:** FOOD-CHOICE-01, issue #342, existing priority data and evidence engines, current Embla visual grammar, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** accessibility and compact geometry improve access to the existing choice; they do not prove comprehension, utility, purchase, outcome, Gold, deployment or LIVE state.
+**MOBILE-FIRST RISK:** compact cards must retain a >=44px target, readable evidence boundary, visible focus and no horizontal overflow at 390/430.
+**HUMAN SUCCESS:** a keyboard user can enter the group once, change selection with Arrow keys, jump with Home/End, see focus and continue from the newly selected priority; a mobile user reaches the response with materially less scroll.
+**BASE / ROLLBACK:** `king/test@20c24fc1af9c07ef7823d994d803671c73967fec`; revert the bounded UI/CSS/contract/brief commit if independent Gold finds focus, touch, hierarchy, truth or browser regression.
+**MAKER ≠ JUDGE:** Factory implements and returns an exact candidate SHA. Independent Gold, rendered Chromium/WebKit 390/430 evidence and Founder release remain separate.
+
+---
+
+# IMPACT / ACTOR — CANONICAL IDENTITY BINDING — 17 OCT 2026
+
+**STATUS:** RETURNED GOLD QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person following ORCA from an Actor profile into an IMPACT action needs both surfaces to refer to the same canonical organisation.
+**ONE THING TO UNDERSTAND:** action-contract actor fields are projections, not identity authority; the public action must resolve through exactly one reviewed Actor Master record.
+**PRIMARY ACTION:** inspect the bounded Bay of Biscay action while retaining an exact path back to the canonical ORCA Actor profile.
+**SECONDARY DEPTH:** review the existing funding, delivery, outcome, evidence and claim boundaries without inferring partnership or ecological impact.
+**P1 DOMINANT:** the existing bounded action and its fail-closed readiness.
+**P2 ORIENTATION:** canonical ORCA organisation identity `P17-A036` and profile route `/actors/orca`.
+**P3 ACTION:** continue through the existing Actor/IMPACT journey only when the Actor Master owns the action ID and its exact ID and route match the action projection.
+**P4 DEPTH:** independent exact-head contract, browser and runtime verification before release.
+**WHAT CAN BE REMOVED:** the caller-supplied identity gate, forged-pair bypass and any name/slug-based identity inference.
+**WHAT MUST BE REUSED:** ACTOR-FP-01, issue #152, canonical Actor Master ID `P17-A036`, the existing Bay action contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this binds an internal action projection to the existing canonical Actor identity; it does not create a partnership, approve funding, prove delivery/outcome/impact, grant Gold, deploy or alter LIVE.
+**MOBILE-FIRST RISK:** no layout or interaction change; exact-head mobile/keyboard and cross-route browser verification remain release gates.
+**HUMAN SUCCESS:** the existing ORCA action resolves only when one Actor Master record owns its action ID and matches `P17-A036` plus `/actors/orca`; forged pairs, wrong IDs, alternate routes and unlinked actions fail closed before the public proof renders.
+**BASE / ROLLBACK:** `king/test@f49f5c062e0b3067a95cfcd472f9e7246ff1f117`; revert this bounded Actor/UI/contract/test/brief correction if independent Gold finds an identity, route, funding or claim-boundary regression.
+**MAKER ≠ JUDGE:** Factory closes the returned identity defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
+
+---
+
+# ATLAS / LIVING SYSTEMS — TAXON PHOTO MEDIA IDENTITY BOUNDARY — 17 OCT 2026
+
+**STATUS:** RETURNED QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person opening a taxon needs the image, source link and licence evidence to describe the same authorised iNaturalist photo item.
+**ONE THING TO UNDERSTAND:** a rights-compatible licence is necessary but insufficient; the admitted image URL must also be HTTPS, use an authorised iNaturalist media host and carry the same photo ID as the source item.
+**PRIMARY ACTION:** inspect a rights-cleared taxon reference image whose visible media is bound to its canonical iNaturalist photo item.
+**SECONDARY DEPTH:** follow the existing source link and verify item identity, attribution, licence and rights-check time.
+**P1 DOMINANT:** the existing ATLAS taxon context and reference image.
+**P2 ORIENTATION:** the existing source/licence caption or explicit no-rights-cleared-photo state.
+**P3 ACTION:** open the canonical iNaturalist photo item.
+**P4 DEPTH:** independent exact-head adapter, browser and runtime verification before release.
+**WHAT CAN BE REMOVED:** trust in arbitrary, insecure, externally hosted or mismatched image URLs supplied beside an otherwise legitimate photo ID.
+**WHAT MUST BE REUSED:** issue #244, TECH-07, the existing iNaturalist connector, taxon-photo source envelope, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** this validates media identity for the current iNaturalist hosts and item path; it does not prove the upstream file bytes, grant Gold, deploy, establish occurrence evidence or alter LIVE.
+**MOBILE-FIRST RISK:** no layout or interaction change; exact-head 390/430 and assistive review remain release gates.
+**HUMAN SUCCESS:** legitimate iNaturalist HTTPS photo URLs render only when their path ID matches the source item; mismatched IDs, external hosts, HTTP and non-network schemes fail closed.
+**BASE / ROLLBACK:** `king/test@e0b85c206c9055943ebe60a456f65b260937e2c7`; revert this bounded connector/test/brief correction if independent Gold finds a media, rights or source-truth regression.
+**MAKER ≠ JUDGE:** Factory closes the returned media-identity defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
+
+---
+
+# S4PIENS / COMPANY-GOLD-01 — CLIMATE TRACE FAILURE CACHE BOUNDARY — 17 OCT 2026
+
+**STATUS:** RETURNED SOURCE QA_CORRECT CONSUMED ON SOLE HEIR / INDEPENDENT GOLD REQUIRED / NO DEPLOYMENT OR LIVE RELEASE.
+**USER ARRIVES BECAUSE:** a person needs recovered Climate TRACE data to become available immediately after a temporary upstream, schema or network failure.
+**ONE THING TO UNDERSTAND:** successful source records may use the existing one-hour public cache, but a 502 is not valid source data and must never advertise reusable caching.
+**PRIMARY ACTION:** retry the existing S4PIENS/ATLAS/4BRANDS Climate TRACE-backed view after a source failure without a stale error being treated like a successful response.
+**SECONDARY DEPTH:** distinguish upstream HTTP failure, empty/schema mismatch, unmappable coordinates and thrown network/parse failure while retaining the shared source truth boundary.
+**P1 DOMINANT:** currently available source-backed emissions data.
+**P2 ORIENTATION:** explicit unavailable/error state when the source cannot provide valid records.
+**P3 ACTION:** retry through the existing product path after recovery.
+**P4 DEPTH:** inspect source identity, year, geography, rights and limitations on successful records only.
+**WHAT CAN BE REMOVED:** the assumption that one cache policy is safe for both 200 source data and 502 source failures.
+**WHAT MUST BE REUSED:** COMPANY-GOLD-01, issue #148, the shared Climate TRACE proxy and contract, PR #131 and sole `king/test` HEIR.
+**TRUTH BOUNDARY:** `no-store` prevents the application response from advertising a reusable failure; it does not prove a particular CDN configuration, upstream recovery, deployment, browser behaviour, Gold or LIVE state.
+**MOBILE-FIRST RISK:** no layout or interaction change; authorised browser and raw-response verification remain release gates.
+**HUMAN SUCCESS:** all 502 paths return `Cache-Control: no-store`, while a subsequent valid response retains `public, max-age=3600` and exposes the recovered source record.
+**BASE / ROLLBACK:** `king/test@ece82a9e1dc1adb413cfbc9c7868c0ce09bf7645`; revert the bounded proxy/test/brief commit if independent Gold finds an HTTP, cache or source-truth regression.
 **MAKER ≠ JUDGE:** Factory closes the returned cache-boundary defect; independent Gold judges the exact resulting SHA. Founder release and runtime verification remain separate.
 
 ---
