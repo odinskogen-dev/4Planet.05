@@ -93,6 +93,12 @@ jobs:
               if(x.text.length<180||/source unavailable/i.test(x.text)) throw new Error(`weak hydration ${kind}/${slug}`);
             }
             // Human-first targeted states.
+            const project=d.projects[0];
+            await page.goto(base+`/impact/project/${project.slug}/`,{waitUntil:'networkidle',timeout:60000});
+            const projectText=await page.locator('article.iu-profile').innerText();
+            if(/No public action route is published/i.test(projectText)) throw new Error('published action missing from project runtime');
+            const actionHref=await page.locator('#act a[href^="https://"]').first().getAttribute('href');
+            if(!actionHref) throw new Error('project action URL missing');
             const noProjectIssue=d.issues.find(issue=>!d.projects.some(p=>(p.issues||[]).some(i=>i.id===issue.id)));
             if(noProjectIssue){
               await page.goto(base+`/impact/issue/${noProjectIssue.slug}/`,{waitUntil:'networkidle',timeout:60000});
