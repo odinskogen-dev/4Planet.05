@@ -75,7 +75,16 @@ for (const surface of surfaces) {
     expect(bodyText).not.toMatch(/\bNaN\b/);
 
     const safeName = surface.path.split("/").filter(Boolean).slice(-1)[0];
-    await page.screenshot({ path: `artifacts/product-proof/gold-${safeName}-${testInfo.project.name}.png`, fullPage: true });
+    const screenshotPrefix = `artifacts/product-proof/gold-${safeName}-${testInfo.project.name}`;
+    const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+    const maxFullPageScreenshotHeight = 32_000;
+    if (pageHeight <= maxFullPageScreenshotHeight) {
+      await page.screenshot({ path: `${screenshotPrefix}.png`, fullPage: true });
+    } else {
+      await page.screenshot({ path: `${screenshotPrefix}-top.png` });
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await page.screenshot({ path: `${screenshotPrefix}-bottom.png` });
+    }
     expect(fatal, fatal.join("\n")).toEqual([]);
   });
 }

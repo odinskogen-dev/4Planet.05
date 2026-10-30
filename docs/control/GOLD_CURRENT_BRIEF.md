@@ -1,3 +1,17 @@
+# GOLD TEMPLATE — TALL WEBKIT EVIDENCE CAPTURE — 30 OCTOBER 2026
+
+**STATUS:** RETURNED CI CORRECTION / EXACT-SHA RERUN REQUIRED / RELEASE HOLD.
+
+**ESCAPED FAILURE:** first physical six-project run 40978162548 passed 76/78 contracts. ACTOR WebKit 390 and 430 reached the final evidence step after route, review-note, h1, noindex and console checks, then failed because WebKit cannot produce a full-page screenshot above 32,767 pixels.
+
+**BOUNDED CORRECTION:** retain full-page evidence for documents at or below 32,000 pixels. For taller documents, capture deterministic top and bottom viewport images under the existing artifact namespace. No product runtime, route, layout, publication state or semantic assertion changes.
+
+**SAME-PATH REGRESSION:** the exact Gold Template workflow now executes this evidence path on Chromium and WebKit at 1440/390/430. Any future reintroduction of an unbounded full-page capture fails the native WebKit matrix before acceptance.
+
+**TRUTH / RELEASE BOUNDARY:** passing screenshots prove only that bounded evidence capture completed after the existing controlled-surface assertions. Independent Gold, full-product rights/accessibility/indexability, published-SPECIES zero-loss and Founder-specific release remain separate.
+
+**ROLLBACK:** revert this test/brief correction to eebbc3ba13de2462b560ef5589669b5625410b64 if the exact-SHA rerun loses required evidence or masks a semantic failure.
+
 # GOLD TEMPLATE — CHROMIUM + WEBKIT IMMUTABLE MATRIX — 30 OCTOBER 2026
 
 **STATUS:** CODE CANDIDATE / EXACT-SHA CI REQUIRED / RELEASE HOLD.
