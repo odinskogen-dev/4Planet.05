@@ -13,6 +13,8 @@ function git(args) {
 }
 const FOUNDER_LOGIN = 'odinskogen-dev';
 const FOUNDER_ID = 289761792;
+const REQUIRED_FOUNDER_ACTION = 'LIVE_DEPLOY';
+const REQUIRED_FOUNDER_TARGET_ROUTE = 'git:main';
 const decisionRefPattern = /^https:\/\/github\.com\/odinskogen-dev\/4Planet\.05\/issues\/(\d+)#issuecomment-(\d+)$/;
 
 export function founderDecisionApiUrl(ref) {
@@ -21,7 +23,7 @@ export function founderDecisionApiUrl(ref) {
   return `https://api.github.com/repos/odinskogen-dev/4Planet.05/issues/comments/${match[2]}`;
 }
 
-export function validateFounderDecisionReceipt({ receipt, ref, testKingSha, action, targetRoute }) {
+export function validateFounderDecisionReceipt({ receipt, ref, testKingSha }) {
   const apiUrl = founderDecisionApiUrl(ref);
   const commentId = Number(apiUrl.split('/').at(-1));
   if (!receipt || receipt.id !== commentId) throw new Error('Founder decision receipt ID mismatch');
@@ -35,8 +37,8 @@ export function validateFounderDecisionReceipt({ receipt, ref, testKingSha, acti
   const requiredLines = [
     '4PLANET FOUNDER RELEASE APPROVED',
     'STATUS: APPROVED',
-    `ACTION: ${action}`,
-    `TARGET_ROUTE: ${targetRoute}`,
+    `ACTION: ${REQUIRED_FOUNDER_ACTION}`,
+    `TARGET_ROUTE: ${REQUIRED_FOUNDER_TARGET_ROUTE}`,
     `TEST_KING_SHA: ${testKingSha}`,
   ];
   for (const line of requiredLines) {
@@ -83,8 +85,6 @@ if (!sha(manifest.founderDecisionTestKingSha)) fail('founderDecisionTestKingSha 
 if (manifest.founderDecisionTestKingSha !== manifest.testKingSha) {
   fail(`Founder decision artifact mismatch: decision binds ${manifest.founderDecisionTestKingSha}, manifest tests ${manifest.testKingSha}`);
 }
-if (!manifest.founderDecisionAction || !String(manifest.founderDecisionAction).trim()) fail('founderDecisionAction missing');
-if (!manifest.founderDecisionTargetRoute || !String(manifest.founderDecisionTargetRoute).trim()) fail('founderDecisionTargetRoute missing');
 let founderReceipt;
 try {
   const receipt = await fetchFounderDecisionReceipt(manifest.founderDecisionRef);
@@ -92,8 +92,6 @@ try {
     receipt,
     ref: manifest.founderDecisionRef,
     testKingSha: manifest.testKingSha,
-    action: manifest.founderDecisionAction,
-    targetRoute: manifest.founderDecisionTargetRoute,
   });
 } catch (error) {
   fail(error instanceof Error ? error.message : String(error));
@@ -128,8 +126,8 @@ console.log(JSON.stringify({
   priorLiveSha: manifest.priorLiveSha,
   founderDecisionRef: manifest.founderDecisionRef,
   founderDecisionTestKingSha: manifest.founderDecisionTestKingSha,
-  founderDecisionAction: manifest.founderDecisionAction,
-  founderDecisionTargetRoute: manifest.founderDecisionTargetRoute,
+  founderDecisionAction: REQUIRED_FOUNDER_ACTION,
+  founderDecisionTargetRoute: REQUIRED_FOUNDER_TARGET_ROUTE,
   founderDecisionReceiptId: founderReceipt.commentId,
   founderDecisionIssuer: founderReceipt.issuer,
   evidenceRef: manifest.evidenceRef,
