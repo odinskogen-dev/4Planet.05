@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          p=$(curl -fsS --max-time 25 -X POST "$SUPABASE_URL/rest/v1/rpc/impact_lan_v02" -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY" -H "Content-Type: application/json" -d '{}')
+          p=$(curl -fsS --max-time 25 -X POST "$SUPABASE_URL/rest/v1/rpc/impact_lan_v02" -H "apikey: $SUPABASE_PUBLISHABLE_KEY" -H "Content-Type: application/json" -d '{}')
           echo "$p" >/tmp/impact.json
           test "$(jq '.projects|length' /tmp/impact.json)" -ge 55
           test "$(jq '.actors|length' /tmp/impact.json)" -ge 52
