@@ -58,6 +58,9 @@ jobs:
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
           echo "GOLD mode=$mode"
 
+      - name: Enforce ONE BOOT / GIGA / project portfolio cold-start instruction contract
+        run: node scripts/one-boot-authority-contract.test.mjs
+
       - name: Enforce canonical GOLD / TEST-LIVE policy
         env:
           GOLD_HEAD_REF: ${{ github.head_ref }}
