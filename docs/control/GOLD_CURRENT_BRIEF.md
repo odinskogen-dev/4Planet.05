@@ -1,3 +1,63 @@
+# P51-OSLOFJORD-01 — PUBLIC GEOGRAPHY + OBSERVER PRIVACY BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / PROVIDER QA PENDING / INDEPENDENT SCIENCE-PRIVACY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `1e76516d034220c614d19f958062da0394ab70f3`
+
+## USER ARRIVES BECAUSE
+
+A field worker needs a source-observation gate that cannot turn locator-grade geography or direct observer PII into an admitted public evidence object.
+
+## ONE THING TO UNDERSTAND
+
+The explicit field allowlist closed unknown-key spread but still treated every nonempty value inside `publicGeography` and `observerRef` as safe.
+
+## PRIMARY ACTION
+
+Reject coordinates, map/geo locators and plus codes in public geography; accept only source-owned opaque observer references and reject direct email, phone, name and URL values.
+
+## SECONDARY DEPTH
+
+Trim every admitted text field and limitation before projection so hidden surrounding whitespace cannot survive as a second representation.
+
+## P1 DOMINANT
+
+Fail-first proof on the exact authorised base admitted `59.123, 10.456` and `private@example.invalid`; the corrected contract rejects both allowed-field contamination paths.
+
+## P2 ORIENTATION
+
+The safe fixture remains a coarse Oslofjord label plus `source-owned-observer-ref`. No real location, observer, permission or field observation is introduced.
+
+## P3 ACTION / NEXT
+
+Independent Science/Privacy Gold challenges exact coordinates, locator URLs, plus codes and observer PII on the immutable provider SHA, then returns ACCEPT/HOLD.
+
+## P4 DEPTH
+
+Any future private-to-public redaction workflow belongs in the existing evidence system with separate consent and review; this gate only admits already-safe public projection values.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that an allowed field name makes arbitrary field content safe.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing ten-field observation schema, explicit projection, claim boundary, Project Pack, Atomic task and independent Gold receiver.
+
+## TRUTH BOUNDARY
+
+Source and contract evidence only. No real field record, public statement, ecological recovery, deployment, Founder release, use, cash or impact is claimed.
+
+## MOBILE-FIRST RISK
+
+None introduced: this is an internal admission contract and renders no interface.
+
+## HUMAN SUCCESS
+
+A worker receives an explicit rejection instead of silently exposing a precise site or identifiable observer through an otherwise allowed field.
+
+---
+
 # SPEC-GS-14 — MALFORMED RESERVED QUERY GRAMMAR FAIL-CLOSED — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT GOLD PENDING / RELEASE HOLD.
