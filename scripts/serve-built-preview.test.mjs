@@ -22,6 +22,20 @@ test("browser proof preserves the active immutable-SHA run", async () => {
   );
 });
 
+test("product navigation evidence stays within WebKit screenshot limits", async () => {
+  const proof = await readFile(
+    new URL("../tests/e2e/product-switcher.spec.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.doesNotMatch(proof, /page\.screenshot\([^\n]+fullPage:\s*true/);
+  assert.equal(
+    proof.match(/page\.screenshot\([^\n]+fullPage:\s*false/g)?.length,
+    2,
+    "closed and open product-navigation evidence must remain viewport bounded",
+  );
+});
+
 test("built preview prefers prerendered route HTML and preserves SPA fallback", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "4planet-built-preview-"));
   t.after(() => rm(root, { force: true, recursive: true }));

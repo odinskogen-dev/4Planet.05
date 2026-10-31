@@ -60,11 +60,14 @@ test("Product family navigation — current GOLD default closed and open", async
   await page.waitForTimeout(600);
 
   await expect(page.getByRole("heading", { level: 1, name: /MEET LIFE ON EARTH/i })).toBeVisible();
-  await page.screenshot({ path: `${OUT}/${tag}-closed.png`, fullPage: true });
+  // Keep evidence within the accepted viewport. SPECIES can be taller than
+  // WebKit's 32,767 px screenshot ceiling, so an unbounded full-page capture
+  // can fail after the user journey itself has already passed.
+  await page.screenshot({ path: `${OUT}/${tag}-closed.png`, fullPage: false });
 
   const navigation = await openProductNavigation(page);
   await page.waitForTimeout(300);
-  await page.screenshot({ path: `${OUT}/${tag}-open.png`, fullPage: true });
+  await page.screenshot({ path: `${OUT}/${tag}-open.png`, fullPage: false });
 
   if ((page.viewportSize()?.width ?? 1440) <= 920) {
     await page.keyboard.press("Shift+Tab");
