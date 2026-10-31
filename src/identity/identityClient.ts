@@ -194,6 +194,28 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       const emailValue = /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i;
       const jwtValue = /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/;
       const embeddedCredential = /(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:["']?)\s*[:=]/i;
+      const structuredValueHasSensitiveKey = (input: string) => {
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(input);
+        } catch {
+          return false;
+        }
+        let visited = 0;
+        const inspect = (candidate: unknown, depth: number): boolean => {
+          if (depth > 8 || visited >= 256) return true;
+          visited += 1;
+          if (Array.isArray(candidate)) {
+            return candidate.some((item) => inspect(item, depth + 1));
+          }
+          if (candidate && typeof candidate === "object") {
+            return Object.entries(candidate).some(([key, nested]) =>
+              sensitiveKey.test(normalizeReturnKey(key)) || inspect(nested, depth + 1));
+          }
+          return false;
+        };
+        return inspect(parsed, 0);
+      };
       const inspectedPath = decodeForReturnInspection(url.pathname);
       if (/^\/(?:auth(?:\/|$)|oauth(?:\/|$))/i.test(inspectedPath)
         || emailValue.test(inspectedPath)
@@ -208,7 +230,8 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         if (sensitiveKey.test(inspectedKey)
           || emailValue.test(inspectedValue)
           || jwtValue.test(inspectedValue)
-          || embeddedCredential.test(inspectedValue)) {
+          || embeddedCredential.test(inspectedValue)
+          || structuredValueHasSensitiveKey(inspectedValue)) {
           url.searchParams.delete(key);
         }
       }

@@ -1,3 +1,67 @@
+# P51-ID-01 — STRUCTURED JSON KEY PRIVACY BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `c0b6c9ef0f27b72b6a926839380aef8429e6d282`
+
+## USER ARRIVES BECAUSE
+
+A person returning through 4PLANET ID needs an allowed destination preserved without copying credential-shaped camelCase fields nested inside a JSON query value into a server-visible return URL.
+
+## ONE THING TO UNDERSTAND
+
+Query keys were canonicalised, but structured query values were inspected only as raw text. JSON fields such as `accessToken` therefore bypassed underscore-form credential detection.
+
+## PRIMARY ACTION
+
+Parse valid structured JSON values and apply the existing canonical sensitive-key classifier recursively to object keys, bounded to eight levels and 256 visited nodes with fail-closed overflow.
+
+## SECONDARY DEPTH
+
+Preserve benign JSON values, the exact-origin allowlist, bounded decoding, fragment stripping and existing ATLAS/campaign controls.
+
+## TRUTH BOUNDARY
+
+Evidence is source-level only: fail-first and corrected native contract results use synthetic strings. No real credential, production leak, browser journey, user behaviour or account state was observed.
+
+## MOBILE-FIRST RISK
+
+The sanitizer is shared code, but this change has not yet been independently exercised at 390, 430 or 1440 widths or in WebKit; those remain Gold gates.
+
+## HUMAN SUCCESS
+
+A person can retain a benign structured deep link while credential-shaped JSON fields are removed before the destination is embedded in the identity URL.
+
+## P1 DOMINANT
+
+Fail-first retained the first of five Gold-returned camelCase JSON fields; the corrected source removes all five and preserves the benign JSON control while the full identity contract passes 13/13.
+
+## P2 ORIENTATION
+
+This remains one bounded correction inside existing `safeReturnTo`; it does not expand the origin allowlist, create a second sanitizer or alter release authority.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold challenges nested objects and arrays, encoding, invalid JSON, node/depth overflow, false positives and benign values on the immutable provider SHA.
+
+## P4 DEPTH
+
+Real account, recovery, tenant, origin-policy and 390/430/1440 plus WebKit validation remain separate Gold work and are not inferred from source tests.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that raw-text credential detection is equivalent to canonical inspection of structured-value keys.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, the current canonical key classifier, identity contract and issue #169 receiver. PR #512 remains separate and untouched.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `c0b6c9ef0f27b72b6a926839380aef8429e6d282`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised or made by this change.
+
+---
+
 # P51-ID-01 — ACRONYM-KEY AND STRUCTURED-VALUE PRIVACY BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
