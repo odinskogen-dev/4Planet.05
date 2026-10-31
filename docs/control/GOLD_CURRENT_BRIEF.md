@@ -1,3 +1,19 @@
+# P51-SHIP-01 — CURRENT CANONICAL LIVE BINDING 15 — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT GOLD PENDING / RELEASE HOLD.
+
+**ROOT CAUSE / FAILED TEST:** an authenticated historical Cloudflare Pages production deployment could satisfy the prior receipt checks after a newer production deployment replaced it. The fail-first contract failed because the gate had no current-canonical binding.
+
+**BOUNDED CORRECTION:** require the authenticated project receipt to provide a valid `canonical_deployment.id`, then require the separately authenticated production deployment in `manifest.evidenceRef` to have that exact ID after its project, production environment, main branch, success and target SHA checks pass. Missing or mismatched canonical IDs fail closed. Candidate preview and rollback remain separate historical receipts and are not mislabelled current LIVE.
+
+**PROOF SET:** the owning contract includes a stale successful A versus current canonical B negative, an exact canonical positive and a missing-canonical negative, while retaining all earlier Founder, target-head, rollback and reference checks. Local focused contracts, Gold policy, TypeScript and full build are required on the returned immutable SHA.
+
+**TRUTH / RELEASE BOUNDARY:** project metadata plus exact deployment identity is necessary provider evidence, not proof that custom-domain route bytes currently match the artifact. Independent Gold must inspect the exact SHA and real route before any LIVE claim. No Worker invocation, main merge, deploy, Founder release, use, cash or ecological outcome is performed here.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only release-control correction. Base and rollback are `king/test@b525b6945bb8e30110e05210af673323ec4aaab5`.
+
+**MAKER ≠ JUDGE:** Factory returns the immutable candidate; independent Gold judges it. Founder-specific release remains separately required.
+
 # P51-SHIP-01 — AUTHENTICATED CLOUDFLARE ROLLBACK PROOF 14 — 31 OCTOBER 2026
 
 ## USER ARRIVES BECAUSE
