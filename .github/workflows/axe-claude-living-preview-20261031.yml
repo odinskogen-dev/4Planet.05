@@ -1,0 +1,145 @@
+name: AXE 4PLANET Claude LIVING isolated founder preview
+on:
+  push:
+    branches:
+      - 'preview/axe-claude-living-20261031'
+    paths:
+      - '.axe-preview-inputs/4PLANET_LIVING_UNIVERSE_BUILD01.zip'
+      - '.github/workflows/axe-claude-living-preview-20261031.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: axe-claude-living-preview
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout isolated branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Verify donor identity and apply exact Claude patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "edb374561d202b44a35ec1ac6c29b1e6faf2d872"
+          echo "a17a3dca82416eccdbe51dc647914f90c85cfccf484e3f54a50166726f05f07d  .axe-preview-inputs/4PLANET_LIVING_UNIVERSE_BUILD01.zip" | sha256sum -c -
+          python - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          p=Path(".axe-preview-inputs/4PLANET_LIVING_UNIVERSE_BUILD01.zip")
+          with ZipFile(p) as z:
+            for n in z.namelist():
+              if n.startswith("/") or ".." in Path(n).parts:
+                raise SystemExit("Unsafe archive member "+n)
+            z.extractall("/tmp/claude-intake")
+          PY
+          git config user.name "4PLANET AXE Preview"
+          git config user.email "noreply@4planet.org"
+          git am /tmp/claude-intake/patches/*.patch
+          echo "CLAUDE_LIVING_PATCH_APPLIED"
+      - name: Locked dependency build without deployment credentials
+        env:
+          CF_PAGES: "1"
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+          npm run build
+          test -s dist/index.html
+          test -s dist/robots.txt
+      - name: Hard-isolate preview from search crawlers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          root=Path("dist")
+          for p in root.rglob("*.html"):
+            h=p.read_text(encoding="utf8")
+            if "noindex,nofollow,noarchive" not in h and "<head>" in h:
+              p.write_text(h.replace("<head>","<head><meta name=\"robots\" content=\"noindex,nofollow,noarchive\" />",1),encoding="utf8")
+          hdr=root/"_headers"
+          with hdr.open("a",encoding="utf8") as f:
+            f.write("\n/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n")
+          (root/"robots.txt").write_text("User-agent: *\nDisallow: /\n",encoding="utf8")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: axe-claude-living-dist
+          path: dist/
+          retention-days: 5
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout branch for Pages Functions
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Reconstruct exact preview Functions source (no npm build)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "a17a3dca82416eccdbe51dc647914f90c85cfccf484e3f54a50166726f05f07d  .axe-preview-inputs/4PLANET_LIVING_UNIVERSE_BUILD01.zip" | sha256sum -c -
+          unzip -q ".axe-preview-inputs/4PLANET_LIVING_UNIVERSE_BUILD01.zip" -d /tmp/claude-intake
+          git config user.name "4PLANET AXE Preview"
+          git config user.email "noreply@4planet.org"
+          git am /tmp/claude-intake/patches/*.patch
+      - name: Download prebuilt audited static output
+        uses: actions/download-artifact@v4
+        with:
+          name: axe-claude-living-dist
+          path: dist/
+      - name: Resolve Cloudflare account and prove production isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          token=$(printf '%s' "$CLOUDFLARE_API_TOKEN" | tr -d '\r\n' | sed 's/^Bearer //')
+          echo "::add-mask::$token"
+          echo "CLOUDFLARE_API_TOKEN=$token" >> "$GITHUB_ENV"
+          api="https://api.cloudflare.com/client/v4"
+          zone=$(curl -fsS -H "Authorization: Bearer $token" "$api/zones?name=4planet.org")
+          account=$(jq -r '.result[0].account.id // empty' <<<"$zone")
+          test -n "$account"
+          project=$(curl -fsS -H "Authorization: Bearer $token" "$api/accounts/$account/pages/projects/4planet-05")
+          jq -e '.success == true' <<<"$project" >/dev/null
+          production=$(jq -r '.result.production_branch // empty' <<<"$project")
+          test "$production" != "axe-claude-living-20261031"
+          echo "CLOUDFLARE_ACCOUNT_ID=$account" >> "$GITHUB_ENV"
+          echo "PREVIEW_ONLY_PRODUCTION_BRANCH=$production"
+      - name: Deploy to non-production Cloudflare Pages branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.128.0 pages deploy dist --project-name 4planet-05 --branch "axe-claude-living-20261031" --commit-hash "$GITHUB_SHA" --commit-dirty=false 2>&1 | tee /tmp/preview-deploy.log
+          url=$(grep -Eo 'https://[a-z0-9-]+[.]4planet-05[.]pages[.]dev' /tmp/preview-deploy.log | head -n1 || true)
+          test -n "$url"
+          echo "PREVIEW_URL=$url" >> "$GITHUB_ENV"
+          echo "AXE_LIVING_PREVIEW_URL=$url"
+      - name: Check externally published HTML, preserve the original site
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 15); do
+            status=$(curl -sSL --max-time 18 -o /tmp/axe-preview.html -w '%{http_code}' "$PREVIEW_URL/" || true)
+            if [ "$status" = "200" ]; then break; fi
+            sleep 3
+          done
+          test "$status" = "200"
+          grep -Eiq '<html|<!doctype html' /tmp/axe-preview.html
+          echo "AXE_LIVING_HTTP_200=$PREVIEW_URL"
+          echo "AXE_LIVING_PRODUCTION_UNTOUCHED=true"
