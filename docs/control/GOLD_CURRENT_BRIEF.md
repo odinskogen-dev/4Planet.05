@@ -1,3 +1,65 @@
+# P51-SHIP-01 — AUTHENTICATED CLOUDFLARE ROLLBACK PROOF 14 — 31 OCTOBER 2026
+
+## USER ARRIVES BECAUSE
+
+A release operator needs the LIVE guard to prove that candidate, current LIVE and rollback artifacts exist in the real provider, not merely in manifest strings.
+
+## ONE THING TO UNDERSTAND
+
+Independent Gold proved that `VERIFIED`, a 40-character SHA and nonempty rollback/evidence text could satisfy the prior local predicates with no Cloudflare receipt.
+
+## PRIMARY ACTION
+
+Fetch the existing Cloudflare Pages `4planet-05` project and exact deployment records with authenticated provider access. Require the project to own production route `4planet.org` on branch `main`.
+
+## SECONDARY DEPTH
+
+Bind three immutable deployment IDs: successful preview `king/test` at the checked candidate SHA, successful production `main` at the observed LIVE SHA, and successful production `main` at the rollback SHA.
+
+## P1 DOMINANT
+
+Caller-declared status, SHA or URL text is never sufficient provider rollback proof.
+
+## P2 ORIENTATION
+
+The guard reuses the existing Cloudflare Pages API and project; it does not create a second release, approval or deployment system.
+
+## P3 ACTION / NEXT
+
+Run the fabricated-reference negative, exact authenticated positive and genuine wrong-environment negative, then return the immutable provider SHA to independent Gold.
+
+## P4 DEPTH
+
+Missing credentials, inaccessible records, failed deployments, wrong project, route, environment, branch, deployment ID or artifact SHA all return HOLD.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that `liveRollbackState`, `rollbackRef` and `evidenceRef` prove themselves.
+
+## WHAT MUST BE REUSED
+
+Reuse the canonical Founder receipt, exact TEST KING binding, literal main promotion target, existing Cloudflare account/project, manifest-only child and Maker-not-Judge controls.
+
+## TRUTH BOUNDARY
+
+No qualifying Cloudflare or Founder receipt is present in the current NOT_AUTHORISED manifest. This code does not call a Worker, mutate Cloudflare, merge, deploy or establish LIVE/use/cash/impact.
+
+## MOBILE-FIRST RISK
+
+None introduced: this internal release guard renders no product surface.
+
+## HUMAN SUCCESS
+
+A fabricated rollback URL or a real receipt from the wrong environment fails before release authority can pass.
+
+**ACCEPTANCE:** exact authenticated project + candidate/live/rollback deployments validate; fabricated reference and wrong environment fail closed; all six existing Founder/target/rollback/lineage tests remain green.
+
+**MAKER ≠ JUDGE:** Factory supplies the bounded gate/test/brief correction. Independent Gold judges the immutable provider SHA. Founder alone may issue the exact release receipt.
+
+**BASE / REVERSION:** base is `king/test@c44606a59b968157a223636588e4a266592c5759`; revert this bounded gate/test/brief correction if independent Gold finds provider-receipt or existing-authority regression.
+
+---
+
 # P51-SHIP-01 — IMMUTABLE LIVE OPERATION SCOPE 13 — 31 OCTOBER 2026
 
 ## USER ARRIVES BECAUSE
