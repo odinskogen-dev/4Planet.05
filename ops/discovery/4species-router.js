@@ -106,12 +106,13 @@ function isProfilePathCandidate(pathname) {
 
 function hasNonCanonicalIndexQuery(searchParams) {
   // Form decoders commonly express structured fields as preview[],
-  // draft[0] or nested namespaces such as preview[0][mode]. Every complete
-  // bracket segment remains inside the reserved preview/draft namespace and
-  // must never inherit the clean profile's indexable review state. Ordinary
-  // tracking keys remain canonical-safe.
+  // draft[0] or nested namespaces such as preview[0][mode]. Once a decoded
+  // key starts the reserved preview/draft bracket namespace it remains
+  // non-canonical even when its bracket grammar is malformed or truncated;
+  // otherwise serial regex examples can leave indexability gaps. Ordinary
+  // words and tracking keys that merely contain those roots remain safe.
   return Array.from(searchParams.keys()).some((key) =>
-    /^(?:preview|draft)(?:\[[^\]]*\])*$/i.test(key)
+    /^(?:preview|draft)(?:$|\[)/i.test(key)
   );
 }
 
