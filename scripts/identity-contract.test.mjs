@@ -202,6 +202,9 @@ test("return sanitizer rejects structured credential values", () => {
       '{"idToken":"SYNTHETIC_ONLY"}',
       '{"sessionToken":"SYNTHETIC_ONLY"}',
       '{"OAuthIDToken":"SYNTHETIC_ONLY"}',
+      JSON.stringify({ meta: JSON.stringify({ accessToken: "SYNTHETIC_ONLY" }) }),
+      JSON.stringify([{ meta: JSON.stringify({ refreshToken: "SYNTHETIC_ONLY" }) }]),
+      '{"accessToken":"SYNTHETIC_ONLY"',
     ]) {
       const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
       target.searchParams.set("payload", value);
@@ -214,6 +217,9 @@ test("return sanitizer rejects structured credential values", () => {
     const benign = new URL("https://4planetatlas.com/explore?habitat=kelp");
     benign.searchParams.set("payload", '{"habitat":"kelp"}');
     assert.equal(identityClient.safeReturnTo(benign.href), benign.href);
+    const benignString = new URL("https://4planetatlas.com/explore?habitat=kelp");
+    benignString.searchParams.set("payload", JSON.stringify({ meta: JSON.stringify({ habitat: "kelp" }) }));
+    assert.equal(identityClient.safeReturnTo(benignString.href), benignString.href);
   } finally {
     if (previousWindow === undefined) delete globalThis.window;
     else globalThis.window = previousWindow;

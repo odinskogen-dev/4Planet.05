@@ -194,12 +194,20 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       const emailValue = /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i;
       const jwtValue = /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/;
       const embeddedCredential = /(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:["']?)\s*[:=]/i;
+      const structuredTextHasSensitiveKey = (input: string) => {
+        let inspected = 0;
+        for (const match of input.matchAll(/(?:^|[{\[,]\s*)["']?([-A-Za-z0-9_.\[\]]{1,128})["']?\s*:/g)) {
+          inspected += 1;
+          if (inspected > 256 || sensitiveKey.test(normalizeReturnKey(match[1]))) return true;
+        }
+        return false;
+      };
       const structuredValueHasSensitiveKey = (input: string) => {
         let parsed: unknown;
         try {
           parsed = JSON.parse(input);
         } catch {
-          return false;
+          return structuredTextHasSensitiveKey(input);
         }
         let visited = 0;
         const inspect = (candidate: unknown, depth: number): boolean => {
@@ -207,6 +215,9 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
           visited += 1;
           if (Array.isArray(candidate)) {
             return candidate.some((item) => inspect(item, depth + 1));
+          }
+          if (typeof candidate === "string") {
+            return structuredTextHasSensitiveKey(candidate);
           }
           if (candidate && typeof candidate === "object") {
             return Object.entries(candidate).some(([key, nested]) =>

@@ -1,3 +1,67 @@
+# P51-ID-01 — NESTED AND MALFORMED STRUCTURED-VALUE PRIVACY BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `4acff37b4e8409b23af19f42986898c6c3379371`
+
+## USER ARRIVES BECAUSE
+
+A person returning through 4PLANET ID needs an allowed destination preserved without copying credential-shaped fields hidden in JSON strings or malformed structured values into a server-visible return URL.
+
+## ONE THING TO UNDERSTAND
+
+Direct JSON objects were inspected, but string leaves and parse failures bypassed canonical field-name inspection.
+
+## PRIMARY ACTION
+
+Scan bounded structured-text field names inside parsed string leaves and malformed structured input, then apply the existing canonical sensitive-key classifier.
+
+## SECONDARY DEPTH
+
+Preserve benign JSON-string values, the exact-origin allowlist, bounded object traversal, fragment stripping and existing ATLAS/campaign controls.
+
+## TRUTH BOUNDARY
+
+Evidence is source-level only: fail-first and corrected native contract results use synthetic strings. No real credential, production leak, browser journey, user behaviour or account state was observed.
+
+## MOBILE-FIRST RISK
+
+The sanitizer is shared code, but this change has not yet been independently exercised at 390, 430 or 1440 widths or in WebKit; those remain Gold gates.
+
+## HUMAN SUCCESS
+
+A person can retain a benign structured deep link while credential-shaped nested or malformed fields are removed before the destination is embedded in the identity URL.
+
+## P1 DOMINANT
+
+Fail-first retained the nested JSON-as-string case; the corrected source removes both nested-string variants and the malformed credential field while preserving the benign string control and passing 13/13.
+
+## P2 ORIENTATION
+
+This remains one bounded correction inside existing `safeReturnTo`; it does not address the separate over-encoding saturation finding or alter release authority.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold challenges escaped strings, malformed syntax, field-name length/count limits, false positives and benign values on the immutable provider SHA.
+
+## P4 DEPTH
+
+The separate nine-wrap encoding saturation defect, real account/recovery, tenant/origin policy and 390/430/1440 plus WebKit validation remain open.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that parsing a top-level JSON value makes every nested credential field structurally visible.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, the canonical classifier, identity contract and issue #169 receiver. PR #512 remains separate and untouched.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `4acff37b4e8409b23af19f42986898c6c3379371`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised or made by this change.
+
+---
+
 # P51-ID-01 — STRUCTURED JSON KEY PRIVACY BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
