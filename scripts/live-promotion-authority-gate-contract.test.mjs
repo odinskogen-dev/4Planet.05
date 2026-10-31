@@ -6,6 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import {
   validateCloudflareDeploymentReceipt,
+  validateCurrentLiveDeployment,
   validateCloudflareProjectReceipt,
   validateFounderDecisionReceipt,
 } from './live-promotion-authority-gate.mjs';
@@ -16,6 +17,7 @@ const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).
 const cloudflareAccountId = 'a'.repeat(32);
 const candidateSha = 'b'.repeat(40);
 const deploymentId = '11111111-2222-4333-8444-555555555555';
+const newerDeploymentId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 const deploymentRef = `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/pages/projects/4planet-05/deployments/${deploymentId}`;
 
 function cloudflareDeployment({ environment = 'preview', branch = 'king/test', sha = candidateSha } = {}) {
@@ -107,13 +109,19 @@ test('accepts authenticated project and exact candidate deployment receipts', ()
     receipt: {
       success: true,
       errors: [],
-      result: { name: '4planet-05', production_branch: 'main', domains: ['4planet.org', '4planet-05.pages.dev'] },
+      result: {
+        name: '4planet-05',
+        production_branch: 'main',
+        domains: ['4planet.org', '4planet-05.pages.dev'],
+        canonical_deployment: { id: deploymentId },
+      },
     },
     accountId: cloudflareAccountId,
   }), {
     accountId: cloudflareAccountId,
     project: '4planet-05',
     productionRoute: 'https://4planet.org',
+    canonicalDeploymentId: deploymentId,
   });
   assert.deepEqual(validateCloudflareDeploymentReceipt({
     receipt: cloudflareDeployment(),
@@ -121,6 +129,36 @@ test('accepts authenticated project and exact candidate deployment receipts', ()
     accountId: cloudflareAccountId,
     expected: { environment: 'preview', branch: 'king/test', sha: candidateSha },
   }), { id: deploymentId, environment: 'preview', branch: 'king/test', sha: candidateSha });
+});
+
+test('rejects a successful historical production deployment that is not current canonical LIVE', () => {
+  const historical = validateCloudflareDeploymentReceipt({
+    receipt: cloudflareDeployment({ environment: 'production', branch: 'main' }),
+    ref: deploymentRef,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'production', branch: 'main', sha: candidateSha },
+  });
+  assert.throws(() => validateCurrentLiveDeployment({
+    project: { canonicalDeploymentId: newerDeploymentId },
+    liveDeployment: historical,
+  }), /not the current canonical production deployment/);
+});
+
+test('accepts only the canonical production deployment as current LIVE', () => {
+  const current = validateCloudflareDeploymentReceipt({
+    receipt: cloudflareDeployment({ environment: 'production', branch: 'main' }),
+    ref: deploymentRef,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'production', branch: 'main', sha: candidateSha },
+  });
+  assert.deepEqual(validateCurrentLiveDeployment({
+    project: { canonicalDeploymentId: deploymentId },
+    liveDeployment: current,
+  }), current);
+  assert.throws(() => validateCurrentLiveDeployment({
+    project: { canonicalDeploymentId: null },
+    liveDeployment: current,
+  }), /canonical production deployment is missing/);
 });
 
 test('rejects a genuine Cloudflare receipt from the wrong environment', () => {
