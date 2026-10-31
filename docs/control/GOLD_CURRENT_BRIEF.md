@@ -1,3 +1,67 @@
+# P51-ID-01 — CONSISTENT URL-COMPONENT SATURATION BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `722b9378ef14f57ea501e4c20504231736842bde`
+
+## USER ARRIVES BECAUSE
+
+A person needs benign return destinations preserved without deeply encoded credential values or callback paths surviving the same bounded decoder that already protects query keys.
+
+## ONE THING TO UNDERSTAND
+
+The bounded decoder exposed a saturation flag, but only query keys consumed it; query values and paths silently used the partially decoded string.
+
+## PRIMARY ACTION
+
+Apply the existing 32-pass saturation result consistently to path, key and value: saturated paths return the safe fallback and saturated query entries are removed.
+
+## SECONDARY DEPTH
+
+Preserve benign path/value controls through the non-saturated 31/32 boundary, make the 33/40 saturation policy explicit, and retain every malformed-Unicode, nested JSON and query-key regression.
+
+## TRUTH BOUNDARY
+
+Evidence is exact-source native test evidence using synthetic values. No real credential, production leak, browser journey, account state or user behaviour was observed.
+
+## MOBILE-FIRST RISK
+
+The shared sanitizer has not yet been independently exercised at 390, 430 or 1440 widths or in WebKit; those remain Gold gates.
+
+## HUMAN SUCCESS
+
+A person can retain an ordinary benign deep link while ambiguous saturated paths and values fail closed before identity handoff.
+
+## P1 DOMINANT
+
+Fail-first identity was 14/15 with the 33-wrap credential value retained; corrected identity passes 15/15, OAuth 5/5 and combined P0 29/29 across 31/32/33/40 value/path boundaries and benign controls.
+
+## P2 ORIENTATION
+
+This reuses one decoder and one policy inside existing `safeReturnTo`; it does not alter origins, identity services or release authority.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold reruns exact-SHA native ID/OAuth/P0 workflows and challenges component boundaries, false positives, browser engines and rollback.
+
+## P4 DEPTH
+
+Native provider workflows, browser 390/430/1440 plus WebKit, tenant/origin/recovery, finance-origin decision and Founder release remain open.
+
+## WHAT CAN BE REMOVED
+
+Remove component-specific saturation handling; one decoder result must have one security meaning everywhere it is used.
+
+## WHAT MUST BE REUSED
+
+Reuse `inspectReturnEncoding`, `safeReturnTo`, current identity/OAuth contracts, issue #169 and existing provider workflows. PR #512 remains separate and untouched.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `722b9378ef14f57ea501e4c20504231736842bde`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised or made by this change.
+
+---
+
 # P51-ID-01 — MALFORMED UNICODE, ENCODING SATURATION AND NATIVE OAUTH CARRIER — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.

@@ -247,8 +247,10 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         };
         return inspect(parsed, 0);
       };
-      const inspectedPath = decodeForReturnInspection(url.pathname);
-      if (/^\/(?:auth(?:\/|$)|oauth(?:\/|$))/i.test(inspectedPath)
+      const pathEncoding = inspectReturnEncoding(url.pathname);
+      const inspectedPath = pathEncoding.decoded;
+      if (pathEncoding.saturated
+        || /^\/(?:auth(?:\/|$)|oauth(?:\/|$))/i.test(inspectedPath)
         || emailValue.test(inspectedPath)
         || jwtValue.test(inspectedPath)
         || embeddedCredential.test(inspectedPath)) return fallback;
@@ -258,8 +260,10 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         // sensitive-key test so nested aliases cannot evade the same boundary.
         const keyEncoding = inspectReturnEncoding(key);
         const inspectedKey = normalizeReturnKey(keyEncoding.decoded);
-        const inspectedValue = decodeForReturnInspection(value);
+        const valueEncoding = inspectReturnEncoding(value);
+        const inspectedValue = valueEncoding.decoded;
         if (keyEncoding.saturated
+          || valueEncoding.saturated
           || sensitiveKey.test(inspectedKey)
           || emailValue.test(inspectedValue)
           || jwtValue.test(inspectedValue)

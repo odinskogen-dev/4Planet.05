@@ -182,6 +182,48 @@ test("return sanitizer fails closed on saturated credential-key encoding", () =>
   }
 });
 
+test("return sanitizer applies decode saturation to values and paths", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  const nestedEncode = (value, wraps) => {
+    let encoded = value;
+    for (let index = 0; index < wraps; index += 1) encoded = encodeURIComponent(encoded);
+    return encoded;
+  };
+  try {
+    for (const wraps of [31, 32, 33, 40]) {
+      const valueTarget = new URL("https://4planetatlas.com/explore?habitat=kelp");
+      valueTarget.searchParams.set("next", nestedEncode("access_token=SYNTHETIC_ONLY", wraps));
+      assert.equal(
+        identityClient.safeReturnTo(valueTarget.href),
+        "https://4planetatlas.com/explore?habitat=kelp",
+        `credential value at ${wraps} wraps`
+      );
+      const pathTarget = `https://4planetatlas.com/${nestedEncode("auth/4planet/callback", wraps)}`;
+      assert.equal(identityClient.safeReturnTo(pathTarget), "https://4planet.org/", `auth path at ${wraps} wraps`);
+    }
+
+    for (const wraps of [31, 32]) {
+      const benignValue = new URL("https://4planetatlas.com/explore?habitat=kelp");
+      benignValue.searchParams.set("next", nestedEncode("habitat=kelp", wraps));
+      assert.equal(identityClient.safeReturnTo(benignValue.href), benignValue.href, `benign value at ${wraps} wraps`);
+      const benignPath = `https://4planetatlas.com/${nestedEncode("atlas/explore", wraps)}`;
+      assert.equal(identityClient.safeReturnTo(benignPath), benignPath, `benign path at ${wraps} wraps`);
+    }
+
+    for (const wraps of [33, 40]) {
+      const saturatedValue = new URL("https://4planetatlas.com/explore?habitat=kelp");
+      saturatedValue.searchParams.set("next", nestedEncode("habitat=kelp", wraps));
+      assert.equal(identityClient.safeReturnTo(saturatedValue.href), "https://4planetatlas.com/explore?habitat=kelp", `saturated benign value at ${wraps} wraps`);
+      const saturatedPath = `https://4planetatlas.com/${nestedEncode("atlas/explore", wraps)}`;
+      assert.equal(identityClient.safeReturnTo(saturatedPath), "https://4planet.org/", `saturated benign path at ${wraps} wraps`);
+    }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test("return sanitizer rejects structured, camelCase and aliased sensitive keys", () => {
   const previousWindow = globalThis.window;
   globalThis.window = { location: { origin: "https://id.4planet.org" } };
