@@ -238,7 +238,17 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
       assert.equal(trailingSlash.headers.get("x-robots-tag"), null);
       assert.equal(await trailingSlash.text(), "", `${method} trailing slash body`);
 
-      for (const path of ["/orca?preview=1", "/orca/unknown", "/unknown/path", "//orca", "//orca/", "/orca//"]) {
+      for (const path of [
+        "/orca?preview=1",
+        "/orca?draft=1",
+        "/orca?preview%5B%5D=1",
+        "/orca?draft%5B0%5D=1",
+        "/orca/unknown",
+        "/unknown/path",
+        "//orca",
+        "//orca/",
+        "/orca//",
+      ]) {
         const response = await speciesWorker.fetch(new Request(`https://4species.com${path}`, { method }));
         assert.equal(response.status, 404, `${method} ${path}`);
         assert.equal(response.headers.get("link"), null, `${method} ${path} canonical`);
