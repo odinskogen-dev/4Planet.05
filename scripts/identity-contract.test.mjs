@@ -169,6 +169,10 @@ test("return sanitizer rejects structured, camelCase and aliased sensitive keys"
       "clientSecret",
       "sessionToken",
       "authorizationCode",
+      "IDToken",
+      "auth[IDToken]",
+      "JWTToken",
+      "auth[OAuthIDToken]",
     ]) {
       const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
       target.searchParams.set(key, "SYNTHETIC_ONLY");
@@ -176,6 +180,30 @@ test("return sanitizer rejects structured, camelCase and aliased sensitive keys"
         identityClient.safeReturnTo(target.href),
         "https://4planetatlas.com/explore?habitat=kelp",
         key
+      );
+    }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+test("return sanitizer rejects structured credential values", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  try {
+    for (const value of [
+      '{"access_token":"SYNTHETIC_ONLY"}',
+      '{"refresh_token":"SYNTHETIC_ONLY"}',
+      '{"id_token":"SYNTHETIC_ONLY"}',
+      '{ "session_token" : "SYNTHETIC_ONLY" }',
+    ]) {
+      const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
+      target.searchParams.set("payload", value);
+      assert.equal(
+        identityClient.safeReturnTo(target.href),
+        "https://4planetatlas.com/explore?habitat=kelp",
+        value
       );
     }
   } finally {
