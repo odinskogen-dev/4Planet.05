@@ -9,6 +9,7 @@ on:
       - scripts/generate-sitemap.mjs
       - scripts/impact-seo-graph-contract.test.mjs
       - scripts/impact-seo-metadata-contract.test.mjs
+      - scripts/impact-sitemap-freshness-contract.test.mjs
       - .github/workflows/impact-search-discovery-quality.yml
   workflow_dispatch:
 permissions:
@@ -33,7 +34,7 @@ jobs:
           npm run build
       - name: Verify all profile evidence links, breadcrumb schema and sitemap parity
         run: |
-          node --test scripts/impact-seo-graph-contract.test.mjs scripts/impact-seo-metadata-contract.test.mjs
+          node --test scripts/impact-seo-graph-contract.test.mjs scripts/impact-seo-metadata-contract.test.mjs scripts/impact-sitemap-freshness-contract.test.mjs
           node --test scripts/impact-lan-gold-contract.test.mjs scripts/impact-independent-evidence-contract.test.mjs
       - name: Verify every profile's static canonical HTML matches its final sitemap URL
         run: |

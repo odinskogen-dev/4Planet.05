@@ -51,6 +51,25 @@ const discoveryRoutes = [
 ];
 const routes = [...new Set([...staticRoutes, ...discoveryRoutes])];
 
+const impactLastmodByRoute = new Map();
+const validLastmod = (value) => {
+  if (!value) return null;
+  const raw = String(value).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const parsed = Date.parse(raw);
+  return Number.isFinite(parsed) ? new Date(parsed).toISOString() : null;
+};
+const rememberImpactLastmod = (route, item) => {
+  const value = validLastmod(item?.lastReviewed || item?.updatedAt);
+  if (value) impactLastmodByRoute.set(route, value);
+};
+for (const item of impactDiscovery.projects ?? []) rememberImpactLastmod(`/impact/project/${item.slug}/`, item);
+for (const item of impactDiscovery.actors ?? []) rememberImpactLastmod(`/impact/actors/${item.slug}/`, item);
+for (const item of impactDiscovery.issues ?? []) rememberImpactLastmod(`/impact/issue/${item.slug}/`, item);
+for (const item of (impactDiscovery.solutions ?? []).filter((item) => item.indexable === true)) rememberImpactLastmod(`/impact/solution/${item.slug}/`, item);
+const impactChildDates = [...impactLastmodByRoute.values()].map((value) => Date.parse(value)).filter(Number.isFinite);
+if (impactChildDates.length) impactLastmodByRoute.set("/impact/", new Date(Math.max(...impactChildDates)).toISOString());
+
 const escapeXml = (value) => String(value)
   .replaceAll("&", "&amp;")
   .replaceAll("<", "&lt;")
@@ -59,7 +78,10 @@ const escapeXml = (value) => String(value)
   .replaceAll("'", "&apos;");
 
 const sitemapUrls = routes
-  .map((route) => `  <url><loc>${escapeXml(`${origin}${route}`)}</loc></url>`)
+  .map((route) => {
+    const lastmod = impactLastmodByRoute.get(route);
+    return `  <url><loc>${escapeXml(`${origin}${route}`)}</loc>${lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : ""}</url>`;
+  })
   .join("\n");
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls}\n</urlset>\n`;
@@ -71,7 +93,10 @@ fs.writeFileSync(path.join(publicDir, "sitemap.xml"), sitemap, "utf8");
 const impactRoutes = ["/impact/", ...impactSitemapRoutes(impactDiscovery)];
 if (origin === "https://4planet.org") {
   const impactXml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    + [...new Set(impactRoutes)].map((p) => '  <url><loc>' + escapeXml(origin + p) + '</loc></url>').join('\n')
+    + [...new Set(impactRoutes)].map((p) => {
+      const lastmod = impactLastmodByRoute.get(p);
+      return '  <url><loc>' + escapeXml(origin + p) + '</loc>' + (lastmod ? '<lastmod>' + escapeXml(lastmod) + '</lastmod>' : '') + '</url>';
+    }).join('\n')
     + '\n</urlset>\n';
   fs.writeFileSync(path.join(publicDir, "impact-sitemap.xml"), impactXml, "utf8");
 }
