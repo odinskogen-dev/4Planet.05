@@ -1,5 +1,31 @@
 import { test, expect } from "@playwright/test";
 
+test("DATA VALUE selector contract: duplicate accessible names require an owning form and exact textbox role", async ({ page }) => {
+  await page.setContent(`
+    <form class="food-generic-search" aria-label="Generic food">
+      <label for="generic-food-query">Generic food</label>
+      <input id="generic-food-query" />
+    </form>
+    <form class="fb-search" aria-label="Company">
+      <label for="company-query">Company</label>
+      <input id="company-query" />
+    </form>
+  `);
+
+  await expect(page.getByLabel("Generic food", { exact: true })).toHaveCount(2);
+  await expect(page.getByLabel("Company", { exact: true })).toHaveCount(2);
+
+  await expect(
+    page.locator(".food-generic-search").getByRole("textbox", { name: "Generic food", exact: true }),
+  ).toHaveCount(1);
+  await expect(
+    page.locator(".fb-search").getByRole("textbox", { name: "Company", exact: true }),
+  ).toHaveCount(1);
+  await expect(
+    page.locator(".missing-search").getByRole("textbox", { name: "Company", exact: true }),
+  ).toHaveCount(0);
+});
+
 const foodEnvelope = {
   source: { id: "open_food_facts", apiVersion: "2", schemaVersion: 1, licence: "ODbL" },
   request: { barcode: "7038010055652" },
@@ -84,7 +110,7 @@ test("DATA VALUE / FOOD: branded product can be explicitly joined to Matvaretabe
 
   const genericFoodSearch = page.locator(".food-generic-search");
   await expect(genericFoodSearch).toHaveCount(1);
-  await genericFoodSearch.getByLabel("Generic food", { exact: true }).fill("havregryn");
+  await genericFoodSearch.getByRole("textbox", { name: "Generic food", exact: true }).fill("havregryn");
   await genericFoodSearch.getByRole("button", { name: "Search Matvaretabellen", exact: true }).click();
   await expect(page.getByText("Havregryn", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /CONFIRM THIS REFERENCE/ }).click();
