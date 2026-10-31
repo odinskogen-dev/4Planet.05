@@ -105,7 +105,13 @@ function isProfilePathCandidate(pathname) {
 }
 
 function hasNonCanonicalIndexQuery(searchParams) {
-  return Array.from(searchParams.keys()).some((key) => /^(?:preview|draft)$/i.test(key));
+  // Form decoders commonly express repeated/structured fields as preview[] or
+  // draft[0]. Those are still preview/draft namespaces and must never inherit
+  // the clean profile's indexable review state. Ordinary tracking keys remain
+  // canonical-safe.
+  return Array.from(searchParams.keys()).some((key) =>
+    /^(?:preview|draft)(?:\[[^\]]*\])?$/i.test(key)
+  );
 }
 
 function missingSpeciesProfile(method) {
