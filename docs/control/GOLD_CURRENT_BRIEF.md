@@ -1,3 +1,63 @@
+# P51-ID-01 — CAMELCASE SENSITIVE-ALIAS PRIVACY BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `d249b36ce1054b1f822e914afdd92b4eb89a222c`
+
+## USER ARRIVES BECAUSE
+
+A person returning through 4PLANET ID needs a valid destination preserved without copying common camelCase credential or contact aliases into a server-visible return URL.
+
+## ONE THING TO UNDERSTAND
+
+Structural delimiter normalisation was already present, but camelCase token boundaries such as `accessToken` and `clientSecret` remained invisible to the existing underscore-aware sensitive-key classifier.
+
+## PRIMARY ACTION
+
+Split lower-case or numeric to upper-case query-key transitions before structural separator normalisation and the existing sensitive-key test.
+
+## SECONDARY DEPTH
+
+Preserve benign structured ATLAS, campaign and view keys unchanged.
+
+## P1 DOMINANT
+
+Fail-first on the exact rollback retained `next[accessToken]`; the corrected table removes all eight Gold-returned camelCase aliases while preserving every prior regression.
+
+## P2 ORIENTATION
+
+The exact-origin allowlist, bounded decoding, bracket/dot/hyphen normalisation, fragment removal and incomplete OAuth callback scrubbing remain unchanged.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold challenges camelCase and alias grammar, encoded/nested keys, benign deep links and telemetry boundaries on the immutable provider SHA.
+
+## P4 DEPTH
+
+Real account, recovery, tenant, origin-policy and 390/430/1440 plus WebKit validation remain separate Gold work and are not inferred from source tests.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that canonicalising punctuation also exposes word boundaries inside camelCase keys.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, the current sensitive-key classifier, identity contract and issue #169 receiver. Do not create an alias registry, second sanitizer or new identity service.
+
+## TRUTH BOUNDARY
+
+Synthetic source fixtures only. No real credentials, account action, session, tenant mutation, merge, deployment, LIVE use, cash or impact is claimed.
+
+## MOBILE-FIRST RISK
+
+No interface change. Mobile and WebKit browser validation remains required before any security release.
+
+## HUMAN SUCCESS
+
+A valid deep link returns safely while common camelCase credential and personal-contact aliases are removed before the return URL is embedded.
+
+---
+
 # P51-ID-01 — RETURN KEY GRAMMAR PRIVACY BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.

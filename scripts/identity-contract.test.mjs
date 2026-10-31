@@ -151,7 +151,7 @@ test("return sanitizer rejects sensitive query keys encoded through depth eight"
   }
 });
 
-test("return sanitizer rejects bracketed, dotted and alternate-delimiter sensitive keys", () => {
+test("return sanitizer rejects structured, camelCase and aliased sensitive keys", () => {
   const previousWindow = globalThis.window;
   globalThis.window = { location: { origin: "https://id.4planet.org" } };
   try {
@@ -161,6 +161,14 @@ test("return sanitizer rejects bracketed, dotted and alternate-delimiter sensiti
       "session[token_hash]",
       "user[email]",
       "access-token",
+      "next[accessToken]",
+      "session[refreshToken]",
+      "oauth.idToken",
+      "user[emailAddress]",
+      "contact[phoneNumber]",
+      "clientSecret",
+      "sessionToken",
+      "authorizationCode",
     ]) {
       const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
       target.searchParams.set(key, "SYNTHETIC_ONLY");
@@ -184,6 +192,7 @@ test("return sanitizer preserves benign structured deep-link keys", () => {
     target.searchParams.set("habitat[focus]", "kelp");
     target.searchParams.set("atlas.layer", "food");
     target.searchParams.set("utm-source", "network");
+    target.searchParams.set("view", "coastal");
     assert.equal(identityClient.safeReturnTo(target.href), target.href);
   } finally {
     if (previousWindow === undefined) delete globalThis.window;

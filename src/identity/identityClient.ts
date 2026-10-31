@@ -187,6 +187,7 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         return decoded;
       };
       const normalizeReturnKey = (input: string) => decodeForReturnInspection(input)
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
         .replace(/[^a-z0-9]+/gi, "_");
       const sensitiveKey = /(?:^|[_-])(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:$|[_-])/i;
       const emailValue = /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i;
