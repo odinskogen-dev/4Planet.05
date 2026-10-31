@@ -1,3 +1,63 @@
+# SPEC-GS-14 — MALFORMED RESERVED QUERY GRAMMAR FAIL-CLOSED — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `93d62a9666f06bb26c081bfedbaa19c3b1e7efbf`
+
+## USER ARRIVES BECAUSE
+
+A crawler or visitor can request an accepted species profile with a malformed preview or draft form key, and that request must never inherit the clean profile's indexability.
+
+## ONE THING TO UNDERSTAND
+
+Matching only complete bracket segments leaves truncated or malformed members of the same decoded `preview[` or `draft[` namespace outside the gate.
+
+## PRIMARY ACTION
+
+Treat the exact case-insensitive `preview` or `draft` key, and every decoded key beginning with either reserved root followed by `[`, as non-canonical.
+
+## SECONDARY DEPTH
+
+The real Worker GET+HEAD contract table-generates 52 reserved root/suffix combinations and seven benign controls while retaining all 57 accepted clean routes and sitemap behaviour.
+
+## P1 DOMINANT
+
+Fail-first proof reproduced HTTP 200 for the decoded malformed key `preview[broken`; the corrected grammar-level gate returns 404/noindex/no-canonical with empty HEAD parity.
+
+## P2 ORIENTATION
+
+This is a bounded decoded-key admission rule. It does not double-decode query text or classify unrelated words such as `previewer`, `drafting`, `draft_2` or `preViewMode` as reserved.
+
+## P3 ACTION / NEXT
+
+Independent Gold reruns the exact immutable SHA, challenges the full generated matrix, verifies benign controls and confirms the clean-route and sitemap zero-loss contract.
+
+## P4 DEPTH
+
+The generated grammar matrix replaces serial one-example regex patches and is retained for the 7-day recurrence check on 7 November 2026.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that syntactically incomplete bracket keys are unrelated to their reserved preview or draft namespace.
+
+## WHAT MUST BE REUSED
+
+Reuse the existing SPECIES Worker, current 57-slug preservation set, owning route/sitemap contract, cumulative Gold brief history and independent Gold receiver.
+
+## TRUTH BOUNDARY
+
+Source and local contract evidence only. No Worker invocation, deployment, public-route observation, Founder release, use, cash or ecological outcome is claimed.
+
+## MOBILE-FIRST RISK
+
+None introduced in product UI; this is a server-side query admission gate. Gold still retains browser and public-route release checks.
+
+## HUMAN SUCCESS
+
+Clean species URLs and benign query keys remain usable while every decoded preview/draft bracket namespace fails closed, including malformed and truncated forms.
+
+---
+
 # SPEC-GS-14 — NESTED QUERY FAMILY GOLD-HISTORY REPAIR — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / EXACT-PROVIDER QA IN PROGRESS / INDEPENDENT GOLD PENDING / RELEASE HOLD.
