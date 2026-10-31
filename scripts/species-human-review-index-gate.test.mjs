@@ -303,3 +303,17 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
   }
 });
 
+
+test("native SPECIES CI pins and runs this owning Worker regression", () => {
+  const workflow = readFileSync(
+    new URL("../.github/workflows/species-sitemap-hotfix-qa.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(workflow, /ref: \$\{\{ github\.sha \}\}/);
+  assert.match(workflow, /test "\$\(git rev-parse HEAD\)" = "\$GITHUB_SHA"/);
+  assert.match(workflow, /- scripts\/species-human-review-index-gate\.test\.mjs/);
+  assert.match(
+    workflow,
+    /node --test scripts\/species-human-review-index-gate\.test\.mjs scripts\/species-sitemap-safety\.test\.mjs/,
+  );
+});
