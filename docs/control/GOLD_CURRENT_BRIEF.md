@@ -1,3 +1,67 @@
+# P51-ID-01 — NESTED JSON UNICODE-ESCAPE PRIVACY BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `981ef914c8c06195101fd6f2ee990ad1b63d49da`
+
+## USER ARRIVES BECAUSE
+
+A person returning through 4PLANET ID needs an allowed destination preserved without copying credential-shaped fields hidden behind JSON Unicode escapes in nested string values into a server-visible return URL.
+
+## ONE THING TO UNDERSTAND
+
+The bounded raw field-name scan accepted only ASCII field tokens, so a valid nested JSON string such as `access\u0054oken` bypassed canonical key classification.
+
+## PRIMARY ACTION
+
+Parse nested JSON string leaves through the existing depth and node budget, then apply the existing canonical sensitive-key classifier to the decoded object keys; malformed strings retain the bounded fallback scan.
+
+## SECONDARY DEPTH
+
+Preserve benign escaped JSON keys, benign nested strings, exact-origin rules, fragment stripping and ordinary ATLAS/campaign controls.
+
+## TRUTH BOUNDARY
+
+Evidence is source-level only and uses synthetic values. No real credential, production leak, browser journey, account state or user behaviour was observed.
+
+## MOBILE-FIRST RISK
+
+The shared sanitizer has not yet been independently exercised at 390, 430 or 1440 widths or in WebKit; those remain Gold gates.
+
+## HUMAN SUCCESS
+
+A person can retain a benign escaped structured deep link while a credential-shaped escaped key is removed before identity handoff.
+
+## P1 DOMINANT
+
+Fail-first retained the nested Unicode-escaped access-token field; the corrected source removes access and refresh variants, preserves the escaped `habitat` control and passes the full 13/13 identity contract.
+
+## P2 ORIENTATION
+
+This is one bounded correction inside existing `safeReturnTo`; it does not address the separate over-encoding saturation finding or alter release authority.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold challenges JSON escape grammar, nested-string depth/node limits, malformed values, false positives and benign deep links on the immutable provider SHA.
+
+## P4 DEPTH
+
+Over-encoding saturation, browser 390/430/1440 plus WebKit, tenant/origin/recovery and Founder release remain open.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that an ASCII field-name scan is equivalent to parsing valid JSON string grammar.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, the canonical classifier, identity contract and issue #169 receiver. PR #512 remains separate and untouched.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `981ef914c8c06195101fd6f2ee990ad1b63d49da`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised or made by this change.
+
+---
+
 # P51-ID-01 — NESTED AND MALFORMED STRUCTURED-VALUE PRIVACY BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.

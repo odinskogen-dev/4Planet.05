@@ -217,6 +217,11 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
             return candidate.some((item) => inspect(item, depth + 1));
           }
           if (typeof candidate === "string") {
+            try {
+              return inspect(JSON.parse(candidate), depth + 1);
+            } catch {
+              // Malformed structured strings still receive the bounded field scan.
+            }
             return structuredTextHasSensitiveKey(candidate);
           }
           if (candidate && typeof candidate === "object") {
