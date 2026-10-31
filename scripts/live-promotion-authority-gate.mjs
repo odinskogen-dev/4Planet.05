@@ -15,7 +15,10 @@ const FOUNDER_LOGIN = 'odinskogen-dev';
 const FOUNDER_ID = 289761792;
 const REQUIRED_FOUNDER_ACTION = 'LIVE_DEPLOY';
 const REQUIRED_FOUNDER_TARGET_ROUTE = 'git:main';
+const CLOUDFLARE_PROJECT = '4planet-05';
+const CLOUDFLARE_PRODUCTION_ROUTE = 'https://4planet.org';
 const decisionRefPattern = /^https:\/\/github\.com\/odinskogen-dev\/4Planet\.05\/issues\/(\d+)#issuecomment-(\d+)$/;
+const cloudflareDeploymentRefPattern = /^https:\/\/api\.cloudflare\.com\/client\/v4\/accounts\/([0-9a-f]{32})\/pages\/projects\/4planet-05\/deployments\/([0-9a-f-]{36})$/;
 
 export function founderDecisionApiUrl(ref) {
   const match = String(ref || '').match(decisionRefPattern);
@@ -47,12 +50,51 @@ export function validateFounderDecisionReceipt({ receipt, ref, testKingSha }) {
   return { apiUrl, commentId, issuer: FOUNDER_LOGIN };
 }
 
+export function validateCloudflareProjectReceipt({ receipt, accountId }) {
+  const project = receipt?.success === true && receipt?.errors?.length === 0 ? receipt.result : null;
+  if (!project || project.name !== CLOUDFLARE_PROJECT) throw new Error('Cloudflare project receipt mismatch');
+  if (project.production_branch !== 'main') throw new Error('Cloudflare production branch is not main');
+  if (!Array.isArray(project.domains) || !project.domains.includes(new URL(CLOUDFLARE_PRODUCTION_ROUTE).host)) {
+    throw new Error('Cloudflare project receipt does not bind production route 4planet.org');
+  }
+  return { accountId, project: project.name, productionRoute: CLOUDFLARE_PRODUCTION_ROUTE };
+}
+
+export function cloudflareDeploymentApiUrl(ref, accountId) {
+  const match = String(ref || '').match(cloudflareDeploymentRefPattern);
+  if (!match || match[1] !== accountId) {
+    throw new Error('Cloudflare deployment reference is not a canonical authenticated 4planet-05 receipt');
+  }
+  return ref;
+}
+
+export function validateCloudflareDeploymentReceipt({ receipt, ref, accountId, expected }) {
+  const apiUrl = cloudflareDeploymentApiUrl(ref, accountId);
+  const match = apiUrl.match(cloudflareDeploymentRefPattern);
+  const deployment = receipt?.success === true && receipt?.errors?.length === 0 ? receipt.result : null;
+  if (!deployment || deployment.id !== match[2]) throw new Error('Cloudflare deployment receipt ID mismatch');
+  if (deployment.project_name !== CLOUDFLARE_PROJECT) throw new Error('Cloudflare deployment project mismatch');
+  if (deployment.environment !== expected.environment) throw new Error(`Cloudflare deployment environment mismatch: expected ${expected.environment}`);
+  if (deployment.latest_stage?.status !== 'success') throw new Error('Cloudflare deployment is not successful');
+  if (deployment.deployment_trigger?.metadata?.branch !== expected.branch) throw new Error(`Cloudflare deployment branch mismatch: expected ${expected.branch}`);
+  if (deployment.deployment_trigger?.metadata?.commit_hash !== expected.sha) throw new Error(`Cloudflare deployment artifact mismatch: expected ${expected.sha}`);
+  return { id: deployment.id, environment: deployment.environment, branch: expected.branch, sha: expected.sha };
+}
+
 async function fetchFounderDecisionReceipt(ref) {
   const apiUrl = founderDecisionApiUrl(ref);
   const headers = { Accept: 'application/vnd.github+json', 'User-Agent': '4planet-live-promotion-guard' };
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   const response = await fetch(apiUrl, { headers });
   if (!response.ok) throw new Error(`Founder decision receipt fetch failed: HTTP ${response.status}`);
+  return response.json();
+}
+
+async function fetchCloudflareReceipt(url, token) {
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+  });
+  if (!response.ok) throw new Error(`Cloudflare receipt fetch failed: HTTP ${response.status}`);
   return response.json();
 }
 
@@ -96,8 +138,43 @@ try {
 } catch (error) {
   fail(error instanceof Error ? error.message : String(error));
 }
-if (!manifest.rollbackRef || !String(manifest.rollbackRef).includes(manifest.priorLiveSha)) fail('rollbackRef does not bind priorLiveSha');
-if (!manifest.evidenceRef || !String(manifest.evidenceRef).trim()) fail('evidenceRef missing');
+const cloudflareAccountId = String(process.env.CLOUDFLARE_ACCOUNT_ID || '');
+const cloudflareToken = String(process.env.CLOUDFLARE_API_TOKEN || '');
+if (!/^[0-9a-f]{32}$/.test(cloudflareAccountId) || !cloudflareToken) fail('authenticated Cloudflare receipt access unavailable');
+let cloudflareProject;
+let candidateDeployment;
+let liveDeployment;
+let rollbackDeployment;
+try {
+  const projectUrl = `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/pages/projects/${CLOUDFLARE_PROJECT}`;
+  cloudflareProject = validateCloudflareProjectReceipt({
+    receipt: await fetchCloudflareReceipt(projectUrl, cloudflareToken),
+    accountId: cloudflareAccountId,
+  });
+  const candidateEvidenceUrl = cloudflareDeploymentApiUrl(manifest.candidateEvidenceRef, cloudflareAccountId);
+  const liveEvidenceUrl = cloudflareDeploymentApiUrl(manifest.evidenceRef, cloudflareAccountId);
+  const rollbackEvidenceUrl = cloudflareDeploymentApiUrl(manifest.rollbackRef, cloudflareAccountId);
+  candidateDeployment = validateCloudflareDeploymentReceipt({
+    receipt: await fetchCloudflareReceipt(candidateEvidenceUrl, cloudflareToken),
+    ref: candidateEvidenceUrl,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'preview', branch: 'king/test', sha: manifest.testKingSha },
+  });
+  liveDeployment = validateCloudflareDeploymentReceipt({
+    receipt: await fetchCloudflareReceipt(liveEvidenceUrl, cloudflareToken),
+    ref: liveEvidenceUrl,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'production', branch: 'main', sha: manifest.targetObservedSha },
+  });
+  rollbackDeployment = validateCloudflareDeploymentReceipt({
+    receipt: await fetchCloudflareReceipt(rollbackEvidenceUrl, cloudflareToken),
+    ref: rollbackEvidenceUrl,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'production', branch: 'main', sha: manifest.priorLiveSha },
+  });
+} catch (error) {
+  fail(error instanceof Error ? error.message : String(error));
+}
 if (!head) fail('cannot resolve exact checked-out SHA');
 if (branch && branch !== 'main' && process.env.ALLOW_PREPROMOTION_CHECK !== '1') fail(`LIVE guard may only authorise main; observed ${branch}`);
 
@@ -130,6 +207,11 @@ console.log(JSON.stringify({
   founderDecisionTargetRoute: REQUIRED_FOUNDER_TARGET_ROUTE,
   founderDecisionReceiptId: founderReceipt.commentId,
   founderDecisionIssuer: founderReceipt.issuer,
+  cloudflareProject: cloudflareProject.project,
+  cloudflareProductionRoute: cloudflareProject.productionRoute,
+  candidateDeployment,
+  liveDeployment,
+  rollbackDeployment,
   evidenceRef: manifest.evidenceRef,
   rollbackRef: manifest.rollbackRef
 }, null, 2));
