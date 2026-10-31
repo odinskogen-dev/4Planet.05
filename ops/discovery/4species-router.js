@@ -105,12 +105,13 @@ function isProfilePathCandidate(pathname) {
 }
 
 function hasNonCanonicalIndexQuery(searchParams) {
-  // Form decoders commonly express repeated/structured fields as preview[] or
-  // draft[0]. Those are still preview/draft namespaces and must never inherit
-  // the clean profile's indexable review state. Ordinary tracking keys remain
-  // canonical-safe.
+  // Form decoders commonly express structured fields as preview[],
+  // draft[0] or nested namespaces such as preview[0][mode]. Every complete
+  // bracket segment remains inside the reserved preview/draft namespace and
+  // must never inherit the clean profile's indexable review state. Ordinary
+  // tracking keys remain canonical-safe.
   return Array.from(searchParams.keys()).some((key) =>
-    /^(?:preview|draft)(?:\[[^\]]*\])?$/i.test(key)
+    /^(?:preview|draft)(?:\[[^\]]*\])*$/i.test(key)
   );
 }
 
