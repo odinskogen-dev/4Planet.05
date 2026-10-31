@@ -186,6 +186,8 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         }
         return decoded;
       };
+      const normalizeReturnKey = (input: string) => decodeForReturnInspection(input)
+        .replace(/[^a-z0-9]+/gi, "_");
       const sensitiveKey = /(?:^|[_-])(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:$|[_-])/i;
       const emailValue = /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i;
       const jwtValue = /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/;
@@ -196,7 +198,10 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         || jwtValue.test(inspectedPath)
         || embeddedCredential.test(inspectedPath)) return fallback;
       for (const [key, value] of [...url.searchParams]) {
-        const inspectedKey = decodeForReturnInspection(key);
+        // URLSearchParams decodes percent escapes but preserves structural key
+        // grammar. Collapse brackets, dots and alternate separators before the
+        // sensitive-key test so nested aliases cannot evade the same boundary.
+        const inspectedKey = normalizeReturnKey(key);
         const inspectedValue = decodeForReturnInspection(value);
         if (sensitiveKey.test(inspectedKey)
           || emailValue.test(inspectedValue)

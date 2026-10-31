@@ -151,6 +151,46 @@ test("return sanitizer rejects sensitive query keys encoded through depth eight"
   }
 });
 
+test("return sanitizer rejects bracketed, dotted and alternate-delimiter sensitive keys", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  try {
+    for (const key of [
+      "next[access_token]",
+      "auth.access_token",
+      "session[token_hash]",
+      "user[email]",
+      "access-token",
+    ]) {
+      const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
+      target.searchParams.set(key, "SYNTHETIC_ONLY");
+      assert.equal(
+        identityClient.safeReturnTo(target.href),
+        "https://4planetatlas.com/explore?habitat=kelp",
+        key
+      );
+    }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
+test("return sanitizer preserves benign structured deep-link keys", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  try {
+    const target = new URL("https://4planetatlas.com/explore");
+    target.searchParams.set("habitat[focus]", "kelp");
+    target.searchParams.set("atlas.layer", "food");
+    target.searchParams.set("utm-source", "network");
+    assert.equal(identityClient.safeReturnTo(target.href), target.href);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test("incomplete OAuth credential fragments are scrubbed before early return", async () => {
   const previousWindow = globalThis.window;
   const replacements = [];

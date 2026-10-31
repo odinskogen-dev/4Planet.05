@@ -1,3 +1,63 @@
+# P51-ID-01 — RETURN KEY GRAMMAR PRIVACY BOUNDARY — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `f624a6c2b128f440785f09fe5190d893a5b8a3b0`
+
+## USER ARRIVES BECAUSE
+
+A person returning through 4PLANET ID needs the chosen destination preserved without copying credential or personal-data aliases into a server-visible return URL.
+
+## ONE THING TO UNDERSTAND
+
+Repeated percent decoding was already bounded, but bracket, dot and alternate-delimiter key grammar could hide the same sensitive names from the existing classifier.
+
+## PRIMARY ACTION
+
+Normalise structural query-key separators before applying the existing sensitive-key boundary and remove matching parameters.
+
+## SECONDARY DEPTH
+
+Preserve benign structured ATLAS and campaign deep-link keys unchanged.
+
+## P1 DOMINANT
+
+Fail-first on the exact rollback retained `next[access_token]`, `auth.access_token`, `session[token_hash]`, `user[email]` and `access-token`; the corrected contract removes all five.
+
+## P2 ORIENTATION
+
+The existing exact-origin allowlist, fragment removal, eight-pass decode bound and OAuth callback scrubbing remain unchanged.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold challenges key grammar, nested encoding, benign deep links and the existing incomplete-fragment path on the immutable provider SHA.
+
+## P4 DEPTH
+
+Real account, recovery, tenant and cross-domain browser validation remain separate Gold work and are not inferred from this source contract.
+
+## WHAT CAN BE REMOVED
+
+Remove the assumption that decoded query-key text is already in a single canonical separator grammar.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, the current origin allowlist, identity contract and issue #169 receiver. Do not create another identity service or sanitizer.
+
+## TRUTH BOUNDARY
+
+Synthetic source fixtures only. No real credentials, account action, session, tenant mutation, merge, deployment, LIVE use, cash or impact is claimed.
+
+## MOBILE-FIRST RISK
+
+No interface change. Browser and tenant validation remains required before any security release.
+
+## HUMAN SUCCESS
+
+A valid deep link returns safely while credential or personal-data aliases are removed before the return URL is embedded.
+
+---
+
 # P51-OSLOFJORD-01 — PUBLIC GEOGRAPHY + OBSERVER PRIVACY BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / PROVIDER QA PENDING / INDEPENDENT SCIENCE-PRIVACY GOLD PENDING / RELEASE HOLD.
