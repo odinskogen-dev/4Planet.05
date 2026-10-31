@@ -76,6 +76,32 @@ test("rejects explicit permission denial", () => {
   assert.ok(result.reasons.includes("denied:sitePermissionRef"));
 });
 
+test("rejects exact or locator-grade geography inside the allowed public field", () => {
+  for (const publicGeography of [
+    "59.123, 10.456",
+    "geo:59.123,10.456",
+    "https://maps.example.invalid/?q=59.123,10.456",
+    "9FFW84J4+9R",
+  ]) {
+    const result = admitOslofjordFieldObservation({ ...completeObservation, publicGeography });
+    assert.equal(result.admitted, false, publicGeography);
+    assert.ok(result.reasons.includes("unsafe:publicGeography"), publicGeography);
+  }
+});
+
+test("requires a source-owned opaque observer reference and rejects direct PII", () => {
+  for (const observerRef of [
+    "private@example.invalid",
+    "+47 999 99 999",
+    "Odin Oddekalv",
+    "https://example.invalid/people/observer",
+  ]) {
+    const result = admitOslofjordFieldObservation({ ...completeObservation, observerRef });
+    assert.equal(result.admitted, false, observerRef);
+    assert.ok(result.reasons.includes("unsafe:observerRef"), observerRef);
+  }
+});
+
 test("projects an admitted record from the explicit ten-field schema", () => {
   const result = admitOslofjordFieldObservation(completeObservation);
   assert.equal(result.admitted, true);

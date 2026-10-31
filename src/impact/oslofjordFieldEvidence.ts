@@ -58,6 +58,10 @@ const ALLOWED_INPUT_KEYS = new Set<keyof OslofjordFieldObservationInput>([
   "limitations",
 ]);
 const PERMISSION_DENIAL = /^(?:denied|no[_ -]?permission|not[_ -]?granted|refused)$/i;
+const DECIMAL_COORDINATE_PAIR = /(?:^|[^0-9])[-+]?(?:[0-8]?\d(?:\.\d+)?|90(?:\.0+)?)\s*[,;/]\s*[-+]?(?:(?:1[0-7]\d|[0-9]?\d)(?:\.\d+)?|180(?:\.0+)?)(?:[^0-9]|$)/;
+const PRIVATE_GEOGRAPHY_MARKER = /(?:https?:\/\/|\bgeo:|\b(?:lat(?:itude)?|lon(?:gitude)?)\b|openstreetmap|maps?\.)/i;
+const PLUS_CODE = /\b[A-Z0-9]{4,8}\+[A-Z0-9]{2,3}\b/i;
+const OPAQUE_OBSERVER_REF = /^(?:observer|source-owned-observer)-(?:ref-)?[A-Za-z0-9][A-Za-z0-9._:-]{2,127}$/;
 
 export function admitOslofjordFieldObservation(
   candidate: OslofjordFieldObservationInput | Record<string, unknown>,
@@ -93,21 +97,35 @@ export function admitOslofjordFieldObservation(
     reasons.push("denied:sitePermissionRef");
   }
 
+  if (typeof raw.publicGeography === "string") {
+    const publicGeography = raw.publicGeography.trim();
+    if (
+      publicGeography.length > 160
+      || DECIMAL_COORDINATE_PAIR.test(publicGeography)
+      || PRIVATE_GEOGRAPHY_MARKER.test(publicGeography)
+      || PLUS_CODE.test(publicGeography)
+    ) reasons.push("unsafe:publicGeography");
+  }
+
+  if (typeof raw.observerRef === "string" && !OPAQUE_OBSERVER_REF.test(raw.observerRef.trim())) {
+    reasons.push("unsafe:observerRef");
+  }
+
   if (reasons.length > 0) return { admitted: false, reasons };
 
   return {
     admitted: true,
     record: {
-      recordId: raw.recordId as string,
+      recordId: (raw.recordId as string).trim(),
       observedAt: raw.observedAt as string,
-      siteRef: raw.siteRef as string,
-      publicGeography: raw.publicGeography as string,
-      sitePermissionRef: raw.sitePermissionRef as string,
-      methodRef: raw.methodRef as string,
-      sourceRef: raw.sourceRef as string,
-      observerRef: raw.observerRef as string,
-      observation: raw.observation as string,
-      limitations: [...(raw.limitations as string[])],
+      siteRef: (raw.siteRef as string).trim(),
+      publicGeography: (raw.publicGeography as string).trim(),
+      sitePermissionRef: (raw.sitePermissionRef as string).trim(),
+      methodRef: (raw.methodRef as string).trim(),
+      sourceRef: (raw.sourceRef as string).trim(),
+      observerRef: (raw.observerRef as string).trim(),
+      observation: (raw.observation as string).trim(),
+      limitations: (raw.limitations as string[]).map((limitation) => limitation.trim()),
       evidenceClass: "FIELD_OBSERVATION",
       claimBoundary: "OBSERVATION_ONLY_NO_DELIVERY_RECOVERY_CAUSALITY_OR_IMPACT",
     },
