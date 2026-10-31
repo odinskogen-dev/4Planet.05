@@ -1,0 +1,83 @@
+name: AXE Claude Dual Preview Browser QA
+on:
+  push:
+    branches:
+      - 'preview/axe-claude-home-20261031'
+    paths:
+      - '.github/workflows/axe-claude-preview-browser-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install Playwright and Chromium for isolated external browser proof
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Browser-proof both Cloudflare deployments on desktop and mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p preview-proof
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+          import fs from 'node:fs';
+          const targets=[
+            ['home','https://7852f09f.4planet-05.pages.dev/'],
+            ['living-home','https://668a1731.4planet-05.pages.dev/'],
+            ['orca','https://668a1731.4planet-05.pages.dev/journey/orca/']
+          ];
+          const viewports=[['desktop',1440,900],['mobile',390,844]];
+          const b=await chromium.launch({headless:true});
+          let bad=0;
+          const records=[];
+          try {
+            for(const [name,url] of targets){
+              for(const [screen,width,height] of viewports){
+                const page=await b.newPage({viewport:{width,height},reducedMotion:'reduce'});
+                const jsErrors=[];
+                page.on('pageerror', e => jsErrors.push(e.message));
+                try{
+                  const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+                  await page.locator('h1').first().waitFor({state:'visible',timeout:30000});
+                  await page.waitForTimeout(750);
+                  const state=await page.evaluate(()=>({
+                    title:document.title,heading:document.querySelector('h1')?.textContent||'',
+                    textLength:document.body?.innerText?.length||0,
+                    scrollWidth:document.documentElement.scrollWidth,
+                    viewport:window.innerWidth,
+                    chapters:document.querySelectorAll('.u-ch').length,
+                    hotSpots:document.querySelectorAll('#habitat .u-hs__dot').length,
+                    edges:document.querySelectorAll('#connections .u-edges li').length,
+                    noindex:!!document.querySelector('meta[name=robots][content*=noindex]')
+                  }));
+                  await page.screenshot({path:'preview-proof/'+name+'-'+screen+'.png',fullPage:false});
+                  const ok=response?.status()===200 && state.heading.length>4 && state.textLength>200 && state.scrollWidth<=state.viewport+16 && state.noindex && jsErrors.length===0 && (name!=='orca'||(state.chapters===8 && state.hotSpots===4 && state.edges===5));
+                  records.push({name,screen,url,http:response?.status(),...state,jsErrors,ok});
+                  console.log('PREVIEW_BROWSER',JSON.stringify(records.at(-1)));
+                  if(!ok)bad++;
+                }catch(e){bad++; records.push({name,screen,url,error:String(e),ok:false});console.error('PREVIEW_BROWSER_FAIL',name,screen,String(e));}
+                finally{await page.close();}
+              }
+            }
+          }finally{await b.close();}
+          fs.writeFileSync('preview-proof/results.json',JSON.stringify(records,null,2));
+          if(bad)process.exitCode=1;
+          NODE
+      - name: Preserve browser proof and real screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: axe-claude-both-preview-browser-proof
+          path: preview-proof/
+          retention-days: 7
