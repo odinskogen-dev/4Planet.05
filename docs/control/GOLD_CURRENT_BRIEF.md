@@ -1,3 +1,19 @@
+# SPEC-GS-14 — BRACKETED PREVIEW/DRAFT QUERY FAIL-CLOSED — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT GOLD PENDING / RELEASE HOLD.
+
+**ROOT CAUSE / FAILED TEST:** the route-index gate recognised only exact decoded `preview` and `draft` keys. Native `URLSearchParams` decodes bracketed form namespaces such as `preview%5B%5D` and `draft%5B0%5D` to `preview[]` and `draft[0]`; those variants inherited the clean accepted profile's indexable response. The fail-first real Worker GET returned HTTP 200 for `/orca?preview%5B%5D=1` instead of the required 404/noindex response.
+
+**BOUNDED CORRECTION:** classify exact preview/draft keys and one decoded bracket namespace as non-canonical index queries. The existing Worker path now fails closed for exact and bracketed preview/draft variants while preserving ordinary tracking queries, the 57 accepted clean profiles, canonical links and sitemap filtering.
+
+**PROOF SET:** the owning real Worker GET+HEAD matrix covers `preview=1`, `draft=1`, `preview[]=1`, `draft[0]=1`, benign UTM, all 57 clean routes, malformed/nested paths, `/explore` and the reviewed sitemap. Status, canonical Link, `x-robots-tag`, HTML robots and HEAD empty-body parity remain asserted.
+
+**TRUTH / RELEASE BOUNDARY:** this is source and local contract evidence only. It does not establish current public 4species.com behaviour, independent Gold, deployment, use or ecological outcome. No species profile or source declaration is added or deleted.
+
+**DOOR CLASS / ROLLBACK:** reversible HEIR-only router/test correction. Base and rollback are `king/test@7a513c3e046cbeaad01ea665abdb2814d6240c1d`.
+
+**MAKER ≠ JUDGE:** Factory returns an immutable candidate. Independent Gold must retest the exact SHA and deployed route before any release claim; Founder authority remains separate.
+
 # P51-SHIP-01 — CURRENT CANONICAL LIVE BINDING 15 — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT GOLD PENDING / RELEASE HOLD.
