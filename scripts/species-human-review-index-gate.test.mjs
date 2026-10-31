@@ -21,6 +21,15 @@ const sourcedProfile = (slug, review = "DRAFT") => ({
   provenance: { review, writtenBy: "GPT draft for 4PLANET" }
 });
 
+const RESERVED_QUERY_ROOTS = ["preview", "draft", "Preview", "DRAFT"];
+const RESERVED_QUERY_SUFFIXES = [
+  "", "[]", "[0]", "[meta][flag]", "[broken", "[0", "[[",
+  "[]x", "[x]tail", "[x][", "[x]]", "[x][0", "[0][mode",
+];
+const BENIGN_QUERY_KEYS = [
+  "previewer", "drafting", "xpreview", "utm_source", "ref", "draft_2", "preViewMode",
+];
+
 const signedPhoto = {
   url: "https://4species.com/assets/species/approved/test-animal.jpg",
   sourcePage: "https://example.org/photos/test-animal",
@@ -231,6 +240,28 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
       assert.equal(benignQuery.headers.get("link"), '<https://4species.com/orca>; rel="canonical"');
       assert.equal(benignQuery.headers.get("x-robots-tag"), null);
 
+      for (const key of BENIGN_QUERY_KEYS) {
+        const query = new URLSearchParams([[key, "1"]]).toString();
+        const response = await speciesWorker.fetch(new Request(`https://4species.com/orca?${query}`, { method }));
+        assert.equal(response.status, 200, `${method} benign key ${key}`);
+        assert.equal(response.headers.get("link"), '<https://4species.com/orca>; rel="canonical"', `${method} benign key ${key} canonical`);
+        assert.equal(response.headers.get("x-robots-tag"), null, `${method} benign key ${key} robots`);
+      }
+
+      for (const root of RESERVED_QUERY_ROOTS) {
+        for (const suffix of RESERVED_QUERY_SUFFIXES) {
+          const key = `${root}${suffix}`;
+          const query = new URLSearchParams([[key, "1"]]).toString();
+          const response = await speciesWorker.fetch(new Request(`https://4species.com/orca?${query}`, { method }));
+          assert.equal(response.status, 404, `${method} reserved key ${key}`);
+          assert.equal(response.headers.get("link"), null, `${method} reserved key ${key} canonical`);
+          assert.match(response.headers.get("x-robots-tag") || "", /noindex/, `${method} reserved key ${key} robots`);
+          const body = await response.text();
+          if (method === "HEAD") assert.equal(body, "", `${method} reserved key ${key} body`);
+          else assert.match(body, /<meta name="robots" content="noindex,nofollow,noarchive">/, `${method} reserved key ${key} HTML robots`);
+        }
+      }
+
       const trailingSlash = await speciesWorker.fetch(new Request("https://4species.com/orca/", { method, redirect: "manual" }));
       assert.equal(trailingSlash.status, 308, `${method} trailing slash`);
       assert.equal(trailingSlash.headers.get("location"), "https://4species.com/orca");
@@ -239,13 +270,6 @@ test("real worker GET and HEAD fail closed for preview and nested routes without
       assert.equal(await trailingSlash.text(), "", `${method} trailing slash body`);
 
       for (const path of [
-        "/orca?preview=1",
-        "/orca?draft=1",
-        "/orca?preview%5B%5D=1",
-        "/orca?draft%5B0%5D=1",
-        "/orca?preview%5B0%5D%5Bmode%5D=1",
-        "/orca?draft%5B%5D%5B%5D=1",
-        "/orca?preview%5Bmeta%5D%5Bflag%5D=1",
         "/orca/unknown",
         "/unknown/path",
         "//orca",
