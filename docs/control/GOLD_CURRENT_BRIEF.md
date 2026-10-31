@@ -1,3 +1,67 @@
+# P51-ID-01 — MALFORMED UNICODE, ENCODING SATURATION AND NATIVE OAUTH CARRIER — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `212519968088b18a2383f75894ae725ebea5e328`
+
+## USER ARRIVES BECAUSE
+
+A person needs a benign 4PLANET ID return destination preserved without malformed structured fields or repeatedly encoded credential keys reaching a server-visible URL, and the owning provider carrier must execute the real compiled sanitizer.
+
+## ONE THING TO UNDERSTAND
+
+The malformed fallback read only ASCII field tokens, the decoder silently stopped after eight passes, and the OAuth contract evaluated regex-edited TypeScript with `new Function` instead of supported transpilation.
+
+## PRIMARY ACTION
+
+Decode quoted JSON field tokens within the existing inspection budget, decode return components for at most 32 passes with explicit saturation, fail closed on saturated query keys, and import the TypeScript-transpiled identity module in the OAuth contract.
+
+## SECONDARY DEPTH
+
+Preserve valid nested JSON handling, malformed ASCII-key protection, benign escaped `habitat`, benign 8/9/10/12-wrap keys, exact-origin rules and existing identity regressions.
+
+## TRUTH BOUNDARY
+
+Evidence is exact-source native test evidence using synthetic values. No real credential, production leak, browser journey, account state or user behaviour was observed.
+
+## MOBILE-FIRST RISK
+
+The shared sanitizer has not yet been independently exercised at 390, 430 or 1440 widths or in WebKit; those remain Gold gates.
+
+## HUMAN SUCCESS
+
+A person can retain a benign deep link while malformed escaped credential fields, deeply encoded credential aliases and saturated ambiguous keys are removed before identity handoff.
+
+## P1 DOMINANT
+
+Fail-first identity was 12/14 and OAuth 4/5 with a TypeScript syntax error; corrected identity plus OAuth contracts pass 19/19, including malformed escaped access/refresh keys, 8/9/10/12 wraps, explicit 40-wrap saturation and benign controls.
+
+## P2 ORIENTATION
+
+This remains one bounded correction in existing `safeReturnTo` and its owning carrier; it does not alter origins, identity services or release authority.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold reruns exact-SHA native identity, OAuth and P0 carriers, then challenges JSON escape grammar, saturation, benign keys and rollback.
+
+## P4 DEPTH
+
+Browser 390/430/1440 plus WebKit, tenant/origin/recovery, finance-origin decision and Founder release remain open.
+
+## WHAT CAN BE REMOVED
+
+Remove regex-edited TypeScript execution and the assumption that a silent decode cap is a security boundary.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, TypeScript transpilation already used by the identity contract, issue #169 and the current provider workflows. PR #512 remains separate and untouched.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `212519968088b18a2383f75894ae725ebea5e328`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised or made by this change.
+
+---
+
 # P51-ID-01 — NESTED JSON UNICODE-ESCAPE PRIVACY BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.

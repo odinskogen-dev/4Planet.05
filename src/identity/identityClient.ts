@@ -173,19 +173,25 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       // return_to appears inside a server-visible URL. Never pass OAuth codes,
       // session credentials, personal contact details or token-bearing values.
       // Preserve non-sensitive ATLAS deep-link state and campaign parameters.
-      const decodeForReturnInspection = (input: string) => {
+      const inspectReturnEncoding = (input: string) => {
         let decoded = input;
-        for (let pass = 0; pass < 8; pass += 1) {
+        for (let pass = 0; pass < 32; pass += 1) {
           try {
             const next = decodeURIComponent(decoded.replace(/\+/g, "%20"));
-            if (next === decoded) break;
+            if (next === decoded) return { decoded, saturated: false };
             decoded = next;
           } catch {
-            break;
+            return { decoded, saturated: false };
           }
         }
-        return decoded;
+        try {
+          const next = decodeURIComponent(decoded.replace(/\+/g, "%20"));
+          return { decoded, saturated: next !== decoded };
+        } catch {
+          return { decoded, saturated: false };
+        }
       };
+      const decodeForReturnInspection = (input: string) => inspectReturnEncoding(input).decoded;
       const normalizeReturnKey = (input: string) => decodeForReturnInspection(input)
         .replace(/([A-Z])([A-Z][a-z])/g, "$1_$2")
         .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
@@ -196,7 +202,16 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       const embeddedCredential = /(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:["']?)\s*[:=]/i;
       const structuredTextHasSensitiveKey = (input: string) => {
         let inspected = 0;
-        for (const match of input.matchAll(/(?:^|[{\[,]\s*)["']?([-A-Za-z0-9_.\[\]]{1,128})["']?\s*:/g)) {
+        for (const match of input.matchAll(/(?:^|[{\[,]\s*)"((?:\\(?:["\\/bfnrt]|u[0-9a-f]{4})|[^"\\]){1,512})"\s*:/gi)) {
+          inspected += 1;
+          if (inspected > 256) return true;
+          try {
+            if (sensitiveKey.test(normalizeReturnKey(JSON.parse(`"${match[1]}"`)))) return true;
+          } catch {
+            return true;
+          }
+        }
+        for (const match of input.matchAll(/(?:^|[{\[,]\s*)'?([-A-Za-z0-9_.\[\]]{1,128})'?\s*:/g)) {
           inspected += 1;
           if (inspected > 256 || sensitiveKey.test(normalizeReturnKey(match[1]))) return true;
         }
@@ -241,9 +256,11 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         // URLSearchParams decodes percent escapes but preserves structural key
         // grammar. Collapse brackets, dots and alternate separators before the
         // sensitive-key test so nested aliases cannot evade the same boundary.
-        const inspectedKey = normalizeReturnKey(key);
+        const keyEncoding = inspectReturnEncoding(key);
+        const inspectedKey = normalizeReturnKey(keyEncoding.decoded);
         const inspectedValue = decodeForReturnInspection(value);
-        if (sensitiveKey.test(inspectedKey)
+        if (keyEncoding.saturated
+          || sensitiveKey.test(inspectedKey)
           || emailValue.test(inspectedValue)
           || jwtValue.test(inspectedValue)
           || embeddedCredential.test(inspectedValue)

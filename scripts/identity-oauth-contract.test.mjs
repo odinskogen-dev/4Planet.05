@@ -1,9 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 
 const app = readFileSync(new URL("../src/pages/identity/IdentityApp.tsx", import.meta.url), "utf8");
 const client = readFileSync(new URL("../src/identity/identityClient.ts", import.meta.url), "utf8");
+const transpiledClient = ts.transpileModule(client, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  fileName: "identityClient.ts",
+}).outputText;
+const identityClient = await import(
+  `data:text/javascript;base64,${Buffer.from(transpiledClient).toString("base64")}`
+);
 
 test("Google OAuth on 4PLANET ID has exactly one browser redirect", () => {
   const start = app.indexOf("async function google()");
@@ -56,18 +64,10 @@ test("Google return never waits on profile hydration or loses early auth events"
 });
 
 test("return_to never forwards OAuth secrets or contact details to the identity host", () => {
-  const match = client.match(/export function safeReturnTo\([^\n]+\) \{([\s\S]*?)\n\}\n\nexport function identityLoginUrl/);
-  assert.ok(match, "safeReturnTo implementation should be testable");
-  // Evaluate this bounded helper only, with a known, fixed site origin.
-  const executableBody = match[1].replace("(input: string)", "(input)");
-  const safeReturnTo = new Function(
-    "window",
-    "TRUSTED_RETURN_ORIGINS",
-    'return function safeReturnTo(value, fallback = "https://4planet.org/") {' + executableBody + '}',
-  )(
-    { location: { origin: "https://4planet.org" } },
-    new Set(["https://4planet.org", "https://4planetatlas.com"]),
-  );
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://4planet.org" } };
+  const safeReturnTo = identityClient.safeReturnTo;
+  try {
   assert.equal(
     safeReturnTo("https://4planetatlas.com/atlas?m=OCE4N&l=whales&z=3.1#access_token=private"),
     "https://4planetatlas.com/atlas?m=OCE4N&l=whales&z=3.1",
@@ -84,4 +84,8 @@ test("return_to never forwards OAuth secrets or contact details to the identity 
   assert.equal(safeReturnTo("https://4planet.org/share/person%2540example.org"), "https://4planet.org/");
   assert.equal(safeReturnTo("https://4planet.org/atlas?next=access_token%253Dsecret&m=PLANET"), "https://4planet.org/atlas?m=PLANET");
   assert.equal(safeReturnTo("https://malicious.example/?next=https://4planet.org/"), "https://4planet.org/");
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
 });

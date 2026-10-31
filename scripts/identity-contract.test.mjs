@@ -151,6 +151,37 @@ test("return sanitizer rejects sensitive query keys encoded through depth eight"
   }
 });
 
+test("return sanitizer fails closed on saturated credential-key encoding", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  const wrappedSeparator = (key, wraps) => {
+    let encoded = key;
+    for (let index = 0; index < wraps; index += 1) encoded = encoded.replace(/%/g, "%25");
+    return encoded;
+  };
+  try {
+    for (const wraps of [8, 9, 10, 12]) {
+      for (const key of ["access%5Ftoken", "refresh%5Ftoken"]) {
+        const target = `https://4planetatlas.com/explore?habitat=kelp&${wrappedSeparator(key, wraps)}=SYNTHETIC_ONLY`;
+        assert.equal(
+          identityClient.safeReturnTo(target),
+          "https://4planetatlas.com/explore?habitat=kelp",
+          `${key} at ${wraps} wraps`
+        );
+      }
+      const benign = `https://4planetatlas.com/explore?${wrappedSeparator("habi%74at", wraps)}=kelp`;
+      assert.equal(identityClient.safeReturnTo(benign), benign, `benign key at ${wraps} wraps`);
+    }
+    for (const key of ["access%5Ftoken", "refresh%5Ftoken"]) {
+      const saturated = `https://4planetatlas.com/explore?habitat=kelp&${wrappedSeparator(key, 40)}=SYNTHETIC_ONLY`;
+      assert.equal(identityClient.safeReturnTo(saturated), "https://4planetatlas.com/explore?habitat=kelp", `${key} saturated`);
+    }
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test("return sanitizer rejects structured, camelCase and aliased sensitive keys", () => {
   const previousWindow = globalThis.window;
   globalThis.window = { location: { origin: "https://id.4planet.org" } };
@@ -206,6 +237,8 @@ test("return sanitizer rejects structured credential values", () => {
       JSON.stringify([{ meta: JSON.stringify({ refreshToken: "SYNTHETIC_ONLY" }) }]),
       JSON.stringify({ meta: '{"access\\u0054oken":"SYNTHETIC_ONLY"}' }),
       JSON.stringify([{ meta: '{"refresh\\u0054oken":"SYNTHETIC_ONLY"}' }]),
+      '{"access\\u0054oken":"SYNTHETIC_ONLY"',
+      '{"refresh\\u0054oken":"SYNTHETIC_ONLY"',
       '{"accessToken":"SYNTHETIC_ONLY"',
     ]) {
       const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
@@ -225,6 +258,9 @@ test("return sanitizer rejects structured credential values", () => {
     const benignEscapedString = new URL("https://4planetatlas.com/explore?habitat=kelp");
     benignEscapedString.searchParams.set("payload", JSON.stringify({ meta: '{"habi\\u0074at":"kelp"}' }));
     assert.equal(identityClient.safeReturnTo(benignEscapedString.href), benignEscapedString.href);
+    const benignMalformedEscaped = new URL("https://4planetatlas.com/explore?habitat=kelp");
+    benignMalformedEscaped.searchParams.set("payload", '{"habi\\u0074at":"kelp"');
+    assert.equal(identityClient.safeReturnTo(benignMalformedEscaped.href), benignMalformedEscaped.href);
   } finally {
     if (previousWindow === undefined) delete globalThis.window;
     else globalThis.window = previousWindow;
