@@ -1,3 +1,67 @@
+# P51-ID-01 — SEPARATED CREDENTIAL-VALUE GRAMMAR — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `4777d48f3e3be43ed39e53d13c78bbd4d6cea6d9`
+
+## USER ARRIVES BECAUSE
+
+A person needs benign deep links preserved without credential-shaped query values surviving when field words use plus, space, dot or hyphen separators.
+
+## ONE THING TO UNDERSTAND
+
+The credential-value classifier recognised underscore aliases but not equivalent separated spellings such as `access+token=`.
+
+## PRIMARY ACTION
+
+Use one bounded separator grammar for embedded credential field names while leaving the existing origin, saturation and structured-value boundaries unchanged.
+
+## SECONDARY DEPTH
+
+Reject plus, encoded-plus, space, dot and hyphen credential aliases and retain a benign `atlas map=kelp` control.
+
+## TRUTH BOUNDARY
+
+Evidence uses synthetic exact-source fixtures. No real credential, browser session, production leak, account state or user behaviour was observed.
+
+## MOBILE-FIRST RISK
+
+Independent WebKit and 390/430/1440 checks remain required.
+
+## HUMAN SUCCESS
+
+Ordinary ATLAS state survives while separated credential field names are removed before identity handoff.
+
+## P1 DOMINANT
+
+Fail-first identity was 15/16 because `access+token=SYNTHETIC_ONLY` survived; the corrected exact-source contract passes all 16 tests.
+
+## P2 ORIENTATION
+
+This is one classifier correction inside existing `safeReturnTo`; it creates no auth service or origin.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold reruns the immutable SHA and challenges separator false positives, browser engines and rollback.
+
+## P4 DEPTH
+
+Native provider workflow, browser, tenant/origin/recovery, finance-origin decision and Founder release remain open.
+
+## WHAT CAN BE REMOVED
+
+Remove duplicated credential spellings from callers; one classifier owns the grammar.
+
+## WHAT MUST BE REUSED
+
+Reuse `safeReturnTo`, current identity/OAuth contracts, issue #169 and existing provider workflows.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `4777d48f3e3be43ed39e53d13c78bbd4d6cea6d9`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised.
+
+---
+
 # P51-ID-01 — CONSISTENT URL-COMPONENT SATURATION BOUNDARY — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
