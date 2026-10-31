@@ -4,10 +4,33 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { validateFounderDecisionReceipt } from './live-promotion-authority-gate.mjs';
+import {
+  validateCloudflareDeploymentReceipt,
+  validateCloudflareProjectReceipt,
+  validateFounderDecisionReceipt,
+} from './live-promotion-authority-gate.mjs';
 
 const gatePath = path.resolve('scripts/live-promotion-authority-gate.mjs');
 const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+
+const cloudflareAccountId = 'a'.repeat(32);
+const candidateSha = 'b'.repeat(40);
+const deploymentId = '11111111-2222-4333-8444-555555555555';
+const deploymentRef = `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/pages/projects/4planet-05/deployments/${deploymentId}`;
+
+function cloudflareDeployment({ environment = 'preview', branch = 'king/test', sha = candidateSha } = {}) {
+  return {
+    success: true,
+    errors: [],
+    result: {
+      id: deploymentId,
+      project_name: '4planet-05',
+      environment,
+      latest_stage: { status: 'success' },
+      deployment_trigger: { metadata: { branch, commit_hash: sha } },
+    },
+  };
+}
 
 function fixture() {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), '4planet-release-gate-'));
@@ -68,6 +91,45 @@ test('accepts an unedited action-specific receipt from the expected Founder acco
     body: `4PLANET FOUNDER RELEASE APPROVED\nSTATUS: APPROVED\nACTION: LIVE_DEPLOY\nTARGET_ROUTE: git:main\nTEST_KING_SHA: ${testKingSha}`,
   };
   assert.equal(validateFounderDecisionReceipt({ receipt, ref, testKingSha }).commentId, 123456);
+});
+
+test('rejects fabricated rollback and evidence strings without an authenticated Cloudflare deployment receipt', () => {
+  assert.throws(() => validateCloudflareDeploymentReceipt({
+    receipt: { success: true, errors: [], result: { id: deploymentId } },
+    ref: `https://example.invalid/unverified/${'c'.repeat(40)}`,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'production', branch: 'main', sha: 'c'.repeat(40) },
+  }), /not a canonical authenticated 4planet-05 receipt/);
+});
+
+test('accepts authenticated project and exact candidate deployment receipts', () => {
+  assert.deepEqual(validateCloudflareProjectReceipt({
+    receipt: {
+      success: true,
+      errors: [],
+      result: { name: '4planet-05', production_branch: 'main', domains: ['4planet.org', '4planet-05.pages.dev'] },
+    },
+    accountId: cloudflareAccountId,
+  }), {
+    accountId: cloudflareAccountId,
+    project: '4planet-05',
+    productionRoute: 'https://4planet.org',
+  });
+  assert.deepEqual(validateCloudflareDeploymentReceipt({
+    receipt: cloudflareDeployment(),
+    ref: deploymentRef,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'preview', branch: 'king/test', sha: candidateSha },
+  }), { id: deploymentId, environment: 'preview', branch: 'king/test', sha: candidateSha });
+});
+
+test('rejects a genuine Cloudflare receipt from the wrong environment', () => {
+  assert.throws(() => validateCloudflareDeploymentReceipt({
+    receipt: cloudflareDeployment({ environment: 'production' }),
+    ref: deploymentRef,
+    accountId: cloudflareAccountId,
+    expected: { environment: 'preview', branch: 'king/test', sha: candidateSha },
+  }), /environment mismatch: expected preview/);
 });
 
 test('rejects an arbitrary or unresolvable Founder decision reference even with a matching self-declared SHA', () => {
