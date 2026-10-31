@@ -57,7 +57,11 @@ export function validateCloudflareProjectReceipt({ receipt, accountId }) {
   if (!Array.isArray(project.domains) || !project.domains.includes(new URL(CLOUDFLARE_PRODUCTION_ROUTE).host)) {
     throw new Error('Cloudflare project receipt does not bind production route 4planet.org');
   }
-  return { accountId, project: project.name, productionRoute: CLOUDFLARE_PRODUCTION_ROUTE };
+  const canonicalDeploymentId = project.canonical_deployment?.id;
+  if (typeof canonicalDeploymentId !== 'string' || !/^[0-9a-f-]{36}$/i.test(canonicalDeploymentId)) {
+    throw new Error('Cloudflare canonical production deployment is missing or invalid');
+  }
+  return { accountId, project: project.name, productionRoute: CLOUDFLARE_PRODUCTION_ROUTE, canonicalDeploymentId };
 }
 
 export function cloudflareDeploymentApiUrl(ref, accountId) {
@@ -79,6 +83,14 @@ export function validateCloudflareDeploymentReceipt({ receipt, ref, accountId, e
   if (deployment.deployment_trigger?.metadata?.branch !== expected.branch) throw new Error(`Cloudflare deployment branch mismatch: expected ${expected.branch}`);
   if (deployment.deployment_trigger?.metadata?.commit_hash !== expected.sha) throw new Error(`Cloudflare deployment artifact mismatch: expected ${expected.sha}`);
   return { id: deployment.id, environment: deployment.environment, branch: expected.branch, sha: expected.sha };
+}
+
+export function validateCurrentLiveDeployment({ project, liveDeployment }) {
+  if (!project?.canonicalDeploymentId) throw new Error('Cloudflare canonical production deployment is missing');
+  if (liveDeployment?.id !== project.canonicalDeploymentId) {
+    throw new Error('Purported LIVE deployment is not the current canonical production deployment');
+  }
+  return liveDeployment;
 }
 
 async function fetchFounderDecisionReceipt(ref) {
@@ -166,6 +178,7 @@ try {
     accountId: cloudflareAccountId,
     expected: { environment: 'production', branch: 'main', sha: manifest.targetObservedSha },
   });
+  liveDeployment = validateCurrentLiveDeployment({ project: cloudflareProject, liveDeployment });
   rollbackDeployment = validateCloudflareDeploymentReceipt({
     receipt: await fetchCloudflareReceipt(rollbackEvidenceUrl, cloudflareToken),
     ref: rollbackEvidenceUrl,
