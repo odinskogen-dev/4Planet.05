@@ -252,6 +252,32 @@ test("return sanitizer rejects separated credential field names inside query val
   }
 });
 
+test("return sanitizer canonicalises bracketed credential fields inside query values", () => {
+  const previousWindow = globalThis.window;
+  globalThis.window = { location: { origin: "https://id.4planet.org" } };
+  try {
+    for (const credential of [
+      "access[token]=SYNTHETIC_ONLY",
+      "refresh[token]:SYNTHETIC_ONLY",
+      "client[secret]=SYNTHETIC_ONLY",
+    ]) {
+      const target = new URL("https://4planetatlas.com/explore?habitat=kelp");
+      target.searchParams.set("next", credential);
+      assert.equal(
+        identityClient.safeReturnTo(target.href),
+        "https://4planetatlas.com/explore?habitat=kelp",
+        credential
+      );
+    }
+    const benign = new URL("https://4planetatlas.com/explore?habitat=kelp");
+    benign.searchParams.set("next", "habitat[zone]=kelp");
+    assert.equal(identityClient.safeReturnTo(benign.href), benign.href);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test("return sanitizer rejects structured, camelCase and aliased sensitive keys", () => {
   const previousWindow = globalThis.window;
   globalThis.window = { location: { origin: "https://id.4planet.org" } };

@@ -1,3 +1,67 @@
+# P51-ID-01 — CANONICAL EMBEDDED-VALUE FIELD RULE — 31 OCTOBER 2026
+
+**STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.
+
+**ROLLBACK:** `26f2b0b616226a1bf9b66a90e4236a897af2b21f`
+
+## USER ARRIVES BECAUSE
+
+A person needs safe deep links without credential fields surviving through yet another separator spelling.
+
+## ONE THING TO UNDERSTAND
+
+Six hours of escaped-error review showed repeated alias patches because embedded values maintained a second credential grammar instead of reusing the canonical key classifier.
+
+## PRIMARY ACTION
+
+Extract bounded field names from embedded values, canonicalise them with `normalizeReturnKey`, and judge them with the existing `sensitiveKey` rule.
+
+## SECONDARY DEPTH
+
+Reject bracketed access, refresh and client-secret fields while preserving benign bracketed habitat state.
+
+## TRUTH BOUNDARY
+
+Evidence uses synthetic exact-source fixtures. No real credential, browser session, production leak, account state or user behaviour was observed.
+
+## MOBILE-FIRST RISK
+
+Independent WebKit and 390/430/1440 checks remain required.
+
+## HUMAN SUCCESS
+
+Benign deep-link state survives while equivalent credential field grammars share one fail-closed decision.
+
+## P1 DOMINANT
+
+Fail-first identity was 16/17 because `access[token]=SYNTHETIC_ONLY` survived; the corrected contract passes all 17 tests.
+
+## P2 ORIENTATION
+
+This removes one duplicated classifier inside existing `safeReturnTo`; it creates no auth service or origin.
+
+## P3 ACTION / NEXT
+
+Independent Identity/Security Gold reruns the immutable SHA and challenges field extraction bounds, false positives, browser engines and rollback.
+
+## P4 DEPTH
+
+Native provider workflow, browser, tenant/origin/recovery, finance-origin decision and Founder release remain open.
+
+## WHAT CAN BE REMOVED
+
+Remove bespoke embedded credential alias lists; canonical key classification is the single rule.
+
+## WHAT MUST BE REUSED
+
+Reuse `normalizeReturnKey`, `sensitiveKey`, `safeReturnTo`, current contracts, issue #169 and provider workflows.
+
+## ROLLBACK / RELEASE BOUNDARY
+
+Rollback is exact parent `26f2b0b616226a1bf9b66a90e4236a897af2b21f`. No merge, deploy, release, account action, LIVE, use, cash or impact claim is authorised.
+
+---
+
 # P51-ID-01 — SEPARATED CREDENTIAL-VALUE GRAMMAR — 31 OCTOBER 2026
 
 **STATUS:** FACTORY CODE FIXED / LOCAL QA PASS / INDEPENDENT IDENTITY-SECURITY GOLD PENDING / RELEASE HOLD.

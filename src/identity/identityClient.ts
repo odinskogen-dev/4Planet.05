@@ -199,11 +199,16 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
       const sensitiveKey = /(?:^|[_-])(?:access_token|refresh_token|id_token|token_hash|session_token|authorization_code|authorization_id|auth_code|client_secret|code|state|password|secret|email|phone|jwt|api_key|apikey|otp)(?:$|[_-])/i;
       const emailValue = /\b[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}\b/i;
       const jwtValue = /eyJ[A-Za-z0-9_-]{12,}\.[A-Za-z0-9_-]{12,}/;
-      const credentialSeparator = "[\\s+._-]*";
-      const embeddedCredential = new RegExp(
-        `(?:access${credentialSeparator}token|refresh${credentialSeparator}token|id${credentialSeparator}token|token${credentialSeparator}hash|session${credentialSeparator}token|authorization${credentialSeparator}(?:code|id)|auth${credentialSeparator}code|client${credentialSeparator}secret|code|state|password|secret|email|phone|jwt|api${credentialSeparator}key|otp)(?:["']?)\\s*[:=]`,
-        "i"
-      );
+      const embeddedCredentialField = /([a-z][a-z0-9+._\s[\]-]{0,128})(?:["']?)\s*[:=]/gi;
+      const valueHasEmbeddedCredential = (input: string) => {
+        let inspected = 0;
+        for (const match of input.matchAll(embeddedCredentialField)) {
+          inspected += 1;
+          if (inspected > 64) return true;
+          if (sensitiveKey.test(normalizeReturnKey(match[1]))) return true;
+        }
+        return false;
+      };
       const structuredTextHasSensitiveKey = (input: string) => {
         let inspected = 0;
         for (const match of input.matchAll(/(?:^|[{\[,]\s*)"((?:\\(?:["\\/bfnrt]|u[0-9a-f]{4})|[^"\\]){1,512})"\s*:/gi)) {
@@ -257,7 +262,7 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
         || /^\/(?:auth(?:\/|$)|oauth(?:\/|$))/i.test(inspectedPath)
         || emailValue.test(inspectedPath)
         || jwtValue.test(inspectedPath)
-        || embeddedCredential.test(inspectedPath)) return fallback;
+        || valueHasEmbeddedCredential(inspectedPath)) return fallback;
       for (const [key, value] of [...url.searchParams]) {
         // URLSearchParams decodes percent escapes but preserves structural key
         // grammar. Collapse brackets, dots and alternate separators before the
@@ -271,7 +276,7 @@ export function safeReturnTo(value: string | null | undefined, fallback = "https
           || sensitiveKey.test(inspectedKey)
           || emailValue.test(inspectedValue)
           || jwtValue.test(inspectedValue)
-          || embeddedCredential.test(inspectedValue)
+          || valueHasEmbeddedCredential(inspectedValue)
           || structuredValueHasSensitiveKey(inspectedValue)) {
           url.searchParams.delete(key);
         }
